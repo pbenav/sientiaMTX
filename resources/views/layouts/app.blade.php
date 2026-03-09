@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<script>
+    (function() {
+        const theme = "{{ auth()->check() ? auth()->user()->theme : 'system' }}";
+        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+</script>
 
 <head>
     <meta charset="utf-8">
@@ -44,10 +54,12 @@
     </style>
 </head>
 
-<body class="h-full bg-gray-950 text-gray-100 antialiased">
+<body
+    class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased transition-colors duration-300">
 
     <!-- Navigation -->
-    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+    <nav
+        class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
@@ -64,9 +76,9 @@
                             <rect x="13" y="13" width="8" height="8" rx="1" />
                         </svg>
                     </div>
-                    <span class="font-bold text-white text-lg tracking-tight"
+                    <span class="font-bold text-gray-900 dark:text-white text-lg tracking-tight"
                         style="font-family:'Space Grotesk',sans-serif">sientia<span
-                            class="text-violet-400">MTX</span></span>
+                            class="text-violet-600 dark:text-violet-400">MTX</span></span>
                 </a>
 
                 <!-- Right side: nav links + locale + user menu -->
@@ -75,7 +87,7 @@
                     @auth
                         <!-- My Teams -->
                         <a href="{{ route('teams.index') }}"
-                            class="hidden sm:flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800">
+                            class="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -85,10 +97,79 @@
                         </a>
                     @endauth
 
+                    <!-- Theme Switcher -->
+                    <div class="relative" x-data="{
+                        open: false,
+                        theme: '{{ auth()->check() ? auth()->user()->theme : 'system' }}',
+                        updateTheme(newTheme) {
+                            this.theme = newTheme;
+                            this.open = false;
+                    
+                            if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                            }
+                    
+                            @auth
+fetch('{{ route('theme.update') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ theme: newTheme })
+                            }); @endauth
+                        }
+                    }">
+                        <button @click="open = !open" @click.outside="open = false"
+                            class="flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 w-9 h-9 rounded-lg transition-all">
+                            <!-- Sun -->
+                            <svg x-show="theme === 'light'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <!-- Moon -->
+                            <svg x-show="theme === 'dark'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                            <!-- System -->
+                            <svg x-show="theme === 'system'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </button>
+                        <div x-show="open" x-transition
+                            class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                            <button @click="updateTheme('light')"
+                                class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                :class="theme === 'light' ? 'text-violet-600 dark:text-violet-400 font-semibold' :
+                                    'text-gray-600 dark:text-gray-300'">
+                                ☀️ Light
+                            </button>
+                            <button @click="updateTheme('dark')"
+                                class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                :class="theme === 'dark' ? 'text-violet-600 dark:text-violet-400 font-semibold' :
+                                    'text-gray-600 dark:text-gray-300'">
+                                🌙 Dark
+                            </button>
+                            <button @click="updateTheme('system')"
+                                class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                :class="theme === 'system' ? 'text-violet-600 dark:text-violet-400 font-semibold' :
+                                    'text-gray-600 dark:text-gray-300'">
+                                💻 System
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Language Switcher -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" @click.outside="open = false"
-                            class="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 px-2.5 py-1.5 rounded-lg transition-all">
+                            class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 px-2.5 py-1.5 rounded-lg transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -102,13 +183,13 @@
                             </svg>
                         </button>
                         <div x-show="open" x-transition
-                            class="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                            class="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
                             <a href="{{ route('locale.switch', 'en') }}"
-                                class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-700 transition-colors {{ app()->getLocale() === 'en' ? 'text-violet-400 font-semibold' : 'text-gray-300' }}">
+                                class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ app()->getLocale() === 'en' ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-gray-600 dark:text-gray-300' }}">
                                 🇬🇧 English
                             </a>
                             <a href="{{ route('locale.switch', 'es') }}"
-                                class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-700 transition-colors {{ app()->getLocale() === 'es' ? 'text-violet-400 font-semibold' : 'text-gray-300' }}">
+                                class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ app()->getLocale() === 'es' ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-gray-600 dark:text-gray-300' }}">
                                 🇪🇸 Español
                             </a>
                         </div>
@@ -130,13 +211,16 @@
                                 </svg>
                             </button>
                             <div x-show="open" x-transition
-                                class="absolute right-0 mt-2 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
-                                <div class="px-4 py-3 border-b border-gray-700">
-                                    <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
-                                    <p class="text-xs text-gray-400 truncate">{{ auth()->user()->email }}</p>
+                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                                <div
+                                    class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                        {{ auth()->user()->name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                        {{ auth()->user()->email }}</p>
                                 </div>
                                 <a href="{{ route('profile.edit') }}"
-                                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                                    class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -144,11 +228,11 @@
                                     </svg>
                                     {{ __('navigation.profile') }}
                                 </a>
-                                <div class="border-t border-gray-700">
+                                <div class="border-t border-gray-100 dark:border-gray-700">
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit"
-                                            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors">
+                                            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left font-medium">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -162,7 +246,7 @@
                         </div>
                     @else
                         <a href="{{ route('login') }}"
-                            class="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800">
+                            class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                             {{ __('navigation.login') }}
                         </a>
                         <a href="{{ route('register') }}"
@@ -220,12 +304,21 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-800 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
-            <span class="text-xs text-gray-600">
-                sientia<span class="text-violet-700">MTX</span> v{{ config('app.version', '0.0.1') }}
-            </span>
-            <span class="text-xs text-gray-700">Eisenhower Matrix · Focused Teams</span>
+    <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
+            <div class="flex flex-col gap-1">
+                <span class="text-xs font-bold text-gray-900 dark:text-white">
+                    sientia<span class="text-violet-600 dark:text-violet-400">MTX</span> <span
+                        class="text-gray-400 font-normal">v{{ config('app.version', '0.0.1') }}</span>
+                </span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Eisenhower
+                    Matrix</span>
+            </div>
+            <div class="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <a href="#" class="hover:text-violet-500 transition-colors">Privacy</a>
+                <a href="#" class="hover:text-violet-500 transition-colors">Terms</a>
+                <a href="#" class="hover:text-violet-500 transition-colors">Support</a>
+            </div>
         </div>
     </footer>
 

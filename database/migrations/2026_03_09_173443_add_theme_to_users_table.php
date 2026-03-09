@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('team_roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique(); // coordinator, moderator, user
-            $table->text('description')->nullable();
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            //
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('team_roles');
+        Schema::table('users', function (Blueprint $table) {
+            //
+        });
     }
 };

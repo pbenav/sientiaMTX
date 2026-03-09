@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/{task}/move', [TaskController::class, 'move'])->name('teams.tasks.move');
     Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');
     Route::get('/teams/{team}/tasks/quadrant', [TaskController::class, 'byQuadrant'])->name('tasks.byQuadrant');
+    
+    // Theme route
+    Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');
 });
 
 require __DIR__.'/auth.php';
