@@ -39,6 +39,7 @@ class Task extends Model
         'created_by_id',
         'metadata',
         'observations',
+        'parent_id',
     ];
 
     protected $casts = [
@@ -97,6 +98,29 @@ class Task extends Model
     public function tags(): HasMany
     {
         return $this->hasMany(TaskTag::class);
+    }
+
+    // Relationship: A task can have a parent task (dependency)
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, 'parent_id');
+    }
+
+    // Relationship: A task can have many subtasks or dependent tasks
+    public function children(): HasMany
+    {
+        return $this->hasMany(Task::class, 'parent_id');
+    }
+
+    /**
+     * Get the CSS class for Frappe Gantt based on Eisenhower quadrant
+     */
+    public function getGanttColorClass(): string
+    {
+        if ($this->priority === 'high' && $this->urgency === 'high') return 'gantt-q1'; // Red
+        if ($this->priority === 'high' && $this->urgency === 'low') return 'gantt-q2';  // Blue
+        if ($this->priority === 'low' && $this->urgency === 'high') return 'gantt-q3';  // Amber
+        return 'gantt-q4'; // Gray
     }
 
     // Scopes

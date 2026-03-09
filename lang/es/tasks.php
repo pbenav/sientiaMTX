@@ -68,4 +68,8 @@ return [
     'view_detail' => 'Ver detalle',
     'view_members' => 'Ver miembros',
     'eisenhower_matrix' => 'Matriz de Eisenhower',
+    'view_gantt' => 'Ver Gantt',
+    'dependency' => 'Dependencia (Tarea Padre)',
+    'no_dependency' => 'Sin dependencia',
+    'roadmap' => 'Hoja de Ruta',
 ];

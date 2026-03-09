@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('tasks', 'observations')) {
-            Schema::table('tasks', function (Blueprint $table) {
-                $table->longText('observations')->nullable()->after('description');
-            });
-        }
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->foreignId('parent_id')->nullable()->after('team_id')->constrained('tasks')->nullOnDelete();
+        });
     }
 
     /**
@@ -24,7 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('observations');
+            $table->dropForeign(['parent_id']);
+            $table->dropColumn('parent_id');
         });
     }
 };

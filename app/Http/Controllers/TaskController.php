@@ -26,8 +26,9 @@ class TaskController extends Controller
         $users = $team->members;
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
+        $tasks = $team->tasks()->orderBy('title')->get();
 
-        return view('tasks.create', compact('team', 'users', 'groups', 'priorities'));
+        return view('tasks.create', compact('team', 'users', 'groups', 'priorities', 'tasks'));
     }
 
     /**
@@ -45,6 +46,7 @@ class TaskController extends Controller
             'assigned_to' => 'nullable|array',
             'assigned_groups' => 'nullable|array',
             'observations' => 'nullable|string',
+            'parent_id' => 'nullable|exists:tasks,id',
         ]);
 
         $task = $team->tasks()->create([
@@ -58,6 +60,7 @@ class TaskController extends Controller
             'original_due_date' => $validated['due_date'],
             'created_by_id' => auth()->id(),
             'observations' => $validated['observations'],
+            'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
         // Assign users if provided
@@ -103,8 +106,9 @@ class TaskController extends Controller
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada'];
+        $tasks = $team->tasks()->where('id', '!=', $task->id)->orderBy('title')->get();
 
-        return view('tasks.edit', compact('team', 'task', 'users', 'groups', 'priorities', 'statuses'));
+        return view('tasks.edit', compact('team', 'task', 'users', 'groups', 'priorities', 'statuses', 'tasks'));
     }
 
     /**
@@ -123,6 +127,7 @@ class TaskController extends Controller
             'assigned_to' => 'nullable|array',
             'assigned_groups' => 'nullable|array',
             'observations' => 'nullable|string',
+            'parent_id' => 'nullable|exists:tasks,id',
         ]);
 
         // Store old values for history
@@ -137,6 +142,7 @@ class TaskController extends Controller
             'scheduled_date' => $validated['scheduled_date'],
             'due_date' => $validated['due_date'],
             'observations' => $validated['observations'],
+            'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
         // Log changes to history

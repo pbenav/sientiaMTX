@@ -92,6 +92,22 @@
                     <span class="text-gray-400 ml-1" id="qp-desc"></span>
                 </div>
 
+                <!-- Dependency -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                        {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
+                    </label>
+                    <select name="parent_id"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                        <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
+                        @foreach ($tasks as $t)
+                            <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}>
+                                {{ $t->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <!-- Dates -->
                 <div class="grid grid-cols-2 gap-4 font-mono">
                     <div>

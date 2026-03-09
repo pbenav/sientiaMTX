@@ -48,5 +48,8 @@
     "Mail settings updated successfully.": "Configuración de correo actualizada correctamente.",
     "Test email sent successfully to :email": "Correo de prueba enviado correctamente a :email",
     "Failed to send test email: ": "Fallo al enviar el correo de prueba: ",
-    "Error updating .env file: ": "Error al actualizar el archivo .env: "
+    "Error updating .env file: ": "Error al actualizar el archivo .env: ",
+    "Dependency": "Dependencia",
+    "Gantt Chart": "Diagrama de Gantt",
+    "Roadmap": "Hoja de Ruta"
 }

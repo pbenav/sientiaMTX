@@ -11,4 +11,5 @@ return [
     'settings' => 'Configuración',
     'welcome' => 'Bienvenido',
     'hello' => 'Hola, :name',
+    'gantt' => 'Gantt',
 ];
