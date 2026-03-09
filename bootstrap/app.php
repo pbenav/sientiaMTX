@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
 
+        $middleware->encryptCookies(except: [
+            'theme',
+        ]);
+
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {

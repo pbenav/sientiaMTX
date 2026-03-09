@@ -1,9 +1,8 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    class="h-full {{ (auth()->check() && auth()->user()->theme === 'dark') || (!auth()->check() && request()->cookie('theme') === 'dark') || (auth()->check() && auth()->user()->theme === 'system' && request()->cookie('theme') === 'dark') ? 'dark' : '' }}">
+    class="h-full {{ (auth()->check() ? auth()->user()->theme === 'dark' || (auth()->user()->theme === 'system' && request()->cookie('theme') === 'dark') : request()->cookie('theme') === 'dark') ? 'dark' : '' }}">
 <script>
     (function() {
-        const theme =
-            "{{ auth()->check() ? auth()->user()->theme : (isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'system') }}";
+        const theme = "{{ auth()->check() ? auth()->user()->theme : request()->cookie('theme', 'system') }}";
         if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -100,7 +99,7 @@
                     <!-- Theme Switcher -->
                     <div class="relative" x-data="{
                         open: false,
-                        theme: '{{ auth()->check() ? auth()->user()->theme : 'system' }}',
+                        theme: '{{ auth()->check() ? auth()->user()->theme : request()->cookie('theme', 'system') }}',
                         updateTheme(newTheme) {
                             this.theme = newTheme;
                             this.open = false;
