@@ -80,7 +80,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Horizontal Urgency labels -->
         <div
-            class="flex justify-between mb-8 ml-16 mr-4 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+            class="flex justify-between mb-4 sm:mb-8 ml-10 sm:ml-16 mr-2 sm:mr-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-400 dark:text-gray-500">
             <div class="flex items-center gap-3">
                 <span class="text-xs">←</span>
                 <span>{{ __('tasks.not_urgent') }}</span>
@@ -93,24 +93,25 @@
 
         <div class="flex gap-4">
             <!-- Vertical Importance label -->
-            <div class="flex items-center py-8">
+            <div class="flex items-center py-4 sm:py-8">
                 <span
-                    class="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 [writing-mode:vertical-rl] rotate-180 whitespace-nowrap select-none">
+                    class="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-500 [writing-mode:vertical-rl] rotate-180 whitespace-nowrap select-none">
                     ← {{ __('tasks.not_important') }} · {{ __('tasks.important') }} →
                 </span>
             </div>
 
             <!-- Matrix grid -->
-            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div class="flex-1 grid grid-cols-2 gap-3 sm:gap-8">
                 @foreach ([2, 1, 4, 3] as $q)
                     @php
                         $cfg = $quadrantConfig[$q];
                         $qTasks = $quadrants[$q];
                     @endphp
-                    <div class="border {{ $cfg['bg'] }} rounded-[2.5rem] flex flex-col min-h-[320px] shadow-2xl transition-all group/q"
+                    <div class="border {{ $cfg['bg'] }} rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q"
                         data-quadrant="{{ $q }}">
                         <!-- Quadrant header -->
-                        <div class="px-8 py-6 border-b border-white/5 flex flex-col gap-1 relative">
+                        <div
+                            class="px-4 py-3 sm:px-8 sm:py-6 border-b border-white/5 flex flex-col gap-0.5 sm:gap-1 relative">
                             <div class="flex items-center gap-3">
                                 <div class="w-3 h-3 rounded-full shrink-0"
                                     style="background:{{ $cfg['color'] }}; box-shadow: 0 0 20px {{ $cfg['color'] }}">
@@ -118,21 +119,23 @@
                                 <span
                                     class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">Q{{ $q }}</span>
                             </div>
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white heading mt-1">
+                            <h2
+                                class="text-sm sm:text-2xl font-bold text-gray-900 dark:text-white heading mt-0.5 sm:mt-1">
                                 {{ __('tasks.quadrants.' . $q . '.label') }}
                             </h2>
-                            <p class="text-[11px] text-gray-500 dark:text-gray-500 font-medium">
+                            <p
+                                class="text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-500 font-medium line-clamp-1 sm:line-clamp-none">
                                 {{ __('tasks.quadrants.' . $q . '.description') }}
                             </p>
 
                             <span
-                                class="absolute top-8 right-8 text-[11px] font-bold bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 w-7 h-7 flex items-center justify-center rounded-full q-count">
+                                class="absolute top-4 right-4 sm:top-8 right-8 text-[9px] sm:text-[11px] font-bold bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full q-count">
                                 {{ count($qTasks) }}
                             </span>
                         </div>
 
                         <!-- Task list -->
-                        <div class="flex-1 overflow-y-auto quadrant-list p-4 min-h-[180px] space-y-2"
+                        <div class="flex-1 overflow-y-auto quadrant-list p-2 sm:p-4 min-h-[100px] sm:min-h-[180px] space-y-1 sm:space-y-2"
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
                                 <div class="px-3 py-2 flex items-center gap-3 hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl"
@@ -140,18 +143,18 @@
                                     <!-- Status dot -->
                                     <div class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }}"></div>
                                     <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                        class="flex-1 text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors">
+                                        class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors">
                                         {{ $task->title }}
                                     </a>
                                     @if ($task->due_date)
-                                        <span class="shrink-0 text-[10px] text-gray-600 font-mono">
+                                        <span class="shrink-0 text-[8px] sm:text-[10px] text-gray-600 font-mono">
                                             {{ $task->due_date->format('d/m') }}
                                         </span>
                                     @endif
                                 </div>
                             @empty
                                 <div
-                                    class="flex items-center justify-center flex-1 text-[11px] text-gray-600 italic empty-msg py-12">
+                                    class="flex items-center justify-center flex-1 text-[9px] sm:text-[11px] text-gray-600 italic empty-msg py-6 sm:py-12">
                                     {{ __('teams.no_tasks') }}
                                 </div>
                             @endforelse
