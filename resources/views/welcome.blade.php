@@ -665,7 +665,7 @@
     <!-- NAV -->
     <nav>
         <div class="nav-inner">
-            <a href="{{ route('home') }}" class="logo">
+            <a href="{{ auth()->check() ? route('dashboard') : route('home') }}" class="logo">
                 <div class="logo-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                         fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

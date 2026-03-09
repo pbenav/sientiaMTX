@@ -64,7 +64,8 @@
             <div class="flex items-center justify-between h-16">
 
                 <!-- Logo -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+                <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
+                    class="flex items-center gap-2 group">
                     <div
                         class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-violet-500/30 transition-all duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 24 24"
@@ -325,10 +326,11 @@ fetch('{{ route('theme.update') }}', {
     <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
             <div class="flex flex-col gap-1">
-                <span class="text-xs font-bold text-gray-900 dark:text-white">
+                <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
+                    class="text-xs font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                     sientia<span class="text-violet-600 dark:text-violet-400">MTX</span> <span
                         class="text-gray-400 font-normal">v{{ config('app.version', '0.0.1') }}</span>
-                </span>
+                </a>
                 <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Eisenhower
                     Matrix</span>
             </div>

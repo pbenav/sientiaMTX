@@ -114,13 +114,13 @@
 
             <!-- Hint about config cache -->
             <div
-                class="p-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl flex gap-4">
+                class="p-6 bg-amber-50 dark:bg-gray-800/50 border border-amber-200 dark:border-amber-900/30 rounded-2xl flex gap-4 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600 dark:text-amber-500 shrink-0"
                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <div class="text-sm text-amber-800 dark:text-amber-200">
+                <div class="text-sm text-amber-800 dark:text-amber-200/90 leading-relaxed">
                     <p class="font-bold mb-1">{{ __('Note on .env changes') }}</p>
                     <p>{{ __('Updating these settings will modify your .env file and clear the configuration cache. Changes should take effect immediately, but a web server restart might be needed in some environments.') }}
                     </p>
