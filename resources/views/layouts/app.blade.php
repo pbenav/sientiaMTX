@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    class="h-full {{ (auth()->check() && auth()->user()->theme === 'dark') || (!auth()->check() && request()->cookie('theme', 'system') === 'dark') ? 'dark' : '' }}">
 <script>
     (function() {
         const theme = "{{ auth()->check() ? auth()->user()->theme : 'system' }}";
@@ -54,8 +54,7 @@
     </style>
 </head>
 
-<body
-    class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased transition-colors duration-300">
+<body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased">
 
     <!-- Navigation -->
     <nav

@@ -3,13 +3,16 @@
 @tailwind utilities;
 
 @layer base {
-    input, select, textarea {
-        @apply bg-gray-800 border-gray-700 text-white placeholder-gray-500;
+
+    input,
+    select,
+    textarea {
+        @apply focus:ring-violet-500 focus:border-violet-500 rounded-xl transition-all;
     }
 
     /* Fix for Chrome autofill */
     input:-webkit-autofill,
-    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:hover,
     input:-webkit-autofill:focus,
     textarea:-webkit-autofill,
     textarea:-webkit-autofill:hover,

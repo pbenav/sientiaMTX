@@ -142,6 +142,59 @@
                         {{ __('teams.no_members') }}</div>
                 @endforelse
                 <div class="px-5 py-4">{{ $members->links() }}</div>
+
+                @if ($invitations->isNotEmpty())
+                    <div
+                        class="px-5 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                        <h2
+                            class="font-bold text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
+                            {{ __('teams.pending_invitations') }}</h2>
+                        <div class="space-y-3">
+                            @foreach ($invitations as $invitation)
+                                <div
+                                    class="flex items-center justify-between gap-4 p-3 bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002-2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">
+                                                {{ $invitation->email }}</p>
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-violet-500">
+                                                {{ $invitation->role->name }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+                                            {{ __('teams.invited') }}
+                                        </span>
+                                        @can('manageMembers', $team)
+                                            <form method="POST"
+                                                action="{{ route('teams.invitations.destroy', [$team, $invitation]) }}"
+                                                onsubmit="return confirm('{{ __('Are you sure you want to cancel this invitation?') }}')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit"
+                                                    class="text-gray-400 hover:text-red-500 transition-colors">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Add member form -->

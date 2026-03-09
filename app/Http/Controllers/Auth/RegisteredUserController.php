@@ -41,10 +41,17 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Process pending invitations
+        $invitations = \App\Models\TeamInvitation::where('email', $user->email)->get();
+        foreach ($invitations as $invitation) {
+            $invitation->team->members()->attach($user->id, ['role_id' => $invitation->role_id]);
+            $invitation->delete();
+        }
+
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('teams.index', absolute: false));
     }
 }

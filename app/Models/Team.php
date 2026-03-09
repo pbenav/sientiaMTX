@@ -51,6 +51,11 @@ class Team extends Model
         return $this->hasMany(CalendarEvent::class);
     }
 
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(TeamInvitation::class);
+    }
+
     // Get creator of the team
     public function creator()
     {

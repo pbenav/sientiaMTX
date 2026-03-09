@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\TeamRole;
+use App\Models\TeamInvitation;
 use App\Models\User;
+use App\Notifications\InvitationNotification;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
 use App\Traits\HandlesEisenhowerMatrix;
 use Illuminate\Http\Request;
 
@@ -117,8 +121,9 @@ class TeamController extends Controller
 
         $groups = $team->groups()->with('users')->get();
         $roles = TeamRole::all();
+        $invitations = $team->invitations()->with('role')->get();
 
-        return view('teams.members', compact('team', 'members', 'groups', 'roles'));
+        return view('teams.members', compact('team', 'members', 'groups', 'roles', 'invitations'));
     }
 
     /**
@@ -136,7 +141,23 @@ class TeamController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         if (!$user) {
-            return back()->withErrors(['email' => 'Usuario no encontrado']);
+            // Check if already invited
+            if ($team->invitations()->where('email', $validated['email'])->exists()) {
+                return back()->withErrors(['email' => __('teams.already_invited')]);
+            }
+
+            // Create invitation
+            $invitation = $team->invitations()->create([
+                'email' => $validated['email'],
+                'role_id' => $validated['role_id'],
+                'token' => Str::random(40),
+            ]);
+
+            // Notify via email - Here we'd send to the email address directly
+            Notification::route('mail', $validated['email'])
+                ->notify(new InvitationNotification($invitation));
+
+            return back()->with('success', __('teams.invitation_sent'));
         }
 
         if ($team->members()->where('user_id', $user->id)->exists()) {
@@ -191,6 +212,18 @@ class TeamController extends Controller
         $team->members()->detach($user->id);
 
         return back()->with('success', __('teams.member_removed'));
+    }
+
+    /**
+     * Remove a pending invitation
+     */
+    public function removeInvitation(Team $team, TeamInvitation $invitation)
+    {
+        $this->authorize('manageMembers', $team);
+
+        $invitation->delete();
+
+        return back()->with('success', __('teams.invitation_cancelled'));
     }
 
     /**
