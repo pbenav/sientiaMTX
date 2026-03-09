@@ -9,7 +9,7 @@ return [
     'name' => 'Título',
     'description' => 'Descripción',
     'observations' => 'Observaciones',
-    'priority' => 'Prioridad (Importancia)',
+    'priority' => 'Prioridad',
     'urgency' => 'Urgencia',
     'status' => 'Estado',
     'assigned_to' => 'Asignada a',
