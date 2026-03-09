@@ -35,6 +35,13 @@ class TaskController extends Controller
      */
     public function store(Request $request, Team $team)
     {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'priority' => 'required|in:low,medium,high,critical',
+            'urgency' => 'required|in:low,medium,high,critical',
+            'scheduled_date' => 'nullable|date',
+            'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|array',
             'assigned_groups' => 'nullable|array',
             'observations' => 'nullable|string',
@@ -105,6 +112,14 @@ class TaskController extends Controller
      */
     public function update(Request $request, Team $team, Task $task)
     {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'priority' => 'required|in:low,medium,high,critical',
+            'urgency' => 'required|in:low,medium,high,critical',
+            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'scheduled_date' => 'nullable|date',
+            'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|array',
             'assigned_groups' => 'nullable|array',
             'observations' => 'nullable|string',
