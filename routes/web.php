@@ -19,6 +19,13 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
 
 
 Route::get('/dashboard', function () {
+    $user = auth()->user();
+    $firstTeam = $user->teams()->first();
+    
+    if ($firstTeam) {
+        return redirect()->route('teams.dashboard', $firstTeam);
+    }
+    
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

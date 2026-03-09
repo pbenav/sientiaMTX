@@ -28,6 +28,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+        $firstTeam = $user->teams()->first();
+
+        if ($firstTeam) {
+            return redirect()->intended(route('teams.dashboard', $firstTeam));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

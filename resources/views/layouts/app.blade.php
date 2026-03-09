@@ -320,9 +320,9 @@ fetch('{{ route('theme.update') }}', {
                     Matrix</span>
             </div>
             <div class="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                <a href="#" class="hover:text-violet-500 transition-colors">Privacy</a>
-                <a href="#" class="hover:text-violet-500 transition-colors">Terms</a>
-                <a href="#" class="hover:text-violet-500 transition-colors">Support</a>
+                <a href="#" class="hover:text-violet-500 transition-colors">{{ __('Privacy') }}</a>
+                <a href="#" class="hover:text-violet-500 transition-colors">{{ __('Terms') }}</a>
+                <a href="#" class="hover:text-violet-500 transition-colors">{{ __('Support') }}</a>
             </div>
         </div>
     </footer>

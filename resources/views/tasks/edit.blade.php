@@ -146,12 +146,11 @@
                 </div>
 
                 <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <form method="POST" action="{{ route('teams.tasks.destroy', [$team, $task]) }}"
-                        onsubmit="return confirm('{{ __('tasks.delete_confirm') }}')">
-                        @csrf @method('DELETE')
-                        <button type="submit"
+                    <div>
+                        <button type="button"
+                            onclick="if(confirm('{{ __('tasks.delete_confirm') }}')) document.getElementById('delete-task-form').submit();"
                             class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">{{ __('tasks.delete') }}</button>
-                    </form>
+                    </div>
                     <div class="flex gap-3">
                         <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
                             class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all font-medium">{{ __('tasks.back') }}</a>
@@ -159,6 +158,11 @@
                             class="text-sm bg-violet-600 hover:bg-violet-500 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-violet-500/25">{{ __('tasks.save') }}</button>
                     </div>
                 </div>
+            </form>
+
+            <form id="delete-task-form" method="POST" action="{{ route('teams.tasks.destroy', [$team, $task]) }}"
+                class="hidden">
+                @csrf @method('DELETE')
             </form>
         </div>
     </div>
