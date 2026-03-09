@@ -576,15 +576,53 @@
         /* RESPONSIVE */
         @media (max-width: 640px) {
             .matrix-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+                padding: 0 4px;
+            }
+
+            .q-card {
+                padding: 10px 8px;
+                border-radius: 12px;
+            }
+
+            .q-name {
+                font-size: 12px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .q-num {
+                font-size: 9px;
+            }
+
+            .q-desc {
+                font-size: 8px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: block;
+            }
+
+            .q-tasks {
+                display: none;
             }
 
             .matrix-label-top {
-                display: none;
+                display: flex;
+                font-size: 9px;
+                padding: 0 12px;
+                margin-bottom: 4px;
             }
 
             .matrix-side-text {
-                display: none;
+                display: flex;
+                font-size: 9px;
+            }
+
+            .matrix-label-side {
+                gap: 4px;
             }
         }
 
