@@ -61,4 +61,10 @@ return [
         3 => ['label' => 'Delegate', 'description' => 'Not Important & Urgent', 'tip' => 'Assign it to someone else.'],
         4 => ['label' => 'Eliminate', 'description' => 'Not Important & Not Urgent', 'tip' => 'Consider removing it.'],
     ],
+
+    'groups' => 'Groups',
+    'assign_groups' => 'Assign to Groups',
+    'view_detail' => 'View Detail',
+    'view_members' => 'View Members',
+    'eisenhower_matrix' => 'Eisenhower Matrix',
 ];

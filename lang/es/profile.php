@@ -17,4 +17,8 @@ return [
     'preferences' => 'Preferencias',
     'update_profile_intro' => 'Actualiza la información de tu perfil y tu dirección de correo electrónico.',
     'password_intro' => 'Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantener la seguridad.',
+    'delete_account_intro' => 'Una vez que se elimine tu cuenta, todos sus recursos y datos se eliminarán permanentemente. Antes de eliminar tu cuenta, descarga cualquier dato o información que desees conservar.',
+    'delete_account_confirm_title' => '¿Estás seguro de que quieres eliminar tu cuenta?',
+    'delete_account_confirm_text' => 'Una vez que se elimine tu cuenta, todos sus recursos y datos se eliminarán permanentemente. Ingresa tu contraseña para confirmar que deseas eliminar tu cuenta de forma permanente.',
+    'cancel' => 'Cancelar',
 ];

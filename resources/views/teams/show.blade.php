@@ -3,21 +3,22 @@
 
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <a href="{{ route('teams.index') }}" class="text-gray-500 hover:text-white transition-colors">
+            <a href="{{ route('teams.index') }}"
+                class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
             <div class="flex-1">
-                <h1 class="text-xl font-bold text-white heading">{{ $team->name }}</h1>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ $team->name }}</h1>
                 @if ($team->description)
-                    <p class="text-xs text-gray-400 mt-0.5">{{ $team->description }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ $team->description }}</p>
                 @endif
             </div>
             <div class="flex items-center gap-2">
                 <a href="{{ route('teams.dashboard', $team) }}"
-                    class="flex items-center gap-1.5 text-sm bg-violet-600 hover:bg-violet-500 text-white px-3 py-2 rounded-xl transition-all font-medium">
+                    class="flex items-center gap-1.5 text-sm bg-violet-600 hover:bg-violet-500 text-white px-3 py-2 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="8" height="8" rx="1" />
@@ -25,10 +26,10 @@
                         <rect x="3" y="13" width="8" height="8" rx="1" />
                         <rect x="13" y="13" width="8" height="8" rx="1" />
                     </svg>
-                    {{ __('teams.eisenhower_matrix') }}
+                    {{ __('tasks.eisenhower_matrix') }}
                 </a>
                 <a href="{{ route('teams.tasks.create', $team) }}"
-                    class="flex items-center gap-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-2 rounded-xl transition-all font-medium">
+                    class="flex items-center gap-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl transition-all font-bold shadow-sm dark:shadow-none">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -47,35 +48,41 @@
         $completed = $team->tasks->where('status', 'completed')->count();
     @endphp
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        @foreach ([['label' => __('tasks.statuses.pending'), 'value' => $pending, 'color' => 'text-yellow-400', 'bg' => 'bg-yellow-400/10 border-yellow-700/30'], ['label' => __('tasks.statuses.in_progress'), 'value' => $inProgress, 'color' => 'text-blue-400', 'bg' => 'bg-blue-400/10 border-blue-700/30'], ['label' => __('tasks.statuses.completed'), 'value' => $completed, 'color' => 'text-emerald-400', 'bg' => 'bg-emerald-400/10 border-emerald-700/30'], ['label' => __('teams.members'), 'value' => $team->members->count(), 'color' => 'text-violet-400', 'bg' => 'bg-violet-400/10 border-violet-700/30']] as $stat)
-            <div class="border {{ $stat['bg'] }} rounded-2xl p-4 text-center">
+        @foreach ([['label' => __('tasks.statuses.pending'), 'value' => $pending, 'color' => 'text-yellow-600 dark:text-yellow-400', 'bg' => 'bg-yellow-50 dark:bg-yellow-400/10 border-yellow-100 dark:border-yellow-700/30'], ['label' => __('tasks.statuses.in_progress'), 'value' => $inProgress, 'color' => 'text-blue-600 dark:text-blue-400', 'bg' => 'bg-blue-50 dark:bg-blue-400/10 border-blue-100 dark:border-blue-700/30'], ['label' => __('tasks.statuses.completed'), 'value' => $completed, 'color' => 'text-emerald-600 dark:text-emerald-400', 'bg' => 'bg-emerald-50 dark:bg-emerald-400/10 border-emerald-100 dark:border-emerald-700/30'], ['label' => __('teams.members'), 'value' => $team->members->count(), 'color' => 'text-violet-600 dark:text-violet-400', 'bg' => 'bg-violet-50 dark:bg-violet-400/10 border-violet-100 dark:border-violet-700/30']] as $stat)
+            <div
+                class="border {{ $stat['bg'] }} rounded-2xl p-4 text-center shadow-sm dark:shadow-none transition-colors">
                 <div class="text-2xl font-bold {{ $stat['color'] }} heading">{{ $stat['value'] }}</div>
-                <div class="text-xs text-gray-400 mt-1">{{ $stat['label'] }}</div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-1">
+                    {{ $stat['label'] }}</div>
             </div>
         @endforeach
     </div>
 
     <!-- Task list -->
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
-            <h2 class="font-semibold text-sm text-gray-300 heading">{{ __('teams.tasks') }}</h2>
-            <a href="{{ route('teams.tasks.index', $team) }}"
-                class="text-xs text-violet-400 hover:text-violet-300">{{ __('teams.view_dashboard') }} →</a>
+    <div
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+        <div
+            class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-transparent">
+            <h2 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
+                {{ __('teams.tasks') }}</h2>
+            <a href="{{ route('teams.dashboard', $team) }}"
+                class="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors">{{ __('teams.view_dashboard') }}
+                →</a>
         </div>
         @forelse($team->tasks->take(10) as $task)
             @php
                 $statusColor = match ($task->status) {
-                    'completed' => 'text-emerald-400 bg-emerald-400/10',
-                    'in_progress' => 'text-blue-400 bg-blue-400/10',
-                    'cancelled' => 'text-red-400 bg-red-400/10',
-                    default => 'text-yellow-400 bg-yellow-400/10',
+                    'completed' => 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-400/10',
+                    'in_progress' => 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-400/10',
+                    'cancelled' => 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-400/10',
+                    default => 'text-amber-600 bg-amber-50 dark:text-yellow-400 dark:bg-yellow-400/10',
                 };
             @endphp
             <div
-                class="px-5 py-3.5 border-b border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-800/40 transition-colors">
+                class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                 <div class="flex-1 min-w-0">
                     <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                        class="text-sm font-medium text-gray-200 hover:text-white truncate block transition-colors">
+                        class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-violet-600 dark:hover:text-white truncate block transition-colors">
                         {{ $task->title }}
                     </a>
                     @if ($task->due_date)

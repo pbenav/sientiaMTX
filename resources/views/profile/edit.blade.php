@@ -7,19 +7,22 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-gray-900 border border-gray-800 shadow sm:rounded-2xl">
+            <div
+                class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
                 <div class="max-w-xl">
                     @include('profile.partials.update-profile-information-form')
                 </div>
             </div>
 
-            <div class="p-4 sm:p-8 bg-gray-900 border border-gray-800 shadow sm:rounded-2xl">
+            <div
+                class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
                 <div class="max-w-xl">
                     @include('profile.partials.update-password-form')
                 </div>
             </div>
 
-            <div class="p-4 sm:p-8 bg-gray-900 border border-red-900/30 shadow sm:rounded-2xl">
+            <div
+                class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
                 <div class="max-w-xl">
                     @include('profile.partials.delete-user-form')
                 </div>

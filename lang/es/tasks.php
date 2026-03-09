@@ -61,4 +61,10 @@ return [
         3 => ['label' => 'Delega', 'description' => 'No importante y Urgente', 'tip' => 'Asígnalo a otra persona.'],
         4 => ['label' => 'Elimina', 'description' => 'No importante y No urgente', 'tip' => 'Considera eliminarlo.'],
     ],
+
+    'groups' => 'Grupos',
+    'assign_groups' => 'Asignar a grupos',
+    'view_detail' => 'Ver detalle',
+    'view_members' => 'Ver miembros',
+    'eisenhower_matrix' => 'Matriz de Eisenhower',
 ];

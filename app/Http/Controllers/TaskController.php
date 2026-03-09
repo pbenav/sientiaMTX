@@ -15,11 +15,7 @@ class TaskController extends Controller
      */
     public function index(Team $team)
     {
-        $tasks = $team->tasks()
-            ->with(['assignedTo', 'creator', 'calendarEvent', 'tags'])
-            ->paginate(20);
-
-        return view('tasks.index', compact('team', 'tasks'));
+        return redirect()->route('teams.dashboard', $team);
     }
 
     /**

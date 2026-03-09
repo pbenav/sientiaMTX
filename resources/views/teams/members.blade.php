@@ -4,57 +4,65 @@
     <x-slot name="header">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-3">
-                <a href="{{ route('teams.dashboard', $team) }}" class="text-gray-500 hover:text-white transition-colors">
+                <a href="{{ route('teams.dashboard', $team) }}"
+                    class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <h1 class="text-xl font-bold text-white heading">{{ __('teams.members') }} — {{ $team->name }}</h1>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ __('teams.members') }} —
+                    {{ $team->name }}</h1>
             </div>
         </div>
     </x-slot>
 
     <div x-data="{ activeTab: '{{ session('tab', request('tab', 'members')) }}' }" class="space-y-6">
         <!-- Tabs -->
-        <div class="flex items-center gap-1 border-b border-gray-800">
+        <div class="flex items-center gap-1 border-b border-gray-200 dark:border-gray-800">
             <button @click="activeTab = 'members'"
-                :class="activeTab === 'members' ? 'text-violet-400 border-b-2 border-violet-500' :
-                    'text-gray-500 hover:text-gray-300'"
-                class="px-5 py-3 text-sm font-medium transition-all">
+                :class="activeTab === 'members' ?
+                    'text-violet-600 dark:text-violet-400 border-b-2 border-violet-500 bg-violet-50/50 dark:bg-transparent' :
+                    'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                class="px-6 py-4 text-sm font-bold uppercase tracking-widest transition-all">
                 {{ __('teams.members') }}
             </button>
             <button @click="activeTab = 'groups'"
-                :class="activeTab === 'groups' ? 'text-violet-400 border-b-2 border-violet-500' :
-                    'text-gray-500 hover:text-gray-300'"
-                class="px-5 py-3 text-sm font-medium transition-all">
-                {{ __('Groups') }}
+                :class="activeTab === 'groups' ?
+                    'text-violet-600 dark:text-violet-400 border-b-2 border-violet-500 bg-violet-50/50 dark:bg-transparent' :
+                    'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                class="px-6 py-4 text-sm font-bold uppercase tracking-widest transition-all">
+                {{ __('tasks.groups') }}
             </button>
         </div>
 
         <div x-show="activeTab === 'members'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Members list -->
-            <div class="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-800">
-                    <h2 class="font-semibold text-sm text-gray-300 heading">{{ __('teams.members') }}
+            <div
+                class="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
+                    <h2 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
+                        {{ __('teams.members') }}
                         ({{ $members->total() }})</h2>
                 </div>
                 @forelse($members as $member)
-                    <div class="px-5 py-3.5 border-b border-gray-800/60 last:border-0 flex items-center gap-4">
+                    <div
+                        class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                         <div
-                            class="w-9 h-9 rounded-full bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                            class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm">
                             {{ strtoupper(substr($member->name, 0, 2)) }}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-200 truncate">{{ $member->name }}</p>
-                            <p class="text-xs text-gray-500 truncate">{{ $member->email }}</p>
+                            <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">{{ $member->name }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
                         </div>
                         @can('manageMembers', $team)
                             <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"
                                 class="shrink-0">
                                 @csrf @method('PATCH')
                                 <select name="role_id" onchange="this.form.submit()"
-                                    class="bg-gray-800 border border-gray-700 text-xs text-gray-300 px-2 py-1.5 rounded-lg focus:border-violet-500 outline-none cursor-pointer">
+                                    class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 px-3 py-2 rounded-lg focus:border-violet-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-all">
                                     @foreach ($roles as $role)
                                         <option value="{{ $role->id }}"
                                             {{ ($member->pivot->role_id ?? null) == $role->id ? 'selected' : '' }}>
@@ -130,37 +138,42 @@
                         @endcan
                     </div>
                 @empty
-                    <div class="py-10 text-center text-gray-500 text-sm">{{ __('teams.no_tasks') }}</div>
+                    <div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm italic font-medium">
+                        {{ __('teams.no_members') }}</div>
                 @endforelse
                 <div class="px-5 py-4">{{ $members->links() }}</div>
             </div>
 
             <!-- Add member form -->
             @can('manageMembers', $team)
-                <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 h-fit">
-                    <h3 class="font-semibold text-sm text-gray-300 heading mb-4">{{ __('teams.add_member') }}</h3>
-                    <form method="POST" action="{{ route('teams.addMember', $team) }}" class="space-y-4">
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none h-fit transition-colors">
+                    <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading mb-6">
+                        {{ __('teams.add_member') }}</h3>
+                    <form method="POST" action="{{ route('teams.addMember', $team) }}" class="space-y-5">
                         @csrf
                         <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1.5">{{ __('teams.email') }}</label>
+                            <label
+                                class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.email') }}</label>
                             <input type="email" name="email" required
-                                class="w-full bg-gray-800 border border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-2.5 text-sm text-white outline-none transition-all"
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400"
                                 placeholder="user@example.com">
                             @error('email')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1.5">{{ __('teams.role') }}</label>
+                            <label
+                                class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.role') }}</label>
                             <select name="role_id" required
-                                class="w-full bg-gray-800 border border-gray-700 focus:border-violet-500 rounded-xl px-3 py-2.5 text-sm text-white outline-none transition-all">
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 @foreach ($roles as $role)
                                     <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <button type="submit"
-                            class="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium py-2.5 rounded-xl transition-all">
+                            class="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
                             {{ __('teams.add_member') }}
                         </button>
                     </form>
@@ -170,20 +183,22 @@
 
         <div x-show="activeTab === 'groups'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Groups list -->
-            <div class="lg:col-span-2 space-y-4">
+            <div class="lg:col-span-2 space-y-6">
                 @forelse($groups as $group)
-                    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden p-5">
-                        <div class="flex items-center justify-between mb-4">
+                    <div
+                        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 shadow-sm dark:shadow-none transition-colors">
+                        <div class="flex items-center justify-between mb-6">
                             <div>
-                                <h3 class="text-white font-semibold flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-400"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                <h3 class="text-gray-900 dark:text-white font-bold flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                     {{ $group->name }}
                                 </h3>
-                                <p class="text-xs text-gray-500">{{ $group->description }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 font-medium">
+                                    {{ $group->description }}</p>
                             </div>
                             @can('manageMembers', $team)
                                 <div class="flex items-center gap-2">
@@ -211,16 +226,18 @@
                         </div>
 
                         <!-- Members in group -->
-                        <div class="flex flex-wrap gap-2 mb-4">
+                        <div class="flex flex-wrap gap-2 mb-6">
                             @foreach ($group->users as $u)
                                 <div
-                                    class="bg-gray-800 text-gray-300 text-[10px] px-2 py-1 rounded flex items-center gap-1.5 border border-gray-700">
+                                    class="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center gap-2 border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+                                    <div class="w-1 h-1 rounded-full bg-violet-400"></div>
                                     {{ $u->name }}
                                     @can('manageMembers', $team)
                                         <form method="POST"
                                             action="{{ route('teams.groups.removeMember', [$team, $group, $u]) }}">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="text-gray-500 hover:text-red-400">×</button>
+                                            <button type="submit"
+                                                class="text-gray-400 hover:text-red-500 transition-colors ml-1 font-bold text-sm leading-none">×</button>
                                         </form>
                                     @endcan
                                 </div>
@@ -229,19 +246,21 @@
 
                         @can('manageMembers', $team)
                             <form method="POST" action="{{ route('teams.groups.addMember', [$team, $group]) }}"
-                                class="flex gap-2">
+                                class="flex gap-2 p-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
                                 @csrf
                                 <select name="user_id"
-                                    class="flex-1 bg-gray-800 border border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1.5 text-xs text-white outline-none">
-                                    <option value="">{{ __('Add member to group...') }}</option>
+                                    class="flex-1 bg-transparent border-0 focus:ring-0 text-xs text-gray-600 dark:text-white outline-none cursor-pointer">
+                                    <option value="" class="dark:bg-gray-900">
+                                        {{ __('tasks.add_member_to_group') }}...</option>
                                     @foreach ($members as $m)
                                         @if (!$group->users->contains($m->id))
-                                            <option value="{{ $m->id }}">{{ $m->name }}</option>
+                                            <option value="{{ $m->id }}" class="dark:bg-gray-900">
+                                                {{ $m->name }}</option>
                                         @endif
                                     @endforeach
                                 </select>
                                 <button type="submit"
-                                    class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg text-[10px] border border-gray-700 transition-all">
+                                    class="bg-white dark:bg-gray-700 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-gray-600 dark:text-white px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 dark:border-gray-600 transition-all shadow-sm">
                                     +
                                 </button>
                             </form>
@@ -274,31 +293,36 @@
                         </form>
                     </x-modal>
                 @empty
-                    <div class="py-10 text-center text-gray-500 text-sm">{{ __('No groups defined yet.') }}</div>
+                    <div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm italic font-medium">
+                        {{ __('teams.no_groups') }}</div>
                 @endforelse
             </div>
 
             <!-- Create group form -->
             @can('manageMembers', $team)
-                <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 h-fit">
-                    <h3 class="font-semibold text-sm text-gray-300 heading mb-4">{{ __('Create Group') }}</h3>
-                    <form method="POST" action="{{ route('teams.groups.store', $team) }}" class="space-y-4">
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none h-fit transition-colors">
+                    <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading mb-6">
+                        {{ __('tasks.create_group') }}</h3>
+                    <form method="POST" action="{{ route('teams.groups.store', $team) }}" class="space-y-5">
                         @csrf
                         <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1.5">{{ __('Name') }}</label>
+                            <label
+                                class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('tasks.name') }}</label>
                             <input type="text" name="name" required
-                                class="w-full bg-gray-800 border border-gray-700 focus:border-violet-500 rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                                placeholder="e.g. Development Team">
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 transition-all"
+                                placeholder="{{ __('tasks.name') }}...">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1.5">{{ __('Description') }}</label>
+                            <label
+                                class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('tasks.description') }}</label>
                             <textarea name="description"
-                                class="w-full bg-gray-800 border border-gray-700 focus:border-violet-500 rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                                placeholder="Short description..."></textarea>
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 resize-none transition-all"
+                                placeholder="{{ __('tasks.description') }}..."></textarea>
                         </div>
                         <button type="submit"
-                            class="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium py-2.5 rounded-xl transition-all">
-                            {{ __('Create Group') }}
+                            class="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
+                            {{ __('tasks.create_group') }}
                         </button>
                     </form>
                 </div>
