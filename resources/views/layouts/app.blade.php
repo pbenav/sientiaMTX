@@ -1,8 +1,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    class="h-full {{ (auth()->check() && auth()->user()->theme === 'dark') || (!auth()->check() && request()->cookie('theme', 'system') === 'dark') ? 'dark' : '' }}">
+    class="h-full {{ (auth()->check() && auth()->user()->theme === 'dark') || (!auth()->check() && request()->cookie('theme') === 'dark') || (auth()->check() && auth()->user()->theme === 'system' && request()->cookie('theme') === 'dark') ? 'dark' : '' }}">
 <script>
     (function() {
-        const theme = "{{ auth()->check() ? auth()->user()->theme : 'system' }}";
+        const theme =
+            "{{ auth()->check() ? auth()->user()->theme : (isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'system') }}";
         if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -104,6 +105,9 @@
                             this.theme = newTheme;
                             this.open = false;
                     
+                            // Set cookie regardless of auth
+                            document.cookie = 'theme=' + newTheme + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
+                    
                             if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                                 document.documentElement.classList.add('dark');
                             } else {
@@ -118,7 +122,9 @@ fetch('{{ route('theme.update') }}', {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                 },
                                 body: JSON.stringify({ theme: newTheme })
-                            }); @endauth
+                            }).then(response => response.json())
+                              .then(data => console.log('Theme updated:', data))
+                              .catch(error => console.error('Error updating theme:', error)); @endauth
                         }
                     }">
                         <button @click="open = !open" @click.outside="open = false"
