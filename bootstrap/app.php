@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
     })
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+        $schedule->command('tasks:check-urgent')->hourly();
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
