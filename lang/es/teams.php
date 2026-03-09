@@ -45,5 +45,11 @@ return [
     'no_tasks' => 'Sin tareas en este cuadrante.',
     'actions' => 'Acciones',
     'delete_confirm' => '¿Seguro que quieres eliminar este equipo?',
+    'delete_confirm_description' => 'Esta acción no se puede deshacer. Se eliminarán permanentemente el equipo, sus miembros y todas sus tareas asociadas.',
+    'delete_team' => 'Eliminar equipo',
+    'danger_zone' => 'Zona de peligro',
+    'info' => 'Información del equipo',
+    'cancel' => 'Cancelar',
+    'settings' => 'Configuración',
     'tasks' => 'Tareas',
 ];

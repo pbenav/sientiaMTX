@@ -45,5 +45,11 @@ return [
     'no_tasks' => 'No tasks in this quadrant.',
     'actions' => 'Actions',
     'delete_confirm' => 'Are you sure you want to delete this team?',
+    'delete_confirm_description' => 'This action cannot be undone. The team, its members, and all associated tasks will be permanently deleted.',
+    'delete_team' => 'Delete Team',
+    'danger_zone' => 'Danger Zone',
+    'info' => 'Team Information',
+    'cancel' => 'Cancel',
+    'settings' => 'Settings',
     'tasks' => 'Tasks',
 ];
