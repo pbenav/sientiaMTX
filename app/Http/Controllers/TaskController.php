@@ -56,6 +56,7 @@ class TaskController extends Controller
             'due_date' => $validated['due_date'],
             'original_due_date' => $validated['due_date'],
             'created_by_id' => auth()->id(),
+            'observations' => $validated['observations'],
         ]);
 
         // Assign users if provided
@@ -133,6 +134,7 @@ class TaskController extends Controller
             'status' => $validated['status'],
             'scheduled_date' => $validated['scheduled_date'],
             'due_date' => $validated['due_date'],
+            'observations' => $validated['observations'],
         ]);
 
         // Log changes to history

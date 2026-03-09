@@ -37,7 +37,8 @@ class Task extends Model
         'due_date',
         'original_due_date',
         'created_by_id',
-        'metadata'
+        'metadata',
+        'observations',
     ];
 
     protected $casts = [

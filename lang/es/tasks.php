@@ -8,6 +8,7 @@ return [
     'deleted' => 'Tarea eliminada correctamente.',
     'name' => 'Título',
     'description' => 'Descripción',
+    'observations' => 'Observaciones',
     'priority' => 'Prioridad (Importancia)',
     'urgency' => 'Urgencia',
     'status' => 'Estado',
