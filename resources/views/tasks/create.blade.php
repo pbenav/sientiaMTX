@@ -42,13 +42,19 @@
                         placeholder="{{ __('tasks.description') }}...">{{ old('description') }}</textarea>
                 </div>
 
+                <!-- Observations (Markdown) -->
+                <div>
+                    <label
+                        class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.observations') }}</label>
+                    <textarea name="observations" id="observations"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">{{ old('observations') }}</textarea>
+                </div>
+
                 <!-- Priority + Urgency (the Eisenhower axes) -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
                             {{ __('tasks.priority') }}
-                            <span
-                                class="text-gray-400 font-normal text-xs ml-1 font-mono italic">({{ __('tasks.priority') }})</span>
                         </label>
                         <select name="priority" required
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
@@ -65,8 +71,6 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
                             {{ __('tasks.urgency') }}
-                            <span
-                                class="text-gray-400 font-normal text-xs ml-1 font-mono italic">({{ __('tasks.urgency') }})</span>
                         </label>
                         <select name="urgency" required
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
@@ -164,56 +168,110 @@
         </div>
     </div>
 
-    <script>
-        const quadrantData = @json(__('tasks.quadrants'));
-        const priorityEl = document.querySelector('[name="priority"]');
-        const urgencyEl = document.querySelector('[name="urgency"]');
-        const preview = document.getElementById('quadrant-preview');
-        const highLevels = ['high', 'critical'];
-
-        const qColors = {
-            1: {
-                border: 'border-red-200 dark:border-red-700',
-                bg: 'bg-red-50 dark:bg-red-950/30',
-                text: 'text-red-600 dark:text-red-300'
-            },
-            2: {
-                border: 'border-blue-200 dark:border-blue-700',
-                bg: 'bg-blue-50 dark:bg-blue-950/30',
-                text: 'text-blue-600 dark:text-blue-300'
-            },
-            3: {
-                border: 'border-amber-200 dark:border-amber-700',
-                bg: 'bg-amber-50 dark:bg-amber-950/30',
-                text: 'text-amber-600 dark:text-amber-300'
-            },
-            4: {
-                border: 'border-gray-200 dark:border-gray-700',
-                bg: 'bg-gray-50 dark:bg-gray-800',
-                text: 'text-gray-600 dark:text-gray-300'
-            },
-        };
-
-        function updatePreview() {
-            const imp = highLevels.includes(priorityEl.value);
-            const urg = highLevels.includes(urgencyEl.value);
-            let q = 4;
-            if (imp && urg) q = 1;
-            else if (imp) q = 2;
-            else if (urg) q = 3;
-
-            const cfg = qColors[q];
-            preview.className =
-                `rounded-xl border p-3 text-xs transition-all shadow-sm dark:shadow-none ${cfg.border} ${cfg.bg}`;
-            preview.classList.remove('hidden');
-            document.getElementById('qp-label').className = `font-bold uppercase tracking-wider ${cfg.text}`;
-            document.getElementById('qp-label').textContent = `Q${q}: ${quadrantData[q].label}`;
-            document.getElementById('qp-desc').className = `text-gray-500 dark:text-gray-400 ml-1 italic font-medium`;
-            document.getElementById('qp-desc').textContent = `— ${quadrantData[q].description}`;
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <style>
+        .EasyMDEContainer .CodeMirror {
+            background: #f9fafb;
+            border-bottom-left-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            color: #111827;
         }
 
-        priorityEl?.addEventListener('change', updatePreview);
-        urgencyEl?.addEventListener('change', updatePreview);
-        updatePreview();
+        .dark .EasyMDEContainer .CodeMirror {
+            background: #1f2937;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+
+        .EasyMDEContainer .editor-toolbar {
+            background: #f3f4f6;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            border-color: #e5e7eb;
+        }
+
+        .dark .EasyMDEContainer .editor-toolbar {
+            background: #111827;
+            border-color: #374151;
+        }
+
+        .dark .EasyMDEContainer .editor-toolbar button {
+            color: #9ca3af;
+        }
+
+        .dark .EasyMDEContainer .editor-toolbar button:hover,
+        .dark .EasyMDEContainer .editor-toolbar button.active {
+            background: #374151;
+            color: white;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const easyMDE = new EasyMDE({
+                element: document.getElementById('observations'),
+                spellChecker: false,
+                autosave: {
+                    enabled: false,
+                },
+                status: false,
+                minHeight: '150px',
+                placeholder: 'Añade observaciones aquí...',
+            });
+
+            const quadrantData = @json(__('tasks.quadrants'));
+            const priorityEl = document.querySelector('[name="priority"]');
+            const urgencyEl = document.querySelector('[name="urgency"]');
+            const preview = document.getElementById('quadrant-preview');
+            const highLevels = ['high', 'critical'];
+
+            const qColors = {
+                1: {
+                    border: 'border-red-200 dark:border-red-700',
+                    bg: 'bg-red-50 dark:bg-red-950/30',
+                    text: 'text-red-600 dark:text-red-300'
+                },
+                2: {
+                    border: 'border-blue-200 dark:border-blue-700',
+                    bg: 'bg-blue-50 dark:bg-blue-950/30',
+                    text: 'text-blue-600 dark:text-blue-300'
+                },
+                3: {
+                    border: 'border-amber-200 dark:border-amber-700',
+                    bg: 'bg-amber-50 dark:bg-amber-950/30',
+                    text: 'text-amber-600 dark:text-amber-300'
+                },
+                4: {
+                    border: 'border-gray-200 dark:border-gray-700',
+                    bg: 'bg-gray-50 dark:bg-gray-800',
+                    text: 'text-gray-600 dark:text-gray-300'
+                },
+            };
+
+            function updatePreview() {
+                const imp = highLevels.includes(priorityEl.value);
+                const urg = highLevels.includes(urgencyEl.value);
+                let q = 4;
+                if (imp && urg) q = 1;
+                else if (imp) q = 2;
+                else if (urg) q = 3;
+
+                const cfg = qColors[q];
+                preview.className =
+                    `rounded-xl border p-3 text-xs transition-all shadow-sm dark:shadow-none ${cfg.border} ${cfg.bg}`;
+                preview.classList.remove('hidden');
+                document.getElementById('qp-label').className = `font-bold uppercase tracking-wider ${cfg.text}`;
+                document.getElementById('qp-label').textContent = `Q${q}: ${quadrantData[q].label}`;
+                document.getElementById('qp-desc').className =
+                    `text-gray-500 dark:text-gray-400 ml-1 italic font-medium`;
+                document.getElementById('qp-desc').textContent = `— ${quadrantData[q].description}`;
+            }
+
+            priorityEl?.addEventListener('change', updatePreview);
+            urgencyEl?.addEventListener('change', updatePreview);
+            updatePreview();
+        });
     </script>
 </x-app-layout>

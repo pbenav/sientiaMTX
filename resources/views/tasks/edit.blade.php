@@ -38,6 +38,14 @@
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all resize-none placeholder-gray-400">{{ old('description', $task->description) }}</textarea>
                 </div>
 
+                <!-- Observations (Markdown) -->
+                <div>
+                    <label
+                        class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.observations') }}</label>
+                    <textarea name="observations" id="observations"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">{{ old('observations', $task->observations) }}</textarea>
+                </div>
+
                 <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label
@@ -154,4 +162,58 @@
             </form>
         </div>
     </div>
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <style>
+        .EasyMDEContainer .CodeMirror {
+            background: #f9fafb;
+            border-bottom-left-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+        }
+
+        .dark .EasyMDEContainer .CodeMirror {
+            background: #1f2937;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+
+        .EasyMDEContainer .editor-toolbar {
+            background: #f3f4f6;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            border-color: #e5e7eb;
+        }
+
+        .dark .EasyMDEContainer .editor-toolbar {
+            background: #111827;
+            border-color: #374151;
+        }
+
+        .dark .EasyMDEContainer .editor-toolbar button {
+            color: #9ca3af;
+        }
+
+        .dark .EasyMDEContainer .editor-toolbar button:hover,
+        .dark .EasyMDEContainer .editor-toolbar button.active {
+            background: #374151;
+            color: white;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const easyMDE = new EasyMDE({
+                element: document.getElementById('observations'),
+                spellChecker: false,
+                autosave: {
+                    enabled: false,
+                },
+                status: false,
+                minHeight: '150px',
+                placeholder: 'Añade observaciones aquí...',
+            });
+        });
+    </script>
 </x-app-layout>
