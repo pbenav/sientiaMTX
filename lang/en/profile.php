@@ -15,4 +15,6 @@ return [
     'delete_account' => 'Delete Account',
     'delete_warning' => 'Once deleted, all data will be permanently removed.',
     'preferences' => 'Preferences',
+    'update_profile_intro' => 'Update your profile information and email address.',
+    'password_intro' => 'Ensure your account is using a long, random password to stay secure.',
 ];

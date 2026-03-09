@@ -15,4 +15,6 @@ return [
     'delete_account' => 'Eliminar cuenta',
     'delete_warning' => 'Una vez eliminada, todos los datos serán borrados permanentemente.',
     'preferences' => 'Preferencias',
+    'update_profile_intro' => 'Actualiza la información de tu perfil y tu dirección de correo electrónico.',
+    'password_intro' => 'Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantener la seguridad.',
 ];

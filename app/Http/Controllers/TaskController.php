@@ -93,7 +93,7 @@ class TaskController extends Controller
     {
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags']);
 
-        return view('tasks.show', compact('team', $task));
+        return view('tasks.show', compact('team', 'task'));
     }
 
     /**
@@ -221,5 +221,38 @@ class TaskController extends Controller
         }
 
         return response()->json($quadrants);
+    }
+
+    /**
+     * Move task to a different quadrant (Ajax)
+     */
+    public function move(\Illuminate\Http\Request $request, Team $team, Task $task)
+    {
+        $this->authorize('update', $task);
+
+        $validated = $request->validate([
+            'quadrant' => 'nullable|integer|between:1,4',
+            'status' => 'nullable|string|in:pending,in_progress,completed,cancelled',
+        ]);
+
+        if ($request->has('quadrant') && $validated['quadrant'] !== null) {
+            // Mapping quadrant back to priority/urgency
+            $mapping = [
+                1 => ['priority' => 'high', 'urgency' => 'high'],
+                2 => ['priority' => 'high', 'urgency' => 'low'],
+                3 => ['priority' => 'low', 'urgency' => 'high'],
+                4 => ['priority' => 'low', 'urgency' => 'low'],
+            ];
+
+            $task->update([
+                'priority' => $mapping[$validated['quadrant']]['priority'],
+                'urgency' => $mapping[$validated['quadrant']]['urgency'],
+                'status' => $validated['status'] ?? 'in_progress',
+            ]);
+        } elseif ($request->has('status') && $validated['status'] === 'completed') {
+            $task->update(['status' => 'completed']);
+        }
+
+        return response()->json(['success' => true]);
     }
 }

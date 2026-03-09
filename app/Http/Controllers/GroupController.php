@@ -23,7 +23,7 @@ class GroupController extends Controller
 
         $group = $team->groups()->create($validated);
 
-        return back()->with('success', __('Groups created successfully.'));
+        return back()->with('success', __('Groups created successfully.'))->with('tab', 'groups');
     }
 
     /**
@@ -40,7 +40,7 @@ class GroupController extends Controller
 
         $group->update($validated);
 
-        return back()->with('success', __('Group updated successfully.'));
+        return back()->with('success', __('Group updated successfully.'))->with('tab', 'groups');
     }
 
     /**
@@ -52,7 +52,7 @@ class GroupController extends Controller
 
         $group->delete();
 
-        return back()->with('success', __('Group deleted successfully.'));
+        return back()->with('success', __('Group deleted successfully.'))->with('tab', 'groups');
     }
 
     /**
@@ -73,7 +73,7 @@ class GroupController extends Controller
 
         $group->users()->syncWithoutDetaching([$validated['user_id']]);
 
-        return back()->with('success', __('Member added to group.'));
+        return back()->with('success', __('Member added to group.'))->with('tab', 'groups');
     }
 
     /**
@@ -85,6 +85,6 @@ class GroupController extends Controller
 
         $group->users()->detach($user->id);
 
-        return back()->with('success', __('Member removed from group.'));
+        return back()->with('success', __('Member removed from group.'))->with('tab', 'groups');
     }
 }

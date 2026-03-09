@@ -49,6 +49,12 @@ return [
         'cancelled' => 'Cancelada',
     ],
 
+    'urgent' => 'Urgente',
+    'not_urgent' => 'No Urgente',
+    'important' => 'Importante',
+    'not_important' => 'No Importante',
+    'move_error' => 'Error al mover la tarea',
+
     'quadrants' => [
         1 => ['label' => 'Haz ahora', 'description' => 'Importante y Urgente', 'tip' => 'Hazlo ya, sin demora.'],
         2 => ['label' => 'Planifica', 'description' => 'Importante y No urgente', 'tip' => 'Reserva tiempo para hacerlo.'],

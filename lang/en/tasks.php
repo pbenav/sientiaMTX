@@ -49,6 +49,12 @@ return [
         'cancelled' => 'Cancelled',
     ],
 
+    'urgent' => 'Urgent',
+    'not_urgent' => 'Not Urgent',
+    'important' => 'Important',
+    'not_important' => 'Not Important',
+    'move_error' => 'Error moving task',
+
     'quadrants' => [
         1 => ['label' => 'Do First', 'description' => 'Important & Urgent', 'tip' => 'Do it now — don\'t delay.'],
         2 => ['label' => 'Schedule', 'description' => 'Important & Not Urgent', 'tip' => 'Plan a time to do it.'],

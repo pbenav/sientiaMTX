@@ -15,7 +15,7 @@
         </div>
     </x-slot>
 
-    <div x-data="{ activeTab: 'members' }" class="space-y-6">
+    <div x-data="{ activeTab: '{{ session('tab', request('tab', 'members')) }}' }" class="space-y-6">
         <!-- Tabs -->
         <div class="flex items-center gap-1 border-b border-gray-800">
             <button @click="activeTab = 'members'"
