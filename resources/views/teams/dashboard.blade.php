@@ -66,14 +66,14 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Horizontal Urgency labels -->
         <div
-            class="flex justify-between mb-8 ml-16 mr-4 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500">
-            <div class="flex items-center gap-2">
-                <span>←</span>
+            class="flex justify-between mb-8 ml-16 mr-4 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+            <div class="flex items-center gap-3">
+                <span class="text-xs">←</span>
                 <span>{{ __('tasks.not_urgent') }}</span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
                 <span>{{ __('tasks.urgent') }}</span>
-                <span>→</span>
+                <span class="text-xs">→</span>
             </div>
         </div>
 
@@ -102,17 +102,17 @@
                                     style="background:{{ $cfg['color'] }}; box-shadow: 0 0 20px {{ $cfg['color'] }}">
                                 </div>
                                 <span
-                                    class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Q{{ $q }}</span>
+                                    class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">Q{{ $q }}</span>
                             </div>
-                            <h2 class="text-2xl font-bold text-white heading mt-1">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white heading mt-1">
                                 {{ __('tasks.quadrants.' . $q . '.label') }}
                             </h2>
-                            <p class="text-[11px] text-gray-500 font-medium">
+                            <p class="text-[11px] text-gray-500 dark:text-gray-500 font-medium">
                                 {{ __('tasks.quadrants.' . $q . '.description') }}
                             </p>
 
                             <span
-                                class="absolute top-8 right-8 text-[11px] font-bold bg-white/5 border border-white/10 text-gray-400 w-7 h-7 flex items-center justify-center rounded-full q-count">
+                                class="absolute top-8 right-8 text-[11px] font-bold bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 w-7 h-7 flex items-center justify-center rounded-full q-count">
                                 {{ count($qTasks) }}
                             </span>
                         </div>
@@ -150,8 +150,10 @@
 
     <!-- Completed Tasks Zone -->
     <div class="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div class="bg-gray-950/20 border border-gray-800/40 rounded-[2.5rem] overflow-hidden">
-            <div class="px-8 py-5 border-b border-white/5 bg-gray-900/10 flex items-center justify-between">
+        <div
+            class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors">
+            <div
+                class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60" fill="none"
@@ -159,21 +161,21 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h3 class="text-[12px] font-bold uppercase tracking-[0.25em] text-gray-500">
+                    <h3 class="text-[12px] font-bold uppercase tracking-[0.25em] text-gray-600 dark:text-gray-500">
                         {{ __('teams.completed_tasks') }}</h3>
                 </div>
                 <span
-                    class="text-xs font-bold text-gray-600 q-count mr-2">{{ $tasks->where('status', 'completed')->count() }}</span>
+                    class="text-xs font-bold text-gray-400 dark:text-gray-600 q-count mr-2">{{ $tasks->where('status', 'completed')->count() }}</span>
             </div>
 
             <div class="min-h-[140px] quadrant-list p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
                 data-q="completed">
                 @forelse($tasks->where('status', 'completed') as $task)
-                    <div class="px-4 py-3 flex items-center gap-4 bg-gray-900/20 hover:bg-white/10 group transition-all cursor-grab active:cursor-grabbing rounded-2xl border border-white/5"
+                    <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all cursor-grab active:cursor-grabbing rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none"
                         data-id="{{ $task->id }}">
                         <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20"></div>
                         <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                            class="flex-1 text-[12px] text-gray-600 line-through truncate group-hover:text-gray-400 transition-colors">
+                            class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                             {{ $task->title }}
                         </a>
                     </div>
