@@ -41,22 +41,22 @@
         $quadrantConfig = [
             1 => [
                 'color' => '#f87171',
-                'bg' => 'bg-red-500/5 border-red-500/20',
+                'bg' => 'bg-red-50 border-red-100 dark:bg-red-500/5 dark:border-red-500/20',
                 'dot' => 'bg-red-500',
             ],
             2 => [
                 'color' => '#60a5fa',
-                'bg' => 'bg-blue-500/5 border-blue-500/20',
+                'bg' => 'bg-blue-50 border-blue-100 dark:bg-blue-500/5 dark:border-blue-500/20',
                 'dot' => 'bg-blue-500',
             ],
             3 => [
                 'color' => '#fbbf24',
-                'bg' => 'bg-amber-500/5 border-amber-500/20',
+                'bg' => 'bg-amber-50 border-amber-100 dark:bg-amber-500/5 dark:border-amber-500/20',
                 'dot' => 'bg-amber-500',
             ],
             4 => [
                 'color' => '#9ca3af',
-                'bg' => 'bg-gray-500/5 border-gray-500/20',
+                'bg' => 'bg-gray-50 border-gray-200 dark:bg-gray-500/5 dark:border-gray-500/20',
                 'dot' => 'bg-gray-500',
             ],
         ];
@@ -126,7 +126,7 @@
                                     <!-- Status dot -->
                                     <div class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }}"></div>
                                     <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                        class="flex-1 text-sm text-gray-400 group-hover:text-white truncate transition-colors">
+                                        class="flex-1 text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors">
                                         {{ $task->title }}
                                     </a>
                                     @if ($task->due_date)
