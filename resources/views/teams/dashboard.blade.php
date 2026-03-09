@@ -138,7 +138,7 @@
                         <div class="flex-1 overflow-y-auto quadrant-list p-2 sm:p-4 min-h-[100px] sm:min-h-[180px] space-y-1 sm:space-y-2"
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
-                                <div class="px-3 py-2 flex items-center gap-3 hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl"
+                                <div class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl"
                                     data-id="{{ $task->id }}">
                                     <!-- Status dot -->
                                     <div class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }}"></div>
@@ -147,7 +147,7 @@
                                         {{ $task->title }}
                                     </a>
                                     @if ($task->due_date)
-                                        <span class="shrink-0 text-[8px] sm:text-[10px] text-gray-600 font-mono">
+                                        <span class="shrink-0 text-[7px] sm:text-[9px] text-gray-600 font-mono">
                                             {{ $task->due_date->format('d/m') }}
                                         </span>
                                     @endif
@@ -290,8 +290,9 @@
                             dot.classList.remove('w-2', 'h-2');
                         }
                         if (link) {
-                            link.classList.add('line-through', 'opacity-50', 'text-[11px]', 'text-gray-500');
-                            link.classList.remove('text-sm', 'text-gray-300');
+                            link.classList.add('line-through', 'opacity-50', 'text-[10px]', 'sm:text-[11px]',
+                                'text-gray-500');
+                            link.classList.remove('text-[11px]', 'sm:text-sm', 'text-gray-700', 'dark:text-gray-400');
                         }
                         item.classList.add('bg-gray-900/40');
                         item.classList.remove('px-3', 'py-2.5');
@@ -306,8 +307,9 @@
                             dot.classList.remove('w-1.5', 'h-1.5');
                         }
                         if (link) {
-                            link.classList.remove('line-through', 'opacity-50', 'text-[11px]', 'text-gray-500');
-                            link.classList.add('text-sm', 'text-gray-300');
+                            link.classList.remove('line-through', 'opacity-50', 'text-[10px]', 'sm:text-[11px]',
+                                'text-gray-500');
+                            link.classList.add('text-[11px]', 'sm:text-sm', 'text-gray-700', 'dark:text-gray-400');
                         }
                         item.classList.remove('bg-gray-900/40');
                         item.classList.remove('px-3', 'py-2');
