@@ -13,7 +13,9 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'sientiaMTX'),
+    'version' => env('APP_VER', '0.0.1'),
+    'app_version' => env('APP_VER', '0.0.1'),
 
     /*
     |--------------------------------------------------------------------------

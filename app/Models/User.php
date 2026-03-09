@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'locale',
+        'timezone',
     ];
 
     /**
@@ -53,6 +55,12 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->withPivot('role_id')
+            ->withTimestamps();
+    }
+
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_user')
             ->withTimestamps();
     }
 

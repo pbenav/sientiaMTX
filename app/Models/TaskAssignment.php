@@ -10,7 +10,12 @@ class TaskAssignment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['task_id', 'user_id', 'assigned_at', 'assigned_by_id'];
+    protected $fillable = ['task_id', 'user_id', 'group_id', 'assigned_at', 'assigned_by_id'];
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
 
     protected $casts = [
         'assigned_at' => 'datetime'

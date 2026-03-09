@@ -1,0 +1,58 @@
+<?php
+
+return [
+    'title' => 'Tareas',
+    'create' => 'Crear tarea',
+    'created' => 'Tarea creada correctamente.',
+    'updated' => 'Tarea actualizada correctamente.',
+    'deleted' => 'Tarea eliminada correctamente.',
+    'name' => 'Título',
+    'description' => 'Descripción',
+    'priority' => 'Prioridad (Importancia)',
+    'urgency' => 'Urgencia',
+    'status' => 'Estado',
+    'assigned_to' => 'Asignada a',
+    'due_date' => 'Fecha límite',
+    'scheduled_date' => 'Fecha programada',
+    'created_by' => 'Creada por',
+    'created_at' => 'Creada',
+    'no_tasks' => 'No se encontraron tareas.',
+    'edit' => 'Editar tarea',
+    'delete' => 'Eliminar',
+    'delete_confirm' => '¿Seguro que quieres eliminar esta tarea?',
+    'back' => 'Volver',
+    'save' => 'Guardar',
+    'history' => 'Historial de cambios',
+    'no_history' => 'Sin cambios registrados.',
+    'tags' => 'Etiquetas',
+    'quadrant' => 'Cuadrante',
+    'mark_complete' => 'Marcar como completada',
+    'mark_in_progress' => 'Marcar en progreso',
+    'view_detail' => 'Ver detalle',
+
+    'priorities' => [
+        'low' => 'Baja',
+        'medium' => 'Media',
+        'high' => 'Alta',
+        'critical' => 'Crítica',
+    ],
+    'urgencies' => [
+        'low' => 'No urgente',
+        'medium' => 'Algo urgente',
+        'high' => 'Urgente',
+        'critical' => 'Muy urgente',
+    ],
+    'statuses' => [
+        'pending' => 'Pendiente',
+        'in_progress' => 'En progreso',
+        'completed' => 'Completada',
+        'cancelled' => 'Cancelada',
+    ],
+
+    'quadrants' => [
+        1 => ['label' => 'Haz ahora', 'description' => 'Importante y Urgente', 'tip' => 'Hazlo ya, sin demora.'],
+        2 => ['label' => 'Planifica', 'description' => 'Importante y No urgente', 'tip' => 'Reserva tiempo para hacerlo.'],
+        3 => ['label' => 'Delega', 'description' => 'No importante y Urgente', 'tip' => 'Asígnalo a otra persona.'],
+        4 => ['label' => 'Elimina', 'description' => 'No importante y No urgente', 'tip' => 'Considera eliminarlo.'],
+    ],
+];

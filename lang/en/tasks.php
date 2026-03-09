@@ -1,0 +1,58 @@
+<?php
+
+return [
+    'title' => 'Tasks',
+    'create' => 'Create Task',
+    'created' => 'Task created successfully.',
+    'updated' => 'Task updated successfully.',
+    'deleted' => 'Task deleted successfully.',
+    'name' => 'Title',
+    'description' => 'Description',
+    'priority' => 'Priority (Importance)',
+    'urgency' => 'Urgency',
+    'status' => 'Status',
+    'assigned_to' => 'Assigned To',
+    'due_date' => 'Due Date',
+    'scheduled_date' => 'Scheduled Date',
+    'created_by' => 'Created by',
+    'created_at' => 'Created',
+    'no_tasks' => 'No tasks found.',
+    'edit' => 'Edit Task',
+    'delete' => 'Delete',
+    'delete_confirm' => 'Are you sure you want to delete this task?',
+    'back' => 'Back',
+    'save' => 'Save',
+    'history' => 'Change History',
+    'no_history' => 'No changes recorded.',
+    'tags' => 'Tags',
+    'quadrant' => 'Quadrant',
+    'mark_complete' => 'Mark as Complete',
+    'mark_in_progress' => 'Mark as In Progress',
+    'view_detail' => 'View Detail',
+
+    'priorities' => [
+        'low' => 'Low',
+        'medium' => 'Medium',
+        'high' => 'High',
+        'critical' => 'Critical',
+    ],
+    'urgencies' => [
+        'low' => 'Not Urgent',
+        'medium' => 'Somewhat Urgent',
+        'high' => 'Urgent',
+        'critical' => 'Very Urgent',
+    ],
+    'statuses' => [
+        'pending' => 'Pending',
+        'in_progress' => 'In Progress',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
+    ],
+
+    'quadrants' => [
+        1 => ['label' => 'Do First', 'description' => 'Important & Urgent', 'tip' => 'Do it now — don\'t delay.'],
+        2 => ['label' => 'Schedule', 'description' => 'Important & Not Urgent', 'tip' => 'Plan a time to do it.'],
+        3 => ['label' => 'Delegate', 'description' => 'Not Important & Urgent', 'tip' => 'Assign it to someone else.'],
+        4 => ['label' => 'Eliminate', 'description' => 'Not Important & Not Urgent', 'tip' => 'Consider removing it.'],
+    ],
+];

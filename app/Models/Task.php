@@ -9,10 +9,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Task extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::creating(function (self $model) {
+            if (empty($model->uuid)) {
+                $model->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
 
     protected $fillable = [
         'team_id',
@@ -57,6 +69,13 @@ class Task extends Model
     public function assignedTo(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'task_assignments')
+            ->withPivot('assigned_at', 'assigned_by_id')
+            ->withTimestamps();
+    }
+
+    public function assignedGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'task_assignments')
             ->withPivot('assigned_at', 'assigned_by_id')
             ->withTimestamps();
     }
