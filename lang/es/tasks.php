@@ -84,4 +84,5 @@ return [
     'view_global_goal' => 'Ver objetivo global',
     'completed' => 'Completada',
     'pending' => 'Pendiente',
+    'add_member_to_group' => 'Añadir miembro al grupo',
 ];
