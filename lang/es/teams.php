@@ -60,4 +60,13 @@ return [
     'no_groups' => 'No hay grupos creados.',
     'no_members' => 'No hay miembros en este equipo.',
     'invited_at' => 'Invitado el',
+    'invitation' => [
+        'subject' => 'Invitación para unirte al equipo :team',
+        'greeting' => '¡Hola!',
+        'line1' => 'Has sido invitado a unirte al equipo ":team" en sientiaMTX.',
+        'action' => 'Aceptar Invitación',
+        'line2' => 'Si ya tienes una cuenta, simplemente inicia sesión y serás añadido al equipo.',
+    ],
+    'confirm_ok' => 'Aceptar',
+    'confirm_cancel' => 'Cancelar',
 ];

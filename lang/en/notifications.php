@@ -7,4 +7,6 @@ return [
     'task_reminder_short' => 'Task ":title" is due soon.',
     'view_task' => 'View Task',
     'thank_you' => 'Thank you for using our application!',
+    'confirm_ok' => 'Accept',
+    'confirm_cancel' => 'Cancel',
 ];

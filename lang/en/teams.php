@@ -60,4 +60,13 @@ return [
     'no_groups' => 'No groups created.',
     'no_members' => 'No members in this team.',
     'invited_at' => 'Invited on',
+    'invitation' => [
+        'subject' => 'Invitation to join team :team',
+        'greeting' => 'Hello!',
+        'line1' => 'You have been invited to join the team ":team" on sientiaMTX.',
+        'action' => 'Accept Invitation',
+        'line2' => 'If you already have an account, just log in and you will be added to the team.',
+    ],
+    'confirm_ok' => 'Accept',
+    'confirm_cancel' => 'Cancel',
 ];

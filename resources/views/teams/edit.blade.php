@@ -73,8 +73,8 @@
                         <p class="text-xs text-gray-500 mt-1">{{ __('teams.delete_confirm_description') }}</p>
                     </div>
 
-                    <form method="POST" action="{{ route('teams.destroy', $team) }}"
-                        onsubmit="return confirm('{{ __('teams.delete_confirm') }}')">
+                    <form id="delete-team-form" method="POST" action="{{ route('teams.destroy', $team) }}"
+                        onsubmit="event.preventDefault(); confirmDelete('delete-team-form', '{{ __('teams.delete_confirm') }}')">
                         @csrf @method('DELETE')
                         <button type="submit"
                             class="text-xs font-bold uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 px-4 py-2.5 rounded-xl transition-all">

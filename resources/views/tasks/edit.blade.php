@@ -164,7 +164,7 @@
                 <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-800">
                     <div>
                         <button type="button"
-                            onclick="if(confirm('{{ __('tasks.delete_confirm') }}')) document.getElementById('delete-task-form').submit();"
+                            onclick="confirmDelete('delete-task-form', '{{ __('tasks.delete_confirm') }}')"
                             class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">{{ __('tasks.delete') }}</button>
                     </div>
                     <div class="flex gap-3">

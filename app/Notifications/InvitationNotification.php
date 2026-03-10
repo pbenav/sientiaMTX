@@ -38,12 +38,12 @@ class InvitationNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject(__('Invitation to join team :team', ['team' => $this->invitation->team->name]))
-                    ->greeting(__('Hello!'))
-                    ->line(__('You have been invited to join the team ":team" on cientiaMTX.', ['team' => $this->invitation->team->name]))
-                    ->action(__('Accept Invitation'), route('register', ['invitation' => $this->invitation->token, 'email' => $this->invitation->email]))
-                    ->line(__('If you already have an account, just log in and you will be added to the team.'))
-                    ->line(__('Thank you for using our application!'));
+                    ->subject(__('teams.invitation.subject', ['team' => $this->invitation->team->name]))
+                    ->greeting(__('teams.invitation.greeting'))
+                    ->line(__('teams.invitation.line1', ['team' => $this->invitation->team->name]))
+                    ->action(__('teams.invitation.action'), route('register', ['invitation' => $this->invitation->token, 'email' => $this->invitation->email]))
+                    ->line(__('teams.invitation.line2'))
+                    ->line(__('notifications.thank_you'));
     }
 
     /**

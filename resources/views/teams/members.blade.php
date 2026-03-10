@@ -83,8 +83,10 @@
                                         </svg>
                                     </button>
 
-                                    <form method="POST" action="{{ route('teams.removeMember', [$team, $member]) }}"
-                                        onsubmit="return confirm('{{ __('teams.delete_confirm') }}')" class="shrink-0">
+                                    <form id="remove-member-{{ $member->id }}" method="POST"
+                                        action="{{ route('teams.removeMember', [$team, $member]) }}"
+                                        onsubmit="event.preventDefault(); confirmDelete('remove-member-{{ $member->id }}', '{{ __('teams.delete_confirm') }}')"
+                                        class="shrink-0">
                                         @csrf @method('DELETE')
                                         <button type="submit"
                                             class="text-gray-600 hover:text-red-400 transition-colors p-1">
@@ -175,9 +177,9 @@
                                             {{ __('teams.invited') }}
                                         </span>
                                         @can('manageMembers', $team)
-                                            <form method="POST"
+                                            <form id="cancel-invitation-{{ $invitation->id }}" method="POST"
                                                 action="{{ route('teams.invitations.destroy', [$team, $invitation]) }}"
-                                                onsubmit="return confirm('{{ __('teams.invitation_cancel_confirm') }}')">
+                                                onsubmit="event.preventDefault(); confirmDelete('cancel-invitation-{{ $invitation->id }}', '{{ __('teams.invitation_cancel_confirm') }}')">
                                                 @csrf @method('DELETE')
                                                 <button type="submit"
                                                     class="text-gray-400 hover:text-red-500 transition-colors">
@@ -263,8 +265,9 @@
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <form method="POST" action="{{ route('teams.groups.destroy', [$team, $group]) }}"
-                                        onsubmit="return confirm('{{ __('teams.delete_group_confirm') }}')">
+                                    <form id="delete-group-{{ $group->id }}" method="POST"
+                                        action="{{ route('teams.groups.destroy', [$team, $group]) }}"
+                                        onsubmit="event.preventDefault(); confirmDelete('delete-group-{{ $group->id }}', '{{ __('teams.delete_group_confirm') }}')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="text-gray-500 hover:text-red-400 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"

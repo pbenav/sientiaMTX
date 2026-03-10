@@ -7,4 +7,6 @@ return [
     'task_reminder_short' => 'La tarea ":title" vence pronto.',
     'view_task' => 'Ver Tarea',
     'thank_you' => '¡Gracias por usar nuestra aplicación!',
+    'confirm_ok' => 'Aceptar',
+    'confirm_cancel' => 'Cancelar',
 ];

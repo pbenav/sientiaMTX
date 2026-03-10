@@ -375,6 +375,26 @@ fetch('{{ route('theme.update') }}', {
     </footer>
 
     @stack('scripts')
+    <script>
+        window.confirmDelete = function(formId, message) {
+            Swal.fire({
+                title: '{{ __('teams.danger_zone') }}',
+                text: message,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '{{ __('teams.confirm_ok') }}',
+                cancelButtonText: '{{ __('teams.confirm_cancel') }}',
+                background: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
