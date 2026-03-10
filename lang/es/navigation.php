@@ -12,4 +12,5 @@ return [
     'welcome' => 'Bienvenido',
     'hello' => 'Hola, :name',
     'gantt' => 'Gantt',
+    'users' => 'Usuarios',
 ];

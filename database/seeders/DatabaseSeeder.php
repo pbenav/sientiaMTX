@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 2. Demo admin user
-        $admin = User::firstOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@sientia.com'],
             [
                 'name'     => 'Admin Sientia',

@@ -96,6 +96,14 @@ class User extends Authenticatable implements HasLocalePreference
     }
 
     /**
+     * Get pending invitations for this user based on email.
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(TeamInvitation::class, 'email', 'email');
+    }
+
+    /**
      * Get the user's preferred locale.
      */
     public function preferredLocale(): string

@@ -17,9 +17,13 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.register');
+        $detectedLocale = $request->getPreferredLanguage(['en', 'es']) ?? config('app.locale');
+
+        return view('auth.register', [
+            'detectedLocale' => $detectedLocale
+        ]);
     }
 
     /**
@@ -33,12 +37,17 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'locale' => ['required', 'string', 'in:en,es'],
         ]);
+
+        $isFirstUser = User::count() === 0;
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'locale' => $request->locale,
+            'is_admin' => $isFirstUser,
         ]);
 
         // Process pending invitations

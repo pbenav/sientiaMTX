@@ -12,4 +12,5 @@ return [
     'welcome' => 'Welcome',
     'hello' => 'Hello, :name',
     'gantt' => 'Gantt Chart',
+    'users' => 'Users',
 ];

@@ -3,22 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\TeamInvitation;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
 class SettingsController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (! \Illuminate\Support\Facades\Gate::allows('admin')) {
-                abort(403);
-            }
-            return $next($request);
-        });
-    }
-
     /**
      * Show the mail settings form.
      */
@@ -36,6 +29,123 @@ class SettingsController extends Controller
                 'from_name' => env('MAIL_FROM_NAME'),
             ]
         ]);
+    }
+
+    /**
+     * Display the users list.
+     */
+    public function users()
+    {
+        $users = User::withCount('invitations')->latest()->paginate(20);
+        
+        return view('settings.users', [
+            'users' => $users
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new user.
+     */
+    public function createUser()
+    {
+        return view('settings.user-create');
+    }
+
+    /**
+     * Store a newly created user.
+     */
+    public function storeUser(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'locale' => 'required|string|in:en,es',
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'locale' => $validated['locale'],
+        ]);
+
+        return redirect()->route('settings.users')
+            ->with('success', __('User created successfully.'));
+    }
+
+    /**
+     * Toggle the admin status of a user.
+     */
+    public function toggleAdmin(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', __('You cannot remove your own administrator privileges.'));
+        }
+
+        $user->is_admin = ! $user->is_admin;
+        $user->save();
+
+        return back()->with('success', __('User roles updated successfully.'));
+    }
+
+    /**
+     * Show the user edit form.
+     */
+    public function editUser(User $user)
+    {
+        $user->load('teams');
+        $invitations = TeamInvitation::where('email', $user->email)->with('team', 'role')->get();
+        
+        return view('settings.user-edit', compact('user', 'invitations'));
+    }
+
+    /**
+     * Update user information.
+     */
+    public function updateUser(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'locale' => 'required|string|in:en,es',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $user->fill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'locale' => $validated['locale'],
+        ]);
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('settings.users')
+            ->with('success', __('User updated successfully.'));
+    }
+
+    /**
+     * Accept an invitation on behalf of a user.
+     */
+    public function acceptUserInvitation(User $user, TeamInvitation $invitation)
+    {
+        // Verify email match
+        if ($user->email !== $invitation->email) {
+            return back()->with('error', __('This invitation is for a different email address.'));
+        }
+
+        // Attach user to team if not already a member
+        if (!$invitation->team->members()->where('user_id', $user->id)->exists()) {
+            $invitation->team->members()->attach($user->id, ['role_id' => $invitation->role_id]);
+        }
+
+        $invitation->delete();
+
+        return back()->with('success', __('Invitation accepted successfully on behalf of the user.'));
     }
 
     /**
