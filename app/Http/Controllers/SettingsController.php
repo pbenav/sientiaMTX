@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\File;
 
 class SettingsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (! \Illuminate\Support\Facades\Gate::allows('admin')) {
+                abort(403);
+            }
+            return $next($request);
+        });
+    }
+
     /**
      * Show the mail settings form.
      */

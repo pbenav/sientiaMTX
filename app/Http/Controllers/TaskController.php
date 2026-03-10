@@ -339,7 +339,26 @@ class TaskController extends Controller
             // Check for milestones if it's an instance
             if ($task->isInstance() && $validated['status'] === 'completed') {
                 $parent = $task->parent;
-                $progress = $parent->progress;
+                
+                // Calculate progress manually here to be sure
+                $totalChildren = $parent->children()->count();
+                $completedChildren = $parent->children()->where('status', 'completed')->count();
+                $progress = $totalChildren > 0 ? ($completedChildren / $totalChildren) * 100 : 0;
+
+                // AUTOMATIC COMPLETION: If all children are completed, mark parent as completed
+                if ($completedChildren === $totalChildren && $parent->status !== 'completed') {
+                    $parent->update([
+                        'status' => 'completed',
+                        'progress_percentage' => 100
+                    ]);
+                    
+                    // Optional: Log completion in parent history
+                    $parent->histories()->create([
+                        'user_id' => auth()->id(),
+                        'action' => 'automated_completion',
+                        'new_values' => $parent->getAttributes(),
+                    ]);
+                }
 
                 if (in_array((int)$progress, [50, 75, 100])) {
                     $team->creator->notify(new \App\Notifications\TaskMilestoneNotification($parent, (int)$progress));

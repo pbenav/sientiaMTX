@@ -4,8 +4,8 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-white heading">{{ __('teams.my_teams') }}</h1>
-                <p class="text-sm text-gray-400 mt-0.5">{{ __('teams.title') }}</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('teams.my_teams') }}</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ __('teams.title') }}</p>
             </div>
             <a href="{{ route('teams.create') }}"
                 class="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all shadow-lg hover:shadow-violet-500/30">
@@ -43,31 +43,33 @@
                     $progress = $total > 0 ? round(($done / $total) * 100) : 0;
                 @endphp
                 <div
-                    class="group bg-gray-900 border border-gray-800 hover:border-violet-800 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-xl hover:shadow-violet-500/10">
+                    class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-600 dark:hover:border-violet-800 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-xl hover:shadow-violet-500/10">
                     <div class="flex items-start justify-between">
                         <div
                             class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white font-bold text-sm">
                             {{ strtoupper(substr($team->name, 0, 2)) }}
                         </div>
-                        <span class="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded-full">
+                        <a href="{{ route('teams.members', $team) }}"
+                            class="text-xs text-gray-600 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-300 px-2 py-1 rounded-full transition-colors"
+                            title="{{ __('teams.members') }}">
                             {{ __('teams.members_count', ['count' => $team->members->count()]) }}
-                        </span>
+                        </a>
                     </div>
                     <div>
                         <h3
-                            class="text-base font-semibold text-white heading group-hover:text-violet-300 transition-colors">
+                            class="text-base font-semibold text-gray-900 dark:text-white heading group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                             {{ $team->name }}</h3>
                         @if ($team->description)
-                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ $team->description }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{{ $team->description }}</p>
                         @endif
                     </div>
                     <!-- Progress bar -->
                     <div>
-                        <div class="flex justify-between text-xs text-gray-500 mb-1.5">
+                        <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                             <span>{{ __('teams.tasks_count', ['count' => $total]) }}</span>
                             <span>{{ $progress }}%</span>
                         </div>
-                        <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div class="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                             <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all"
                                 style="width: {{ $progress }}%"></div>
                         </div>
@@ -78,12 +80,12 @@
                             {{ __('teams.view_dashboard') }}
                         </a>
                         <a href="{{ route('teams.show', $team) }}"
-                            class="flex-1 text-center text-xs font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg transition-all border border-gray-700">
+                            class="flex-1 text-center text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 py-2 rounded-lg transition-all border border-gray-200 dark:border-gray-700">
                             {{ __('teams.tasks') }}
                         </a>
                         @can('update', $team)
                             <a href="{{ route('teams.edit', $team) }}"
-                                class="flex items-center justify-center w-10 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-lg transition-all border border-gray-700"
+                                class="flex items-center justify-center w-10 bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all border border-gray-200 dark:border-gray-700"
                                 title="{{ __('teams.edit') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

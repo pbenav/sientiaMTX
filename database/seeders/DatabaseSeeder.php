@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('12345678'),
                 'locale'   => 'es',
                 'timezone' => 'Europe/Madrid',
+                'is_admin' => true,
                 'email_verified_at' => now(),
             ]
         );

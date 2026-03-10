@@ -27,6 +27,7 @@ class User extends Authenticatable implements HasLocalePreference
         'locale',
         'timezone',
         'theme',
+        'is_admin',
     ];
 
     /**
@@ -49,6 +50,7 @@ class User extends Authenticatable implements HasLocalePreference
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 

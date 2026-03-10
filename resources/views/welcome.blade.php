@@ -946,7 +946,7 @@
             </div>
             <p class="cta-demo">
                 {{ app()->getLocale() === 'es' ? 'Cuenta demo: ' : 'Demo account: ' }}
-                <code>admin@sientia.com</code> / <code>12345678</code>
+                <code>demo@sientia.com</code> / <code>12345678</code>
             </p>
         </div>
     </section>

@@ -23,10 +23,9 @@ class SetLocale
         elseif (session()->has('locale')) {
             App::setLocale(session('locale'));
         }
-        // 3. Try to detect from browser Accept-Language header
+        // 3. Use default config locale (from APP_LOCALE in .env)
         else {
-            $browserLocale = substr($request->getPreferredLanguage(['en', 'es']), 0, 2);
-            App::setLocale($browserLocale ?: config('app.locale'));
+            App::setLocale(config('app.locale'));
         }
 
         return $next($request);

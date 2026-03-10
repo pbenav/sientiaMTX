@@ -130,6 +130,7 @@
                             {{ __('navigation.my_teams') }}
                         </a>
 
+                    @can('admin')
                         <a href="{{ route('settings.mail') }}"
                             class="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -141,6 +142,7 @@
                             </svg>
                             {{ __('navigation.settings') }}
                         </a>
+                    @endcan
                     @endauth
 
                     <!-- Theme Switcher -->
