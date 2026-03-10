@@ -85,4 +85,5 @@ return [
     'completed' => 'Completada',
     'pending' => 'Pendiente',
     'add_member_to_group' => 'Añadir miembro al grupo',
+    'create_group' => 'Crear grupo',
 ];
