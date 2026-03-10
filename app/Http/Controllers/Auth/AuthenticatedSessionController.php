@@ -29,6 +29,24 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
+
+        // Process pending invitations if a token was provided
+        if ($request->has('invitation')) {
+            $invitation = \App\Models\TeamInvitation::where('token', $request->invitation)
+                ->where('email', $user->email)
+                ->first();
+
+            if ($invitation) {
+                if (!$invitation->team->members()->where('user_id', $user->id)->exists()) {
+                    $invitation->team->members()->attach($user->id, ['role_id' => $invitation->role_id]);
+                }
+                $invitation->delete();
+                
+                return redirect()->intended(route('teams.dashboard', $invitation->team))
+                    ->with('success', '¡Te has unido al equipo correctamente!');
+            }
+        }
+
         $firstTeam = $user->teams()->first();
 
         if ($firstTeam) {

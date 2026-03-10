@@ -41,7 +41,7 @@ class InvitationNotification extends Notification
                     ->subject(__('teams.invitation.subject', ['team' => $this->invitation->team->name]))
                     ->greeting(__('teams.invitation.greeting'))
                     ->line(__('teams.invitation.line1', ['team' => $this->invitation->team->name]))
-                    ->action(__('teams.invitation.action'), route('register', ['invitation' => $this->invitation->token, 'email' => $this->invitation->email]))
+                    ->action(__('teams.invitation.action'), route('invitations.accept', ['token' => $this->invitation->token]))
                     ->line(__('teams.invitation.line2'))
                     ->line(__('notifications.thank_you'));
     }

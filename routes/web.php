@@ -12,6 +12,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Team Invitation Acceptance
+Route::get('/invitations/{token}', [\App\Http\Controllers\TeamInvitationController::class, 'accept'])
+    ->name('invitations.accept');
+
 // Locale switcher
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
     ->name('locale.switch')
