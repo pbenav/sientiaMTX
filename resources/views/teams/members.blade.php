@@ -66,7 +66,7 @@
                                     @foreach ($roles as $role)
                                         <option value="{{ $role->id }}"
                                             {{ ($member->pivot->role_id ?? null) == $role->id ? 'selected' : '' }}>
-                                            {{ __('teams.' . ($member->pivot->role->name ?? 'member')) }}
+                                            {{ __('teams.' . $role->name) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -166,7 +166,7 @@
                                             <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">
                                                 {{ $invitation->email }}</p>
                                             <p class="text-[10px] font-bold uppercase tracking-widest text-violet-500">
-                                                {{ $invitation->role->name }}</p>
+                                                {{ __('teams.' . $invitation->role->name) }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
