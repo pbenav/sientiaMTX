@@ -233,7 +233,31 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
 
-        $tasks = $team->tasks()->with(['assignedTo', 'assignedGroups', 'tags'])->get();
+        $user = auth()->user();
+        $isCoordinator = $team->isCoordinator($user);
+
+        $query = $team->tasks()->with(['assignedTo', 'assignedGroups', 'tags']);
+
+        if ($isCoordinator) {
+            // Coordinator sees template tasks and standalone tasks
+            $query->where(function($q) {
+                $q->where('is_template', true)
+                  ->orWhereNull('parent_id')
+                  ->orWhere('assigned_user_id', auth()->id()); // Just in case coordinator has their own instance
+            });
+        } else {
+            // Regular member sees their private instances and standalone tasks without template
+            $query->where(function($q) use ($user) {
+                $q->where('assigned_user_id', $user->id)
+                  ->orWhere(function($subq) {
+                      $subq->whereNull('assigned_user_id')
+                           ->whereNull('parent_id')
+                           ->where('is_template', false);
+                  });
+            });
+        }
+
+        $tasks = $query->get();
 
         // Group tasks by quadrant
         $quadrants = [

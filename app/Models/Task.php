@@ -40,6 +40,8 @@ class Task extends Model
         'metadata',
         'observations',
         'parent_id',
+        'is_template',
+        'assigned_user_id',
     ];
 
     protected $casts = [
@@ -110,6 +112,40 @@ class Task extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Task::class, 'parent_id');
+    }
+
+    // Relationship: A template task has many instances
+    public function instances(): HasMany
+    {
+        return $this->hasMany(Task::class, 'parent_id')->where('is_template', false);
+    }
+
+    // Relationship: An instance task belongs to a user
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /**
+     * Check if this task is an instance of a global task
+     */
+    public function isInstance(): bool
+    {
+        return !empty($this->parent_id) && !$this->is_template;
+    }
+
+    /**
+     * Get the progress percentage for template tasks
+     */
+    public function getProgressAttribute(): int
+    {
+        if (!$this->is_template) return $this->status === 'completed' ? 100 : 0;
+
+        $totalCount = $this->instances()->count();
+        if ($totalCount === 0) return 0;
+
+        $completedCount = $this->instances()->where('status', 'completed')->count();
+        return (int) (($completedCount / $totalCount) * 100);
     }
 
     /**

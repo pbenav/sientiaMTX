@@ -66,7 +66,7 @@
                                     @foreach ($roles as $role)
                                         <option value="{{ $role->id }}"
                                             {{ ($member->pivot->role_id ?? null) == $role->id ? 'selected' : '' }}>
-                                            {{ ucfirst($role->name) }}
+                                            {{ __('teams.' . ($member->pivot->role->name ?? 'member')) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -104,19 +104,19 @@
                                         @method('patch')
 
                                         <h2 class="text-lg font-medium text-white heading">
-                                            {{ __('Edit Member Info') }}
+                                            {{ __('teams.edit_member') }}
                                         </h2>
 
                                         <div class="mt-6 space-y-4">
                                             <div>
-                                                <x-input-label for="name_{{ $member->id }}" :value="__('Name')" />
+                                                <x-input-label for="name_{{ $member->id }}" :value="__('teams.name')" />
                                                 <x-text-input id="name_{{ $member->id }}" name="name" type="text"
                                                     class="mt-1 block w-full" :value="$member->name" required />
                                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                             </div>
 
                                             <div>
-                                                <x-input-label for="email_{{ $member->id }}" :value="__('Email')" />
+                                                <x-input-label for="email_{{ $member->id }}" :value="__('teams.email')" />
                                                 <x-text-input id="email_{{ $member->id }}" name="email" type="email"
                                                     class="mt-1 block w-full" :value="$member->email" required />
                                                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
@@ -125,11 +125,11 @@
 
                                         <div class="mt-6 flex justify-end gap-3">
                                             <x-secondary-button x-on:click="$dispatch('close')">
-                                                {{ __('Cancel') }}
+                                                {{ __('teams.cancel') }}
                                             </x-secondary-button>
 
                                             <x-primary-button>
-                                                {{ __('Save Changes') }}
+                                                {{ __('teams.save_changes') }}
                                             </x-primary-button>
                                         </div>
                                     </form>
@@ -177,7 +177,7 @@
                                         @can('manageMembers', $team)
                                             <form method="POST"
                                                 action="{{ route('teams.invitations.destroy', [$team, $invitation]) }}"
-                                                onsubmit="return confirm('{{ __('Are you sure you want to cancel this invitation?') }}')">
+                                                onsubmit="return confirm('{{ __('teams.invitation_cancel_confirm') }}')">
                                                 @csrf @method('DELETE')
                                                 <button type="submit"
                                                     class="text-gray-400 hover:text-red-500 transition-colors">
@@ -221,7 +221,7 @@
                             <select name="role_id" required
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
+                                    <option value="{{ $role->id }}">{{ __('teams.' . $role->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -264,7 +264,7 @@
                                         </svg>
                                     </button>
                                     <form method="POST" action="{{ route('teams.groups.destroy', [$team, $group]) }}"
-                                        onsubmit="return confirm('¿Eliminar grupo?')">
+                                        onsubmit="return confirm('{{ __('teams.delete_group_confirm') }}')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="text-gray-500 hover:text-red-400 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -325,23 +325,23 @@
                         <form method="post" action="{{ route('teams.groups.update', [$team, $group]) }}"
                             class="p-6">
                             @csrf @method('patch')
-                            <h2 class="text-lg font-medium text-white heading">{{ __('Edit Group') }}</h2>
+                            <h2 class="text-lg font-medium text-white heading">{{ __('teams.edit_group') }}</h2>
                             <div class="mt-6 space-y-4">
                                 <div>
-                                    <x-input-label for="group_name_{{ $group->id }}" :value="__('Name')" />
+                                    <x-input-label for="group_name_{{ $group->id }}" :value="__('teams.name')" />
                                     <x-text-input id="group_name_{{ $group->id }}" name="name" type="text"
                                         class="mt-1 block w-full" :value="$group->name" required />
                                 </div>
                                 <div>
-                                    <x-input-label for="group_desc_{{ $group->id }}" :value="__('Description')" />
+                                    <x-input-label for="group_desc_{{ $group->id }}" :value="__('teams.description')" />
                                     <textarea name="description"
                                         class="mt-1 block w-full bg-gray-800 border border-gray-700 rounded-xl text-white text-sm px-3 py-2 outline-none focus:border-violet-500">{{ $group->description }}</textarea>
                                 </div>
                             </div>
                             <div class="mt-6 flex justify-end gap-3">
                                 <x-secondary-button
-                                    x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                                <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
+                                    x-on:click="$dispatch('close')">{{ __('teams.cancel') }}</x-secondary-button>
+                                <x-primary-button>{{ __('teams.save_changes') }}</x-primary-button>
                             </div>
                         </form>
                     </x-modal>

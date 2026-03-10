@@ -64,6 +64,8 @@
                 => 'text-blue-600 bg-blue-50 border-blue-100 dark:text-blue-400 dark:bg-blue-400/10 dark:border-blue-800',
             'cancelled'
                 => 'text-red-600 bg-red-50 border-red-100 dark:text-red-400 dark:bg-red-400/10 dark:border-red-800',
+            'blocked'
+                => 'text-white bg-red-600 border-red-700 dark:bg-red-500 dark:border-red-600 font-bold animate-pulse',
             default
                 => 'text-amber-600 bg-amber-50 border-amber-100 dark:text-yellow-400 dark:bg-yellow-400/10 dark:border-yellow-800',
         };
@@ -72,6 +74,146 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main content -->
         <div class="lg:col-span-2 space-y-5">
+            @if ($task->is_template)
+                @php
+                    $instances = $task->instances()->with('assignedUser')->get();
+                    $totalInst = $instances->count();
+                    $doneInst = $instances->where('status', 'completed')->count();
+                    $prog = $totalInst > 0 ? ($doneInst / $totalInst) * 100 : 0;
+                    $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
+                @endphp
+
+                <!-- Progress Dashboard (Template Only) -->
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3
+                                class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+                                {{ __('tasks.roadmap_progress') }}</h3>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white heading">
+                                {{ $doneInst }}/{{ $totalInst }} <span
+                                    class="text-sm font-medium text-gray-400">{{ __('tasks.completed') }}</span></p>
+                        </div>
+                        <div class="text-right">
+                            <span
+                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ round($prog) }}%</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
+                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all duration-1000 shadow-lg shadow-violet-500/20"
+                            style="width: {{ $prog }}%"></div>
+                    </div>
+
+                    @if ($hasBlocker)
+                        <div
+                            class="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl flex items-center gap-3 animate-pulse">
+                            <div
+                                class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-red-700 dark:text-red-400">
+                                    {{ __('tasks.blocker_detected') }}</p>
+                                <p class="text-xs text-red-600/80 dark:text-red-400/70">
+                                    {{ __('tasks.blocker_description') }}</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl">
+                        <table class="w-full text-left text-sm">
+                            <thead
+                                class="bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                <tr>
+                                    <th class="px-4 py-3">{{ __('teams.members') }}</th>
+                                    <th class="px-4 py-3">{{ __('tasks.status') }}</th>
+                                    <th class="px-4 py-3 text-right">{{ __('tasks.actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
+                                @foreach ($instances as $inst)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
+                                                    {{ strtoupper(substr($inst->assignedUser?->name ?? '?', 0, 2)) }}
+                                                </div>
+                                                <span
+                                                    class="font-medium text-gray-700 dark:text-gray-300">{{ $inst->assignedUser?->name ?? 'User' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            @php
+                                                $instStatusColor = match ($inst->status) {
+                                                    'completed' => 'text-emerald-500 dark:text-emerald-400',
+                                                    'in_progress' => 'text-blue-500 dark:text-blue-400',
+                                                    'blocked' => 'text-red-600 dark:text-red-400 font-bold',
+                                                    default => 'text-gray-500 dark:text-gray-400',
+                                                };
+                                            @endphp
+                                            <div class="flex items-center gap-1.5 {{ $instStatusColor }}">
+                                                <div
+                                                    class="w-1.5 h-1.5 rounded-full {{ str_contains($instStatusColor, 'text-') ? str_replace('text-', 'bg-', explode(' ', $instStatusColor)[0]) : 'bg-gray-400' }}">
+                                                </div>
+                                                <span
+                                                    class="text-xs font-bold uppercase tracking-tight">{{ __('tasks.statuses.' . $inst->status) }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            @if ($inst->status !== 'completed')
+                                                <button onclick="nudgeUser({{ $inst->id }})"
+                                                    class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
+                                                    title="{{ __('tasks.nudge_user') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                        stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
+            @if ($task->isInstance())
+                <div
+                    class="bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-800 rounded-2xl p-4 flex items-center justify-between shadow-sm dark:shadow-none transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-violet-700 dark:text-violet-300">
+                                {{ __('tasks.personal_instance_notice') }}</p>
+                            <p class="text-xs text-violet-600/80 dark:text-violet-400/70">
+                                {{ __('tasks.personal_instance_description') }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}"
+                        class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline px-4 py-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
+                        {{ __('tasks.view_global_goal') }}
+                    </a>
+                </div>
+            @endif
             @if ($task->description)
                 <div
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
@@ -252,4 +394,30 @@
             @endif
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            function nudgeUser(taskId) {
+                if (!confirm('{{ __('tasks.nudge_user') }}?')) return;
+
+                fetch(`/teams/{{ $team->id }}/tasks/${taskId}/nudge`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al enviar el recordatorio');
+                    });
+            }
+        </script>
+    @endpush
 </x-app-layout>

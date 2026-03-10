@@ -54,9 +54,6 @@ class TeamPolicy
      */
     private function isCoordinator(User $user, Team $team): bool
     {
-        $member = $team->members()->where('user_id', $user->id)->first();
-        if (!$member) return false;
-
-        return optional($member->pivot->role)->name === 'coordinator';
+        return $team->isCoordinator($user);
     }
 }

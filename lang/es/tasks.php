@@ -48,6 +48,7 @@ return [
         'in_progress' => 'En progreso',
         'completed' => 'Completada',
         'cancelled' => 'Cancelada',
+        'blocked' => 'Bloqueada',
     ],
 
     'urgent' => 'Urgente',
@@ -72,4 +73,15 @@ return [
     'dependency' => 'Dependencia (Tarea Padre)',
     'no_dependency' => 'Sin dependencia',
     'roadmap' => 'Hoja de Ruta',
+    'roadmap_progress' => 'Progreso de la Hoja de Ruta',
+    'blocker_detected' => '¡Bloqueo Detectado!',
+    'blocker_description' => 'Uno o más miembros han marcado esta tarea como bloqueada. Requiere intervención.',
+    'actions' => 'Acciones',
+    'nudge_user' => 'Enviar recordatorio',
+    'nudge_sent' => 'Recordatorio enviado correctamente.',
+    'personal_instance_notice' => 'Esta es tu instancia privada',
+    'personal_instance_description' => 'Tus cambios aquí solo te afectan a ti. El progreso se reflejará en el objetivo global del equipo.',
+    'view_global_goal' => 'Ver objetivo global',
+    'completed' => 'Completada',
+    'pending' => 'Pendiente',
 ];

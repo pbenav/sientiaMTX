@@ -61,5 +61,18 @@ class Team extends Model
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
+
+    /**
+     * Check if a user is a coordinator for this team
+     */
+    public function isCoordinator(User $user): bool
+    {
+        return $this->members()
+            ->where('user_id', $user->id)
+            ->wherePivotIn('role_id', function ($query) {
+                $query->select('id')->from('team_roles')->where('name', 'coordinator');
+            })
+            ->exists();
+    }
 }
 

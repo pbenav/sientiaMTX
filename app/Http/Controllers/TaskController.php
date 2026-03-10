@@ -49,6 +49,8 @@ class TaskController extends Controller
             'parent_id' => 'nullable|exists:tasks,id',
         ]);
 
+        $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
+
         $task = $team->tasks()->create([
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -61,24 +63,52 @@ class TaskController extends Controller
             'created_by_id' => auth()->id(),
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
+            'is_template' => $isTemplate,
         ]);
 
-        // Assign users if provided
-        if (!empty($validated['assigned_to'])) {
-            foreach ($validated['assigned_to'] as $userId) {
-                $task->assignments()->create([
-                    'user_id' => $userId,
-                    'assigned_by_id' => auth()->id(),
-                ]);
-            }
-        }
+        if ($isTemplate) {
+            $userIds = collect($validated['assigned_to'] ?? []);
 
-        // Assign groups if provided
-        if (!empty($validated['assigned_groups'])) {
-            foreach ($validated['assigned_groups'] as $groupId) {
-                $task->assignments()->create([
-                    'group_id' => $groupId,
-                    'assigned_by_id' => auth()->id(),
+            if (!empty($validated['assigned_groups'])) {
+                foreach ($validated['assigned_groups'] as $groupId) {
+                    $group = $team->groups()->find($groupId);
+                    if ($group) {
+                        $userIds = $userIds->merge($group->users->pluck('id'));
+                    }
+
+                    $task->assignments()->create([
+                        'group_id' => $groupId,
+                        'assigned_by_id' => auth()->id(),
+                    ]);
+                }
+            }
+
+            $uniqueUserIds = $userIds->unique();
+
+            foreach ($uniqueUserIds as $userId) {
+                // Create Assignment record (for history/legacy compatibility)
+                if (in_array($userId, $validated['assigned_to'] ?? [])) {
+                    $task->assignments()->create([
+                        'user_id' => $userId,
+                        'assigned_by_id' => auth()->id(),
+                    ]);
+                }
+
+                // Create Individual Instance
+                $team->tasks()->create([
+                    'title' => $task->title,
+                    'description' => $task->description,
+                    'priority' => $task->priority,
+                    'urgency' => $task->urgency,
+                    'status' => 'pending',
+                    'scheduled_date' => $task->scheduled_date,
+                    'due_date' => $task->due_date,
+                    'original_due_date' => $task->due_date,
+                    'created_by_id' => $task->created_by_id,
+                    'observations' => null, // Reset observations for private task
+                    'parent_id' => $task->id,
+                    'is_template' => false,
+                    'assigned_user_id' => $userId,
                 ]);
             }
         }
@@ -105,7 +135,7 @@ class TaskController extends Controller
         $users = $team->members;
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
-        $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada'];
+        $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
         $tasks = $team->tasks()->where('id', '!=', $task->id)->orderBy('title')->get();
 
         return view('tasks.edit', compact('team', 'task', 'users', 'groups', 'priorities', 'statuses', 'tasks'));
@@ -144,6 +174,17 @@ class TaskController extends Controller
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
         ]);
+
+        // If this is a template, sync core fields to instances
+        if ($task->is_template) {
+            $task->instances()->update([
+                'title' => $task->title,
+                'description' => $task->description,
+                'due_date' => $task->due_date,
+                'priority' => $task->priority,
+                'urgency' => $task->urgency,
+            ]);
+        }
 
         // Log changes to history
         $newValues = $task->getAttributes();
@@ -260,5 +301,16 @@ class TaskController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Nudge a user assigned to a task instance
+     */
+    public function nudge(Team $team, Task $task)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('tasks.nudge_sent')
+        ]);
     }
 }

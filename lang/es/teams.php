@@ -52,4 +52,11 @@ return [
     'cancel' => 'Cancelar',
     'settings' => 'Configuración',
     'tasks' => 'Tareas',
+    'edit_member' => 'Editar información del miembro',
+    'edit_group' => 'Editar grupo',
+    'invitation_cancel_confirm' => '¿Seguro que quieres cancelar esta invitación?',
+    'delete_group_confirm' => '¿Eliminar grupo?',
+    'no_groups' => 'No hay grupos creados.',
+    'no_members' => 'No hay miembros en este equipo.',
+    'invited_at' => 'Invitado el',
 ];

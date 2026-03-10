@@ -138,7 +138,7 @@
                             </p>
 
                             <span
-                                class="absolute top-4 right-4 sm:top-8 right-8 text-[9px] sm:text-[11px] font-bold bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full q-count">
+                                class="absolute top-4 right-4 sm:top-8 sm:right-8 text-[9px] sm:text-[11px] font-bold bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full q-count">
                                 {{ count($qTasks) }}
                             </span>
                         </div>
