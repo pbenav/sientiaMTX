@@ -52,4 +52,11 @@ return [
     'cancel' => 'Cancel',
     'settings' => 'Settings',
     'tasks' => 'Tasks',
+    'edit_member' => 'Edit Member Info',
+    'edit_group' => 'Edit Group',
+    'invitation_cancel_confirm' => 'Are you sure you want to cancel this invitation?',
+    'delete_group_confirm' => 'Delete group?',
+    'no_groups' => 'No groups created.',
+    'no_members' => 'No members in this team.',
+    'invited_at' => 'Invited on',
 ];
