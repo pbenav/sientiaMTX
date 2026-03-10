@@ -139,13 +139,16 @@ class Task extends Model
      */
     public function getProgressAttribute(): int
     {
-        if (!$this->is_template) return $this->status === 'completed' ? 100 : 0;
+        // If it has children (subtasks or instances), calculate aggregate progress
+        if ($this->children()->exists()) {
+            $totalCount = $this->children()->count();
+            if ($totalCount === 0) return 0;
 
-        $totalCount = $this->instances()->count();
-        if ($totalCount === 0) return 0;
+            $completedCount = $this->children()->where('status', 'completed')->count();
+            return (int) (($completedCount / $totalCount) * 100);
+        }
 
-        $completedCount = $this->instances()->where('status', 'completed')->count();
-        return (int) (($completedCount / $totalCount) * 100);
+        return $this->status === 'completed' ? 100 : 0;
     }
 
     /**

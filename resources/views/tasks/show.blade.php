@@ -74,23 +74,26 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main content -->
         <div class="lg:col-span-2 space-y-5">
-            @if ($task->is_template)
+            @if ($task->is_template || $task->children()->exists())
                 @php
-                    $instances = $task->instances()->with('assignedUser')->get();
+                    $isRoadmap = $task->is_template;
+                    $instances = $isRoadmap
+                        ? $task->instances()->with('assignedUser')->get()
+                        : $task->children()->with('assignedTo')->get();
                     $totalInst = $instances->count();
                     $doneInst = $instances->where('status', 'completed')->count();
                     $prog = $totalInst > 0 ? ($doneInst / $totalInst) * 100 : 0;
                     $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
                 @endphp
 
-                <!-- Progress Dashboard (Template Only) -->
+                <!-- Progress Dashboard -->
                 <div
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
                     <div class="flex items-center justify-between mb-6">
                         <div>
                             <h3
                                 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
-                                {{ __('tasks.roadmap_progress') }}</h3>
+                                {{ $isRoadmap ? __('tasks.roadmap_progress') : __('tasks.status') }}</h3>
                             <p class="text-2xl font-bold text-gray-900 dark:text-white heading">
                                 {{ $doneInst }}/{{ $totalInst }} <span
                                     class="text-sm font-medium text-gray-400">{{ __('tasks.completed') }}</span></p>
@@ -264,6 +267,43 @@
 
         <!-- Sidebar -->
         <div class="space-y-4">
+            <!-- Quick Actions -->
+            @if ($task->assigned_user_id === auth()->id() || $team->isCoordinator(auth()->user()))
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1">
+                        {{ __('tasks.actions') }}</p>
+
+                    @if ($task->status !== 'completed')
+                        <button onclick="updateTaskStatus('completed')"
+                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            {{ __('tasks.mark_complete') }}
+                        </button>
+                    @else
+                        <button onclick="updateTaskStatus('pending')"
+                            class="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold py-2.5 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
+                            {{ __('tasks.reopen_task') }}
+                        </button>
+                    @endif
+
+                    @if ($task->status !== 'blocked')
+                        <button onclick="updateTaskStatus('blocked')"
+                            class="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-red-200 dark:border-red-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            {{ __('tasks.report_blocker') }}
+                        </button>
+                    @endif
+                </div>
+            @endif
+
             <!-- Status -->
             <div
                 class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors">
@@ -398,25 +438,121 @@
     @push('scripts')
         <script>
             function nudgeUser(taskId) {
-                if (!confirm('{{ __('tasks.nudge_user') }}?')) return;
+                Swal.fire({
+                    title: '{{ __('tasks.nudge_user') }}?',
+                    text: '{{ __('tasks.nudge_received') }}',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#6366f1',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Sí, enviar',
+                    cancelButtonText: 'Cancelar',
+                    background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/teams/{{ $team->id }}/tasks/${taskId}/nudge`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                        'content')
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: '¡Enviado!',
+                                        text: data.message,
+                                        icon: 'success',
+                                        timer: 2000,
+                                        showConfirmButton: false,
+                                        background: document.documentElement.classList.contains('dark') ?
+                                            '#111827' : '#fff',
+                                        color: document.documentElement.classList.contains('dark') ?
+                                            '#fff' : '#111827'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'No se pudo enviar el recordatorio',
+                                    icon: 'error',
+                                    background: document.documentElement.classList.contains('dark') ?
+                                        '#111827' : '#fff',
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' :
+                                        '#111827'
+                                });
+                            });
+                    }
+                });
+            }
 
-                fetch(`/teams/{{ $team->id }}/tasks/${taskId}/nudge`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error al enviar el recordatorio');
-                    });
+            function updateTaskStatus(status) {
+                const messages = {
+                    'completed': '¿Marcar como completada?',
+                    'blocked': '¿Informar un bloqueo en esta tarea?',
+                    'pending': '¿Reabrir esta tarea?'
+                };
+
+                Swal.fire({
+                    title: messages[status] || '¿Cambiar estado?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: status === 'blocked' ? '#ef4444' : '#6366f1',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Cancelar',
+                    background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/teams/{{ $team->id }}/tasks/{{ $task->id }}/move`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                        'content')
+                                },
+                                body: JSON.stringify({
+                                    status: status
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: '¡Actualizado!',
+                                        text: 'El estado se ha actualizado correctamente.',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false,
+                                        background: document.documentElement.classList.contains('dark') ?
+                                            '#111827' : '#fff',
+                                        color: document.documentElement.classList.contains('dark') ?
+                                            '#fff' : '#111827'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'No se pudo actualizar el estado',
+                                    icon: 'error',
+                                    background: document.documentElement.classList.contains('dark') ?
+                                        '#111827' : '#fff',
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' :
+                                        '#111827'
+                                });
+                            });
+                    }
+                });
             }
         </script>
     @endpush

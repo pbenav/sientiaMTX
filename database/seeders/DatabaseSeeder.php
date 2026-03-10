@@ -69,18 +69,18 @@ class DatabaseSeeder extends Seeder
 
         // 5. Sample tasks covering all 4 quadrants
         $tasksData = [
-            // Q1 – Important + Urgent
-            ['title' => 'Fix production server outage', 'priority' => 'critical', 'urgency' => 'critical', 'status' => 'in_progress'],
-            ['title' => 'Respond to client security incident', 'priority' => 'high', 'urgency' => 'critical', 'status' => 'pending'],
-            // Q2 – Important + Not Urgent
-            ['title' => 'Plan Q2 product roadmap', 'priority' => 'high', 'urgency' => 'low', 'status' => 'pending'],
-            ['title' => 'Write technical documentation', 'priority' => 'critical', 'urgency' => 'medium', 'status' => 'pending'],
-            // Q3 – Not Important + Urgent
-            ['title' => 'Schedule team meeting', 'priority' => 'low', 'urgency' => 'high', 'status' => 'pending'],
-            ['title' => 'Reply to routine emails', 'priority' => 'medium', 'urgency' => 'high', 'status' => 'pending'],
-            // Q4 – Not Important + Not Urgent
-            ['title' => 'Reorganize shared drive folders', 'priority' => 'low', 'urgency' => 'low', 'status' => 'pending'],
-            ['title' => 'Review old meeting recordings', 'priority' => 'medium', 'urgency' => 'low', 'status' => 'pending'],
+            // Q1 – Importante + Urgente
+            ['title' => __('tasks.demo.fix_outage'), 'priority' => 'critical', 'urgency' => 'critical', 'status' => 'in_progress'],
+            ['title' => __('tasks.demo.security_incident'), 'priority' => 'high', 'urgency' => 'critical', 'status' => 'pending'],
+            // Q2 – Importante + No Urgente
+            ['title' => __('tasks.demo.roadmap'), 'priority' => 'high', 'urgency' => 'low', 'status' => 'pending'],
+            ['title' => __('tasks.demo.documentation'), 'priority' => 'critical', 'urgency' => 'medium', 'status' => 'pending'],
+            // Q3 – No Importante + Urgente
+            ['title' => __('tasks.demo.meeting'), 'priority' => 'low', 'urgency' => 'high', 'status' => 'pending'],
+            ['title' => __('tasks.demo.emails'), 'priority' => 'medium', 'urgency' => 'high', 'status' => 'pending'],
+            // Q4 – No Importante + No Urgente
+            ['title' => __('tasks.demo.drive'), 'priority' => 'low', 'urgency' => 'low', 'status' => 'pending'],
+            ['title' => __('tasks.demo.recordings'), 'priority' => 'medium', 'urgency' => 'low', 'status' => 'pending'],
         ];
 
         foreach ($tasksData as $t) {

@@ -29,6 +29,8 @@ return [
     'quadrant' => 'Cuadrante',
     'mark_complete' => 'Marcar como completada',
     'mark_in_progress' => 'Marcar en progreso',
+    'reopen_task' => 'Reabrir tarea',
+    'report_blocker' => 'Informar un bloqueo',
     'view_detail' => 'Ver detalle',
 
     'priorities' => [
@@ -86,4 +88,30 @@ return [
     'pending' => 'Pendiente',
     'add_member_to_group' => 'Añadir miembro al grupo',
     'create_group' => 'Crear grupo',
+
+    'demo' => [
+        'fix_outage' => 'Corregir caída del servidor de producción',
+        'security_incident' => 'Responder a incidente de seguridad del cliente',
+        'roadmap' => 'Planificar hoja de ruta (roadmap) del Q2',
+        'documentation' => 'Escribir documentación técnica',
+        'meeting' => 'Programar reunión de equipo',
+        'emails' => 'Responder correos electrónicos de rutina',
+        'drive' => 'Reorganizar carpetas de la unidad compartida',
+        'recordings' => 'Revisar grabaciones de reuniones antiguas',
+    ],
+
+    'nudges' => [
+        'collaborative' => '¡Hola! 👋 El equipo ya ha completado el :progress% de la tarea ":title". Solo faltas tú para que lleguemos a la meta. ¿Necesitas ayuda con algo para terminar tu parte?',
+        'deadline' => '⏳ ¡Cuenta atrás! La tarea ":title" vence en menos de 24 horas. Asegúrate de marcar tu instancia como completada para que el progreso del grupo se actualice correctamente.',
+        'unblocking' => 'Vemos que tu parte en ":title" sigue pendiente. 🚩 ¿Hay algún bloqueo o duda técnica que te impida avanzar? Pulsa aquí para dejar un comentario al gestor.',
+    ],
+    'milestones' => [
+        'p50' => 'El 50% del equipo ha terminado la tarea ":title".',
+        'p75' => 'El 75% del equipo ha terminado la tarea ":title".',
+        'p100' => '¡Tarea ":title" completada por todo el equipo! 🎉',
+    ],
+    'notifications' => [
+        'blocked_alert' => '🚩 Tarea bloqueada: Un miembro ha reportado un problema en ":title". Requiere tu atención inmediata.',
+        'nudge_received' => 'Has recibido un recordatorio sobre la tarea ":title". Por favor, actualiza tu progreso.',
+    ],
 ];

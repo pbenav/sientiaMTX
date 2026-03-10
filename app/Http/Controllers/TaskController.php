@@ -151,7 +151,7 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high,critical',
             'urgency' => 'required|in:low,medium,high,critical',
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'status' => 'required|in:pending,in_progress,completed,cancelled,blocked',
             'scheduled_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|array',
@@ -279,7 +279,7 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'quadrant' => 'nullable|integer|between:1,4',
-            'status' => 'nullable|string|in:pending,in_progress,completed,cancelled',
+            'status' => 'nullable|string|in:pending,in_progress,completed,cancelled,blocked',
         ]);
 
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
@@ -296,8 +296,34 @@ class TaskController extends Controller
                 'urgency' => $mapping[$validated['quadrant']]['urgency'],
                 'status' => $validated['status'] ?? 'in_progress',
             ]);
-        } elseif ($request->has('status') && $validated['status'] === 'completed') {
-            $task->update(['status' => 'completed']);
+        }
+
+        if ($request->has('status')) {
+            $oldStatus = $task->status;
+            $task->update(['status' => $validated['status']]);
+
+            // Trigger notification if blocked
+            if ($validated['status'] === 'blocked' && $oldStatus !== 'blocked') {
+                $team->creator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
+                // Also notify coordinators
+                foreach ($team->members()->wherePivotIn('role_id', function ($q) {
+                    $q->select('id')->from('team_roles')->where('name', 'coordinator');
+                })->get() as $coordinator) {
+                    if ($coordinator->id !== auth()->id()) {
+                        $coordinator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
+                    }
+                }
+            }
+
+            // Check for milestones if it's an instance
+            if ($task->isInstance() && $validated['status'] === 'completed') {
+                $parent = $task->parent;
+                $progress = $parent->progress;
+
+                if (in_array((int)$progress, [50, 75, 100])) {
+                    $team->creator->notify(new \App\Notifications\TaskMilestoneNotification($parent, (int)$progress));
+                }
+            }
         }
 
         return response()->json(['success' => true]);
@@ -308,6 +334,24 @@ class TaskController extends Controller
      */
     public function nudge(Team $team, Task $task)
     {
+        $this->authorize('update', $team);
+
+        if (!$task->isInstance()) {
+            return response()->json(['success' => false, 'message' => 'Solo se pueden enviar recordatorios sobre instancias individuales.'], 400);
+        }
+
+        $parent = $task->parent;
+        $progress = $parent->progress;
+        $type = 'collaborative';
+
+        if ($task->status === 'blocked') {
+            $type = 'unblocking';
+        } elseif ($task->due_date && $task->due_date->isFuture() && $task->due_date->diffInHours(now()) < 24) {
+            $type = 'deadline';
+        }
+
+        $task->assignedUser->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress));
+
         return response()->json([
             'success' => true,
             'message' => __('tasks.nudge_sent')

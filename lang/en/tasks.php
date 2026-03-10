@@ -28,6 +28,8 @@ return [
     'quadrant' => 'Quadrant',
     'mark_complete' => 'Mark as Complete',
     'mark_in_progress' => 'Mark as In Progress',
+    'reopen_task' => 'Reopen Task',
+    'report_blocker' => 'Report Blocker',
     'view_detail' => 'View Detail',
 
     'priorities' => [
@@ -84,4 +86,30 @@ return [
     'pending' => 'Pending',
     'add_member_to_group' => 'Add member to group',
     'create_group' => 'Create group',
+
+    'demo' => [
+        'fix_outage' => 'Fix production server outage',
+        'security_incident' => 'Respond to client security incident',
+        'roadmap' => 'Plan Q2 product roadmap',
+        'documentation' => 'Write technical documentation',
+        'meeting' => 'Schedule team meeting',
+        'emails' => 'Reply to routine emails',
+        'drive' => 'Reorganize shared drive folders',
+        'recordings' => 'Review old meeting recordings',
+    ],
+
+    'nudges' => [
+        'collaborative' => 'Hello! 👋 The team has already completed :progress% of the task ":title". Only you are left to reach the goal. Do you need help with anything to finish your part?',
+        'deadline' => '⏳ Countdown! The task ":title" is due in less than 24 hours. Make sure to mark your instance as completed so the group progress updates correctly.',
+        'unblocking' => 'We see your part in ":title" is still pending. 🚩 Is there any blocker or technical doubt preventing you from moving forward? Click here to leave a comment for the manager.',
+    ],
+    'milestones' => [
+        'p50' => '50% of the team has finished the task ":title".',
+        'p75' => '75% of the team has finished the task ":title".',
+        'p100' => 'Task ":title" completed by the whole team! 🎉',
+    ],
+    'notifications' => [
+        'blocked_alert' => '🚩 Task blocked: A member has reported an issue in ":title". Requires your immediate attention.',
+        'nudge_received' => 'You have received a reminder about task ":title". Please update your progress.',
+    ],
 ];

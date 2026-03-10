@@ -239,11 +239,21 @@ class TeamController extends Controller
         $query = $team->tasks()->with(['assignedTo', 'assignedGroups', 'tags']);
 
         if ($isCoordinator) {
-            // Coordinator sees template tasks and standalone tasks
+            // Coordinator sees:
+            // 1. Templates
+            // 2. Standalone tasks (no parent)
+            // 3. Subtasks that are NOT instances of a template (shared project tasks)
+            // 4. Their own private instances
             $query->where(function($q) {
                 $q->where('is_template', true)
                   ->orWhereNull('parent_id')
-                  ->orWhere('assigned_user_id', auth()->id()); // Just in case coordinator has their own instance
+                  ->orWhere(function($subq) {
+                      $subq->whereNotNull('parent_id')
+                           ->whereHas('parent', function($pq) {
+                               $pq->where('is_template', false);
+                           });
+                  })
+                  ->orWhere('assigned_user_id', auth()->id());
             });
         } else {
             // Regular member sees their private instances and standalone tasks without template
