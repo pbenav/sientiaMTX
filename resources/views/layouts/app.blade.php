@@ -97,7 +97,7 @@
                                         d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                 </svg>
                                 <span class="hidden md:inline">{{ __('tasks.eisenhower_matrix') }}</span>
-                                <span class="md:hidden">Matriz</span>
+                                <span class="md:hidden">{{ __('teams.view_dashboard') }}</span>
                             </a>
                         @endif
 
@@ -112,7 +112,7 @@
                                         d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 012 2h2a2 2 0 012-2V7a2 2 0 01-2-2h-2a2 2 0 01-2 2" />
                                 </svg>
                                 <span class="hidden md:inline">{{ __('navigation.gantt') }}</span>
-                                <span class="md:hidden">Gantt</span>
+                                <span class="md:hidden">{{ __('navigation.gantt') }}</span>
                             </a>
                         @endif
 

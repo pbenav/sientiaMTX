@@ -191,25 +191,25 @@
 
             @if ($task->isInstance())
                 <div
-                    class="bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-800 rounded-2xl p-4 flex items-center justify-between shadow-sm dark:shadow-none transition-colors">
-                    <div class="flex items-center gap-3">
+                    class="bg-indigo-50/80 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm dark:shadow-none transition-colors mb-6">
+                    <div class="flex items-center gap-4">
                         <div
-                            class="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                            class="w-12 h-12 rounded-2xl bg-white dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm border border-indigo-100 dark:border-indigo-500/20">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
+                                stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-violet-700 dark:text-violet-300">
+                            <p class="text-sm font-extrabold text-indigo-900 dark:text-indigo-300 tracking-tight">
                                 {{ __('tasks.personal_instance_notice') }}</p>
-                            <p class="text-xs text-violet-600/80 dark:text-violet-400/70">
+                            <p class="text-xs text-indigo-700/70 dark:text-indigo-400/80 font-medium">
                                 {{ __('tasks.personal_instance_description') }}</p>
                         </div>
                     </div>
                     <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}"
-                        class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline px-4 py-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
+                        class="text-xs font-bold text-indigo-600 dark:text-indigo-300 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-500 px-5 py-2.5 bg-white dark:bg-indigo-500/10 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-500/20 transition-all text-center">
                         {{ __('tasks.view_global_goal') }}
                     </a>
                 </div>

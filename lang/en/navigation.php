@@ -11,4 +11,5 @@ return [
     'settings' => 'Settings',
     'welcome' => 'Welcome',
     'hello' => 'Hello, :name',
+    'gantt' => 'Gantt Chart',
 ];
