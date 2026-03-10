@@ -267,9 +267,11 @@ class TeamController extends Controller
             });
         }
 
-        $tasks = $query->get();
 
-        // Group tasks by quadrant
+        $allTasks = $query->get();
+        $tasks = $allTasks; // Stay compatible with view expecting $tasks
+
+        // Group tasks by quadrant, excluding completed ones
         $quadrants = [
             1 => [],
             2 => [],
@@ -277,9 +279,11 @@ class TeamController extends Controller
             4 => [],
         ];
 
-        foreach ($tasks as $task) {
-            $quadrant = $this->getQuadrant($task);
-            $quadrants[$quadrant][] = $task;
+        foreach ($allTasks as $task) {
+            if ($task->status !== 'completed') {
+                $quadrant = $this->getQuadrant($task);
+                $quadrants[$quadrant][] = $task;
+            }
         }
 
         return view('teams.dashboard', compact('team', 'quadrants', 'tasks'));

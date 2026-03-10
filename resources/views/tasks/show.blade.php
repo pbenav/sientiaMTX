@@ -301,6 +301,21 @@
                             {{ __('tasks.report_blocker') }}
                         </button>
                     @endif
+
+                    <!-- Progress Slider for Individual Tasks -->
+                    @if (!$task->is_template && !$task->children()->exists())
+                        <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                            <label
+                                class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3 block">
+                                % {{ __('tasks.progress') }}: <span id="progress-val"
+                                    class="text-violet-500">{{ $task->progress }}</span>%
+                            </label>
+                            <input type="range" min="0" max="100" value="{{ $task->progress }}"
+                                class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                                oninput="document.getElementById('progress-val').innerText = this.value"
+                                onchange="updateTaskProgress(this.value)">
+                        </div>
+                    @endif
                 </div>
             @endif
 
@@ -553,6 +568,47 @@
                             });
                     }
                 });
+            }
+
+            function updateTaskProgress(progress) {
+                fetch(`/teams/{{ $team->id }}/tasks/{{ $task->id }}/move`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            progress_percentage: progress
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // If progress is 100, we might want to reload to show "Completed" status
+                            if (progress == 100) {
+                                window.location.reload();
+                            } else {
+                                // Subtle toast or just keep it as is
+                                const valSpan = document.getElementById('progress-val');
+                                valSpan.classList.add('animate-pulse', 'text-emerald-500');
+                                setTimeout(() => {
+                                    valSpan.classList.remove('animate-pulse', 'text-emerald-500');
+                                }, 1000);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'No se pudo actualizar el progreso',
+                            icon: 'error',
+                            background: document.documentElement.classList.contains('dark') ?
+                                '#111827' : '#fff',
+                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                        });
+                    });
             }
         </script>
     @endpush

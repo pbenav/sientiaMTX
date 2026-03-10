@@ -74,11 +74,14 @@ return [
     'no_dependency' => 'No dependency',
     'roadmap' => 'Roadmap',
     'roadmap_progress' => 'Roadmap Progress',
+    'progress' => 'Progress',
+    'progress_updated' => 'Progress updated successfully.',
     'blocker_detected' => 'Blocker Detected!',
     'blocker_description' => 'One or more members have marked this task as blocked. Requires intervention.',
     'actions' => 'Actions',
     'nudge_user' => 'Send Reminder',
     'nudge_sent' => 'Reminder sent successfully.',
+    'nudge_received' => 'You have received a reminder about task ":title". Please update your progress.',
     'personal_instance_notice' => 'This is your personal instance',
     'personal_instance_description' => 'Your changes here only affect you. Progress will be reflected in the team\'s global goal.',
     'view_global_goal' => 'View global goal',
@@ -110,6 +113,5 @@ return [
     ],
     'notifications' => [
         'blocked_alert' => '🚩 Task blocked: A member has reported an issue in ":title". Requires your immediate attention.',
-        'nudge_received' => 'You have received a reminder about task ":title". Please update your progress.',
     ],
 ];

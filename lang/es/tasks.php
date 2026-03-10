@@ -76,11 +76,14 @@ return [
     'no_dependency' => 'Sin dependencia',
     'roadmap' => 'Hoja de Ruta',
     'roadmap_progress' => 'Progreso de la Hoja de Ruta',
+    'progress' => 'Progreso',
+    'progress_updated' => 'Progreso actualizado correctamente.',
     'blocker_detected' => '¡Bloqueo Detectado!',
     'blocker_description' => 'Uno o más miembros han marcado esta tarea como bloqueada. Requiere intervención.',
     'actions' => 'Acciones',
     'nudge_user' => 'Enviar recordatorio',
     'nudge_sent' => 'Recordatorio enviado correctamente.',
+    'nudge_received' => 'Has recibido un recordatorio sobre la tarea ":title". Por favor, actualiza tu progreso.',
     'personal_instance_notice' => 'Esta es tu instancia privada',
     'personal_instance_description' => 'Tus cambios aquí solo te afectan a ti. El progreso se reflejará en el objetivo global del equipo.',
     'view_global_goal' => 'Ver objetivo global',
@@ -112,6 +115,5 @@ return [
     ],
     'notifications' => [
         'blocked_alert' => '🚩 Tarea bloqueada: Un miembro ha reportado un problema en ":title". Requiere tu atención inmediata.',
-        'nudge_received' => 'Has recibido un recordatorio sobre la tarea ":title". Por favor, actualiza tu progreso.',
     ],
 ];

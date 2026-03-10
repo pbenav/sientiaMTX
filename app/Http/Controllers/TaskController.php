@@ -173,7 +173,15 @@ class TaskController extends Controller
             'due_date' => $validated['due_date'],
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
+            'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
         ]);
+
+        // Sync status if progress is 100% or 0%
+        if ($task->progress_percentage === 100 && $task->status !== 'completed' && $task->status !== 'cancelled') {
+            $task->update(['status' => 'completed']);
+        } elseif ($task->progress_percentage < 100 && $task->status === 'completed') {
+            $task->update(['status' => 'in_progress']);
+        }
 
         // If this is a template, sync core fields to instances
         if ($task->is_template) {
@@ -280,6 +288,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'quadrant' => 'nullable|integer|between:1,4',
             'status' => 'nullable|string|in:pending,in_progress,completed,cancelled,blocked',
+            'progress_percentage' => 'nullable|integer|between:0,100',
         ]);
 
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
@@ -300,7 +309,19 @@ class TaskController extends Controller
 
         if ($request->has('status')) {
             $oldStatus = $task->status;
-            $task->update(['status' => $validated['status']]);
+            $status = $validated['status'];
+            
+            $updateData = ['status' => $status];
+            
+            if ($status === 'completed') {
+                $updateData['progress_percentage'] = 100;
+            } elseif ($status === 'pending' || $status === 'in_progress' || $status === 'blocked') {
+                if ($task->progress_percentage === 100) {
+                    $updateData['progress_percentage'] = 90; // Just below 100 to show it's not done
+                }
+            }
+
+            $task->update($updateData);
 
             // Trigger notification if blocked
             if ($validated['status'] === 'blocked' && $oldStatus !== 'blocked') {
@@ -324,6 +345,18 @@ class TaskController extends Controller
                     $team->creator->notify(new \App\Notifications\TaskMilestoneNotification($parent, (int)$progress));
                 }
             }
+        }
+        if ($request->has('progress_percentage')) {
+            $progress = (int) $validated['progress_percentage'];
+            $updateData = ['progress_percentage' => $progress];
+
+            if ($progress === 100) {
+                $updateData['status'] = 'completed';
+            } elseif ($progress < 100 && $task->status === 'completed') {
+                $updateData['status'] = 'in_progress';
+            }
+
+            $task->update($updateData);
         }
 
         return response()->json(['success' => true]);

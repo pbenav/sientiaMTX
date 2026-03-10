@@ -42,6 +42,7 @@ class Task extends Model
         'parent_id',
         'is_template',
         'assigned_user_id',
+        'progress_percentage',
     ];
 
     protected $casts = [
@@ -148,7 +149,9 @@ class Task extends Model
             return (int) (($completedCount / $totalCount) * 100);
         }
 
-        return $this->status === 'completed' ? 100 : 0;
+        // For individual tasks, return the manual progress percentage
+        // If status is completed, it should be 100 anyway, but we return the column value
+        return (int) ($this->attributes['progress_percentage'] ?? ($this->status === 'completed' ? 100 : 0));
     }
 
     /**
