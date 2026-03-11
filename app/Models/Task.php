@@ -197,6 +197,7 @@ class Task extends Model
     public function scopeVisibleTo($query, $user, $isCoordinator = false)
     {
         return $query->where(function($q) use ($user, $isCoordinator) {
+            // Standard visibility: Creator, Assignee, Collaborator or Public
             $q->where('visibility', 'public')
               ->orWhere('created_by_id', $user->id)
               ->orWhere('assigned_user_id', $user->id)
@@ -206,8 +207,9 @@ class Task extends Model
               ->orWhereNull('visibility');
 
             if ($isCoordinator) {
-                // Coordinator sees all tasks in the team they are managing
-                $q->orWhereNotNull('id');
+                // Coordinators see all tasks in the team they manage
+                // We use whereRaw to avoid issues with complex unions/ors
+                $q->orWhereRaw('1=1'); 
             }
         });
     }
@@ -218,39 +220,52 @@ class Task extends Model
 
         return $query->where(function($q) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // COORDINATOR VIEW: Management side
-                // 1. Root tasks and Templates
-                $q->whereNull('parent_id')
-                  ->orWhere('is_template', true)
-                  // 2. Standard Hierarchical Subtasks (children of non-templates)
-                  ->orWhere(function($subq) {
-                      $subq->whereNotNull('parent_id')
-                           ->whereHas('parent', function($pq) {
-                               $pq->where('is_template', false);
-                           });
-                  });
-                
-                // Note: Instances (children of templates) are HIDDEN because they 
-                // are managed through the Template task itself.
+                // COORDINATOR (MANAGEMENT VIEW):
+                // 1. See all "Master" tasks (Roots or Templates)
+                $q->where(function($subq) {
+                    $subq->whereNull('parent_id')
+                         ->orWhere('is_template', true);
+                });
+
+                // 2. See standard subtasks of non-templates
+                $q->orWhere(function($subq) {
+                    $subq->whereNotNull('parent_id')
+                         ->whereHas('parent', function($pq) {
+                             $pq->where('is_template', false);
+                         });
+                });
+
+                // DEDUPLICATE: If I'm the owner/manager, I don't need to see 
+                // my own individual instance of my own template. I manage the Template.
+                $q->whereNot(function($subq) use ($user) {
+                    $subq->whereNotNull('parent_id')
+                         ->whereHas('parent', function($pq) use ($user) {
+                             $pq->where('is_template', true)
+                                ->where('created_by_id', $user->id);
+                         });
+                });
             } else {
-                // MEMBER VIEW: Execution side
-                // 1. Explicitly assigned tasks (Instances or Direct)
+                // MEMBER (EXECUTION VIEW):
+                // 1. See tasks explicitly assigned to me (Instances or Direct)
                 $q->where('assigned_user_id', $user->id)
                   ->orWhereHas('assignedTo', function($subq) use ($user) {
                       $subq->where('users.id', $user->id);
-                  })
-                  // 2. Simple tasks I created
-                  ->orWhere(function($subq) use ($user) {
-                      $subq->where('created_by_id', $user->id)
-                           ->where('is_template', false);
-                  })
-                  // 3. Unassigned root tasks (available to pick up)
-                  ->orWhere(function($subq) {
-                      $subq->whereNull('parent_id')
-                           ->where('is_template', false)
-                           ->whereNull('assigned_user_id')
-                           ->whereDoesntHave('assignedTo');
                   });
+
+                // 2. See root tasks I created that aren't templates for others
+                $q->orWhere(function($subq) use ($user) {
+                    $subq->whereNull('parent_id')
+                         ->where('created_by_id', $user->id)
+                         ->where('is_template', false);
+                });
+
+                // DEDUPLICATE: If I have an instance, I don't want to see the parent Template
+                $q->whereNot(function($subq) use ($user) {
+                    $subq->where('is_template', true)
+                         ->whereHas('instances', function($iq) use ($user) {
+                             $iq->where('assigned_user_id', $user->id);
+                         });
+                });
             }
         });
     }
