@@ -220,23 +220,26 @@ class Task extends Model
 
         return $query->where(function($q) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // COORDINATOR VIEW (Matrix / Overview Focus)
-                $q->where(function($subq) use ($user) {
-                    // 1. Backlog: Root tasks, NOT templates, NOT assigned yet
-                    $subq->where(function($backlog) {
-                        $backlog->whereNull('parent_id')
-                                ->where('is_template', false)
-                                ->whereNull('assigned_user_id')
-                                ->whereDoesntHave('assignedTo');
-                    })
-                    // 2. Personal: Tasks directly assigned to the coordinator
-                    ->orWhere('assigned_user_id', $user->id);
-                })
-                // DEDUPLICATE: Ensure no instances are shown in this view
-                ->where(function($subq) {
+                // COORDINATOR (MANAGEMENT VIEW):
+                // 1. See all "Master" tasks (Roots or Templates)
+                $q->where(function($subq) {
                     $subq->whereNull('parent_id')
-                         ->orWhereHas('parent', function($pq) {
+                         ->orWhere('is_template', true);
+                });
+
+                // 2. See standard subtasks of non-templates
+                $q->orWhere(function($subq) {
+                    $subq->whereNotNull('parent_id')
+                         ->whereHas('parent', function($pq) {
                              $pq->where('is_template', false);
+                         });
+                });
+
+                // DEDUPLICATE: Coordinators manage Templates, not Instances.
+                $q->whereNot(function($subq) {
+                    $subq->whereNotNull('parent_id')
+                         ->whereHas('parent', function($pq) {
+                             $pq->where('is_template', true);
                          });
                 });
             } else {

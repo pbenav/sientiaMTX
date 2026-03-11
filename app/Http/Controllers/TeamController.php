@@ -241,6 +241,19 @@ class TeamController extends Controller
             ->visibleTo($user, $isCoordinator)
             ->operationalFor($user, $team);
 
+        // Matrix-specific filter for coordinators (as requested: hide templates and assigned tasks)
+        if ($isCoordinator) {
+            $query->where(function($q) use ($user) {
+                // Return only unassigned non-templates OR tasks assigned specifically to ME
+                $q->where(function($backlog) {
+                    $backlog->where('is_template', false)
+                            ->whereNull('assigned_user_id')
+                            ->whereDoesntHave('assignedTo');
+                })
+                ->orWhere('assigned_user_id', $user->id);
+            });
+        }
+
 
         $allTasks = $query->get();
         $tasks = $allTasks; // Stay compatible with view expecting $tasks
