@@ -213,44 +213,28 @@ class Task extends Model
 
         return $query->where(function($q) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // MANAGEMENT VIEW:
-                // We want to see everything EXCEPT our own instances of templates
-                $q->where(function($subq) use ($user) {
-                    $subq->where('is_template', true)
-                      ->orWhere(function($ssq) {
-                          $ssq->whereNull('parent_id')
-                               ->where('is_template', false);
-                      })
-                      ->orWhere(function($ssq) {
-                          $ssq->whereNotNull('parent_id')
-                               ->whereHas('parent', function($pq) {
-                                   $pq->where('is_template', false);
-                               });
-                      })
-                      ->orWhere('created_by_id', $user->id)
-                      ->orWhere('assigned_user_id', $user->id);
-                })
-                ->whereNot(function($subq) use ($user) {
-                    $subq->whereNotNull('parent_id')
-                         ->whereHas('parent', function($pq) use ($user) {
-                             $pq->where('is_template', true)
-                                ->where('created_by_id', $user->id);
-                         });
-                });
+                // COORDINATOR VIEW: See the "Management" side
+                // 1. Root tasks (no parent) - These are the masters
+                // 2. Templates (regardless of parent, though usually they are roots)
+                // 3. Subtasks of non-templates (standard hierarchical tasks)
+                $q->whereNull('parent_id')
+                  ->orWhere('is_template', true)
+                  ->orWhere(function($subq) {
+                      $subq->whereNotNull('parent_id')
+                           ->whereHas('parent', function($pq) {
+                               $pq->where('is_template', false);
+                           });
+                  });
             } else {
-                // EXECUTION VIEW: 
-                // 1. Tasks explicitly assigned to them (Instances or direct assignments)
-                // 2. Tasks they created
-                // 3. Unassigned root tasks available for team pick-up
+                // MEMBER VIEW: See the "Execution" side
+                // 1. Tasks explicitly assigned to them (via assigned_user_id or pivot)
+                // 2. Tasks they created (that are not templates they created for others)
                 $q->where('assigned_user_id', $user->id)
                   ->orWhereHas('assignedTo', function($subq) use ($user) {
                       $subq->where('users.id', $user->id);
                   })
-                  ->orWhere('created_by_id', $user->id)
-                  ->orWhere(function($subq) {
-                      $subq->whereNull('assigned_user_id')
-                           ->whereDoesntHave('assignedTo')
-                           ->whereNull('parent_id')
+                  ->orWhere(function($subq) use ($user) {
+                      $subq->where('created_by_id', $user->id)
                            ->where('is_template', false);
                   });
             }
