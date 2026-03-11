@@ -1,0 +1,43 @@
+# Guía de Configuración de Google API
+
+Para que la sincronización de tareas con Google Calendar funcione, necesitas obtener un **Client ID** y un **Client Secret** desde la Google Cloud Console.
+
+### 1. Crear un Proyecto en Google Cloud
+1. Entra en [Google Cloud Console](https://console.cloud.google.com/).
+2. Arriba a la izquierda, haz clic en el selector de proyectos y luego al botón **"New Project"**.
+3. Ponle un nombre (ej: `sientiaMTX`) y dale a **Create**.
+
+### 2. Habilitar las APIs Necesarias
+1. En el menú de la izquierda, ve a **APIs & Services > Library**.
+2. Busca y habilita las siguientes APIs:
+   - **Google Calendar API**
+   - **Gmail API**
+
+### 3. Configurar la Pantalla de Consentimiento (OAuth Consent Screen)
+*Este paso es obligatorio antes de crear las credenciales.*
+1. Ve a **APIs & Services > OAuth consent screen**.
+2. Elige **User Type: External** (si no tienes una organización de Google Workspace).
+3. Rellena los datos obligatorios:
+   - **App name:** `sientiaMTX`
+   - **User support email:** Tu correo.
+   - **Developer contact info:** Tu correo.
+4. En **Scopes**, añade:
+   - `.../auth/calendar.events.readonly`
+   - `.../auth/gmail.readonly`
+   - `.../auth/userinfo.email`
+5. En **Test users**, añade tu propio correo electrónico (el que usarás para las pruebas). *Es muy importante porque mientras la app esté en "Testing", solo los correos listados aquí podrán entrar.*
+
+### 4. Crear las Credenciales (Client ID)
+1. Ve a **APIs & Services > Credentials**.
+2. Haz clic en **+ Create Credentials > OAuth client ID**.
+3. **Application type:** Web application.
+4. **Name:** `sientiaMTX Web Client`.
+5. **Authorized redirect URIs:**
+   - Añade: `http://localhost:8000/auth/google/callback` (para pruebas locales).
+   - Añade la URL de tu servidor de pruebas (ej: `https://tuservidor.com/auth/google/callback`).
+
+### 5. Configurar en cientiaMTX
+1. Una vez creado, copia el **Client ID** y el **Client Secret**.
+2. Ve a los **Ajustes** de la aplicación en el menú lateral.
+3. Pega las credenciales en la sección de Google.
+4. Asegúrate de que las URLs en `.env` coinciden con las que pusiste en la consola de Google.

@@ -16,6 +16,7 @@ class TaskController extends Controller
     public function index(Team $team)
     {
         $tasks = $team->tasks()
+            ->visibleTo(auth()->user())
             ->with(['assignedUser', 'tags', 'creator'])
             ->orderBy('due_date', 'asc')
             ->orderBy('priority', 'desc')

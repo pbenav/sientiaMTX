@@ -266,15 +266,7 @@ class TeamController extends Controller
         }
 
         // Apply global visibility filter: Publicly visible tasks, my private ones, OR tasks assigned to me
-        $query->where(function($q) {
-            $q->where('visibility', 'public')
-              ->orWhere('created_by_id', auth()->id())
-              ->orWhere('assigned_user_id', auth()->id())
-              ->orWhereHas('assignedTo', function($subq) {
-                  $subq->where('users.id', auth()->id());
-              })
-              ->orWhereNull('visibility'); // Backward compatibility
-        });
+        $query->visibleTo($user);
 
 
         $allTasks = $query->get();

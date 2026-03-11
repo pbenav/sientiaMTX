@@ -194,6 +194,19 @@ class Task extends Model
             ->where('status', '!=', 'completed');
     }
 
+    public function scopeVisibleTo($query, $user)
+    {
+        return $query->where(function($q) use ($user) {
+            $q->where('visibility', 'public')
+              ->orWhere('created_by_id', $user->id)
+              ->orWhere('assigned_user_id', $user->id)
+              ->orWhereHas('assignedTo', function($subq) use ($user) {
+                  $subq->where('users.id', $user->id);
+              })
+              ->orWhereNull('visibility');
+        });
+    }
+
     public function scopeDueThisWeek($query)
     {
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
