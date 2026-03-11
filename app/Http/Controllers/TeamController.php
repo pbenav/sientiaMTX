@@ -238,7 +238,7 @@ class TeamController extends Controller
 
         $query = $team->tasks()
             ->with(['assignedTo', 'assignedGroups', 'tags'])
-            ->visibleTo($user)
+            ->visibleTo($user, $isCoordinator)
             ->operationalFor($user, $team);
 
 
