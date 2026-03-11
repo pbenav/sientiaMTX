@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->string('visibility')->default('private')->after('priority'); // private or public
+            if (!Schema::hasColumn('tasks', 'visibility')) {
+                $table->string('visibility')->default('private')->after('priority'); // private or public
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('visibility');
+            if (Schema::hasColumn('tasks', 'visibility')) {
+                $table->dropColumn('visibility');
+            }
         });
     }
 };
