@@ -13,10 +13,9 @@ class TaskController extends Controller
     /**
      * Display a listing of tasks for a team
      */
-    public function index(Team $team)
-    {
+        $isCoordinator = $team->isCoordinator(auth()->user());
         $tasks = $team->tasks()
-            ->visibleTo(auth()->user())
+            ->visibleTo(auth()->user(), $isCoordinator)
             ->operationalFor(auth()->user(), $team)
             ->with(['assignedUser', 'tags', 'creator'])
             ->orderBy('due_date', 'asc')

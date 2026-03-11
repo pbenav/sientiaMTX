@@ -26,7 +26,7 @@ class GanttController extends Controller
 
         $query = $team->tasks()
             ->with(['parent'])
-            ->visibleTo($user)
+            ->visibleTo($user, $isCoordinator)
             ->operationalFor($user, $team);
 
         // Optional quadrant filtering
