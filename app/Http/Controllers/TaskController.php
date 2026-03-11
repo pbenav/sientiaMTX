@@ -186,11 +186,13 @@ class TaskController extends Controller
             'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
         ]);
 
-        // Sync status if progress is 100% or 0%
+        // Sync status based on progress
         if ($task->progress_percentage == 100 && $task->status !== 'completed' && $task->status !== 'cancelled') {
-            $task->update(['status' => 'completed']);
+            $task->status = 'completed';
+            $task->save();
         } elseif ($task->progress_percentage < 100 && $task->status === 'completed') {
-            $task->update(['status' => 'in_progress']);
+            $task->status = 'in_progress';
+            $task->save();
         }
 
         // If this is a template, sync core fields to instances
@@ -218,14 +220,12 @@ class TaskController extends Controller
         }
 
         // Handle Assignments and Instances
-        $assignedTo = $request->input('assigned_to', []);
-        $assignedGroups = $request->input('assigned_groups', []);
-        
-        // We only clear and sync if we are coming from the edit form (which has title)
-        // This avoids clearing assignments if we only update status/progress via AJAX (if we ever do)
         if ($request->has('title')) {
             $task->assignments()->delete();
             
+            $assignedTo = $request->input('assigned_to', []);
+            $assignedGroups = $request->input('assigned_groups', []);
+
             foreach ($assignedTo as $userId) {
                 $task->assignments()->create([
                     'user_id' => $userId,
@@ -240,12 +240,12 @@ class TaskController extends Controller
                 ]);
             }
 
-            // Update is_template status
+            // Determine if it should still be a template
             $isTemplate = !empty($assignedTo) || !empty($assignedGroups);
-            $task->update(['is_template' => $isTemplate]);
-
+            $task->is_template = $isTemplate;
+            
             if ($isTemplate) {
-                // Calculate unique users after changes
+                // Calculate unique users
                 $userIds = collect($assignedTo);
                 foreach ($assignedGroups as $groupId) {
                     $group = $team->groups()->find($groupId);
@@ -255,10 +255,8 @@ class TaskController extends Controller
                 }
                 $uniqueUserIds = $userIds->unique();
 
-                // Delete instances for users no longer assigned
+                // Sync instances
                 $task->instances()->whereNotIn('assigned_user_id', $uniqueUserIds)->delete();
-
-                // Create instances for new users
                 foreach ($uniqueUserIds as $userId) {
                     if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
                         $team->tasks()->create([
@@ -270,7 +268,7 @@ class TaskController extends Controller
                             'scheduled_date' => $task->scheduled_date,
                             'due_date' => $task->due_date,
                             'original_due_date' => $task->due_date,
-                            'created_by_id' => $task->created_by_id,
+                            'created_by_id' => $task->created_by_id, // Owner stays owner
                             'observations' => null,
                             'parent_id' => $task->id,
                             'is_template' => false,
@@ -280,11 +278,11 @@ class TaskController extends Controller
                     }
                 }
             } else {
-                // If it's no longer a template, delete all instances
+                // Not a template anymore: clean up
                 $task->instances()->delete();
-                // Also clear the assigned_user_id from the main task to make it unassigned
-                $task->update(['assigned_user_id' => null]);
+                $task->assigned_user_id = null; // Mark as unassigned
             }
+            $task->save();
         }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
