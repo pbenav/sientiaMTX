@@ -78,7 +78,7 @@
                         $cfg = $quadrantConfig[$q];
                         $qTasks = $quadrants[$q];
                     @endphp
-                    <div class="border {{ $cfg['bg'] }} rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q"
+                    <div class="border {{ $cfg['bg'] }} rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q quadrant-container"
                         data-quadrant="{{ $q }}">
                         <!-- Quadrant header -->
                         <div
@@ -110,7 +110,7 @@
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
                                 @if ($task->status !== 'completed')
-                                    <div class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl relative overflow-hidden"
+                                    <div class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl relative overflow-hidden"
                                         data-id="{{ $task->id }}">
                                         <!-- Status dot -->
                                         <div
@@ -149,7 +149,7 @@
     <!-- Completed Tasks Zone -->
     <div class="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div
-            class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors">
+            class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors quadrant-container">
             <div
                 class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -232,8 +232,10 @@
                     new Sortable(list, {
                         group: 'quadrants',
                         animation: 150,
-                        ghostClass: 'bg-white/10',
-                        chosenClass: 'bg-white/5',
+                        ghostClass: document.documentElement.classList.contains('dark') ?
+                            'bg-white/10' : 'bg-black/5',
+                        chosenClass: document.documentElement.classList.contains('dark') ?
+                            'bg-white/5' : 'bg-black/[0.02]',
                         dragClass: 'opacity-50',
                         preventOnFilter: true,
                         onEnd: function(evt) {
@@ -295,7 +297,7 @@
                                 'text-gray-500');
                             link.classList.remove('text-[11px]', 'sm:text-sm', 'text-gray-700', 'dark:text-gray-400');
                         }
-                        item.classList.add('bg-gray-900/40');
+                        item.classList.add('bg-gray-100', 'dark:bg-gray-900/40');
                         item.classList.remove('px-3', 'py-2.5');
                         item.classList.add('px-3', 'py-2');
                     } else {
@@ -312,41 +314,40 @@
                                 'text-gray-500');
                             link.classList.add('text-[11px]', 'sm:text-sm', 'text-gray-700', 'dark:text-gray-400');
                         }
-                        item.classList.remove('bg-gray-900/40');
+                        item.classList.remove('bg-gray-100', 'dark:bg-gray-900/40');
                         item.classList.remove('px-3', 'py-2');
                         item.classList.add('px-3', 'py-2.5');
                     }
 
                     // Update counts
-                    const fromCount = from.closest('.border') ? from.closest('.border').querySelector('.q-count') :
-                        (from.closest('.bg-gray-950/30') ? from.closest('.bg-gray-950/30').querySelector('.q-count') :
-                            null);
-                    const toCount = to.closest('.border') ? to.closest('.border').querySelector('.q-count') :
-                        (to.closest('.bg-gray-950/30') ? to.closest('.bg-gray-950/30').querySelector('.q-count') :
-                            null);
+                    const fromCount = from.closest('.quadrant-container') ? from.closest('.quadrant-container')
+                        .querySelector('.q-count') : null;
+                    const toCount = to.closest('.quadrant-container') ? to.closest('.quadrant-container').querySelector(
+                        '.q-count') : null;
+                    null);
 
-                    if (fromCount) fromCount.textContent = from.querySelectorAll('[data-id]').length;
-                    if (toCount) toCount.textContent = to.querySelectorAll('[data-id]').length;
+                if (fromCount) fromCount.textContent = from.querySelectorAll('[data-id]').length;
+                if (toCount) toCount.textContent = to.querySelectorAll('[data-id]').length;
 
-                    // Update empty messages
-                    [from, to].forEach(l => {
-                        let emptyMsg = l.querySelector('.empty-msg');
-                        const hasItems = l.querySelectorAll('[data-id]').length > 0;
+                // Update empty messages
+                [from, to].forEach(l => {
+                    let emptyMsg = l.querySelector('.empty-msg');
+                    const hasItems = l.querySelectorAll('[data-id]').length > 0;
 
-                        if (!hasItems) {
-                            if (!emptyMsg) {
-                                emptyMsg = document.createElement('div');
-                                emptyMsg.className =
-                                    'col-span-full py-8 text-center text-xs text-gray-700 italic empty-msg';
-                                emptyMsg.textContent = l.getAttribute('data-q') === 'completed' ?
-                                    '{{ __('teams.drop_to_complete') }}' : '{{ __('teams.no_tasks') }}';
-                                l.appendChild(emptyMsg);
-                            }
-                        } else if (emptyMsg) {
-                            emptyMsg.remove();
+                    if (!hasItems) {
+                        if (!emptyMsg) {
+                            emptyMsg = document.createElement('div');
+                            emptyMsg.className =
+                                'col-span-full py-8 text-center text-xs text-gray-700 italic empty-msg';
+                            emptyMsg.textContent = l.getAttribute('data-q') === 'completed' ?
+                                '{{ __('teams.drop_to_complete') }}' : '{{ __('teams.no_tasks') }}';
+                            l.appendChild(emptyMsg);
                         }
-                    });
-                }
+                    } else if (emptyMsg) {
+                        emptyMsg.remove();
+                    }
+                });
+            }
             });
         </script>
     @endpush

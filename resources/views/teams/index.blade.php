@@ -20,14 +20,15 @@
 
     @if ($teams->isEmpty())
         <div class="flex flex-col items-center justify-center py-24 text-center">
-            <div class="w-20 h-20 rounded-2xl bg-gray-800 flex items-center justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-600" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <div class="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 dark:text-gray-600"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </div>
-            <h2 class="text-lg font-semibold text-gray-300 heading mb-2">{{ __('teams.no_teams') }}</h2>
+            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 heading mb-2">{{ __('teams.no_teams') }}
+            </h2>
             <p class="text-gray-500 text-sm max-w-sm mb-6">{{ __('teams.create_first') }}</p>
             <a href="{{ route('teams.create') }}"
                 class="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-all">
@@ -60,7 +61,8 @@
                             class="text-base font-semibold text-gray-900 dark:text-white heading group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                             {{ $team->name }}</h3>
                         @if ($team->description)
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{{ $team->description }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                {{ $team->description }}</p>
                         @endif
                     </div>
                     <!-- Progress bar -->

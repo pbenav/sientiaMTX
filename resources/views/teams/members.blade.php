@@ -107,7 +107,7 @@
                                         @csrf
                                         @method('patch')
 
-                                        <h2 class="text-lg font-medium text-white heading">
+                                        <h2 class="text-lg font-medium text-gray-900 dark:text-white heading">
                                             {{ __('teams.edit_member') }}
                                         </h2>
 
@@ -260,7 +260,7 @@
                             @can('manageMembers', $team)
                                 <div class="flex items-center gap-2">
                                     <button @click="$dispatch('open-modal', 'edit-group-{{ $group->id }}')"
-                                        class="text-gray-500 hover:text-white transition-colors">
+                                        class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -330,7 +330,8 @@
                         <form method="post" action="{{ route('teams.groups.update', [$team, $group]) }}"
                             class="p-6">
                             @csrf @method('patch')
-                            <h2 class="text-lg font-medium text-white heading">{{ __('teams.edit_group') }}</h2>
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white heading">
+                                {{ __('teams.edit_group') }}</h2>
                             <div class="mt-6 space-y-4">
                                 <div>
                                     <x-input-label for="group_name_{{ $group->id }}" :value="__('teams.name')" />
@@ -340,7 +341,7 @@
                                 <div>
                                     <x-input-label for="group_desc_{{ $group->id }}" :value="__('teams.description')" />
                                     <textarea name="description"
-                                        class="mt-1 block w-full bg-gray-800 border border-gray-700 rounded-xl text-white text-sm px-3 py-2 outline-none focus:border-violet-500">{{ $group->description }}</textarea>
+                                        class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm px-3 py-2 outline-none focus:border-violet-500 transition-all">{{ $group->description }}</textarea>
                                 </div>
                             </div>
                             <div class="mt-6 flex justify-end gap-3">

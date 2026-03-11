@@ -336,19 +336,20 @@ fetch('{{ route('theme.update') }}', {
     <!-- Flash Messages -->
     @if (session('success'))
         <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 4000)"
-            class="fixed top-20 right-4 z-50 max-w-sm w-full bg-emerald-900/90 border border-emerald-700 text-emerald-200 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+            class="fixed top-20 right-4 z-50 max-w-sm w-full bg-emerald-50 dark:bg-emerald-900/90 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-emerald-400" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
             <span class="text-sm">{{ session('success') }}</span>
-            <button @click="show = false" class="ml-auto text-emerald-400 hover:text-white">✕</button>
+            <button @click="show = false"
+                class="ml-auto text-emerald-500 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-white transition-colors">✕</button>
         </div>
     @endif
 
     @if (session('error') || $errors->any())
         <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 6000)"
-            class="fixed top-20 right-4 z-50 max-w-sm w-full bg-red-900/90 border border-red-700 text-red-200 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3">
+            class="fixed top-20 right-4 z-50 max-w-sm w-full bg-red-50 dark:bg-red-900/90 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-200 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 mt-0.5 text-red-400" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -362,7 +363,8 @@ fetch('{{ route('theme.update') }}', {
                     <div>{{ $err }}</div>
                 @endforeach
             </div>
-            <button @click="show = false" class="ml-auto text-red-400 hover:text-white shrink-0">✕</button>
+            <button @click="show = false"
+                class="ml-auto text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-white shrink-0 transition-colors">✕</button>
         </div>
     @endif
 
