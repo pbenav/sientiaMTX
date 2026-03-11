@@ -17,6 +17,7 @@ class TaskController extends Controller
     {
         $tasks = $team->tasks()
             ->visibleTo(auth()->user())
+            ->operationalFor(auth()->user(), $team)
             ->with(['assignedUser', 'tags', 'creator'])
             ->orderBy('due_date', 'asc')
             ->orderBy('priority', 'desc')

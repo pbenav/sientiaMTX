@@ -24,24 +24,10 @@ class GanttController extends Controller
         $user = auth()->user();
         $isCoordinator = $team->isCoordinator($user);
 
-        $query = $team->tasks()->with(['parent']);
-
-        if ($isCoordinator) {
-            $query->where(function($q) {
-                $q->where('is_template', true)
-                  ->orWhereNull('parent_id')
-                  ->orWhere('assigned_user_id', auth()->id());
-            });
-        } else {
-            $query->where(function($q) use ($user) {
-                $q->where('assigned_user_id', $user->id)
-                  ->orWhere(function($subq) {
-                      $subq->whereNull('assigned_user_id')
-                           ->whereNull('parent_id')
-                           ->where('is_template', false);
-                  });
-            });
-        }
+        $query = $team->tasks()
+            ->with(['parent'])
+            ->visibleTo($user)
+            ->operationalFor($user, $team);
 
         // Optional quadrant filtering
         if ($request->has('quadrant') && $request->quadrant != 'all') {

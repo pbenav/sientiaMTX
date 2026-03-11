@@ -236,37 +236,10 @@ class TeamController extends Controller
         $user = auth()->user();
         $isCoordinator = $team->isCoordinator($user);
 
-        $query = $team->tasks()->with(['assignedTo', 'assignedGroups', 'tags']);
-
-        if ($isCoordinator) {
-            $query->where(function($q) {
-                $q->where('is_template', true)
-                  ->orWhereNull('parent_id')
-                  ->orWhere(function($subq) {
-                      $subq->whereNotNull('parent_id')
-                           ->whereHas('parent', function($pq) {
-                               $pq->where('is_template', false);
-                           });
-                  })
-                  ->orWhere('assigned_user_id', auth()->id());
-            });
-        } else {
-            $query->where(function($q) use ($user) {
-                $q->where('assigned_user_id', $user->id)
-                  ->orWhereHas('assignedTo', function($subq) use ($user) {
-                      $subq->where('users.id', $user->id);
-                  })
-                  ->orWhere(function($subq) {
-                      $subq->whereNull('assigned_user_id')
-                           ->whereDoesntHave('assignedTo')
-                           ->whereNull('parent_id')
-                           ->where('is_template', false);
-                  });
-            });
-        }
-
-        // Apply global visibility filter: Publicly visible tasks, my private ones, OR tasks assigned to me
-        $query->visibleTo($user);
+        $query = $team->tasks()
+            ->with(['assignedTo', 'assignedGroups', 'tags'])
+            ->visibleTo($user)
+            ->operationalFor($user, $team);
 
 
         $allTasks = $query->get();

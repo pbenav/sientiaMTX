@@ -207,6 +207,41 @@ class Task extends Model
         });
     }
 
+    public function scopeOperationalFor($query, $user, Team $team)
+    {
+        $isCoordinator = $team->isCoordinator($user);
+
+        return $query->where(function($q) use ($user, $isCoordinator) {
+            // Priority 1: Direct or secondary assignment
+            $q->where('assigned_user_id', $user->id)
+              ->orWhereHas('assignedTo', function($subq) use ($user) {
+                  $subq->where('users.id', $user->id);
+              })
+              // Priority 2: Creator (often wants to track what they created)
+              ->orWhere('created_by_id', $user->id);
+
+            // Priority 3: Role-based operational scope
+            if ($isCoordinator) {
+                $q->orWhere('is_template', true)
+                  ->orWhereNull('parent_id')
+                  ->orWhere(function($subq) {
+                      $subq->whereNotNull('parent_id')
+                           ->whereHas('parent', function($pq) {
+                               $pq->where('is_template', false);
+                           });
+                  });
+            } else {
+                // Members see unassigned root tasks available to them
+                $q->orWhere(function($subq) {
+                    $subq->whereNull('assigned_user_id')
+                         ->whereDoesntHave('assignedTo')
+                         ->whereNull('parent_id')
+                         ->where('is_template', false);
+                });
+            }
+        });
+    }
+
     public function scopeDueThisWeek($query)
     {
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
