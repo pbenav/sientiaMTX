@@ -218,60 +218,42 @@ class Task extends Model
     {
         $isCoordinator = $team->isCoordinator($user);
 
-        return $query->where(function($q) use ($user, $isCoordinator) {
+        return $query->where(function ($main) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // COORDINATOR (MANAGEMENT VIEW):
-                // 1. See all "Master" tasks (Roots or Templates)
-                $q->where(function($subq) {
-                    $subq->whereNull('parent_id')
-                         ->orWhere('is_template', true);
-                });
-
-                // 2. See standard subtasks of non-templates
-                $q->orWhere(function($subq) {
-                    $subq->whereNotNull('parent_id')
-                         ->whereHas('parent', function($pq) {
-                             $pq->where('is_template', false);
+                // MANAGEMENT VIEW: Focused on the Project Skeleton.
+                $main->where(function ($incl) {
+                    $incl->whereNull('parent_id') // Root tasks
+                         ->orWhere('is_template', true) // Template Masters
+                         ->orWhere(function ($hierarchical) {
+                             $hierarchical->whereNotNull('parent_id')
+                                          ->whereHas('parent', fn ($p) => $p->where('is_template', false));
                          });
-                });
-
-                // DEDUPLICATE: Coordinators manage Templates, not Instances.
-                $q->whereNot(function($subq) {
-                    $subq->whereNotNull('parent_id')
-                         ->whereHas('parent', function($pq) {
-                             $pq->where('is_template', true);
-                         });
+                })
+                // DEDUPLICATE: Hide all Execution Instances (automatic children of templates).
+                ->whereNot(function ($excl) {
+                    $excl->whereNotNull('parent_id')
+                         ->whereHas('parent', fn ($p) => $p->where('is_template', true));
                 });
             } else {
-                // MEMBER (EXECUTION VIEW):
-                // 1. See tasks explicitly assigned to me (Instances or Direct)
-                $q->where('assigned_user_id', $user->id)
-                  ->orWhereHas('assignedTo', function($subq) use ($user) {
-                      $subq->where('users.id', $user->id);
-                  });
-
-                // 2. See root tasks I created that aren't templates for others
-                $q->orWhere(function($subq) use ($user) {
-                    $subq->whereNull('parent_id')
-                         ->where('created_by_id', $user->id)
-                         ->where('is_template', false);
-                });
-
-                // DEDUPLICATE: If I have an instance, I don't want to see the parent Template
-                $q->whereNot(function($subq) use ($user) {
-                    $subq->where('is_template', true)
-                         ->whereHas('instances', function($iq) use ($user) {
+                // EXECUTION VIEW: Focused on the Assigned Work.
+                $main->where(function ($incl) use ($user) {
+                    // 1. My assigned tasks (The 'Doing' side)
+                    $incl->where('assigned_user_id', $user->id)
+                         ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id));
+                })
+                // DEDUPLICATE: If I have an instance, HIDE the template Master.
+                ->whereNot(function ($excl) use ($user) {
+                    $excl->where('is_template', true)
+                         ->whereHas('instances', function ($iq) use ($user) {
                              $iq->where('assigned_user_id', $user->id);
                          });
                 });
             }
         });
     }
-
     public function scopeDueThisWeek($query)
     {
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->where('status', '!=', 'completed');
     }
 }
-

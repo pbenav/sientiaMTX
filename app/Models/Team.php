@@ -70,9 +70,9 @@ class Team extends Model
         return $this->members()
             ->where('user_id', $user->id)
             ->wherePivotIn('role_id', function ($query) {
-                $query->select('id')->from('team_roles')->where('name', 'coordinator');
+                $query->select('id')->from('team_roles')
+                    ->whereIn('name', ['coordinator', 'moderator']);
             })
             ->exists();
     }
 }
-
