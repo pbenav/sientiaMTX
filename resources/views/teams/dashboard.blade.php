@@ -235,8 +235,7 @@
                         ghostClass: 'bg-white/10',
                         chosenClass: 'bg-white/5',
                         dragClass: 'opacity-50',
-                        filter: 'a',
-                        preventOnFilter: false,
+                        preventOnFilter: true,
                         onEnd: function(evt) {
                             const taskId = evt.item.getAttribute('data-id');
                             const targetQuadrant = evt.to.getAttribute('data-q');

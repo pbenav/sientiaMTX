@@ -38,12 +38,14 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <!-- Language -->
         <div class="mt-4">
             <x-input-label for="locale" :value="__('navigation.language')" />
-            <select id="locale" name="locale" class="block mt-1 w-full border-gray-700 bg-gray-900 text-gray-300 focus:border-violet-500 focus:ring-violet-500 rounded-md shadow-sm">
-                <option value="es" {{ (old('locale', $detectedLocale) === 'es') ? 'selected' : '' }}>{{ __('Spanish') }}</option>
-                <option value="en" {{ (old('locale', $detectedLocale) === 'en') ? 'selected' : '' }}>{{ __('English') }}</option>
+            <select id="locale" name="locale"
+                class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all cursor-pointer">
+                <option value="es" {{ old('locale', $detectedLocale) === 'es' ? 'selected' : '' }}>
+                    {{ __('Spanish') }}</option>
+                <option value="en" {{ old('locale', $detectedLocale) === 'en' ? 'selected' : '' }}>
+                    {{ __('English') }}</option>
             </select>
             <x-input-error :messages="$errors->get('locale')" class="mt-2" />
         </div>

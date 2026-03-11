@@ -112,7 +112,7 @@
                         {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
                     </label>
                     <select name="parent_id"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                         <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
                         @foreach ($tasks as $t)
                             <option value="{{ $t->id }}"

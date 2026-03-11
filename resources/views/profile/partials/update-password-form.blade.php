@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-200 heading">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white heading">
             {{ __('profile.password') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
             {{ __('profile.password_intro') }}
         </p>
     </header>

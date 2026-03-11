@@ -35,7 +35,7 @@
         <div>
             <x-input-label for="locale" :value="__('profile.language')" />
             <select id="locale" name="locale"
-                class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500 rounded-xl shadow-sm text-gray-900 dark:text-gray-200">
+                class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                 <option value="en" {{ old('locale', $user->locale) === 'en' ? 'selected' : '' }}>English</option>
                 <option value="es" {{ old('locale', $user->locale) === 'es' ? 'selected' : '' }}>Español</option>
             </select>
@@ -46,7 +46,7 @@
         <div>
             <x-input-label for="timezone" :value="__('profile.timezone')" />
             <select id="timezone" name="timezone"
-                class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500 rounded-xl shadow-sm text-gray-900 dark:text-gray-200">
+                class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                 @foreach (\DateTimeZone::listIdentifiers() as $tz)
                     <option value="{{ $tz }}"
                         {{ old('timezone', $user->timezone) === $tz ? 'selected' : '' }}>{{ $tz }}</option>
