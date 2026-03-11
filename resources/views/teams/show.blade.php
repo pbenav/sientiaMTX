@@ -89,17 +89,17 @@
             @endphp
             <div
                 class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 relative">
                     <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                        class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-violet-600 dark:hover:text-white truncate block transition-colors">
+                        class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-violet-600 dark:hover:text-white truncate block transition-colors after:absolute after:inset-0 after:z-10">
                         {{ $task->title }}
                     </a>
                     @if ($task->due_date)
-                        <span class="text-xs text-gray-500">{{ __('tasks.due_date') }}:
+                        <span class="text-xs text-gray-500 relative z-20">{{ __('tasks.due_date') }}:
                             {{ $task->due_date->format('d M Y') }}</span>
                     @endif
                 </div>
-                <span class="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full {{ $statusColor }}">
+                <span class="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full {{ $statusColor }} relative z-20">
                     {{ __('tasks.statuses.' . $task->status) }}
                 </span>
                 <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"

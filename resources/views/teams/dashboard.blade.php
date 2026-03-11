@@ -19,14 +19,22 @@
             </div>
             <div class="flex gap-2">
                 <!-- Google Sync Controls -->
-                @if(!auth()->user()->google_token)
-                    <button onclick="openGoogleAuth()" 
+                @if (!auth()->user()->google_token)
+                    <button onclick="openGoogleAuth()"
                         class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 px-3 py-2 rounded-xl transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
                         </svg>
                         {{ __('Connect Google') }}
                     </button>
@@ -34,14 +42,17 @@
                     <form action="{{ route('google.sync') }}" method="POST" class="flex items-center gap-1">
                         @csrf
                         <input type="hidden" name="team_id" value="{{ $team->id }}">
-                        <select name="visibility" class="text-[10px] py-1 pl-2 pr-6 border-gray-200 dark:border-gray-700 bg-transparent rounded-lg focus:ring-violet-500 focus:border-violet-500 text-gray-500 dark:text-gray-400">
+                        <select name="visibility"
+                            class="text-[10px] py-1 pl-2 pr-6 border-gray-200 dark:border-gray-700 bg-transparent rounded-lg focus:ring-violet-500 focus:border-violet-500 text-gray-500 dark:text-gray-400">
                             <option value="private" selected>{{ __('Private') }}</option>
                             <option value="public">{{ __('Public') }}</option>
                         </select>
-                        <button type="submit" 
+                        <button type="submit"
                             class="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-500/5 px-3 py-2 rounded-xl transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                             {{ __('Sync') }}
                         </button>
@@ -178,18 +189,24 @@
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
                                 @if ($task->status !== 'completed')
-                                    <div class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl"
+                                    <div class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl relative overflow-hidden"
                                         data-id="{{ $task->id }}">
                                         <!-- Status dot -->
-                                        <div class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }}"></div>
+                                        <div
+                                            class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }} z-10 relative">
+                                        </div>
+                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
+                                            class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors z-10 relative after:absolute after:inset-0 after:z-20">
                                             {{ $task->title }}
                                         </a>
                                         <!-- Owner initials -->
-                                        <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700" title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
+                                        <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+                                            title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
                                             {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
                                         </div>
                                         @if ($task->due_date)
-                                            <span class="shrink-0 text-[7px] sm:text-[9px] text-gray-600 font-mono">
+                                            <span
+                                                class="shrink-0 text-[7px] sm:text-[9px] text-gray-600 font-mono z-10 relative">
                                                 {{ $task->due_date->format('d/m') }}
                                             </span>
                                         @endif
@@ -216,9 +233,10 @@
                 class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <h3 class="text-[12px] font-bold uppercase tracking-[0.25em] text-gray-600 dark:text-gray-500">
@@ -231,11 +249,11 @@
             <div class="min-h-[140px] quadrant-list p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
                 data-q="completed">
                 @forelse($tasks->where('status', 'completed') as $task)
-                    <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all cursor-grab active:cursor-grabbing rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none"
+                    <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all cursor-grab active:cursor-grabbing rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden"
                         data-id="{{ $task->id }}">
-                        <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20"></div>
+                        <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
                         <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                            class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                            class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors z-10 relative after:absolute after:inset-0 after:z-20">
                             {{ $task->title }}
                         </a>
                     </div>
@@ -271,16 +289,16 @@
                 const left = (window.innerWidth - width) / 2;
                 const top = (window.innerHeight - height) / 2;
                 const url = "{{ route('google.auth') }}?popup=1";
-                
+
                 const popup = window.open(url, 'GoogleAuth', `width=${width},height=${height},top=${top},left=${left}`);
-                
+
                 const messageHandler = function(event) {
                     if (event.data === 'google-auth-success') {
                         window.removeEventListener('message', messageHandler);
                         location.reload();
                     }
                 };
-                
+
                 window.addEventListener('message', messageHandler);
             }
 
@@ -297,6 +315,8 @@
                         ghostClass: 'bg-white/10',
                         chosenClass: 'bg-white/5',
                         dragClass: 'opacity-50',
+                        filter: 'a',
+                        preventOnFilter: false,
                         onEnd: function(evt) {
                             const taskId = evt.item.getAttribute('data-id');
                             const targetQuadrant = evt.to.getAttribute('data-q');
