@@ -16,7 +16,7 @@ class TaskController extends Controller
         $tasks = $team->tasks()
             ->visibleTo(auth()->user(), $isManager)
             ->operationalFor(auth()->user(), $team)
-            ->with(['assignedUser', 'tags', 'creator'])
+            ->with(['assignedUser', 'tags', 'creator', 'parent'])
             ->orderBy('due_date', 'asc')
             ->orderBy('priority', 'desc')
             ->paginate(20);
@@ -29,7 +29,8 @@ class TaskController extends Controller
      */
     public function create(Team $team)
     {
-        $users = $team->members;
+        // Exclude the current user: the creator is an implicit owner, not an assignable member
+        $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->orderBy('title')->get();
@@ -139,7 +140,8 @@ class TaskController extends Controller
      */
     public function edit(Team $team, Task $task)
     {
-        $users = $team->members;
+        // Exclude the current user: the creator is an implicit owner, not an assignable member
+        $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];

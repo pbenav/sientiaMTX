@@ -15,6 +15,8 @@ return [
     'assigned_to' => 'Asignado a',
     'unassigned' => 'Sin asignar',
     'template' => 'Plantilla',
+    'subtask' => 'Subtarea',
+    'parent_task' => 'Tarea principal',
     'due_date' => 'Fecha límite',
     'scheduled_date' => 'Fecha programada',
     'created_by' => 'Creada por',
