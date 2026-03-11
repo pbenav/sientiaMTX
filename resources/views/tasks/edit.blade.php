@@ -21,21 +21,23 @@
             <form method="POST" action="{{ route('teams.tasks.update', [$team, $task]) }}" class="space-y-6">
                 @csrf @method('PATCH')
 
-                @if($team->isCoordinator(auth()->user()))
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-violet-600 dark:text-violet-400 mb-2 uppercase tracking-wide">{{ __('tasks.owner') }}</label>
-                    <select name="created_by_id" required
-                        class="w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium">
-                        @foreach ($users as $u)
-                            <option value="{{ $u->id }}" {{ old('created_by_id', $task->created_by_id) == $u->id ? 'selected' : '' }}>
-                                {{ $u->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('created_by_id')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
+                @if ($team->isCoordinator(auth()->user()))
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-bold text-violet-600 dark:text-violet-400 mb-2 uppercase tracking-wide">{{ __('tasks.owner') }}</label>
+                        <select name="created_by_id" required
+                            class="w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium">
+                            @foreach ($allMembers as $u)
+                                <option value="{{ $u->id }}"
+                                    {{ old('created_by_id', $task->created_by_id) == $u->id ? 'selected' : '' }}>
+                                    {{ $u->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('created_by_id')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
                 @endif
 
                 <div>
@@ -141,7 +143,7 @@
                         <div>
                             <label
                                 class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.assigned_to') }}</label>
-                            @php 
+                            @php
                                 $assignedIds = $task->assignedTo->pluck('id')->toArray();
                                 if ($task->assigned_user_id && !in_array($task->assigned_user_id, $assignedIds)) {
                                     $assignedIds[] = $task->assigned_user_id;

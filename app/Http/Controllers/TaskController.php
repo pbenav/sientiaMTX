@@ -29,13 +29,14 @@ class TaskController extends Controller
      */
     public function create(Team $team)
     {
-        // Exclude the current user: the creator is an implicit owner, not an assignable member
+        $allMembers = $team->members; // All members — for owner selector
+        // Exclude the current user from assignee list: creator is implicit owner
         $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->orderBy('title')->get();
 
-        return view('tasks.create', compact('team', 'users', 'groups', 'priorities', 'tasks'));
+        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks'));
     }
 
     /**
@@ -140,14 +141,15 @@ class TaskController extends Controller
      */
     public function edit(Team $team, Task $task)
     {
-        // Exclude the current user: the creator is an implicit owner, not an assignable member
+        $allMembers = $team->members; // All members — for owner selector
+        // Exclude the current user from assignee list: creator is implicit owner
         $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
         $tasks = $team->tasks()->where('id', '!=', $task->id)->orderBy('title')->get();
 
-        return view('tasks.edit', compact('team', 'task', 'users', 'groups', 'priorities', 'statuses', 'tasks'));
+        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks'));
     }
 
     /**
