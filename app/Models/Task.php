@@ -212,32 +212,51 @@ class Task extends Model
         $isCoordinator = $team->isCoordinator($user);
 
         return $query->where(function($q) use ($user, $isCoordinator) {
-            // Priority 1: Direct or secondary assignment
-            $q->where('assigned_user_id', $user->id)
-              ->orWhereHas('assignedTo', function($subq) use ($user) {
-                  $subq->where('users.id', $user->id);
-              })
-              // Priority 2: Creator (often wants to track what they created)
-              ->orWhere('created_by_id', $user->id);
-
-            // Priority 3: Role-based operational scope
             if ($isCoordinator) {
-                $q->orWhere('is_template', true)
-                  ->orWhereNull('parent_id')
+                // MANAGEMENT VIEW:
+                // 1. All templates (the source of truth for assignments)
+                // 2. All root tasks (not templates, not instances)
+                // 3. Child tasks of non-templates (standard subtasks)
+                // 4. Tasks explicitly assigned to them OR created by them (as long as they aren't instances of their own templates)
+                $q->where('is_template', true)
+                  ->orWhere(function($subq) {
+                      $subq->whereNull('parent_id')
+                           ->where('is_template', false);
+                  })
                   ->orWhere(function($subq) {
                       $subq->whereNotNull('parent_id')
                            ->whereHas('parent', function($pq) {
                                $pq->where('is_template', false);
                            });
-                  });
-            } else {
-                // Members see unassigned root tasks available to them
-                $q->orWhere(function($subq) {
-                    $subq->whereNull('assigned_user_id')
-                         ->whereDoesntHave('assignedTo')
-                         ->whereNull('parent_id')
-                         ->where('is_template', false);
+                  })
+                  ->orWhere('created_by_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id);
+                
+                // CRITICAL: Filter out instances if the user is the coordinator/creator of the parent
+                // (They should manage the Template, not see a duplicate Instance)
+                $q->whereNot(function($subq) use ($user) {
+                    $subq->whereNotNull('parent_id')
+                         ->whereHas('parent', function($pq) use ($user) {
+                             $pq->where('is_template', true)
+                                ->where('created_by_id', $user->id);
+                         });
                 });
+            } else {
+                // EXECUTION VIEW: 
+                // 1. Tasks explicitly assigned to them (Instances or direct assignments)
+                // 2. Tasks they created
+                // 3. Unassigned root tasks available for team pick-up
+                $q->where('assigned_user_id', $user->id)
+                  ->orWhereHas('assignedTo', function($subq) use ($user) {
+                      $subq->where('users.id', $user->id);
+                  })
+                  ->orWhere('created_by_id', $user->id)
+                  ->orWhere(function($subq) {
+                      $subq->whereNull('assigned_user_id')
+                           ->whereDoesntHave('assignedTo')
+                           ->whereNull('parent_id')
+                           ->where('is_template', false);
+                  });
             }
         });
     }
