@@ -235,11 +235,13 @@ class Task extends Model
                          ->whereHas('parent', fn ($p) => $p->where('is_template', true));
                 });
             } else {
-                // EXECUTION VIEW: Focused on the Assigned Work.
+                // EXECUTION VIEW: Focused on the Assigned Work & Personal Creations.
                 $main->where(function ($incl) use ($user) {
                     // 1. My assigned tasks (The 'Doing' side)
                     $incl->where('assigned_user_id', $user->id)
-                         ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id));
+                         ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
+                         // 2. Tasks I created (The 'Ownership' side)
+                         ->orWhere('created_by_id', $user->id);
                 })
                 // DEDUPLICATE: If I have an instance, HIDE the template Master.
                 ->whereNot(function ($excl) use ($user) {

@@ -241,15 +241,17 @@ class TeamController extends Controller
             ->visibleTo($user, $isCoordinator)
             ->operationalFor($user, $team);
 
-        // Matrix-specific filter for coordinators (as requested: hide already-assigned specific member tasks)
+        // Matrix-specific filter for coordinators (as requested: ensure owner visibility + backlog)
         if ($isCoordinator) {
             $query->where(function ($q) use ($user) {
                 // Return tasks that have NO one specifically assigned yet (Backlog/Masters)
-                // OR tasks assigned specifically to ME (My Work)
+                // OR tasks explicitly created by the user (Ownership)
+                // OR tasks assigned specifically to the user (Direct work)
                 $q->where(function ($backlog) {
                     $backlog->whereNull('assigned_user_id')
                             ->whereDoesntHave('assignedTo');
                 })
+                ->orWhere('created_by_id', $user->id)
                 ->orWhere('assigned_user_id', $user->id);
             });
         }
