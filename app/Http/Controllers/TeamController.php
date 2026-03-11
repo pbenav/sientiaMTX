@@ -180,6 +180,16 @@ class TeamController extends Controller
             'role_id' => 'required|exists:team_roles,id',
         ]);
 
+        // PROTECT: Cannot promote yourself to Coordinator if you aren't already one.
+        // Actually, the Policy already restricts this to Coordinators/Owners.
+        // But let's be double sure: If you are NOT the owner and NOT a coordinator, abort.
+        if (!$team->isOwner(auth()->user()) && !$team->isCoordinator(auth()->user())) {
+             abort(403, 'Unauthorized action.');
+        }
+
+        // Even if you ARE a coordinator, you shouldn't be able to remove your own coordinator status
+        // unless there's at least one other coordinator (though usually the owner is the safety net).
+        
         $team->members()->updateExistingPivot($user->id, ['role_id' => $validated['role_id']]);
 
         return back()->with('success', __('teams.member_role_updated'));
@@ -234,15 +244,15 @@ class TeamController extends Controller
         $this->authorize('view', $team);
 
         $user = auth()->user();
-        $isCoordinator = $team->isCoordinator($user);
+        $isManager = $team->isManager($user);
 
         $query = $team->tasks()
             ->with(['assignedTo', 'assignedGroups', 'tags'])
-            ->visibleTo($user, $isCoordinator)
+            ->visibleTo($user, $isManager)
             ->operationalFor($user, $team);
 
-        // Matrix-specific filter for coordinators (as requested: ensure owner visibility + backlog)
-        if ($isCoordinator) {
+        // Matrix-specific filter for managers (as requested: ensure owner visibility + backlog)
+        if ($isManager) {
             $query->where(function ($q) use ($user) {
                 // Return tasks that have NO one specifically assigned yet (Backlog/Masters)
                 // OR tasks explicitly created by the user (Ownership)

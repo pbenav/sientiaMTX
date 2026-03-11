@@ -19,6 +19,7 @@ return [
     'scheduled_date' => 'Fecha programada',
     'created_by' => 'Creada por',
     'created_at' => 'Creada',
+    'owner' => 'Propietario',
     'no_tasks' => 'No se encontraron tareas.',
     'edit' => 'Editar tarea',
     'delete' => 'Eliminar',

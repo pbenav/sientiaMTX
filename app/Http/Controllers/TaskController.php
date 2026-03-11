@@ -12,9 +12,9 @@ class TaskController extends Controller
     use HandlesEisenhowerMatrix;
     public function index(Team $team)
     {
-        $isCoordinator = $team->isCoordinator(auth()->user());
+        $isManager = $team->isManager(auth()->user());
         $tasks = $team->tasks()
-            ->visibleTo(auth()->user(), $isCoordinator)
+            ->visibleTo(auth()->user(), $isManager)
             ->operationalFor(auth()->user(), $team)
             ->with(['assignedUser', 'tags', 'creator'])
             ->orderBy('due_date', 'asc')

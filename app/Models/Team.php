@@ -63,9 +63,22 @@ class Team extends Model
     }
 
     /**
-     * Check if a user is a coordinator for this team
+     * Check if a user is a coordinator for this team (Admin)
      */
     public function isCoordinator(User $user): bool
+    {
+        return $this->members()
+            ->where('user_id', $user->id)
+            ->wherePivotIn('role_id', function ($query) {
+                $query->select('id')->from('team_roles')->where('name', 'coordinator');
+            })
+            ->exists();
+    }
+
+    /**
+     * Check if a user is a manager for this team (Coordinator or Moderator)
+     */
+    public function isManager(User $user): bool
     {
         return $this->members()
             ->where('user_id', $user->id)
@@ -74,5 +87,13 @@ class Team extends Model
                     ->whereIn('name', ['coordinator', 'moderator']);
             })
             ->exists();
+    }
+
+    /**
+     * Check if a user is the owner of the team
+     */
+    public function isOwner(User $user): bool
+    {
+        return $this->created_by_id === $user->id;
     }
 }

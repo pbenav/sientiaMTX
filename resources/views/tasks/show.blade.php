@@ -106,6 +106,14 @@
                     $doneInst = $instances->where('status', 'completed')->count();
                     $prog = $totalInst > 0 ? ($doneInst / $totalInst) * 100 : 0;
                     $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
+
+                    // Find if the current user has a personal instance of this goal
+                    $personalInstance = null;
+                    if ($task->is_template || $task->children()->exists()) {
+                         $personalInstance = $task->instances()
+                            ->where('assigned_user_id', auth()->id())
+                            ->first();
+                    }
                 @endphp
 
                 <!-- Progress Dashboard -->
@@ -325,18 +333,23 @@
                         </button>
                     @endif
 
-                    <!-- Progress Slider for Individual Tasks -->
-                    @if (!$task->is_template && !$task->children()->exists())
+                    <!-- Progress Slider for Individual Tasks or Personal Instance -->
+                    @php
+                        $showSlider = (!$task->is_template && !$task->children()->exists()) || $personalInstance;
+                        $sliderTask = $personalInstance ?: $task;
+                    @endphp
+
+                    @if ($showSlider)
                         <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
                             <label
                                 class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3 block">
-                                % {{ __('tasks.progress') }}: <span id="progress-val"
-                                    class="text-violet-500">{{ $task->progress }}</span>%
+                                {{ $personalInstance ? 'Tu ' : '% ' }}{{ __('tasks.progress') }}: <span id="progress-val"
+                                    class="text-violet-500">{{ $sliderTask->progress }}</span>%
                             </label>
-                            <input type="range" min="0" max="100" value="{{ $task->progress }}"
+                            <input type="range" min="0" max="100" value="{{ $sliderTask->progress }}"
                                 class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-violet-600"
                                 oninput="document.getElementById('progress-val').innerText = this.value"
-                                onchange="updateTaskProgress(this.value)">
+                                onchange="updateTaskProgress(this.value, {{ $sliderTask->id }})">
                         </div>
                     @endif
                 </div>
@@ -597,8 +610,8 @@
                 });
             }
 
-            function updateTaskProgress(progress) {
-                fetch(`/teams/{{ $team->id }}/tasks/{{ $task->id }}/move`, {
+            function updateTaskProgress(progress, taskId = {{ $task->id }}) {
+                fetch(`/teams/{{ $team->id }}/tasks/${taskId}/move`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

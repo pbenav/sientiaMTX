@@ -194,32 +194,30 @@ class Task extends Model
             ->where('status', '!=', 'completed');
     }
 
-    public function scopeVisibleTo($query, $user, $isCoordinator = false)
+    public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        return $query->where(function($q) use ($user, $isCoordinator) {
+        return $query->where(function($q) use ($user, $isManager) {
             // Standard visibility: Creator, Assignee, Collaborator or Public
-            $q->where('visibility', 'public')
-              ->orWhere('created_by_id', $user->id)
+            $q->where('created_by_id', $user->id)
               ->orWhere('assigned_user_id', $user->id)
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
               })
-              ->orWhereNull('visibility');
+              ->orWhere('visibility', 'public');
 
-            if ($isCoordinator) {
-                // Coordinators see all tasks in the team they manage
-                // We use whereRaw to avoid issues with complex unions/ors
-                $q->orWhereRaw('1=1'); 
+            // Managers (Coordinators/Moderators) see all tasks in their team
+            if ($isManager) {
+                $q->orWhere('team_id', $user->current_team_id);
             }
         });
     }
 
     public function scopeOperationalFor($query, $user, Team $team)
     {
-        $isCoordinator = $team->isCoordinator($user);
+        $isManager = $team->isManager($user);
 
-        return $query->where(function ($main) use ($user, $isCoordinator) {
-            if ($isCoordinator) {
+        return $query->where(function ($main) use ($user, $isManager) {
+            if ($isManager) {
                 // MANAGEMENT VIEW: Focused on the Project Skeleton.
                 $main->where(function ($incl) {
                     $incl->whereNull('parent_id') // Root tasks

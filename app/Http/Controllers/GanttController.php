@@ -22,11 +22,11 @@ class GanttController extends Controller
     public function data(Request $request, Team $team)
     {
         $user = auth()->user();
-        $isCoordinator = $team->isCoordinator($user);
+        $isManager = $team->isManager($user);
 
         $query = $team->tasks()
             ->with(['parent'])
-            ->visibleTo($user, $isCoordinator)
+            ->visibleTo($user, $isManager)
             ->operationalFor($user, $team);
 
         // Optional quadrant filtering

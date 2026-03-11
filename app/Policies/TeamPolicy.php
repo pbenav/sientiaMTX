@@ -45,8 +45,8 @@ class TeamPolicy
      */
     public function manageMembers(User $user, Team $team): bool
     {
-        return $team->created_by_id === $user->id
-            || $this->isCoordinator($user, $team);
+        return $team->isOwner($user)
+            || $team->isCoordinator($user);
     }
 
     /**
