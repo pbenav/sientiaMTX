@@ -11,7 +11,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ $task->title }}</h1>
+                <div class="min-w-0">
+                    @include('teams.partials.breadcrumb')
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ $task->title }}
+                    </h1>
+                </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 @can('update', $task)

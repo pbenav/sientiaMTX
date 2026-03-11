@@ -10,8 +10,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('tasks.edit') }}:
-                {{ $task->title }}</h1>
+            <div>
+                @include('teams.partials.breadcrumb')
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('tasks.edit') }}:
+                    {{ $task->title }}</h1>
+            </div>
         </div>
     </x-slot>
 
