@@ -160,7 +160,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="button"
-                                            @click="confirmDelete('delete-task-{{ $task->id }}', '{{ __('tasks.confirm_delete') }}')"
+                                            onclick="confirmDelete('delete-task-{{ $task->id }}', '{{ __('tasks.confirm_delete') }}')"
                                             class="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
                                             title="{{ __('tasks.delete') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
