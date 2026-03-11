@@ -247,7 +247,8 @@ class Task extends Model
                 ->whereNot(function ($excl) use ($user) {
                     $excl->where('is_template', true)
                          ->whereHas('instances', function ($iq) use ($user) {
-                             $iq->where('assigned_user_id', $user->id);
+                             $iq->where('assigned_user_id', $user->id)
+                                ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id));
                          });
                 });
             }

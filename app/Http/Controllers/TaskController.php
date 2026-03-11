@@ -166,6 +166,7 @@ class TaskController extends Controller
             'observations' => 'nullable|string',
             'parent_id' => 'nullable|exists:tasks,id',
             'progress_percentage' => 'nullable|integer|min:0|max:100',
+            'created_by_id' => 'nullable|exists:users,id',
         ]);
 
         // Store old values for history
@@ -183,6 +184,11 @@ class TaskController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
         ]);
+
+        if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
+            $task->created_by_id = $validated['created_by_id'];
+            $task->save();
+        }
 
         // Sync status based on progress
         if ($task->progress_percentage == 100 && $task->status !== 'completed' && $task->status !== 'cancelled') {

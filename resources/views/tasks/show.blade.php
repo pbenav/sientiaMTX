@@ -404,17 +404,21 @@
                             class="text-[11px] text-gray-700 dark:text-gray-300 font-medium">{{ $task->scheduled_date->format('d M Y, H:i') }}</span>
                     </div>
                 @endif
-                <div class="flex items-center justify-between py-1 border-t border-gray-50 dark:border-gray-800 mt-2">
+                <div class="flex items-center justify-between py-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                    <span
+                        class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">{{ __('tasks.owner') }}</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                            {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                        </div>
+                        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ $task->creator?->name ?? '—' }}</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
                     <span
                         class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.created_at') }}</span>
                     <span
                         class="text-[10px] text-gray-500 dark:text-gray-600">{{ $task->created_at->format('d M Y') }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.created_by') }}</span>
-                    <span
-                        class="text-[10px] text-gray-500 dark:text-gray-600 font-medium">{{ $task->creator?->name ?? '—' }}</span>
                 </div>
             </div>
 
