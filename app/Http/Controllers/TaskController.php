@@ -117,6 +117,7 @@ class TaskController extends Controller
                     'parent_id' => $task->id,
                     'is_template' => false,
                     'assigned_user_id' => $userId,
+                    'visibility' => 'private',
                 ]);
             }
         }
@@ -166,6 +167,7 @@ class TaskController extends Controller
             'assigned_groups' => 'nullable|array',
             'observations' => 'nullable|string',
             'parent_id' => 'nullable|exists:tasks,id',
+            'progress_percentage' => 'nullable|integer|min:0|max:100',
         ]);
 
         // Store old values for history
@@ -185,7 +187,7 @@ class TaskController extends Controller
         ]);
 
         // Sync status if progress is 100% or 0%
-        if ($task->progress_percentage === 100 && $task->status !== 'completed' && $task->status !== 'cancelled') {
+        if ($task->progress_percentage == 100 && $task->status !== 'completed' && $task->status !== 'cancelled') {
             $task->update(['status' => 'completed']);
         } elseif ($task->progress_percentage < 100 && $task->status === 'completed') {
             $task->update(['status' => 'in_progress']);
@@ -215,28 +217,77 @@ class TaskController extends Controller
             ]);
         }
 
-        // Update assignments if provided
-        if (isset($validated['assigned_to']) || isset($validated['assigned_groups'])) {
+        // Handle Assignments and Instances
+        $assignedTo = $request->input('assigned_to', []);
+        $assignedGroups = $request->input('assigned_groups', []);
+        
+        // We only clear and sync if we are coming from the edit form (which has title)
+        // This avoids clearing assignments if we only update status/progress via AJAX (if we ever do)
+        if ($request->has('title')) {
             $task->assignments()->delete();
             
-            if (!empty($validated['assigned_to'])) {
-                foreach ($validated['assigned_to'] as $userId) {
-                    $task->assignments()->create([
-                        'user_id' => $userId,
-                        'assigned_by_id' => auth()->id(),
-                    ]);
-                }
+            foreach ($assignedTo as $userId) {
+                $task->assignments()->create([
+                    'user_id' => $userId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
             }
 
-            if (!empty($validated['assigned_groups'])) {
-                foreach ($validated['assigned_groups'] as $groupId) {
-                    $task->assignments()->create([
-                        'group_id' => $groupId,
-                        'assigned_by_id' => auth()->id(),
-                    ]);
+            foreach ($assignedGroups as $groupId) {
+                $task->assignments()->create([
+                    'group_id' => $groupId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+
+            // Update is_template status
+            $isTemplate = !empty($assignedTo) || !empty($assignedGroups);
+            $task->update(['is_template' => $isTemplate]);
+
+            if ($isTemplate) {
+                // Calculate unique users after changes
+                $userIds = collect($assignedTo);
+                foreach ($assignedGroups as $groupId) {
+                    $group = $team->groups()->find($groupId);
+                    if ($group) {
+                        $userIds = $userIds->merge($group->users->pluck('id'));
+                    }
                 }
+                $uniqueUserIds = $userIds->unique();
+
+                // Delete instances for users no longer assigned
+                $task->instances()->whereNotIn('assigned_user_id', $uniqueUserIds)->delete();
+
+                // Create instances for new users
+                foreach ($uniqueUserIds as $userId) {
+                    if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
+                        $team->tasks()->create([
+                            'title' => $task->title,
+                            'description' => $task->description,
+                            'priority' => $task->priority,
+                            'urgency' => $task->urgency,
+                            'status' => 'pending',
+                            'scheduled_date' => $task->scheduled_date,
+                            'due_date' => $task->due_date,
+                            'original_due_date' => $task->due_date,
+                            'created_by_id' => $task->created_by_id,
+                            'observations' => null,
+                            'parent_id' => $task->id,
+                            'is_template' => false,
+                            'assigned_user_id' => $userId,
+                            'visibility' => 'private',
+                        ]);
+                    }
+                }
+            } else {
+                // If it's no longer a template, delete all instances
+                $task->instances()->delete();
             }
         }
+
+        return redirect()->route('teams.tasks.show', [$team, $task])
+            ->with('success', __('tasks.updated'));
+    }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
             ->with('success', __('tasks.updated'));
