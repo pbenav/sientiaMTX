@@ -16,50 +16,7 @@
                 </h1>
             </div>
 
-            <div class="flex gap-2">
-                <a href="{{ route('teams.dashboard', $team) }}"
-                    class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-violet-500 hover:text-violet-600 dark:hover:text-violet-400 px-3 py-2 rounded-xl transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                    {{ __('teams.eisenhower_matrix') }}
-                </a>
-            </div>
-            <div class="flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
-                x-data="{ quadrant: 'all' }">
-                <button @click="quadrant = 'all'; filterTasks('all')"
-                    :class="quadrant === 'all' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' :
-                        'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-                    class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all">
-                    Todos
-                </button>
-                <button @click="quadrant = '1'; filterTasks(1)"
-                    :class="quadrant === '1' ? 'bg-red-500 text-white shadow-sm' :
-                        'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'"
-                    class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all">
-                    Q1
-                </button>
-                <button @click="quadrant = '2'; filterTasks(2)"
-                    :class="quadrant === '2' ? 'bg-blue-500 text-white shadow-sm' :
-                        'text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'"
-                    class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all">
-                    Q2
-                </button>
-                <button @click="quadrant = '3'; filterTasks(3)"
-                    :class="quadrant === '3' ? 'bg-amber-500 text-white shadow-sm' :
-                        'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'"
-                    class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all">
-                    Q3
-                </button>
-                <button @click="quadrant = '4'; filterTasks(4)"
-                    :class="quadrant === '4' ? 'bg-gray-500 text-white shadow-sm' :
-                        'text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'"
-                    class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all">
-                    Q4
-                </button>
-            </div>
+            @include('teams.partials.header-actions')
         </div>
     </x-slot>
 
@@ -308,28 +265,28 @@
                 },
                 on_date_change: function(task, start, end) {
                     console.log('Date changed', task, start, end);
-                    
+
                     // Update task dates via AJAX
                     fetch(`{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}/move`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            scheduled_date: start,
-                            due_date: end
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                scheduled_date: start,
+                                due_date: end
+                            })
                         })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Optional: Show a small toast or notification
-                            console.log('Task updated successfully');
-                        }
-                    })
-                    .catch(error => console.error('Error updating task:', error));
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Optional: Show a small toast or notification
+                                console.log('Task updated successfully');
+                            }
+                        })
+                        .catch(error => console.error('Error updating task:', error));
                 }
             });
         }

@@ -14,6 +14,8 @@
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ __('teams.members') }} —
                     {{ $team->name }}</h1>
             </div>
+
+            @include('teams.partials.header-actions')
         </div>
     </x-slot>
 

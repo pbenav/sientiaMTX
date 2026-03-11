@@ -110,7 +110,8 @@
                     $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
 
                     // Find if the current user has a personal instance of this goal
-                    $personalInstance = $task->instances()
+                    $personalInstance = $task
+                        ->instances()
                         ->where('assigned_user_id', auth()->id())
                         ->first();
                 @endphp
@@ -306,7 +307,7 @@
 
                     @if ($task->status !== 'completed')
                         <button onclick="updateTaskStatus('completed')"
-                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20">
+                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -342,8 +343,8 @@
                         <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
                             <label
                                 class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3 block">
-                                {{ $personalInstance ? 'Tu ' : '% ' }}{{ __('tasks.progress') }}: <span id="progress-val"
-                                    class="text-violet-500">{{ $sliderTask->progress }}</span>%
+                                {{ $personalInstance ? 'Tu ' : '% ' }}{{ __('tasks.progress') }}: <span
+                                    id="progress-val" class="text-violet-500">{{ $sliderTask->progress }}</span>%
                             </label>
                             <input type="range" min="0" max="100" value="{{ $sliderTask->progress }}"
                                 class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-violet-600"
@@ -420,10 +421,12 @@
                     <span
                         class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">{{ __('tasks.owner') }}</span>
                     <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                        <div
+                            class="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                             {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
                         </div>
-                        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ $task->creator?->name ?? '—' }}</span>
+                        <span
+                            class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ $task->creator?->name ?? '—' }}</span>
                     </div>
                 </div>
                 <div class="flex items-center justify-between pt-1">
