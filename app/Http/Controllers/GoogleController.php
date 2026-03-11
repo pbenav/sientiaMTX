@@ -97,8 +97,11 @@ class GoogleController extends Controller
         $events = $this->googleService->listEvents(20);
         $syncCount = 0;
         
-        // Visibility from request or default to user preference (we'll use 'private' by default for now)
+        // Visibility from request or default to 'private' for security
         $visibility = $request->input('visibility', 'private');
+        if (!in_array($visibility, ['private', 'public'])) {
+            $visibility = 'private';
+        }
         $teamId = $request->input('team_id');
 
         if (!$teamId) {
