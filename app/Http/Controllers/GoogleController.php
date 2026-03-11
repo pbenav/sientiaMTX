@@ -20,11 +20,16 @@ class GoogleController extends Controller
     /**
      * Redirect to Google for authentication.
      */
-    public function redirect()
+    public function redirect(Request $request)
     {
         if (!$this->googleService->isConfigured()) {
             return redirect()->route('dashboard')->with('error', __('Google integration is not configured by the administrator.'));
         }
+
+        if ($request->has('popup')) {
+            $this->googleService->getClient()->setState('popup=1');
+        }
+
         return redirect()->away($this->googleService->getClient()->createAuthUrl());
     }
 
@@ -62,9 +67,18 @@ class GoogleController extends Controller
             
             $user->save();
 
+            if ($request->has('state') && str_contains($request->state, 'popup=1')) {
+                return view('google.callback-success');
+            }
+
             return redirect()->route('dashboard')->with('success', 'Google account connected successfully.');
         } catch (\Exception $e) {
             Log::error('Google callback exception: ' . $e->getMessage());
+            
+            if ($request->has('state') && str_contains($request->state, 'popup=1')) {
+                return '<html><body><script>alert("Authentication failed."); window.close();</script></body></html>';
+            }
+
             return redirect()->route('dashboard')->with('error', 'An error occurred during Google authentication.');
         }
     }
