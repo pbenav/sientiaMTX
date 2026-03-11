@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\TeamRole;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,139 +16,254 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // 1. Roles and quadrants first
+        // 1. Roles y cuadrantes
         $this->call([
             TeamRoleSeeder::class,
             QuadrantSeeder::class,
         ]);
 
-        // 2. Demo admin user
+        $coordinatorRole = TeamRole::where('name', 'coordinator')->first();
+        $memberRole      = TeamRole::where('name', 'user')->first();
+
+        // 2. Usuario administrador / coordinador del equipo
         $admin = User::updateOrCreate(
             ['email' => 'admin@sientia.com'],
             [
-                'name'     => 'Admin Sientia',
-                'password' => Hash::make('12345678'),
-                'locale'   => 'es',
-                'timezone' => 'Europe/Madrid',
-                'is_admin' => true,
+                'name'              => 'Carlos Martínez',
+                'password'          => Hash::make('12345678'),
+                'locale'            => 'es',
+                'timezone'          => 'Europe/Madrid',
+                'is_admin'          => true,
                 'email_verified_at' => now(),
             ]
         );
 
-        // 3. Demo regular user
-        $demo = User::firstOrCreate(
-            ['email' => 'demo@sientia.com'],
+        // 3. Miembros del equipo demo
+        $ana = User::firstOrCreate(
+            ['email' => 'ana@sientia.com'],
             [
-                'name'     => 'Demo User',
-                'password' => Hash::make('12345678'),
-                'locale'   => 'en',
-                'timezone' => 'UTC',
+                'name'              => 'Ana García',
+                'password'          => Hash::make('12345678'),
+                'locale'            => 'es',
+                'timezone'          => 'Europe/Madrid',
                 'email_verified_at' => now(),
             ]
         );
 
-        // 4. Demo team
-        $coordinatorRole = TeamRole::where('name', 'coordinator')->first();
-        $memberRole = TeamRole::where('name', 'user')->first();
+        $pedro = User::firstOrCreate(
+            ['email' => 'pedro@sientia.com'],
+            [
+                'name'              => 'Pedro Sánchez',
+                'password'          => Hash::make('12345678'),
+                'locale'            => 'es',
+                'timezone'          => 'Europe/Madrid',
+                'email_verified_at' => now(),
+            ]
+        );
 
+        $lucia = User::firstOrCreate(
+            ['email' => 'lucia@sientia.com'],
+            [
+                'name'              => 'Lucía Fernández',
+                'password'          => Hash::make('12345678'),
+                'locale'            => 'es',
+                'timezone'          => 'Europe/Madrid',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 4. Equipo demo
         $team = Team::firstOrCreate(
             ['slug' => 'sientia-demo'],
             [
-                'uuid'          => (string) \Illuminate\Support\Str::uuid(),
-                'name'          => 'Sientia Demo',
-                'description'   => 'Demo team to showcase the Eisenhower Matrix features.',
+                'uuid'          => (string) Str::uuid(),
+                'name'          => 'Equipo Sientia',
+                'description'   => 'Equipo de demostración para mostrar las funcionalidades de la Matriz de Eisenhower y gestión de tareas.',
                 'created_by_id' => $admin->id,
             ]
         );
 
-        // Attach members if not already
-        if (!$team->members()->where('user_id', $admin->id)->exists()) {
-            $team->members()->attach($admin->id, ['role_id' => $coordinatorRole->id]);
-        }
-        if (!$team->members()->where('user_id', $demo->id)->exists()) {
-            $team->members()->attach($demo->id, ['role_id' => $memberRole->id]);
+        // Adjuntar miembros si no existen ya
+        foreach ([
+            $admin->id  => $coordinatorRole->id,
+            $ana->id    => $memberRole->id,
+            $pedro->id  => $memberRole->id,
+            $lucia->id  => $memberRole->id,
+        ] as $userId => $roleId) {
+            if (!$team->members()->where('user_id', $userId)->exists()) {
+                $team->members()->attach($userId, ['role_id' => $roleId]);
+            }
         }
 
-        // 5. Sample tasks covering all 4 quadrants
-        $tasksData = [
-            // Q1 – Importante + Urgente
-            [
-                'title' => __('tasks.demo.fix_outage'),
-                'priority' => 'critical',
-                'urgency' => 'critical',
-                'status' => 'in_progress',
-                'description' => "### Critical Production Outage\n\nThe main server is currently down. This is affecting all users.\n\n**Immediate Actions:**\n- Check database logs\n- Restart application containers\n- Notify the devops team",
-                'observations' => "> [!IMPORTANT]\n> This task must be resolved within the next 2 hours to meet SLA."
-            ],
-            [
-                'title' => __('tasks.demo.security_incident'),
-                'priority' => 'high',
-                'urgency' => 'critical',
-                'status' => 'pending',
-                'description' => "A potential security breach has been reported in the auth module.\n\n*Review the following files:*\n- `app/Http/Controllers/Auth/LoginController.php`\n- `routes/web.php`",
-                'observations' => "Requested by the security audit team. Use `Vulnerability Scanner` results as reference."
-            ],
-            // Q2 – Importante + No Urgente
-            [
-                'title' => __('tasks.demo.roadmap'),
-                'priority' => 'high',
-                'urgency' => 'low',
-                'status' => 'pending',
-                'description' => "We need to plan the features and milestones for the second quarter of the year.\n\n| Feature | Priority | Estimated Complexity |\n| :--- | :---: | :---: |\n| Mobile App Sync | High | Large |\n| AI Task Prioritization | Medium | Medium |\n| Team Analytics | Low | Small |",
-                'observations' => "Check the `Q1 Review` document before starting."
-            ],
-            [
-                'title' => __('tasks.demo.documentation'),
-                'priority' => 'critical',
-                'urgency' => 'medium',
-                'status' => 'pending',
-                'description' => "The technical documentation for the new API is missing. We need to document all endpoints using OpenAPI specification.",
-                'observations' => "Use Swagger or Postman for testing the endpoints during documentation."
-            ],
-            // Q3 – No Importante + Urgente
-            [
-                'title' => __('tasks.demo.meeting'),
-                'priority' => 'low',
-                'urgency' => 'high',
-                'status' => 'pending',
-                'description' => "Routine meeting to discuss the weekly progress.",
-                'observations' => "Prepare the `Weekly Report` beforehand."
-            ],
-            [
-                'title' => __('tasks.demo.emails'),
-                'priority' => 'medium',
-                'urgency' => 'high',
-                'status' => 'pending',
-                'description' => "Check and respond to incoming emails from customers and partners.",
-                'observations' => "Focus on the `Support` folder first."
-            ],
-            // Q4 – No Importante + No Urgente
-            [
-                'title' => __('tasks.demo.drive'),
-                'priority' => 'low',
-                'urgency' => 'low',
-                'status' => 'pending',
-                'description' => "Clean up and reorganize the shared folders in Google Drive.",
-                'observations' => "Archive files older than 2 years."
-            ],
-            [
-                'title' => __('tasks.demo.recordings'),
-                'priority' => 'medium',
-                'urgency' => 'low',
-                'status' => 'pending',
-                'description' => "Review the recordings from the past team meetings to extract key decisions.",
-                'observations' => "Upload the extracted notes to the internal wiki."
-            ],
-        ];
+        // 5. Tareas de demostración
+        // Estructura: propietario = $admin (coordinador), sin autoasignarse.
+        // Las tareas de grupo tienen instancias privadas para cada miembro asignado.
+        // Las tareas individuales son propias del admin (sin instancias).
 
-        foreach ($tasksData as $t) {
-            if (!$team->tasks()->where('title', $t['title'])->exists()) {
-                $team->tasks()->create(array_merge($t, [
-                    'uuid'              => (string) \Illuminate\Support\Str::uuid(),
-                    'created_by_id'     => $admin->id,
-                    'original_due_date' => now()->addDays(rand(1, 30)),
-                    'due_date'          => now()->addDays(rand(1, 30)),
-                ]));
+        // ── Q1: Importante y Urgente ────────────────────────────────────────────
+        $this->createTask($team, $admin, [
+            'title'       => 'Resolver caída del servidor de producción',
+            'priority'    => 'critical',
+            'urgency'     => 'critical',
+            'status'      => 'in_progress',
+            'due_date'    => now()->addHours(4),
+            'description' => implode("\n", [
+                '### Caída crítica en producción',
+                '',
+                'El servidor principal está caído. Afecta a todos los usuarios activos.',
+                '',
+                '**Acciones inmediatas:**',
+                '- Revisar los logs de la base de datos',
+                '- Reiniciar los contenedores de la aplicación',
+                '- Notificar al equipo de operaciones',
+            ]),
+            'observations' => '> [!IMPORTANT]' . "\n" . '> Esta incidencia debe resolverse en menos de 2 horas para cumplir con el SLA.',
+        ], assignTo: [$ana->id, $pedro->id]);
+
+        $this->createTask($team, $admin, [
+            'title'       => 'Responder a incidente de seguridad del cliente',
+            'priority'    => 'high',
+            'urgency'     => 'critical',
+            'status'      => 'pending',
+            'due_date'    => now()->addHours(8),
+            'description' => implode("\n", [
+                'Se ha detectado una posible brecha de seguridad en el módulo de autenticación.',
+                '',
+                '*Revisar los siguientes ficheros:*',
+                '- `app/Http/Controllers/Auth/LoginController.php`',
+                '- `routes/web.php`',
+            ]),
+            'observations' => 'Solicitado por el equipo de auditoría de seguridad. Usar los resultados del `Escáner de Vulnerabilidades` como referencia.',
+        ], assignTo: [$lucia->id]);
+
+        // ── Q2: Importante y No Urgente ─────────────────────────────────────────
+        $this->createTask($team, $admin, [
+            'title'       => 'Planificar hoja de ruta (roadmap) del segundo trimestre',
+            'priority'    => 'high',
+            'urgency'     => 'low',
+            'status'      => 'pending',
+            'due_date'    => now()->addDays(14),
+            'description' => implode("\n", [
+                'Es necesario planificar las funcionalidades e hitos del segundo trimestre del año.',
+                '',
+                '| Funcionalidad | Prioridad | Complejidad estimada |',
+                '| :--- | :---: | :---: |',
+                '| Sincronización con app móvil | Alta | Grande |',
+                '| Priorización de tareas con IA | Media | Media |',
+                '| Analíticas del equipo | Baja | Pequeña |',
+            ]),
+            'observations' => 'Revisar el documento de `Revisión del Q1` antes de comenzar.',
+        ], assignTo: [$ana->id, $pedro->id, $lucia->id]);
+
+        $this->createTask($team, $admin, [
+            'title'       => 'Escribir documentación técnica de la API',
+            'priority'    => 'critical',
+            'urgency'     => 'medium',
+            'status'      => 'pending',
+            'due_date'    => now()->addDays(7),
+            'description' => 'Falta la documentación técnica de la nueva API. Hay que documentar todos los endpoints usando la especificación OpenAPI.',
+            'observations' => 'Usar Swagger o Postman para probar los endpoints durante la documentación.',
+        ]); // Tarea propia del admin, sin asignados
+
+        // ── Q3: No Importante y Urgente ─────────────────────────────────────────
+        $this->createTask($team, $admin, [
+            'title'       => 'Preparar y enviar el informe semanal',
+            'priority'    => 'low',
+            'urgency'     => 'high',
+            'status'      => 'pending',
+            'due_date'    => now()->addDays(2),
+            'description' => 'Informe de progreso semanal para la dirección. Incluir métricas de sprint y estado de incidencias abiertas.',
+            'observations' => 'Preparar el `Informe Semanal` con antelación.',
+        ], assignTo: [$ana->id]);
+
+        $this->createTask($team, $admin, [
+            'title'       => 'Responder correos electrónicos de clientes pendientes',
+            'priority'    => 'medium',
+            'urgency'     => 'high',
+            'status'      => 'pending',
+            'due_date'    => now()->addDays(1),
+            'description' => 'Revisar y responder los correos entrantes de clientes y socios.',
+            'observations' => 'Priorizar la carpeta `Soporte` y los tickets marcados como urgentes.',
+        ]); // Tarea propia
+
+        // ── Q4: No Importante y No Urgente ──────────────────────────────────────
+        $this->createTask($team, $admin, [
+            'title'       => 'Reorganizar carpetas en la unidad compartida',
+            'priority'    => 'low',
+            'urgency'     => 'low',
+            'status'      => 'pending',
+            'due_date'    => now()->addDays(30),
+            'description' => 'Limpiar y reorganizar las carpetas compartidas en Google Drive.',
+            'observations' => 'Archivar los ficheros con más de 2 años de antigüedad.',
+        ], assignTo: [$pedro->id]);
+
+        $this->createTask($team, $admin, [
+            'title'       => 'Revisar grabaciones de reuniones antiguas',
+            'priority'    => 'medium',
+            'urgency'     => 'low',
+            'status'      => 'pending',
+            'due_date'    => now()->addDays(21),
+            'description' => 'Revisar las grabaciones de las reuniones de equipo pasadas para extraer decisiones clave.',
+            'observations' => 'Subir las notas extraídas a la wiki interna.',
+        ]); // Tarea propia
+    }
+
+    /**
+     * Helper: crea una tarea (template si tiene asignados, simple si no).
+     * El propietario ($owner) NUNCA aparece en $assignTo (es participante implícito).
+     *
+     * @param Team  $team
+     * @param User  $owner        Creador/propietario de la tarea
+     * @param array $data         Campos de la tarea
+     * @param array $assignTo     IDs de usuarios a asignar (diferentes del propietario)
+     */
+    private function createTask(Team $team, User $owner, array $data, array $assignTo = []): void
+    {
+        // Evitar duplicados por título
+        if ($team->tasks()->where('title', $data['title'])->exists()) {
+            return;
+        }
+
+        // Filtrar por si acaso el propietario hubiera sido incluido
+        $assignTo = array_filter($assignTo, fn ($id) => $id !== $owner->id);
+
+        $isTemplate = !empty($assignTo);
+
+        $task = $team->tasks()->create(array_merge($data, [
+            'uuid'              => (string) Str::uuid(),
+            'created_by_id'     => $owner->id,
+            'is_template'       => $isTemplate,
+            'scheduled_date'    => $data['scheduled_date'] ?? now(),
+            'original_due_date' => $data['due_date'] ?? now()->addDays(7),
+        ]));
+
+        if ($isTemplate) {
+            foreach ($assignTo as $userId) {
+                // Registro de asignación (tabla task_assignments)
+                $task->assignments()->create([
+                    'user_id'        => $userId,
+                    'assigned_by_id' => $owner->id,
+                    'assigned_at'    => now(),
+                ]);
+
+                // Instancia privada para el miembro
+                $team->tasks()->create([
+                    'uuid'              => (string) Str::uuid(),
+                    'title'             => $task->title,
+                    'description'       => $task->description,
+                    'priority'          => $task->priority,
+                    'urgency'           => $task->urgency,
+                    'status'            => 'pending',
+                    'scheduled_date'    => $task->scheduled_date,
+                    'due_date'          => $task->due_date,
+                    'original_due_date' => $task->due_date,
+                    'created_by_id'     => $owner->id,
+                    'observations'      => null,
+                    'parent_id'         => $task->id,
+                    'is_template'       => false,
+                    'assigned_user_id'  => $userId,
+                    'visibility'        => 'private',
+                ]);
             }
         }
     }
