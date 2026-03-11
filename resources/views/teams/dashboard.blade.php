@@ -39,8 +39,7 @@
                         {{ __('Connect Google') }}
                     </button>
                 @else
-                    <form action="{{ route('google.sync') }}" method="POST" class="flex items-center gap-1">
-                        @csrf
+                    <form action="{{ route('google.sync') }}" method="GET" class="flex items-center gap-1">
                         <input type="hidden" name="team_id" value="{{ $team->id }}">
                         <select name="visibility"
                             class="text-[10px] py-1 pl-2 pr-6 border-gray-200 dark:border-gray-700 bg-transparent rounded-lg focus:ring-violet-500 focus:border-violet-500 text-gray-500 dark:text-gray-400">

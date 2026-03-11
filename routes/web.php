@@ -85,7 +85,8 @@ Route::middleware('auth')->group(function () {
     // Google Services
     Route::get('/auth/google', [\App\Http\Controllers\GoogleController::class, 'redirect'])->name('google.auth');
     Route::get('/auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'callback'])->name('google.callback');
-    Route::post('/google/sync', [\App\Http\Controllers\GoogleController::class, 'sync'])->name('google.sync');
+    Route::get('/google/sync', [\App\Http\Controllers\GoogleController::class, 'sync'])->name('google.sync');
+    Route::post('/google/import', [\App\Http\Controllers\GoogleController::class, 'import'])->name('google.import');
 });
 
 require __DIR__.'/auth.php';

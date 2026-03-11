@@ -84,7 +84,7 @@ class GoogleController extends Controller
     }
 
     /**
-     * Sync objects (Calendar events) for the current user.
+     * Show events (Calendar events) for the current user to select.
      */
     public function sync(Request $request)
     {
@@ -94,51 +94,98 @@ class GoogleController extends Controller
             return redirect()->route('google.auth')->with('info', 'Please connect your Google account first.');
         }
 
-        $events = $this->googleService->listEvents(20);
-        $syncCount = 0;
-        
-        // Visibility from request or default to 'private' for security
-        $visibility = $request->input('visibility', 'private');
-        if (!in_array($visibility, ['private', 'public'])) {
-            $visibility = 'private';
-        }
         $teamId = $request->input('team_id');
-
         if (!$teamId) {
             return back()->with('error', 'Team ID is required for synchronization.');
         }
 
-        foreach ($events as $event) {
-            // Check if task already exists via metadata or title/date
-            // Basic logic: title + start date
+        $team = \App\Models\Team::findOrFail($teamId);
+        $events = $this->googleService->listEvents(30);
+
+        // Pre-check for existing tasks to help the user identify duplicates
+        $eventsData = collect($events)->map(function($event) use ($teamId, $user) {
             $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
             $title = $event->getSummary();
-
-            $existing = \App\Models\Task::where('team_id', $teamId)
+            
+            $exists = \App\Models\Task::where('team_id', $teamId)
                 ->where('created_by_id', $user->id)
                 ->where('title', $title)
                 ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)))
-                ->first();
+                ->exists();
 
-            if (!$existing) {
-                \App\Models\Task::create([
-                    'team_id' => $teamId,
-                    'title' => $title,
-                    'description' => $event->getDescription() ?: '',
-                    'scheduled_date' => date('Y-m-d H:i:s', strtotime($start)),
-                    'due_date' => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
-                    'created_by_id' => $user->id,
-                    'assigned_user_id' => $user->id,
-                    'visibility' => $visibility,
-                    'priority' => 'low', // Default
-                    'urgency' => 'low',   // Default
-                    'status' => 'pending',
-                ]);
-                $syncCount++;
+            return [
+                'id' => $event->id,
+                'title' => $title,
+                'description' => $event->getDescription() ?: '',
+                'start' => $start,
+                'end' => $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate(),
+                'exists' => $exists,
+            ];
+        });
+
+        return view('google.select-tasks', [
+            'events' => $eventsData,
+            'team' => $team,
+            'visibility' => $request->input('visibility', 'private')
+        ]);
+    }
+
+    /**
+     * Import selected tasks.
+     */
+    public function import(Request $request)
+    {
+        $user = Auth::user();
+        $teamId = $request->input('team_id');
+        $selectedEventIds = $request->input('events', []);
+        $visibility = $request->input('visibility', 'private');
+
+        if (empty($selectedEventIds)) {
+            return back()->with('error', 'No tasks selected for import.');
+        }
+
+        if (!$this->googleService->setTokenForUser($user)) {
+            return redirect()->route('google.auth')->with('info', 'Please connect your Google account first.');
+        }
+
+        // Fetch events again to process (or we could have passed all data in the request if small)
+        // For reliability, we fetch them again
+        $allEvents = collect($this->googleService->listEvents(50));
+        $syncCount = 0;
+
+        foreach ($allEvents as $event) {
+            if (in_array($event->id, $selectedEventIds)) {
+                $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
+                $title = $event->getSummary();
+
+                // Double check existence just in case
+                $existing = \App\Models\Task::where('team_id', $teamId)
+                    ->where('created_by_id', $user->id)
+                    ->where('title', $title)
+                    ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)))
+                    ->first();
+
+                if (!$existing) {
+                    \App\Models\Task::create([
+                        'team_id' => $teamId,
+                        'title' => $title,
+                        'description' => $event->getDescription() ?: '',
+                        'scheduled_date' => date('Y-m-d H:i:s', strtotime($start)),
+                        'due_date' => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
+                        'created_by_id' => $user->id,
+                        'assigned_user_id' => $user->id,
+                        'visibility' => $visibility,
+                        'priority' => 'low',
+                        'urgency' => 'low',
+                        'status' => 'pending',
+                    ]);
+                    $syncCount++;
+                }
             }
         }
 
-        return back()->with('success', "Synced $syncCount new tasks from your Google Calendar.");
+        return redirect()->route('teams.dashboard', $teamId)
+            ->with('success', "Successfully imported $syncCount tasks from Google Calendar.");
     }
 
     /**
