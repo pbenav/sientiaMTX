@@ -9,6 +9,7 @@ return [
     'my_teams' => 'Mis equipos',
     'language' => 'Idioma',
     'settings' => 'Configuración',
+    'task_list' => 'Lista de tareas',
     'welcome' => 'Bienvenido',
     'hello' => 'Hola, :name',
     'gantt' => 'Gantt',

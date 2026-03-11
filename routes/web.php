@@ -78,8 +78,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/users/{user}/toggle-admin', [\App\Http\Controllers\SettingsController::class, 'toggleAdmin'])->name('settings.users.toggle-admin');
         Route::get('/settings/users/{user}/edit', [\App\Http\Controllers\SettingsController::class, 'editUser'])->name('settings.users.edit');
         Route::put('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'updateUser'])->name('settings.users.update');
+        Route::delete('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'destroyUser'])->name('settings.users.destroy');
         Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\SettingsController::class, 'acceptUserInvitation'])->name('settings.users.accept-invitation');
     });
+
+    // Google Services
+    Route::get('/auth/google', [\App\Http\Controllers\GoogleController::class, 'redirect'])->name('google.auth');
+    Route::get('/auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'callback'])->name('google.callback');
+    Route::post('/google/sync', [\App\Http\Controllers\GoogleController::class, 'sync'])->name('google.sync');
 });
 
 require __DIR__.'/auth.php';

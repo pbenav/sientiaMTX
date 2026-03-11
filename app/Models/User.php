@@ -28,6 +28,9 @@ class User extends Authenticatable implements HasLocalePreference
         'timezone',
         'theme',
         'is_admin',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -38,6 +41,8 @@ class User extends Authenticatable implements HasLocalePreference
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
+        'google_refresh_token',
     ];
 
     /**

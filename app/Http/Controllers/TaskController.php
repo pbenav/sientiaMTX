@@ -15,7 +15,13 @@ class TaskController extends Controller
      */
     public function index(Team $team)
     {
-        return redirect()->route('teams.dashboard', $team);
+        $tasks = $team->tasks()
+            ->with(['assignedUser', 'tags', 'creator'])
+            ->orderBy('due_date', 'asc')
+            ->orderBy('priority', 'desc')
+            ->paginate(20);
+
+        return view('tasks.index', compact('team', 'tasks'));
     }
 
     /**
@@ -289,7 +295,22 @@ class TaskController extends Controller
             'quadrant' => 'nullable|integer|between:1,4',
             'status' => 'nullable|string|in:pending,in_progress,completed,cancelled,blocked',
             'progress_percentage' => 'nullable|integer|between:0,100',
+            'scheduled_date' => 'nullable|date',
+            'due_date' => 'nullable|date',
         ]);
+
+        if ($request->has('scheduled_date') || $request->has('due_date')) {
+            $updateData = [];
+            if ($request->has('scheduled_date')) $updateData['scheduled_date'] = $validated['scheduled_date'];
+            if ($request->has('due_date')) $updateData['due_date'] = $validated['due_date'];
+            
+            $task->update($updateData);
+
+            // Sync with instances if it's a template
+            if ($task->is_template) {
+                $task->instances()->update($updateData);
+            }
+        }
 
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
             // Mapping quadrant back to priority/urgency

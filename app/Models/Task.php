@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+use App\Traits\HandlesEisenhowerMatrix;
+
 class Task extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HandlesEisenhowerMatrix;
 
     protected static function boot(): void
     {
@@ -43,6 +45,7 @@ class Task extends Model
         'is_template',
         'assigned_user_id',
         'progress_percentage',
+        'visibility',
     ];
 
     protected $casts = [
@@ -159,10 +162,8 @@ class Task extends Model
      */
     public function getGanttColorClass(): string
     {
-        if ($this->priority === 'high' && $this->urgency === 'high') return 'gantt-q1'; // Red
-        if ($this->priority === 'high' && $this->urgency === 'low') return 'gantt-q2';  // Blue
-        if ($this->priority === 'low' && $this->urgency === 'high') return 'gantt-q3';  // Amber
-        return 'gantt-q4'; // Gray
+        $quadrant = $this->getQuadrant($this);
+        return "gantt-q{$quadrant}";
     }
 
     // Scopes

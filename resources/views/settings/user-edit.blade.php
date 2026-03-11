@@ -142,5 +142,45 @@
                 </div>
             @endif
         </div>
+
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+            <div class="mt-12 pt-8 border-t border-red-100 dark:border-red-900/30">
+                <h3 class="text-lg font-bold text-red-600 dark:text-red-400 mb-2">{{ __('Danger Zone') }}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{{ __('Once you delete a user, there is no going back. Please be certain.') }}</p>
+                
+                <form id="delete-user-form" action="{{ route('settings.users.destroy', $user) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" onclick="confirmDelete()"
+                        class="px-6 py-3 bg-white dark:bg-gray-900 border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-bold rounded-2xl transition-all shadow-lg hover:shadow-red-500/20 active:scale-95">
+                        {{ __('Delete User') }}
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete() {
+            Swal.fire({
+                title: '{{ __("Are you sure?") }}',
+                text: '{{ __("You are about to delete this user. This action cannot be undone.") }}',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '{{ __("Yes, delete user") }}',
+                cancelButtonText: '{{ __("Cancel") }}',
+                background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-user-form').submit();
+                }
+            })
+        }
+    </script>
+    @endpush
 </x-app-layout>

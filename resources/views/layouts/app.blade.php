@@ -89,6 +89,21 @@
                 <div class="flex items-center gap-4">
 
                     @auth
+                        <!-- Task List -->
+                        @if (request()->route('team') || isset($team))
+                            @php $t = request()->route('team') ?? $team; @endphp
+                            <a href="{{ route('teams.tasks.index', $t) }}"
+                                class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('teams.tasks.index') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <span class="hidden md:inline">{{ __('navigation.task_list') }}</span>
+                                <span class="md:hidden">{{ __('navigation.task_list') }}</span>
+                            </a>
+                        @endif
+
                         <!-- Matrix View -->
                         @if (request()->route('team') || isset($team))
                             @php $t = request()->route('team') ?? $team; @endphp

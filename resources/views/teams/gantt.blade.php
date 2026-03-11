@@ -308,7 +308,28 @@
                 },
                 on_date_change: function(task, start, end) {
                     console.log('Date changed', task, start, end);
-                    // Proactive idea: We could update the task dates via AJAX here too
+                    
+                    // Update task dates via AJAX
+                    fetch(`{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}/move`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            scheduled_date: start,
+                            due_date: end
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Optional: Show a small toast or notification
+                            console.log('Task updated successfully');
+                        }
+                    })
+                    .catch(error => console.error('Error updating task:', error));
                 }
             });
         }

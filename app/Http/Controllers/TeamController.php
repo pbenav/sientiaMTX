@@ -239,11 +239,6 @@ class TeamController extends Controller
         $query = $team->tasks()->with(['assignedTo', 'assignedGroups', 'tags']);
 
         if ($isCoordinator) {
-            // Coordinator sees:
-            // 1. Templates
-            // 2. Standalone tasks (no parent)
-            // 3. Subtasks that are NOT instances of a template (shared project tasks)
-            // 4. Their own private instances
             $query->where(function($q) {
                 $q->where('is_template', true)
                   ->orWhereNull('parent_id')
@@ -256,16 +251,30 @@ class TeamController extends Controller
                   ->orWhere('assigned_user_id', auth()->id());
             });
         } else {
-            // Regular member sees their private instances and standalone tasks without template
             $query->where(function($q) use ($user) {
                 $q->where('assigned_user_id', $user->id)
+                  ->orWhereHas('assignedTo', function($subq) use ($user) {
+                      $subq->where('users.id', $user->id);
+                  })
                   ->orWhere(function($subq) {
                       $subq->whereNull('assigned_user_id')
+                           ->whereDoesntHave('assignedTo')
                            ->whereNull('parent_id')
                            ->where('is_template', false);
                   });
             });
         }
+
+        // Apply global visibility filter: Publicly visible tasks, my private ones, OR tasks assigned to me
+        $query->where(function($q) {
+            $q->where('visibility', 'public')
+              ->orWhere('created_by_id', auth()->id())
+              ->orWhere('assigned_user_id', auth()->id())
+              ->orWhereHas('assignedTo', function($subq) {
+                  $subq->where('users.id', auth()->id());
+              })
+              ->orWhereNull('visibility'); // Backward compatibility
+        });
 
 
         $allTasks = $query->get();

@@ -47,10 +47,21 @@ class GanttController extends Controller
         if ($request->has('quadrant') && $request->quadrant != 'all') {
             $q = (int) $request->quadrant;
             $query->where(function($query) use ($q) {
-                if ($q === 1) { $query->where('priority', 'high')->where('urgency', 'high'); }
-                if ($q === 2) { $query->where('priority', 'high')->where('urgency', 'low'); }
-                if ($q === 3) { $query->where('priority', 'low')->where('urgency', 'high'); }
-                if ($q === 4) { $query->where('priority', 'low')->where('urgency', 'low'); }
+                $priorityValues = ['high', 'critical'];
+                $lowPriorityValues = ['low', 'medium'];
+                
+                if ($q === 1) { 
+                    $query->whereIn('priority', $priorityValues)->whereIn('urgency', $priorityValues); 
+                }
+                if ($q === 2) { 
+                    $query->whereIn('priority', $priorityValues)->whereNotIn('urgency', $priorityValues); 
+                }
+                if ($q === 3) { 
+                    $query->whereNotIn('priority', $priorityValues)->whereIn('urgency', $priorityValues); 
+                }
+                if ($q === 4) { 
+                    $query->whereNotIn('priority', $priorityValues)->whereNotIn('urgency', $priorityValues); 
+                }
             });
         }
 

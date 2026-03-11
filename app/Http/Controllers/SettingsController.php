@@ -27,6 +27,11 @@ class SettingsController extends Controller
                 'encryption' => env('MAIL_ENCRYPTION'),
                 'from_address' => env('MAIL_FROM_ADDRESS'),
                 'from_name' => env('MAIL_FROM_NAME'),
+            ],
+            'google' => [
+                'client_id' => env('GOOGLE_CLIENT_ID'),
+                'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+                'redirect_uri' => env('GOOGLE_REDIRECT_URI', route('google.callback')),
             ]
         ]);
     }
@@ -128,6 +133,17 @@ class SettingsController extends Controller
             ->with('success', __('User updated successfully.'));
     }
 
+    public function destroyUser(User $user)
+    {
+        if (auth()->id() === $user->id) {
+            return back()->with('error', __('You cannot delete your own account.'));
+        }
+
+        $user->delete();
+
+        return redirect()->route('settings.users')->with('success', __('User deleted successfully.'));
+    }
+
     /**
      * Accept an invitation on behalf of a user.
      */
@@ -154,14 +170,16 @@ class SettingsController extends Controller
     public function updateMailSettings(Request $request)
     {
         $data = $request->validate([
-            'MAIL_MAILER' => 'required|string',
-            'MAIL_HOST' => 'required|string',
-            'MAIL_PORT' => 'required|numeric',
-            'MAIL_USERNAME' => 'nullable|string',
-            'MAIL_PASSWORD' => 'nullable|string',
-            'MAIL_ENCRYPTION' => 'nullable|string',
-            'MAIL_FROM_ADDRESS' => 'required|email',
-            'MAIL_FROM_NAME' => 'required|string',
+            'MAIL_MAILER' => 'sometimes|string',
+            'MAIL_HOST' => 'sometimes|string',
+            'MAIL_PORT' => 'sometimes|numeric',
+            'MAIL_USERNAME' => 'sometimes|nullable|string',
+            'MAIL_PASSWORD' => 'sometimes|nullable|string',
+            'MAIL_ENCRYPTION' => 'sometimes|nullable|string',
+            'MAIL_FROM_ADDRESS' => 'sometimes|email',
+            'MAIL_FROM_NAME' => 'sometimes|string',
+            'GOOGLE_CLIENT_ID' => 'sometimes|nullable|string',
+            'GOOGLE_CLIENT_SECRET' => 'sometimes|nullable|string',
         ]);
 
         try {
