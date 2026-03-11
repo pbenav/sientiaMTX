@@ -10,9 +10,8 @@ use Illuminate\Http\Request;
 class TaskController extends Controller
 {
     use HandlesEisenhowerMatrix;
-    /**
-     * Display a listing of tasks for a team
-     */
+    public function index(Team $team)
+    {
         $isCoordinator = $team->isCoordinator(auth()->user());
         $tasks = $team->tasks()
             ->visibleTo(auth()->user(), $isCoordinator)
