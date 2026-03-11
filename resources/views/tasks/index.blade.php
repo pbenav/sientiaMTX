@@ -54,6 +54,9 @@
                             {{ __('tasks.priority') }} / {{ __('tasks.urgency') }}
                         </th>
                         <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            {{ __('tasks.owner') }}
+                        </th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                             {{ __('tasks.assigned_to') }}
                         </th>
                         <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -94,6 +97,14 @@
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{{ __('tasks.priority') }}: <span class="text-gray-700 dark:text-gray-300">{{ __("tasks.priorities.{$task->priority}") }}</span></span>
                                     <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{{ __('tasks.urgency') }}: <span class="text-gray-700 dark:text-gray-300">{{ __("tasks.urgencies.{$task->urgency}") }}</span></span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                                        {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                    </div>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ $task->creator?->name ?? '—' }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">

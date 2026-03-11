@@ -182,10 +182,12 @@
                                         data-id="{{ $task->id }}">
                                         <!-- Status dot -->
                                         <div class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }}"></div>
-                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                            class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors">
                                             {{ $task->title }}
                                         </a>
+                                        <!-- Owner initials -->
+                                        <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700" title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
+                                            {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                        </div>
                                         @if ($task->due_date)
                                             <span class="shrink-0 text-[7px] sm:text-[9px] text-gray-600 font-mono">
                                                 {{ $task->due_date->format('d/m') }}

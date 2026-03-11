@@ -91,6 +91,8 @@
             default
                 => 'text-amber-600 bg-amber-50 border-amber-100 dark:text-yellow-400 dark:bg-yellow-400/10 dark:border-yellow-800',
         };
+
+        $personalInstance = null;
     @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -108,12 +110,9 @@
                     $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
 
                     // Find if the current user has a personal instance of this goal
-                    $personalInstance = null;
-                    if ($task->is_template || $task->children()->exists()) {
-                         $personalInstance = $task->instances()
-                            ->where('assigned_user_id', auth()->id())
-                            ->first();
-                    }
+                    $personalInstance = $task->instances()
+                        ->where('assigned_user_id', auth()->id())
+                        ->first();
                 @endphp
 
                 <!-- Progress Dashboard -->
