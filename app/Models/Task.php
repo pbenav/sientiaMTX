@@ -235,13 +235,12 @@ class Task extends Model
                          });
                 });
 
-                // DEDUPLICATE: If I'm the owner/manager, I don't need to see 
-                // my own individual instance of my own template. I manage the Template.
-                $q->whereNot(function($subq) use ($user) {
+                // DEDUPLICATE: If I'm a coordinator, I manage the Template. 
+                // I don't need to see individual instances of templates in my operational view.
+                $q->whereNot(function($subq) {
                     $subq->whereNotNull('parent_id')
-                         ->whereHas('parent', function($pq) use ($user) {
-                             $pq->where('is_template', true)
-                                ->where('created_by_id', $user->id);
+                         ->whereHas('parent', function($pq) {
+                             $pq->where('is_template', true);
                          });
                 });
             } else {
