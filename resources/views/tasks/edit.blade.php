@@ -124,7 +124,12 @@
                         <div>
                             <label
                                 class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.assigned_to') }}</label>
-                            @php $assignedIds = $task->assignedTo->pluck('id')->toArray(); @endphp
+                            @php 
+                                $assignedIds = $task->assignedTo->pluck('id')->toArray();
+                                if ($task->assigned_user_id && !in_array($task->assigned_user_id, $assignedIds)) {
+                                    $assignedIds[] = $task->assigned_user_id;
+                                }
+                            @endphp
                             <div
                                 class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto">
                                 @foreach ($users as $user)

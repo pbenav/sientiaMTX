@@ -282,12 +282,10 @@ class TaskController extends Controller
             } else {
                 // If it's no longer a template, delete all instances
                 $task->instances()->delete();
+                // Also clear the assigned_user_id from the main task to make it unassigned
+                $task->update(['assigned_user_id' => null]);
             }
         }
-
-        return redirect()->route('teams.tasks.show', [$team, $task])
-            ->with('success', __('tasks.updated'));
-    }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
             ->with('success', __('tasks.updated'));
