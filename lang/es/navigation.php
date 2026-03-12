@@ -14,4 +14,5 @@ return [
     'hello' => 'Hola, :name',
     'gantt' => 'Gantt',
     'users' => 'Usuarios',
+    'task_detail' => 'Detalle de la tarea',
 ];

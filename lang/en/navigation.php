@@ -13,4 +13,5 @@ return [
     'hello' => 'Hello, :name',
     'gantt' => 'Gantt Chart',
     'users' => 'Users',
+    'task_detail' => 'Task Detail',
 ];

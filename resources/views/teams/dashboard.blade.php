@@ -324,30 +324,29 @@
                         .querySelector('.q-count') : null;
                     const toCount = to.closest('.quadrant-container') ? to.closest('.quadrant-container').querySelector(
                         '.q-count') : null;
-                    null);
 
-                if (fromCount) fromCount.textContent = from.querySelectorAll('[data-id]').length;
-                if (toCount) toCount.textContent = to.querySelectorAll('[data-id]').length;
+                    if (fromCount) fromCount.textContent = from.querySelectorAll('[data-id]').length;
+                    if (toCount) toCount.textContent = to.querySelectorAll('[data-id]').length;
 
-                // Update empty messages
-                [from, to].forEach(l => {
-                    let emptyMsg = l.querySelector('.empty-msg');
-                    const hasItems = l.querySelectorAll('[data-id]').length > 0;
+                    // Update empty messages
+                    [from, to].forEach(l => {
+                        let emptyMsg = l.querySelector('.empty-msg');
+                        const hasItems = l.querySelectorAll('[data-id]').length > 0;
 
-                    if (!hasItems) {
-                        if (!emptyMsg) {
-                            emptyMsg = document.createElement('div');
-                            emptyMsg.className =
-                                'col-span-full py-8 text-center text-xs text-gray-700 italic empty-msg';
-                            emptyMsg.textContent = l.getAttribute('data-q') === 'completed' ?
-                                '{{ __('teams.drop_to_complete') }}' : '{{ __('teams.no_tasks') }}';
-                            l.appendChild(emptyMsg);
+                        if (!hasItems) {
+                            if (!emptyMsg) {
+                                emptyMsg = document.createElement('div');
+                                emptyMsg.className =
+                                    'col-span-full py-8 text-center text-xs text-gray-700 italic empty-msg';
+                                emptyMsg.textContent = l.getAttribute('data-q') === 'completed' ?
+                                    '{{ __('teams.drop_to_complete') }}' : '{{ __('teams.no_tasks') }}';
+                                l.appendChild(emptyMsg);
+                            }
+                        } else if (emptyMsg) {
+                            emptyMsg.remove();
                         }
-                    } else if (emptyMsg) {
-                        emptyMsg.remove();
-                    }
-                });
-            }
+                    });
+                }
             });
         </script>
     @endpush
