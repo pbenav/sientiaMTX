@@ -10,18 +10,60 @@ use Illuminate\Http\Request;
 class TaskController extends Controller
 {
     use HandlesEisenhowerMatrix;
-    public function index(Team $team)
+    public function index(Request $request, Team $team)
     {
-        $isManager = $team->isManager(auth()->user());
-        $tasks = $team->tasks()
-            ->visibleTo(auth()->user(), $isManager)
-            ->operationalFor(auth()->user(), $team)
-            ->with(['assignedUser', 'tags', 'creator', 'parent'])
-            ->orderBy('due_date', 'asc')
-            ->orderBy('priority', 'desc')
-            ->paginate(20);
+        $user = auth()->user();
+        $isManager = $team->isManager($user);
+        
+        $query = $team->tasks()
+            ->visibleTo($user, $isManager)
+            ->operationalFor($user, $team)
+            ->with(['assignedUser', 'tags', 'creator', 'parent']);
 
-        return view('tasks.index', compact('team', 'tasks'));
+        // --- Filters ---
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('assigned_to')) {
+            $query->where('assigned_user_id', $request->assigned_to);
+        }
+
+        if ($request->filled('type')) {
+            if ($request->type === 'template') {
+                $query->where('is_template', true);
+            } elseif ($request->type === 'instance') {
+                $query->where('is_template', false)->whereNotNull('parent_id');
+            } elseif ($request->type === 'plain') {
+                $query->where('is_template', false)->whereNull('parent_id');
+            }
+        }
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // --- Sorting ---
+        $sort = $request->get('sort', 'due_date');
+        $direction = $request->get('direction', 'asc');
+        
+        $allowedSorts = ['title', 'status', 'priority', 'due_date', 'created_at', 'progress_percentage'];
+        if (in_array($sort, $allowedSorts)) {
+            $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
+        } else {
+            // Default sort
+            $query->orderBy('due_date', 'asc')
+                  ->orderBy('priority', 'desc');
+        }
+
+        $tasks = $query->paginate(20)->withQueryString();
+        $members = $team->members;
+
+        return view('tasks.index', compact('team', 'tasks', 'members'));
     }
 
     /**
