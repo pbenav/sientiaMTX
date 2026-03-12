@@ -160,7 +160,7 @@
                             class="border border-gray-100 dark:border-gray-800 rounded-xl p-4 bg-gray-50 dark:bg-gray-800/20">
                             <div class="font-bold text-gray-900 dark:text-white mb-1">{{ $team->name }}</div>
                             <div class="text-xs text-violet-500 font-semibold uppercase tracking-wider">
-                                {{ $team->pivot->role_id == 1 ? __('Coordinator') : ($team->pivot->role_id == 2 ? __('Moderator') : __('Member')) }}
+                                {{ __('teams.' . ($team->members()->find($user->id)->pivot->role->name ?? 'user')) }}
                             </div>
                         </div>
                     @endforeach
