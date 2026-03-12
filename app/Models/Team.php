@@ -85,7 +85,21 @@ class Team extends Model
      */
     public function isManager(User $user): bool
     {
-        return $this->isCoordinator($user);
+        return $this->isCoordinator($user) || $this->isModerator($user);
+    }
+
+    /**
+     * Check if a user is a moderator for this team
+     */
+    public function isModerator(User $user): bool
+    {
+        return $this->members()
+            ->where('user_id', $user->id)
+            ->wherePivotIn('role_id', function ($query) {
+                $query->select('id')->from('team_roles')
+                    ->where('name', 'moderator');
+            })
+            ->exists();
     }
 
     /**
