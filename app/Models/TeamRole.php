@@ -10,4 +10,13 @@ class TeamRole extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'description'];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('active_roles', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            $builder->where('name', '!=', 'moderator');
+        });
+    }
 }
