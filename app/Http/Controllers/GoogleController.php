@@ -23,7 +23,7 @@ class GoogleController extends Controller
     public function redirect(Request $request)
     {
         if (!$this->googleService->isConfigured()) {
-            return redirect()->route('dashboard')->with('error', __('Google integration is not configured by the administrator.'));
+            return redirect()->route('dashboard')->with('error', __('google.not_configured'));
         }
 
         if ($request->has('popup')) {
@@ -39,18 +39,18 @@ class GoogleController extends Controller
     public function callback(Request $request)
     {
         if ($request->has('error')) {
-            return redirect()->route('dashboard')->with('error', 'Google authentication failed: ' . $request->error);
+            return redirect()->route('dashboard')->with('error', __('google.auth_failed', ['error' => $request->error]));
         }
 
         if (!$request->has('code')) {
-            return redirect()->route('dashboard')->with('error', 'Invalid Google callback.');
+            return redirect()->route('dashboard')->with('error', __('google.invalid_callback'));
         }
 
         try {
             $token = $this->googleService->getClient()->fetchAccessTokenWithAuthCode($request->code);
             
             if (isset($token['error'])) {
-                return redirect()->route('dashboard')->with('error', 'Error fetching token: ' . $token['error']);
+                return redirect()->route('dashboard')->with('error', __('google.token_error', ['error' => $token['error']]));
             }
 
             $user = Auth::user();
@@ -71,7 +71,7 @@ class GoogleController extends Controller
                 return view('google.callback-success');
             }
 
-            return redirect()->route('dashboard')->with('success', 'Google account connected successfully.');
+            return redirect()->route('dashboard')->with('success', __('google.connected_success'));
         } catch (\Exception $e) {
             Log::error('Google callback exception: ' . $e->getMessage());
             
@@ -79,7 +79,7 @@ class GoogleController extends Controller
                 return '<html><body><script>alert("Authentication failed."); window.close();</script></body></html>';
             }
 
-            return redirect()->route('dashboard')->with('error', 'An error occurred during Google authentication.');
+            return redirect()->route('dashboard')->with('error', __('google.auth_failed', ['error' => '']));
         }
     }
 
@@ -91,12 +91,12 @@ class GoogleController extends Controller
         $user = Auth::user();
         
         if (!$this->googleService->setTokenForUser($user)) {
-            return redirect()->route('google.auth')->with('info', 'Please connect your Google account first.');
+            return redirect()->route('google.auth')->with('info', __('google.connect_account_first'));
         }
 
         $teamId = $request->input('team_id');
         if (!$teamId) {
-            return back()->with('error', 'Team ID is required for synchronization.');
+            return back()->with('error', __('google.team_id_required'));
         }
 
         $team = \App\Models\Team::findOrFail($teamId);
@@ -141,11 +141,11 @@ class GoogleController extends Controller
         $visibility = $request->input('visibility', 'private');
 
         if (empty($selectedEventIds)) {
-            return back()->with('error', 'No tasks selected for import.');
+            return back()->with('error', __('google.no_tasks_selected'));
         }
 
         if (!$this->googleService->setTokenForUser($user)) {
-            return redirect()->route('google.auth')->with('info', 'Please connect your Google account first.');
+            return redirect()->route('google.auth')->with('info', __('google.connect_account_first'));
         }
 
         // Fetch events again to process (or we could have passed all data in the request if small)
@@ -185,7 +185,7 @@ class GoogleController extends Controller
         }
 
         return redirect()->route('teams.dashboard', $teamId)
-            ->with('success', "Successfully imported $syncCount tasks from Google Calendar.");
+            ->with('success', __('google.import_success', ['count' => $syncCount]));
     }
 
     /**
@@ -199,6 +199,6 @@ class GoogleController extends Controller
         $user->google_refresh_token = null;
         $user->save();
 
-        return back()->with('success', __('Google account disconnected successfully.'));
+        return back()->with('success', __('google.disconnected_success'));
     }
 }

@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'connect' => 'Connect Google',
+    'sync' => 'Sync',
+    'private' => 'Private',
+    'public' => 'Public',
+    'import' => 'Import',
+    'disconnect' => 'Disconnect Google account',
+    'connected_success' => 'Google account connected successfully.',
+    'disconnected_success' => 'Google account disconnected successfully.',
+    'auth_failed' => 'Google authentication failed: :error',
+    'invalid_callback' => 'Invalid Google callback.',
+    'token_error' => 'Error fetching token: :error',
+    'sync_error' => 'Error moving task.',
+    'team_id_required' => 'Team ID is required for synchronization.',
+    'no_tasks_selected' => 'No tasks selected for import.',
+    'import_success' => 'Successfully imported :count tasks from Google Calendar.',
+    'not_configured' => 'Google integration is not configured by the administrator.',
+    'connect_first' => 'Please connect your Google account first.',
+    'connect_account_first' => 'Please connect your Google account first.',
+    'select_tasks' => 'Select Google Calendar Events',
+    'task_exists' => 'This task already seems to exist in this team.',
+    'drop_to_sync' => 'Sync your Google Calendar events as tasks.',
+];

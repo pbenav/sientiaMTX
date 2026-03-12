@@ -146,22 +146,36 @@
                                     <span class="hidden lg:inline">{{ __('Connect Google') }}</span>
                                 </button>
                             @else
-                                <form action="{{ route('google.sync') }}" method="GET" class="flex items-center gap-1">
-                                    <select name="visibility"
-                                        class="text-xs py-1.5 border-none bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-violet-500 text-gray-600 dark:text-gray-300 w-28 font-medium">
-                                        <option value="private" selected>{{ __('Private') }}</option>
-                                        <option value="public">{{ __('Public') }}</option>
-                                    </select>
-                                    <button type="submit"
-                                        class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
-                                        title="{{ __('Sync') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                    </button>
-                                </form>
+                                @php
+                                    $currentTeamId = null;
+                                    // Intenta obtener el ID de la ruta si es una ruta vinculada a equipo
+                                    if (request()->route('team')) {
+                                        $currentTeamId = is_object(request()->route('team'))
+                                            ? request()->route('team')->id
+                                            : request()->route('team');
+                                    }
+                                @endphp
+
+                                @if ($currentTeamId)
+                                    <form action="{{ route('google.sync') }}" method="GET"
+                                        class="flex items-center gap-1">
+                                        <input type="hidden" name="team_id" value="{{ $currentTeamId }}">
+                                        <select name="visibility"
+                                            class="text-xs py-1.5 border-none bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-violet-500 text-gray-600 dark:text-gray-300 w-28 font-medium">
+                                            <option value="private" selected>{{ __('google.private') }}</option>
+                                            <option value="public">{{ __('google.public') }}</option>
+                                        </select>
+                                        <button type="submit"
+                                            class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
+                                            title="{{ __('google.sync') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                         </div>
                     @endauth

@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'connect' => 'Conectar Google',
+    'sync' => 'Sincronizar',
+    'private' => 'Privado',
+    'public' => 'Público',
+    'import' => 'Importar',
+    'disconnect' => 'Desconectar cuenta de Google',
+    'connected_success' => 'Cuenta de Google conectada correctamente.',
+    'disconnected_success' => 'Cuenta de Google desconectada correctamente.',
+    'auth_failed' => 'La autenticación de Google ha fallado: :error',
+    'invalid_callback' => 'Callback de Google no válido.',
+    'token_error' => 'Error al obtener el token: :error',
+    'sync_error' => 'Error al mover la tarea.',
+    'team_id_required' => 'Se requiere el ID del equipo para la sincronización.',
+    'no_tasks_selected' => 'No se han seleccionado tareas para importar.',
+    'import_success' => 'Se han importado correctamente :count tareas de Google Calendar.',
+    'not_configured' => 'La integración con Google no está configurada por el administrador.',
+    'connect_first' => 'Por favor, conecta tu cuenta de Google primero.',
+    'connect_account_first' => 'Por favor, conecta tu cuenta de Google primero.',
+    'select_tasks' => 'Seleccionar tareas de Google Calendar',
+    'task_exists' => 'Esta tarea ya parece existir en este equipo.',
+    'drop_to_sync' => 'Sincroniza tus eventos de Google Calendar como tareas.',
+];
