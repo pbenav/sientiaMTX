@@ -148,13 +148,8 @@ class GoogleService
     public function createTask(array $data, string $taskListId = '@default'): ?string
     {
         $service = new Tasks($this->client);
-        try {
-            $task = new \Google\Service\Tasks\Task($data);
-            $result = $service->tasks->insert($taskListId, $task);
-            return $result->getId();
-        } catch (\Exception $e) {
-            Log::error('Error creating Google Task: ' . $e->getMessage());
-            return null;
-        }
+        $task = new \Google\Service\Tasks\Task($data);
+        $result = $service->tasks->insert($taskListId, $task);
+        return $result->getId();
     }
 }

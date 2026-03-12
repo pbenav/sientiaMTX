@@ -286,10 +286,18 @@ class GoogleController extends Controller
             $data['due'] = date('c', strtotime($task->scheduled_date));
         }
 
-        $googleTaskId = $this->googleService->createTask($data);
+        try {
+            $googleTaskId = $this->googleService->createTask($data);
 
-        if ($googleTaskId) {
-            return back()->with('success', __('google.export_success'));
+            if ($googleTaskId) {
+                return back()->with('success', __('google.export_success'));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error creating Google Task: ' . $e->getMessage());
+            
+            if (str_contains(strtolower($e->getMessage()), 'insufficient authentication scopes')) {
+                return redirect()->route('google.auth')->with('info', __('google.reconnect_scopes'));
+            }
         }
 
         return back()->with('error', __('google.export_failed'));

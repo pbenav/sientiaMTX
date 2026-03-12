@@ -33,4 +33,6 @@ return [
     'authenticating' => 'Authenticating...',
     'export_success' => 'Task successfully exported to Google Tasks.',
     'export_failed' => 'Error exporting task to Google Tasks.',
+    'export_tasks' => 'Export to Google Tasks',
+    'reconnect_scopes' => 'Additional permissions required. Please disconnect and reconnect your Google account.',
 ];
