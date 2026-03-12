@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>{{ __('Authenticating...') }}</title>
+    <title>{{ __('google.authenticating') }}</title>
 </head>
+
 <body>
     <script>
         // Notify the parent window
@@ -18,4 +20,5 @@
         }
     </script>
 </body>
+
 </html>

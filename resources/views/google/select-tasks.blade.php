@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', __('Sync Google Tasks'))
+    @section('title', __('google.sync_tasks_title'))
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -12,7 +12,7 @@
                     </svg>
                 </a>
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                    {{ __('Select Tasks to Import') }}
+                    {{ __('google.select_to_import') }}
                 </h1>
             </div>
             <div class="text-xs text-gray-400">
@@ -33,16 +33,16 @@
                     class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
-                            {{ __('Found Events') }}
+                            {{ __('google.found_events') }}
                         </h2>
                         <p class="text-[10px] text-gray-400 mt-1">
-                            {{ __('Choose the calendar events you want to convert into tasks.') }}
+                            {{ __('google.choose_events') }}
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
                         <button type="button" id="select-all"
                             class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-tighter hover:underline">
-                            {{ __('Select All') }}
+                            {{ __('google.select_all') }}
                         </button>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                                                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                                                     clip-rule="evenodd" />
                                             </svg>
-                                            {{ __('Already Sync') }}
+                                            {{ __('google.already_sync') }}
                                         </span>
                                     @endif
                                 </div>
@@ -99,7 +99,7 @@
                                 </svg>
                             </div>
                             <p class="text-sm text-gray-500 italic">
-                                {{ __('No upcoming events found in your calendar.') }}</p>
+                                {{ __('google.no_events') }}</p>
                         </div>
                     @endforelse
                 </div>
@@ -113,7 +113,7 @@
                     <button type="submit"
                         class="px-8 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-2xl shadow-lg shadow-violet-500/20 transition-all font-bold text-xs uppercase tracking-wider active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                         id="import-btn">
-                        {{ __('Import Selected') }}
+                        {{ __('google.import_selected') }}
                     </button>
                 </div>
             </form>
