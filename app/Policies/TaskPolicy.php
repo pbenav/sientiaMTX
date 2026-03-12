@@ -15,21 +15,18 @@ class TaskPolicy
         return $task->team->members()->where('user_id', $user->id)->exists();
     }
 
-    /**
-     * Determine whether the user can update the task.
-     */
     public function update(User $user, Task $task): bool
     {
         return $user->id === $task->created_by_id || 
-               $task->team->members()->where('user_id', $user->id)->exists();
+               $user->id === $task->assigned_user_id ||
+               $task->team->created_by_id === $user->id ||
+               $task->team->isCoordinator($user);
     }
 
-    /**
-     * Determine whether the user can delete the task.
-     */
     public function delete(User $user, Task $task): bool
     {
         return $user->id === $task->created_by_id || 
-               $task->team->created_by_id === $user->id;
+               $task->team->created_by_id === $user->id ||
+               $task->team->isCoordinator($user);
     }
 }

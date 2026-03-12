@@ -214,34 +214,47 @@ class Task extends Model
 
     public function scopeOperationalFor($query, $user, Team $team)
     {
-        $isManager = $team->isManager($user);
+        $isCoordinator = $team->isCoordinator($user);
+        $isModerator   = $team->isModerator($user);
 
-        return $query->where(function ($main) use ($user, $isManager) {
-            if ($isManager) {
-                // MANAGEMENT VIEW: Focused on the Project Skeleton.
+        return $query->where(function ($main) use ($user, $isCoordinator, $isModerator) {
+            if ($isCoordinator) {
+                // COORDINATOR VIEW: Full Project Skeleton.
                 $main->where(function ($incl) {
-                    $incl->whereNull('parent_id') // Root tasks
-                         ->orWhere('is_template', true) // Template Masters
+                    $incl->whereNull('parent_id')
+                         ->orWhere('is_template', true)
                          ->orWhere(function ($hierarchical) {
                              $hierarchical->whereNotNull('parent_id')
                                           ->whereHas('parent', fn ($p) => $p->where('is_template', false));
                          });
                 })
-                // DEDUPLICATE: Hide all Execution Instances (automatic children of templates).
                 ->whereNot(function ($excl) {
                     $excl->whereNotNull('parent_id')
                          ->whereHas('parent', fn ($p) => $p->where('is_template', true));
                 });
+            } elseif ($isModerator) {
+                // MODERATOR (SUPERVISOR) VIEW: Skeleton + Own Instances.
+                $main->where(function ($incl) use ($user) {
+                    // 1. Project Skeleton (Templates & Root Tasks)
+                    $incl->where('is_template', true)
+                         ->orWhereNull('parent_id')
+                         // 2. My own assigned instances
+                         ->orWhere('assigned_user_id', $user->id)
+                         ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id));
+                })
+                // PRIVACY: Hide instances of other users (children of templates not assigned to me).
+                ->whereNot(function ($excl) use ($user) {
+                    $excl->whereNotNull('parent_id')
+                         ->whereHas('parent', fn ($p) => $p->where('is_template', true))
+                         ->where('assigned_user_id', '!=', $user->id);
+                });
             } else {
                 // EXECUTION VIEW: Focused on the Assigned Work & Personal Creations.
                 $main->where(function ($incl) use ($user) {
-                    // 1. My assigned tasks (The 'Doing' side)
                     $incl->where('assigned_user_id', $user->id)
                          ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                         // 2. Tasks I created (The 'Ownership' side)
                          ->orWhere('created_by_id', $user->id);
                 })
-                // DEDUPLICATE: If I have an instance, HIDE the template Master.
                 ->whereNot(function ($excl) use ($user) {
                     $excl->where('is_template', true)
                          ->whereHas('instances', function ($iq) use ($user) {

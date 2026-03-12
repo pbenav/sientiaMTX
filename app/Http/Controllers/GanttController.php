@@ -42,17 +42,22 @@ class GanttController extends Controller
         foreach ($baseTasks as $task) {
             $ganttTaskIds->push($task->id);
 
-            if ($task->is_template && $task->created_by_id === $user->id) {
-                // Owner of a template: add all child instances so each member's progress is visible
+            // Expansion rules
+            if ($task->is_template && $team->isCoordinator($user)) {
+                // Coordinators see all child instances for progress monitoring
                 $task->children->each(fn ($child) => $ganttTaskIds->push($child->id));
             } elseif ($task->isInstance()) {
-                // Assigned member: add all sibling instances so the team context is visible
-                $siblings = Task::where('parent_id', $task->parent_id)->pluck('id');
-                $ganttTaskIds = $ganttTaskIds->merge($siblings);
-
-                // Also include the parent template so Frappe can draw the dependency arrow
-                $ganttTaskIds->push($task->parent_id);
+                // Assigned member (including moderator if assigned): see only their context
+                if ($task->assigned_user_id === $user->id) {
+                    $ganttTaskIds->push($task->parent_id);
+                }
             }
+        }
+    
+        // Special case for Moderator (Supervisor): make sure they see templates even if not owners
+        if ($team->isModerator($user)) {
+             $templateIds = $team->tasks()->where('is_template', true)->pluck('id');
+             $ganttTaskIds = $ganttTaskIds->merge($templateIds);
         }
 
         $uniqueIds = $ganttTaskIds->filter()->unique()->values();
