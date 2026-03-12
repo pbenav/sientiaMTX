@@ -248,16 +248,26 @@
                         'cancelled': 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
                     };
 
+                    const parentHtml = task.parent_title ? `
+                        <div class="flex items-center gap-1 mt-1 mb-2">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+                                ↳ {{ __('tasks.subtask') }} 
+                            </span>
+                            <span class="text-[10px] text-gray-400 truncate max-w-[120px]">${task.parent_title}</span>
+                        </div>
+                    ` : '';
+
                     return `
-                        <div class="p-1">
-                            <h4 class="font-bold text-sm mb-1">${task.name}</h4>
+                        <div class="p-1 min-w-[200px]">
+                            <h4 class="font-bold text-sm mb-1 truncate" title="${task.name}">${task.name}</h4>
+                            ${parentHtml}
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColors[task.status]}">${statusLabels[task.status]}</span>
-                                <span class="text-[10px] text-gray-500">${task.progress}% completado</span>
+                                <span class="text-[10px] text-gray-500">${task.progress}%</span>
                             </div>
-                            <div class="text-[10px] text-gray-400 flex flex-col gap-0.5">
-                                <span>📅 Inicio: ${task.start}</span>
-                                <span>🏁 Fin: ${task.end}</span>
+                            <div class="text-[10px] text-gray-400 flex flex-col gap-0.5 border-t border-gray-100 dark:border-gray-800 pt-2 mt-2">
+                                <div class="flex justify-between"><span>📅 Inicio:</span> <span class="text-gray-600 dark:text-gray-300">${task.start}</span></div>
+                                <div class="flex justify-between"><span>🏁 Fin:</span> <span class="text-gray-600 dark:text-gray-300">${task.end}</span></div>
                             </div>
                         </div>
                     `;

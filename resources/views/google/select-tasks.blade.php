@@ -30,16 +30,34 @@
                 <input type="hidden" name="visibility" value="{{ $visibility }}">
 
                 <div
-                    class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
-                            {{ __('google.found_events') }}
-                        </h2>
-                        <p class="text-[10px] text-gray-400 mt-1">
-                            {{ __('google.choose_events') }}
-                        </p>
+                    class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="relative group max-w-md">
+                            <div
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-violet-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" id="event-search"
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 sm:text-xs transition-all"
+                                placeholder="{{ __('google.search_placeholder') }}">
+                        </div>
                     </div>
                     <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label for="filter-mode" class="text-[10px] font-bold uppercase text-gray-400">
+                                {{ __('google.filter_mode') }}:
+                            </label>
+                            <select id="filter-mode"
+                                class="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold uppercase tracking-tighter text-gray-600 dark:text-gray-400 focus:ring-violet-500 focus:border-violet-500 p-1">
+                                <option value="include">{{ __('google.filter_include') }}</option>
+                                <option value="exclude">{{ __('google.filter_exclude') }}</option>
+                            </select>
+                        </div>
+                        <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
                         <button type="button" id="select-all"
                             class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-tighter hover:underline">
                             {{ __('google.select_all') }}
@@ -49,7 +67,9 @@
 
                 <div class="divide-y divide-gray-50 dark:divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
                     @forelse($events as $event)
-                        <div class="group relative px-8 py-5 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 transition-all cursor-pointer"
+                        <div class="event-item group relative px-8 py-5 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 transition-all cursor-pointer"
+                            data-title="{{ strtolower($event['title']) }}"
+                            data-description="{{ strtolower($event['description'] ?? '') }}"
                             onclick="toggleCheckbox('checkbox-{{ $event['id'] }}')">
                             <div class="flex items-start gap-6">
                                 <div class="mt-1">
@@ -153,10 +173,49 @@
                 btn.disabled = checkboxes.length === 0;
             }
 
+            // Search and Filter logic
+            const searchInput = document.getElementById('event-search');
+            const filterMode = document.getElementById('filter-mode');
+            const eventItems = document.querySelectorAll('.event-item');
+
+            function applyFilter() {
+                const query = searchInput.value.toLowerCase().trim();
+                const mode = filterMode.value;
+
+                eventItems.forEach(item => {
+                    const title = item.getAttribute('data-title');
+                    const description = item.getAttribute('data-description');
+                    const matches = title.includes(query) || description.includes(query);
+
+                    if (query === '') {
+                        item.classList.remove('hidden');
+                        return;
+                    }
+
+                    if (mode === 'include') {
+                        if (matches) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    } else { // exclude
+                        if (matches) {
+                            item.classList.add('hidden');
+                        } else {
+                            item.classList.remove('hidden');
+                        }
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', applyFilter);
+            filterMode.addEventListener('change', applyFilter);
+
             document.getElementById('select-all').addEventListener('click', function() {
-                const checkboxes = document.querySelectorAll('input[name="events[]"]:not(:disabled)');
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                checkboxes.forEach(cb => cb.checked = !allChecked);
+                const visibleCheckboxes = document.querySelectorAll(
+                    '.event-item:not(.hidden) input[name="events[]"]:not(:disabled)');
+                const allChecked = Array.from(visibleCheckboxes).every(cb => cb.checked);
+                visibleCheckboxes.forEach(cb => cb.checked = !allChecked);
                 updateButtonState();
             });
 

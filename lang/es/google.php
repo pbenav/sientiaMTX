@@ -35,4 +35,9 @@ return [
     'export_failed' => 'Error al exportar la tarea a Google Tasks.',
     'export_tasks' => 'Exportar a Google Tasks',
     'reconnect_scopes' => 'Se requieren permisos adicionales. Por favor, desconecta y vuelve a conectar tu cuenta de Google.',
+    'search_placeholder' => 'Buscar eventos o tareas...',
+    'filter_mode' => 'Modo de filtro',
+    'filter_include' => 'Incluir (Contiene)',
+    'filter_exclude' => 'Excluir (No contiene)',
+    'filter_help' => 'Usa el buscador para filtrar. El modo "Excluir" ocultará lo que coincida.',
 ];

@@ -203,25 +203,6 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
         <script>
-            function openGoogleAuth() {
-                const width = 600;
-                const height = 700;
-                const left = (window.innerWidth - width) / 2;
-                const top = (window.innerHeight - height) / 2;
-                const url = "{{ route('google.auth') }}?popup=1";
-
-                const popup = window.open(url, 'GoogleAuth', `width=${width},height=${height},top=${top},left=${left}`);
-
-                const messageHandler = function(event) {
-                    if (event.data === 'google-auth-success') {
-                        window.removeEventListener('message', messageHandler);
-                        location.reload();
-                    }
-                };
-
-                window.addEventListener('message', messageHandler);
-            }
-
             document.addEventListener('DOMContentLoaded', function() {
                 const lists = document.querySelectorAll('.quadrant-list');
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

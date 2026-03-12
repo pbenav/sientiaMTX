@@ -433,6 +433,31 @@ fetch('{{ route('theme.update') }}', {
                 }
             });
         }
+
+        window.openGoogleAuth = function() {
+            const width = 600;
+            const height = 700;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            const url = "{{ route('google.auth') }}?popup=1";
+
+            const popup = window.open(url, 'GoogleAuth', `width=${width},height=${height},top=${top},left=${left}`);
+
+            const messageHandler = function(event) {
+                if (event.data === 'google-auth-success') {
+                    window.removeEventListener('message', messageHandler);
+                    location.reload();
+                }
+            };
+
+            window.addEventListener('message', messageHandler);
+        }
+
+        @if (session('google_reauth_required'))
+            document.addEventListener('DOMContentLoaded', function() {
+                openGoogleAuth();
+            });
+        @endif
     </script>
 </body>
 

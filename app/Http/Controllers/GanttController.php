@@ -110,6 +110,7 @@ class GanttController extends Controller
                 'urgency'      => $task->urgency,
                 'is_template'  => $task->is_template,
                 'assigned_to'  => $task->assignedUser?->name,
+                'parent_title' => $task->parent?->title,
             ];
         });
 

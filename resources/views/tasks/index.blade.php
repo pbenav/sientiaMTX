@@ -75,17 +75,19 @@
                                             <span
                                                 class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded relative z-30">{{ __('tasks.template') }}</span>
                                         @elseif ($task->isInstance())
-                                            <span
-                                                class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded relative z-30"
-                                                title="{{ __('tasks.parent_task') }}: {{ $task->parent?->title }}">
-                                                ↳ {{ __('tasks.subtask') }}
-                                            </span>
-                                            @if ($task->parent)
-                                                <p
-                                                    class="text-[10px] text-indigo-500 dark:text-indigo-400 mt-0.5 font-medium truncate max-w-xs">
-                                                    {{ $task->parent->title }}
-                                                </p>
-                                            @endif
+                                            <div class="flex items-center gap-1.5 mt-1 relative z-30">
+                                                <span
+                                                    class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 rounded-md shadow-sm"
+                                                    title="{{ __('tasks.parent_task') }}: {{ $task->parent?->title }}">
+                                                    ↳ {{ __('tasks.subtask') }}
+                                                </span>
+                                                @if ($task->parent)
+                                                    <span
+                                                        class="text-[10px] text-gray-400 dark:text-gray-500 font-medium truncate max-w-[150px]">
+                                                        {{ $task->parent->title }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

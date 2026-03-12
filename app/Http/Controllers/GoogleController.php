@@ -293,13 +293,13 @@ class GoogleController extends Controller
                 return back()->with('success', __('google.export_success'));
             }
         } catch (\Exception $e) {
-            Log::error('Error creating Google Task: ' . $e->getMessage());
+            Log::error('Error exporting to Google Tasks: ' . $e->getMessage());
             
             if (str_contains(strtolower($e->getMessage()), 'insufficient authentication scopes')) {
-                return redirect()->route('google.auth')->with('info', __('google.reconnect_scopes'));
+                return back()->with('google_reauth_required', true)->with('info', __('google.reconnect_scopes'));
             }
-        }
 
-        return back()->with('error', __('google.export_failed'));
+            return back()->with('error', __('google.export_failed') . ': ' . $e->getMessage());
+        }
     }
 }
