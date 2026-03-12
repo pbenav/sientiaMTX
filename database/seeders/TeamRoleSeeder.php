@@ -18,10 +18,6 @@ class TeamRoleSeeder extends Seeder
                 'description' => 'Coordinador: Puede crear/editar/borrar tareas, invitar usuarios, asignar roles, ver reportes y auditoría'
             ],
             [
-                'name' => 'moderator',
-                'description' =>  'Moderador: Puede crear/editar tareas, revisar (cambiar status), comentar y asignar'
-            ],
-            [
                 'name' => 'user',
                 'description' => 'Usuario: Puede ver tareas asignadas, actualizar status propio, comentar'
             ]

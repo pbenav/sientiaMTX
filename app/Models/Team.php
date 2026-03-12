@@ -76,17 +76,11 @@ class Team extends Model
     }
 
     /**
-     * Check if a user is a manager for this team (Coordinator or Moderator)
+     * Check if a user is a manager for this team (Coordinator)
      */
     public function isManager(User $user): bool
     {
-        return $this->members()
-            ->where('user_id', $user->id)
-            ->wherePivotIn('role_id', function ($query) {
-                $query->select('id')->from('team_roles')
-                    ->whereIn('name', ['coordinator', 'moderator']);
-            })
-            ->exists();
+        return $this->isCoordinator($user);
     }
 
     /**

@@ -205,7 +205,7 @@ class Task extends Model
               })
               ->orWhere('visibility', 'public');
 
-            // Managers (Coordinators/Moderators) see all tasks in their team
+            // Managers (Coordinators) see all tasks in their team
             if ($isManager) {
                 $q->orWhere('team_id', $user->current_team_id);
             }
