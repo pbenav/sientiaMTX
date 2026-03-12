@@ -5,6 +5,7 @@ namespace App\Services;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Gmail;
+use Google\Service\Tasks;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -28,6 +29,7 @@ class GoogleService
 
         $this->client->addScope(Calendar::CALENDAR_READONLY);
         $this->client->addScope(Gmail::GMAIL_READONLY);
+        $this->client->addScope(Tasks::TASKS); // Read/Write
         $this->client->addScope('profile');
         $this->client->addScope('email');
         
@@ -105,6 +107,54 @@ class GoogleService
         } catch (\Exception $e) {
             Log::error('Error listing Google Calendar events: ' . $e->getMessage());
             return [];
+        }
+    }
+    
+    /**
+     * List tasks for the authenticated user from all task lists.
+     */
+    public function listTasks(int $maxResults = 30): array
+    {
+        $service = new Tasks($this->client);
+        try {
+            // First get all task lists
+            $taskLists = $service->tasklists->listTasklists();
+            $allTasks = [];
+            
+            foreach ($taskLists->getItems() as $list) {
+                $tasks = $service->tasks->listTasks($list->getId(), [
+                    'maxResults' => $maxResults,
+                    'showCompleted' => false,
+                    'dueMin' => date('c'), // Only future tasks
+                ]);
+                
+                foreach ($tasks->getItems() as $task) {
+                    // Add list title to task for context
+                    $task->listTitle = $list->getTitle();
+                    $allTasks[] = $task;
+                }
+            }
+            
+            return $allTasks;
+        } catch (\Exception $e) {
+            Log::error('Error listing Google Tasks: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Create a task in a Google Task List.
+     */
+    public function createTask(array $data, string $taskListId = '@default'): ?string
+    {
+        $service = new Tasks($this->client);
+        try {
+            $task = new \Google\Service\Tasks\Task($data);
+            $result = $service->tasks->insert($taskListId, $task);
+            return $result->getId();
+        } catch (\Exception $e) {
+            Log::error('Error creating Google Task: ' . $e->getMessage());
+            return null;
         }
     }
 }

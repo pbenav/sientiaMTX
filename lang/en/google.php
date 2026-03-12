@@ -31,4 +31,6 @@ return [
     'task_exists' => 'This task already seems to exist in this team.',
     'drop_to_sync' => 'Sync your Google Calendar events as tasks.',
     'authenticating' => 'Authenticating...',
+    'export_success' => 'Task successfully exported to Google Tasks.',
+    'export_failed' => 'Error exporting task to Google Tasks.',
 ];

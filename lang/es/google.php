@@ -31,4 +31,6 @@ return [
     'task_exists' => 'Esta tarea ya parece existir en este equipo.',
     'drop_to_sync' => 'Sincroniza tus eventos de Google Calendar como tareas.',
     'authenticating' => 'Autenticando...',
+    'export_success' => 'Tarea exportada correctamente a Google Tasks.',
+    'export_failed' => 'Error al exportar la tarea a Google Tasks.',
 ];
