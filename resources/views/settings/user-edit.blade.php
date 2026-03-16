@@ -60,9 +60,19 @@
                             class="mt-1 block w-full" />
                     </div>
 
-                    </select>
-                    <x-input-error class="mt-2" :messages="$errors->get('locale')" />
-                </div>
+                    <div>
+                        <x-input-label for="locale" :value="__('navigation.language')" />
+                        <select id="locale" name="locale"
+                            class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all cursor-pointer">
+                            <option value="es" {{ old('locale', $user->locale) === 'es' ? 'selected' : '' }}>
+                                {{ __('Spanish') }}
+                            </option>
+                            <option value="en" {{ old('locale', $user->locale) === 'en' ? 'selected' : '' }}>
+                                {{ __('English') }}
+                            </option>
+                        </select>
+                        <x-input-error class="mt-2" :messages="$errors->get('locale')" />
+                    </div>
 
                 <div>
                     <x-input-label for="disk_quota" :value="__('Disk Quota') . ' (MB)'" />
@@ -176,7 +186,8 @@
             <form id="delete-user-form" action="{{ route('settings.users.destroy', $user) }}" method="POST">
                 @csrf
                 @method('DELETE')
-                <button type="button" onclick="confirmDelete()"
+                <button type="button"
+                    onclick="window.confirmDelete('delete-user-form', '{{ __('Are you sure you want to delete this user?') }}')"
                     class="px-6 py-3 bg-white dark:bg-gray-900 border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-bold rounded-2xl transition-all shadow-lg hover:shadow-red-500/20 active:scale-95">
                     {{ __('Delete User') }}
                 </button>
@@ -184,28 +195,4 @@
         </div>
     </div>
     </div>
-
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
-            function confirmDelete() {
-                Swal.fire({
-                    title: '{{ __('Are you sure?') }}',
-                    text: '{{ __('You are about to delete this user. This action cannot be undone.') }}',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: '{{ __('Yes, delete user') }}',
-                    cancelButtonText: '{{ __('Cancel') }}',
-                    background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
-                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('delete-user-form').submit();
-                    }
-                })
-            }
-        </script>
-    @endpush
 </x-app-layout>

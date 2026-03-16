@@ -276,6 +276,18 @@
                 </div>
             @endif
 
+            @if ($task->observations)
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
+                    <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
+                        {{ __('tasks.observations') }}</h3>
+                    <div
+                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
+                        {!! str($task->observations)->markdown() !!}
+                    </div>
+                </div>
+            @endif
+
             <!-- History -->
             @if ($task->histories->isNotEmpty())
                 <div
