@@ -290,90 +290,6 @@
         </div>
         @endif
 
-        <!-- Attachments Section -->
-        <div
-            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    {{ __('tasks.attachments') }}
-                </h3>
-                <button type="button" onclick="document.getElementById('attachment-input').click()"
-                    class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    {{ __('tasks.add_attachment') }}
-                </button>
-                <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}"
-                    method="POST" enctype="multipart/form-data" class="hidden">
-                    @csrf
-                    <input type="file" id="attachment-input" name="file"
-                        onchange="document.getElementById('attachment-form').submit()">
-                </form>
-            </div>
-
-            @if ($task->attachments->isEmpty())
-                <p class="text-xs text-gray-400 italic">{{ __('tasks.no_attachments') }}</p>
-            @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    @foreach ($task->attachments as $attachment)
-                        <div
-                            class="group flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div
-                                    class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700 shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate"
-                                        title="{{ $attachment->file_name }}">
-                                        {{ $attachment->file_name }}
-                                    </p>
-                                    <p class="text-[10px] text-gray-400">
-                                        {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB •
-                                        {{ $attachment->created_at->diffForHumans() }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
-                                    class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
-                                    title="{{ __('tasks.download') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                </a>
-                                @can('update', $task)
-                                    <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
-                                        method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="p-1.5 text-gray-500 hover:text-red-600 transition-colors"
-                                            onclick="return confirm('{{ __('tasks.delete_attachment_confirm') }}')"
-                                            title="{{ __('tasks.delete') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                @endcan
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
         <!-- History -->
         @if ($task->histories->isNotEmpty())
             <div
@@ -590,6 +506,91 @@
                 </div>
             </div>
         @endif
+
+
+        <!-- Attachments Section -->
+        <div
+            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                    {{ __('tasks.attachments') }}
+                </h3>
+                <button type="button" onclick="document.getElementById('attachment-input').click()"
+                    class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    {{ __('tasks.add_attachment') }}
+                </button>
+                <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}"
+                    method="POST" enctype="multipart/form-data" class="hidden">
+                    @csrf
+                    <input type="file" id="attachment-input" name="file"
+                        onchange="document.getElementById('attachment-form').submit()">
+                </form>
+            </div>
+
+            @if ($task->attachments->isEmpty())
+                <p class="text-xs text-gray-400 italic text-center py-4">{{ __('tasks.no_attachments') }}</p>
+            @else
+                <div class="space-y-2">
+                    @foreach ($task->attachments as $attachment)
+                        <div
+                            class="group flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[11px] font-bold text-gray-700 dark:text-gray-300 truncate"
+                                        title="{{ $attachment->file_name }}">
+                                        {{ $attachment->file_name }}
+                                    </p>
+                                    <p class="text-[9px] text-gray-400">
+                                        {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
+                                    </p>
+                                </div>
+                            </div>
+                            <div
+                                class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
+                                    class="p-1 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                    title="{{ __('tasks.download') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </a>
+                                @can('update', $task)
+                                    <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
+                                        method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                            onclick="return confirm('{{ __('tasks.delete_attachment_confirm') }}')"
+                                            title="{{ __('tasks.delete') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endcan
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
 
         <!-- Disk Quota Widget -->
         <div
