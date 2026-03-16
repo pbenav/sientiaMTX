@@ -341,7 +341,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <a href="{{ route('teams.attachments.download', $attachment) }}"
+                                <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
                                     class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
                                     title="{{ __('tasks.download') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -351,8 +351,8 @@
                                     </svg>
                                 </a>
                                 @can('delete', $task)
-                                    <form action="{{ route('teams.attachments.destroy', $attachment) }}" method="POST"
-                                        class="inline">
+                                    <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
+                                        method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
