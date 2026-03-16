@@ -2,8 +2,8 @@
     @section('title', __('navigation.task_list') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between gap-3 overflow-hidden">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
                 <a href="{{ route('teams.show', $team) }}"
                     class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -11,9 +11,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div>
+                <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
                         {{ __('navigation.task_list') }}</h1>
                 </div>
             </div>
@@ -160,12 +160,12 @@
                                     <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 @endif">
                                         {{-- Bullet always first --}}
                                         <div
-                                            class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0 relative z-30">
+                                            class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0 relative z-40">
                                         </div>
 
                                         @if ($task->children->count() > 0)
                                             <button type="button"
-                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all relative z-30 mr-1"
+                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all relative z-40 mr-1"
                                                 data-id="{{ $task->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                     class="h-3 w-3 transform transition-transform" fill="none"
