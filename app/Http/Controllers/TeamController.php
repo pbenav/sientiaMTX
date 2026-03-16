@@ -307,13 +307,16 @@ class TeamController extends Controller
             return back()->withErrors(['user_id' => 'El nuevo propietario debe ser miembro del equipo.']);
         }
 
+        $oldOwnerId = auth()->id();
+
         // Transfer ownership
         $team->update(['created_by_id' => $newOwner->id]);
 
-        // Ensure new owner has coordinator role
+        // Ensure both new and old owner have coordinator role
         $coordinatorRole = TeamRole::where('name', 'coordinator')->first();
         if ($coordinatorRole) {
             $team->members()->updateExistingPivot($newOwner->id, ['role_id' => $coordinatorRole->id]);
+            $team->members()->updateExistingPivot($oldOwnerId, ['role_id' => $coordinatorRole->id]);
         }
 
         return redirect()->route('teams.show', $team)
