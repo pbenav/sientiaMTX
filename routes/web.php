@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('teams/{team}')->group(function () {
         Route::post('tasks/{task}/attachments', [TaskController::class, 'uploadAttachment'])->name('teams.tasks.attachments.upload');
         Route::get('attachments/{attachment}/download', [TaskController::class, 'downloadAttachment'])->name('teams.attachments.download');
+        Route::patch('attachments/{attachment}', [TaskController::class, 'updateAttachment'])->name('teams.attachments.update');
         Route::delete('attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
     });
 

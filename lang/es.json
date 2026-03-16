@@ -139,5 +139,8 @@
     "teams.new_owner": "Nuevo Propietario",
     "teams.ownership_transferred": "La propiedad del equipo ha sido transferida correctamente.",
     "teams.transfer_btn": "Transferir ahora",
-    "teams.select_member": "Seleccionar miembro"
+    "teams.select_member": "Seleccionar miembro",
+    "tasks.rename_attachment": "Renombrar archivo",
+    "tasks.new_name": "Nuevo nombre del archivo",
+    "tasks.attachment_renamed": "Archivo renombrado correctamente."
 }

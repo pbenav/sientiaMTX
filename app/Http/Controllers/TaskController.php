@@ -45,6 +45,11 @@ class TaskController extends Controller
 
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
+        } else {
+            // If no search/filter, only show top-level tasks by default to allow hierarchical view
+            if (!$request->filled('status') && !$request->filled('priority') && !$request->filled('assigned_to') && !$request->filled('type')) {
+                $query->whereNull('parent_id');
+            }
         }
 
         // --- Sorting ---
@@ -561,18 +566,33 @@ class TaskController extends Controller
         return back()->with('success', 'Archivo adjuntado correctamente.');
     }
 
-    public function downloadAttachment(TaskAttachment $attachment)
+    public function downloadAttachment(Team $team, TaskAttachment $attachment)
     {
         return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 
-    public function deleteAttachment(TaskAttachment $attachment)
+    public function updateAttachment(Request $request, Team $team, TaskAttachment $attachment)
     {
-        // Remove file from disk
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($attachment->file_path);
-        
-        // Update user disk usage (decrement)
-        $attachment->user->decrement('disk_used', $attachment->file_size);
+        $validated = $request->validate([
+            'file_name' => 'required|string|max:255',
+        ]);
+
+        $attachment->update([
+            'file_name' => $validated['file_name'],
+        ]);
+
+        return back()->with('success', 'Archivo renombrado correctamente.');
+    }
+
+    public function destroyAttachment(Team $team, TaskAttachment $attachment)
+    {
+        // Remove file from disk if exists
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($attachment->file_path);
+            
+            // Update user disk usage (decrement) only if file existed and was deleted
+            $attachment->user->decrement('disk_used', $attachment->file_size);
+        }
         
         $attachment->delete();
 

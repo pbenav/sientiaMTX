@@ -153,19 +153,23 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                        @forelse($tasks as $task)
-                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer @if ($task->parent_id) subtask-row hidden @endif"
-                                @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif
-                                data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
+                        @foreach ($tasks as $task)
+                            @if ($task->parent_id && $tasks->contains('id', $task->parent_id))
+                                @continue
+                            @endif
+
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer"
+                                data-href="{{ route('teams.tasks.show', [$team, $task]) }}"
+                                onclick="if(!event.target.closest('button, a, input, select')) window.location=this.dataset.href">
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 @endif">
-                                        {{-- Bullet always first --}}
+                                    <div class="flex items-center gap-3">
                                         <div
                                             class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0">
                                         </div>
 
-                                        @if ($task->children->count() > 0)
+                                        @if ($task->children->isNotEmpty())
                                             <button type="button"
+                                                onclick="event.stopPropagation(); toggleSubtasks({{ $task->id }}, this)"
                                                 class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all mr-1"
                                                 data-id="{{ $task->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -175,10 +179,7 @@
                                                         stroke-width="2" d="M9 5l7 7-7 7" />
                                                 </svg>
                                             </button>
-                                        @elseif($task->parent_id)
-                                            <div class="w-5 mr-1"></div>
                                         @else
-                                            {{-- No children and no parent, just some spacing --}}
                                             <div class="w-5 mr-1"></div>
                                         @endif
                                         <div>
@@ -192,8 +193,7 @@
                                             @elseif ($task->isInstance())
                                                 <div class="flex items-center gap-1.5 mt-1 relative z-30">
                                                     <span
-                                                        class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 rounded-md shadow-sm"
-                                                        title="{{ __('tasks.parent_task') }}: {{ $task->parent?->title }}">
+                                                        class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 rounded-md shadow-sm">
                                                         ↳ {{ __('tasks.subtask') }}
                                                     </span>
                                                     @if ($task->parent)
@@ -217,83 +217,83 @@
                                         {{ __("tasks.statuses.{$task->status}") }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col gap-1">
-                                        <span
-                                            class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{{ __('tasks.priority') }}:
-                                            <span
-                                                class="text-gray-700 dark:text-gray-300">{{ __("tasks.priorities.{$task->priority}") }}</span></span>
-                                        <span
-                                            class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{{ __('tasks.urgency') }}:
-                                            <span
-                                                class="text-gray-700 dark:text-gray-300">{{ __("tasks.urgencies.{$task->urgency}") }}</span></span>
-                                    </div>
+                                <td class="px-6 py-4 text-xs">
+                                    {{ __("tasks.priorities.{$task->priority}") }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
-                                            {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
-                                        </div>
-                                        <span
-                                            class="text-xs text-gray-600 dark:text-gray-400">{{ $task->creator?->name ?? '—' }}</span>
-                                    </div>
+                                    {{ $task->creator?->name ?? '—' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if ($task->assigned_user_id)
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[10px] font-bold text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
-                                                {{ strtoupper(substr($task->assignedUser->name, 0, 2)) }}
-                                            </div>
-                                            <span
-                                                class="text-xs text-gray-600 dark:text-gray-400">{{ $task->assignedUser->name }}</span>
-                                        </div>
-                                    @else
-                                        <span class="text-xs italic text-gray-400">{{ __('tasks.unassigned') }}</span>
-                                    @endif
+                                    {{ $task->assignedUser?->name ?? __('tasks.unassigned') }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if ($task->due_date)
-                                        <span
-                                            class="text-xs text-gray-600 dark:text-gray-400">{{ $task->due_date->format('d/m/Y') }}</span>
-                                    @else
-                                        <span class="text-xs text-gray-400">—</span>
-                                    @endif
+                                    <span
+                                        class="text-xs text-gray-500">{{ $task->due_date ? $task->due_date->format('d/m/y') : '—' }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-0.5">
+                                <td class="px-6 py-4 text-right">
+                                    <div
+                                        class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
-                                            class="p-1.5 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                                            title="{{ __('tasks.edit') }}">
+                                            class="p-1.5 text-gray-400 hover:text-blue-500 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </a>
-                                        <form action="{{ route('teams.tasks.destroy', [$team, $task]) }}"
-                                            method="POST" id="delete-task-{{ $task->id }}" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button"
-                                                onclick="confirmDelete('delete-task-{{ $task->id }}', '{{ __('tasks.confirm_delete') }}')"
-                                                class="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                title="{{ __('tasks.delete') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                    stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
                                     </div>
                                 </td>
                             </tr>
-                        @empty
+
+                            {{-- Subtasks loop --}}
+                            @foreach ($task->children as $subtask)
+                                <tr class="subtask-row hidden bg-gray-50/50 dark:bg-gray-800/20 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-800/40"
+                                    data-parent="{{ $task->id }}"
+                                    onclick="if(!event.target.closest('button, a, input, select')) window.location='{{ route('teams.tasks.show', [$team, $subtask]) }}'">
+                                    <td class="px-6 py-3 pl-16">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-1.5 h-1.5 rounded-full {{ $subtask->status === 'completed' ? 'bg-emerald-500' : 'bg-gray-400' }} shrink-0">
+                                            </div>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                {{ $subtask->title }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <span
+                                            class="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase tracking-tight">
+                                            {{ __("tasks.statuses.{$subtask->status}") }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                        {{ __("tasks.priorities.{$subtask->priority}") }}
+                                    </td>
+                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                        {{ $subtask->creator?->name ?? '—' }}
+                                    </td>
+                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                        {{ $subtask->assignedUser?->name ?? '—' }}
+                                    </td>
+                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                        {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
+                                    </td>
+                                    <td class="px-6 py-3 text-right">
+                                        <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}"
+                                            class="text-gray-300 hover:text-violet-400 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                        @if ($tasks->isEmpty())
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
+                                <td colspan="7" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center gap-2">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 border border-gray-100 dark:border-gray-700">
@@ -312,7 +312,7 @@
                                     </div>
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -326,39 +326,20 @@
 
         @push('scripts')
             <script>
+                function toggleSubtasks(taskId, button) {
+                    const subtasks = document.querySelectorAll(`.subtask-row[data-parent="${taskId}"]`);
+                    const icon = button.querySelector('svg');
+
+                    subtasks.forEach(st => {
+                        st.classList.toggle('hidden');
+                    });
+
+                    icon.classList.toggle('rotate-90');
+                }
+
+                // Document event listener for data-href rows if any left (though we used inline onclick)
                 document.addEventListener('DOMContentLoaded', function() {
-                    // Toggle subtasks functionality
-                    const toggles = document.querySelectorAll('.toggle-subtasks');
-                    toggles.forEach(toggle => {
-                        toggle.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-
-                            const taskId = this.getAttribute('data-id');
-                            const subtasks = document.querySelectorAll(
-                                `.subtask-row[data-parent="${taskId}"]`);
-                            const icon = this.querySelector('svg');
-
-                            subtasks.forEach(st => {
-                                st.classList.toggle('hidden');
-                            });
-
-                            icon.classList.toggle('rotate-90');
-                        });
-                    });
-
-                    // Row navigation functionality
-                    const rows = document.querySelectorAll('tr[data-href]');
-                    rows.forEach(row => {
-                        row.addEventListener('click', function(e) {
-                            // Don't navigate if clicking on a button, link or form element
-                            if (e.target.closest('button, a, form, input, select')) {
-                                return;
-                            }
-
-                            window.location.href = this.getAttribute('data-href');
-                        });
-                    });
+                    // This is extra protection, but inline onclick is already handling it
                 });
             </script>
         @endpush
