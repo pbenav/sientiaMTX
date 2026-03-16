@@ -57,6 +57,14 @@ Route::middleware('auth')->group(function () {
 
     // Tasks routes (nested under teams)
     Route::resource('teams.tasks', TaskController::class);
+    
+    // Task Attachments
+    Route::prefix('teams/{team}')->group(function () {
+        Route::post('tasks/{task}/attachments', [TaskController::class, 'uploadAttachment'])->name('teams.tasks.attachments.upload');
+        Route::get('attachments/{attachment}/download', [TaskController::class, 'downloadAttachment'])->name('teams.attachments.download');
+        Route::delete('attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
+    });
+
     Route::post('/teams/{team}/tasks/{task}/nudge', [TaskController::class, 'nudge'])->name('teams.tasks.nudge');
     Route::post('/teams/{team}/tasks/{task}/move', [TaskController::class, 'move'])->name('teams.tasks.move');
     Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');

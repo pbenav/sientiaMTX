@@ -154,10 +154,10 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse($tasks as $task)
-                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group">
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group @if ($task->parent_id) subtask-row hidden @endif"
+                                @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif>
                                 <td class="px-6 py-4 relative">
-                                    <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 subtask-row hidden @endif"
-                                        @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif>
+                                    <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 @endif">
                                         @if ($task->children->count() > 0)
                                             <button type="button"
                                                 class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-transform"
