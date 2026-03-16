@@ -350,7 +350,7 @@
                                             d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
                                 </a>
-                                @can('delete', $task)
+                                @can('update', $task)
                                     <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
                                         method="POST" class="inline">
                                         @csrf
