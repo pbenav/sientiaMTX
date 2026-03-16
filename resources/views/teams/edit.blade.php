@@ -66,39 +66,55 @@
         <!-- Transfer Ownership -->
         @can('transferOwnership', $team)
             <div
-                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
-                    <h2 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
+                class="bg-white dark:bg-gray-900 border border-amber-100 dark:border-amber-900/30 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+                <div
+                    class="px-6 py-4 border-b border-amber-50 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-900/10">
+                    <h2 class="font-bold text-xs uppercase tracking-widest text-amber-600 dark:text-amber-400 heading">
                         {{ __('teams.transfer_ownership') }}
                     </h2>
                 </div>
 
                 <div class="p-6">
-                    <p class="text-xs text-gray-500 mb-4">{{ __('teams.transfer_ownership_description') }}</p>
+                    <div class="flex items-start gap-4 mb-6">
+                        <div
+                            class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            {{ __('teams.transfer_ownership_description') }}
+                        </p>
+                    </div>
 
                     <form id="transfer-ownership-form" method="POST"
                         action="{{ route('teams.transfer-ownership', $team) }}"
                         onsubmit="event.preventDefault(); if(confirm('{{ __('teams.transfer_ownership_confirm') }}')) this.submit();">
                         @csrf
-                        <div class="flex flex-col sm:flex-row items-end gap-3">
-                            <div class="flex-1 w-full">
+                        <div class="space-y-4">
+                            <div>
                                 <x-input-label for="user_id" :value="__('teams.new_owner')"
                                     class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
                                 <select id="user_id" name="user_id" required
-                                    class="block w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                    class="block w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-amber-500 focus:ring focus:ring-amber-500/20 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white outline-none transition-all shadow-sm">
                                     <option value="">{{ __('teams.select_member') ?? 'Seleccionar miembro' }}
                                     </option>
                                     @foreach ($team->members->where('id', '!=', auth()->id()) as $member)
 <option value="{{ $member->id }}">{{ $member->name }} ({{ $member->email }})</option>
 @endforeach
                                 </select>
+                                <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
+                                </div>
+                                
+                                <div class="flex justify-end pt-2">
+                                    <button type="submit"
+                                        class="text-[11px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 hover:text-white hover:bg-amber-500 border border-amber-200 dark:border-amber-900/50 px-6 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-amber-500/20">
+                                        {{ __('teams.transfer_btn') }}
+                                    </button>
+                                </div>
                             </div>
-                            <button type="submit"
-                                class="w-full sm:w-auto bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all shadow-lg hover:shadow-gray-500/25">
-                                {{ __('teams.transfer_btn') }}
-                            </button>
-                        </div>
-                        <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
                         </form>
                     </div>
                 </div>
@@ -107,27 +123,27 @@
         <!-- Danger zone -->
         @can('delete', $team)
     <div
-                    class="bg-white dark:bg-gray-900 border border-red-100 dark:border-red-900/30 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-                    <div class="px-6 py-4 border-b border-red-50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10">
-                        <h3 class="text-[10px] font-bold uppercase tracking-widest text-red-500 heading">
-                            {{ __('teams.danger_zone') }}</h3>
-                    </div>
-                    <div class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <p class="text-sm font-bold text-gray-700 dark:text-gray-200">{{ __('teams.delete_team') }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ __('teams.delete_confirm_description') }}</p>
+                        class="bg-white dark:bg-gray-900 border border-red-100 dark:border-red-900/30 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+                        <div class="px-6 py-4 border-b border-red-50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10">
+                            <h3 class="text-[10px] font-bold uppercase tracking-widest text-red-500 heading">
+                                {{ __('teams.danger_zone') }}</h3>
                         </div>
+                        <div class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-200">{{ __('teams.delete_team') }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ __('teams.delete_confirm_description') }}</p>
+                            </div>
 
-                        <form id="delete-team-form" method="POST" action="{{ route('teams.destroy', $team) }}"
-                            onsubmit="event.preventDefault(); confirmDelete('delete-team-form', '{{ __('teams.delete_confirm') }}')">
-                            @csrf @method('DELETE')
-                            <button type="submit"
-                                class="text-xs font-bold uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 px-4 py-2.5 rounded-xl transition-all">
-                                {{ __('teams.delete_team') }}
-                            </button>
-                        </form>
+                            <form id="delete-team-form" method="POST" action="{{ route('teams.destroy', $team) }}"
+                                onsubmit="event.preventDefault(); confirmDelete('delete-team-form', '{{ __('teams.delete_confirm') }}')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                    class="text-xs font-bold uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 px-4 py-2.5 rounded-xl transition-all">
+                                    {{ __('teams.delete_team') }}
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
 @endcan
     </div>
 </x-app-layout>)
