@@ -158,9 +158,14 @@
                                 @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif>
                                 <td class="px-6 py-4 relative">
                                     <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 @endif">
+                                        {{-- Bullet always first --}}
+                                        <div
+                                            class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0 relative z-30">
+                                        </div>
+
                                         @if ($task->children->count() > 0)
                                             <button type="button"
-                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-transform"
+                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all relative z-30 mr-1"
                                                 data-id="{{ $task->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                     class="h-3 w-3 transform transition-transform" fill="none"
@@ -170,11 +175,11 @@
                                                 </svg>
                                             </button>
                                         @elseif($task->parent_id)
-                                            <div class="w-5"></div>
+                                            <div class="w-5 mr-1"></div>
+                                        @else
+                                            {{-- No children and no parent, just some spacing --}}
+                                            <div class="w-5 mr-1"></div>
                                         @endif
-                                        <div
-                                            class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} z-10 relative">
-                                        </div>
                                         <div class="z-10 relative">
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
                                                 class="text-sm font-semibold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors after:absolute after:inset-0 after:z-20">
