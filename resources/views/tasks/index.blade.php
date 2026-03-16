@@ -154,18 +154,19 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse($tasks as $task)
-                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group @if ($task->parent_id) subtask-row hidden @endif"
-                                @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif>
-                                <td class="px-6 py-4 relative">
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer @if ($task->parent_id) subtask-row hidden @endif"
+                                @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif
+                                data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
+                                <td class="px-6 py-4">
                                     <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 @endif">
                                         {{-- Bullet always first --}}
                                         <div
-                                            class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0 relative z-40">
+                                            class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0">
                                         </div>
 
                                         @if ($task->children->count() > 0)
                                             <button type="button"
-                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all relative z-40 mr-1"
+                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all mr-1"
                                                 data-id="{{ $task->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                     class="h-3 w-3 transform transition-transform" fill="none"
@@ -180,9 +181,9 @@
                                             {{-- No children and no parent, just some spacing --}}
                                             <div class="w-5 mr-1"></div>
                                         @endif
-                                        <div class="z-10 relative">
+                                        <div>
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                                class="text-sm font-semibold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors after:absolute after:inset-0 after:z-20">
+                                                class="text-sm font-semibold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                                 {{ $task->title }}
                                             </a>
                                             @if ($task->is_template)
@@ -326,6 +327,7 @@
         @push('scripts')
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
+                    // Toggle subtasks functionality
                     const toggles = document.querySelectorAll('.toggle-subtasks');
                     toggles.forEach(toggle => {
                         toggle.addEventListener('click', function(e) {
@@ -342,6 +344,19 @@
                             });
 
                             icon.classList.toggle('rotate-90');
+                        });
+                    });
+
+                    // Row navigation functionality
+                    const rows = document.querySelectorAll('tr[data-href]');
+                    rows.forEach(row => {
+                        row.addEventListener('click', function(e) {
+                            // Don't navigate if clicking on a button, link or form element
+                            if (e.target.closest('button, a, form, input, select')) {
+                                return;
+                            }
+
+                            window.location.href = this.getAttribute('data-href');
                         });
                     });
                 });

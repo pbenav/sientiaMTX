@@ -2,8 +2,8 @@
     @section('title', __('teams.eisenhower_matrix') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between gap-4 overflow-hidden">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
                 <a href="{{ route('teams.show', $team) }}"
                     class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -11,9 +11,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div>
+                <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
                         {{ __('teams.eisenhower_matrix') }}</h1>
                 </div>
             </div>
@@ -110,10 +110,11 @@
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
                                 @if ($task->status !== 'completed')
-                                    <div class="flex flex-col gap-1 w-full relative group/task"
-                                        data-id="{{ $task->id }}">
+                                    <div class="flex flex-col gap-1 w-full relative group/task cursor-pointer task-card"
+                                        data-id="{{ $task->id }}"
+                                        data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
                                         <div
-                                            class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl relative overflow-hidden">
+                                            class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all rounded-xl relative overflow-hidden">
                                             <!-- Status dot -->
                                             <div
                                                 class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }} z-10 relative">
@@ -133,7 +134,7 @@
                                             @endif
 
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                                class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors z-10 relative after:absolute after:inset-0 after:z-20">
+                                                class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors">
                                                 {{ $task->title }}
                                             </a>
                                             <!-- Owner initials -->
@@ -209,11 +210,11 @@
             <div class="min-h-[140px] quadrant-list p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
                 data-q="completed">
                 @forelse($tasks->where('status', 'completed') as $task)
-                    <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all cursor-grab active:cursor-grabbing rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden"
-                        data-id="{{ $task->id }}">
+                    <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer task-card"
+                        data-id="{{ $task->id }}" data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
                         <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
                         <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                            class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors z-10 relative after:absolute after:inset-0 after:z-20">
+                            class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                             {{ $task->title }}
                         </a>
                     </div>
@@ -383,6 +384,18 @@
                         sublist.classList.toggle('hidden');
                         icon.classList.toggle('rotate-90');
                     }
+                });
+            });
+
+            // Card navigation functionality
+            document.querySelectorAll('.task-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't navigate if clicking on a button, link or form element
+                    if (e.target.closest('button, a, form, input, select')) {
+                        return;
+                    }
+
+                    window.location.href = this.getAttribute('data-href');
                 });
             });
         </script>

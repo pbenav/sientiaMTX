@@ -10,10 +10,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <div class="flex-1">
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ $team->name }}</h1>
+            <div class="flex-1 min-w-0">
+                @include('teams.partials.breadcrumb')
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ $team->name }}</h1>
                 @if ($team->description)
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ $team->description }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{{ $team->description }}</p>
                 @endif
             </div>
             @include('teams.partials.header-actions')
@@ -58,19 +59,19 @@
                     default => 'text-amber-600 bg-amber-50 dark:text-yellow-400 dark:bg-yellow-400/10',
                 };
             @endphp
-            <div
-                class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors cursor-pointer task-row"
+                data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
                 <div class="flex-1 min-w-0 relative">
                     <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                        class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-violet-600 dark:hover:text-white truncate block transition-colors after:absolute after:inset-0 after:z-10">
+                        class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-violet-600 dark:hover:text-white truncate block transition-colors">
                         {{ $task->title }}
                     </a>
                     @if ($task->due_date)
-                        <span class="text-xs text-gray-500 relative z-20">{{ __('tasks.due_date') }}:
+                        <span class="text-xs text-gray-500">{{ __('tasks.due_date') }}:
                             {{ $task->due_date->format('d M Y') }}</span>
                     @endif
                 </div>
-                <span class="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full {{ $statusColor }} relative z-20">
+                <span class="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full {{ $statusColor }}">
                     {{ __('tasks.statuses.' . $task->status) }}
                 </span>
                 <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
@@ -86,4 +87,18 @@
             <div class="px-5 py-10 text-center text-gray-500 text-sm">{{ __('teams.no_tasks') }}</div>
         @endforelse
     </div>
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.task-row').forEach(row => {
+                    row.addEventListener('click', function(e) {
+                        if (e.target.closest('button, a, form, input, select')) {
+                            return;
+                        }
+                        window.location.href = this.getAttribute('data-href');
+                    });
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>
