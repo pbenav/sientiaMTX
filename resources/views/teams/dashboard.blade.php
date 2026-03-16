@@ -110,26 +110,66 @@
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
                                 @if ($task->status !== 'completed')
-                                    <div class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl relative overflow-hidden"
+                                    <div class="flex flex-col gap-1 w-full relative group/task"
                                         data-id="{{ $task->id }}">
-                                        <!-- Status dot -->
                                         <div
-                                            class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }} z-10 relative">
+                                            class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all cursor-grab active:cursor-grabbing rounded-xl relative overflow-hidden">
+                                            <!-- Status dot -->
+                                            <div
+                                                class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }} z-10 relative">
+                                            </div>
+
+                                            @if ($task->children->count() > 0)
+                                                <button type="button"
+                                                    class="toggle-subtasks-matrix p-0.5 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-transform z-20 relative"
+                                                    data-id="{{ $task->id }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-3 w-3 transform transition-transform" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+
+                                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
+                                                class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors z-10 relative after:absolute after:inset-0 after:z-20">
+                                                {{ $task->title }}
+                                            </a>
+                                            <!-- Owner initials -->
+                                            <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+                                                title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
+                                                {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                            </div>
+                                            @if ($task->due_date)
+                                                <span
+                                                    class="shrink-0 text-[7px] sm:text-[9px] text-gray-600 font-mono z-10 relative">
+                                                    {{ $task->due_date->format('d/m') }}
+                                                </span>
+                                            @endif
                                         </div>
-                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                            class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors z-10 relative after:absolute after:inset-0 after:z-20">
-                                            {{ $task->title }}
-                                        </a>
-                                        <!-- Owner initials -->
-                                        <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
-                                            title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
-                                            {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
-                                        </div>
-                                        @if ($task->due_date)
-                                            <span
-                                                class="shrink-0 text-[7px] sm:text-[9px] text-gray-600 font-mono z-10 relative">
-                                                {{ $task->due_date->format('d/m') }}
-                                            </span>
+
+                                        <!-- Subtasks List (Hidden by default) -->
+                                        @if ($task->children->count() > 0)
+                                            <div class="subtasks-matrix-list hidden pl-6 pr-2 space-y-1 pb-2"
+                                                data-parent="{{ $task->id }}">
+                                                @foreach ($task->children as $child)
+                                                    <div
+                                                        class="flex items-center gap-2 py-1 px-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all group/sub">
+                                                        <div class="w-1 h-1 rounded-full bg-gray-400/50"></div>
+                                                        <a href="{{ route('teams.tasks.show', [$team, $child]) }}"
+                                                            class="flex-1 text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white truncate">
+                                                            {{ $child->title }}
+                                                        </a>
+                                                        @if ($child->assignedUser)
+                                                            <div class="shrink-0 w-3 h-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-[6px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200/50"
+                                                                title="{{ $child->assignedUser->name }}">
+                                                                {{ strtoupper(substr($child->assignedUser->name, 0, 2)) }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         @endif
                                     </div>
                                 @endif
@@ -328,6 +368,22 @@
                         }
                     });
                 }
+            });
+
+            // Subtasks Matrix Fold/Unfold
+            document.querySelectorAll('.toggle-subtasks-matrix').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const taskId = this.getAttribute('data-id');
+                    const sublist = document.querySelector(`.subtasks-matrix-list[data-parent="${taskId}"]`);
+                    const icon = this.querySelector('svg');
+
+                    if (sublist) {
+                        sublist.classList.toggle('hidden');
+                        icon.classList.toggle('rotate-90');
+                    }
+                });
             });
         </script>
     @endpush

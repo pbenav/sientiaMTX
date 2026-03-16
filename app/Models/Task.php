@@ -257,4 +257,8 @@ class Task extends Model
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->where('status', '!=', 'completed');
     }
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class);
+    }
 }

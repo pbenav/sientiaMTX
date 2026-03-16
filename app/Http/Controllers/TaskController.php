@@ -18,7 +18,7 @@ class TaskController extends Controller
         $query = $team->tasks()
             ->visibleTo($user, $isManager)
             ->operationalFor($user, $team)
-            ->with(['assignedUser', 'tags', 'creator', 'parent']);
+            ->with(['assignedUser', 'tags', 'creator', 'parent', 'children']);
 
         // --- Filters ---
         if ($request->filled('status')) {
@@ -173,7 +173,7 @@ class TaskController extends Controller
      */
     public function show(Team $team, Task $task)
     {
-        $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags']);
+        $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments']);
 
         return view('tasks.show', compact('team', 'task'));
     }
@@ -528,5 +528,54 @@ class TaskController extends Controller
             'success' => true,
             'message' => __('tasks.nudge_sent')
         ]);
+    }
+
+    public function uploadAttachment(\Illuminate\Http\Request $request, Team $team, Task $task)
+    {
+        $request->validate([
+            'file' => 'required|file|max:10240', // 10MB max per file
+        ]);
+
+        $user = auth()->user();
+        $file = $request->file('file');
+        $size = $file->getSize();
+
+        // Check user quota
+        if (!$user->hasAvailableQuota($size)) {
+            return back()->with('error', 'Has excedido tu cuota de espacio en disco.');
+        }
+
+        $path = $file->store("attachments/task_{$task->id}", 'public');
+
+        $attachment = $task->attachments()->create([
+            'user_id' => $user->id,
+            'file_name' => $file->getClientOriginalName(),
+            'file_path' => $path,
+            'file_size' => $size,
+            'mime_type' => $file->getMimeType(),
+        ]);
+
+        // Update user disk usage
+        $user->increment('disk_used', $size);
+
+        return back()->with('success', 'Archivo adjuntado correctamente.');
+    }
+
+    public function downloadAttachment(TaskAttachment $attachment)
+    {
+        return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+    }
+
+    public function deleteAttachment(TaskAttachment $attachment)
+    {
+        // Remove file from disk
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($attachment->file_path);
+        
+        // Update user disk usage (decrement)
+        $attachment->user->decrement('disk_used', $attachment->file_size);
+        
+        $attachment->delete();
+
+        return back()->with('success', 'Archivo eliminado correctamente.');
     }
 }

@@ -247,9 +247,10 @@ class TeamController extends Controller
         $isManager = $team->isManager($user);
 
         $query = $team->tasks()
-            ->with(['assignedTo', 'assignedGroups', 'tags'])
+            ->with(['assignedTo', 'assignedGroups', 'tags', 'children', 'assignedUser'])
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team);
+            ->operationalFor($user, $team)
+            ->whereNull('parent_id');
 
         // Matrix-specific filter for managers (as requested: ensure owner visibility + backlog)
         if ($isManager) {

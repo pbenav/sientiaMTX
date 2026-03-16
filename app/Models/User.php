@@ -31,6 +31,8 @@ class User extends Authenticatable implements HasLocalePreference
         'google_id',
         'google_token',
         'google_refresh_token',
+        'disk_quota',
+        'disk_used',
     ];
 
     /**
@@ -114,6 +116,16 @@ class User extends Authenticatable implements HasLocalePreference
     public function preferredLocale(): string
     {
         return $this->locale ?? config('app.locale');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class);
+    }
+
+    public function hasAvailableQuota(int $bytes): bool
+    {
+        return ($this->disk_used + $bytes) <= $this->disk_quota;
     }
 }
 

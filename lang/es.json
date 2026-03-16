@@ -103,7 +103,6 @@
     "Delete User": "Eliminar Usuario",
     "You cannot delete your own account.": "No puedes eliminar tu propia cuenta.",
     "Task List": "Lista de tareas",
-    "Actions": "Acciones",
     "Title": "Título",
     "Status": "Estado",
     "Priority": "Prioridad",
@@ -123,5 +122,15 @@
     "Authorized Redirect URI": "URI de Redirección Autorizada",
     "Add this URL to your Google Cloud Console project settings.": "Añade esta URL a los ajustes de tu proyecto en Google Cloud Console.",
     "Google Client ID": "ID de Cliente de Google",
-    "Google Client Secret": "Secreto de Cliente de Google"
+    "Google Client Secret": "Secreto de Cliente de Google",
+    "tasks.attachments": "Archivos Adjuntos",
+    "tasks.add_attachment": "Añadir Archivo",
+    "tasks.no_attachments": "No hay archivos adjuntos en esta tarea.",
+    "tasks.disk_quota": "Espacio en Disco",
+    "tasks.quota_usage_tip": "Gestiona tus archivos para no exceder tu límite de almacenamiento.",
+    "tasks.download": "Descargar",
+    "tasks.delete_attachment_confirm": "¿Estás seguro de que quieres eliminar este archivo?",
+    "tasks.attachment_uploaded": "Archivo adjuntado correctamente.",
+    "tasks.attachment_deleted": "Archivo eliminado correctamente.",
+    "tasks.quota_exceeded": "Has excedido tu cuota de espacio en disco."
 }

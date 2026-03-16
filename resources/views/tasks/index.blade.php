@@ -156,7 +156,22 @@
                         @forelse($tasks as $task)
                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group">
                                 <td class="px-6 py-4 relative">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-3 @if ($task->parent_id) ml-8 subtask-row hidden @endif"
+                                        @if ($task->parent_id) data-parent="{{ $task->parent_id }}" @endif>
+                                        @if ($task->children->count() > 0)
+                                            <button type="button"
+                                                class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-transform"
+                                                data-id="{{ $task->id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-3 w-3 transform transition-transform" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        @elseif($task->parent_id)
+                                            <div class="w-5"></div>
+                                        @endif
                                         <div
                                             class="w-2 h-2 rounded-full {{ $task->status === 'completed' ? 'bg-emerald-500' : ($task->status === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} z-10 relative">
                                         </div>
@@ -302,4 +317,29 @@
                 </div>
             @endif
         </div>
+
+        @push('scripts')
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const toggles = document.querySelectorAll('.toggle-subtasks');
+                    toggles.forEach(toggle => {
+                        toggle.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const taskId = this.getAttribute('data-id');
+                            const subtasks = document.querySelectorAll(
+                                `.subtask-row[data-parent="${taskId}"]`);
+                            const icon = this.querySelector('svg');
+
+                            subtasks.forEach(st => {
+                                st.classList.toggle('hidden');
+                            });
+
+                            icon.classList.toggle('rotate-90');
+                        });
+                    });
+                });
+            </script>
+        @endpush
 </x-app-layout>
