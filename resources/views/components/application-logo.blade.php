@@ -9,6 +9,6 @@
             <rect x="13" y="13" width="8" height="8" rx="1" />
         </svg>
     </div>
-    <div class="text-xl font-bold text-white font-space-grotesk tracking-tight">sientia<span
+    <div class="text-xl font-bold text-gray-900 dark:text-white font-space-grotesk tracking-tight">sientia<span
             class="text-violet-400">MTX</span></div>
 </div>
