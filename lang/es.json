@@ -138,5 +138,6 @@
     "teams.transfer_ownership_confirm": "¿Estás seguro de que quieres transferir la propiedad del equipo? Perderás el control total sobre él.",
     "teams.new_owner": "Nuevo Propietario",
     "teams.ownership_transferred": "La propiedad del equipo ha sido transferida correctamente.",
-    "teams.transfer_btn": "Transferir ahora"
+    "teams.transfer_btn": "Transferir ahora",
+    "teams.select_member": "Seleccionar miembro"
 }
