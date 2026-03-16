@@ -210,6 +210,18 @@
         .gantt .gantt-today-marker-task .bar-label {
             display: none !important;
         }
+
+        /* Blocked task pulse in Gantt */
+        .gantt .bar-group[data-status="blocked"] .bar {
+            fill: #ef4444 !important;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
     </style>
 
     <script>
@@ -256,13 +268,15 @@
                         'pending': 'Pendiente',
                         'in_progress': 'En curso',
                         'completed': 'Terminada',
-                        'cancelled': 'Cancelada'
+                        'cancelled': 'Cancelada',
+                        'blocked': 'Bloqueada'
                     };
                     const statusColors = {
                         'pending': 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
                         'in_progress': 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
                         'completed': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
                         'cancelled': 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                        'blocked': 'bg-red-500 text-white shadow-lg animate-pulse',
                     };
 
                     const parentHtml = task.parent_title ? `
@@ -319,6 +333,14 @@
                         .catch(error => console.error('Error updating task:', error));
                 }
             });
+
+            // Post-initialization: Add status attributes to bar groups for CSS targeting
+            setTimeout(() => {
+                tasks.forEach(t => {
+                    const el = document.querySelector(`.bar-group[data-id="${t.id}"]`);
+                    if (el) el.setAttribute('data-status', t.status);
+                });
+            }, 500);
             // Center today line and add custom line
             setTimeout(() => {
                 centerToday();

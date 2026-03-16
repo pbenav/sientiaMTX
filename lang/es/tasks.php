@@ -42,6 +42,7 @@ return [
     'reopen_task' => 'Reabrir tarea',
     'report_blocker' => 'Informar un bloqueo',
     'view_detail' => 'Ver detalle',
+    'unblock_task' => 'Quitar bloqueo',
 
     'priorities' => [
         'low' => 'Baja',

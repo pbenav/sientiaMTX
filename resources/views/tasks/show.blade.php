@@ -462,7 +462,16 @@
                         </button>
                     @endif
 
-                    @if ($task->status !== 'blocked')
+                    @if ($task->status === 'blocked')
+                        <button onclick="updateTaskStatus('in_progress')"
+                            class="w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            {{ __('tasks.unblock_task') }}
+                        </button>
+                    @else
                         <button onclick="updateTaskStatus('blocked')"
                             class="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-red-200 dark:border-red-500/20">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -690,7 +699,8 @@
                 const messages = {
                     'completed': '¿Marcar como completada?',
                     'blocked': '¿Informar un bloqueo en esta tarea?',
-                    'pending': '¿Reabrir esta tarea?'
+                    'pending': '¿Reabrir esta tarea?',
+                    'in_progress': '¿Quitar el bloqueo de esta tarea?'
                 };
 
                 Swal.fire({

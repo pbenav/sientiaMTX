@@ -115,9 +115,19 @@
                                         data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
                                         <div
                                             class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all rounded-xl relative overflow-hidden">
-                                            <!-- Status dot -->
-                                            <div
-                                                class="w-1.5 h-1.5 rounded-full shrink-0 {{ $cfg['dot'] }} z-10 relative">
+                                            <!-- Status indicator -->
+                                            <div class="flex items-center gap-1.5 shrink-0 z-10 relative">
+                                                @if ($task->status === 'blocked')
+                                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></div>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-500"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2.5"
+                                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                @else
+                                                    <div class="w-1.5 h-1.5 rounded-full {{ $cfg['dot'] }}"></div>
+                                                @endif
                                             </div>
 
                                             @if ($task->children->count() > 0)
@@ -236,6 +246,9 @@
         <span>·</span>
         <span>{{ $tasks->where('status', 'in_progress')->count() }}
             {{ strtolower(__('tasks.statuses.in_progress')) }}</span>
+        <span>·</span>
+        <span>{{ $tasks->where('status', 'blocked')->count() }}
+            {{ strtolower(__('tasks.statuses.blocked')) }}</span>
         <span>·</span>
         <span>{{ $tasks->where('due_date', '<', now())->whereNotIn('status', ['completed', 'cancelled'])->count() }}
             {{ __('teams.overdue') }}</span>
