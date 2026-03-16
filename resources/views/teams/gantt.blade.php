@@ -193,6 +193,17 @@
             border-color: #374151;
             color: #f3f4f6;
         }
+
+        /* Today line highlight */
+        .gantt .today-highlight {
+            fill: rgba(16, 185, 129, 0.05) !important;
+        }
+
+        #today-line {
+            stroke: #10b981;
+            stroke-width: 1.5;
+            stroke-dasharray: 4;
+        }
     </style>
 
     <script>
@@ -302,10 +313,49 @@
                         .catch(error => console.error('Error updating task:', error));
                 }
             });
+
+            // Center today line and add custom line
+            setTimeout(() => {
+                centerToday();
+                drawTodayLine();
+            }, 500);
+        }
+
+        function centerToday() {
+            const container = document.getElementById('gantt-container');
+            const todayElement = container.querySelector('.today-highlight');
+            if (todayElement) {
+                const x = todayElement.getAttribute('x');
+                const containerWidth = container.offsetWidth;
+                container.scrollLeft = x - (containerWidth / 2);
+            }
+        }
+
+        function drawTodayLine() {
+            const svg = document.querySelector('#gantt-container svg');
+            const todayHighlight = document.querySelector('.today-highlight');
+            if (!svg || !todayHighlight) return;
+
+            const existing = document.getElementById('today-line');
+            if (existing) existing.remove();
+
+            const x = parseFloat(todayHighlight.getAttribute('x'));
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('id', 'today-line');
+            line.setAttribute('x1', x);
+            line.setAttribute('y1', 0);
+            line.setAttribute('x2', x);
+            line.setAttribute('y2', '100%');
+            svg.appendChild(line);
         }
 
         function changeView(mode) {
             gantt.change_view_mode(mode);
+            setTimeout(() => {
+                centerToday();
+                drawTodayLine();
+            }, 300);
         }
 
         function filterTasks(quadrant) {

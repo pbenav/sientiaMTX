@@ -48,6 +48,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'locale' => $request->locale,
             'is_admin' => $isFirstUser,
+            'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
         ]);
 
         // Process pending invitations

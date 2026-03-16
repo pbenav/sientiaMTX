@@ -32,6 +32,9 @@ class SettingsController extends Controller
                 'client_id' => env('GOOGLE_CLIENT_ID'),
                 'client_secret' => env('GOOGLE_CLIENT_SECRET'),
                 'redirect_uri' => env('GOOGLE_REDIRECT_URI', route('google.callback')),
+            ],
+            'limits' => [
+                'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100), // In MB
             ]
         ]);
     }
@@ -73,6 +76,7 @@ class SettingsController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'locale' => $validated['locale'],
+            'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
         ]);
 
         return redirect()->route('settings.users')
@@ -115,12 +119,14 @@ class SettingsController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'locale' => 'required|string|in:en,es',
             'password' => 'nullable|string|min:8|confirmed',
+            'disk_quota' => 'required|numeric|min:1',
         ]);
 
         $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'locale' => $validated['locale'],
+            'disk_quota' => $validated['disk_quota'] * 1024 * 1024,
         ]);
 
         if (!empty($validated['password'])) {
@@ -180,6 +186,7 @@ class SettingsController extends Controller
             'MAIL_FROM_NAME' => 'sometimes|string',
             'GOOGLE_CLIENT_ID' => 'sometimes|nullable|string',
             'GOOGLE_CLIENT_SECRET' => 'sometimes|nullable|string',
+            'DEFAULT_DISK_QUOTA' => 'sometimes|nullable|numeric',
         ]);
 
         try {

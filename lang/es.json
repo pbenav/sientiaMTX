@@ -142,5 +142,10 @@
     "teams.select_member": "Seleccionar miembro",
     "tasks.rename_attachment": "Renombrar archivo",
     "tasks.new_name": "Nuevo nombre del archivo",
-    "tasks.attachment_renamed": "Archivo renombrado correctamente."
+    "tasks.attachment_renamed": "Archivo renombrado correctamente.",
+    "Application Limits": "Límites de la Aplicación",
+    "Default Disk Quota (MB)": "Cuota de Disco Predeterminada (MB)",
+    "Set the default storage limit for new and existing users.": "Establece el límite de almacenamiento predeterminado para usuarios nuevos y existentes.",
+    "Disk Quota": "Cuota de Disco",
+    "Global Settings": "Configuración Global"
 }
