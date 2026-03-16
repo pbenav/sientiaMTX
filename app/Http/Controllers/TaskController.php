@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Team;
+use App\Models\TaskAttachment;
 use App\Traits\HandlesEisenhowerMatrix;
 use Illuminate\Http\Request;
 
