@@ -114,6 +114,17 @@ class GanttController extends Controller
             ];
         });
 
+        // Step 5: Ensure Today is in range even if no tasks exist currently
+        $todayStr = now()->format('Y-m-d');
+        $tasks->push([
+            'id'           => 'today_marker',
+            'name'         => '',
+            'start'        => $todayStr,
+            'end'          => $todayStr,
+            'progress'     => 0,
+            'custom_class' => 'gantt-today-marker-task', // We will hide this in CSS
+        ]);
+
         return response()->json($tasks);
     }
 }

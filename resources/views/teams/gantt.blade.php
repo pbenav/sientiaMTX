@@ -201,8 +201,14 @@
 
         #today-line {
             stroke: #10b981;
-            stroke-width: 1.5;
-            stroke-dasharray: 4;
+            stroke-width: 1;
+            /* Solid line for better visibility on screen */
+        }
+
+        /* Hide the dummy task used to extend range */
+        .gantt .gantt-today-marker-task .bar-group,
+        .gantt .gantt-today-marker-task .bar-label {
+            display: none !important;
         }
     </style>
 
@@ -313,28 +319,43 @@
                         .catch(error => console.error('Error updating task:', error));
                 }
             });
-
             // Center today line and add custom line
             setTimeout(() => {
                 centerToday();
                 drawTodayLine();
-            }, 500);
+            }, 800);
         }
 
         function centerToday() {
             const container = document.getElementById('gantt-container');
             const todayElement = container.querySelector('.today-highlight');
             if (todayElement) {
-                const x = todayElement.getAttribute('x');
+                const x = parseFloat(todayElement.getAttribute('x'));
                 const containerWidth = container.offsetWidth;
                 container.scrollLeft = x - (containerWidth / 2);
+            } else {
+                // Fallback: If no highlight (should not happen with our enforcer), center last task
+                const bars = container.querySelectorAll('.bar');
+                if (bars.length > 0) {
+                    const lastBar = bars[bars.length - 1];
+                    container.scrollLeft = parseFloat(lastBar.getAttribute('x')) - (container.offsetWidth / 2);
+                }
             }
         }
 
         function drawTodayLine() {
-            const svg = document.querySelector('#gantt-container svg');
-            const todayHighlight = document.querySelector('.today-highlight');
-            if (!svg || !todayHighlight) return;
+            const container = document.getElementById('gantt-container');
+            const svg = container.querySelector('svg');
+            const todayHighlight = container.querySelector('.today-highlight');
+
+            if (!svg || !todayHighlight) {
+                // Retry once after a short delay if not ready
+                if (!window._gantt_retry) {
+                    window._gantt_retry = true;
+                    setTimeout(drawTodayLine, 1000);
+                }
+                return;
+            };
 
             const existing = document.getElementById('today-line');
             if (existing) existing.remove();
@@ -352,13 +373,15 @@
 
         function changeView(mode) {
             gantt.change_view_mode(mode);
+            window._gantt_retry = false;
             setTimeout(() => {
                 centerToday();
                 drawTodayLine();
-            }, 300);
+            }, 500);
         }
 
         function filterTasks(quadrant) {
+            window._gantt_retry = false;
             initGantt(quadrant);
         }
 
