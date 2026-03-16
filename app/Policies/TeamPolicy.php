@@ -33,6 +33,14 @@ class TeamPolicy
     }
 
     /**
+     * Determine whether the user can transfer ownership of the team.
+     */
+    public function transferOwnership(User $user, Team $team): bool
+    {
+        return $team->created_by_id === $user->id;
+    }
+
+    /**
      * Determine whether the user can view team members.
      */
     public function viewMembers(User $user, Team $team): bool

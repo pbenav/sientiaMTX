@@ -132,5 +132,11 @@
     "tasks.delete_attachment_confirm": "¿Estás seguro de que quieres eliminar este archivo?",
     "tasks.attachment_uploaded": "Archivo adjuntado correctamente.",
     "tasks.attachment_deleted": "Archivo eliminado correctamente.",
-    "tasks.quota_exceeded": "Has excedido tu cuota de espacio en disco."
+    "tasks.quota_exceeded": "Has excedido tu cuota de espacio en disco.",
+    "teams.transfer_ownership": "Transferir Propiedad",
+    "teams.transfer_ownership_description": "Transfiere la propiedad de este equipo a otro miembro. El nuevo propietario se convertirá automáticamente en administrador.",
+    "teams.transfer_ownership_confirm": "¿Estás seguro de que quieres transferir la propiedad del equipo? Perderás el control total sobre él.",
+    "teams.new_owner": "Nuevo Propietario",
+    "teams.ownership_transferred": "La propiedad del equipo ha sido transferida correctamente.",
+    "teams.transfer_btn": "Transferir ahora"
 }

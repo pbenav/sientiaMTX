@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
 
     // Teams routes
     Route::resource('teams', TeamController::class);
+    Route::post('/teams/{team}/transfer-ownership', [TeamController::class, 'transferOwnership'])->name('teams.transfer-ownership');
     Route::get('/teams/{team}/dashboard', [TeamController::class, 'dashboard'])->name('teams.dashboard');
     Route::get('/teams/{team}/members', [TeamController::class, 'members'])->name('teams.members');
     Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.addMember');

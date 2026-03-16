@@ -289,4 +289,34 @@ class TeamController extends Controller
         return view('teams.dashboard', compact('team', 'quadrants', 'tasks'));
     }
 
+    /**
+     * Transfer team ownership to another user
+     */
+    public function transferOwnership(Request $request, Team $team)
+    {
+        $this->authorize('transferOwnership', $team);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $newOwner = User::findOrFail($validated['user_id']);
+
+        // Check if user is member of the team
+        if (!$team->members()->where('user_id', $newOwner->id)->exists()) {
+            return back()->withErrors(['user_id' => 'El nuevo propietario debe ser miembro del equipo.']);
+        }
+
+        // Transfer ownership
+        $team->update(['created_by_id' => $newOwner->id]);
+
+        // Ensure new owner has coordinator role
+        $coordinatorRole = TeamRole::where('name', 'coordinator')->first();
+        if ($coordinatorRole) {
+            $team->members()->updateExistingPivot($newOwner->id, ['role_id' => $coordinatorRole->id]);
+        }
+
+        return redirect()->route('teams.show', $team)
+            ->with('success', __('teams.ownership_transferred'));
+    }
 }
