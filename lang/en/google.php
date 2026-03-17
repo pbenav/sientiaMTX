@@ -44,6 +44,7 @@ return [
     'sync_success' => 'Task synced successfully.',
     'sync_failed' => 'Error syncing task.',
     'sync_from_remote_success' => 'Task updated with remote changes from Google Tasks.',
+    'sync_remote_deleted' => 'Task has been deleted locally because it was not found in Google Tasks.',
     'sync_to_remote_success' => 'Google Task updated with local changes.',
     'already_synced' => 'Task is already up to date.',
 ];

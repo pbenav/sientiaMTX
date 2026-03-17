@@ -309,13 +309,10 @@ class GoogleController extends Controller
             $googleTask = $this->googleService->getTask($task->google_task_list_id, $task->google_task_id);
 
             if (!$googleTask) {
-                // Task might have been deleted in Google. Reset local IDs and re-export.
-                $task->update([
-                    'google_task_id' => null,
-                    'google_task_list_id' => null,
-                    'google_synced_at' => null,
-                ]);
-                return $this->syncTask($team, $task);
+                // Task was deleted in Google Tasks. Delete locally as well.
+                $task->delete();
+                return redirect()->route('teams.tasks.index', $team)
+                    ->with('warning', __('google.sync_remote_deleted'));
             }
 
             $googleUpdated = strtotime($googleTask->getUpdated());

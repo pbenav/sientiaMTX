@@ -198,6 +198,11 @@ class TaskController extends Controller
         $this->authorize('view', $task);
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments']);
 
+        // Load parent attachments if it's an instance or has a parent
+        if ($task->parent_id) {
+            $task->load('parent.attachments');
+        }
+
         return view('tasks.show', compact('team', 'task'));
     }
 
@@ -407,6 +412,13 @@ class TaskController extends Controller
     public function destroy(Team $team, Task $task)
     {
         $this->authorize('delete', $task);
+
+        // Delete from Google Tasks if synced
+        if ($task->google_task_id && auth()->user()->google_token) {
+            $googleService = app(\App\Services\GoogleService::class);
+            $googleService->deleteTask($task->google_task_list_id, $task->google_task_id);
+        }
+
         $task->delete();
 
         return redirect()->route('teams.tasks.index', $team)

@@ -142,6 +142,13 @@
                                 {{ __('tasks.assigned_to') }}
                             </th>
                             <th class="px-6 py-4">
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'progress_percentage', 'direction' => request('sort') == 'progress_percentage' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
+                                    class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                    {{ __('tasks.progress') }}
+                                    <x-sort-icon column="progress_percentage" />
+                                </a>
+                            </th>
+                            <th class="px-6 py-4">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'due_date', 'direction' => request('sort') == 'due_date' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.due_date') }}
@@ -256,6 +263,17 @@
                                     {{ $task->assignedUser?->name ?? __('tasks.unassigned') }}
                                 </td>
                                 <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="flex-1 w-20 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
+                                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all shadow-sm"
+                                                style="width: {{ $task->progress }}%"></div>
+                                        </div>
+                                        <span
+                                            class="text-[10px] font-bold text-gray-400 dark:text-gray-500 w-6">{{ $task->progress }}%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
                                     <span
                                         class="text-xs text-gray-500">{{ $task->due_date ? $task->due_date->format('d/m/y') : '—' }}</span>
                                 </td>
@@ -305,6 +323,17 @@
                                     </td>
                                     <td class="px-6 py-3 text-[10px] text-gray-400">
                                         {{ $subtask->assignedUser?->name ?? '—' }}
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex-1 w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
+                                                <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all shadow-sm"
+                                                    style="width: {{ $subtask->progress }}%"></div>
+                                            </div>
+                                            <span
+                                                class="text-[9px] font-bold text-gray-400 dark:text-gray-500 w-5">{{ $subtask->progress }}%</span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-3 text-[10px] text-gray-400">
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}

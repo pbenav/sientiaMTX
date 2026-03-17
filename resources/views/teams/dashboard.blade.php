@@ -170,6 +170,14 @@
                                                 </span>
                                             @endif
                                         </div>
+                                        <!-- Progress Bar for Matrix Cards -->
+                                        <div class="px-2 sm:px-3 pb-1.5 -mt-0.5">
+                                            <div
+                                                class="w-full h-0.5 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                                <div class="h-full bg-violet-500/50"
+                                                    style="width: {{ $task->progress }}%"></div>
+                                            </div>
+                                        </div>
 
                                         <!-- Subtasks List (Hidden by default) -->
                                         @if ($task->children->count() > 0)
@@ -218,7 +226,8 @@
                     <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <h3 class="text-[12px] font-bold uppercase tracking-[0.25em] text-gray-600 dark:text-gray-500">

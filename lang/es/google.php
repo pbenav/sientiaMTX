@@ -44,6 +44,7 @@ return [
     'sync_success' => 'Tarea sincronizada correctamente.',
     'sync_failed' => 'Error al sincronizar la tarea.',
     'sync_from_remote_success' => 'Tarea actualizada con los cambios remotos de Google Tasks.',
+    'sync_remote_deleted' => 'La tarea ha sido eliminada de local porque no se encontró en Google Tasks.',
     'sync_to_remote_success' => 'Tarea actualizada en Google Tasks con los cambios locales.',
     'already_synced' => 'La tarea ya está al día.',
 ];

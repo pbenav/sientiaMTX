@@ -188,4 +188,19 @@ class GoogleService
             return null;
         }
     }
+
+    /**
+     * Delete a task from Google Tasks.
+     */
+    public function deleteTask(string $taskListId, string $taskId): bool
+    {
+        $service = new Tasks($this->client);
+        try {
+            $service->tasks->delete($taskListId, $taskId);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error deleting Google Task: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
