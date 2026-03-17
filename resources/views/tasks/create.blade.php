@@ -104,7 +104,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.public') }}</span>
-                                    <span class="text-[10px] text-gray-500">{{ __('Visible to team') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('tasks.public_hint') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -118,7 +118,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.private') }}</span>
-                                    <span class="text-[10px] text-gray-500">{{ __('Owner only') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('tasks.private_hint') }}</span>
                                 </div>
                             </div>
                         </label>

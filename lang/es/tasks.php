@@ -28,7 +28,7 @@ return [
     'clear_filters' => 'Limpiar filtros',
     'no_tasks' => 'No se encontraron tareas.',
     'confirm_delete' => '¿Seguro que quieres eliminar esta tarea?',
-    'edit' => 'Editar tarea',
+    'edit' => 'Edición de tarea',
     'delete' => 'Eliminar',
     'delete_confirm' => '¿Seguro que quieres eliminar esta tarea?',
     'back' => 'Volver',
@@ -46,6 +46,8 @@ return [
     'visibility' => 'Visibilidad',
     'public' => 'Pública',
     'private' => 'Privada',
+    'public_hint' => 'Visible para el equipo',
+    'private_hint' => 'Solo el propietario',
     'auto_public_warning' => 'La tarea se ha cambiado a Pública porque ha sido asignada a otros miembros. Las tareas privadas son estrictamente para uso personal.',
 
     'priorities' => [

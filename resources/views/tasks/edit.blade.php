@@ -12,8 +12,7 @@
             </a>
             <div>
                 @include('teams.partials.breadcrumb')
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('tasks.edit') }}:
-                    {{ $task->title }}</h1>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('navigation.task_detail') }}s</h1>
             </div>
         </div>
     </x-slot>
@@ -122,7 +121,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.public') }}</span>
-                                    <span class="text-[10px] text-gray-500">{{ __('Visible to team') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('tasks.public_hint') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -136,7 +135,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.private') }}</span>
-                                    <span class="text-[10px] text-gray-500">{{ __('Owner only') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('tasks.private_hint') }}</span>
                                 </div>
                             </div>
                         </label>
