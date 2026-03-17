@@ -57,7 +57,7 @@
                     <label
                         class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.description') }}</label>
                     <textarea name="description" rows="3"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all resize-none placeholder-gray-400">{{ old('description', $task->description) }}</textarea>
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400">{{ old('description', $task->description) }}</textarea>
                 </div>
 
                 <!-- Observations (Markdown) -->
@@ -224,6 +224,10 @@
             background: #1f2937;
             border-color: #374151;
             color: #f3f4f6;
+        }
+
+        .EasyMDEContainer .CodeMirror {
+            resize: vertical;
         }
 
         .EasyMDEContainer .editor-toolbar {
