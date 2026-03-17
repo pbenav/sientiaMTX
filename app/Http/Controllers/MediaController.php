@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\TaskAttachment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class MediaController extends Controller
+{
+    /**
+     * Display a listing of the user's uploaded files.
+     */
+    public function index()
+    {
+        $user = auth()->user();
+        
+        // Show all files uploaded by this user, across all tasks and teams
+        $attachments = TaskAttachment::where('user_id', $user->id)
+            ->with(['task.team'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('media.index', compact('attachments', 'user'));
+    }
+
+    /**
+     * Remove the specified attachment.
+     */
+    public function destroy(TaskAttachment $attachment)
+    {
+        // Security check: only the owner can delete their files from here
+        if ($attachment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (Storage::disk('public')->exists($attachment->file_path)) {
+            Storage::disk('public')->delete($attachment->file_path);
+            
+            // Update user disk usage
+            $attachment->user->decrement('disk_used', $attachment->file_size);
+        }
+        
+        $attachment->delete();
+
+        return back()->with('success', __('tasks.deleted'));
+    }
+}
