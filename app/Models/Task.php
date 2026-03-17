@@ -197,12 +197,14 @@ class Task extends Model
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
         return $query->where(function($q) use ($user) {
-            // 1. Public tasks are visible to everyone in the team
+            // 1. Any team member can see PUBLIC tasks
             $q->where('visibility', 'public')
-            // 2. Private tasks are ONLY visible to the owner (creator)
-              ->orWhere(function($sub) use ($user) {
-                  $sub->where('visibility', 'private')
-                      ->where('created_by_id', $user->id);
+            // 2. Owners (creators) can see their OWN tasks (public or private)
+              ->orWhere('created_by_id', $user->id)
+            // 3. Directly assigned users or collaborators can see tasks assigned to them
+              ->orWhere('assigned_user_id', $user->id)
+              ->orWhereHas('assignedTo', function($subq) use ($user) {
+                  $subq->where('users.id', $user->id);
               });
         });
     }
