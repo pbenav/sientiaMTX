@@ -230,21 +230,27 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Default Disk Quota -->
-                            <div class="md:col-span-2 space-y-4">
-                                <div>
-                                    <x-input-label for="DEFAULT_DISK_QUOTA" :value="__('Default Disk Quota (MB)')" />
-                                    <x-text-input id="DEFAULT_DISK_QUOTA" name="DEFAULT_DISK_QUOTA" type="number"
-                                        class="mt-1 block w-full" :value="old('DEFAULT_DISK_QUOTA', $limits['default_disk_quota'])" required />
-                                    <x-input-error :messages="$errors->get('DEFAULT_DISK_QUOTA')" class="mt-2" />
-                                </div>
-                                
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="update_existing_users" name="update_existing_users" value="1"
-                                        class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-violet-600 shadow-sm focus:ring-violet-500">
-                                    <label for="update_existing_users" class="text-sm text-gray-600 dark:text-gray-400">
-                                        {{ __('Update all existing users to this new quota') }}
-                                    </label>
-                                </div>
+                            <div class="md:col-span-1">
+                                <x-input-label for="DEFAULT_DISK_QUOTA" :value="__('Default Disk Quota (MB)')" />
+                                <x-text-input id="DEFAULT_DISK_QUOTA" name="DEFAULT_DISK_QUOTA" type="number"
+                                    class="mt-1 block w-full" :value="old('DEFAULT_DISK_QUOTA', $limits['default_disk_quota'])" required />
+                                <x-input-error :messages="$errors->get('DEFAULT_DISK_QUOTA')" class="mt-2" />
+                            </div>
+
+                            <!-- Session Expiration -->
+                            <div class="md:col-span-1">
+                                <x-input-label for="SESSION_LIFETIME" :value="__('Session Expiration (Minutes)')" />
+                                <x-text-input id="SESSION_LIFETIME" name="SESSION_LIFETIME" type="number"
+                                    class="mt-1 block w-full" :value="old('SESSION_LIFETIME', $limits['session_lifetime'])" required />
+                                <x-input-error :messages="$errors->get('SESSION_LIFETIME')" class="mt-2" />
+                            </div>
+                            
+                            <div class="md:col-span-2 flex items-center gap-2">
+                                <input type="checkbox" id="update_existing_users" name="update_existing_users" value="1"
+                                    class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-violet-600 shadow-sm focus:ring-violet-500">
+                                <label for="update_existing_users" class="text-sm text-gray-600 dark:text-gray-400">
+                                    {{ __('Update all existing users to this new quota') }}
+                                </label>
                             </div>
                         </div>
 

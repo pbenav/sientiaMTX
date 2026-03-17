@@ -35,6 +35,7 @@ class SettingsController extends Controller
             ],
             'limits' => [
                 'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100), // In MB
+                'session_lifetime' => env('SESSION_LIFETIME', 120), // In minutes
             ]
         ]);
     }
@@ -187,6 +188,7 @@ class SettingsController extends Controller
             'GOOGLE_CLIENT_ID' => 'sometimes|nullable|string',
             'GOOGLE_CLIENT_SECRET' => 'sometimes|nullable|string',
             'DEFAULT_DISK_QUOTA' => 'sometimes|nullable|numeric',
+            'SESSION_LIFETIME' => 'sometimes|nullable|numeric|min:1',
             'update_existing_users' => 'sometimes|boolean',
         ]);
 

@@ -147,5 +147,7 @@
     "Default Disk Quota (MB)": "Cuota de Disco Predeterminada (MB)",
     "Set the default storage limit for new and existing users.": "Establece el límite de almacenamiento predeterminado para usuarios nuevos y existentes.",
     "Disk Quota": "Cuota de Disco",
-    "Global Settings": "Configuración Global"
+    "Global Settings": "Configuración Global",
+    "Session Expiration (Minutes)": "Expiración de Sesión (Minutos)",
+    "Update all existing users to this new quota": "Actualizar a todos los usuarios existentes a esta nueva cuota"
 }
