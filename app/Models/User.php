@@ -27,6 +27,7 @@ class User extends Authenticatable implements HasLocalePreference
         'locale',
         'timezone',
         'theme',
+        'layout',
         'is_admin',
         'google_id',
         'google_token',

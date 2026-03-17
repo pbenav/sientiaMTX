@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
     
     // Theme route
     Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');
+    Route::post('/layout', [\App\Http\Controllers\LayoutController::class, 'update'])->name('layout.update');
 
     // Global Settings routes
     Route::middleware('can:admin')->group(function () {
