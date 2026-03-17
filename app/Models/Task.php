@@ -205,11 +205,10 @@ class Task extends Model
               ->orWhere('assigned_user_id', $user->id)
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
+              })
+              ->orWhereHas('assignedGroups.members', function($subq) use ($user) {
+                  $subq->where('users.id', $user->id);
               });
-            
-            // 4. Managers can see all tasks in their team UNLESS they are private and not theirs?
-            // User requested: "si es privada, solo podrá ser vista por su propietario"
-            // So we do NOT add a general Manager override for private tasks here.
         });
     }
 

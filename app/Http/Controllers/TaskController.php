@@ -206,7 +206,10 @@ class TaskController extends Controller
      */
     public function edit(Team $team, Task $task)
     {
-        $this->authorize('update', $task);
+        if (auth()->user()->cannot('update', $task)) {
+            return redirect()->route('teams.tasks.show', [$team, $task])
+                ->with('warning', __('No tienes permisos para modificar esta tarea privada.'));
+        }
         $allMembers = $team->members; // All members — for owner selector
         // Exclude the current user from assignee list: creator is implicit owner
         $users = $team->members->reject(fn ($u) => $u->id === auth()->id());

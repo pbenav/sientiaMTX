@@ -25,7 +25,10 @@ class TaskPolicy
         // 3. If private, only owner or assignees
         return $user->id === $task->created_by_id || 
                $user->id === $task->assigned_user_id ||
-               $task->assignedTo()->where('users.id', $user->id)->exists();
+               $task->assignedTo()->where('users.id', $user->id)->exists() ||
+               $task->assignedGroups()->whereHas('members', function($q) use ($user) {
+                   $q->where('users.id', $user->id);
+               })->exists();
     }
 
     /**
@@ -42,6 +45,9 @@ class TaskPolicy
         // Assignees can update (progress, etc.)
         if ($user->id === $task->assigned_user_id) return true;
         if ($task->assignedTo()->where('users.id', $user->id)->exists()) return true;
+        if ($task->assignedGroups()->whereHas('members', function($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->exists()) return true;
 
         // If public, Managers can update
         if ($task->visibility === 'public' && $task->team->isManager($user)) {
