@@ -36,6 +36,8 @@ return [
     'report_blocker' => 'Report Blocker',
     'view_detail' => 'View Detail',
     'detail' => 'Task Details',
+    'completed' => 'Completed',
+    'pending' => 'Pending',
     'visibility' => 'Visibility',
     'public' => 'Public',
     'private' => 'Private',

@@ -63,6 +63,8 @@ return [
     'date' => 'Fecha',
     'actions' => 'Acciones',
     'delete_file_warning' => 'Esta acción no se puede deshacer y liberará espacio de tu cuota.',
+    'completed' => 'Completada',
+    'pending' => 'Pendiente',
 
     'priorities' => [
         'low' => 'Baja',
