@@ -2,17 +2,20 @@
     @section('title', $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('teams.index') }}"
-                class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-            </a>
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                {{ $team->name }}
-            </h1>
+        <div class="flex items-center justify-between gap-4 overflow-hidden">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+                <a href="{{ route('teams.index') }}"
+                    class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
+                    {{ $team->name }}
+                </h1>
+            </div>
+            @include('teams.partials.header-actions')
         </div>
     </x-slot>
 
