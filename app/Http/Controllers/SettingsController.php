@@ -187,6 +187,7 @@ class SettingsController extends Controller
             'GOOGLE_CLIENT_ID' => 'sometimes|nullable|string',
             'GOOGLE_CLIENT_SECRET' => 'sometimes|nullable|string',
             'DEFAULT_DISK_QUOTA' => 'sometimes|nullable|numeric',
+            'update_existing_users' => 'sometimes|boolean',
         ]);
 
         try {
@@ -196,6 +197,12 @@ class SettingsController extends Controller
 
             // Clear config cache to apply changes
             Artisan::call('config:clear');
+
+            // If requested, update all existing users to the new quota
+            if (isset($data['DEFAULT_DISK_QUOTA']) && $request->has('update_existing_users')) {
+                $newQuotaBytes = $data['DEFAULT_DISK_QUOTA'] * 1024 * 1024;
+                \App\Models\User::query()->update(['disk_quota' => $newQuotaBytes]);
+            }
 
             return back()->with('success', __('Mail settings updated successfully.'));
         } catch (\Exception $e) {
