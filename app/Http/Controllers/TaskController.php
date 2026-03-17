@@ -108,6 +108,24 @@ class TaskController extends Controller
 
         $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
 
+        // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
+        $autoPublic = false;
+        if (($validated['visibility'] ?? 'private') === 'private') {
+            $hasOtherAssignee = false;
+            if ($request->filled('assigned_user_id') && (int)$request->assigned_user_id !== auth()->id()) {
+                $hasOtherAssignee = true;
+            }
+            if ($request->filled('assigned_to')) {
+                if (collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
+                    $hasOtherAssignee = true;
+                }
+            }
+            if ($hasOtherAssignee) {
+                $validated['visibility'] = 'public';
+                $autoPublic = true;
+            }
+        }
+
         $task = $team->tasks()->create([
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -173,7 +191,7 @@ class TaskController extends Controller
         }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
-            ->with('success', __('tasks.created'));
+            ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.created'));
     }
 
     /**
@@ -229,6 +247,35 @@ class TaskController extends Controller
 
         // Store old values for history
         $oldValues = $task->getAttributes();
+        $statusChanged = $task->status !== $validated['status'];
+
+        // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
+        $autoPublic = false;
+        $visibility = $validated['visibility'] ?? $task->visibility;
+        if ($visibility === 'private') {
+            $hasOtherAssignee = false;
+            // Check direct assignee in request OR current task if not in request
+            $targetAssignee = $request->has('assigned_user_id') ? $request->assigned_user_id : $task->assigned_user_id;
+            if ($targetAssignee && (int)$targetAssignee !== auth()->id()) {
+                $hasOtherAssignee = true;
+            }
+            
+            // Check collaborators (assigned_to array)
+            if ($request->has('assigned_to')) {
+                if (collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
+                    $hasOtherAssignee = true;
+                }
+            } elseif ($task->assignedTo()->where('users.id', '!=', auth()->id())->exists()) {
+                // If not providing assigned_to in request, check existing ones
+                $hasOtherAssignee = true;
+            }
+
+            if ($hasOtherAssignee) {
+                $visibility = 'public';
+                $autoPublic = true;
+            }
+            $validated['visibility'] = $visibility;
+        }
 
         $task->update([
             'title' => $validated['title'],
@@ -349,7 +396,7 @@ class TaskController extends Controller
         }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
-            ->with('success', __('tasks.updated'));
+            ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.updated'));
     }
 
     /**

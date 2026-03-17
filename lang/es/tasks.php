@@ -46,6 +46,7 @@ return [
     'visibility' => 'Visibilidad',
     'public' => 'Pública',
     'private' => 'Privada',
+    'auto_public_warning' => 'La tarea se ha cambiado a Pública porque ha sido asignada a otros miembros. Las tareas privadas son estrictamente para uso personal.',
 
     'priorities' => [
         'low' => 'Baja',

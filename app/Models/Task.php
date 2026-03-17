@@ -196,23 +196,14 @@ class Task extends Model
 
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        return $query->where(function($q) use ($user, $isManager) {
-            // Task is visible if:
-            // 1. It is public
+        return $query->where(function($q) use ($user) {
+            // 1. Public tasks are visible to everyone in the team
             $q->where('visibility', 'public')
-            // 2. Or the user is the owner (creator)
-              ->orWhere('created_by_id', $user->id)
-            // 3. Or the user is the direct assignee
-              ->orWhere('assigned_user_id', $user->id)
-            // 4. Or the user is a collaborator
-              ->orWhereHas('assignedTo', function($subq) use ($user) {
-                  $subq->where('users.id', $user->id);
+            // 2. Private tasks are ONLY visible to the owner (creator)
+              ->orWhere(function($sub) use ($user) {
+                  $sub->where('visibility', 'private')
+                      ->where('created_by_id', $user->id);
               });
-
-            // Managers can also see all tasks, UNLESS strictly private means strictly private?
-            // The request says "solo podrá ser vista por su propietario". 
-            // I will honor this by NOT adding a manager override for private tasks here.
-            // If they are not owner/assignee, they won't see it even as a manager.
         });
     }
 

@@ -61,7 +61,12 @@ class TeamController extends Controller
      */
     public function show(Team $team)
     {
-        $team->load(['members', 'tasks']);
+        $user = auth()->user();
+        $isManager = $team->isManager($user);
+
+        $team->load(['members', 'tasks' => function($query) use ($user, $isManager) {
+            $query->visibleTo($user, $isManager);
+        }]);
 
         return view('teams.show', compact('team'));
     }
