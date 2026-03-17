@@ -1,5 +1,3 @@
-@extends('layouts.app')
-
 <x-app-layout>
     @section('title', $team->name)
 
