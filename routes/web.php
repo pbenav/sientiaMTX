@@ -98,7 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'callback'])->name('google.callback');
     Route::get('/google/sync', [\App\Http\Controllers\GoogleController::class, 'sync'])->name('google.sync');
     Route::post('/google/import', [\App\Http\Controllers\GoogleController::class, 'import'])->name('google.import');
-    Route::post('/teams/{team}/tasks/{task}/google-export', [\App\Http\Controllers\GoogleController::class, 'export'])->name('google.export');
+    Route::post('/teams/{team}/tasks/{task}/google-sync', [\App\Http\Controllers\GoogleController::class, 'syncTask'])->name('google.sync_task');
 
     // Media Management
     Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');

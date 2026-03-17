@@ -266,9 +266,9 @@ class GoogleController extends Controller
     }
 
     /**
-     * Export a specific task to Google Tasks.
+     * Sync a specific task with Google Tasks (Bidirectional).
      */
-    public function export(\App\Models\Team $team, \App\Models\Task $task)
+    public function syncTask(\App\Models\Team $team, \App\Models\Task $task)
     {
         $user = Auth::user();
 
@@ -276,30 +276,101 @@ class GoogleController extends Controller
             return redirect()->route('google.auth')->with('info', __('google.connect_account_first'));
         }
 
-        $data = [
-            'title' => $task->title,
-            'notes' => $task->description ?: '',
-        ];
+        // 1. If not exported yet, export it
+        if (!$task->google_task_id) {
+            $data = [
+                'title' => $task->title,
+                'notes' => $task->description ?: '',
+            ];
 
-        if ($task->scheduled_date) {
-            // Google Tasks expects an RFC3339 timestamp
-            $data['due'] = date('c', strtotime($task->scheduled_date));
+            if ($task->scheduled_date) {
+                $data['due'] = $task->scheduled_date->toRfc3339String();
+            }
+
+            try {
+                $googleTaskId = $this->googleService->createTask($data);
+
+                if ($googleTaskId) {
+                    $task->update([
+                        'google_task_id' => $googleTaskId,
+                        'google_task_list_id' => '@default',
+                        'google_synced_at' => now(),
+                    ]);
+                    return back()->with('success', __('google.export_success'));
+                }
+            } catch (\Exception $e) {
+                Log::error('Error exporting to Google Tasks: ' . $e->getMessage());
+                return back()->with('error', __('google.export_failed') . ': ' . $e->getMessage());
+            }
         }
 
+        // 2. Already exported, perform bidirectional sync
         try {
-            $googleTaskId = $this->googleService->createTask($data);
+            $googleTask = $this->googleService->getTask($task->google_task_list_id, $task->google_task_id);
 
-            if ($googleTaskId) {
-                return back()->with('success', __('google.export_success'));
+            if (!$googleTask) {
+                // Task might have been deleted in Google. Reset local IDs and re-export.
+                $task->update([
+                    'google_task_id' => null,
+                    'google_task_list_id' => null,
+                    'google_synced_at' => null,
+                ]);
+                return $this->syncTask($team, $task);
             }
-        } catch (\Exception $e) {
-            Log::error('Error exporting to Google Tasks: ' . $e->getMessage());
+
+            $googleUpdated = strtotime($googleTask->getUpdated());
+            $localUpdated = $task->updated_at->timestamp;
+            $lastSynced = $task->google_synced_at ? $task->google_synced_at->timestamp : 0;
+
+            // Determine which side is newer
+            // If Google is newer than the last sync AND newer than local
+            if ($googleUpdated > $lastSynced && $googleUpdated > $localUpdated) {
+                // Remote is newer, update local
+                $task->update([
+                    'title' => $googleTask->getTitle(),
+                    'description' => $googleTask->getNotes() ?: $task->description,
+                    'status' => $googleTask->getStatus() === 'completed' ? 'completed' : $task->status,
+                    'progress_percentage' => $googleTask->getStatus() === 'completed' ? 100 : $task->progress_percentage,
+                    'google_synced_at' => now(),
+                ]);
+                
+                // If it was marked as completed in Google, ensure local status reflects it
+                if ($googleTask->getStatus() === 'completed' && $task->status !== 'completed') {
+                    $task->status = 'completed';
+                    $task->progress_percentage = 100;
+                    $task->save();
+                }
+
+                return back()->with('success', __('google.sync_from_remote_success'));
+            } 
             
-            if (str_contains(strtolower($e->getMessage()), 'insufficient authentication scopes')) {
-                return back()->with('google_reauth_required', true)->with('info', __('google.reconnect_scopes'));
+            // If Local is newer than last sync
+            if ($localUpdated > $lastSynced) {
+                // Local is newer, update remote
+                $data = [
+                    'title' => $task->title,
+                    'notes' => $task->description ?: '',
+                    'status' => $task->status === 'completed' ? 'completed' : 'needsAction',
+                ];
+                
+                if ($task->scheduled_date) {
+                    $data['due'] = $task->scheduled_date->toRfc3339String();
+                }
+
+                $this->googleService->updateTask($task->google_task_list_id, $task->google_task_id, $data);
+                
+                $task->update([
+                    'google_synced_at' => now(),
+                ]);
+
+                return back()->with('success', __('google.sync_to_remote_success'));
             }
 
-            return back()->with('error', __('google.export_failed') . ': ' . $e->getMessage());
+            return back()->with('info', __('google.already_synced'));
+
+        } catch (\Exception $e) {
+            Log::error('Error syncing with Google Tasks: ' . $e->getMessage());
+            return back()->with('error', __('google.sync_failed') . ': ' . $e->getMessage());
         }
     }
 }

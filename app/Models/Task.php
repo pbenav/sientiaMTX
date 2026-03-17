@@ -46,13 +46,17 @@ class Task extends Model
         'assigned_user_id',
         'progress_percentage',
         'visibility',
+        'google_task_id',
+        'google_task_list_id',
+        'google_synced_at',
     ];
-
+ 
     protected $casts = [
         'metadata' => 'array',
         'due_date' => 'datetime',
         'scheduled_date' => 'datetime',
         'original_due_date' => 'datetime',
+        'google_synced_at' => 'datetime',
     ];
 
     // Relationship: A task belongs to a team

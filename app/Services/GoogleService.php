@@ -152,4 +152,40 @@ class GoogleService
         $result = $service->tasks->insert($taskListId, $task);
         return $result->getId();
     }
+
+    /**
+     * Update an existing task in Google Tasks.
+     */
+    public function updateTask(string $taskListId, string $taskId, array $data): bool
+    {
+        $service = new Tasks($this->client);
+        try {
+            $task = $service->tasks->get($taskListId, $taskId);
+            
+            if (isset($data['title'])) $task->setTitle($data['title']);
+            if (isset($data['notes'])) $task->setNotes($data['notes']);
+            if (isset($data['due'])) $task->setDue($data['due']);
+            if (isset($data['status'])) $task->setStatus($data['status']);
+            
+            $service->tasks->update($taskListId, $taskId, $task);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error updating Google Task: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get a specific task from Google Tasks.
+     */
+    public function getTask(string $taskListId, string $taskId): ?\Google\Service\Tasks\Task
+    {
+        $service = new Tasks($this->client);
+        try {
+            return $service->tasks->get($taskListId, $taskId);
+        } catch (\Exception $e) {
+            Log::error('Error getting Google Task: ' . $e->getMessage());
+            return null;
+        }
+    }
 }

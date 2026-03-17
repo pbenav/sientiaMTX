@@ -630,6 +630,14 @@ class TaskController extends Controller
 
     public function downloadAttachment(Team $team, TaskAttachment $attachment)
     {
+        // Check if user has access to the task associated with the attachment
+        $task = $attachment->task;
+        $isManager = $team->isManager(auth()->user());
+        
+        if (!Task::where('id', $task->id)->visibleTo(auth()->user(), $isManager)->exists()) {
+            abort(403, 'No tienes permiso para descargar este archivo.');
+        }
+
         return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 

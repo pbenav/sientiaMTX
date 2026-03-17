@@ -40,4 +40,10 @@ return [
     'filter_include' => 'Incluir (Contiene)',
     'filter_exclude' => 'Excluir (No contiene)',
     'filter_help' => 'Usa el buscador para filtrar. El modo "Excluir" ocultará lo que coincida.',
+    'sync_tasks' => 'Sincronizar con Google Tasks',
+    'sync_success' => 'Tarea sincronizada correctamente.',
+    'sync_failed' => 'Error al sincronizar la tarea.',
+    'sync_from_remote_success' => 'Tarea actualizada con los cambios remotos de Google Tasks.',
+    'sync_to_remote_success' => 'Tarea actualizada en Google Tasks con los cambios locales.',
+    'already_synced' => 'La tarea ya está al día.',
 ];

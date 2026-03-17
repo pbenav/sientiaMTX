@@ -31,16 +31,26 @@
                         {{ __('tasks.edit') }}
                     </a>
 
-                    <form action="{{ route('google.export', [$team, $task]) }}" method="POST" class="inline">
+                    <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST" class="inline">
                         @csrf
-                        <button type="submit" title="{{ __('google.export_tasks') }}"
-                            class="shrink-0 flex items-center gap-1.5 text-sm bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 px-3 py-2 rounded-xl transition-all shadow-sm dark:shadow-none font-medium">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                            </svg>
-                            {{ __('google.export_tasks') }}
+                        <button type="submit"
+                            title="{{ $task->google_task_id ? __('google.sync_tasks') : __('google.export_tasks') }}"
+                            class="shrink-0 flex items-center gap-1.5 text-sm {{ $task->google_task_id ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400' }} px-3 py-2 rounded-xl transition-all shadow-sm dark:shadow-none font-medium">
+                            @if ($task->google_task_id)
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                {{ __('google.sync_tasks') }}
+                            @else
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                {{ __('google.export_tasks') }}
+                            @endif
                         </button>
                     </form>
                 @endcan
