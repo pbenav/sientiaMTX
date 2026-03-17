@@ -642,12 +642,21 @@ class TaskController extends Controller
 
     public function downloadAttachment(Team $team, TaskAttachment $attachment)
     {
-        // Check if user has access to the task associated with the attachment
         $task = $attachment->task;
         $isManager = $team->isManager(auth()->user());
         
-        if (!Task::where('id', $task->id)->visibleTo(auth()->user(), $isManager)->exists()) {
+        $hasAccess = Task::where('id', $task->id)->visibleTo(auth()->user(), $isManager)->exists();
+
+        if (!$hasAccess && $task->children()->where('assigned_user_id', auth()->id())->exists()) {
+            $hasAccess = true;
+        }
+
+        if (!$hasAccess) {
             abort(403, 'No tienes permiso para descargar este archivo.');
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
+            return back()->with('error', 'El archivo no se encuentra en el servidor.');
         }
 
         return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);

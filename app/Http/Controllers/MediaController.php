@@ -33,6 +33,10 @@ class MediaController extends Controller
             abort(403);
         }
 
+        if (!Storage::disk('public')->exists($attachment->file_path)) {
+            return back()->with('error', 'El archivo físico no se encuentra en el servidor. Contacte con el administrador.');
+        }
+
         return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 
