@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
 
     // Media Management
     Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');
+    Route::get('/media/{attachment}/download', [\App\Http\Controllers\MediaController::class, 'download'])->name('media.download');
     Route::delete('/media/{attachment}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
 });
 

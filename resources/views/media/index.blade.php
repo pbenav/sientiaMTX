@@ -115,28 +115,26 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @if($file->task)
-                                                <a href="{{ route('teams.attachments.download', [$file->task->team_id, $file]) }}" 
-                                                    class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
-                                                    title="{{ __('tasks.download') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                    </svg>
-                                                </a>
+                                            <a href="{{ route('media.download', $file) }}" 
+                                                class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                                title="{{ __('tasks.download') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002-2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                            </a>
 
-                                                <button type="button" 
-                                                    onclick="confirmFileDelete({{ $file->id }})"
-                                                    class="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                                    title="{{ __('tasks.delete') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
+                                            <button type="button" 
+                                                onclick="confirmFileDelete({{ $file->id }})"
+                                                class="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                                title="{{ __('tasks.delete') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
 
-                                                <form id="delete-form-{{ $file->id }}" action="{{ route('media.destroy', $file) }}" method="POST" class="hidden">
-                                                    @csrf @method('DELETE')
-                                                </form>
-                                            @endif
+                                            <form id="delete-form-{{ $file->id }}" action="{{ route('media.destroy', $file) }}" method="POST" class="hidden">
+                                                @csrf @method('DELETE')
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

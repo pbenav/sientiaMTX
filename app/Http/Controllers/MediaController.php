@@ -25,6 +25,18 @@ class MediaController extends Controller
     }
 
     /**
+     * Download the attachment.
+     */
+    public function download(TaskAttachment $attachment)
+    {
+        if ($attachment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+    }
+
+    /**
      * Remove the specified attachment.
      */
     public function destroy(TaskAttachment $attachment)
