@@ -368,8 +368,8 @@
                     </svg>
                 </button>
 
-                <div class="flex-1 max-w-7xl mx-auto flex items-center justify-between gap-4">
-                    <div class="min-w-0">
+                <div class="flex-1 max-w-7xl mx-auto flex items-center justify-between gap-8">
+                    <div class="flex-1 min-w-0">
                         @if (isset($header))
                             {{ $header }}
                         @endif
