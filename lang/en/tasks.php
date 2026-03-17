@@ -35,6 +35,13 @@ return [
     'reopen_task' => 'Reopen Task',
     'report_blocker' => 'Report Blocker',
     'view_detail' => 'View Detail',
+    'detail' => 'Task Details',
+    'visibility' => 'Visibility',
+    'public' => 'Public',
+    'private' => 'Private',
+    'public_hint' => 'Visible to team',
+    'private_hint' => 'Owner only',
+    'auto_public_warning' => 'The task was changed to Public because it was assigned to other members. Private tasks are strictly for personal use.',
 
     'priorities' => [
         'low' => 'Low',
@@ -53,6 +60,7 @@ return [
         'in_progress' => 'In Progress',
         'completed' => 'Completed',
         'cancelled' => 'Cancelled',
+        'blocked' => 'Blocked',
     ],
 
     'urgent' => 'Urgent',
@@ -70,7 +78,6 @@ return [
 
     'groups' => 'Groups',
     'assign_groups' => 'Assign to Groups',
-    'view_detail' => 'View Detail',
     'view_members' => 'View Members',
     'eisenhower_matrix' => 'Eisenhower Matrix',
     'view_gantt' => 'View Gantt',
@@ -89,8 +96,6 @@ return [
     'personal_instance_notice' => 'This is your personal instance',
     'personal_instance_description' => 'Your changes here only affect you. Progress will be reflected in the team\'s global goal.',
     'view_global_goal' => 'View global goal',
-    'completed' => 'Completed',
-    'pending' => 'Pending',
     'add_member_to_group' => 'Add member to group',
     'create_group' => 'Create group',
 

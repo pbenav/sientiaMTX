@@ -12,7 +12,7 @@
             </a>
             <div>
                 @include('teams.partials.breadcrumb')
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('tasks.detail') }}</h1>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('tasks.edit') }}</h1>
             </div>
         </div>
     </x-slot>

@@ -27,7 +27,6 @@ return [
     'task' => 'Tarea normal',
     'clear_filters' => 'Limpiar filtros',
     'no_tasks' => 'No se encontraron tareas.',
-    'confirm_delete' => '¿Seguro que quieres eliminar esta tarea?',
     'edit' => 'Edición de tarea',
     'delete' => 'Eliminar',
     'delete_confirm' => '¿Seguro que quieres eliminar esta tarea?',
@@ -50,6 +49,12 @@ return [
     'public_hint' => 'Visible para el equipo',
     'private_hint' => 'Solo el propietario',
     'auto_public_warning' => 'La tarea se ha cambiado a Pública porque ha sido asignada a otros miembros. Las tareas privadas son estrictamente para uso personal.',
+    'attachments' => 'Adjuntos',
+    'add_attachment' => 'Añadir adjunto',
+    'no_attachments' => 'Sin archivos adjuntos.',
+    'download' => 'Descargar',
+    'disk_quota' => 'Cupo de disco',
+    'quota_usage_tip' => 'Usa el espacio para adjuntos de tareas.',
 
     'priorities' => [
         'low' => 'Baja',
@@ -86,7 +91,6 @@ return [
 
     'groups' => 'Grupos',
     'assign_groups' => 'Asignar a grupos',
-    'view_detail' => 'Ver detalle',
     'view_members' => 'Ver miembros',
     'eisenhower_matrix' => 'Matriz de Eisenhower',
     'view_gantt' => 'Ver Gantt',
@@ -105,8 +109,6 @@ return [
     'personal_instance_notice' => 'Esta es tu instancia privada',
     'personal_instance_description' => 'Tus cambios aquí solo te afectan a ti. El progreso se reflejará en el objetivo global del equipo.',
     'view_global_goal' => 'Ver objetivo global',
-    'completed' => 'Completada',
-    'pending' => 'Pendiente',
     'add_member_to_group' => 'Añadir miembro al grupo',
     'create_group' => 'Crear grupo',
 
