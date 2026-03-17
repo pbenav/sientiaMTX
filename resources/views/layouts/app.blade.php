@@ -368,7 +368,7 @@
                     </svg>
                 </button>
 
-                <div class="flex-1 max-w-7xl mx-auto flex items-center justify-between gap-8">
+                <div class="flex-1 flex items-center justify-between gap-8">
                     <div class="flex-1 min-w-0">
                         @if (isset($header))
                             {{ $header }}
@@ -394,7 +394,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-all duration-300"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'max-w-7xl mx-auto') : ''">
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : ''">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
             <div class="flex flex-col gap-1">
                 <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
