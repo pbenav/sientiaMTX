@@ -88,6 +88,43 @@
                     </div>
                 </div>
 
+                <!-- Visibility -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                        {{ __('tasks.visibility') }}
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="relative flex cursor-pointer">
+                            <input type="radio" name="visibility" value="public" class="peer sr-only" {{ old('visibility', 'public') === 'public' ? 'checked' : '' }}>
+                            <div class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.public') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('Visible to team') }}</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="relative flex cursor-pointer">
+                            <input type="radio" name="visibility" value="private" class="peer sr-only" {{ old('visibility') === 'private' ? 'checked' : '' }}>
+                            <div class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.private') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('Owner only') }}</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Quadrant preview (calculated in JS) -->
                 <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
                     <span class="font-semibold" id="qp-label"></span>

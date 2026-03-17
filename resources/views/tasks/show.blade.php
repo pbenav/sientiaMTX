@@ -588,6 +588,16 @@
                             class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __($map . '.' . $val) }}</span>
                     </div>
                 @endforeach
+                
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2 h-2 rounded-full {{ $task->visibility === 'public' ? 'bg-violet-500' : 'bg-amber-500' }}"></div>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                            {{ $task->visibility === 'public' ? __('tasks.public') : __('tasks.private') }}
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <!-- Dates -->

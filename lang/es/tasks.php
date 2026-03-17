@@ -43,6 +43,9 @@ return [
     'report_blocker' => 'Informar un bloqueo',
     'view_detail' => 'Ver detalle',
     'unblock_task' => 'Quitar bloqueo',
+    'visibility' => 'Visibilidad',
+    'public' => 'Pública',
+    'private' => 'Privada',
 
     'priorities' => [
         'low' => 'Baja',

@@ -103,6 +103,7 @@ class TaskController extends Controller
             'assigned_groups' => 'nullable|array',
             'observations' => 'nullable|string',
             'parent_id' => 'nullable|exists:tasks,id',
+            'visibility' => 'required|in:public,private',
         ]);
 
         $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
@@ -120,6 +121,7 @@ class TaskController extends Controller
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
             'is_template' => $isTemplate,
+            'visibility' => $validated['visibility'],
         ]);
 
         if ($isTemplate) {
@@ -179,6 +181,7 @@ class TaskController extends Controller
      */
     public function show(Team $team, Task $task)
     {
+        $this->authorize('view', $task);
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments']);
 
         return view('tasks.show', compact('team', 'task'));
@@ -189,6 +192,7 @@ class TaskController extends Controller
      */
     public function edit(Team $team, Task $task)
     {
+        $this->authorize('update', $task);
         $allMembers = $team->members; // All members — for owner selector
         // Exclude the current user from assignee list: creator is implicit owner
         $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
@@ -205,6 +209,7 @@ class TaskController extends Controller
      */
     public function update(Request $request, Team $team, Task $task)
     {
+        $this->authorize('update', $task);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -219,6 +224,7 @@ class TaskController extends Controller
             'parent_id' => 'nullable|exists:tasks,id',
             'progress_percentage' => 'nullable|integer|min:0|max:100',
             'created_by_id' => 'nullable|exists:users,id',
+            'visibility' => 'required|in:public,private',
         ]);
 
         // Store old values for history
@@ -235,6 +241,7 @@ class TaskController extends Controller
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
             'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
+            'visibility' => $validated['visibility'],
         ]);
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
@@ -350,6 +357,7 @@ class TaskController extends Controller
      */
     public function destroy(Team $team, Task $task)
     {
+        $this->authorize('delete', $task);
         $task->delete();
 
         return redirect()->route('teams.tasks.index', $team)
@@ -362,6 +370,8 @@ class TaskController extends Controller
     public function byStatus(Team $team, string $status)
     {
         $tasks = $team->tasks()
+            ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
+            ->operationalFor(auth()->user(), $team)
             ->where('status', $status)
             ->with(['assignedTo', 'tags'])
             ->get();
@@ -378,6 +388,8 @@ class TaskController extends Controller
 
         foreach ([1, 2, 3, 4] as $q) {
             $quadrants[$q] = $team->tasks()
+                ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
+                ->operationalFor(auth()->user(), $team)
                 ->with(['assignedTo', 'tags'])
                 ->get()
                 ->filter(function ($task) use ($q) {

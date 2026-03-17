@@ -197,18 +197,22 @@ class Task extends Model
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
         return $query->where(function($q) use ($user, $isManager) {
-            // Standard visibility: Creator, Assignee, Collaborator or Public
-            $q->where('created_by_id', $user->id)
+            // Task is visible if:
+            // 1. It is public
+            $q->where('visibility', 'public')
+            // 2. Or the user is the owner (creator)
+              ->orWhere('created_by_id', $user->id)
+            // 3. Or the user is the direct assignee
               ->orWhere('assigned_user_id', $user->id)
+            // 4. Or the user is a collaborator
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
-              })
-              ->orWhere('visibility', 'public');
+              });
 
-            // Managers (Coordinators) see all tasks in their team
-            if ($isManager) {
-                $q->orWhere('team_id', $user->current_team_id);
-            }
+            // Managers can also see all tasks, UNLESS strictly private means strictly private?
+            // The request says "solo podrá ser vista por su propietario". 
+            // I will honor this by NOT adding a manager override for private tasks here.
+            // If they are not owner/assignee, they won't see it even as a manager.
         });
     }
 
@@ -239,7 +243,9 @@ class Task extends Model
                     $incl->where('assigned_user_id', $user->id)
                          ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
                          // 2. Tasks I created (The 'Ownership' side)
-                         ->orWhere('created_by_id', $user->id);
+                         ->orWhere('created_by_id', $user->id)
+                         // 3. Public tasks (The 'Team' side)
+                         ->orWhere('visibility', 'public');
                 })
                 // DEDUPLICATE: If I have an instance, HIDE the template Master.
                 ->whereNot(function ($excl) use ($user) {
