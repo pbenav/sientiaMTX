@@ -203,10 +203,23 @@
                                             <div class="flex items-center gap-3">
                                                 <div
                                                     class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
-                                                    {{ strtoupper(substr($inst->assignedUser?->name ?? '?', 0, 2)) }}
+                                                    @if($inst->assignedUser)
+                                                        {{ strtoupper(substr($inst->assignedUser->name, 0, 2)) }}
+                                                    @elseif($inst->assignedTo->count() > 0)
+                                                        {{ strtoupper(substr($inst->assignedTo->first()->name, 0, 2)) }}
+                                                    @else
+                                                        ?
+                                                    @endif
                                                 </div>
-                                                <span
-                                                    class="font-medium text-gray-700 dark:text-gray-300">{{ $inst->assignedUser?->name ?? 'User' }}</span>
+                                                <span class="font-medium text-gray-700 dark:text-gray-300">
+                                                    @if($inst->assignedUser)
+                                                        {{ $inst->assignedUser->name }}
+                                                    @elseif($inst->assignedTo->count() > 0)
+                                                        {{ $inst->assignedTo->pluck('name')->join(', ') }}
+                                                    @else
+                                                        {{ __('tasks.unassigned') ?? 'Sin asignar' }}
+                                                    @endif
+                                                </span>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3">
@@ -227,7 +240,7 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right">
-                                            @if ($inst->status !== 'completed')
+                                            @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
                                                 <button onclick="nudgeUser({{ $inst->id }})"
                                                     class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
                                                     title="{{ __('tasks.nudge_user') }}">

@@ -328,8 +328,10 @@ class TaskController extends Controller
             ]);
         }
 
-        // Handle Assignments and Instances
-        if ($request->has('title')) {
+        // Only allow coordinators, managers or the owner to change assignments, visibility or core metadata
+        $isCoordinator = $team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id;
+
+        if ($request->has('title') && $isCoordinator) {
             $task->assignments()->delete();
             
             $assignedTo = $request->input('assigned_to', []);
@@ -352,6 +354,7 @@ class TaskController extends Controller
             // Determine if it should still be a template
             $isTemplate = !empty($assignedTo) || !empty($assignedGroups);
             $task->is_template = $isTemplate;
+            $task->save();
             
             if ($isTemplate) {
                 // Calculate unique users

@@ -36,9 +36,15 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        $isMember = $task->team->members()->where('user_id', $user->id)->exists();
-        if (!$isMember) return false;
+        // Template Tasks (Roadmaps) can ONLY be updated by coordinators or the owner
+        if ($task->is_template) {
+            return $user->id === $task->created_by_id || 
+                   $task->team->isCoordinator($user);
+        }
 
+        // Parent/Goal logic for instances
+        // If it's part of a private roadmap, common logic applies below
+        
         // Owner/Creator can always update
         if ($user->id === $task->created_by_id) return true;
 
