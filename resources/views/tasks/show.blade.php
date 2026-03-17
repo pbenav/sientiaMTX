@@ -307,8 +307,8 @@
                         <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                             {{ __('tasks.history') }}</h3>
                     </div>
-                    <div class="divide-y divide-gray-50 dark:divide-gray-800">
-                        @foreach ($task->histories->take(10) as $h)
+                    <div class="divide-y divide-gray-50 dark:divide-gray-800 max-h-[250px] overflow-y-auto">
+                        @foreach ($task->histories->take(20) as $h)
                             <div class="px-5 py-3 text-xs flex items-center justify-between gap-4">
                                 <div class="flex items-center gap-2 min-w-0">
                                     <div
