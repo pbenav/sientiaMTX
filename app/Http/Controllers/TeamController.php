@@ -64,8 +64,9 @@ class TeamController extends Controller
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
-        $team->load(['members', 'tasks' => function($query) use ($user, $isManager) {
-            $query->visibleTo($user, $isManager);
+        $team->load(['members', 'tasks' => function($query) use ($user, $isManager, $team) {
+            $query->visibleTo($user, $isManager)
+                  ->operationalFor($user, $team);
         }]);
 
         return view('teams.show', compact('team'));
@@ -254,10 +255,10 @@ class TeamController extends Controller
         $query = $team->tasks()
             ->with(['assignedTo', 'assignedGroups', 'tags', 'children', 'assignedUser'])
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team)
-            ->whereNull('parent_id');
+            ->operationalFor($user, $team);
 
         // Matrix-specific filter for managers (as requested: ensure owner visibility + backlog)
+        // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
         if ($isManager) {
             $query->where(function ($q) use ($user) {
                 // Return tasks that have NO one specifically assigned yet (Backlog/Masters)

@@ -44,13 +44,9 @@ class TaskController extends Controller
             }
         }
 
+        // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
-        } else {
-            // If no search/filter, only show top-level tasks by default to allow hierarchical view
-            if (!$request->filled('status') && !$request->filled('priority') && !$request->filled('assigned_to') && !$request->filled('type')) {
-                $query->whereNull('parent_id');
-            }
         }
 
         // --- Sorting ---

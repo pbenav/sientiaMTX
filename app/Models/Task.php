@@ -196,7 +196,7 @@ class Task extends Model
 
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        return $query->where(function($q) use ($user) {
+        return $query->where(function($q) use ($user, $isManager) {
             // 1. Any team member can see PUBLIC tasks
             $q->where('visibility', 'public')
             // 2. Owners (creators) can see their OWN tasks (public or private)
@@ -206,46 +206,54 @@ class Task extends Model
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
               });
+            
+            // 4. Managers can see all tasks in their team UNLESS they are private and not theirs?
+            // User requested: "si es privada, solo podrá ser vista por su propietario"
+            // So we do NOT add a general Manager override for private tasks here.
         });
     }
 
+    /**
+     * Scope for "What I should be working on or managing right now".
+     * This handles the hierarchy to avoid showing both master and instance.
+     */
     public function scopeOperationalFor($query, $user, Team $team)
     {
         $isManager = $team->isManager($user);
 
         return $query->where(function ($main) use ($user, $isManager) {
             if ($isManager) {
-                // MANAGEMENT VIEW: Focused on the Project Skeleton.
+                // MANAGEMENT VIEW: Project Skeleton (Masters & Root Tasks)
                 $main->where(function ($incl) {
-                    $incl->whereNull('parent_id') // Root tasks
-                         ->orWhere('is_template', true) // Template Masters
-                         ->orWhere(function ($hierarchical) {
-                             $hierarchical->whereNotNull('parent_id')
-                                          ->whereHas('parent', fn ($p) => $p->where('is_template', false));
-                         });
-                })
-                // DEDUPLICATE: Hide all Execution Instances (automatic children of templates).
-                ->whereNot(function ($excl) {
-                    $excl->whereNotNull('parent_id')
-                         ->whereHas('parent', fn ($p) => $p->where('is_template', true));
+                    $incl->whereNull('parent_id')    // Root tasks
+                         ->orWhere('is_template', true); // All Master Templates
                 });
             } else {
-                // EXECUTION VIEW: Focused on the Assigned Work & Personal Creations.
+                // EXECUTION VIEW: My work.
                 $main->where(function ($incl) use ($user) {
-                    // 1. My assigned tasks (The 'Doing' side)
+                    // 1. My assigned tasks (Direct or via Team)
                     $incl->where('assigned_user_id', $user->id)
                          ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                         // 2. Tasks I created (The 'Ownership' side)
+                         // 2. Tasks I created
                          ->orWhere('created_by_id', $user->id)
-                         // 3. Public tasks (The 'Team' side)
-                         ->orWhere('visibility', 'public');
+                         // 3. Public tasks (that aren't instances for someone else)
+                         ->orWhere(function($sub) {
+                             $sub->where('visibility', 'public')
+                                 ->where('is_template', false)
+                                 ->whereNull('parent_id');
+                         })
+                         // 4. Public Templates
+                         ->orWhere(function($sub) {
+                             $sub->where('visibility', 'public')
+                                 ->where('is_template', true);
+                         });
                 })
-                // DEDUPLICATE: If I have an instance, HIDE the template Master.
+                // DEDUPLICATE: If I have an instance of a template, hide the template master.
                 ->whereNot(function ($excl) use ($user) {
                     $excl->where('is_template', true)
                          ->whereHas('instances', function ($iq) use ($user) {
                              $iq->where('assigned_user_id', $user->id)
-                                ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id));
+                                ->orWhereHas('assignedTo', fn ($q) => $q->where('users.id', $user->id));
                          });
                 });
             }
