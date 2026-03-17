@@ -2,18 +2,19 @@
     @section('title', __('navigation.gantt') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('teams.dashboard', $team) }}"
-                    class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+                <a href="{{ route('teams.index') }}"
+                    class="mt-1 p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div>
+                <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
+                    <h1 class="text-2xl font-black text-gray-900 dark:text-white heading truncate select-none">
                         {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
                     </h1>
                 </div>
@@ -218,9 +219,17 @@
         }
 
         @keyframes pulse-red {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
     </style>
 

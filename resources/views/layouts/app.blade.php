@@ -356,11 +356,11 @@
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
             class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
-            <div class="flex items-center gap-4">
+            <div class="flex items-start gap-4">
                 <!-- Toggle button ONLY when closed -->
                 <button x-show="!sidebarOpen" @click="sidebarOpen = true"
-                    class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
-                    title="{{ __('Open Sidebar') }}">
+                    class="p-2 -mt-1 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all shrink-0"
+                    title="{{ __('Open Sidebar') }}" x-cloak>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -368,7 +368,7 @@
                     </svg>
                 </button>
 
-                <div class="flex-1 flex items-center justify-between gap-8">
+                <div class="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div class="flex-1 min-w-0">
                         @if (isset($header))
                             {{ $header }}
@@ -376,7 +376,7 @@
                     </div>
 
                     <!-- Minimal action bar for vertical layout -->
-                    <div class="flex items-center gap-3 shrink-0">
+                    <div class="flex items-center gap-2 shrink-0 self-end lg:self-center">
                         @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
                     </div>
                 </div>

@@ -2,19 +2,21 @@
     @section('title', __('teams.eisenhower_matrix') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-4 overflow-hidden">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-                <a href="{{ route('teams.show', $team) }}"
-                    class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+                <a href="{{ route('teams.index') }}"
+                    class="mt-1 p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
-                        {{ __('teams.eisenhower_matrix') }}</h1>
+                    <h1 class="text-2xl font-black text-gray-900 dark:text-white heading truncate select-none">
+                        {{ __('teams.eisenhower_matrix') }}
+                    </h1>
                 </div>
             </div>
 
@@ -145,9 +147,13 @@
 
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
                                                 class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors flex items-center gap-1.5">
-                                                @if($task->visibility === 'private')
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-amber-500/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                @if ($task->visibility === 'private')
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-2.5 w-2.5 text-amber-500/80 shrink-0" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="3"
+                                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                     </svg>
                                                 @endif
                                                 <span class="truncate">{{ $task->title }}</span>

@@ -2,21 +2,24 @@
     @section('title', $task->title)
 
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-4 flex-nowrap min-w-0">
-            <div class="flex items-center gap-3 min-w-0">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
                 <a href="{{ route('teams.dashboard', $team) }}"
-                    class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors shrink-0">
+                    class="mt-1 p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">{{ __('tasks.detail') }}</h1>
+                    <h1 class="text-2xl font-black text-gray-900 dark:text-white heading truncate select-none">
+                        {{ __('tasks.detail') }}
+                    </h1>
                 </div>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
                 @can('update', $task)
                     <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
                         class="shrink-0 flex items-center gap-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl transition-all shadow-sm dark:shadow-none font-medium">
@@ -203,7 +206,7 @@
                                             <div class="flex items-center gap-3">
                                                 <div
                                                     class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
-                                                    @if($inst->assignedUser)
+                                                    @if ($inst->assignedUser)
                                                         {{ strtoupper(substr($inst->assignedUser->name, 0, 2)) }}
                                                     @elseif($inst->assignedTo->count() > 0)
                                                         {{ strtoupper(substr($inst->assignedTo->first()->name, 0, 2)) }}
@@ -212,7 +215,7 @@
                                                     @endif
                                                 </div>
                                                 <span class="font-medium text-gray-700 dark:text-gray-300">
-                                                    @if($inst->assignedUser)
+                                                    @if ($inst->assignedUser)
                                                         {{ $inst->assignedUser->name }}
                                                     @elseif($inst->assignedTo->count() > 0)
                                                         {{ $inst->assignedTo->pluck('name')->join(', ') }}
@@ -600,11 +603,14 @@
                             class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __($map . '.' . $val) }}</span>
                     </div>
                 @endforeach
-                
+
                 <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
+                    <span
+                        class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
                     <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full {{ $task->visibility === 'public' ? 'bg-violet-500' : 'bg-amber-500' }}"></div>
+                        <div
+                            class="w-2 h-2 rounded-full {{ $task->visibility === 'public' ? 'bg-violet-500' : 'bg-amber-500' }}">
+                        </div>
                         <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
                             {{ $task->visibility === 'public' ? __('tasks.public') : __('tasks.private') }}
                         </span>
