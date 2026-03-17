@@ -1,20 +1,29 @@
 @php
-    $layout = auth()->check() ? auth()->user()->layout : request()->cookie('layout', 'horizontal');
+    $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
 @endphp
 
 @if ($layout === 'vertical')
+    <!-- Overlay for mobile when sidebar is open -->
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 lg:hidden"
+        style="display: none"></div>
+
     <!-- Sidebar for Vertical Layout -->
     <aside id="sidebar"
-        class="fixed inset-y-0 left-0 z-40 w-64 transition-transform -translate-x-full lg:translate-x-0 border-r border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+        class="fixed inset-y-0 left-0 z-40 w-64 transition-transform duration-300 border-r border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
         <div class="flex flex-col h-full px-4 py-6 overflow-y-auto">
             <!-- Logo in Sidebar -->
-            <div class="mb-10 px-2">
+            <div class="mb-10 px-2 flex items-center justify-between">
                 <a href="{{ auth()->check() ? (request()->route('team') ? route('teams.dashboard', request()->route('team')) : route('dashboard')) : route('home') }}"
                     class="flex items-center gap-2 group">
                     <div
                         class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-violet-500/30 transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round">
                             <rect x="3" y="3" width="8" height="8" rx="1" />
                             <rect x="13" y="3" width="8" height="8" rx="1" />
                             <rect x="3" y="13" width="8" height="8" rx="1" />
@@ -25,6 +34,16 @@
                         style="font-family:'Space Grotesk',sans-serif">sientia<span
                             class="text-violet-600 dark:text-violet-400">MTX</span></span>
                 </a>
+
+                <!-- Close button for mobile -->
+                <button @click="sidebarOpen = false"
+                    class="lg:hidden p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
             <!-- Navigation Links -->
@@ -54,9 +73,10 @@
 
                     @can('admin')
                         <div class="pt-4 pb-2">
-                            <span class="px-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('Admin') }}</span>
+                            <span
+                                class="px-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('Admin') }}</span>
                         </div>
-                        
+
                         <a href="{{ route('settings.users') }}"
                             class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all {{ request()->routeIs('settings.users') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"

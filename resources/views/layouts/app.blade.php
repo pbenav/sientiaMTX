@@ -1,5 +1,5 @@
 @php
-    $layout = auth()->check() ? auth()->user()->layout : request()->cookie('layout', 'horizontal');
+    $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
@@ -61,24 +61,28 @@
     </style>
 </head>
 
-<body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased" x-data="{ 
-    layout: '{{ auth()->check() ? auth()->user()->layout : request()->cookie('layout', 'horizontal') }}',
-    updateLayout(newLayout) {
+<body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased" x-data="{
+    layout: '{{ auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal') }}',
+    sidebarOpen: window.innerWidth > 1024,
+    async updateLayout(newLayout) {
         this.layout = newLayout;
         document.cookie = 'layout=' + newLayout + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
-        
+
         @auth
-        fetch('{{ route('layout.update') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ layout: newLayout })
-        }).then(response => response.json())
-          .catch(error => console.error('Error updating layout:', error));
+        try {
+            await fetch('{{ route('layout.update') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ layout: newLayout })
+            });
+        } catch (error) {
+            console.error('Error updating layout:', error);
+        }
         @endauth
-        
+
         // Reload to apply layout structure
         window.location.reload();
     }
@@ -87,7 +91,7 @@
     @include('layouts.navigation-sidebar')
 
     <!-- Navigation -->
-    <nav x-show="layout === 'horizontal'"
+    <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
         class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -347,23 +351,33 @@
 
     <!-- Page content -->
     <main class="transition-all duration-300 px-4 sm:px-6 lg:px-8 py-8"
-        :class="layout === 'vertical' ? 'lg:pl-72' : 'max-w-7xl mx-auto'">
-        
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'pl-0 lg:pl-0') : 'max-w-7xl mx-auto'">
+
         <!-- Header for Vertical Layout -->
-        <div x-show="layout === 'vertical'" class="mb-8 flex items-center justify-between">
-            <div>
-                @if (isset($header))
-                    {{ $header }}
-                @endif
-            </div>
-            
-            <!-- Minimal action bar for vertical layout -->
-            <div class="flex items-center gap-3">
-                <!-- Theme/Layout/Language toggles are in the sidebar or a small topbar? 
-                     User asked for them next to the selectors, so I'll keep them 
-                     visible in a small floating header or similar if needed. 
-                     For now, let's keep the main header actions here. -->
-                @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
+        <div x-show="layout === 'vertical'"
+            class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4 min-w-0">
+                    <button @click="sidebarOpen = !sidebarOpen"
+                        class="p-2 -ml-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+                        title="{{ __('Toggle Sidebar') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <div class="min-w-0">
+                        @if (isset($header))
+                            {{ $header }}
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Minimal action bar for vertical layout -->
+                <div class="flex items-center gap-3 shrink-0">
+                    @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
+                </div>
             </div>
         </div>
 
@@ -377,8 +391,8 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-colors"
-        :class="layout === 'vertical' ? 'lg:pl-72' : ''">
+    <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-all duration-300"
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'lg:pl-0') : ''">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
             <div class="flex flex-col gap-1">
                 <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
