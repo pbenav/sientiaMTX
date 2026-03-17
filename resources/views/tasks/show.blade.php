@@ -115,6 +115,16 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main content -->
         <div class="lg:col-span-2 space-y-5">
+            <!-- Task Name Card -->
+            <div
+                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
+                <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                    {{ __('tasks.name') }}</h3>
+                <p class="text-xl font-bold text-gray-900 dark:text-white heading leading-tight">
+                    {{ $task->title }}
+                </p>
+            </div>
+
             @if ($task->is_template || $task->children()->exists())
                 @php
                     $isRoadmap = $task->is_template;
