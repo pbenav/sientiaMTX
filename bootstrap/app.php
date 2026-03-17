@@ -25,5 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('tasks:check-urgent')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            return redirect()->route('home')->with('warning', 'Tu sesión ha expirado. Por favor, vuelve a intentarlo.');
+        });
     })->create();
