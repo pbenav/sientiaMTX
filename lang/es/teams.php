@@ -69,4 +69,5 @@ return [
     ],
     'confirm_ok' => 'Aceptar',
     'confirm_cancel' => 'Cancelar',
+    'recent_tasks' => 'Tareas recientes',
 ];
