@@ -103,7 +103,47 @@
                 @endauth
             </nav>
 
-            <!-- User Status Footer in Sidebar (Optional/Extra) -->
+            @auth
+                <div class="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-3 px-2 mb-4">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shrink-0">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-black text-gray-900 dark:text-white truncate uppercase tracking-tight">
+                                {{ explode(' ', auth()->user()->name)[0] }}</p>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate">{{ auth()->user()->email }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <a href="{{ route('profile.edit') }}"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {{ __('navigation.profile') }}
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all text-left">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                {{ __('navigation.logout') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endauth
         </div>
     </aside>
 @endif
