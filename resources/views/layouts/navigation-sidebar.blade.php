@@ -15,12 +15,12 @@
         class="fixed inset-y-0 left-0 z-40 w-64 transition-transform duration-300 border-r border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
         <div class="flex flex-col h-full px-4 py-6 overflow-y-auto">
-            <!-- Logo in Sidebar -->
-            <div class="mb-10 px-2 flex items-center justify-between">
+            <!-- Logo area with Toggle Button -->
+            <div class="mb-10 px-2 flex items-center justify-between gap-2">
                 <a href="{{ auth()->check() ? (request()->route('team') ? route('teams.dashboard', request()->route('team')) : route('dashboard')) : route('home') }}"
-                    class="flex items-center gap-2 group">
+                    class="flex items-center gap-2 group min-w-0">
                     <div
-                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-violet-500/30 transition-all duration-300">
+                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-violet-500/30 transition-all duration-300 shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -30,18 +30,19 @@
                             <rect x="13" y="13" width="8" height="8" rx="1" />
                         </svg>
                     </div>
-                    <span class="font-bold text-gray-900 dark:text-white text-lg tracking-tight"
+                    <span class="font-bold text-gray-900 dark:text-white text-lg tracking-tight truncate"
                         style="font-family:'Space Grotesk',sans-serif">sientia<span
                             class="text-violet-600 dark:text-violet-400">MTX</span></span>
                 </a>
 
-                <!-- Close button for mobile -->
+                <!-- Toggle button inside sidebar (Visible when deployed) -->
                 <button @click="sidebarOpen = false"
-                    class="lg:hidden p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                    class="p-2 -mr-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+                    title="{{ __('Close Sidebar') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                            d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
             </div>

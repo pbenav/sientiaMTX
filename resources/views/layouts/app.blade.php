@@ -351,32 +351,34 @@
 
     <!-- Page content -->
     <main class="transition-all duration-300 px-4 sm:px-6 lg:px-8 py-8"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'pl-0 lg:pl-0') : 'max-w-7xl mx-auto'">
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'max-w-7xl mx-auto') : 'max-w-7xl mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
             class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
-            <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                <div class="flex items-center gap-4 min-w-0">
-                    <button @click="sidebarOpen = !sidebarOpen"
-                        class="p-2 -ml-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
-                        title="{{ __('Toggle Sidebar') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+            <div class="flex items-center gap-4">
+                <!-- Toggle button ONLY when closed -->
+                <button x-show="!sidebarOpen" @click="sidebarOpen = true"
+                    class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+                    title="{{ __('Open Sidebar') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+
+                <div class="flex-1 max-w-7xl mx-auto flex items-center justify-between gap-4">
                     <div class="min-w-0">
                         @if (isset($header))
                             {{ $header }}
                         @endif
                     </div>
-                </div>
 
-                <!-- Minimal action bar for vertical layout -->
-                <div class="flex items-center gap-3 shrink-0">
-                    @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
+                    <!-- Minimal action bar for vertical layout -->
+                    <div class="flex items-center gap-3 shrink-0">
+                        @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
+                    </div>
                 </div>
             </div>
         </div>
@@ -392,7 +394,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-all duration-300"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'lg:pl-0') : ''">
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'max-w-7xl mx-auto') : ''">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
             <div class="flex flex-col gap-1">
                 <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
