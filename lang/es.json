@@ -145,7 +145,7 @@
     "tasks.attachment_renamed": "Archivo renombrado correctamente.",
     "Application Limits": "Límites de la Aplicación",
     "Default Disk Quota (MB)": "Cuota de Disco Predeterminada (MB)",
-    "Set the default storage limit for new and existing users.": "Establece el límite de almacenamiento predeterminado para usuarios nuevos y existentes.",
+    "Configure global limits and session preferences.": "Configura los límites generales y las preferencias de sesión.",
     "Disk Quota": "Cuota de Disco",
     "Global Settings": "Configuración Global",
     "Session Expiration (Minutes)": "Expiración de Sesión (Minutos)",

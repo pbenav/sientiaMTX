@@ -221,7 +221,7 @@
                             <h3 class="text-lg font-bold text-gray-900 dark:text-white heading">
                                 {{ __('Application Limits') }}</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ __('Set the default storage limit for new and existing users.') }}</p>
+                                {{ __('Configure global limits and session preferences.') }}</p>
                         </div>
                     </div>
 
