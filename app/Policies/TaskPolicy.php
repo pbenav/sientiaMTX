@@ -26,7 +26,7 @@ class TaskPolicy
         return $user->id === $task->created_by_id || 
                $user->id === $task->assigned_user_id ||
                $task->assignedTo()->where('users.id', $user->id)->exists() ||
-               $task->assignedGroups()->whereHas('members', function($q) use ($user) {
+               $task->assignedGroups()->whereHas('users', function($q) use ($user) {
                    $q->where('users.id', $user->id);
                })->exists();
     }
@@ -45,7 +45,7 @@ class TaskPolicy
         // Assignees can update (progress, etc.)
         if ($user->id === $task->assigned_user_id) return true;
         if ($task->assignedTo()->where('users.id', $user->id)->exists()) return true;
-        if ($task->assignedGroups()->whereHas('members', function($q) use ($user) {
+        if ($task->assignedGroups()->whereHas('users', function($q) use ($user) {
             $q->where('users.id', $user->id);
         })->exists()) return true;
 

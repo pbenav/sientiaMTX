@@ -206,7 +206,7 @@ class Task extends Model
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
               })
-              ->orWhereHas('assignedGroups.members', function($subq) use ($user) {
+              ->orWhereHas('assignedGroups.users', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
               });
         });
