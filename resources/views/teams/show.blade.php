@@ -56,7 +56,7 @@
             <div class="flex items-center justify-between">
                 <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                     {{ __('teams.recent_tasks') }}</h3>
-                <a href="{{ route('teams.tasks.index', $team) }}"
+                <a href="{{ route('teams.dashboard', $team) }}"
                     class="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors">{{ __('teams.view_dashboard') }}
                     →</a>
             </div>
