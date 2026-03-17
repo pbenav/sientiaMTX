@@ -43,6 +43,7 @@ return [
     'report_blocker' => 'Informar un bloqueo',
     'view_detail' => 'Ver detalle',
     'unblock_task' => 'Quitar bloqueo',
+    'detail' => 'Detalles de la tarea',
     'visibility' => 'Visibilidad',
     'public' => 'Pública',
     'private' => 'Privada',
