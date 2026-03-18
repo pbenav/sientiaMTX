@@ -139,4 +139,7 @@ return [
     'notifications' => [
         'blocked_alert' => '🚩 Task blocked: A member has reported an issue in ":title". Requires your immediate attention.',
     ],
+
+    'global_progress' => 'Global Progress',
+    'automatic' => 'Automatic',
 ];

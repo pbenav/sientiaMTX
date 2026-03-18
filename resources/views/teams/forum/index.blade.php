@@ -11,15 +11,15 @@
                     {{ __('forum.title') ?? 'Tablón de Anuncios' }}
                 </h1>
 
-                <x-primary-button x-data=""
+                <button type="button" x-data=""
                     x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
-                    class="flex items-center gap-2 shadow-lg shadow-violet-500/20 shrink-0">
+                    class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
                     <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo Hilo' }}</span>
-                </x-primary-button>
+                </button>
             </div>
 
             @include('teams.partials.header-actions')

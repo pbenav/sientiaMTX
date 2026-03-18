@@ -146,4 +146,7 @@ return [
     'notifications' => [
         'blocked_alert' => '🚩 Tarea bloqueada: Un miembro ha reportado un problema en ":title". Requiere tu atención inmediata.',
     ],
+
+    'global_progress' => 'Progreso Global',
+    'automatic' => 'Automático',
 ];
