@@ -2,7 +2,7 @@
     @section('title', __('navigation.gantt') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-start gap-3 min-w-0 flex-1">
                 <a href="{{ route('teams.index') }}"
                     class="mt-1 p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm shrink-0"

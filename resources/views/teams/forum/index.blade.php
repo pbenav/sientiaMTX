@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-center justify-between min-w-0 flex-1 gap-4 select-none">
                 <h1 class="text-2xl font-black text-gray-900 dark:text-white heading truncate flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none"

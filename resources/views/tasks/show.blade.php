@@ -2,7 +2,7 @@
     @section('title', $task->title)
 
     <x-slot name="header">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-start gap-3 min-w-0 flex-1">
                 <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
                     class="mt-1 p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm shrink-0"
@@ -20,6 +20,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap shrink-0">
+                @include('teams.partials.view-switcher')
                 @can('update', $task)
                     <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
                         class="shrink-0 flex items-center gap-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl transition-all shadow-sm dark:shadow-none font-medium">
