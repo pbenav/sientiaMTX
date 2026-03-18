@@ -13,7 +13,8 @@ class GanttController extends Controller
      */
     public function index(Team $team)
     {
-        return view('teams.gantt', compact('team'));
+        $members = $team->members()->with('user')->get()->pluck('user');
+        return view('teams.gantt', compact('team', 'members'));
     }
 
     /**
@@ -59,6 +60,24 @@ class GanttController extends Controller
 
         $allGanttTasks = Task::with(['parent', 'assignedUser'])
             ->whereIn('id', $uniqueIds)
+            ->when($request->search, function ($q, $search) {
+                $q->where(function ($sq) use ($search) {
+                    $sq->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->status, fn($q, $status) => $q->where('status', $status))
+            ->when($request->priority, fn($q, $priority) => $q->where('priority', $priority))
+            ->when($request->assigned_to, fn($q, $assignedTo) => $q->where('assigned_user_id', $assignedTo))
+            ->when($request->type, function ($q, $type) {
+                if ($type === 'template') {
+                    $q->where('is_template', true);
+                } elseif ($type === 'instance') {
+                    $q->where('is_template', false)->whereNotNull('parent_id');
+                } elseif ($type === 'plain') {
+                    $q->where('is_template', false)->whereNull('parent_id');
+                }
+            })
             ->get();
 
         // Step 3: Optional quadrant filter (applied after expansion to keep siblings coherent)

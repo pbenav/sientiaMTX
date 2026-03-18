@@ -12,14 +12,17 @@
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <!-- Usage Summary -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors col-span-1 md:col-span-2">
+            <div
+                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors col-span-1 md:col-span-2">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.disk_quota') }}</h3>
+                    <h3 class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                        {{ __('tasks.disk_quota') }}</h3>
                     <div class="flex items-center gap-2">
                         <span class="text-lg font-black text-gray-900 dark:text-white">
                             {{ number_format($user->disk_used / 1024 / 1024, 2) }}
                         </span>
-                        <span class="text-sm font-medium text-gray-400">/ {{ number_format($user->disk_quota / 1024 / 1024, 0) }} MB</span>
+                        <span class="text-sm font-medium text-gray-400">/
+                            {{ number_format($user->disk_quota / 1024 / 1024, 0) }} MB</span>
                     </div>
                 </div>
 
@@ -28,8 +31,10 @@
                     $barColor = $perc > 90 ? 'bg-red-500' : ($perc > 70 ? 'bg-amber-500' : 'bg-violet-500');
                 @endphp
 
-                <div class="w-full h-4 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-inner">
-                    <div class="h-full {{ $barColor }} transition-all duration-1000 shadow-lg" style="width: {{ $perc }}%"></div>
+                <div
+                    class="w-full h-4 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-inner">
+                    <div class="h-full {{ $barColor }} transition-all duration-1000 shadow-lg"
+                        style="width: {{ $perc }}%"></div>
                 </div>
 
                 <p class="mt-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -37,16 +42,20 @@
                 </p>
             </div>
 
-            <div class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-6 shadow-lg shadow-violet-500/20 text-white flex flex-col justify-between">
+            <div
+                class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-6 shadow-lg shadow-violet-500/20 text-white flex flex-col justify-between">
                 <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-4 opacity-80" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                     </svg>
                     <h4 class="text-xs font-bold uppercase tracking-widest opacity-80">{{ __('Totales') }}</h4>
                     <p class="text-3xl font-black heading">{{ $attachments->count() }}</p>
                     <p class="text-sm opacity-80 font-medium">{{ __('tasks.uploaded_files') }}</p>
                 </div>
-                <div class="mt-4 pt-4 border-t border-white/10 flex justify-between items-end text-xs font-bold uppercase tracking-tighter">
+                <div
+                    class="mt-4 pt-4 border-t border-white/10 flex justify-between items-end text-xs font-bold uppercase tracking-tighter">
                     <span class="opacity-70">{{ __('Estado') }}</span>
                     <span>{{ round($perc) }}% FULL</span>
                 </div>
@@ -54,16 +63,21 @@
         </div>
 
         <!-- File List -->
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+        <div
+            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
             <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-                <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.files_management') }}</h3>
+                <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                    {{ __('tasks.files_management') }}</h3>
             </div>
 
-            @if($attachments->isEmpty())
+            @if ($attachments->isEmpty())
                 <div class="flex flex-col items-center justify-center py-20 px-6 text-center">
-                    <div class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-300 dark:text-gray-600 mb-4 border border-gray-100 dark:border-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-300 dark:text-gray-600 mb-4 border border-gray-100 dark:border-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
                     <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('tasks.no_attachments') }}</p>
@@ -71,7 +85,8 @@
             @else
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                        <thead
+                            class="bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                             <tr>
                                 <th class="px-6 py-4">{{ __('tasks.file') }}</th>
                                 <th class="px-6 py-4">{{ __('tasks.task_team') }}</th>
@@ -81,27 +96,37 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
-                            @foreach($attachments as $file)
+                            @foreach ($attachments as $file)
                                 <tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800 shadow-sm shrink-0">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            <div
+                                                class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800 shadow-sm shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                                 </svg>
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="font-bold text-gray-800 dark:text-gray-200 truncate max-w-[200px]" title="{{ $file->file_name }}">
+                                                <p class="font-bold text-gray-800 dark:text-gray-200 truncate max-w-[200px]"
+                                                    title="{{ $file->file_name }}">
                                                     {{ $file->file_name }}
                                                 </p>
-                                                <p class="text-[10px] text-gray-400 uppercase tracking-tighter">{{ $file->mime_type }}</p>
+                                                <p class="text-[10px] text-gray-400 uppercase tracking-tighter">
+                                                    {{ $file->mime_type }}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        @if($file->task)
-                                            <p class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $file->task->title }}</p>
-                                            <p class="text-[10px] text-violet-500/80 font-medium">{{ $file->task->team->name }}</p>
+                                        @if ($file->task)
+                                            <a href="{{ route('teams.tasks.show', [$file->task->team_id, $file->task_id]) }}"
+                                                class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
+                                                {{ $file->task->title }}
+                                            </a>
+                                            <p class="text-[10px] text-gray-500 font-medium">
+                                                {{ $file->task->team->name }}</p>
                                         @else
                                             <span class="text-[10px] italic text-gray-400">{{ __('Sin tarea') }}</span>
                                         @endif
@@ -111,28 +136,36 @@
                                     </td>
                                     <td class="px-6 py-4 text-[11px] text-gray-500">
                                         {{ $file->created_at->format('d M Y') }}
-                                        <span class="block text-[10px] opacity-70">{{ $file->created_at->format('H:i') }}</span>
+                                        <span
+                                            class="block text-[10px] opacity-70">{{ $file->created_at->format('H:i') }}</span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('media.download', $file) }}" 
+                                            <a href="{{ route('media.download', $file) }}"
                                                 class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
                                                 title="{{ __('tasks.download') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002-2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M4 16v1a2 2 0 002-2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                 </svg>
                                             </a>
 
-                                            <button type="button" 
-                                                onclick="confirmFileDelete({{ $file->id }})"
+                                            <button type="button" onclick="confirmFileDelete({{ $file->id }})"
                                                 class="p-2 text-gray-400 hover:text-red-500 transition-colors"
                                                 title="{{ __('tasks.delete') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
 
-                                            <form id="delete-form-{{ $file->id }}" action="{{ route('media.destroy', $file) }}" method="POST" class="hidden">
+                                            <form id="delete-form-{{ $file->id }}"
+                                                action="{{ route('media.destroy', $file) }}" method="POST"
+                                                class="hidden">
                                                 @csrf @method('DELETE')
                                             </form>
                                         </div>
@@ -149,14 +182,14 @@
     <script>
         function confirmFileDelete(id) {
             Swal.fire({
-                title: '{{ __("tasks.delete_confirm") }}',
-                text: '{{ __("tasks.delete_file_warning") }}',
+                title: '{{ __('tasks.delete_confirm') }}',
+                text: '{{ __('tasks.delete_file_warning') }}',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
-                confirmButtonText: '{{ __("Sí, eliminar") }}',
-                cancelButtonText: '{{ __("Cancelar") }}',
+                confirmButtonText: '{{ __('Sí, eliminar') }}',
+                cancelButtonText: '{{ __('Cancelar') }}',
                 background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
             }).then((result) => {

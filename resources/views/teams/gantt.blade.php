@@ -24,7 +24,90 @@
         </div>
     </x-slot>
 
-    <div class="py-6">
+    <div class="py-6 space-y-4">
+        <!-- Filters and Search Bar -->
+        <div
+            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm transition-all">
+            <form action="{{ route('teams.gantt', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
+                <!-- Search -->
+                <div class="flex-1 min-w-[200px] relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="{{ __('tasks.search') }}..."
+                        class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                </div>
+
+                <!-- Status Filter -->
+                <div class="w-40">
+                    <select name="status" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="">{{ __('tasks.status') }}</option>
+                        @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
+                            <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>
+                                {{ __("tasks.statuses.{$status}") }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Priority Filter -->
+                <div class="w-40">
+                    <select name="priority" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="">{{ __('tasks.priority') }}</option>
+                        @foreach (['low', 'medium', 'high', 'critical'] as $priority)
+                            <option value="{{ $priority }}"
+                                {{ request('priority') === $priority ? 'selected' : '' }}>
+                                {{ __("tasks.priorities.{$priority}") }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Assigned To Filter -->
+                <div class="w-48">
+                    <select name="assigned_to" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="">{{ __('tasks.assigned_to') }}</option>
+                        @if (isset($members))
+                            @foreach ($members as $member)
+                                <option value="{{ $member->id }}"
+                                    {{ request('assigned_to') == $member->id ? 'selected' : '' }}>
+                                    {{ $member->name }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="w-40">
+                    <select name="type" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="">{{ __('tasks.type') }}</option>
+                        <option value="template" {{ request('type') === 'template' ? 'selected' : '' }}>
+                            {{ __('tasks.template') }}</option>
+                        <option value="instance" {{ request('type') === 'instance' ? 'selected' : '' }}>
+                            {{ __('tasks.subtask') }}</option>
+                        <option value="plain" {{ request('type') === 'plain' ? 'selected' : '' }}>
+                            {{ __('tasks.task') }}</option>
+                    </select>
+                </div>
+
+                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type']))
+                    <a href="{{ route('teams.gantt', $team) }}"
+                        class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
+                        {{ __('tasks.clear_filters') }}
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm dark:shadow-none overflow-hidden transition-colors">
             <div
@@ -238,7 +321,9 @@
         let allTasks = [];
 
         async function fetchTasks(quadrant = 'all') {
-            const url = `{{ route('teams.gantt.data', $team) }}?quadrant=${quadrant}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('quadrant', quadrant);
+            const url = `{{ route('teams.gantt.data', $team) }}?${urlParams.toString()}`;
             const response = await fetch(url);
             return await response.json();
         }
