@@ -50,7 +50,7 @@
     @endphp
 
     <!-- Matrix Labels & Grid -->
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Horizontal Urgency labels -->
         <div
             class="flex justify-between mb-4 sm:mb-8 ml-10 sm:ml-16 mr-2 sm:mr-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-400 dark:text-gray-500">

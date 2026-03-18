@@ -93,7 +93,7 @@
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
         class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50 transition-colors">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
                 <!-- Logo -->
@@ -351,7 +351,7 @@
 
     <!-- Page content -->
     <main class="transition-all duration-300 px-4 sm:px-6 lg:px-8 py-8"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'max-w-7xl mx-auto') : 'max-w-7xl mx-auto'">
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'max-w-[1600px] mx-auto') : 'max-w-[1600px] mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
@@ -395,7 +395,7 @@
     <!-- Footer -->
     <footer class="border-t border-gray-200 dark:border-gray-800 mt-16 transition-all duration-300"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : ''">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
             <div class="flex flex-col gap-1">
                 <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
                     class="text-xs font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
