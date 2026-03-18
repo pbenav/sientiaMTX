@@ -138,14 +138,14 @@
                                     <x-sort-icon column="title" />
                                 </a>
                             </th>
-                            <th class="px-6 py-4">
+                            <th class="px-4 py-4 whitespace-nowrap">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => request('sort') == 'status' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.status') }}
                                     <x-sort-icon column="status" />
                                 </a>
                             </th>
-                            <th class="px-6 py-4">
+                            <th class="px-4 py-4 whitespace-nowrap">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'priority', 'direction' => request('sort') == 'priority' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.priority') }} / {{ __('tasks.urgency') }}
@@ -153,21 +153,21 @@
                                 </a>
                             </th>
                             <th
-                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 {{ __('tasks.owner') }}
                             </th>
                             <th
-                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 {{ __('tasks.assigned_to') }}
                             </th>
-                            <th class="px-6 py-4">
+                            <th class="px-4 py-4 whitespace-nowrap">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'progress_percentage', 'direction' => request('sort') == 'progress_percentage' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.progress') }}
                                     <x-sort-icon column="progress_percentage" />
                                 </a>
                             </th>
-                            <th class="px-6 py-4">
+                            <th class="px-4 py-4 whitespace-nowrap">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'due_date', 'direction' => request('sort') == 'due_date' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.due_date') }}
@@ -175,7 +175,7 @@
                                 </a>
                             </th>
                             <th
-                                class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">
+                                class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right whitespace-nowrap min-w-[100px]">
                                 {{ __('tasks.actions') }}
                             </th>
                         </tr>
@@ -267,7 +267,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <span
                                         class="px-2.5 py-1 text-[11px] font-bold rounded-lg border 
                                     @if ($task->status === 'completed') bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400
@@ -277,16 +277,16 @@
                                         {{ __("tasks.statuses.{$task->status}") }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-xs">
+                                <td class="px-4 py-4 text-xs whitespace-nowrap">
                                     {{ __("tasks.priorities.{$task->priority}") }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     {{ $task->creator?->name ?? '—' }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     {{ $task->assignedUser?->name ?? __('tasks.unassigned') }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
                                         <div
                                             class="flex-1 w-20 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
@@ -297,11 +297,11 @@
                                             class="text-[10px] font-bold text-gray-400 dark:text-gray-500 w-6">{{ $task->progress }}%</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <span
                                         class="text-xs text-gray-500">{{ $task->due_date ? $task->due_date->format('d/m/y') : '—' }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-4 py-4 text-right whitespace-nowrap min-w-[100px]">
                                     <div
                                         class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         @can('update', $task)
@@ -348,22 +348,22 @@
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-3">
+                                    <td class="px-4 py-3 whitespace-nowrap">
                                         <span
                                             class="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase tracking-tight">
                                             {{ __("tasks.statuses.{$subtask->status}") }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         {{ __("tasks.priorities.{$subtask->priority}") }}
                                     </td>
-                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         {{ $subtask->creator?->name ?? '—' }}
                                     </td>
-                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         {{ $subtask->assignedUser?->name ?? '—' }}
                                     </td>
-                                    <td class="px-6 py-3">
+                                    <td class="px-4 py-3 whitespace-nowrap">
                                         <div class="flex items-center gap-2">
                                             <div
                                                 class="flex-1 w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
@@ -374,10 +374,10 @@
                                                 class="text-[9px] font-bold text-gray-400 dark:text-gray-500 w-5">{{ $subtask->progress }}%</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-3 text-[10px] text-gray-400">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
                                     </td>
-                                    <td class="px-6 py-3 text-right">
+                                    <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
                                         <div
                                             class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}"
