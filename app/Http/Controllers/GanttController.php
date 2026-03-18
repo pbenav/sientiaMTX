@@ -13,7 +13,7 @@ class GanttController extends Controller
      */
     public function index(Team $team)
     {
-        $members = $team->members()->with('user')->get()->pluck('user');
+        $members = $team->members()->get();
         return view('teams.gantt', compact('team', 'members'));
     }
 
