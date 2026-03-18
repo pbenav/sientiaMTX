@@ -80,7 +80,15 @@ class TaskController extends Controller
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->orderBy('title')->get();
 
-        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks'));
+        $referer = request()->headers->get('referer');
+        if ($referer && str_starts_with($referer, url('/'))) {
+            if (!str_contains($referer, "/tasks/create")) {
+                session()->put("back_url_task_create_{$team->id}", $referer);
+            }
+        }
+        $backUrl = session("back_url_task_create_{$team->id}", route('teams.dashboard', $team));
+
+        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl'));
     }
 
     /**
@@ -203,7 +211,16 @@ class TaskController extends Controller
             $task->load('parent.attachments');
         }
 
-        return view('tasks.show', compact('team', 'task'));
+        $referer = request()->headers->get('referer');
+        if ($referer && str_starts_with($referer, url('/'))) {
+            // Only update the back url if we are not coming from the same task
+            if (!str_contains($referer, "/tasks/{$task->id}")) {
+                session()->put("back_url_task_{$task->id}", $referer);
+            }
+        }
+        $backUrl = session("back_url_task_{$task->id}", route('teams.dashboard', $team));
+
+        return view('tasks.show', compact('team', 'task', 'backUrl'));
     }
 
     /**
@@ -223,7 +240,15 @@ class TaskController extends Controller
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
         $tasks = $team->tasks()->where('id', '!=', $task->id)->orderBy('title')->get();
 
-        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks'));
+        $referer = request()->headers->get('referer');
+        if ($referer && str_starts_with($referer, url('/'))) {
+            if (!str_contains($referer, "/tasks/{$task->id}/edit")) {
+                session()->put("back_url_task_edit_{$task->id}", $referer);
+            }
+        }
+        $backUrl = session("back_url_task_edit_{$task->id}", route('teams.tasks.show', [$team, $task]));
+
+        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl'));
     }
 
     /**

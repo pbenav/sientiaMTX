@@ -4,7 +4,7 @@
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
             <div class="flex items-start gap-3 min-w-0 flex-1">
-                <a href="{{ route('teams.dashboard', $team) }}"
+                <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
                     class="mt-1 p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm shrink-0"
                     title="{{ __('navigation.back') ?? 'Volver' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
