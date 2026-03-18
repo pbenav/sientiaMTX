@@ -15,9 +15,70 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('navigation.dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
+                        {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
+                    </x-nav-link>
                     <x-nav-link :href="route('media.index')" :active="request()->routeIs('media.index')">
                         {{ __('tasks.disk_quota') }}
                     </x-nav-link>
+
+                    @if (request()->route('team'))
+                        @php
+                            $currentTeamId = is_object(request()->route('team'))
+                                ? request()->route('team')->id
+                                : request()->route('team');
+                            $currentTeamLabel = is_object(request()->route('team'))
+                                ? request()->route('team')->name
+                                : \App\Models\Team::find($currentTeamId)->name;
+                            $isTeamRoute =
+                                request()->routeIs('teams.dashboard') ||
+                                request()->routeIs('teams.tasks.*') ||
+                                request()->routeIs('teams.gantt') ||
+                                request()->routeIs('teams.forum.*') ||
+                                request()->routeIs('teams.members') ||
+                                request()->routeIs('teams.edit');
+                        @endphp
+                        @if ($isTeamRoute)
+                            <div class="flex items-center ms-4">
+                                <x-dropdown align="left" width="48">
+                                    <x-slot name="trigger">
+                                        <button
+                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-lg text-violet-600 bg-violet-50 hover:bg-violet-100 hover:text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 dark:hover:text-violet-300 focus:outline-none transition ease-in-out duration-150">
+                                            <div
+                                                class="w-5 h-5 mr-2 rounded bg-violet-200 text-violet-700 dark:bg-violet-900/50 dark:text-violet-400 flex items-center justify-center text-[10px] font-bold">
+                                                {{ strtoupper(substr($currentTeamLabel, 0, 1)) }}
+                                            </div>
+                                            <div>{{ Str::limit($currentTeamLabel, 20) }}</div>
+
+                                            <div class="ms-2">
+                                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </button>
+                                    </x-slot>
+
+                                    <x-slot name="content">
+                                        <x-dropdown-link :href="route('teams.forum.index', $currentTeamId)">
+                                            {{ __('forum.title') ?? 'Tablón de Anuncios' }}
+                                        </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.tasks.index', $currentTeamId)">
+                                            {{ __('navigation.task_list') ?? 'Lista de Tareas' }}
+                                        </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.dashboard', $currentTeamId)">
+                                            {{ __('teams.eisenhower_matrix') ?? 'Matriz Eisenhower' }}
+                                        </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.gantt', $currentTeamId)">
+                                            {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
+                                        </x-dropdown-link>
+                                    </x-slot>
+                                </x-dropdown>
+                            </div>
+                        @endif
+                    @endif
                 </div>
             </div>
 
@@ -25,12 +86,16 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                        <button
+                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
                                 </svg>
                             </div>
                         </button>
@@ -46,7 +111,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -57,10 +122,14 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button @click="open = ! open"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path :class="{ 'hidden': open, 'inline-flex': !open }" class="inline-flex"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{ 'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round"
+                            stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -68,11 +137,58 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('navigation.dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
+                {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
+            </x-responsive-nav-link>
+
+            @if (request()->route('team'))
+                @php
+                    $currentTeamId = is_object(request()->route('team'))
+                        ? request()->route('team')->id
+                        : request()->route('team');
+                    $currentTeamLabel = is_object(request()->route('team'))
+                        ? request()->route('team')->name
+                        : \App\Models\Team::find($currentTeamId)->name;
+                    $isTeamRoute =
+                        request()->routeIs('teams.dashboard') ||
+                        request()->routeIs('teams.tasks.*') ||
+                        request()->routeIs('teams.gantt') ||
+                        request()->routeIs('teams.forum.*') ||
+                        request()->routeIs('teams.members') ||
+                        request()->routeIs('teams.edit');
+                @endphp
+                @if ($isTeamRoute)
+                    <div class="pl-6 bg-violet-50/50 dark:bg-violet-900/10 py-2 border-l-4 border-violet-500 my-1">
+                        <div
+                            class="px-4 text-xs font-bold text-violet-600 dark:text-violet-400 mb-1 tracking-wider uppercase flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {{ Str::limit($currentTeamLabel, 20) }}
+                        </div>
+                        <x-responsive-nav-link :href="route('teams.forum.index', $currentTeamId)" :active="request()->routeIs('teams.forum.*')" class="text-sm">
+                            {{ __('forum.title') ?? 'Tablón de Anuncios' }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.tasks.index', $currentTeamId)" :active="request()->routeIs('teams.tasks.*')" class="text-sm">
+                            {{ __('navigation.task_list') ?? 'Lista de Tareas' }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.dashboard', $currentTeamId)" :active="request()->routeIs('teams.dashboard')" class="text-sm">
+                            {{ __('teams.eisenhower_matrix') ?? 'Matriz Eisenhower' }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.gantt', $currentTeamId)" :active="request()->routeIs('teams.gantt')" class="text-sm">
+                            {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
+                        </x-responsive-nav-link>
+                    </div>
+                @endif
+            @endif
+
             <x-responsive-nav-link :href="route('media.index')" :active="request()->routeIs('media.index')">
                 {{ __('tasks.disk_quota') }}
             </x-responsive-nav-link>
@@ -95,7 +211,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
