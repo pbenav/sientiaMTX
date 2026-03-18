@@ -426,6 +426,40 @@ class TaskController extends Controller
     }
 
     /**
+     * Remove multiple tasks from storage
+     */
+    public function bulkDelete(\Illuminate\Http\Request $request, Team $team)
+    {
+        $request->validate([
+            'task_ids' => 'required|array',
+            'task_ids.*' => 'exists:tasks,id'
+        ]);
+
+        $tasks = Task::whereIn('id', $request->task_ids)->where('team_id', $team->id)->get();
+        $deletedCount = 0;
+
+        foreach ($tasks as $task) {
+            if ($request->user()->can('delete', $task)) {
+                // Delete from Google Tasks if synced
+                if ($task->google_task_id && auth()->user()->google_token) {
+                    try {
+                        $googleService = app(\App\Services\GoogleService::class);
+                        $googleService->deleteTask($task->google_task_list_id, $task->google_task_id);
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Bulk delete Google Task error: ' . $e->getMessage());
+                    }
+                }
+
+                $task->delete();
+                $deletedCount++;
+            }
+        }
+
+        return redirect()->route('teams.tasks.index', $team)
+            ->with('success', "$deletedCount tareas eliminadas correctamente.");
+    }
+
+    /**
      * Get tasks by status (API endpoint for AJAX)
      */
     public function byStatus(Team $team, string $status)

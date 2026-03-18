@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
     // Tasks routes (nested under teams)
+    Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
     Route::resource('teams.tasks', TaskController::class);
     
     // Task Attachments

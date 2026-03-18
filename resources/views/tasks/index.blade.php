@@ -108,10 +108,29 @@
 
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-2xl overflow-hidden transition-all">
+            <div id="bulkActionBar"
+                class="hidden bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 p-3 flex justify-between items-center transition-all animate-fade-in">
+                <span class="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span><span id="selectedCount">0</span> tareas seleccionadas</span>
+                </span>
+                <button type="button" onclick="confirmBulkDelete()"
+                    class="px-4 py-1.5 bg-red-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:bg-red-600 transition focus:ring focus:ring-red-500/30">
+                    Eliminar Selección
+                </button>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                            <th class="px-4 py-4 w-10 text-center">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)"
+                                    class="rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-colors">
+                            </th>
                             <th class="px-6 py-4">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'title', 'direction' => request('sort') == 'title' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
@@ -170,6 +189,11 @@
                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer"
                                 data-href="{{ route('teams.tasks.show', [$team, $task]) }}"
                                 onclick="if(!event.target.closest('button, a, input, select')) window.location=this.dataset.href">
+                                <td class="px-4 py-4 w-10 text-center" onclick="event.stopPropagation()">
+                                    <input type="checkbox" value="{{ $task->id }}"
+                                        class="task-checkbox rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-colors"
+                                        onchange="updateSelectedCount()">
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div
@@ -289,6 +313,16 @@
                                                         d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
                                             </a>
+                                            <button type="button"
+                                                onclick="event.stopPropagation(); confirmDeleteTask({{ $task->id }}, '{{ addslashes($task->title) }}')"
+                                                class="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                                title="{{ __('tasks.delete') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         @endcan
                                     </div>
                                 </td>
@@ -299,6 +333,11 @@
                                 <tr class="subtask-row hidden bg-gray-50/50 dark:bg-gray-800/20 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-800/40"
                                     data-parent="{{ $task->id }}"
                                     onclick="if(!event.target.closest('button, a, input, select')) window.location='{{ route('teams.tasks.show', [$team, $subtask]) }}'">
+                                    <td class="px-4 py-3 w-10 text-center" onclick="event.stopPropagation()">
+                                        <input type="checkbox" value="{{ $subtask->id }}"
+                                            class="task-checkbox rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-colors"
+                                            onchange="updateSelectedCount()">
+                                    </td>
                                     <td class="px-6 py-3 pl-16">
                                         <div class="flex items-center gap-3">
                                             <div
@@ -339,21 +378,37 @@
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
                                     </td>
                                     <td class="px-6 py-3 text-right">
-                                        <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}"
-                                            class="text-gray-300 hover:text-violet-400 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
-                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </a>
+                                        <div
+                                            class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}"
+                                                class="p-1 text-gray-400 hover:text-violet-400 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </a>
+                                            @can('delete', $subtask)
+                                                <button type="button"
+                                                    onclick="event.stopPropagation(); confirmDeleteTask({{ $subtask->id }}, '{{ addslashes($subtask->title) }}')"
+                                                    class="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                                    title="{{ __('tasks.delete') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            @endcan
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
                         @endforeach
                         @if ($tasks->isEmpty())
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
+                                <td colspan="9" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center gap-2">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 border border-gray-100 dark:border-gray-700">
@@ -386,6 +441,79 @@
 
         @push('scripts')
             <script>
+                function toggleAll(source) {
+                    const checkboxes = document.querySelectorAll('.task-checkbox');
+                    checkboxes.forEach(cb => cb.checked = source.checked);
+                    updateSelectedCount();
+                }
+
+                function updateSelectedCount() {
+                    const selected = document.querySelectorAll('.task-checkbox:checked').length;
+                    const counter = document.getElementById('selectedCount');
+                    if (counter) counter.textContent = selected;
+
+                    const bulkBar = document.getElementById('bulkActionBar');
+                    if (bulkBar) {
+                        if (selected > 0) {
+                            bulkBar.classList.remove('hidden');
+                        } else {
+                            bulkBar.classList.add('hidden');
+                        }
+                    }
+                }
+
+                function confirmBulkDelete() {
+                    const selected = document.querySelectorAll('.task-checkbox:checked');
+                    if (selected.length === 0) return;
+
+                    Swal.fire({
+                        title: '¿Eliminar selección?',
+                        text: `Estás a punto de eliminar ${selected.length} tareas. Esta acción no se puede deshacer.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const container = document.getElementById('bulkDeleteInputs');
+                            container.innerHTML = '';
+                            selected.forEach(cb => {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'task_ids[]';
+                                input.value = cb.value;
+                                container.appendChild(input);
+                            });
+                            document.getElementById('bulkDeleteForm').submit();
+                        }
+                    });
+                }
+
+                function confirmDeleteTask(taskId, taskTitle) {
+                    Swal.fire({
+                        title: '¿Eliminar tarea?',
+                        text: `¿Estás seguro de que quieres eliminar la tarea "${taskTitle}"? Esta acción no se puede deshacer y su progreso dejará de sumar.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const form = document.getElementById('individualDeleteForm');
+                            form.action = `{{ url('/teams/' . $team->id . '/tasks') }}/${taskId}`;
+                            form.submit();
+                        }
+                    });
+                }
+
                 function toggleSubtasks(taskId, button) {
                     const subtasks = document.querySelectorAll(`.subtask-row[data-parent="${taskId}"]`);
                     const icon = button.querySelector('svg');
@@ -403,4 +531,15 @@
                 });
             </script>
         @endpush
+        <form id="individualDeleteForm" method="POST" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+
+        <form id="bulkDeleteForm" action="{{ route('teams.tasks.bulk-delete', $team) }}" method="POST"
+            class="hidden">
+            @csrf
+            @method('DELETE')
+            <div id="bulkDeleteInputs"></div>
+        </form>
 </x-app-layout>
