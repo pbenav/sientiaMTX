@@ -603,9 +603,10 @@
                     @endif
 
                     <!-- Progress Slider for all tasks -->
-                    $sliderTask = $personalInstance ?: $task;
-                    $isAutomatic = $sliderTask->is_template || $sliderTask->children()->exists();
-                    $currentProgress = $sliderTask->progress;
+                    @php
+                        $sliderTask = $personalInstance ?: $task;
+                        $isAutomatic = $sliderTask->is_template || $sliderTask->children()->exists();
+                        $currentProgress = $sliderTask->progress;
                     @endphp
 
                     <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
