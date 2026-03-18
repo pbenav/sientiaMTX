@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ForumMessage;
 use App\Models\ForumThread;
 use App\Models\Team;
+use Illuminate\Http\Request;
 
 class ForumMessageController extends Controller
 {
