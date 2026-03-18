@@ -113,6 +113,7 @@ return [
     'blocker_detected' => '¡Bloqueo Detectado!',
     'blocker_description' => 'Uno o más miembros han marcado esta tarea como bloqueada. Requiere intervención.',
     'nudge_user' => 'Enviar recordatorio',
+    'nudge_confirm_text' => '¿Quieres enviar un aviso al responsable para que actualice su progreso?',
     'nudge_sent' => 'Recordatorio enviado correctamente.',
     'nudge_received' => 'Has recibido un recordatorio sobre la tarea ":title". Por favor, actualiza tu progreso.',
     'personal_instance_notice' => 'Esta es tu instancia privada',

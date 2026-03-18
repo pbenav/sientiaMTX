@@ -106,6 +106,7 @@ return [
     'blocker_detected' => 'Blocker Detected!',
     'blocker_description' => 'One or more members have marked this task as blocked. Requires intervention.',
     'nudge_user' => 'Send Reminder',
+    'nudge_confirm_text' => 'Do you want to send a reminder to the assignee to update their progress?',
     'nudge_sent' => 'Reminder sent successfully.',
     'nudge_received' => 'You have received a reminder about task ":title". Please update your progress.',
     'personal_instance_notice' => 'This is your personal instance',

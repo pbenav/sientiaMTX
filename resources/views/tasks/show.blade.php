@@ -790,7 +790,7 @@
             function nudgeUser(taskId) {
                 Swal.fire({
                     title: '{{ __('tasks.nudge_user') }}?',
-                    text: '{{ __('tasks.nudge_received') }}',
+                    text: '{{ __('tasks.nudge_confirm_text') }}',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#6366f1',
