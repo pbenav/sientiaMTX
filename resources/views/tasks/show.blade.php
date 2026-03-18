@@ -782,6 +782,10 @@
                     @endif
                 </div>
             @endif
+
+            <!-- Forum Thread Widget -->
+            @include('teams.forum.partials.thread-widget')
+
         </div>
     </div>
 

@@ -5,6 +5,8 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\ForumMessageController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)
@@ -59,6 +61,18 @@ Route::middleware('auth')->group(function () {
     // Tasks routes (nested under teams)
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
     Route::resource('teams.tasks', TaskController::class);
+
+    // Forum routes inside team
+    Route::get('/teams/{team}/forum', [ForumController::class, 'index'])->name('teams.forum.index');
+    Route::post('/teams/{team}/forum', [ForumController::class, 'store'])->name('teams.forum.store');
+    Route::get('/teams/{team}/forum/{thread}', [ForumController::class, 'show'])->name('teams.forum.show');
+    Route::patch('/teams/{team}/forum/{thread}', [ForumController::class, 'update'])->name('teams.forum.update');
+    Route::delete('/teams/{team}/forum/{thread}', [ForumController::class, 'destroy'])->name('teams.forum.destroy');
+    
+    // Forum messages
+    Route::post('/teams/{team}/forum/{thread}/messages', [ForumMessageController::class, 'store'])->name('teams.forum.messages.store');
+    Route::patch('/teams/{team}/forum/messages/{message}', [ForumMessageController::class, 'update'])->name('teams.forum.messages.update');
+    Route::delete('/teams/{team}/forum/messages/{message}', [ForumMessageController::class, 'destroy'])->name('teams.forum.messages.destroy');
     
     // Task Attachments
     Route::prefix('teams/{team}')->group(function () {

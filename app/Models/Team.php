@@ -56,6 +56,11 @@ class Team extends Model
         return $this->hasMany(TeamInvitation::class);
     }
 
+    public function forumThreads(): HasMany
+    {
+        return $this->hasMany(ForumThread::class);
+    }
+
     // Get creator of the team
     public function creator()
     {

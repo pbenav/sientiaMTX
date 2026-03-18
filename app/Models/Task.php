@@ -162,6 +162,14 @@ class Task extends Model
     }
 
     /**
+     * Get the associated forum thread.
+     */
+    public function forumThread(): HasOne
+    {
+        return $this->hasOne(ForumThread::class);
+    }
+
+    /**
      * Get the CSS class for Frappe Gantt based on Eisenhower quadrant
      */
     public function getGanttColorClass(): string

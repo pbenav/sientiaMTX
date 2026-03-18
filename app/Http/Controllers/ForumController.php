@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ForumThread;
+use App\Models\Task;
+use App\Models\Team;
+use Illuminate\Http\Request;
+
+class ForumController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Team $team)
+    {
+        $userId = auth()->id();
+        $isCoordinator = $team->isCoordinator(auth()->user());
+
+        $threads = $team->forumThreads()
+            ->with(['user', 'task', 'messages' => function ($query) {
+                // Get the latest message for each thread
+                $query->latest()->limit(1);
+            }])
+            ->where(function($query) use ($userId, $isCoordinator) {
+                if ($isCoordinator) {
+                    return $query; // Coordinators see everything in the team
+                }
+                
+                $query->whereNull('task_id')
+                      ->orWhereHas('task', function($q) use ($userId) {
+                          $q->where('visibility', 'public')
+                            ->orWhere('created_by_id', $userId)
+                            ->orWhere('assigned_user_id', $userId)
+                            ->orWhereHas('assignedTo', function($q2) use ($userId) {
+                                $q2->where('users.id', $userId);
+                            })
+                            ->orWhereHas('assignedGroups.users', function($q3) use ($userId) {
+                                $q3->where('users.id', $userId);
+                            });
+                      });
+            })
+            ->withCount('messages')
+            ->orderBy('is_pinned', 'desc')
+            ->orderBy('updated_at', 'desc')
+            ->paginate(15);
+
+        return view('teams.forum.index', compact('team', 'threads'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request, Team $team)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'task_id' => 'nullable|exists:tasks,id',
+            'content' => 'required|string',
+        ]);
+
+        $task = null;
+        if ($validated['task_id']) {
+            $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
+        }
+
+        $thread = $team->forumThreads()->create([
+            'title' => $validated['title'],
+            'user_id' => auth()->id(),
+            'task_id' => $task ? $task->id : null,
+        ]);
+
+        $thread->messages()->create([
+            'user_id' => auth()->id(),
+            'content' => $validated['content'],
+        ]);
+
+        return redirect()->route('teams.forum.show', [$team, $thread])
+            ->with('success', __('forum.thread_created'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Team $team, ForumThread $thread)
+    {
+        if ($thread->team_id !== $team->id) {
+            abort(404);
+        }
+
+        $thread->load(['user', 'task']);
+        $messages = $thread->messages()->with('user')->oldest()->paginate(20);
+
+        return view('teams.forum.show', compact('team', 'thread', 'messages'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Team $team, ForumThread $thread)
+    {
+        if ($thread->team_id !== $team->id) {
+            abort(404);
+        }
+
+        // Only author or coordinator can update the thread itself (e.g., pin, lock, title)
+        // Adjust abilities later with a Policy
+        if (auth()->id() !== $thread->user_id && auth()->user()->getRole($team) !== 'coordinator') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'is_pinned' => 'sometimes|boolean',
+            'is_locked' => 'sometimes|boolean',
+        ]);
+
+        $thread->update($validated);
+
+        return back()->with('success', __('forum.thread_updated'));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Team $team, ForumThread $thread)
+    {
+        if ($thread->team_id !== $team->id) {
+            abort(404);
+        }
+
+        if (auth()->id() !== $thread->user_id && auth()->user()->getRole($team) !== 'coordinator') {
+            abort(403);
+        }
+
+        $thread->delete();
+
+        return redirect()->route('teams.forum.index', $team)
+            ->with('success', __('forum.thread_deleted'));
+    }
+}

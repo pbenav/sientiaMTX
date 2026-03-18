@@ -53,13 +53,102 @@
                     <!-- My Teams -->
                     <a href="{{ route('teams.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all {{ request()->routeIs('teams.index') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        {{ __('navigation.my_teams') }}
+                        <span class="truncate">{{ __('navigation.my_teams') }}</span>
                     </a>
+
+                    @if (request()->route('team'))
+                        @php
+                            $currentTeamId = is_object(request()->route('team'))
+                                ? request()->route('team')->id
+                                : request()->route('team');
+                            $currentTeamLabel = is_object(request()->route('team'))
+                                ? request()->route('team')->name
+                                : \App\Models\Team::find($currentTeamId)->name;
+                            $isTeamRoute =
+                                request()->routeIs('teams.dashboard') ||
+                                request()->routeIs('teams.tasks.*') ||
+                                request()->routeIs('teams.gantt') ||
+                                request()->routeIs('teams.forum.*') ||
+                                request()->routeIs('teams.members') ||
+                                request()->routeIs('teams.edit');
+                        @endphp
+                        @if ($isTeamRoute)
+                            <div x-data="{ open: true }"
+                                class="mt-1 mb-2 ml-4 relative before:absolute before:inset-y-0 before:left-[-11px] before:w-px before:bg-gray-200 dark:before:bg-gray-800">
+                                <button @click="open = !open"
+                                    class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    <div class="flex items-center gap-2 overflow-hidden relative">
+                                        <!-- Connective line -->
+                                        <div class="absolute left-[-24px] top-1/2 w-4 h-[1px] bg-gray-200 dark:bg-gray-800">
+                                        </div>
+                                        <div
+                                            class="w-5 h-5 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center text-[10px] font-bold shrink-0 z-10 relative">
+                                            {{ strtoupper(substr($currentTeamLabel, 0, 1)) }}
+                                        </div>
+                                        <span class="truncate">{{ $currentTeamLabel }}</span>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 shrink-0 transition-transform duration-200 text-gray-400"
+                                        :class="{ 'rotate-180': open }" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+
+                                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 -translate-y-2"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 -translate-y-2" class="pl-2 pr-1 py-1 space-y-1">
+                                    <a href="{{ route('teams.forum.index', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.forum.*') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                                        </svg>
+                                        <span class="truncate">{{ __('forum.title') ?? 'Tablón de Anuncios' }}</span>
+                                    </a>
+                                    <a href="{{ route('teams.tasks.index', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        <span
+                                            class="truncate">{{ __('navigation.task_list') ?? 'Lista de Tareas' }}</span>
+                                    </a>
+                                    <a href="{{ route('teams.dashboard', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.dashboard') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        </svg>
+                                        <span
+                                            class="truncate">{{ __('teams.eisenhower_matrix') ?? 'Matriz Eisenhower' }}</span>
+                                    </a>
+                                    <a href="{{ route('teams.gantt', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.gantt') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 012 2h2a2 2 0 012-2V7a2 2 0 01-2-2h-2a2 2 0 01-2 2" />
+                                        </svg>
+                                        <span class="truncate">{{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
 
                     <!-- Disk Usage -->
                     <a href="{{ route('media.index') }}"
