@@ -141,5 +141,8 @@ return [
     ],
 
     'global_progress' => 'Global Progress',
+    'your_progress' => 'Your Progress',
     'automatic' => 'Automatic',
+    'your_attachments' => 'Your Files',
+    'parent_attachments' => 'Parent Task Files',
 ];

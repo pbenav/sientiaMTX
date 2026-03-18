@@ -163,6 +163,9 @@ class TaskController extends Controller
                 }
             }
 
+            // Always include the creator in the work distribution for template tasks
+            $userIds->push($task->created_by_id);
+
             $uniqueUserIds = $userIds->unique();
 
             foreach ($uniqueUserIds as $userId) {
@@ -395,6 +398,10 @@ class TaskController extends Controller
                         $userIds = $userIds->merge($group->users->pluck('id'));
                     }
                 }
+
+                // Always include the creator in the work distribution for template tasks
+                $userIds->push($task->created_by_id);
+
                 $uniqueUserIds = $userIds->unique();
 
                 // Sync instances

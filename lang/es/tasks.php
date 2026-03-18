@@ -148,5 +148,8 @@ return [
     ],
 
     'global_progress' => 'Progreso Global',
+    'your_progress' => 'Tu Progreso',
     'automatic' => 'Automático',
+    'your_attachments' => 'Tus Archivos',
+    'parent_attachments' => 'Archivos de la Tarea Principal',
 ];

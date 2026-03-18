@@ -602,14 +602,9 @@
                     @endif
 
                     <!-- Progress Slider for all tasks -->
-                    @php
-                        // If I have a personal instance of this goal, I probably want to see MY progress slider.
-                        // However, if I am a coordinator, I might want to see the GLOBAL one.
-                        // Let's stick to the user's logic: all tasks have a slider.
-                        // A "master" task (with children) has automatic progress.
-                        $isAutomatic = $task->is_template || $task->children()->exists();
-                        $sliderTask = $personalInstance ?: $task;
-                        $currentProgress = $sliderTask->progress;
+                    $sliderTask = $personalInstance ?: $task;
+                    $isAutomatic = $sliderTask->is_template || $sliderTask->children()->exists();
+                    $currentProgress = $sliderTask->progress;
                     @endphp
 
                     <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
