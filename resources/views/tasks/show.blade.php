@@ -176,14 +176,14 @@
                         </div>
                         <div class="text-right">
                             <span id="global-progress-val"
-                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ round($prog) }}%</span>
+                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading transition-opacity duration-300">{{ round($prog) }}%</span>
                         </div>
                     </div>
 
                     <div
                         class="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
                         <div id="global-progress-bar"
-                            class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all duration-1000 shadow-lg shadow-violet-500/20"
+                            class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20"
                             style="width: {{ $prog }}%"></div>
                     </div>
 
@@ -948,12 +948,33 @@
                             if (data.task_status !== currentStatus || progress == 100) {
                                 window.location.reload();
                             } else {
+                                // Elegant fade-in/out update
                                 const valSpan = document.getElementById('progress-val');
+                                const gVal = document.getElementById('global-progress-val');
+
                                 if (valSpan) {
-                                    valSpan.classList.add('animate-pulse', 'text-emerald-500');
-                                    setTimeout(() => {
-                                        valSpan.classList.remove('animate-pulse', 'text-emerald-500');
-                                    }, 1000);
+                                    valSpan.innerText = progress;
+                                    valSpan.animate([{
+                                        opacity: 0.4
+                                    }, {
+                                        opacity: 1
+                                    }], {
+                                        duration: 400
+                                    });
+                                }
+                                if (gVal) {
+                                    gVal.animate([{
+                                        opacity: 0.4
+                                    }, {
+                                        opacity: 1
+                                    }], {
+                                        duration: 400
+                                    });
+                                }
+
+                                if (gBar) {
+                                    gBar.style.transition = 'width 0.3s ease-out';
+                                    gBar.style.width = data.parent_progress + '%';
                                 }
                             }
                         }
