@@ -176,7 +176,7 @@
                         </div>
                         <div class="text-right">
                             <span id="global-progress-val"
-                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading transition-opacity duration-300">{{ round($prog) }}%</span>
+                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ round($prog) }}%</span>
                         </div>
                     </div>
 
@@ -940,40 +940,20 @@
                             if (data.parent_progress !== null) {
                                 const gVal = document.getElementById('global-progress-val');
                                 const gBar = document.getElementById('global-progress-bar');
-                                if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
-                                if (gBar) gBar.style.width = data.parent_progress + '%';
                             }
 
                             // If status has changed (e.g. from completed back to in_progress), reload
                             if (data.task_status !== currentStatus || progress == 100) {
                                 window.location.reload();
                             } else {
-                                // Elegant fade-in/out update
+                                // Subtle label update without animations that feel like glitches
                                 const valSpan = document.getElementById('progress-val');
                                 const gVal = document.getElementById('global-progress-val');
 
-                                if (valSpan) {
-                                    valSpan.innerText = progress;
-                                    valSpan.animate([{
-                                        opacity: 0.4
-                                    }, {
-                                        opacity: 1
-                                    }], {
-                                        duration: 400
-                                    });
-                                }
-                                if (gVal) {
-                                    gVal.animate([{
-                                        opacity: 0.4
-                                    }, {
-                                        opacity: 1
-                                    }], {
-                                        duration: 400
-                                    });
-                                }
+                                if (valSpan) valSpan.innerText = progress;
+                                if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
 
                                 if (gBar) {
-                                    gBar.style.transition = 'width 0.3s ease-out';
                                     gBar.style.width = data.parent_progress + '%';
                                 }
                             }
