@@ -138,6 +138,17 @@
                 </p>
             </div>
 
+            @php
+                // Find if the current user has a personal instance of this goal (regardless of being a template or not)
+                $personalInstance =
+                    $task->is_template || $task->children()->exists()
+                        ? $task
+                            ->instances()
+                            ->where('assigned_user_id', auth()->id())
+                            ->first()
+                        : null;
+            @endphp
+
             @if ($task->is_template || $task->children()->exists())
                 @php
                     $isRoadmap = $task->is_template;
@@ -148,12 +159,6 @@
                     $doneInst = $instances->where('status', 'completed')->count();
                     $prog = $totalInst > 0 ? ($doneInst / $totalInst) * 100 : 0;
                     $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
-
-                    // Find if the current user has a personal instance of this goal
-                    $personalInstance = $task
-                        ->instances()
-                        ->where('assigned_user_id', auth()->id())
-                        ->first();
                 @endphp
 
                 <!-- Progress Dashboard -->
@@ -559,7 +564,11 @@
         <!-- Sidebar -->
         <div class="space-y-4">
             <!-- Quick Actions -->
-            @if ($task->assigned_user_id === auth()->id() || $team->isCoordinator(auth()->user()))
+            @if (
+                $task->assigned_user_id === auth()->id() ||
+                    $task->created_by_id === auth()->id() ||
+                    $team->isCoordinator(auth()->user()) ||
+                    ($personalInstance && $personalInstance->assigned_user_id === auth()->id()))
                 <div
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1">

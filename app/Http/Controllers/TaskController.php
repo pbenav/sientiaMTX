@@ -207,6 +207,25 @@ class TaskController extends Controller
     public function show(Team $team, Task $task)
     {
         $this->authorize('view', $task);
+        // Proactively ensure the creator has a personal instance if this is a template task
+        if ($task->is_template && !$task->instances()->where('assigned_user_id', $task->created_by_id)->exists()) {
+            $team->tasks()->create([
+                'title' => $task->title,
+                'description' => $task->description,
+                'priority' => $task->priority,
+                'urgency' => $task->urgency,
+                'status' => 'pending',
+                'scheduled_date' => $task->scheduled_date,
+                'due_date' => $task->due_date,
+                'original_due_date' => $task->due_date,
+                'created_by_id' => $task->created_by_id,
+                'parent_id' => $task->id,
+                'is_template' => false,
+                'assigned_user_id' => $task->created_by_id,
+                'visibility' => 'private',
+            ]);
+        }
+
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments']);
 
         // Load parent attachments if it's an instance or has a parent
