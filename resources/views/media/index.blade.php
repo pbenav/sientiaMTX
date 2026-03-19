@@ -33,8 +33,8 @@
 
                 <div
                     class="w-full h-4 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-inner">
-                    <div class="h-full {{ $barColor }} transition-all duration-1000 shadow-lg"
-                        style="width: {{ $perc }}%"></div>
+                    <div class="h-full {{ $barColor }} shadow-lg"
+                        style="width: {{ $perc }}%; transition: none !important;"></div>
                 </div>
 
                 <p class="mt-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">

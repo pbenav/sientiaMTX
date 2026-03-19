@@ -622,19 +622,25 @@
 
                     <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
                         <label
-                            class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3 block">
-                            @if ($personalInstance)
-                                {{ __('tasks.your_progress') ?? 'Tu Progreso' }}
-                            @elseif($isAutomatic)
-                                {{ __('tasks.global_progress') ?? 'Progreso Global' }}
-                            @else
-                                {{ __('tasks.progress') }}
-                            @endif:
-                            <span id="progress-val" class="text-violet-500">{{ $currentProgress }}</span>%
+                            class="flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
+                            <span>
+                                @if ($personalInstance)
+                                    {{ __('tasks.your_progress') ?? 'Tu Progreso' }}
+                                @elseif($isAutomatic)
+                                    {{ __('tasks.global_progress') ?? 'Progreso Global' }}
+                                @else
+                                    {{ __('tasks.progress') }}
+                                @endif
+                            </span>
+                            <div class="flex items-center gap-1 min-w-[3rem] justify-end">
+                                <span id="progress-val"
+                                    class="text-violet-600 dark:text-violet-400 tabular-nums">{{ $currentProgress }}</span>
+                                <span class="text-gray-400 text-[8px]">%</span>
+                            </div>
                         </label>
                         <div class="flex items-center gap-3">
                             <input type="range" min="0" max="100" value="{{ $currentProgress }}"
-                                class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none {{ $isAutomatic ? 'cursor-not-allowed opacity-60' : 'cursor-pointer accent-violet-600' }}"
+                                class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none transition-none {{ $isAutomatic ? 'cursor-not-allowed opacity-60' : 'cursor-pointer accent-violet-600' }}"
                                 {{ $isAutomatic ? 'disabled' : '' }}
                                 oninput="document.getElementById('progress-val').innerText = this.value"
                                 onchange="updateTaskProgress(this.value, {{ $sliderTask->id }})">
@@ -936,12 +942,6 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Update global progress bar and text if we are on a template task
-                            if (data.parent_progress !== null) {
-                                const gVal = document.getElementById('global-progress-val');
-                                const gBar = document.getElementById('global-progress-bar');
-                            }
-
                             // If status has changed (e.g. from completed back to in_progress), reload
                             if (data.task_status !== currentStatus || progress == 100) {
                                 window.location.reload();
@@ -949,13 +949,17 @@
                                 // Subtle label update without animations that feel like glitches
                                 const valSpan = document.getElementById('progress-val');
                                 const gVal = document.getElementById('global-progress-val');
+                                const gBar = document.getElementById('global-progress-bar');
 
                                 if (valSpan) valSpan.innerText = progress;
-                                if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
 
-                                if (gBar) {
-                                    gBar.style.transition = 'none';
-                                    gBar.style.width = data.parent_progress + '%';
+                                // Update global progress factors if we have them
+                                if (data.parent_progress !== null) {
+                                    if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
+                                    if (gBar) {
+                                        gBar.style.transition = 'none';
+                                        gBar.style.width = data.parent_progress + '%';
+                                    }
                                 }
                             }
                         }

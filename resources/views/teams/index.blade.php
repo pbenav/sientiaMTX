@@ -76,8 +76,8 @@
                             <span>{{ $progress }}%</span>
                         </div>
                         <div class="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all"
-                                style="width: {{ $progress }}%"></div>
+                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full"
+                                style="width: {{ $progress }}%; transition: none !important;"></div>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 pt-1">

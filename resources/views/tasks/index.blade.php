@@ -290,7 +290,7 @@
                                     <div class="flex items-center gap-2">
                                         <div
                                             class="flex-1 w-20 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
-                                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all shadow-sm"
+                                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-sm"
                                                 style="width: {{ $task->progress }}%"></div>
                                         </div>
                                         <span
@@ -367,7 +367,7 @@
                                         <div class="flex items-center gap-2">
                                             <div
                                                 class="flex-1 w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
-                                                <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all shadow-sm"
+                                                <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-sm"
                                                     style="width: {{ $subtask->progress }}%"></div>
                                             </div>
                                             <span

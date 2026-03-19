@@ -350,12 +350,12 @@
     @endif
 
     <!-- Page content -->
-    <main class="transition-all duration-300 px-4 sm:px-6 lg:px-8 py-8"
+    <main class="px-4 sm:px-6 lg:px-8 py-8"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : 'max-w-[1600px] mx-auto') : 'max-w-[1600px] mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
-            class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+            class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
             <div class="flex items-start gap-4">
                 <!-- Toggle button ONLY when closed -->
                 <button x-show="!sidebarOpen" @click="sidebarOpen = true"
@@ -395,19 +395,22 @@
     <!-- Footer -->
     <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-4 transition-all duration-300"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : ''">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
+        <div
+            class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
             <div class="mb-2 md:mb-0 flex items-center gap-2">
                 <span class="font-bold">© {{ date('Y') }} Sientia</span>
                 <span class="mx-1">|</span>
                 <span>v{{ config('app.version', '1.0.0') }}</span>
                 <span class="mx-1">|</span>
-                <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Licencia AGPL v3</a>
+                <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank"
+                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Licencia AGPL v3</a>
             </div>
             <div class="flex items-center space-x-4">
                 <a href="https://www.patreon.com/cw/sientiaCTH_ControlHorario" target="_blank"
                     class="text-orange-500 hover:text-orange-600 font-bold transition-colors flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M2.912 8.411c-.312 0-.533.225-.533.533v11.43c0 .312.225.533.533.533H21.09c.312 0 .533-.225.533-.533V8.944c0-.312-.225-.533-.533-.533H2.912zm0-2.666H21.09c1.782 0 3.2 1.418 3.2 3.2v11.43c0 1.782-1.418 3.2-3.2 3.2H2.912C1.13 23.535-.285 22.117-.285 20.335V8.944c0-1.782 1.418-3.2 3.2-3.2zM4.156 2.666c0-.533.433-.966.966-.966h13.754c.533 0 .966.433.966.966s-.433.966-.966.966H5.122c-.533 0-.966-.433-.966-.966z" />
+                        <path
+                            d="M2.912 8.411c-.312 0-.533.225-.533.533v11.43c0 .312.225.533.533.533H21.09c.312 0 .533-.225.533-.533V8.944c0-.312-.225-.533-.533-.533H2.912zm0-2.666H21.09c1.782 0 3.2 1.418 3.2 3.2v11.43c0 1.782-1.418 3.2-3.2 3.2H2.912C1.13 23.535-.285 22.117-.285 20.335V8.944c0-1.782 1.418-3.2 3.2-3.2zM4.156 2.666c0-.533.433-.966.966-.966h13.754c.533 0 .966.433.966.966s-.433.966-.966.966H5.122c-.533 0-.966-.433-.966-.966z" />
                     </svg>
                     Apoyar en Patreon
                 </a>
