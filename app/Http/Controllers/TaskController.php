@@ -660,9 +660,19 @@ class TaskController extends Controller
             }
 
             $task->update($updateData);
+
+            // If it's an instance, sync parent's progress_percentage column (important for sorting/filtering)
+            if ($task->parent_id) {
+                $parent = $task->parent;
+                $parent->update(['progress_percentage' => $parent->progress]);
+            }
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'task_progress' => $task->progress,
+            'parent_progress' => $task->parent_id ? $task->parent->progress : null
+        ]);
     }
 
     /**

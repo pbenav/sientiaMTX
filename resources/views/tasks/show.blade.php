@@ -175,14 +175,15 @@
                                     class="text-sm font-medium text-gray-400">{{ __('tasks.completed') }}</span></p>
                         </div>
                         <div class="text-right">
-                            <span
+                            <span id="global-progress-val"
                                 class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ round($prog) }}%</span>
                         </div>
                     </div>
 
                     <div
                         class="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
-                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all duration-1000 shadow-lg shadow-violet-500/20"
+                        <div id="global-progress-bar"
+                            class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all duration-1000 shadow-lg shadow-violet-500/20"
                             style="width: {{ $prog }}%"></div>
                     </div>
 
@@ -932,11 +933,17 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // If progress is 100, we might want to reload to show "Completed" status
+                            // Update global progress bar and text if we are on a template task
+                            if (data.parent_progress !== null) {
+                                const gVal = document.getElementById('global-progress-val');
+                                const gBar = document.getElementById('global-progress-bar');
+                                if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
+                                if (gBar) gBar.style.width = data.parent_progress + '%';
+                            }
+
                             if (progress == 100) {
                                 window.location.reload();
                             } else {
-                                // Subtle toast or just keep it as is
                                 const valSpan = document.getElementById('progress-val');
                                 valSpan.classList.add('animate-pulse', 'text-emerald-500');
                                 setTimeout(() => {
