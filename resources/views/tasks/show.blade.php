@@ -174,9 +174,10 @@
                                 {{ $doneInst }}/{{ $totalInst }} <span
                                     class="text-sm font-medium text-gray-400">{{ __('tasks.completed') }}</span></p>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right min-w-[4rem]">
                             <span id="global-progress-val"
-                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ round($prog) }}%</span>
+                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading"
+                                style="transition: none !important;">{{ round($prog) }}%</span>
                         </div>
                     </div>
 
@@ -184,7 +185,7 @@
                         class="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
                         <div id="global-progress-bar"
                             class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20"
-                            style="width: {{ $prog }}%"></div>
+                            style="width: {{ $prog }}%; transition: none !important;"></div>
                     </div>
 
                     @if ($hasBlocker)
@@ -548,8 +549,7 @@
                     $barColor = $perc > 90 ? 'bg-red-500' : ($perc > 70 ? 'bg-amber-500' : 'bg-violet-500');
                 @endphp
                 <div class="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
-                    <div class="h-full {{ $barColor }} transition-all duration-500 shadow-lg"
-                        style="width: {{ $perc }}%"></div>
+                    <div class="h-full {{ $barColor }} shadow-lg" style="width: {{ $perc }}%"></div>
                 </div>
                 <p
                     class="text-[11px] text-gray-500 dark:text-gray-400 mt-3 font-medium flex items-center gap-1.5 font-sans">
@@ -954,6 +954,7 @@
                                 if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
 
                                 if (gBar) {
+                                    gBar.style.transition = 'none';
                                     gBar.style.width = data.parent_progress + '%';
                                 }
                             }
