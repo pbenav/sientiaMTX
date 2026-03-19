@@ -56,4 +56,12 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+sientiaMTX is **free and open-source software** distributed under the [GNU AGPL v3 License](LICENSE).
+
+This ensures that the software remains free for all its users. Under this license you can:
+- ✅ **Use**, copy, and distribute the software for free.
+- ✅ **Modify** the source code to suit your needs.
+- ✅ **SaaS**: If you allow others to interact with the software over a network, you must make the complete source code available to users under this same license.
+
+**Author**: pbenav (2022-2026)  
+**Full license**: See [LICENSE](LICENSE) file
