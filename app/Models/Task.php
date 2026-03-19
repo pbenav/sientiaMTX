@@ -152,8 +152,8 @@ class Task extends Model
             $totalCount = $this->children()->count();
             if ($totalCount === 0) return 0;
 
-            $completedCount = $this->children()->where('status', 'completed')->count();
-            return (int) (($completedCount / $totalCount) * 100);
+            $totalProgress = $this->children()->sum('progress_percentage');
+            return (int) round($totalProgress / $totalCount);
         }
 
         // For individual tasks, return the manual progress percentage

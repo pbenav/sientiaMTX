@@ -156,8 +156,9 @@
                         ? $task->instances()->with('assignedUser')->get()
                         : $task->children()->with('assignedTo')->get();
                     $totalInst = $instances->count();
+                    $sumProg = $instances->sum('progress_percentage');
+                    $prog = $totalInst > 0 ? $sumProg / $totalInst : 0;
                     $doneInst = $instances->where('status', 'completed')->count();
-                    $prog = $totalInst > 0 ? ($doneInst / $totalInst) * 100 : 0;
                     $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
                 @endphp
 
