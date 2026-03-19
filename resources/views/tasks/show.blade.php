@@ -919,6 +919,9 @@
             }
 
             function updateTaskProgress(progress, taskId = {{ $task->id }}) {
+                // Store current status to compare later
+                const currentStatus = '{{ $task->status }}';
+
                 fetch(`/teams/{{ $team->id }}/tasks/${taskId}/move`, {
                         method: 'POST',
                         headers: {
@@ -941,14 +944,17 @@
                                 if (gBar) gBar.style.width = data.parent_progress + '%';
                             }
 
-                            if (progress == 100) {
+                            // If status has changed (e.g. from completed back to in_progress), reload
+                            if (data.task_status !== currentStatus || progress == 100) {
                                 window.location.reload();
                             } else {
                                 const valSpan = document.getElementById('progress-val');
-                                valSpan.classList.add('animate-pulse', 'text-emerald-500');
-                                setTimeout(() => {
-                                    valSpan.classList.remove('animate-pulse', 'text-emerald-500');
-                                }, 1000);
+                                if (valSpan) {
+                                    valSpan.classList.add('animate-pulse', 'text-emerald-500');
+                                    setTimeout(() => {
+                                        valSpan.classList.remove('animate-pulse', 'text-emerald-500');
+                                    }, 1000);
+                                }
                             }
                         }
                     })

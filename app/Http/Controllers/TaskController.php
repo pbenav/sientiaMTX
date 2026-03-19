@@ -607,6 +607,14 @@ class TaskController extends Controller
 
             $task->update($updateData);
 
+            // AUTOMATIC DE-COMPLETION: If a child is moved back from completed, move parent to in_progress too
+            if ($task->isInstance() && $oldStatus === 'completed' && $status !== 'completed') {
+                $parent = $task->parent;
+                if ($parent && $parent->status === 'completed') {
+                    $parent->update(['status' => 'in_progress']);
+                }
+            }
+
             // Trigger notification if blocked
             if ($validated['status'] === 'blocked' && $oldStatus !== 'blocked') {
                 $team->creator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
@@ -670,6 +678,7 @@ class TaskController extends Controller
 
         return response()->json([
             'success' => true,
+            'task_status' => $task->status,
             'task_progress' => $task->progress,
             'parent_progress' => $task->parent_id ? $task->parent->progress : null
         ]);
