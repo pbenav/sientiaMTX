@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout maxWidth="max-w-full">
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-start gap-3 min-w-0 flex-1">
@@ -27,23 +27,24 @@
         <div class="flex-1 overflow-x-auto pb-10 pt-4 custom-scrollbar">
             <div class="flex h-full gap-5 px-4 min-w-full items-stretch" id="kanban-board">
                 @foreach($columns as $column)
-                    <div class="flex-1 min-w-[320px] max-w-[480px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border border-gray-200/40 dark:border-gray-800/40 transition-all duration-500 shadow-sm hover:shadow-md animate-fade-in group" 
+                    <div class="flex-1 min-w-[320px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border border-gray-200/40 dark:border-gray-800/40 transition-all duration-500 shadow-sm hover:shadow-md animate-fade-in group" 
                          style="background-color: {{ $column->color ?? 'rgba(249, 250, 251, 0.5)' }};"
                          data-column-id="{{ $column->id }}">
                         <!-- Column Header -->
-                        <div class="p-4 flex flex-col gap-2">
+                        <div class="p-4 flex flex-col gap-2 cursor-grab active:cursor-grabbing column-handle">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2 group/title">
                                     <h3 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-xs column-title" 
                                         contenteditable="true" 
-                                        onblur="updateColumnTitle({{ $column->id }}, this.innerText)">
+                                        onblur="updateColumnTitle({{ $column->id }}, this.innerText)"
+                                        onclick="event.stopPropagation()">
                                         {{ $column->title }}
                                     </h3>
                                     <span class="px-2 py-0.5 rounded-full bg-white/50 dark:bg-black/20 text-[10px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200/30 dark:border-gray-700/30">
                                         {{ $column->tasks->count() }}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2" onclick="event.stopPropagation()">
                                     <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
                                         <!-- Palette Icon -->
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -67,7 +68,7 @@
                                                    value="{{ $column->color ?? '#f9fafb' }}">
                                         </div>
                                     </div>
-                                    <div class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing column-handle">
+                                    <div class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                                         </svg>
@@ -167,6 +168,18 @@
                         </div>
                     </div>
                 @endforeach
+
+                <!-- Add Column Area -->
+                <div class="min-w-[320px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-dashed border-gray-200 dark:border-gray-800/60 bg-gray-50/30 dark:bg-gray-900/10 items-center justify-center p-6 group/add transition-all hover:bg-white/50 dark:hover:bg-gray-800/20" id="add-column-area">
+                    <button onclick="createNewColumn()" class="flex flex-col items-center gap-4 text-gray-400 group-hover/add:text-violet-500 transition-all duration-300">
+                        <div class="w-14 h-14 rounded-2xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center border border-gray-200 dark:border-gray-700 group-hover/add:scale-110 group-hover/add:shadow-lg transition-all duration-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <span class="text-sm font-bold uppercase tracking-widest">{{ __('Añadir Columna') }}</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -321,6 +334,45 @@
                 })
                 .catch(error => console.error('Error:', error));
             }
+
+            window.createNewColumn = function() {
+                Swal.fire({
+                    title: '{{ __('Nueva Columna') }}',
+                    input: 'text',
+                    inputLabel: '{{ __('Título de la columna') }}',
+                    inputPlaceholder: '{{ __('Ej: En revisión, Testing...') }}',
+                    showCancelButton: true,
+                    confirmButtonText: '{{ __('Crear') }}',
+                    cancelButtonText: '{{ __('Cancelar') }}',
+                    confirmButtonColor: '#7c3aed',
+                    background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
+                    preConfirm: (title) => {
+                        if (!title) {
+                            Swal.showValidationMessage('El título es obligatorio');
+                        }
+                        return title;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`{{ route('teams.kanban.columns.store', $team) }}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ title: result.value })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                    }
+                });
+            };
         });
     </script>
     <style>

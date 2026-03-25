@@ -22,15 +22,18 @@ class KanbanController extends Controller
             $task->syncKanbanColumn();
         });
 
-        $columns = $team->kanbanColumns()->with(['tasks' => function ($query) use ($team) {
-            $user = auth()->user();
-            $isManager = $team->isManager($user);
-            $query->visibleTo($user, $isManager)
-                  ->operationalFor($user, $team)
-                  ->orderBy('priority', 'desc') // Essential for Eisenhower vertical order
-                  ->orderBy('urgency', 'desc')
-                  ->orderBy('kanban_order', 'asc');
-        }])->get();
+        $columns = $team->kanbanColumns()
+            ->with(['tasks' => function ($query) use ($team) {
+                $user = auth()->user();
+                $isManager = $team->isManager($user);
+                $query->visibleTo($user, $isManager)
+                      ->operationalFor($user, $team)
+                      ->orderBy('priority', 'desc') // Essential for Eisenhower vertical order
+                      ->orderBy('urgency', 'desc')
+                      ->orderBy('kanban_order', 'asc');
+            }])
+            ->orderBy('order_index', 'asc')
+            ->get();
 
         // Ensure columns have a default color if null
         $columns->each(function ($column) {
@@ -125,6 +128,28 @@ class KanbanController extends Controller
         $column->update($validated);
 
         return response()->json(['success' => true]);
+    }
+
+    public function storeColumn(Request $request, Team $team)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'color' => 'nullable|string|max:20',
+        ]);
+
+        $maxOrder = $team->kanbanColumns()->max('order_index') ?? 0;
+
+        $column = $team->kanbanColumns()->create([
+            'title' => $validated['title'],
+            'color' => $validated['color'] ?? '#f9fafb',
+            'order_index' => $maxOrder + 1,
+            'type' => 'custom',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'column' => $column
+        ]);
     }
 
     public function updateColumnOrder(Request $request, Team $team)
