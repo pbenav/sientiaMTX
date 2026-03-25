@@ -136,6 +136,7 @@ class Team extends Model
 
         $config = $defaults;
         foreach ($this->quadrant_colors as $q => $color) {
+            $q = (int)$q;
             if (isset($config[$q])) {
                 $config[$q]['color'] = $color;
             }

@@ -59,11 +59,9 @@
                         $cfg = $quadrantConfig[$q];
                         $qTasks = $quadrants[$q];
                     @endphp
-                    <div class="border {{ $cfg['bg'] }} rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q quadrant-container"
-                        @if(isset($team->quadrant_colors[$q]))
-                            style="background-color: {{ $team->quadrant_colors[$q] }}15; border-color: {{ $team->quadrant_colors[$q] }}40;"
-                        @endif
-                        data-quadrant="{{ $q }}">
+                    <div class="border rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q quadrant-container"
+                         style="background-color: {{ $cfg['color'] }}15; border-color: {{ $cfg['color'] }}40;"
+                         data-quadrant="{{ $q }}">
                         <!-- Quadrant header -->
                         <div
                             class="px-4 py-3 sm:px-8 sm:py-6 border-b border-white/5 flex flex-col gap-0.5 sm:gap-1 relative">
