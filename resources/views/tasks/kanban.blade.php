@@ -73,7 +73,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-3" />
                                         </svg>
-                                        @foreach(['#fef2f2', '#eff6ff', '#f0fdf4', '#fefce8', '#faf5ff', '#f0f9ff'] as $hex)
+                                        @foreach(['#fee2e2', '#dbeafe', '#dcfce7', '#fef3c7', '#f5f3ff', '#e0f2fe'] as $hex)
                                             <button onclick="updateColumnColor({{ $column->id }}, '{{ $hex }}')" 
                                                     class="w-3.5 h-3.5 rounded-full border border-gray-300/50 dark:border-gray-600/50 hover:scale-125 transition-transform shadow-sm"
                                                     style="background-color: {{ $hex }};"
