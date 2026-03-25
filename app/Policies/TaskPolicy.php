@@ -17,14 +17,20 @@ class TaskPolicy
             return false;
         }
 
-        // 2. If public, everyone in team can view
+        // 2. Coordinators, team owner or task owner can always view
+        if ($user->id === $task->created_by_id || 
+            $task->team->created_by_id === $user->id ||
+            $task->team->isManager($user)) {
+            return true;
+        }
+
+        // 3. If public, everyone in team can view
         if ($task->visibility === 'public') {
             return true;
         }
 
-        // 3. If private, only owner or assignees
-        return $user->id === $task->created_by_id || 
-               $user->id === $task->assigned_user_id ||
+        // 4. If private, check direct assignment or collaborators
+        return $user->id === $task->assigned_user_id ||
                $task->assignedTo()->where('users.id', $user->id)->exists() ||
                $task->assignedGroups()->whereHas('users', function($q) use ($user) {
                    $q->where('users.id', $user->id);

@@ -17,18 +17,20 @@ class KanbanController extends Controller
     {
         $this->ensureDefaultColumnsExist($team);
 
+        $user = auth()->user();
+        $isManager = $team->isManager($user);
+
         // Sync tasks that don't have a column yet
         $team->tasks()->whereNull('kanban_column_id')->get()->each(function ($task) {
             $task->syncKanbanColumn();
         });
 
         $columns = $team->kanbanColumns()
-            ->with(['tasks' => function ($query) use ($team) {
-                $user = auth()->user();
-                $isManager = $team->isManager($user);
+            ->with(['tasks' => function ($query) use ($team, $user, $isManager) {
                 $query->visibleTo($user, $isManager)
                       ->operationalFor($user, $team)
-                      ->orderBy('priority', 'desc') // Essential for Eisenhower vertical order
+                      ->where('is_archived', false)
+                      ->orderBy('priority', 'desc')
                       ->orderBy('urgency', 'desc')
                       ->orderBy('kanban_order', 'asc');
             }])
@@ -39,16 +41,24 @@ class KanbanController extends Controller
         $columns->each(function ($column) {
             if (!$column->color) {
                 $column->color = match($column->type) {
-                    'todo' => '#fef2f2',
-                    'in_progress' => '#eff6ff',
-                    'done' => '#f0fdf4',
+                    'todo' => '#fee2e2',
+                    'in_progress' => '#dbeafe',
+                    'done' => '#dcfce7',
                     default => '#f9fafb',
                 };
                 $column->save();
             }
         });
 
-        return view('tasks.kanban', compact('team', 'columns'));
+        $completedTasks = $team->tasks()
+            ->visibleTo($user, $isManager)
+            ->operationalFor($user, $team)
+            ->where('is_archived', true)
+            ->orderBy('updated_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        return view('tasks.kanban', compact('team', 'columns', 'completedTasks'));
     }
 
     public function update(Request $request, Team $team, Task $task)
@@ -174,9 +184,9 @@ class KanbanController extends Controller
     {
         if ($team->kanbanColumns()->count() === 0) {
             $defaults = [
-                ['title' => __('tasks.statuses.pending'), 'type' => 'todo', 'order_index' => 1, 'default_progress' => 0, 'color' => '#fef2f2'], // Light red
-                ['title' => __('tasks.statuses.in_progress'), 'type' => 'in_progress', 'order_index' => 2, 'default_progress' => 50, 'color' => '#eff6ff'], // Light blue
-                ['title' => __('tasks.statuses.completed'), 'type' => 'done', 'order_index' => 3, 'default_progress' => 100, 'color' => '#f0fdf4'], // Light green
+                ['title' => __('tasks.statuses.pending'), 'type' => 'todo', 'order_index' => 1, 'default_progress' => 0, 'color' => '#fee2e2'], 
+                ['title' => __('tasks.statuses.in_progress'), 'type' => 'in_progress', 'order_index' => 2, 'default_progress' => 50, 'color' => '#dbeafe'], 
+                ['title' => __('tasks.statuses.completed'), 'type' => 'done', 'order_index' => 3, 'default_progress' => 100, 'color' => '#dcfce7'],
             ];
 
             foreach ($defaults as $default) {

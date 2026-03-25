@@ -25,28 +25,7 @@
     </x-slot>
 
     @php
-        $quadrantConfig = [
-            1 => [
-                'color' => '#f87171',
-                'bg' => 'bg-red-50 border-red-100 dark:bg-red-500/5 dark:border-red-500/20',
-                'dot' => 'bg-red-500',
-            ],
-            2 => [
-                'color' => '#60a5fa',
-                'bg' => 'bg-blue-50 border-blue-100 dark:bg-blue-500/5 dark:border-blue-500/20',
-                'dot' => 'bg-blue-500',
-            ],
-            3 => [
-                'color' => '#fbbf24',
-                'bg' => 'bg-amber-50 border-amber-100 dark:bg-amber-500/5 dark:border-amber-500/20',
-                'dot' => 'bg-amber-500',
-            ],
-            4 => [
-                'color' => '#9ca3af',
-                'bg' => 'bg-gray-50 border-gray-200 dark:bg-gray-500/5 dark:border-gray-500/20',
-                'dot' => 'bg-gray-500',
-            ],
-        ];
+        $quadrantConfig = $team->getQuadrantConfig();
     @endphp
 
     <!-- Matrix Labels & Grid -->
@@ -81,23 +60,33 @@
                         $qTasks = $quadrants[$q];
                     @endphp
                     <div class="border {{ $cfg['bg'] }} rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q quadrant-container"
+                        @if(isset($team->quadrant_colors[$q]))
+                            style="background-color: {{ $team->quadrant_colors[$q] }}15; border-color: {{ $team->quadrant_colors[$q] }}40;"
+                        @endif
                         data-quadrant="{{ $q }}">
                         <!-- Quadrant header -->
                         <div
                             class="px-4 py-3 sm:px-8 sm:py-6 border-b border-white/5 flex flex-col gap-0.5 sm:gap-1 relative">
                             <div class="flex items-center gap-3">
-                                <div class="w-3 h-3 rounded-full shrink-0"
+                                <div class="w-3 h-3 rounded-full shrink-0 relative"
                                     style="background:{{ $cfg['color'] }}; box-shadow: 0 0 20px {{ $cfg['color'] }}">
+                                    @if($team->isManager(auth()->user()))
+                                        <input type="color" 
+                                               value="{{ $cfg['color'] }}" 
+                                               onchange="updateQuadrantColor({{ $q }}, this.value)"
+                                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                               title="{{ __('Change Color') }}">
+                                    @endif
                                 </div>
                                 <span
                                     class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">Q{{ $q }}</span>
                             </div>
                             <h2
-                                class="text-sm sm:text-2xl font-bold text-gray-900 dark:text-white heading mt-0.5 sm:mt-1">
+                                class="text-sm sm:text-2xl font-bold text-gray-900 dark:text-gray-50 heading mt-0.5 sm:mt-1">
                                 {{ __('tasks.quadrants.' . $q . '.label') }}
                             </h2>
                             <p
-                                class="text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-500 font-medium line-clamp-1 sm:line-clamp-none">
+                                class="text-[9px] sm:text-[11px] text-gray-600 dark:text-gray-300 font-medium line-clamp-1 sm:line-clamp-none">
                                 {{ __('tasks.quadrants.' . $q . '.description') }}
                             </p>
 
@@ -146,7 +135,7 @@
                                             @endif
 
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                                class="flex-1 text-[11px] sm:text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white truncate transition-colors flex items-center gap-1.5">
+                                                class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white truncate transition-colors flex items-center gap-1.5 font-black">
                                                 @if ($task->visibility === 'private')
                                                     <svg xmlns="http://www.w3.org/2000/svg"
                                                         class="h-2.5 w-2.5 text-amber-500/80 shrink-0" fill="none"
@@ -230,7 +219,7 @@
                                 d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h3 class="text-[12px] font-bold uppercase tracking-[0.25em] text-gray-600 dark:text-gray-500">
+                    <h3 class="text-[12px] font-black uppercase tracking-[0.25em] text-gray-900 dark:text-gray-100">
                         {{ __('teams.completed_tasks') }}</h3>
                 </div>
                 <span
@@ -431,6 +420,26 @@
                     window.location.href = this.getAttribute('data-href');
                 });
             });
-        </script>
-    @endpush
+        function updateQuadrantColor(quadrant, color) {
+            fetch(`{{ route('teams.quadrants.color', $team) }}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    quadrant: quadrant,
+                    color: color
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+@endpush
 </x-app-layout>

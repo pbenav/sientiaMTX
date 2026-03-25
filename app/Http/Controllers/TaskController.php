@@ -564,6 +564,7 @@ class TaskController extends Controller
             'progress_percentage' => 'nullable|integer|between:0,100',
             'scheduled_date' => 'nullable|date',
             'due_date' => 'nullable|date',
+            'is_archived' => 'nullable|boolean',
         ]);
 
         if ($request->has('scheduled_date') || $request->has('due_date')) {
@@ -577,6 +578,14 @@ class TaskController extends Controller
             if ($task->is_template) {
                 $task->instances()->update($updateData);
             }
+        }
+
+        if ($request->has('progress_percentage') || $request->has('is_archived')) {
+            $updateData = [];
+            if ($request->has('progress_percentage')) $updateData['progress_percentage'] = $validated['progress_percentage'];
+            if ($request->has('is_archived')) $updateData['is_archived'] = $validated['is_archived'];
+            
+            $task->update($updateData);
         }
 
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {

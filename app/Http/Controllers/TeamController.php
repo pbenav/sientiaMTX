@@ -328,4 +328,24 @@ class TeamController extends Controller
         return redirect()->route('teams.show', $team)
             ->with('success', __('teams.ownership_transferred'));
     }
+
+    /**
+     * Update a quadrant color for the team.
+     */
+    public function updateQuadrantColor(Request $request, Team $team)
+    {
+        $this->authorize('update', $team);
+
+        $validated = $request->validate([
+            'quadrant' => 'required|integer|between:1,4',
+            'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+        ]);
+
+        $colors = $team->quadrant_colors ?? [];
+        $colors[$validated['quadrant']] = $validated['color'];
+
+        $team->update(['quadrant_colors' => $colors]);
+
+        return response()->json(['success' => true]);
+    }
 }

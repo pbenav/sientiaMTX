@@ -49,6 +49,7 @@ class Task extends Model
         'google_task_id',
         'google_task_list_id',
         'google_synced_at',
+        'is_archived',
         'kanban_column_id',
         'kanban_order',
     ];
@@ -59,6 +60,7 @@ class Task extends Model
         'scheduled_date' => 'datetime',
         'original_due_date' => 'datetime',
         'google_synced_at' => 'datetime',
+        'is_archived' => 'boolean',
     ];
 
     // Relationship: A task belongs to a team

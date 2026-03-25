@@ -1,4 +1,20 @@
 <x-app-layout maxWidth="max-w-full">
+    <style>
+        .kanban-column {
+            background-color: var(--col-bg);
+            transition: all 0.5s ease;
+        }
+        .dark .kanban-column {
+            background-color: rgba(17, 24, 39, 0.4) !important;
+            backdrop-filter: blur(8px);
+            border-color: rgba(255, 255, 255, 0.05) !important;
+        }
+        .dark .kanban-column-accent {
+            background-color: var(--col-bg);
+            opacity: 0.3;
+        }
+    </style>
+
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-start gap-3 min-w-0 flex-1">
@@ -22,26 +38,33 @@
         </div>
     </x-slot>
 
+    @php
+        $quadrantConfig = $team->getQuadrantConfig();
+    @endphp
+
     <div class="flex flex-col min-h-[calc(100vh-180px)] h-full">
         <!-- Kanban Board Container -->
         <div class="flex-1 overflow-x-auto pb-10 pt-4 custom-scrollbar">
             <div class="flex h-full gap-5 px-4 min-w-full items-stretch" id="kanban-board">
                 @foreach($columns as $column)
-                    <div class="flex-1 min-w-[320px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border border-gray-200/40 dark:border-gray-800/40 transition-all duration-500 shadow-sm hover:shadow-md animate-fade-in group" 
-                         style="background-color: {{ $column->color ?? 'rgba(249, 250, 251, 0.5)' }};"
+                    <div class="flex-1 min-w-[340px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
+                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40;"
                          data-column-id="{{ $column->id }}">
+                        <!-- Accent Top Bar -->
+                        <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>
+                        
                         <!-- Column Header -->
                         <div class="p-4 flex flex-col gap-2 cursor-grab active:cursor-grabbing column-handle">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2 group/title">
-                                    <h3 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-xs column-title" 
+                                    <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title" 
                                         contenteditable="true" 
                                         onblur="updateColumnTitle({{ $column->id }}, this.innerText)"
                                         onclick="event.stopPropagation()">
                                         {{ $column->title }}
                                     </h3>
-                                    <span class="px-2 py-0.5 rounded-full bg-white/50 dark:bg-black/20 text-[10px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200/30 dark:border-gray-700/30">
-                                        {{ $column->tasks->count() }}
+                                    <span class="px-2.5 py-1 rounded-xl bg-black/5 dark:bg-white/10 text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm">
+                                        {{ count($column->tasks->filter(fn($t) => !$t->is_archived)) }}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-2" onclick="event.stopPropagation()">
@@ -82,40 +105,36 @@
                             @foreach($column->tasks as $task)
                                 @php
                                     $quadrant = $task->getQuadrant($task);
-                                    $meta = $task->getQuadrantMetadata($quadrant);
-                                    $colorClass = match($quadrant) {
-                                        1 => 'border-red-500 bg-red-50/30 dark:bg-red-500/5',
-                                        2 => 'border-blue-500 bg-blue-50/30 dark:bg-blue-500/5',
-                                        3 => 'border-amber-500 bg-amber-50/30 dark:bg-amber-500/5',
-                                        4 => 'border-gray-400 bg-gray-100/30 dark:bg-gray-400/5',
-                                        default => 'border-gray-200 dark:border-gray-800'
-                                    };
-                                    $badgeClass = match($quadrant) {
-                                        1 => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                                        2 => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-                                        3 => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                                        4 => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
-                                        default => 'bg-gray-100 text-gray-700'
-                                    };
+                                    $qCfg = $quadrantConfig[$quadrant] ?? null;
                                 @endphp
-                                <div class="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-sm border-l-4 {{ $colorClass }} p-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group relative animate-card-appear"
+                                <div class="bg-white dark:bg-gray-900 backdrop-blur-sm rounded-2xl shadow-md border-l-[6px] p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
                                      data-task-id="{{ $task->id }}"
-                                     style="animation-delay: {{ $loop->index * 50 }}ms">
+                                     style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms">
                                     
                                     <!-- Card Content -->
                                     <div class="flex items-start justify-between gap-2 mb-2">
-                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="text-sm font-bold text-gray-900 dark:text-white leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                             {{ $task->title }}
                                         </a>
-                                        <div class="shrink-0 flex items-center gap-1">
-                                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded {{ $badgeClass }} uppercase tracking-tighter">
+                                        <div class="shrink-0 flex items-center gap-1.5">
+                                            @if(!$task->is_archived)
+                                                <button onclick="archiveTask({{ $task->id }})" 
+                                                        class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-colors"
+                                                        title="{{ __('tasks.mark_as_completed_and_archive') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter"
+                                                  style="background-color: {{ $qCfg['color'] ?? '#d1d5db' }}40; color: {{ $qCfg['color'] ?? '#374151' }};">
                                                 Q{{ $quadrant }}
                                             </span>
                                         </div>
                                     </div>
 
                                     @if($task->description)
-                                        <p class="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">
+                                        <p class="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
                                             {{ $task->description }}
                                         </p>
                                     @endif
@@ -128,7 +147,8 @@
                                         </div>
                                         <input type="range" min="0" max="100" value="{{ $task->progress_percentage }}" 
                                                class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 progress-slider"
-                                               data-task-id="{{ $task->id }}">
+                                               data-task-id="{{ $task->id }}"
+                                               onmousedown="event.stopPropagation()">
                                     </div>
 
                                     <!-- Card Footer -->
@@ -170,15 +190,47 @@
                 @endforeach
 
                 <!-- Add Column Area -->
-                <div class="min-w-[320px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-dashed border-gray-200 dark:border-gray-800/60 bg-gray-50/30 dark:bg-gray-900/10 items-center justify-center p-6 group/add transition-all hover:bg-white/50 dark:hover:bg-gray-800/20" id="add-column-area">
-                    <button onclick="createNewColumn()" class="flex flex-col items-center gap-4 text-gray-400 group-hover/add:text-violet-500 transition-all duration-300">
-                        <div class="w-14 h-14 rounded-2xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center border border-gray-200 dark:border-gray-700 group-hover/add:scale-110 group-hover/add:shadow-lg transition-all duration-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                <div class="min-w-[60px] flex items-center justify-center h-full mr-10" id="add-column-area">
+                    <button onclick="createNewColumn()" class="w-12 h-12 rounded-2xl bg-white dark:bg-gray-950 shadow-sm flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-800 text-gray-400 hover:text-violet-500 hover:border-violet-500 hover:scale-110 hover:shadow-lg transition-all duration-300" title="{{ __('Añadir Columna') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Tasks Zone -->
+        <div class="mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            <div class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors">
+                <div class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
-                        <span class="text-sm font-bold uppercase tracking-widest">{{ __('Añadir Columna') }}</span>
-                    </button>
+                        <h3 class="text-[12px] font-black uppercase tracking-[0.25em] text-gray-900 dark:text-gray-100">
+                            {{ __('teams.completed_tasks') }}
+                        </h3>
+                    </div>
+                    <span class="text-xs font-bold text-gray-400 dark:text-gray-600">{{ count($completedTasks) }}</span>
+                </div>
+
+                <div class="min-h-[140px] p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="completed-tasks-zone" data-column-type="done">
+                    @forelse($completedTasks as $task)
+                        <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer"
+                             onclick="window.location.href='{{ route('teams.tasks.show', [$team, $task]) }}'">
+                            <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
+                            <span class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                                {{ $task->title }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="col-span-full py-20 text-center text-xs text-gray-500 italic">
+                            {{ __('No hay tareas completadas archivadas.') }}
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -197,12 +249,19 @@
                     ghostClass: 'bg-violet-100/50',
                     chosenClass: 'scale-105',
                     dragClass: 'shadow-2xl',
+                    filter: '.progress-slider',
+                    preventOnFilter: false,
                     onEnd: function(evt) {
                         const taskId = evt.item.dataset.taskId;
                         const newColumnId = evt.to.dataset.columnId;
+                        const isCompletedZone = evt.to.id === 'completed-tasks-zone';
                         const newIndex = evt.newIndex;
 
-                        updateTaskPosition(taskId, newColumnId, newIndex);
+                        if (isCompletedZone) {
+                            archiveTask(taskId);
+                        } else {
+                            updateTaskPosition(taskId, newColumnId, newIndex);
+                        }
                     }
                 });
             });
@@ -269,6 +328,38 @@
                 })
                 .catch(error => console.error('Error:', error));
             }
+
+            function archiveTask(taskId) {
+                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        status: 'completed',
+                        progress_percentage: 100,
+                        is_archived: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); 
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            // Completed tasks drop zone
+            new Sortable(document.getElementById('completed-tasks-zone'), {
+                group: 'tasks',
+                animation: 200,
+                onAdd: function(evt) {
+                    const taskId = evt.item.dataset.taskId;
+                    archiveTask(taskId);
+                }
+            });
 
             function updateTaskProgress(taskId, progress) {
                 fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {

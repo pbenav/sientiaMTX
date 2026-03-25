@@ -14,7 +14,11 @@ class Team extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'slug', 'description', 'created_by_id'];
+    protected $fillable = ['name', 'slug', 'description', 'created_by_id', 'quadrant_colors'];
+
+    protected $casts = [
+        'quadrant_colors' => 'array',
+    ];
 
     protected static function boot(): void
     {
@@ -113,5 +117,30 @@ class Team extends Model
     public function isOwner(User $user): bool
     {
         return $this->created_by_id === $user->id;
+    }
+    /**
+     * Get the quadrant color configuration for this team.
+     */
+    public function getQuadrantConfig(): array
+    {
+        $defaults = [
+            1 => ['color' => '#ef4444', 'bg' => 'bg-red-200 border-red-400 dark:bg-red-500/25 dark:border-red-500/60', 'dot' => 'bg-red-500'],
+            2 => ['color' => '#3b82f6', 'bg' => 'bg-blue-200 border-blue-400 dark:bg-blue-500/25 dark:border-blue-500/60', 'dot' => 'bg-blue-500'],
+            3 => ['color' => '#f59e0b', 'bg' => 'bg-amber-200 border-amber-400 dark:bg-amber-500/25 dark:border-amber-500/60', 'dot' => 'bg-amber-500'],
+            4 => ['color' => '#6b7280', 'bg' => 'bg-gray-200 border-gray-400 dark:bg-gray-500/25 dark:border-gray-500/60', 'dot' => 'bg-gray-500'],
+        ];
+
+        if (empty($this->quadrant_colors)) {
+            return $defaults;
+        }
+
+        $config = $defaults;
+        foreach ($this->quadrant_colors as $q => $color) {
+            if (isset($config[$q])) {
+                $config[$q]['color'] = $color;
+            }
+        }
+
+        return $config;
     }
 }
