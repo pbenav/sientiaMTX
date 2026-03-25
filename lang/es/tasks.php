@@ -152,4 +152,6 @@ return [
     'automatic' => 'Automático',
     'your_attachments' => 'Tus Archivos',
     'parent_attachments' => 'Archivos de la Tarea Principal',
+    'visual_task_management' => 'Gestión visual de tareas',
+    'new_task' => 'Nueva tarea',
 ];

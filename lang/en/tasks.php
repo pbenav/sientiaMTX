@@ -145,4 +145,6 @@ return [
     'automatic' => 'Automatic',
     'your_attachments' => 'Your Files',
     'parent_attachments' => 'Parent Task Files',
+    'visual_task_management' => 'Visual Task Management',
+    'new_task' => 'New Task',
 ];

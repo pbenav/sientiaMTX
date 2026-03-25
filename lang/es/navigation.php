@@ -13,6 +13,7 @@ return [
     'welcome' => 'Bienvenido',
     'hello' => 'Hola, :name',
     'gantt' => 'Gantt',
+    'kanban' => 'Tablero Kanban',
     'users' => 'Usuarios',
     'task_detail' => 'Detalle de la tarea',
 ];

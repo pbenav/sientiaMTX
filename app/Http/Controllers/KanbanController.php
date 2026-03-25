@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\KanbanColumn;
+use App\Models\Task;
+use App\Models\Team;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+class KanbanController extends Controller
+{
+    use AuthorizesRequests;
+
+    public function index(Team $team)
+    {
+        $this->ensureDefaultColumnsExist($team);
+
+        // Sync tasks that don't have a column yet
+        $team->tasks()->whereNull('kanban_column_id')->get()->each(function ($task) {
+            $task->syncKanbanColumn();
+        });
+
+        $columns = $team->kanbanColumns()->with(['tasks' => function ($query) use ($team) {
+            $user = auth()->user();
+            $isManager = $team->isManager($user);
+            $query->visibleTo($user, $isManager)
+                  ->operationalFor($user, $team)
+                  ->orderBy('priority', 'desc') // Essential for Eisenhower vertical order
+                  ->orderBy('urgency', 'desc')
+                  ->orderBy('kanban_order', 'asc');
+        }])->get();
+
+        // Ensure columns have a default color if null
+        $columns->each(function ($column) {
+            if (!$column->color) {
+                $column->color = match($column->type) {
+                    'todo' => '#fef2f2',
+                    'in_progress' => '#eff6ff',
+                    'done' => '#f0fdf4',
+                    default => '#f9fafb',
+                };
+                $column->save();
+            }
+        });
+
+        return view('tasks.kanban', compact('team', 'columns'));
+    }
+
+    public function update(Request $request, Team $team, Task $task)
+    {
+        $this->authorize('update', $task);
+
+        $validated = $request->validate([
+            'kanban_column_id' => 'required|exists:kanban_columns,id',
+            'kanban_order' => 'nullable|integer',
+        ]);
+
+        $column = KanbanColumn::findOrFail($validated['kanban_column_id']);
+
+        // Check if column belongs to the team
+        if ($column->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $oldColumnId = $task->kanban_column_id;
+        $task->kanban_column_id = $column->id;
+        $task->kanban_order = $validated['kanban_order'] ?? 0;
+
+        // Bidirectional sync: Update progress/status based on column type
+        if ($column->type === 'todo') {
+            $task->progress_percentage = 0;
+            $task->status = 'pending';
+        } elseif ($column->type === 'done') {
+            $task->progress_percentage = 100;
+            $task->status = 'completed';
+        } elseif ($column->type === 'in_progress' || $column->type === 'custom') {
+            if ($column->default_progress !== null) {
+                $task->progress_percentage = $column->default_progress;
+            } else {
+                // If moving to in_progress from todo, set to 10% if it was 0
+                if ($task->progress_percentage == 0) {
+                    $task->progress_percentage = 10;
+                } elseif ($task->progress_percentage == 100) {
+                    $task->progress_percentage = 90;
+                }
+            }
+            
+            if ($task->status === 'completed' || $task->status === 'pending') {
+                $task->status = 'in_progress';
+            }
+        }
+
+        $task->save();
+
+        // Log history if column changed
+        if ($oldColumnId != $task->kanban_column_id) {
+            $task->histories()->create([
+                'user_id' => auth()->id(),
+                'action' => 'moved_column',
+                'old_values' => ['kanban_column_id' => $oldColumnId],
+                'new_values' => ['kanban_column_id' => $task->kanban_column_id, 'status' => $task->status, 'progress' => $task->progress_percentage],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $task->status,
+            'progress' => $task->progress_percentage
+        ]);
+    }
+
+    public function updateColumn(Request $request, Team $team, KanbanColumn $column)
+    {
+        if ($column->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:255',
+            'color' => 'nullable|string|max:20',
+        ]);
+
+        $column->update($validated);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateColumnOrder(Request $request, Team $team)
+    {
+        $validated = $request->validate([
+            'columns' => 'required|array',
+            'columns.*.id' => 'required|exists:kanban_columns,id',
+            'columns.*.order_index' => 'required|integer',
+        ]);
+
+        foreach ($validated['columns'] as $colData) {
+            $column = $team->kanbanColumns()->find($colData['id']);
+            if ($column) {
+                $column->update(['order_index' => $colData['order_index']]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    protected function ensureDefaultColumnsExist(Team $team)
+    {
+        if ($team->kanbanColumns()->count() === 0) {
+            $defaults = [
+                ['title' => __('tasks.statuses.pending'), 'type' => 'todo', 'order_index' => 1, 'default_progress' => 0, 'color' => '#fef2f2'], // Light red
+                ['title' => __('tasks.statuses.in_progress'), 'type' => 'in_progress', 'order_index' => 2, 'default_progress' => 50, 'color' => '#eff6ff'], // Light blue
+                ['title' => __('tasks.statuses.completed'), 'type' => 'done', 'order_index' => 3, 'default_progress' => 100, 'color' => '#f0fdf4'], // Light green
+            ];
+
+            foreach ($defaults as $default) {
+                $team->kanbanColumns()->create($default);
+            }
+        }
+    }
+}

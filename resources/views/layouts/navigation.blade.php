@@ -74,6 +74,9 @@
                                         <x-dropdown-link :href="route('teams.gantt', $currentTeamId)">
                                             {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
                                         </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.kanban', $currentTeamId)">
+                                            {{ __('navigation.kanban') ?? 'Tablero Kanban' }}
+                                        </x-dropdown-link>
                                     </x-slot>
                                 </x-dropdown>
                             </div>
@@ -158,6 +161,7 @@
                         request()->routeIs('teams.dashboard') ||
                         request()->routeIs('teams.tasks.*') ||
                         request()->routeIs('teams.gantt') ||
+                        request()->routeIs('teams.kanban') ||
                         request()->routeIs('teams.forum.*') ||
                         request()->routeIs('teams.members') ||
                         request()->routeIs('teams.edit');
@@ -184,6 +188,9 @@
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.gantt', $currentTeamId)" :active="request()->routeIs('teams.gantt')" class="text-sm">
                             {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.kanban', $currentTeamId)" :active="request()->routeIs('teams.kanban')" class="text-sm">
+                            {{ __('navigation.kanban') ?? 'Tablero Kanban' }}
                         </x-responsive-nav-link>
                     </div>
                 @endif

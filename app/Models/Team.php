@@ -61,6 +61,11 @@ class Team extends Model
         return $this->hasMany(ForumThread::class);
     }
 
+    public function kanbanColumns(): HasMany
+    {
+        return $this->hasMany(KanbanColumn::class)->orderBy('order_index');
+    }
+
     // Get creator of the team
     public function creator()
     {

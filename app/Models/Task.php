@@ -49,6 +49,8 @@ class Task extends Model
         'google_task_id',
         'google_task_list_id',
         'google_synced_at',
+        'kanban_column_id',
+        'kanban_order',
     ];
  
     protected $casts = [
@@ -289,5 +291,33 @@ class Task extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(TaskAttachment::class);
+    }
+
+    public function kanbanColumn(): BelongsTo
+    {
+        return $this->belongsTo(KanbanColumn::class);
+    }
+
+    /**
+     * Synchronize the Kanban column based on current progress and status.
+     */
+    public function syncKanbanColumn(): void
+    {
+        $type = 'in_progress';
+        if ($this->progress_percentage == 100 || $this->status === 'completed') {
+            $type = 'done';
+        } elseif ($this->progress_percentage == 0 && ($this->status === 'pending' || $this->status === 'todo')) {
+            $type = 'todo';
+        }
+
+        $column = $this->team->kanbanColumns()
+            ->where('type', $type)
+            ->orderBy('order_index')
+            ->first();
+
+        if ($column && $this->kanban_column_id !== $column->id) {
+            $this->kanban_column_id = $column->id;
+            $this->saveQuietly();
+        }
     }
 }

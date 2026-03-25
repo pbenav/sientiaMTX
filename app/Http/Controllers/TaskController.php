@@ -197,6 +197,8 @@ class TaskController extends Controller
             }
         }
 
+        $task->syncKanbanColumn();
+
         return redirect()->route('teams.tasks.show', [$team, $task])
             ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.created'));
     }
@@ -453,6 +455,8 @@ class TaskController extends Controller
             $task->save();
         }
 
+        $task->syncKanbanColumn();
+
         return redirect()->route('teams.tasks.show', [$team, $task])
             ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.updated'));
     }
@@ -675,6 +679,8 @@ class TaskController extends Controller
                 $parent->update(['progress_percentage' => $parent->progress]);
             }
         }
+
+        $task->syncKanbanColumn();
 
         return response()->json([
             'success' => true,
