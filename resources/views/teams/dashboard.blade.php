@@ -115,7 +115,7 @@
                                                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                     </svg>
                                                 @else
-                                                    <div class="w-1.5 h-1.5 rounded-full {{ $cfg['dot'] }}"></div>
+                                                    <div class="w-1.5 h-1.5 rounded-full" style="background-color: {{ $cfg['color'] }}"></div>
                                                 @endif
                                             </div>
 
@@ -408,36 +408,30 @@
             });
 
             // Card navigation functionality
-            document.querySelectorAll('.task-card').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    // Don't navigate if clicking on a button, link or form element
-                    if (e.target.closest('button, a, form, input, select')) {
-                        return;
-                    }
-
-                    window.location.href = this.getAttribute('data-href');
                 });
             });
-        function updateQuadrantColor(quadrant, color) {
-            fetch(`{{ route('teams.quadrants.color', $team) }}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    quadrant: quadrant,
-                    color: color
+
+            window.updateQuadrantColor = function(quadrant, color) {
+                fetch(`{{ route('teams.quadrants.color', $team) }}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        quadrant: quadrant,
+                        color: color
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
     </script>
 @endpush
 </x-app-layout>
