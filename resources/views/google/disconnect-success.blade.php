@@ -12,34 +12,49 @@
             </h1>
             
             <p class="text-gray-500 dark:text-gray-400 mb-8 font-medium">
-                {{ __('google.window_closing') ?? 'Cerrando ventana y actualizando el tablero...' }}
+                {{ __('google.window_closing') }}
             </p>
 
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-900 rounded-xl text-xs font-bold text-gray-400 uppercase tracking-widest">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
-                </span>
-                {{ __('Please wait') }}...
+            <div class="space-y-4">
+                <button onclick="window.close()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                    {{ __('Close Window') }}
+                </button>
+
+                <div class="block">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-900 rounded-xl text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
+                        </span>
+                        {{ __('Please wait') }}...
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     @push('scripts')
     <script>
-        // Force reload parent window if exists
-        try {
-            if (window.opener && !window.opener.closed) {
-                window.opener.location.reload();
+        // Use a more robust way to handle the parent and self
+        function finalize() {
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.reload();
+                }
+            } catch (e) {
+                console.warn('Could not reload parent:', e);
             }
-        } catch (e) {
-            console.error('Window opener error:', e);
+            
+            // Try to close
+            setTimeout(() => {
+                window.close();
+            }, 500);
         }
 
-        // Close this window after 2 seconds
-        setTimeout(() => {
-            window.close();
-        }, 1500);
+        // Execute on load
+        window.addEventListener('load', () => {
+            setTimeout(finalize, 2000);
+        });
     </script>
     @endpush
 </x-app-layout>
