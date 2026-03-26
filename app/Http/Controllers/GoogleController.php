@@ -262,7 +262,8 @@ class GoogleController extends Controller
         $user->google_refresh_token = null;
         $user->save();
 
-        return back()->with('success', __('google.disconnected_success'));
+        return redirect()->route('google.auth')
+            ->with('success', __('google.disconnected_success'));
     }
 
     /**
