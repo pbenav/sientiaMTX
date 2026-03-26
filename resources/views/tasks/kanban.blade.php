@@ -102,7 +102,7 @@
 
                         <!-- Tasks List -->
                         <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
-                            @foreach($column->tasks as $task)
+                            @foreach($column->tasks->filter(fn($t) => !$t->is_archived) as $task)
                                 @php
                                     $quadrant = $task->getQuadrant($task);
                                     $qCfg = $quadrantConfig[$quadrant] ?? null;
