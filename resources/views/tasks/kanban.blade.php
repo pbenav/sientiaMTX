@@ -222,12 +222,20 @@
 
                 <div class="min-h-[140px] p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="completed-tasks-zone" data-column-type="done">
                     @forelse($completedTasks as $task)
-                        <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer"
-                             onclick="window.location.href='{{ route('teams.tasks.show', [$team, $task]) }}'">
+                        <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden">
                             <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
-                            <span class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                            <span class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors cursor-pointer"
+                                  onclick="window.location.href='{{ route('teams.tasks.show', [$team, $task]) }}'">
                                 {{ $task->title }}
                             </span>
+                            <button onclick="unarchiveTask({{ $task->id }})" 
+                                    class="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-gray-400 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200"
+                                    title="{{ __('tasks.restore') ?? 'Desarchivar' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
                         </div>
                     @empty
                         <div class="col-span-full py-20 text-center text-xs text-gray-500 italic">
@@ -343,6 +351,26 @@
                         status: 'completed',
                         progress_percentage: 100,
                         is_archived: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); 
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            window.unarchiveTask = function(taskId) {
+                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        is_archived: false
                     })
                 })
                 .then(response => response.json())
