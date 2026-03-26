@@ -23,6 +23,7 @@ return [
     'select_tasks' => 'Select Google Calendar Events',
     'sync_tasks_title' => 'Sync Google Tasks',
     'select_to_import' => 'Select Tasks to Import',
+    'window_closing' => 'Closing window and updating dashboard...',
     'found_events' => 'Found Events',
     'choose_events' => 'Choose the calendar events you want to convert into tasks.',
     'select_all' => 'Select All',

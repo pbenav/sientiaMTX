@@ -23,6 +23,7 @@ return [
     'select_tasks' => 'Seleccionar tareas de Google Calendar',
     'sync_tasks_title' => 'Sincronizar tareas de Google',
     'select_to_import' => 'Seleccionar tareas para importar',
+    'window_closing' => 'Cerrando ventana y actualizando el tablero...',
     'found_events' => 'Eventos encontrados',
     'choose_events' => 'Elige los eventos del calendario que quieres convertir en tareas.',
     'select_all' => 'Seleccionar todos',
