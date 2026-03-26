@@ -338,7 +338,7 @@ class TeamController extends Controller
 
         $validated = $request->validate([
             'quadrant' => 'required|integer|between:1,4',
-            'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
         ]);
 
         // Normalize color to 6 digits hex

@@ -417,7 +417,7 @@
                             emptyMsg.remove();
                         }
                     });
-                }); // CIERRE DEL lists.forEach QUE FALTABA
+                }
 
 
             // Subtasks Matrix Fold/Unfold
@@ -449,9 +449,6 @@
                 });
             });
         });
-
-        });
-
     </script>
 @endpush
 </x-app-layout>

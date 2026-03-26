@@ -297,9 +297,19 @@
                         </div>
                         <div>
                             <p class="text-sm font-extrabold text-indigo-900 dark:text-indigo-300 tracking-tight">
-                                {{ __('tasks.personal_instance_notice') }}</p>
+                                @if($task->assigned_user_id === auth()->id())
+                                    {{ __('tasks.personal_instance_notice') }}
+                                @else
+                                    {{ __('tasks.personal_instance_notice_others', ['name' => $task->assignedUser->name ?? 'User']) }}
+                                @endif
+                            </p>
                             <p class="text-xs text-indigo-700/70 dark:text-indigo-400/80 font-medium">
-                                {{ __('tasks.personal_instance_description') }}</p>
+                                @if($task->assigned_user_id === auth()->id())
+                                    {{ __('tasks.personal_instance_description') }}
+                                @else
+                                    {{ __('tasks.personal_instance_description_others') }}
+                                @endif
+                            </p>
                         </div>
                     </div>
                     <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}"
