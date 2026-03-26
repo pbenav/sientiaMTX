@@ -351,8 +351,9 @@ class TeamController extends Controller
         $colors[$validated['quadrant']] = $color;
 
         $team->update(['quadrant_colors' => $colors]);
+        $team->save(); // Forzado de guardado
 
-        \Log::info("Color updated for team {$team->id}, quadrant {$validated['quadrant']}, color {$color}");
+        \Log::emergency("CRITICAL DEBUG: Team {$team->id} color saved. Q: {$validated['quadrant']}, Color: {$color}. Total array: " . json_encode($colors));
 
         return response()->json(['success' => true]);
     }

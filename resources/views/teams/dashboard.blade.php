@@ -422,24 +422,35 @@
         });
 
         window.updateQuadrantColor = function(quadrant, color) {
+            console.log('Update color triggered:', quadrant, color);
+            // alert('Quadrant: ' + quadrant + ' - Color: ' + color); // Comentado por ahora
             fetch(`{{ route('teams.quadrants.color', $team) }}`, {
-                method: 'PATCH',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-HTTP-Method-Override': 'PATCH'
                 },
                 body: JSON.stringify({
                     quadrant: quadrant,
                     color: color
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     location.reload();
+                } else {
+                    alert('Error del servidor: ' + (data.message || 'Desconocido'));
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Error de conexión al guardar el color: ' + error.message);
+            });
         }
     </script>
 @endpush
