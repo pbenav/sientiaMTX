@@ -264,6 +264,35 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
         <script>
+            // FUNCTION EXPOSED TO GLOBAL SCOPE (Defined first to be available immediately)
+            window.updateQuadrantColor = function(quadrant, color) {
+                console.log('Update color triggered:', quadrant, color);
+                fetch(`{{ route('teams.quadrants.color', $team) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-HTTP-Method-Override': 'PATCH'
+                    },
+                    body: JSON.stringify({
+                        quadrant: quadrant,
+                        color: color
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error del servidor: ' + (data.message || 'Desconocido'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Error de conexión al guardar el color: ' + error.message);
+                });
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 const lists = document.querySelectorAll('.quadrant-list');
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -388,8 +417,8 @@
                             emptyMsg.remove();
                         }
                     });
-                }
-            });
+                }); // CIERRE DEL lists.forEach QUE FALTABA
+
 
             // Subtasks Matrix Fold/Unfold
             document.querySelectorAll('.toggle-subtasks-matrix').forEach(btn => {
@@ -421,37 +450,8 @@
             });
         });
 
-        window.updateQuadrantColor = function(quadrant, color) {
-            console.log('Update color triggered:', quadrant, color);
-            // alert('Quadrant: ' + quadrant + ' - Color: ' + color); // Comentado por ahora
-            fetch(`{{ route('teams.quadrants.color', $team) }}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'X-HTTP-Method-Override': 'PATCH'
-                },
-                body: JSON.stringify({
-                    quadrant: quadrant,
-                    color: color
-                })
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error del servidor: ' + (data.message || 'Desconocido'));
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                alert('Error de conexión al guardar el color: ' + error.message);
-            });
-        }
+        });
+
     </script>
 @endpush
 </x-app-layout>
