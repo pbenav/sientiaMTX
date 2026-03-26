@@ -439,6 +439,9 @@
                 }
             });
         }
+        
+        // Alias for compatibility with other views
+        window.handleGlobalDelete = window.confirmDelete;
 
         window.openGoogleAuth = function() {
             const width = 600;

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Notice Board',
+    'title' => 'Announcements',
     'discussion' => 'Discussion / Forum',
     'view_full' => 'View all',
     'no_thread_yet' => 'There is no thread yet',

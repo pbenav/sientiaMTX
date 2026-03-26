@@ -9,11 +9,11 @@ return [
     'my_teams' => 'Mis equipos',
     'language' => 'Idioma',
     'settings' => 'Configuración',
-    'task_list' => 'Lista de tareas',
+    'task_list' => 'Tareas',
     'welcome' => 'Bienvenido',
     'hello' => 'Hola, :name',
     'gantt' => 'Gantt',
-    'kanban' => 'Tablero Kanban',
+    'kanban' => 'Kanban',
     'users' => 'Usuarios',
     'task_detail' => 'Detalle de la tarea',
 ];

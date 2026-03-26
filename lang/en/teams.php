@@ -40,7 +40,7 @@ return [
     'save_changes' => 'Save Changes',
     'edit' => 'Edit Team',
     'back' => 'Back',
-    'eisenhower_matrix' => 'Eisenhower Matrix',
+    'eisenhower_matrix' => 'Eisenhower',
     'view_dashboard' => 'Matrix View',
     'view_members' => 'Members',
     'no_tasks' => 'No tasks in this quadrant.',

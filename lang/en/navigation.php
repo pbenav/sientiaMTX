@@ -12,8 +12,8 @@ return [
     'welcome' => 'Welcome',
     'hello' => 'Hello, :name',
     'gantt' => 'Gantt Chart',
-    'kanban' => 'Kanban Board',
-    'task_list' => 'Task List',
+    'kanban' => 'Kanban',
+    'task_list' => 'Tasks',
     'users' => 'Users',
     'task_detail' => 'Task Detail',
 ];

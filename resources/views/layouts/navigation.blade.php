@@ -63,13 +63,13 @@
 
                                     <x-slot name="content">
                                         <x-dropdown-link :href="route('teams.forum.index', $currentTeamId)">
-                                            {{ __('forum.title') ?? 'Tablón de Anuncios' }}
+                                            {{ __('forum.title') ?? 'Anuncios' }}
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.tasks.index', $currentTeamId)">
-                                            {{ __('navigation.task_list') ?? 'Lista de Tareas' }}
+                                            {{ __('navigation.task_list') ?? 'Tareas' }}
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.dashboard', $currentTeamId)">
-                                            {{ __('teams.eisenhower_matrix') ?? 'Matriz Eisenhower' }}
+                                            {{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.gantt', $currentTeamId)">
                                             {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
@@ -178,13 +178,13 @@
                             {{ Str::limit($currentTeamLabel, 20) }}
                         </div>
                         <x-responsive-nav-link :href="route('teams.forum.index', $currentTeamId)" :active="request()->routeIs('teams.forum.*')" class="text-sm">
-                            {{ __('forum.title') ?? 'Tablón de Anuncios' }}
+                            {{ __('forum.title') ?? 'Anuncios' }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.tasks.index', $currentTeamId)" :active="request()->routeIs('teams.tasks.*')" class="text-sm">
-                            {{ __('navigation.task_list') ?? 'Lista de Tareas' }}
+                            {{ __('navigation.task_list') ?? 'Tareas' }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.dashboard', $currentTeamId)" :active="request()->routeIs('teams.dashboard')" class="text-sm">
-                            {{ __('teams.eisenhower_matrix') ?? 'Matriz Eisenhower' }}
+                            {{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.gantt', $currentTeamId)" :active="request()->routeIs('teams.gantt')" class="text-sm">
                             {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}

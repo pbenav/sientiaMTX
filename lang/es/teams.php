@@ -40,7 +40,7 @@ return [
     'save_changes' => 'Guardar cambios',
     'edit' => 'Editar equipo',
     'back' => 'Volver',
-    'eisenhower_matrix' => 'Matriz de Eisenhower',
+    'eisenhower_matrix' => 'Eisenhower',
     'view_dashboard' => 'Vista matriz',
     'view_members' => 'Miembros',
     'no_tasks' => 'Sin tareas en este cuadrante.',

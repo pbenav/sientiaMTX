@@ -14,8 +14,8 @@ return [
     */
 
     'name' => env('APP_NAME', 'sientiaMTX'),
-    'version' => env('APP_VER', '0.0.5'),
-    'app_version' => env('APP_VER', '0.0.5'),
+    'version' => env('APP_VER', '0.5.0'),
+    'app_version' => env('APP_VER', '0.5.0'),
 
     /*
     |--------------------------------------------------------------------------
