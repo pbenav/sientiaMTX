@@ -143,13 +143,10 @@
 
                 <div
                     class="px-8 py-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-3">
-                    <form id="google-disconnect-form" action="{{ route('google.disconnect') }}" method="POST" class="hidden">
-                        @csrf
-                    </form>
                     <button type="button" 
-                        onclick="confirmDelete('google-disconnect-form', '{{ __('google.disconnect_confirm') ?? '¿Estás seguro de que deseas desconectar tu cuenta de Google?' }}')"
+                        onclick="confirmDelete('google-disconnect-form', '{{ __('google.disconnect_confirm') }}')"
                         class="px-5 py-2.5 text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-all uppercase tracking-wider mr-auto">
-                        {{ __('google.disconnect') ?? 'Desconectar' }}
+                        {{ __('google.disconnect') }}
                     </button>
                     <a href="{{ route('teams.dashboard', $team) }}"
                         class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all uppercase tracking-wider">
@@ -164,6 +161,10 @@
             </form>
         </div>
     </div>
+
+    <form id="google-disconnect-form" action="{{ route('google.disconnect') }}" method="POST" class="hidden">
+        @csrf
+    </form>
 
     @push('scripts')
         <script>
