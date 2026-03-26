@@ -341,8 +341,14 @@ class TeamController extends Controller
             'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ]);
 
+        // Normalize color to 6 digits hex
+        $color = $validated['color'];
+        if (strlen($color) === 4) {
+            $color = '#' . $color[1] . $color[1] . $color[2] . $color[2] . $color[3] . $color[3];
+        }
+
         $colors = $team->quadrant_colors ?? [];
-        $colors[$validated['quadrant']] = $validated['color'];
+        $colors[$validated['quadrant']] = $color;
 
         $team->update(['quadrant_colors' => $colors]);
 

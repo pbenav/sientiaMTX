@@ -60,7 +60,7 @@
                         $qTasks = $quadrants[$q];
                     @endphp
                     <div class="border rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q quadrant-container"
-                         style="background-color: {{ $cfg['color'] }}15; border-color: {{ $cfg['color'] }}40;"
+                         style="background-color: {{ $team->hexToRgba($cfg['color'], 0.15) }}; border-color: {{ $team->hexToRgba($cfg['color'], 0.40) }};"
                          data-quadrant="{{ $q }}">
                         <!-- Quadrant header -->
                         <div
@@ -408,6 +408,15 @@
             });
 
             // Card navigation functionality
+            // Card navigation functionality
+            document.querySelectorAll('.task-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't navigate if clicking on a button, link or form element
+                    if (e.target.closest('button, a, form, input, select')) {
+                        return;
+                    }
+
+                    window.location.href = this.getAttribute('data-href');
                 });
             });
 
