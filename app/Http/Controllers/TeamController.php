@@ -352,6 +352,8 @@ class TeamController extends Controller
 
         $team->update(['quadrant_colors' => $colors]);
 
+        \Log::info("Color updated for team {$team->id}, quadrant {$validated['quadrant']}, color {$color}");
+
         return response()->json(['success' => true]);
     }
 }

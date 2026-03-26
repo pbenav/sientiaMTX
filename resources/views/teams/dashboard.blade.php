@@ -60,7 +60,7 @@
                         $qTasks = $quadrants[$q];
                     @endphp
                     <div class="border rounded-2xl sm:rounded-[2.5rem] flex flex-col min-h-[180px] sm:min-h-[320px] shadow-lg sm:shadow-2xl transition-all group/q quadrant-container"
-                         style="background-color: {{ $team->hexToRgba($cfg['color'], 0.15) }}; border-color: {{ $team->hexToRgba($cfg['color'], 0.40) }};"
+                         style="background-color: {{ $team->hexToRgba($cfg['color'], 0.25) }}; border-color: {{ $team->hexToRgba($cfg['color'], 0.50) }};"
                          data-quadrant="{{ $q }}">
                         <!-- Quadrant header -->
                         <div
