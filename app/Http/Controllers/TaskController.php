@@ -46,7 +46,13 @@ class TaskController extends Controller
 
         // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where('title', 'like', '%' . $searchTerm . '%');
+
+            // Also filter the children relationship so only matched subtasks are shown in the nested view
+            $query->with(['children' => function($q) use ($searchTerm) {
+                $q->where('title', 'like', '%' . $searchTerm . '%');
+            }]);
         }
 
         // --- Sorting ---
