@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable implements HasLocalePreference
 {
@@ -127,6 +128,21 @@ class User extends Authenticatable implements HasLocalePreference
     public function hasAvailableQuota(int $bytes): bool
     {
         return ($this->disk_used + $bytes) <= $this->disk_quota;
+    }
+
+    /**
+     * Get the user's role name in a specific team.
+     */
+    public function getRole(Team $team): ?string
+    {
+        $membership = $this->teams()->where('team_id', $team->id)->first();
+        
+        if (!$membership || !$membership->pivot->role_id) {
+            return null;
+        }
+
+        $role = \DB::table('team_roles')->where('id', $membership->pivot->role_id)->first();
+        return $role ? $role->name : null;
     }
 }
 
