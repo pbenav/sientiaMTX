@@ -419,28 +419,28 @@
                     window.location.href = this.getAttribute('data-href');
                 });
             });
-
-            window.updateQuadrantColor = function(quadrant, color) {
-                fetch(`{{ route('teams.quadrants.color', $team) }}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        quadrant: quadrant,
-                        color: color
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            }
         });
+
+        window.updateQuadrantColor = function(quadrant, color) {
+            fetch(`{{ route('teams.quadrants.color', $team) }}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    quadrant: quadrant,
+                    color: color
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
     </script>
 @endpush
 </x-app-layout>

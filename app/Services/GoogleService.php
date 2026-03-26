@@ -71,7 +71,7 @@ class GoogleService
                 $newToken = $this->client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
                 
                 if (isset($newToken['error'])) {
-                    Log::error('Error refreshing Google token for user ' . $user->id . ': ' . $newToken['error']);
+                    Log::error('Google API Error (Refresh Token) for user ' . $user->id . ': ' . json_encode($newToken));
                     return false;
                 }
 
@@ -137,7 +137,7 @@ class GoogleService
             
             return $allTasks;
         } catch (\Exception $e) {
-            Log::error('Error listing Google Tasks: ' . $e->getMessage());
+            Log::error('Google Tasks API Exception: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
             return [];
         }
     }
