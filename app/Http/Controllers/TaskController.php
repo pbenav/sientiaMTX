@@ -567,126 +567,88 @@ class TaskController extends Controller
             'is_archived' => 'nullable|boolean',
         ]);
 
-        if ($request->has('scheduled_date') || $request->has('due_date')) {
-            $updateData = [];
-            if ($request->has('scheduled_date')) $updateData['scheduled_date'] = $validated['scheduled_date'];
-            if ($request->has('due_date')) $updateData['due_date'] = $validated['due_date'];
-            
-            $task->update($updateData);
+        $oldStatus = $task->status;
+        \Log::info('Task move request:', ['task_id' => $task->id, 'data' => $request->all()]);
 
-            // Sync with instances if it's a template
-            if ($task->is_template) {
-                $task->instances()->update($updateData);
+        // Collect all changes in the model object first
+        if ($request->has('scheduled_date')) $task->scheduled_date = $validated['scheduled_date'];
+        if ($request->has('due_date')) $task->due_date = $validated['due_date'];
+        if ($request->has('progress_percentage')) $task->progress_percentage = $validated['progress_percentage'];
+        if ($request->has('is_archived')) {
+            $task->is_archived = (bool) $validated['is_archived'];
+            \Log::info('Setting is_archived to:', ['val' => $task->is_archived]);
+        }
+        
+        if ($request->has('status')) {
+            $task->status = $validated['status'];
+            
+            if ($task->status === 'completed') {
+                $task->progress_percentage = 100;
+            } elseif (in_array($task->status, ['pending', 'in_progress', 'blocked']) && $task->progress_percentage === 100) {
+                $task->progress_percentage = 90;
+            }
+
+            // Automatic de-completion for parents
+            if ($task->isInstance() && $oldStatus === 'completed' && $task->status !== 'completed') {
+                $parent = $task->parent;
+                if ($parent && $parent->status === 'completed') {
+                    $parent->update(['status' => 'in_progress']);
+                }
             }
         }
 
-        if ($request->has('progress_percentage') || $request->has('is_archived')) {
-            $updateData = [];
-            if ($request->has('progress_percentage')) $updateData['progress_percentage'] = $validated['progress_percentage'];
-            if ($request->has('is_archived')) $updateData['is_archived'] = $validated['is_archived'];
-            
-            $task->update($updateData);
-        }
-
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
-            // Mapping quadrant back to priority/urgency
             $mapping = [
                 1 => ['priority' => 'high', 'urgency' => 'high'],
                 2 => ['priority' => 'high', 'urgency' => 'low'],
                 3 => ['priority' => 'low', 'urgency' => 'high'],
                 4 => ['priority' => 'low', 'urgency' => 'low'],
             ];
+            $task->priority = $mapping[$validated['quadrant']]['priority'];
+            $task->urgency = $mapping[$validated['quadrant']]['urgency'];
+            if (!$request->has('status')) $task->status = 'in_progress';
+        }
 
-            $task->update([
-                'priority' => $mapping[$validated['quadrant']]['priority'],
-                'urgency' => $mapping[$validated['quadrant']]['urgency'],
-                'status' => $validated['status'] ?? 'in_progress',
+        // Final save for the main task
+        $task->save();
+
+        // Secondary Effects (Notifications & Syncs)
+        if ($task->is_template && ($request->has('scheduled_date') || $request->has('due_date'))) {
+            $task->instances()->update([
+                'scheduled_date' => $task->scheduled_date,
+                'due_date' => $task->due_date
             ]);
         }
 
-        if ($request->has('status')) {
-            $oldStatus = $task->status;
-            $status = $validated['status'];
-            
-            $updateData = ['status' => $status];
-            
-            if ($status === 'completed') {
-                $updateData['progress_percentage'] = 100;
-            } elseif ($status === 'pending' || $status === 'in_progress' || $status === 'blocked') {
-                if ($task->progress_percentage === 100) {
-                    $updateData['progress_percentage'] = 90; // Just below 100 to show it's not done
-                }
-            }
-
-            $task->update($updateData);
-
-            // AUTOMATIC DE-COMPLETION: If a child is moved back from completed, move parent to in_progress too
-            if ($task->isInstance() && $oldStatus === 'completed' && $status !== 'completed') {
-                $parent = $task->parent;
-                if ($parent && $parent->status === 'completed') {
-                    $parent->update(['status' => 'in_progress']);
-                }
-            }
-
-            // Trigger notification if blocked
-            if ($validated['status'] === 'blocked' && $oldStatus !== 'blocked') {
-                $team->creator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
-                // Also notify coordinators
-                foreach ($team->members()->wherePivotIn('role_id', function ($q) {
-                    $q->select('id')->from('team_roles')->where('name', 'coordinator');
-                })->get() as $coordinator) {
-                    if ($coordinator->id !== auth()->id()) {
-                        $coordinator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
-                    }
-                }
-            }
-
-            // Check for milestones if it's an instance
-            if ($task->isInstance() && $validated['status'] === 'completed') {
-                $parent = $task->parent;
-                
-                // Calculate progress manually here to be sure
-                $totalChildren = $parent->children()->count();
-                $completedChildren = $parent->children()->where('status', 'completed')->count();
-                $progress = $totalChildren > 0 ? ($completedChildren / $totalChildren) * 100 : 0;
-
-                // AUTOMATIC COMPLETION: If all children are completed, mark parent as completed
-                if ($completedChildren === $totalChildren && $parent->status !== 'completed') {
-                    $parent->update([
-                        'status' => 'completed',
-                        'progress_percentage' => 100
-                    ]);
-                    
-                    // Optional: Log completion in parent history
-                    $parent->histories()->create([
-                        'user_id' => auth()->id(),
-                        'action' => 'automated_completion',
-                        'new_values' => $parent->getAttributes(),
-                    ]);
-                }
-
-                if (in_array((int)$progress, [50, 75, 100])) {
-                    $team->creator->notify(new \App\Notifications\TaskMilestoneNotification($parent, (int)$progress));
+        if ($request->has('status') && $task->status === 'blocked' && $oldStatus !== 'blocked') {
+            $team->creator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
+            foreach ($team->members()->wherePivotIn('role_id', function ($q) {
+                $q->select('id')->from('team_roles')->where('name', 'coordinator');
+            })->get() as $coordinator) {
+                if ($coordinator->id !== auth()->id()) {
+                    $coordinator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
                 }
             }
         }
-        if ($request->has('progress_percentage')) {
-            $progress = (int) $validated['progress_percentage'];
-            $updateData = ['progress_percentage' => $progress];
 
-            if ($progress === 100) {
-                $updateData['status'] = 'completed';
-            } elseif ($progress < 100 && $task->status === 'completed') {
-                $updateData['status'] = 'in_progress';
+        if ($task->isInstance() && $request->has('status') && $task->status === 'completed') {
+            $parent = $task->parent;
+            $totalChildren = $parent->children()->count();
+            $completedChildren = $parent->children()->where('status', 'completed')->count();
+            $progress = $totalChildren > 0 ? ($completedChildren / $totalChildren) * 100 : 0;
+
+            if ($completedChildren === $totalChildren && $parent->status !== 'completed') {
+                $parent->update(['status' => 'completed', 'progress_percentage' => 100]);
             }
 
-            $task->update($updateData);
-
-            // If it's an instance, sync parent's progress_percentage column (important for sorting/filtering)
-            if ($task->parent_id) {
-                $parent = $task->parent;
-                $parent->update(['progress_percentage' => $parent->progress]);
+            if (in_array((int)$progress, [50, 75, 100])) {
+                $team->creator->notify(new \App\Notifications\TaskMilestoneNotification($parent, (int)$progress));
             }
+        }
+
+        if ($task->parent_id && $request->has('progress_percentage')) {
+            $parent = $task->parent;
+            $parent->update(['progress_percentage' => $parent->progress]);
         }
 
         $task->syncKanbanColumn();
@@ -694,8 +656,8 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'task_status' => $task->status,
-            'task_progress' => $task->progress,
-            'parent_progress' => $task->parent_id ? $task->parent->progress : null
+            'task_progress' => $task->progress_percentage,
+            'parent_progress' => $task->parent_id ? $task->parent->progress_percentage : null
         ]);
     }
 

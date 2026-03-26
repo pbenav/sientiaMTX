@@ -126,10 +126,13 @@
                                                     </svg>
                                                 </button>
                                             @endif
-                                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter"
-                                                  style="background-color: {{ $qCfg['color'] ?? '#d1d5db' }}40; color: {{ $qCfg['color'] ?? '#374151' }};">
+                                            <a href="{{ route('teams.dashboard', $team) }}" 
+                                               onclick="event.stopPropagation()"
+                                               class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter hover:ring-2 hover:ring-violet-500 transition-all cursor-pointer shadow-sm"
+                                               style="background-color: {{ $qCfg['color'] ?? '#d1d5db' }}40; color: {{ $qCfg['color'] ?? '#374151' }};"
+                                               title="{{ __('teams.view_dashboard') ?? 'Ver Eisenhower' }}">
                                                 Q{{ $quadrant }}
-                                            </span>
+                                            </a>
                                         </div>
                                     </div>
 
@@ -329,7 +332,7 @@
                 .catch(error => console.error('Error:', error));
             }
 
-            function archiveTask(taskId) {
+            window.archiveTask = function(taskId) {
                 fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
