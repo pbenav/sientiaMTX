@@ -7,6 +7,7 @@ return [
     'public' => 'Público',
     'import' => 'Importar',
     'disconnect' => 'Desconectar cuenta de Google',
+    'disconnect_confirm' => '¿Estás seguro de que deseas desconectar tu cuenta de Google? Se detendrá la sincronización de tareas.',
     'connected_success' => 'Cuenta de Google conectada correctamente.',
     'disconnected_success' => 'Cuenta de Google desconectada correctamente.',
     'auth_failed' => 'La autenticación de Google ha fallado: :error',

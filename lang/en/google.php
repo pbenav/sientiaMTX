@@ -7,6 +7,7 @@ return [
     'public' => 'Public',
     'import' => 'Import',
     'disconnect' => 'Disconnect Google account',
+    'disconnect_confirm' => 'Are you sure you want to disconnect your Google account? Task synchronization will be stopped.',
     'connected_success' => 'Google account connected successfully.',
     'disconnected_success' => 'Google account disconnected successfully.',
     'auth_failed' => 'Google authentication failed: :error',
