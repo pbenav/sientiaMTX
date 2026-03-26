@@ -223,6 +223,7 @@
 
                     @include('layouts.partials.theme-toggle')
                     @include('layouts.partials.layout-toggle')
+                    @include('layouts.partials.zoom-controls')
                     @include('layouts.partials.language-toggle')
 
 
@@ -350,7 +351,7 @@
     @endif
 
     <!-- Page content -->
-    <main class="px-4 sm:px-6 lg:px-8 py-8"
+    <main id="mainContent" class="px-4 sm:px-6 lg:px-8 py-8"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '{{ $maxWidth }} mx-auto') : '{{ $maxWidth }} mx-auto'">
 
         <!-- Header for Vertical Layout -->
@@ -463,6 +464,37 @@
                 openGoogleAuth();
             });
         @endif
+    </script>
+
+    <!-- Global Zoom Logic -->
+    <script>
+        (function() {
+            window.applyGlobalZoom = function(val) {
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.style.zoom = val;
+                }
+                
+                const label = document.getElementById('global-zoom-label');
+                if (label) {
+                    label.innerText = Math.round(val * 100) + '%';
+                }
+            }
+
+            window.adjustGlobalZoom = function(delta) {
+                let currentZoom = parseFloat(localStorage.getItem('global_zoom') || '1.0');
+                currentZoom = Math.round((currentZoom + delta) * 100) / 100;
+                currentZoom = Math.max(0.8, Math.min(1.2, currentZoom));
+                localStorage.setItem('global_zoom', currentZoom);
+                window.applyGlobalZoom(currentZoom);
+            }
+
+            // Apply zoom on load
+            document.addEventListener('DOMContentLoaded', function() {
+                const savedZoom = localStorage.getItem('global_zoom') || '1.0';
+                window.applyGlobalZoom(parseFloat(savedZoom));
+            });
+        })();
     </script>
 </body>
 
