@@ -430,7 +430,9 @@
 
                     return `
                         <div class="p-1 min-w-[240px]">
-                            <h4 class="font-black text-base mb-1 truncate" style="color: var(--gantt-title) !important;" title="${task.name}">${task.name}</h4>
+                            <a href="{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}" class="hover:underline decoration-2">
+                                <h4 class="font-black text-base mb-1 truncate" style="color: var(--gantt-title) !important;" title="${task.name}">${task.name}</h4>
+                            </a>
                             ${parentHtml}
                             <div class="flex items-center gap-3 mb-3">
                                 <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase ${statusColors[task.status]}" style="color: inherit !important;">${statusLabels[task.status]}</span>
