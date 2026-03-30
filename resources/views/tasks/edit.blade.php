@@ -1,5 +1,8 @@
 <x-app-layout>
     @section('title', __('tasks.edit') . ': ' . $task->title)
+    @php
+        $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
+    @endphp
 
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -17,7 +20,14 @@
         </div>
     </x-slot>
 
-    <div class="max-w-2xl mx-auto space-y-5">
+    <div id="task-edit-container" 
+        class="layout-{{ $layout }} max-w-2xl mx-auto space-y-5 transition-all duration-300"
+        :class="{ 
+            'sidebar-is-open': sidebarOpen, 
+            'sidebar-is-closed': !sidebarOpen,
+            'max-w-7xl': $data.isDualView 
+        }"
+        x-data="{ isDualView: false }">
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
             <form method="POST" action="{{ route('teams.tasks.update', [$team, $task]) }}" class="space-y-6">
@@ -466,6 +476,68 @@
             background: #374151;
             color: white;
         }
+
+        /* Ajuste de coordenadas del editor para respetar el layout de Sientia */
+        .CodeMirror-fullscreen,
+        .editor-preview-active-side {
+            z-index: 40 !important; /* Menor que z-50 del header para estar debajo */
+            top: 64px !important;   /* Altura del header (h-16) */
+            height: calc(100vh - 64px) !important;
+            left: 0 !important;
+            width: 100% !important;
+        }
+
+        .editor-toolbar.fullscreen {
+            z-index: 41 !important;
+            top: 64px !important;
+            left: 0 !important;
+            width: 100% !important;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Si el layout es VERTICAL y el sidebar está abierto (clase controlada por Alpine) */
+        @media (min-width: 1024px) {
+            .layout-vertical.sidebar-is-open .CodeMirror-fullscreen,
+            .layout-vertical.sidebar-is-open .editor-preview-active-side,
+            .layout-vertical.sidebar-is-open .editor-toolbar.fullscreen {
+                left: 256px !important;
+                width: calc(100% - 256px) !important;
+            }
+
+            /* Si el sidebar está cerrado, el editor ocupa todo el ancho */
+            .layout-vertical.sidebar-is-closed .CodeMirror-fullscreen,
+            .layout-vertical.sidebar-is-closed .editor-preview-active-side,
+            .layout-vertical.sidebar-is-closed .editor-toolbar.fullscreen {
+                left: 0 !important;
+                width: 100% !important;
+            }
+        }
+
+        /* Responsividad para móviles y tablets en Vista Dual */
+        @media (max-width: 1023px) {
+            .CodeMirror-side-by-side {
+                flex-direction: column !important;
+            }
+
+            .CodeMirror-side-by-side > .CodeMirror-scroll,
+            .CodeMirror-side-by-side > .editor-preview-side {
+                width: 100% !important;
+                height: 50% !important;
+            }
+
+            .CodeMirror-side-by-side > .editor-preview-side {
+                border-left: none !important;
+                border-top: 1px solid #e5e7eb;
+            }
+
+            .dark .CodeMirror-side-by-side > .editor-preview-side {
+                border-top-color: #374151;
+            }
+        }
+
+        .dark .editor-toolbar.fullscreen {
+            border-color: #374151;
+        }
     </style>
 
     <script>
@@ -479,6 +551,26 @@
                 status: false,
                 minHeight: '150px',
                 placeholder: 'Añade observaciones aquí...',
+                toolbar: [
+                    "bold", "italic", "heading", "|", 
+                    "quote", "unordered-list", "ordered-list", "|", 
+                    "link", "image", "table", "|", 
+                    "preview", 
+                    {
+                        name: "side-by-side",
+                        action: function(editor) {
+                            EasyMDE.toggleSideBySide(editor);
+                            // Comunicamos el estado a Alpine
+                            const container = document.getElementById('task-edit-container');
+                            if (container && container.__x) {
+                                container.__x.$data.isDualView = editor.isSideBySideActive();
+                            }
+                        },
+                        className: "fa fa-columns",
+                        title: "Vista Dual",
+                    },
+                    "fullscreen", "|", "guide"
+                ],
             });
 
             const quadrantData = @json(__('tasks.quadrants'));
