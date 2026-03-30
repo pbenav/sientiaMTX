@@ -407,7 +407,7 @@
                     class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Licencia AGPL v3</a>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="https://www.patreon.com/cw/sientiaCTH_ControlHorario" target="_blank"
+                <a href="https://www.patreon.com/cw/sientia" target="_blank"
                     class="text-orange-500 hover:text-orange-600 font-bold transition-colors flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                         <path
