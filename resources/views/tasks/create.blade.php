@@ -88,6 +88,12 @@
                     </div>
                 </div>
 
+                <!-- Quadrant preview (calculated in JS) -->
+                <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
+                    <span class="font-semibold" id="qp-label"></span>
+                    <span class="text-gray-400 ml-1" id="qp-desc"></span>
+                </div>
+
                 <!-- Visibility -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
@@ -137,11 +143,7 @@
                     </div>
                 </div>
 
-                <!-- Quadrant preview (calculated in JS) -->
-                <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
-                    <span class="font-semibold" id="qp-label"></span>
-                    <span class="text-gray-400 ml-1" id="qp-desc"></span>
-                </div>
+
 
                 <!-- Autoprogrammable (Recurrence) -->
                 <div x-data="{ 
@@ -153,22 +155,29 @@
                         'monthly': '{{ __("tasks.months") }}',
                         'yearly': '{{ __("tasks.years") }}'
                     }
-                }" class="bg-violet-50/50 dark:bg-violet-950/10 border border-violet-100 dark:border-violet-900/50 rounded-2xl p-5 transition-all">
+                }" class="bg-violet-50/30 dark:bg-gray-900/40 backdrop-blur-md border border-violet-100 dark:border-violet-500/20 rounded-2xl p-6 shadow-sm dark:shadow-[0_0_20px_-12px_rgba(139,92,246,0.3)] transition-all">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.autoprogrammable') }}</span>
-                            <span class="text-[11px] text-gray-500">{{ __('tasks.autoprogrammable_hint') }}</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.autoprogrammable') }}</span>
+                                <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('tasks.autoprogrammable_hint') }}</span>
+                            </div>
                         </div>
                         
                         <!-- Segmented Control -->
-                        <div class="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl w-fit self-start sm:self-center">
+                        <div class="flex p-1 bg-gray-200 dark:bg-gray-950/50 rounded-xl w-fit self-start sm:self-center border border-transparent dark:border-gray-800">
                             <button type="button" @click="isAutoprogrammable = false" 
-                                :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'"
+                                :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                 {{ __('tasks.disabled') }}
                             </button>
                             <button type="button" @click="isAutoprogrammable = true" 
-                                :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'"
+                                :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                 {{ __('tasks.active') }}
                             </button>
@@ -176,51 +185,88 @@
                         <input type="hidden" name="is_autoprogrammable" :value="isAutoprogrammable ? 1 : 0">
                     </div>
 
-                    <div x-show="isAutoprogrammable" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4 pt-4 border-t border-violet-100 dark:border-violet-900/50">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1.5">{{ __('tasks.frequency') ?? 'Frecuencia' }}</label>
-                                <select name="autoprogram_settings[frequency]" x-model="frequency" class="w-full bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none">
+                    <div x-show="isAutoprogrammable" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-6 pt-6 border-t border-violet-100/50 dark:border-violet-500/10">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{ __('tasks.frequency') ?? 'Frecuencia' }}
+                                </label>
+                                <select name="autoprogram_settings[frequency]" x-model="frequency" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                     <option value="daily">{{ __('tasks.daily') ?? 'Diaria' }}</option>
                                     <option value="weekly">{{ __('tasks.weekly') ?? 'Semanal' }}</option>
                                     <option value="monthly">{{ __('tasks.monthly') ?? 'Mensual' }}</option>
                                     <option value="yearly">{{ __('tasks.yearly') ?? 'Anual' }}</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1.5">{{ __('tasks.interval') ?? 'Repetir cada' }}</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    {{ __('tasks.interval') ?? 'Repetir cada' }}
+                                </label>
                                 <div class="flex items-center gap-2">
-                                    <input type="number" name="autoprogram_settings[interval]" value="1" min="1" class="w-full bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none">
-                                    <span class="text-xs text-gray-500" x-text="labels[frequency]">días</span>
+                                    <input type="number" name="autoprogram_settings[interval]" value="1" min="1" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                    <span class="text-xs font-medium text-gray-500 w-12" x-text="labels[frequency]">días</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="space-y-3">
-                            <label class="block text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">{{ __('tasks.limit') ?? 'Terminar' }}</label>
-                            <div class="flex items-center gap-6">
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="autoprogram_settings[limit_type]" value="count" checked class="accent-violet-500">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('tasks.after_n_times') ?? 'Después de' }}</span>
-                                    <input type="number" name="autoprogram_settings[limit_value_count]" value="5" min="1" class="w-16 bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none">
+                            <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 11l7-7 7 7M5 19l7-7 7 7" />
+                                </svg>
+                                {{ __('tasks.limit') ?? 'Terminar' }}
+                            </label>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="relative flex items-center justify-center">
+                                        <input type="radio" name="autoprogram_settings[limit_type]" value="count" checked class="peer sr-only">
+                                        <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
+                                        <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.after_n_times') ?? 'Después de' }}</span>
+                                    <input type="number" name="autoprogram_settings[limit_value_count]" value="5" min="1" class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all">
                                     <span class="text-xs text-gray-500">{{ __('tasks.times') ?? 'veces' }}</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="autoprogram_settings[limit_type]" value="date" class="accent-violet-500">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('tasks.on_date') ?? 'El día' }}</span>
-                                    <input type="date" name="autoprogram_settings[limit_value_date]" class="bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="relative flex items-center justify-center">
+                                        <input type="radio" name="autoprogram_settings[limit_type]" value="date" class="peer sr-only">
+                                        <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
+                                        <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.on_date') ?? 'El día' }}</span>
+                                    <input type="date" name="autoprogram_settings[limit_value_date]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 </label>
                             </div>
                         </div>
 
                         <div class="flex flex-wrap gap-4 pt-2">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="autoprogram_settings[skip_weekends]" value="1" checked class="accent-violet-500 rounded">
-                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('tasks.skip_weekends') ?? 'Saltar fines de semana' }}</span>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <div class="relative flex items-center justify-center">
+                                    <input type="checkbox" name="autoprogram_settings[skip_weekends]" value="1" checked class="peer sr-only">
+                                    <div class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all flex items-center justify-center text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.skip_weekends') ?? 'Saltar fines de semana' }}</span>
                             </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="autoprogram_settings[sequential]" value="1" checked class="accent-violet-500 rounded">
-                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('tasks.sequential_dependencies') ?? 'Dependencias secuenciales (Gantt)' }}</span>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <div class="relative flex items-center justify-center">
+                                    <input type="checkbox" name="autoprogram_settings[sequential]" value="1" checked class="peer sr-only">
+                                    <div class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all flex items-center justify-center text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.sequential_dependencies') ?? 'Dependencias secuenciales (Gantt)' }}</span>
                             </label>
                         </div>
                     </div>
