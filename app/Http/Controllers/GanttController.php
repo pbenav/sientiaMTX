@@ -112,9 +112,9 @@ class GanttController extends Controller
             // Use the model's real progress (aggregate for templates, direct field for instances)
             $progress = $task->progress;
 
-            // Distinguish template vs instance in the label
-            if ($task->is_template) {
-                $label = '📋 ' . $task->title;
+            // Distinguish template vs instance vs recurring in the label
+            if ($task->is_template || $task->is_autoprogrammable) {
+                $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
             } elseif ($task->assignedUser) {
                 $label = '👤 ' . $task->assignedUser->name . ': ' . $task->title;
             } else {
@@ -127,7 +127,7 @@ class GanttController extends Controller
                 'start'        => $start->format('Y-m-d'),
                 'end'          => $end->format('Y-m-d'),
                 'progress'     => $progress,
-                'dependencies' => $task->parent_id ? (string) $task->parent_id : '',
+                'dependencies' => $task->metadata['dependency_id'] ?? ($task->parent_id ? (string) $task->parent_id : ''),
                 'custom_class' => $task->getGanttColorClass(),
                 'status'       => $task->status,
                 'priority'     => $task->priority,

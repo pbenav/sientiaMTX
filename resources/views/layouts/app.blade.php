@@ -64,6 +64,15 @@
 <body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased" x-data="{
     layout: '{{ auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal') }}',
     sidebarOpen: window.innerWidth > 1024,
+    init() {
+        window.addEventListener('resize', () => {
+            if (window.innerWidth < 1024) {
+                this.sidebarOpen = false;
+            } else if (this.layout === 'vertical' && window.innerWidth >= 1024) {
+                this.sidebarOpen = true;
+            }
+        });
+    },
     async updateLayout(newLayout) {
         this.layout = newLayout;
         document.cookie = 'layout=' + newLayout + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
@@ -351,8 +360,8 @@
     @endif
 
     <!-- Page content -->
-    <main id="mainContent" class="px-4 sm:px-6 lg:px-8 py-8"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '{{ $maxWidth }} mx-auto') : '{{ $maxWidth }} mx-auto'">
+    <main id="mainContent" class="px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300"
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 {{ $maxWidth }} mx-auto' : '{{ $maxWidth }} mx-auto') : '{{ $maxWidth }} mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"

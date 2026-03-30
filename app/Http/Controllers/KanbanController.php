@@ -55,7 +55,7 @@ class KanbanController extends Controller
             ->operationalFor($user, $team)
             ->where('is_archived', true)
             ->orderBy('updated_at', 'desc')
-            ->limit(50)
+            ->limit(env('KANBAN_COMPLETED_LIMIT', 10))
             ->get();
 
         return view('tasks.kanban', compact('team', 'columns', 'completedTasks'));
@@ -169,13 +169,39 @@ class KanbanController extends Controller
             'columns.*.id' => 'required|exists:kanban_columns,id',
             'columns.*.order_index' => 'required|integer',
         ]);
-
+    
         foreach ($validated['columns'] as $colData) {
             $column = $team->kanbanColumns()->find($colData['id']);
             if ($column) {
                 $column->update(['order_index' => $colData['order_index']]);
             }
         }
+    
+        return response()->json(['success' => true]);
+    }
+
+    public function destroyColumn(Request $request, Team $team, KanbanColumn $column)
+    {
+        if ($column->team_id !== $team->id) {
+            abort(403);
+        }
+
+        // Don't allow deleting default columns
+        if (in_array($column->type, ['todo', 'in_progress', 'done'])) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No puedes eliminar columnas base del sistema.'
+            ], 422);
+        }
+
+        // Move tasks to the first 'todo' column to prevent loss
+        $defaultColumn = $team->kanbanColumns()->where('type', 'todo')->orderBy('order_index', 'asc')->first();
+        
+        if ($defaultColumn) {
+            $column->tasks()->update(['kanban_column_id' => $defaultColumn->id]);
+        }
+
+        $column->delete();
 
         return response()->json(['success' => true]);
     }

@@ -44,8 +44,8 @@
 
     <div class="flex flex-col min-h-[calc(100vh-180px)] h-full">
         <!-- Kanban Board Container -->
-        <div class="flex-1 overflow-x-auto pb-10 pt-4 custom-scrollbar">
-            <div class="flex h-full gap-5 px-4 min-w-full items-stretch" id="kanban-board">
+        <div class="flex-1 overflow-x-auto pb-6 pt-4 custom-scrollbar overflow-y-hidden">
+            <div class="flex h-full gap-5 px-4 w-max min-w-full items-stretch pb-4" id="kanban-board">
                 @foreach($columns as $column)
                     <div class="flex-1 min-w-[340px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
                          style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40;"
@@ -67,9 +67,20 @@
                                         {{ count($column->tasks->filter(fn($t) => !$t->is_archived)) }}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-2" onclick="event.stopPropagation()">
-                                    <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                        <!-- Palette Icon -->
+                                        <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                                            <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                                <!-- Trash Icon for Custom Columns -->
+                                                @if($column->type === 'custom')
+                                                    <button onclick="deleteColumn({{ $column->id }})" 
+                                                            class="p-1 px-1.5 rounded-lg hover:bg-red-500 hover:text-white text-red-500/50 transition-all mr-1"
+                                                            title="Eliminar columna">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
+                                                <!-- Palette Icon -->
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-3" />
                                         </svg>
@@ -484,6 +495,36 @@
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
                             body: JSON.stringify({ title: result.value })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                    }
+                });
+            };
+
+            window.deleteColumn = function(columnId) {
+                Swal.fire({
+                    title: '¿Eliminar columna?',
+                    text: 'Las tareas de esta columna se moverán automáticamente a la columna "Pendiente".',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#ef4444',
+                    background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`{{ route('teams.kanban.columns.destroy', [$team, ':columnId']) }}`.replace(':columnId', columnId), {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
                         })
                         .then(response => response.json())
                         .then(data => {

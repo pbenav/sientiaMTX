@@ -114,6 +114,8 @@ class TaskController extends Controller
             'observations' => 'nullable|string',
             'parent_id' => 'nullable|exists:tasks,id',
             'visibility' => 'required|in:public,private',
+            'is_autoprogrammable' => 'nullable|boolean',
+            'autoprogram_settings' => 'nullable|array',
         ]);
 
         $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
@@ -150,7 +152,13 @@ class TaskController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'is_template' => $isTemplate,
             'visibility' => $validated['visibility'],
+            'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
+            'autoprogram_settings' => $request->input('autoprogram_settings'),
         ]);
+
+        if ($task->is_autoprogrammable) {
+            $task->generateOccurrences();
+        }
 
         if ($isTemplate) {
             $userIds = collect($validated['assigned_to'] ?? []);
@@ -302,6 +310,8 @@ class TaskController extends Controller
             'progress_percentage' => 'nullable|integer|min:0|max:100',
             'created_by_id' => 'nullable|exists:users,id',
             'visibility' => 'required|in:public,private',
+            'is_autoprogrammable' => 'nullable|boolean',
+            'autoprogram_settings' => 'nullable|array',
         ]);
 
         // Store old values for history
@@ -348,6 +358,8 @@ class TaskController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
             'visibility' => $validated['visibility'],
+            'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
+            'autoprogram_settings' => $request->input('autoprogram_settings'),
         ]);
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {

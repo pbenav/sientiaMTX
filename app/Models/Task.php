@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 use App\Traits\HandlesEisenhowerMatrix;
@@ -52,6 +53,8 @@ class Task extends Model
         'is_archived',
         'kanban_column_id',
         'kanban_order',
+        'is_autoprogrammable',
+        'autoprogram_settings',
     ];
  
     protected $casts = [
@@ -61,6 +64,8 @@ class Task extends Model
         'original_due_date' => 'datetime',
         'google_synced_at' => 'datetime',
         'is_archived' => 'boolean',
+        'is_autoprogrammable' => 'boolean',
+        'autoprogram_settings' => 'array',
     ];
 
     // Relationship: A task belongs to a team
@@ -320,6 +325,129 @@ class Task extends Model
         if ($column && $this->kanban_column_id !== $column->id) {
             $this->kanban_column_id = $column->id;
             $this->saveQuietly();
+        }
+    }
+
+    /**
+     * Generate occurrences for an autoprogrammable task.
+     */
+    public function generateOccurrences(): void
+    {
+        if (!$this->is_autoprogrammable || empty($this->autoprogram_settings)) {
+            return;
+        }
+
+        $settings = $this->autoprogram_settings;
+        $frequency = $settings['frequency'] ?? 'daily';
+        $interval = (int)($settings['interval'] ?? 1);
+        $limitType = $settings['limit_type'] ?? 'count';
+        $limitValue = $settings['limit_value'] ?? 1;
+        $sequential = $settings['sequential'] ?? false;
+        $skipWeekends = $settings['skip_weekends'] ?? false;
+
+        $currentDate = $this->scheduled_date ? $this->scheduled_date->copy() : now();
+        $baseDueDate = $this->due_date ? $this->due_date->copy() : $currentDate->copy()->addDay();
+        $durationInSeconds = $currentDate->diffInSeconds($baseDueDate);
+
+        $count = 0;
+        $maxCount = $limitType === 'count' ? (int)$limitValue : 100; // Hard cap for safety
+        $endDate = $limitType === 'date' ? Carbon::parse($limitValue) : null;
+
+        $previousOccurrenceId = null;
+
+        while (true) {
+            $count++;
+            if ($limitType === 'count' && $count > $maxCount) break;
+
+            if ($count > 1) {
+                switch ($frequency) {
+                    case 'daily':
+                        $currentDate = $currentDate->addDays($interval);
+                        break;
+                    case 'weekly':
+                        $currentDate = $currentDate->addWeeks($interval);
+                        break;
+                    case 'monthly':
+                        $currentDate = $currentDate->addMonths($interval);
+                        break;
+                    case 'yearly':
+                        $currentDate = $currentDate->addYears($interval);
+                        break;
+                }
+            }
+
+            if ($skipWeekends && $currentDate->isWeekend()) {
+                $currentDate = $currentDate->next(Carbon::MONDAY);
+            }
+
+            if ($endDate && $currentDate->greaterThan($endDate)) {
+                break;
+            }
+
+            // Create the Occurrence Task
+            $occurrence = $this->replicate(['uuid', 'google_task_id', 'google_synced_at']);
+            $occurrence->parent_id = $this->id;
+            $occurrence->is_autoprogrammable = false;
+            $occurrence->autoprogram_settings = null;
+            $occurrence->scheduled_date = $currentDate->copy();
+            $occurrence->due_date = $currentDate->copy()->addSeconds($durationInSeconds);
+            $occurrence->status = 'pending';
+            $occurrence->progress_percentage = 0;
+            
+            // Handle Sequential Dependency
+            if ($sequential && $previousOccurrenceId) {
+                $occurrence->metadata = array_merge($occurrence->metadata ?? [], ['dependency_id' => $previousOccurrenceId]);
+            }
+
+            $occurrence->save();
+            $previousOccurrenceId = $occurrence->id;
+
+            // Trigger Instance Generation if this occurrence is a template
+            if ($occurrence->is_template) {
+                $this->spawnInstancesForOccurrence($occurrence);
+            }
+        }
+    }
+
+    /**
+     * Helper to spawn individual instances for a specific occurrence.
+     */
+    protected function spawnInstancesForOccurrence(Task $occurrence): void
+    {
+        $assignments = $this->assignments()->get();
+        $userIds = collect();
+
+        foreach ($assignments as $assignment) {
+            if ($assignment->user_id) {
+                $userIds->push($assignment->user_id);
+            } elseif ($assignment->group_id) {
+                $group = Group::find($assignment->group_id);
+                if ($group) {
+                    $userIds = $userIds->merge($group->users->pluck('id'));
+                }
+            }
+        }
+
+        $userIds->push($this->created_by_id);
+        $uniqueUserIds = $userIds->unique();
+
+        foreach ($uniqueUserIds as $userId) {
+            $occurrence->children()->create([
+                'team_id' => $occurrence->team_id,
+                'title' => $occurrence->title,
+                'description' => $occurrence->description,
+                'priority' => $occurrence->priority,
+                'urgency' => $occurrence->urgency,
+                'status' => 'pending',
+                'scheduled_date' => $occurrence->scheduled_date,
+                'due_date' => $occurrence->due_date,
+                'original_due_date' => $occurrence->due_date,
+                'created_by_id' => $occurrence->created_by_id,
+                'parent_id' => $occurrence->id,
+                'is_template' => false,
+                'assigned_user_id' => $userId,
+                'visibility' => 'private',
+            ]);
         }
     }
 }

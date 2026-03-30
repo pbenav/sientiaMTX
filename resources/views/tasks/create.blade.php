@@ -143,6 +143,89 @@
                     <span class="text-gray-400 ml-1" id="qp-desc"></span>
                 </div>
 
+                <!-- Autoprogrammable (Recurrence) -->
+                <div x-data="{ 
+                    isAutoprogrammable: {{ old('is_autoprogrammable', 0) ? 'true' : 'false' }},
+                    frequency: '{{ old('autoprogram_settings.frequency', 'daily') }}',
+                    labels: {
+                        'daily': '{{ __("tasks.days") }}',
+                        'weekly': '{{ __("tasks.weeks") }}',
+                        'monthly': '{{ __("tasks.months") }}',
+                        'yearly': '{{ __("tasks.years") }}'
+                    }
+                }" class="bg-violet-50/50 dark:bg-violet-950/10 border border-violet-100 dark:border-violet-900/50 rounded-2xl p-5 transition-all">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.autoprogrammable') }}</span>
+                            <span class="text-[11px] text-gray-500">{{ __('tasks.autoprogrammable_hint') }}</span>
+                        </div>
+                        
+                        <!-- Segmented Control -->
+                        <div class="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl w-fit self-start sm:self-center">
+                            <button type="button" @click="isAutoprogrammable = false" 
+                                :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'"
+                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
+                                {{ __('tasks.disabled') }}
+                            </button>
+                            <button type="button" @click="isAutoprogrammable = true" 
+                                :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg' : 'text-gray-500 dark:text-gray-400'"
+                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
+                                {{ __('tasks.active') }}
+                            </button>
+                        </div>
+                        <input type="hidden" name="is_autoprogrammable" :value="isAutoprogrammable ? 1 : 0">
+                    </div>
+
+                    <div x-show="isAutoprogrammable" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4 pt-4 border-t border-violet-100 dark:border-violet-900/50">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1.5">{{ __('tasks.frequency') ?? 'Frecuencia' }}</label>
+                                <select name="autoprogram_settings[frequency]" x-model="frequency" class="w-full bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none">
+                                    <option value="daily">{{ __('tasks.daily') ?? 'Diaria' }}</option>
+                                    <option value="weekly">{{ __('tasks.weekly') ?? 'Semanal' }}</option>
+                                    <option value="monthly">{{ __('tasks.monthly') ?? 'Mensual' }}</option>
+                                    <option value="yearly">{{ __('tasks.yearly') ?? 'Anual' }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1.5">{{ __('tasks.interval') ?? 'Repetir cada' }}</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="autoprogram_settings[interval]" value="1" min="1" class="w-full bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none">
+                                    <span class="text-xs text-gray-500" x-text="labels[frequency]">días</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="block text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">{{ __('tasks.limit') ?? 'Terminar' }}</label>
+                            <div class="flex items-center gap-6">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="radio" name="autoprogram_settings[limit_type]" value="count" checked class="accent-violet-500">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('tasks.after_n_times') ?? 'Después de' }}</span>
+                                    <input type="number" name="autoprogram_settings[limit_value_count]" value="5" min="1" class="w-16 bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none">
+                                    <span class="text-xs text-gray-500">{{ __('tasks.times') ?? 'veces' }}</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="radio" name="autoprogram_settings[limit_type]" value="date" class="accent-violet-500">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('tasks.on_date') ?? 'El día' }}</span>
+                                    <input type="date" name="autoprogram_settings[limit_value_date]" class="bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-4 pt-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="autoprogram_settings[skip_weekends]" value="1" checked class="accent-violet-500 rounded">
+                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('tasks.skip_weekends') ?? 'Saltar fines de semana' }}</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="autoprogram_settings[sequential]" value="1" checked class="accent-violet-500 rounded">
+                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('tasks.sequential_dependencies') ?? 'Dependencias secuenciales (Gantt)' }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Dependency -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
