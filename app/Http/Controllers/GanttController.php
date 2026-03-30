@@ -83,6 +83,16 @@ class GanttController extends Controller
                     $q->where('is_template', false)->whereNull('parent_id');
                 }
             })
+            ->when($request->time_range && $request->time_range !== 'all', function ($q) use ($request) {
+                $months = (int) $request->time_range;
+                $q->whereBetween('scheduled_date', [
+                    now()->subMonths(1), // Muestra al menos 1 mes pasado
+                    now()->addMonths($months)
+                ]);
+            })
+            ->when($request->limit && $request->limit !== 'all', function ($q) use ($request) {
+                $q->limit((int) $request->limit);
+            })
             ->get();
 
         // Step 3: Optional quadrant filter (applied after expansion to keep siblings coherent)

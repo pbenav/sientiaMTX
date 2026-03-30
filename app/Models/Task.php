@@ -333,10 +333,6 @@ class Task extends Model
      */
     public function generateOccurrences(): void
     {
-        if (!$this->is_autoprogrammable || empty($this->autoprogram_settings)) {
-            return;
-        }
-
         $settings = $this->autoprogram_settings;
         $frequency = $settings['frequency'] ?? 'daily';
         $interval = (int)($settings['interval'] ?? 1);
@@ -344,69 +340,81 @@ class Task extends Model
         $limitValue = $settings['limit_value'] ?? 1;
         $sequential = $settings['sequential'] ?? false;
         $skipWeekends = $settings['skip_weekends'] ?? false;
+        $leadValue = (int)($settings['lead_value'] ?? 7);
+        $leadUnit = $settings['lead_unit'] ?? 'days';
 
-        $currentDate = $this->scheduled_date ? $this->scheduled_date->copy() : now();
-        $baseDueDate = $this->due_date ? $this->due_date->copy() : $currentDate->copy()->addDay();
-        $durationInSeconds = $currentDate->diffInSeconds($baseDueDate);
+        $lastOccurrence = $this->children()->whereNotNull('scheduled_date')->orderBy('scheduled_date', 'desc')->first();
+        
+        // If we already reached the limit based on count
+        if ($limitType === 'count' && $this->children()->count() >= (int)$limitValue) {
+            $this->update(['is_autoprogrammable' => false]);
+            return;
+        }
 
-        $count = 0;
-        $maxCount = $limitType === 'count' ? (int)$limitValue : 100; // Hard cap for safety
-        $endDate = $limitType === 'date' ? Carbon::parse($limitValue) : null;
-
-        $previousOccurrenceId = null;
-
-        while (true) {
-            $count++;
-            if ($limitType === 'count' && $count > $maxCount) break;
-
-            if ($count > 1) {
-                switch ($frequency) {
-                    case 'daily':
-                        $currentDate = $currentDate->addDays($interval);
-                        break;
-                    case 'weekly':
-                        $currentDate = $currentDate->addWeeks($interval);
-                        break;
-                    case 'monthly':
-                        $currentDate = $currentDate->addMonths($interval);
-                        break;
-                    case 'yearly':
-                        $currentDate = $currentDate->addYears($interval);
-                        break;
-                }
-            }
-
-            if ($skipWeekends && $currentDate->isWeekend()) {
-                $currentDate = $currentDate->next(Carbon::MONDAY);
-            }
-
-            if ($endDate && $currentDate->greaterThan($endDate)) {
-                break;
-            }
-
-            // Create the Occurrence Task
-            $occurrence = $this->replicate(['uuid', 'google_task_id', 'google_synced_at']);
-            $occurrence->parent_id = $this->id;
-            $occurrence->is_autoprogrammable = false;
-            $occurrence->autoprogram_settings = null;
-            $occurrence->scheduled_date = $currentDate->copy();
-            $occurrence->due_date = $currentDate->copy()->addSeconds($durationInSeconds);
-            $occurrence->status = 'pending';
-            $occurrence->progress_percentage = 0;
-            
-            // Handle Sequential Dependency
-            if ($sequential && $previousOccurrenceId) {
-                $occurrence->metadata = array_merge($occurrence->metadata ?? [], ['dependency_id' => $previousOccurrenceId]);
-            }
-
-            $occurrence->save();
-            $previousOccurrenceId = $occurrence->id;
-
-            // Trigger Instance Generation if this occurrence is a template
-            if ($occurrence->is_template) {
-                $this->spawnInstancesForOccurrence($occurrence);
+        // Calculate the Date for the next occurrence
+        if (!$lastOccurrence) {
+            // Use the master task date as the base for the first occurrence child
+            $currentDate = $this->scheduled_date ? $this->scheduled_date->copy() : now();
+        } else {
+            $currentDate = $lastOccurrence->scheduled_date->copy();
+            switch ($frequency) {
+                case 'daily': $currentDate->addDays($interval); break;
+                case 'weekly': $currentDate->addWeeks($interval); break;
+                case 'monthly': $currentDate->addMonths($interval); break;
+                case 'yearly': $currentDate->addYears($interval); break;
             }
         }
+
+        if ($skipWeekends && $currentDate->isWeekend()) {
+            $currentDate->next(Carbon::MONDAY);
+        }
+
+        // Check end date limit
+        if ($limitType === 'date' && $currentDate->greaterThan(Carbon::parse($limitValue))) {
+            $this->update(['is_autoprogrammable' => false]);
+            return;
+        }
+
+        // Duration relative to the master task
+        $masterScheduled = $this->scheduled_date ? $this->scheduled_date->copy() : now();
+        $masterDue = $this->due_date ? $this->due_date->copy() : $masterScheduled->copy()->addDay();
+        $durationInSeconds = $masterScheduled->diffInSeconds($masterDue);
+
+        // Create the Occurrence Task
+        $occurrence = $this->replicate(['uuid', 'google_task_id', 'google_synced_at']);
+        $occurrence->parent_id = $this->id;
+        $occurrence->is_autoprogrammable = false;
+        $occurrence->autoprogram_settings = null;
+        $occurrence->scheduled_date = $currentDate->copy();
+        $occurrence->due_date = $currentDate->copy()->addSeconds($durationInSeconds);
+        $occurrence->status = 'pending';
+        $occurrence->progress_percentage = 0;
+        
+        // Handle Sequential Dependency (Point to the last child in the chain)
+        if ($sequential && $lastOccurrence) {
+            $occurrence->metadata = array_merge($occurrence->metadata ?? [], ['dependency_id' => $lastOccurrence->id]);
+        }
+
+        $occurrence->save();
+
+        // Trigger Instance Generation if this occurrence is a template
+        if ($occurrence->is_template) {
+            $this->spawnInstancesForOccurrence($occurrence);
+        }
+
+        // Update next_occurrence_at for the master task to optimize the command
+        $nextDate = $currentDate->copy();
+        switch ($frequency) {
+            case 'daily': $nextDate->addDays($interval); break;
+            case 'weekly': $nextDate->addWeeks($interval); break;
+            case 'monthly': $nextDate->addMonths($interval); break;
+            case 'yearly': $nextDate->addYears($interval); break;
+        }
+        if ($skipWeekends && $nextDate->isWeekend()) $nextDate->next(Carbon::MONDAY);
+
+        $newSettings = $this->autoprogram_settings;
+        $newSettings['next_occurrence_at'] = $nextDate->toDateTimeString();
+        $this->update(['autoprogram_settings' => $newSettings]);
     }
 
     /**

@@ -99,7 +99,29 @@
                     </select>
                 </div>
 
-                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type']))
+                <!-- Time Range Filter -->
+                <div class="w-40">
+                    <select name="time_range" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="all" {{ request('time_range') === 'all' ? 'selected' : '' }}>{{ __('tasks.all_time') ?? 'Cualquier fecha' }}</option>
+                        <option value="1" {{ request('time_range') === '1' ? 'selected' : '' }}>{{ __('tasks.next_month') ?? 'Próximo mes' }}</option>
+                        <option value="3" {{ request('time_range') === '3' ? 'selected' : '' }}>{{ __('tasks.next_3_months') ?? 'Próximos 3 meses' }}</option>
+                        <option value="6" {{ request('time_range') === '6' ? 'selected' : '' }}>{{ __('tasks.next_6_months') ?? 'Próximos 6 meses' }}</option>
+                    </select>
+                </div>
+
+                <!-- Limit Filter -->
+                <div class="w-32">
+                    <select name="limit" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="all" {{ request('limit') === 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Sin límite' }}</option>
+                        <option value="25" {{ request('limit') === '25' ? 'selected' : '' }}>{{ __('tasks.top_25') ?? 'Top 25' }}</option>
+                        <option value="50" {{ request('limit') === '50' ? 'selected' : '' }}>{{ __('tasks.top_50') ?? 'Top 50' }}</option>
+                        <option value="100" {{ request('limit') === '100' ? 'selected' : '' }}>{{ __('tasks.top_100') ?? 'Top 100' }}</option>
+                    </select>
+                </div>
+
+                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type', 'time_range', 'limit']))
                     <a href="{{ route('teams.gantt', $team) }}"
                         class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
                         {{ __('tasks.clear_filters') }}

@@ -157,7 +157,11 @@ class TaskController extends Controller
         ]);
 
         if ($task->is_autoprogrammable) {
-            $task->generateOccurrences();
+            // JIT Generation will be handled by the artisan command
+            // We just ensure early metadata if needed
+            $settings = $task->autoprogram_settings;
+            $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
+            $task->update(['autoprogram_settings' => $settings]);
         }
 
         if ($isTemplate) {

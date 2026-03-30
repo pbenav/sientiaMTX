@@ -261,6 +261,29 @@
                         <div class="space-y-3">
                             <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ __('tasks.lead_time') ?? 'Antelación de creación (despertar)' }}
+                            </label>
+                            <div class="flex items-center gap-3">
+                                @php
+                                    $lVal = $task->autoprogram_settings['lead_value'] ?? 7;
+                                    $lUnit = $task->autoprogram_settings['lead_unit'] ?? 'days';
+                                @endphp
+                                <input type="number" name="autoprogram_settings[lead_value]" value="{{ $lVal }}" min="1" class="w-24 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                                <select name="autoprogram_settings[lead_unit]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                                    <option value="hours" {{ $lUnit === 'hours' ? 'selected' : '' }}>{{ __('tasks.hours') ?? 'Horas' }}</option>
+                                    <option value="days" {{ $lUnit === 'days' ? 'selected' : '' }}>{{ __('tasks.days') ?? 'Días' }}</option>
+                                    <option value="weeks" {{ $lUnit === 'weeks' ? 'selected' : '' }}>{{ __('tasks.weeks') ?? 'Semanas' }}</option>
+                                    <option value="months" {{ $lUnit === 'months' ? 'selected' : '' }}>{{ __('tasks.months') ?? 'Meses' }}</option>
+                                </select>
+                                <span class="text-[10px] text-gray-400 italic">{{ __('tasks.lead_time_hint') ?? 'antes de la fecha señalada' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 11l7-7 7 7M5 19l7-7 7 7" />
                                 </svg>
                                 {{ __('tasks.limit') ?? 'Terminar' }}

@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
         $schedule->command('tasks:check-urgent')->hourly();
+        $schedule->command('app:tasks-autoprogram-wakeup')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {

@@ -763,6 +763,37 @@
                 </div>
             @endif
 
+            <!-- Autoprogram Settings -->
+            @if ($task->is_autoprogrammable)
+                <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors border-l-4 border-l-violet-500 mb-4">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-bold">
+                            {{ __('tasks.autoprogram_active') ?? 'Autoprogramación JIT' }}
+                        </p>
+                        <div class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-gray-400">{{ __('tasks.frequency') }}:</span>
+                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ __('tasks.' . ($task->autoprogram_settings['frequency'] ?? 'daily')) }} (x{{ $task->autoprogram_settings['interval'] ?? 1 }})</span>
+                        </div>
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-gray-400">{{ __('tasks.lead_time') }}:</span>
+                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ $task->autoprogram_settings['lead_value'] ?? 7 }} {{ __('tasks.' . ($task->autoprogram_settings['lead_unit'] ?? 'days')) }}</span>
+                        </div>
+                        @if(isset($task->autoprogram_settings['next_occurrence_at']))
+                        <div class="flex justify-between text-[11px] pt-1 border-t border-gray-50 dark:border-gray-800">
+                            <span class="text-gray-400">{{ __('tasks.next_wakeup') ?? 'Próximo despertar' }}:</span>
+                            <span class="text-violet-600 dark:text-violet-400 font-bold">
+                                {{ \Carbon\Carbon::parse($task->autoprogram_settings['next_occurrence_at'])->format('d M Y') }}
+                            </span>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <!-- Assigned To -->
             @if ($task->assignedTo->isNotEmpty() || $task->assignedGroups->isNotEmpty())
                 <div
