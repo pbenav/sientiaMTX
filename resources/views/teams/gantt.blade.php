@@ -283,21 +283,45 @@
             display: none;
         }
 
-        .frappe-gantt .details-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            color: #111827;
-            padding: 12px;
-            font-size: 12px;
-            border: 1px solid #e5e7eb;
-            backdrop-filter: blur(8px);
+        /* Sobreescritura del contenedor BASE de Frappe Gantt */
+        .gantt-container .popup-wrapper {
+            background: #f9fafb !important; /* bg-gray-50 */
+            border-radius: 16px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            padding: 0 !important;
+            color: #111827 !important;
+            border: 1px solid #e5e7eb !important;
+            opacity: 1 !important;
+            min-width: 280px !important;
         }
 
-        .dark .frappe-gantt .details-container {
-            background: rgba(17, 24, 39, 0.95);
-            border-color: #374151;
-            color: #f3f4f6;
+        .dark .gantt-container .popup-wrapper {
+            background: #1f2937 !important; /* bg-gray-800 */
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+
+        /* Limpiamos el contenedor interno para que no duplique estilos */
+        .frappe-gantt .details-container {
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 16px !important;
+        }
+
+        /* Variables de Estilo Sientia */
+        :root {
+            --gantt-title: #111827;
+            --gantt-label: #6b7280;
+            --gantt-value: #374151;
+            --gantt-sep: #e5e7eb;
+        }
+
+        .dark {
+            --gantt-title: #FFFFFF;
+            --gantt-label: #9ca3af;
+            --gantt-value: #f3f4f6;
+            --gantt-sep: #4b5563;
         }
 
         /* Today line highlight */
@@ -405,16 +429,22 @@
                     ` : '';
 
                     return `
-                        <div class="p-1 min-w-[200px]">
-                            <h4 class="font-bold text-sm mb-1 truncate" title="${task.name}">${task.name}</h4>
+                        <div class="p-1 min-w-[240px]">
+                            <h4 class="font-black text-base mb-1 truncate" style="color: var(--gantt-title) !important;" title="${task.name}">${task.name}</h4>
                             ${parentHtml}
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColors[task.status]}">${statusLabels[task.status]}</span>
-                                <span class="text-[10px] text-gray-500">${task.progress}%</span>
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase ${statusColors[task.status]}" style="color: inherit !important;">${statusLabels[task.status]}</span>
+                                <span class="text-xs font-black" style="color: var(--gantt-label) !important;">${task.progress}%</span>
                             </div>
-                            <div class="text-[10px] text-gray-400 flex flex-col gap-0.5 border-t border-gray-100 dark:border-gray-800 pt-2 mt-2">
-                                <div class="flex justify-between"><span>📅 Inicio:</span> <span class="text-gray-600 dark:text-gray-300">${task.start}</span></div>
-                                <div class="flex justify-between"><span>🏁 Fin:</span> <span class="text-gray-600 dark:text-gray-300">${task.end}</span></div>
+                            <div class="text-xs flex flex-col gap-2 border-t pt-3 mt-1 font-bold" style="border-color: var(--gantt-sep) !important;">
+                                <div class="flex justify-between items-center" style="margin-bottom: 2px;">
+                                    <span style="color: var(--gantt-label) !important;">📅 INICIO</span> 
+                                    <span style="color: var(--gantt-value) !important; font-weight: 900; font-family: monospace;">${task.start}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span style="color: var(--gantt-label) !important;">🏁 FIN</span> 
+                                    <span style="color: var(--gantt-value) !important; font-weight: 900; font-family: monospace;">${task.end}</span>
+                                </div>
                             </div>
                         </div>
                     `;
