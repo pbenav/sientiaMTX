@@ -64,8 +64,8 @@
                 <!-- Shortcut to Settings -->
                 <p class="mt-6 text-xs text-gray-400 dark:text-gray-500">
                     {{ __('¿No quieres ver esto más?') }} 
-                    <a href="{{ route('settings.users') }}" class="text-violet-500 hover:text-violet-600 underline transition-colors">
-                        {{ __('Ajusta tus preferencias aquí.') }}
+                    <a href="{{ route('profile.edit') }}" class="text-violet-500 hover:text-violet-600 underline transition-colors">
+                        {{ __('Ajusta tus preferencias en tu perfil.') }}
                     </a>
                 </p>
             </div>
