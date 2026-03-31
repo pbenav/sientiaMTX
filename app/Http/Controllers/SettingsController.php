@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class SettingsController extends Controller
 {
