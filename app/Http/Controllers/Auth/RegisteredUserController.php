@@ -38,6 +38,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'locale' => ['required', 'string', 'in:en,es'],
+            'terms' => ['accepted'],
         ]);
 
         $isFirstUser = User::count() === 0;
@@ -49,6 +50,9 @@ class RegisteredUserController extends Controller
             'locale' => $request->locale,
             'is_admin' => $isFirstUser,
             'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
+            'privacy_policy_accepted_at' => now(),
+            'terms_accepted_at' => now(),
+            'marketing_accepted_at' => $request->has('marketing') ? now() : null,
         ]);
 
         // Process pending invitations

@@ -149,5 +149,19 @@
     "Disk Quota": "Cuota de Disco",
     "Global Settings": "Configuración Global",
     "Session Expiration (Minutes)": "Expiración de Sesión (Minutos)",
-    "Update all existing users to this new quota": "Actualizar a todos los usuarios existentes a esta nueva cuota"
+    "Update all existing users to this new quota": "Actualizar a todos los usuarios existentes a esta nueva cuota",
+    "Max Completed Tasks visible": "Máx. tareas completadas visibles",
+    "Legal Texts Configuration": "Configuración de Textos Legales",
+    "Legal Texts": "Textos Legales",
+    "Privacy Policy": "Política de Privacidad",
+    "Terms of Service": "Términos de Servicio",
+    "Cookie Policy": "Política de Cookies",
+    "Use the editor below to customize your privacy statement.": "Usa el editor para personalizar tu declaración de privacidad.",
+    "Define your terms and conditions for all users.": "Define tus términos y condiciones para todos los usuarios.",
+    "Explain how you use cookies and tracking technologies.": "Explica cómo utilizas las cookies y tecnologías de seguimiento.",
+    "Notify substantial changes": "Notificar cambios sustanciales",
+    "Marking this will require all users to re-accept terms upon their next login or dashboard access.": "Marcar esto requerirá que todos los usuarios vuelvan a aceptar los términos en su próximo inicio de sesión o acceso al tablero.",
+    "Save Legal Texts": "Guardar Textos Legales",
+    "Note on Customization": "Nota sobre la personalización",
+    "The changes made here will be reflected instantly on the public legal pages. If a field is left empty, the system will use the default template text.": "Los cambios realizados aquí se reflejarán instantáneamente en las páginas legales públicas. Si un campo se deja vacío, el sistema utilizará el texto de la plantilla predeterminada."
 }

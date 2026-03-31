@@ -36,6 +36,9 @@ class User extends Authenticatable implements HasLocalePreference
         'disk_quota',
         'disk_used',
         'show_welcome_messages',
+        'privacy_policy_accepted_at',
+        'terms_accepted_at',
+        'marketing_accepted_at',
     ];
 
     /**
@@ -61,6 +64,9 @@ class User extends Authenticatable implements HasLocalePreference
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'privacy_policy_accepted_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
+            'marketing_accepted_at' => 'datetime',
         ];
     }
 

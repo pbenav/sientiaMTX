@@ -8,12 +8,25 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumMessageController;
 use App\Http\Controllers\KanbanController;
+use App\Http\Controllers\LegalController;
+use App\Http\Controllers\GDPRController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// Legal pages
+Route::get('/privacy-policy', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('/terms-of-service', [LegalController::class, 'terms'])->name('terms');
+Route::get('/cookie-policy', [LegalController::class, 'cookies'])->name('cookies');
+
+// Legal Re-consent
+Route::middleware('auth')->group(function () {
+    Route::get('/legal/consent', [LegalController::class, 'reconsent'])->name('legal.reconsent');
+    Route::post('/legal/consent', [LegalController::class, 'acceptConsent'])->name('legal.accept');
+});
 
 // Team Invitation Acceptance
 Route::get('/invitations/{token}', [\App\Http\Controllers\TeamInvitationController::class, 'accept'])
@@ -40,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile/export', [GDPRController::class, 'export'])->name('profile.export');
 
     // Teams routes
     Route::resource('teams', TeamController::class);
@@ -116,6 +130,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'updateUser'])->name('settings.users.update');
         Route::delete('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'destroyUser'])->name('settings.users.destroy');
         Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\SettingsController::class, 'acceptUserInvitation'])->name('settings.users.accept-invitation');
+        
+        // Legal Settings
+        Route::get('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'legalSettings'])->name('settings.legal');
+        Route::post('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'updateLegalSettings'])->name('settings.legal.update');
     });
 
     // Google Services

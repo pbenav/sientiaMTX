@@ -20,7 +20,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'sientiaMTX') }} — @yield('title', __('navigation.dashboard'))</title>
-    <meta name="description" content="@yield('meta_description', 'sientiaMTX — Eisenhower Matrix task management for focused teams.')">
+    <meta name="description" content="@yield('meta_description', 'sientiaMTX — Smart project management with MTX, Gantt, and Kanban for focused teams.')">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -106,7 +106,7 @@
 
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
-        class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50 transition-colors">
+        class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50">
         <div class="{{ $maxWidth }} mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
@@ -365,7 +365,7 @@
     @endif
 
     <!-- Page content -->
-    <main id="mainContent" class="px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300"
+    <main id="mainContent" class="px-4 sm:px-6 lg:px-8 py-8"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 {{ $maxWidth }} mx-auto' : '{{ $maxWidth }} mx-auto') : '{{ $maxWidth }} mx-auto'">
 
         <!-- Header for Vertical Layout -->
@@ -408,7 +408,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-4 transition-all duration-300"
+    <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-4"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : ''">
         <div
             class="{{ $maxWidth }} mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -421,6 +421,10 @@
                     class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Licencia AGPL v3</a>
             </div>
             <div class="flex items-center space-x-4">
+                <a href="{{ route('privacy') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Privacidad') }}</a>
+                <a href="{{ route('terms') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Términos') }}</a>
+                <a href="{{ route('cookies') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Cookies') }}</a>
+                <span class="text-gray-300 dark:text-gray-700">|</span>
                 <a href="https://www.patreon.com/cw/sientia" target="_blank"
                     class="text-orange-500 hover:text-orange-600 font-bold transition-colors flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">

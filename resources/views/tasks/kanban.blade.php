@@ -45,10 +45,10 @@
     <div class="flex flex-col min-h-[calc(100vh-180px)] h-full">
         <!-- Kanban Board Container -->
         <div class="flex-1 overflow-x-auto pb-6 pt-4 custom-scrollbar overflow-y-hidden">
-            <div class="flex h-full gap-5 px-4 w-max min-w-full items-stretch pb-4" id="kanban-board">
+            <div class="flex h-full gap-6 px-6 min-w-full items-stretch pb-4" id="kanban-board">
                 @foreach($columns as $column)
-                    <div class="flex-1 min-w-[340px] flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
-                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40;"
+                    <div class="flex-1 flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
+                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40; flex: 1 1 0%; min-width: 350px; max-width: 600px;"
                          data-column-id="{{ $column->id }}">
                         <!-- Accent Top Bar -->
                         <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>

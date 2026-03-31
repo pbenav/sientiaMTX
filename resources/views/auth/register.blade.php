@@ -50,7 +50,40 @@
             <x-input-error :messages="$errors->get('locale')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <!-- GDPR Consents -->
+        <div class="mt-6 space-y-4">
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input id="terms" name="terms" type="checkbox" required
+                        class="w-5 h-5 text-violet-600 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-lg focus:ring-violet-500/20 focus:ring-4 transition-all cursor-pointer">
+                </div>
+                <div class="ml-3 text-sm">
+                    <label for="terms" class="text-gray-600 dark:text-gray-400">
+                        {{ __('Acepto los') }}
+                        <a href="{{ route('terms') }}" target="_blank"
+                            class="text-violet-600 dark:text-violet-400 font-semibold hover:underline">{{ __('Términos de Servicio') }}</a>
+                        {{ __('y la') }}
+                        <a href="{{ route('privacy') }}" target="_blank"
+                            class="text-violet-600 dark:text-violet-400 font-semibold hover:underline">{{ __('Política de Privacidad') }}</a>.
+                    </label>
+                    <x-input-error :messages="$errors->get('terms')" class="mt-1" />
+                </div>
+            </div>
+
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input id="marketing" name="marketing" type="checkbox"
+                        class="w-5 h-5 text-violet-600 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-lg focus:ring-violet-500/20 focus:ring-4 transition-all cursor-pointer">
+                </div>
+                <div class="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                    <label for="marketing">
+                        {{ __('Deseo recibir actualizaciones y noticias sobre Sientia (Opcional).') }}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
             <a class="underline text-sm text-gray-500 hover:text-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
                 href="{{ route('login') }}">
                 {{ __('Already registered?') }}

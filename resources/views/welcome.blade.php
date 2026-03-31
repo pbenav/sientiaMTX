@@ -706,13 +706,13 @@
             {{ app()->getLocale() === 'es' ? 'Productividad inteligente para equipos' : 'Smart productivity for teams' }}
         </div>
         <h1 class="hero-title anim anim-d2">
-            {{ app()->getLocale() === 'es' ? 'Decide qué importa.' : 'Decide what matters.' }}<br>
-            <span class="gradient">{{ app()->getLocale() === 'es' ? 'Haz que ocurra.' : 'Make it happen.' }}</span>
+            {{ app()->getLocale() === 'es' ? 'Mucho más que una matriz.' : 'More than just a matrix.' }}<br>
+            <span class="gradient">{{ app()->getLocale() === 'es' ? 'El centro de mando de tu equipo.' : 'Your team\'s command center.' }}</span>
         </h1>
         <p class="hero-sub anim anim-d3">
             {{ app()->getLocale() === 'es'
-                ? 'sientiaMTX organiza las tareas de tu equipo usando la Matriz de Eisenhower — el método de los líderes para separar lo urgente de lo importante.'
-                : 'sientiaMTX organizes your team\'s tasks using the Eisenhower Matrix — the leader\'s method to separate the urgent from the important.' }}
+                ? 'sientiaMTX combina la Matriz de Eisenhower, Diagramas de Gantt y Tableros Kanban en un ecosistema inteligente de productividad.'
+                : 'sientiaMTX combines the Eisenhower Matrix, Gantt Charts, and Kanban Boards in a smart productivity ecosystem.' }}
         </p>
         <div class="hero-ctas anim anim-d3">
             @auth
@@ -839,37 +839,37 @@
                                 '🎯',
                                 'bg:#312e81',
                                 'Matriz de Eisenhower',
-                                'Dashboard visual 2×2 con los 4 cuadrantes. Colores diferenciados y tareas clasificadas automáticamente.',
+                                'Priorización inteligente: separa lo urgente de lo importante para dar el primer paso con total claridad.',
+                            ],
+                            [
+                                '📈',
+                                'bg:#14532d',
+                                'Diagramas de Gantt',
+                                'Planificación a largo plazo: gestiona cronogramas complejos y dependencias de forma visual y sencilla.',
+                            ],
+                            [
+                                '📋',
+                                'bg:#164e63',
+                                'Método Kanban',
+                                'Flujo de trabajo ágil: controla el estado de tus tareas diarias moviéndolas a través de tu tablero personalizado.',
                             ],
                             [
                                 '👥',
-                                'bg:#164e63',
-                                'Equipos colaborativos',
-                                'Múltiples equipos, roles de coordinador/usuario y gestión de miembros desde el panel.',
-                            ],
-                            [
-                                '📅',
-                                'bg:#14532d',
-                                'Fechas y plazos',
-                                'Fechas programadas y de vencimiento con alertas visuales para tareas atrasadas.',
+                                'bg:#581c87',
+                                'Equipos y Foros',
+                                'Colaboración total: gestiona miembros, roles y mantén discusiones de equipo en tiempo real.',
                             ],
                             [
                                 '🌍',
-                                'bg:#581c87',
-                                'Multiidioma',
-                                'Interfaz en inglés y español. Selector de idioma en la cabecera, lista para más idiomas.',
-                            ],
-                            [
-                                '🕐',
-                                'bg:#7f1d1d',
-                                'Zonas horarias',
-                                'Cada usuario elige su zona horaria en las preferencias del perfil.',
+                                'bg:#1e3a5f',
+                                'Multiidioma y Horas',
+                                'Adaptabilidad global: soporte completo para múltiples idiomas y ajustes automáticos de zonas horarias.',
                             ],
                             [
                                 '📜',
-                                'bg:#1e3a5f',
-                                'Historial de cambios',
-                                'Registro automático de todos los cambios realizados sobre cada tarea.',
+                                'bg:#7f1d1d',
+                                'Auditoría y Control',
+                                'Historial completo de cambios por tarea para una trazabilidad perfecta de lo que ocurre en tu equipo.',
                             ],
                         ]
                         : [
@@ -877,37 +877,37 @@
                                 '🎯',
                                 'bg:#312e81',
                                 'Eisenhower Matrix',
-                                'Visual 2×2 dashboard with 4 colour-coded quadrants and automatic classification.',
+                                'Smart prioritization: separate urgent from important to take the first step with total clarity.',
+                            ],
+                            [
+                                '📈',
+                                'bg:#14532d',
+                                'Gantt Charts',
+                                'Long-term planning: manage complex timelines and dependencies visually and easily.',
+                            ],
+                            [
+                                '📋',
+                                'bg:#164e63',
+                                'Kanban Boards',
+                                'Agile workflow: control the state of your daily tasks by moving them through your custom board.',
                             ],
                             [
                                 '👥',
-                                'bg:#164e63',
-                                'Team collaboration',
-                                'Multiple teams, coordinator/user roles and member management from the panel.',
-                            ],
-                            [
-                                '📅',
-                                'bg:#14532d',
-                                'Dates & deadlines',
-                                'Scheduled and due dates with visual alerts for overdue tasks.',
+                                'bg:#581c87',
+                                'Teams & Forums',
+                                'Full collaboration: manage members, roles, and maintain team discussions in real time.',
                             ],
                             [
                                 '🌍',
-                                'bg:#581c87',
-                                'Multi-language',
-                                'Interface in English and Spanish. Language switcher in the header, ready for more.',
-                            ],
-                            [
-                                '🕐',
-                                'bg:#7f1d1d',
-                                'Timezones',
-                                'Each user sets their own timezone in profile preferences.',
+                                'bg:#1e3a5f',
+                                'Multi-language & Time',
+                                'Global adaptivity: full support for multiple languages and automatic timezone adjustments.',
                             ],
                             [
                                 '📜',
-                                'bg:#1e3a5f',
-                                'Change history',
-                                'Automatic record of all changes made to each task.',
+                                'bg:#7f1d1d',
+                                'Audit & Control',
+                                'Full task change history for a perfect traceability of what happens in your team.',
                             ],
                         ];
             @endphp
@@ -929,9 +929,9 @@
     <section style="padding-top:64px">
         <div class="cta-section">
             <div class="cta-glow"></div>
-            <h2>{{ app()->getLocale() === 'es' ? '¿Listo para enfocar a tu equipo?' : 'Ready to focus your team?' }}
+            <h2>{{ app()->getLocale() === 'es' ? '¿Listo para transformar tu productividad?' : 'Ready to transform your productivity?' }}
             </h2>
-            <p>{{ app()->getLocale() === 'es' ? 'Empieza a gestionar tareas con la Matriz de Eisenhower hoy mismo.' : 'Start managing tasks with the Eisenhower Matrix today.' }}
+            <p>{{ app()->getLocale() === 'es' ? 'Empieza a gestionar tus proyectos con MTX, Gantt y Kanban hoy mismo.' : 'Start managing your projects with MTX, Gantt, and Kanban today.' }}
             </p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative">
                 @auth
@@ -954,9 +954,21 @@
     <!-- FOOTER -->
     <footer>
         <p>sientia<strong>MTX</strong> v{{ config('app.version', '0.0.1') }} ·
-            {{ app()->getLocale() === 'es' ? 'Matriz de Eisenhower para equipos enfocados' : 'Eisenhower Matrix for focused teams' }}
+            {{ app()->getLocale() === 'es' ? 'MTX, Gantt y Kanban para equipos enfocados' : 'MTX, Gantt and Kanban for focused teams' }}
             · <a href="{{ route('login') }}"
                 style="color:#7c3aed">{{ app()->getLocale() === 'es' ? 'Entrar' : 'Login' }}</a></p>
+        
+        <div style="margin-top: 12px; display: flex; justify-content: center; gap: 16px; font-size: 11px; color: var(--muted);">
+            <a href="{{ route('privacy') }}" class="hover:text-white transition-colors">
+                {{ app()->getLocale() === 'es' ? 'Privacidad' : 'Privacy' }}
+            </a>
+            <a href="{{ route('terms') }}" class="hover:text-white transition-colors">
+                {{ app()->getLocale() === 'es' ? 'Términos' : 'Terms' }}
+            </a>
+            <a href="{{ route('cookies') }}" class="hover:text-white transition-colors">
+                {{ app()->getLocale() === 'es' ? 'Cookies' : 'Cookies' }}
+            </a>
+        </div>
     </footer>
 
 </body>
