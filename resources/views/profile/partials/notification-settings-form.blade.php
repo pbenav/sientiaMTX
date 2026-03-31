@@ -36,14 +36,17 @@
                 </div>
 
                 <!-- Web Push -->
-                <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 group hover:shadow-sm transition-all shadow-inner">
-                    <div class="flex-1">
-                        <label for="web_push" class="block text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
-                            {{ __('notifications.channel_web_push') }}
-                        </label>
+                <div class="flex flex-col gap-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 group hover:shadow-sm transition-all shadow-inner">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1">
+                            <label for="web_push" class="block text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
+                                {{ __('notifications.channel_web_push') }}
+                            </label>
+                        </div>
+                        <input type="checkbox" id="web_push" name="web_push" value="1" {{ ($settings['web_push'] ?? false) ? 'checked' : '' }}
+                            class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
                     </div>
-                    <input type="checkbox" id="web_push" name="web_push" value="1" {{ ($settings['web_push'] ?? false) ? 'checked' : '' }}
-                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+                    <div id="webpush-status" style="display:none"></div>
                 </div>
 
                 <!-- Telegram -->
@@ -170,22 +173,40 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const webPushCheckbox = document.getElementById('web_push');
-            
+            const statusMsg = document.getElementById('webpush-status');
+
+            // Comprobar soporte
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
                 if (webPushCheckbox) {
                     webPushCheckbox.disabled = true;
-                    webPushCheckbox.parentElement.parentElement.style.opacity = '0.5';
+                    webPushCheckbox.closest('.flex').style.opacity = '0.4';
+                    showStatus('⚠️ Tu navegador no soporta notificaciones push.', 'warning');
                 }
                 return;
             }
 
-            // Register Service Worker
+            // Registrar Service Worker y comprobar si ya hay suscripción activa
             navigator.serviceWorker.register('/sw.js').then(registration => {
-                console.log('SW registered');
+                return registration.pushManager.getSubscription();
+            }).then(subscription => {
+                if (subscription) {
+                    // Ya suscrito — asegurar que el checkbox refleja la realidad
+                    webPushCheckbox.dataset.subscribed = 'true';
+                } else {
+                    webPushCheckbox.dataset.subscribed = 'false';
+                }
+            }).catch(err => {
+                console.warn('SW registration failed:', err);
             });
 
             webPushCheckbox.addEventListener('change', function() {
                 if (this.checked) {
+                    // Comprobar si los permisos ya están denegados
+                    if (Notification.permission === 'denied') {
+                        this.checked = false;
+                        showStatus('🚫 Has bloqueado los permisos de notificación. Debes habilitarlos manualmente en la configuración del navegador (icono 🔒 en la barra de direcciones).', 'error');
+                        return;
+                    }
                     subscribeUser();
                 } else {
                     unsubscribeUser();
@@ -193,20 +214,41 @@
             });
 
             function subscribeUser() {
-                navigator.serviceWorker.ready.then(registration => {
-                    const subscribeOptions = {
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array("{{ config('webpush.vapid.public_key') }}")
-                    };
+                const vapidKey = "{{ config('webpush.vapid.public_key') }}";
 
-                    return registration.pushManager.subscribe(subscribeOptions);
-                }).then(pushSubscription => {
-                    return storeSubscription(pushSubscription);
-                }).then(response => {
-                    console.log('User is subscribed');
-                }).catch(err => {
-                    console.error('Failed to subscribe user: ', err);
+                if (!vapidKey || vapidKey.trim() === '') {
                     webPushCheckbox.checked = false;
+                    showStatus('⚠️ Las claves VAPID no están configuradas en el servidor. Contacta con el administrador.', 'error');
+                    return;
+                }
+
+                showStatus('⏳ Solicitando permiso de notificaciones...', 'info');
+
+                Notification.requestPermission().then(permission => {
+                    if (permission !== 'granted') {
+                        webPushCheckbox.checked = false;
+                        showStatus('❌ Permiso denegado. Activa las notificaciones en tu navegador.', 'error');
+                        return;
+                    }
+
+                    navigator.serviceWorker.ready.then(registration => {
+                        return registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidKey)
+                        });
+                    }).then(pushSubscription => {
+                        return storeSubscription(pushSubscription);
+                    }).then(response => {
+                        if (response && response.ok) {
+                            showStatus('✅ Notificaciones de navegador activadas.', 'success');
+                        } else {
+                            showStatus('⚠️ Suscripción guardada pero el servidor devolvió un error. Recarga la página.', 'warning');
+                        }
+                    }).catch(err => {
+                        console.error('Failed to subscribe:', err);
+                        webPushCheckbox.checked = false;
+                        showStatus('❌ Error al suscribirse: ' + err.message, 'error');
+                    });
                 });
             }
 
@@ -216,11 +258,12 @@
                 }).then(subscription => {
                     if (subscription) {
                         const endpoint = subscription.endpoint;
-                        subscription.unsubscribe();
-                        return deleteSubscription(endpoint);
+                        return subscription.unsubscribe().then(() => deleteSubscription(endpoint));
                     }
+                }).then(() => {
+                    showStatus('🔕 Notificaciones de navegador desactivadas.', 'info');
                 }).catch(err => {
-                    console.error('Failed to unsubscribe user: ', err);
+                    console.error('Failed to unsubscribe:', err);
                 });
             }
 
@@ -255,6 +298,19 @@
                     outputArray[i] = rawData.charCodeAt(i);
                 }
                 return outputArray;
+            }
+
+            function showStatus(msg, type) {
+                if (!statusMsg) return;
+                const colors = {
+                    success: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800',
+                    error:   'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+                    warning: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',
+                    info:    'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+                };
+                statusMsg.className = `mt-2 p-3 rounded-xl border text-xs font-medium ${colors[type] ?? colors.info}`;
+                statusMsg.textContent = msg;
+                statusMsg.style.display = 'block';
             }
         });
     </script>
