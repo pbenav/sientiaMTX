@@ -1,7 +1,8 @@
 @php
     $showWelcome = session('show_welcome_modal');
-    $greeting = \App\Models\MotivationalQuote::where('type', 'greeting')->inRandomOrder()->first();
-    $quote = \App\Models\MotivationalQuote::where('type', 'quote')->inRandomOrder()->first();
+    $messages = app(\App\Services\QuoteService::class)->getWelcomeMessage();
+    $greeting = $messages['greeting'];
+    $quote = $messages['quote'];
 @endphp
 
 @if ($showWelcome && $greeting && $quote)
