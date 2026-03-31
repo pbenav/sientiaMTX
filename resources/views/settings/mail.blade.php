@@ -58,7 +58,35 @@
                                         class="mt-1 block w-full" :value="old('KANBAN_COMPLETED_LIMIT', $limits['kanban_completed_limit'])" required min="1" max="100" />
                                     <x-input-error :messages="$errors->get('KANBAN_COMPLETED_LIMIT')" class="mt-2" />
                                 </div>
-                                
+
+                                <!-- Zona Horaria Global -->
+                                <div class="md:col-span-3" x-data="{ search: '', tz: '{{ old('site_timezone', $site_timezone) }}' }">
+                                    <x-input-label for="site_timezone" value="Zona Horaria Global del Sitio" />
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2 mt-0.5">
+                                        Zona horaria por defecto para todos los usuarios. Afecta a la visualización de fechas, horas y notificaciones.
+                                    </p>
+                                    <div class="relative">
+                                        <input type="text" x-model="search"
+                                            placeholder="Buscar zona horaria (ej: Madrid, London, UTC)..."
+                                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 focus:ring focus:ring-violet-500/20 transition-all mb-2" />
+                                        <select id="site_timezone" name="site_timezone" x-model="tz"
+                                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 transition-all cursor-pointer">
+                                            @foreach($timezones as $tz)
+                                                <option value="{{ $tz }}"
+                                                    x-show="search === '' || '{{ strtolower($tz) }}'.includes(search.toLowerCase())"
+                                                    :selected="tz === '{{ $tz }}'">
+                                                    {{ $tz }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <p class="mt-1.5 text-xs font-medium text-violet-600 dark:text-violet-400">
+                                        Zona activa actualmente: <span class="font-bold">{{ $site_timezone }}</span>
+                                        ({{ now()->format('d/m/Y H:i') }})
+                                    </p>
+                                    <x-input-error :messages="$errors->get('site_timezone')" class="mt-2" />
+                                </div>
+
                                 <div class="md:col-span-3 flex items-center gap-2">
                                     <input type="checkbox" id="update_existing_users" name="update_existing_users" value="1"
                                         class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-violet-600 shadow-sm focus:ring-violet-500">

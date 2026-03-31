@@ -36,14 +36,16 @@ class SettingsController extends Controller
                 'redirect_uri' => env('GOOGLE_REDIRECT_URI', route('google.callback')),
             ],
             'limits' => [
-                'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100), // In MB
-                'session_lifetime' => env('SESSION_LIFETIME', 120), // In minutes
-                'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10), // Max tasks in completed section
+                'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100),
+                'session_lifetime' => env('SESSION_LIFETIME', 120),
+                'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10),
             ],
             'telegram' => [
                 'bot_token' => config('services.telegram.bot_token'),
                 'webhook_info' => $this->getTelegramWebhookInfo(),
-            ]
+            ],
+            'site_timezone' => \App\Models\Setting::get('site_timezone', 'Europe/Madrid', true),
+            'timezones' => \DateTimeZone::listIdentifiers(),
         ]);
     }
 
@@ -215,9 +217,16 @@ class SettingsController extends Controller
             'KANBAN_COMPLETED_LIMIT' => 'sometimes|nullable|numeric|min:1|max:100',
             'TELEGRAM_BOT_TOKEN' => 'sometimes|nullable|string',
             'update_existing_users' => 'sometimes|boolean',
+            'site_timezone' => 'sometimes|nullable|timezone',
         ]);
 
         try {
+            // site_timezone va a la tabla settings (no al .env)
+            if (isset($data['site_timezone'])) {
+                \App\Models\Setting::set('site_timezone', $data['site_timezone']);
+                unset($data['site_timezone']);
+            }
+
             foreach ($data as $key => $value) {
                 $this->updateEnv($key, $value);
             }

@@ -110,7 +110,8 @@ class User extends Authenticatable implements HasLocalePreference
         $start = $settings['quiet_hours_start'] ?? '22:00';
         $end = $settings['quiet_hours_end'] ?? '08:00';
         
-        $now = now($this->timezone ?? 'Europe/Madrid')->format('H:i');
+        $siteTimezone = config('app.timezone', 'Europe/Madrid');
+        $now = now($this->timezone ?? $siteTimezone)->format('H:i');
 
         if ($start <= $end) {
             return $now >= $start && $now <= $end;
@@ -125,6 +126,7 @@ class User extends Authenticatable implements HasLocalePreference
      */
     public function defaultNotificationSettings(): array
     {
+        $siteTimezone = config('app.timezone', 'Europe/Madrid');
         return [
             'mail' => true,
             'web_push' => false,
@@ -134,7 +136,7 @@ class User extends Authenticatable implements HasLocalePreference
             'quiet_hours_start' => '22:00',
             'quiet_hours_end' => '08:00',
             'notify_before_hours' => 2,
-            'timezone' => 'Europe/Madrid',
+            'timezone' => $siteTimezone,
         ];
     }
 
