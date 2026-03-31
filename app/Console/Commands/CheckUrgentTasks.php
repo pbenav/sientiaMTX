@@ -29,7 +29,7 @@ class CheckUrgentTasks extends Command
      */
     public function handle()
     {
-        \Illuminate\Support\Facades\Log::info("DEBUG: === INICIO DE COMANDO TASKS:CHECK-URGENT (VERSIÓN PROPIETARIO) ===");
+        \Illuminate\Support\Facades\Log::info("PABLO_REGLA_NUMERO_1: EJECUTANDO COMANDO...");
         $this->info('Checking for urgent tasks with summary logic and quotes...');
 
         // 1. Collect all users and their tasks that need notification
