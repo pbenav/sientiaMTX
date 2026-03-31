@@ -38,7 +38,7 @@ class CheckUrgentTasks extends Command
         // 1. No completadas ni canceladas
         // 2. Con urgencia 'high' o 'critical'
         
-        $tasks = Task::with('assignedTo')
+        $tasks = Task::with(['assignedTo', 'creator'])
             ->whereIn('status', ['pending', 'in_progress'])
             ->whereNotNull('due_date')
             ->get();
