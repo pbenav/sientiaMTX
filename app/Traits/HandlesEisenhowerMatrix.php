@@ -14,8 +14,8 @@ trait HandlesEisenhowerMatrix
      */
     public function getQuadrant(Task $task): int
     {
-        $isPriority = in_array($task->priority, ['high', 'critical']);
-        $isUrgent = in_array($task->urgency, ['high', 'critical']);
+        $isPriority = in_array($task->priority, ['high', 'critical', 'medium']);
+        $isUrgent = in_array($task->urgency, ['high', 'critical', 'medium']);
 
         if ($isPriority && $isUrgent) {
             return 1; // Do First (Important + Urgent)
