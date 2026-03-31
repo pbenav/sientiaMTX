@@ -16,7 +16,7 @@
     <div x-data="{ mobileMenuOpen: false }" class="w-full">
 
         {{-- Mobile: Sidebar toggle button --}}
-        <div class="md:hidden mb-4">
+        <div class="mb-4" id="docs-mobile-toggle" style="display:none">
             <button @click="mobileMenuOpen = !mobileMenuOpen"
                 class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm w-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -49,7 +49,7 @@
         <div class="flex gap-6 items-start">
 
             {{-- Desktop Sidebar --}}
-            <aside class="hidden md:block w-52 lg:w-60 xl:w-64 shrink-0">
+            <aside id="docs-sidebar" style="width:220px;flex-shrink:0">
                 <div class="sticky top-24 space-y-3">
                     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
                         <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3 px-1">
@@ -121,19 +121,22 @@
 
     @push('scripts')
     <style>
+        /* Responsive sidebar */
+        @media (max-width: 767px) {
+            #docs-sidebar { display: none !important; }
+            #docs-mobile-toggle { display: block !important; }
+        }
         /* Fix table overflow on small screens */
         .prose table {
             display: block;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        /* Fix pre/code overflow */
         .prose pre {
             overflow-x: auto;
         }
-        /* Print styles */
         @media print {
-            aside, nav, footer, button { display: none !important; }
+            #docs-sidebar, #docs-mobile-toggle, nav, footer, button { display: none !important; }
             .prose { max-width: 100% !important; }
         }
     </style>
