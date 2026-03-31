@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Task;
 use App\Notifications\TaskReminderNotification;
 use App\Notifications\TaskSummaryNotification;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Notification;
 
 class CheckUrgentTasks extends Command
 {
@@ -29,76 +29,88 @@ class CheckUrgentTasks extends Command
      */
     public function handle()
     {
-        $this->info('Checking for urgent tasks with summary logic and quotes...');
+        $this->info('Checking for urgent tasks...');
+        $this->line('Server now (UTC): ' . now()->toDateTimeString());
 
-        // 1. Collect all users and their tasks that need notification
+        // 1. Recopilar usuarios y sus tareas que necesitan notificación
         $userTasks = [];
 
-        // Identificamos tareas:
-        // 1. No completadas ni canceladas
-        // 2. Con urgencia 'high' o 'critical'
-        
-        $tasks = Task::with(['assignedTo', 'creator'])
+        $tasks = Task::with(['assignedTo', 'assignedUser', 'creator'])
             ->whereIn('status', ['pending', 'in_progress'])
             ->whereNotNull('due_date')
+            ->whereIn('urgency', ['high', 'critical'])
+            ->where('due_date', '>', now()) // Solo tareas que aún no han vencido
             ->get();
 
+        $this->line("Tareas urgentes activas no vencidas: {$tasks->count()}");
+
         foreach ($tasks as $task) {
-
-            if (!in_array($task->urgency, ['high', 'critical'])) {
-                continue;
-            }
-
-            if ($task->due_date->isPast()) {
-                continue;
-            }
-
+            // Construir lista de destinatarios:
+            // 1. Usuarios asignados via tabla pivote (task_assignments)
             $usersToNotify = $task->assignedTo->collect();
+
+            // 2. Usuario asignado directamente via assigned_user_id (tareas individuales)
+            if ($task->assignedUser && !$usersToNotify->contains('id', $task->assigned_user_id)) {
+                $usersToNotify->push($task->assignedUser);
+            }
+
+            // 3. Creador (si no está ya incluido)
             if ($task->creator && !$usersToNotify->contains('id', $task->created_by_id)) {
                 $usersToNotify->push($task->creator);
             }
 
             if ($usersToNotify->isEmpty()) {
+                $this->line("  [skip] ID:{$task->id} '{$task->title}' — sin usuarios a notificar");
                 continue;
             }
 
-            foreach ($uniqueUsers = $usersToNotify->unique('id') as $user) {
+            foreach ($usersToNotify->unique('id') as $user) {
                 $settings = $user->notification_settings ?? $user->defaultNotificationSettings();
-                $leadHours = (int) ($settings['notify_before_hours'] ?? 24);
-                $diffHours = $task->due_date->diffInHours(now());
-                
-                // Si la tarea vence dentro del rango de antelación del usuario
-                if ($diffHours <= $leadHours) {
+                $leadHours = (int) ($settings['notify_before_hours'] ?? 2);
+
+                // Horas restantes hasta vencimiento (positivo = futuro)
+                $diffHours = now()->diffInHours($task->due_date, false);
+
+                $this->line("  ID:{$task->id} '{$task->title}' — due={$task->due_date} (UTC) restanH={$diffHours} leadH={$leadHours} user={$user->name}");
+
+                // Solo notificar si está dentro del margen de antelación del usuario
+                if ($diffHours >= 0 && $diffHours <= $leadHours) {
                     $metadata = $task->metadata ?? [];
                     $lastNotified = $metadata['last_reminder_sent_at'] ?? null;
 
-                    // Evitamos duplicar recordatorios en menos de 12 horas
-                    if (!$lastNotified || now()->parse($lastNotified)->addHours(12)->isPast()) {
-                        $userTasks[$user->id]['user'] = $user;
-                        $userTasks[$user->id]['tasks'][] = $task;
+                    // Evitar duplicados en menos de 12 horas
+                    $alreadyNotified = $lastNotified && Carbon::parse($lastNotified)->addHours(12)->isFuture();
+
+                    if ($alreadyNotified) {
+                        $this->line("    [skip] ya notificado recientemente ({$lastNotified})");
+                        continue;
                     }
+
+                    $userTasks[$user->id]['user'] = $user;
+                    $userTasks[$user->id]['tasks'][] = $task;
+                    $this->line("    [✓] Añadido para notificación");
+                } else {
+                    $this->line("    [skip] restan {$diffHours}h > leadH {$leadHours}h — fuera del margen");
                 }
             }
         }
 
-        // 2. Notify users using summary logic
+        // 2. Notificar con lógica de resumen
         $count = 0;
         foreach ($userTasks as $userId => $data) {
             $user = $data['user'];
             $tasksToNotify = $data['tasks'];
 
             if (count($tasksToNotify) === 1) {
-                // Single notification
                 $task = $tasksToNotify[0];
                 $user->notify(new TaskReminderNotification($task));
-                
+
                 $metadata = $task->metadata ?? [];
                 $metadata['last_reminder_sent_at'] = now()->toDateTimeString();
                 $task->update(['metadata' => $metadata]);
             } else {
-                // Summary/Batch notification
                 $user->notify(new TaskSummaryNotification($tasksToNotify));
-                
+
                 foreach ($tasksToNotify as $t) {
                     $metadata = $t->metadata ?? [];
                     $metadata['last_reminder_sent_at'] = now()->toDateTimeString();
@@ -108,6 +120,6 @@ class CheckUrgentTasks extends Command
             $count += count($tasksToNotify);
         }
 
-        $this->info("Processed notifications for {$count} task assignments.");
+        $this->info("Procesadas notificaciones para {$count} asignaciones.");
     }
 }

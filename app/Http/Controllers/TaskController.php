@@ -144,25 +144,15 @@ class TaskController extends Controller
             }
         }
 
-        $userTimezone = auth()->user()->timezone ?? config('app.timezone');
-        
-        $scheduledDate = $validated['scheduled_date'] 
-            ? \Carbon\Carbon::parse($validated['scheduled_date'], $userTimezone)->setTimezone('UTC') 
-            : null;
-            
-        $dueDate = $validated['due_date'] 
-            ? \Carbon\Carbon::parse($validated['due_date'], $userTimezone)->setTimezone('UTC') 
-            : null;
-
         $task = $team->tasks()->create([
             'title' => $validated['title'],
             'description' => $validated['description'],
             'priority' => $validated['priority'],
             'urgency' => $validated['urgency'],
             'status' => 'pending',
-            'scheduled_date' => $scheduledDate,
-            'due_date' => $dueDate,
-            'original_due_date' => $dueDate,
+            'scheduled_date' => $validated['scheduled_date'],
+            'due_date' => $validated['due_date'],
+            'original_due_date' => $validated['due_date'],
             'created_by_id' => auth()->id(),
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
@@ -366,24 +356,14 @@ class TaskController extends Controller
             $validated['visibility'] = $visibility;
         }
 
-        $userTimezone = auth()->user()->timezone ?? config('app.timezone');
-        
-        $scheduledDate = $request->has('scheduled_date') 
-            ? ($validated['scheduled_date'] ? \Carbon\Carbon::parse($validated['scheduled_date'], $userTimezone)->setTimezone('UTC') : null) 
-            : $task->scheduled_date;
-            
-        $dueDate = $request->has('due_date') 
-            ? ($validated['due_date'] ? \Carbon\Carbon::parse($validated['due_date'], $userTimezone)->setTimezone('UTC') : null) 
-            : $task->due_date;
-
         $task->update([
             'title' => $validated['title'],
             'description' => $validated['description'],
             'priority' => $validated['priority'],
             'urgency' => $validated['urgency'],
             'status' => $validated['status'],
-            'scheduled_date' => $scheduledDate,
-            'due_date' => $dueDate,
+            'scheduled_date' => $validated['scheduled_date'],
+            'due_date' => $validated['due_date'],
             'observations' => $validated['observations'],
             'parent_id' => $validated['parent_id'] ?? null,
             'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
