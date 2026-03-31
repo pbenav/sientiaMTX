@@ -337,25 +337,26 @@
                                 </div>
                             </div>
 
-                            <div class="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-gray-800">
-                                <div class="flex gap-4">
-                                    <button type="button" x-data=""
-                                        x-on:click.prevent="$dispatch('open-modal', 'test-telegram-modal')"
-                                        class="text-sm font-bold text-sky-600 dark:text-sky-400 hover:text-sky-500 transition-colors uppercase tracking-widest">{{ __('notifications.test_telegram') }}</button>
-                                    
-                                    <form method="POST" action="{{ route('settings.telegram.register') }}" class="inline">
-                                        @csrf
-                                        <button type="submit"
-                                            class="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors uppercase tracking-widest">{{ __('notifications.register_webhook') }}</button>
-                                    </form>
-                                </div>
-
+                            <div class="flex items-center justify-end pt-6 border-t border-gray-100 dark:border-gray-800">
                                 <x-primary-button
                                     class="px-8 py-3 bg-sky-600 hover:bg-sky-500 focus:bg-sky-500 active:bg-sky-700">
                                     {{ __('notifications.save_telegram_config') }}
                                 </x-primary-button>
                             </div>
                         </form>
+
+                        {{-- Secondary Actions (placed outside to avoid nested forms) --}}
+                        <div class="mt-4 flex items-center gap-4">
+                            <button type="button" x-data=""
+                                x-on:click.prevent="$dispatch('open-modal', 'test-telegram-modal')"
+                                class="text-sm font-bold text-sky-600 dark:text-sky-400 hover:text-sky-500 transition-colors uppercase tracking-widest">{{ __('notifications.test_telegram') }}</button>
+                            
+                            <form method="POST" action="{{ route('settings.telegram.register') }}">
+                                @csrf
+                                <button type="submit"
+                                    class="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors uppercase tracking-widest">{{ __('notifications.register_webhook') }}</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
