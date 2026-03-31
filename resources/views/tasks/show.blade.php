@@ -220,8 +220,8 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
                                 @foreach ($instances as $inst)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                                        <td class="px-4 py-3">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
+                                        <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                                             <div class="flex items-center gap-3">
                                                 <div
                                                     class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
@@ -352,7 +352,7 @@
                             {{ __('tasks.history') }}</h3>
                     </div>
                     <div class="divide-y divide-gray-50 dark:divide-gray-800 max-h-[250px] overflow-y-auto">
-                        @foreach ($task->histories->take(20) as $h)
+                        @foreach ($task->histories->sortByDesc('created_at')->take(20) as $h)
                             <div class="px-5 py-3 text-xs flex items-center justify-between gap-4">
                                 <div class="flex items-center gap-2 min-w-0">
                                     <div
@@ -806,14 +806,30 @@
                             </p>
                             <div class="space-y-2.5">
                                 @foreach ($task->assignedTo as $u)
-                                    <div class="flex items-center gap-2.5">
-                                        <div
-                                            class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0">
-                                            {{ strtoupper(substr($u->name, 0, 2)) }}
+                                    @php
+                                        $instance = $task->is_template
+                                            ? $task->instances()->where('assigned_user_id', $u->id)->first()
+                                            : null;
+                                    @endphp
+                                    @if($instance)
+                                        <a href="{{ route('teams.tasks.show', [$team, $instance]) }}" class="flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1.5 -ml-1.5 rounded-lg transition-colors group">
+                                            <div
+                                                class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors">
+                                                {{ strtoupper(substr($u->name, 0, 2)) }}
+                                            </div>
+                                            <span
+                                                class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $u->name }}</span>
+                                        </a>
+                                    @else
+                                        <div class="flex items-center gap-2.5 p-1.5 -ml-1.5">
+                                            <div
+                                                class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-500 dark:text-gray-400 shrink-0">
+                                                {{ strtoupper(substr($u->name, 0, 2)) }}
+                                            </div>
+                                            <span
+                                                class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
                                         </div>
-                                        <span
-                                            class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
-                                    </div>
+                                    @endif
                                 @endforeach
                             </div>
                         </div>
