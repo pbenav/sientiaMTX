@@ -213,7 +213,7 @@ class SettingsController extends Controller
                 \App\Models\User::query()->update(['disk_quota' => $newQuotaBytes]);
             }
 
-            return back()->with('success', __('Mail settings updated successfully.'));
+            return back()->with('success', __('notifications.config_saved'));
         } catch (\Exception $e) {
             return back()->with('error', __('Error updating .env file: ') . $e->getMessage());
         }
@@ -270,7 +270,7 @@ class SettingsController extends Controller
             Setting::set('legal_updated_at', now()->toDateTimeString());
         }
 
-        return back()->with('success', __('Legal texts updated successfully.'));
+        return back()->with('success', __('notifications.config_saved'));
     }
 
     /**

@@ -50,4 +50,5 @@ return [
     'register_webhook' => 'Vincular App con Bot',
     'webhook_registered_success' => '¡App vinculada con Telegram! Webhook registrado en: :url',
     'webhook_registered_error' => 'Error al vincular con Telegram: :error',
+    'config_saved' => 'Configuración guardada correctamente.',
 ];
