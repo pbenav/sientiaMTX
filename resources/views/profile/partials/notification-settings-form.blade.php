@@ -270,7 +270,7 @@
             function storeSubscription(subscription) {
                 return fetch("{{ route('webpush.subscribe') }}", {
                     method: 'POST',
-                    body: JSON.stringify(subscription),
+                    body: JSON.stringify(subscription.toJSON()),
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
