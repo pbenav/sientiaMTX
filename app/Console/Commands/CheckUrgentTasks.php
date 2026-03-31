@@ -44,26 +44,21 @@ class CheckUrgentTasks extends Command
             ->get();
 
         foreach ($tasks as $task) {
-            \Illuminate\Support\Facades\Log::info("Analizando tarea [ID: {$task->id}]: {$task->title}");
 
             if (!in_array($task->urgency, ['high', 'critical'])) {
-                \Illuminate\Support\Facades\Log::info("  - Ignorada: Urgencia '{$task->urgency}' no es alta/crítica.");
                 continue;
             }
 
             if ($task->due_date->isPast()) {
-                \Illuminate\Support\Facades\Log::info("  - Ignorada: Ya ha vencido ({$task->due_date}).");
                 continue;
             }
 
             $usersToNotify = $task->assignedTo->collect();
             if ($task->creator && !$usersToNotify->contains('id', $task->created_by_id)) {
                 $usersToNotify->push($task->creator);
-                \Illuminate\Support\Facades\Log::info("  - Añadiendo al creador ({$task->creator->name}) a la lista de avisos.");
             }
 
             if ($usersToNotify->isEmpty()) {
-                \Illuminate\Support\Facades\Log::info("  - Ignorada: No hay usuarios asignados ni creador válido.");
                 continue;
             }
 
@@ -72,8 +67,6 @@ class CheckUrgentTasks extends Command
                 $leadHours = (int) ($settings['notify_before_hours'] ?? 24);
                 $diffHours = $task->due_date->diffInHours(now());
                 
-                \Illuminate\Support\Facades\Log::info("  - Usuario {$user->name} (Antelación: {$leadHours}h, Faltan: {$diffHours}h)");
-
                 // Si la tarea vence dentro del rango de antelación del usuario
                 if ($diffHours <= $leadHours) {
                     $metadata = $task->metadata ?? [];
@@ -83,12 +76,7 @@ class CheckUrgentTasks extends Command
                     if (!$lastNotified || now()->parse($lastNotified)->addHours(12)->isPast()) {
                         $userTasks[$user->id]['user'] = $user;
                         $userTasks[$user->id]['tasks'][] = $task;
-                        \Illuminate\Support\Facades\Log::info("  - ¡NOTIFICACIÓN PROGRAMADA!");
-                    } else {
-                        \Illuminate\Support\Facades\Log::info("  - Ignorada: Ya notificada hace poco ({$lastNotified}).");
                     }
-                } else {
-                    \Illuminate\Support\Facades\Log::info("  - Ignorada: Falta demasiado tiempo para el aviso.");
                 }
             }
         }
