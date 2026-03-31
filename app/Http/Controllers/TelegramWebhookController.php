@@ -14,6 +14,8 @@ class TelegramWebhookController extends Controller
     public function handle(Request $request)
     {
         $update = $request->all();
+        
+        Log::info('Telegram Update Received:', $update);
 
         // Basic validation
         if (!isset($update['message']['chat']['id'])) {
