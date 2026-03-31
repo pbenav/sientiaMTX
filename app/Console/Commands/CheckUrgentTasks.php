@@ -29,7 +29,6 @@ class CheckUrgentTasks extends Command
      */
     public function handle()
     {
-        \Illuminate\Support\Facades\Log::info("PABLO_REGLA_NUMERO_1: EJECUTANDO COMANDO...");
         $this->info('Checking for urgent tasks with summary logic and quotes...');
 
         // 1. Collect all users and their tasks that need notification
@@ -54,11 +53,6 @@ class CheckUrgentTasks extends Command
 
             if ($task->due_date->isPast()) {
                 \Illuminate\Support\Facades\Log::info("  - Ignorada: Ya ha vencido ({$task->due_date}).");
-                continue;
-            }
-
-            if ($task->assignedTo->isEmpty()) {
-                \Illuminate\Support\Facades\Log::info("  - Ignorada: No tiene usuarios asignados.");
                 continue;
             }
 
