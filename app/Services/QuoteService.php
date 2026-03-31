@@ -64,7 +64,6 @@ class QuoteService
                     );
 
                     return $quote;
-                }
             }
         } catch (\Exception $e) {
             Log::warning('Could not fetch external quote: ' . $e->getMessage());
