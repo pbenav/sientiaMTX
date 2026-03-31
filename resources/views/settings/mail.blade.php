@@ -303,7 +303,7 @@
                                 </span>
                             </div>
                             <div class="space-y-1">
-                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ $telegram['webhook_info']['url'] ?: 'No registrada' }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ ($telegram['webhook_info']['url'] ?? null) ?: 'No registrada' }}</p>
                                 @if(isset($telegram['webhook_info']['last_error_message']))
                                     <p class="text-xs text-red-600 dark:text-red-400 font-mono mt-2"><strong>Último error:</strong> {{ $telegram['webhook_info']['last_error_message'] }}</p>
                                     <p class="text-[10px] text-gray-500 mt-1 italic">{{ __('notifications.webhook_troubleshoot') }}</p>
