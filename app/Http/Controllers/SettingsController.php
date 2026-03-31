@@ -303,7 +303,7 @@ class SettingsController extends Controller
             'test_chat_id' => 'required|string',
         ]);
 
-        $token = env('TELEGRAM_BOT_TOKEN');
+        $token = config('services.telegram.bot_token');
 
         if (!$token) {
             return back()->with('error', __('notifications.telegram_bot_token_missing'));
@@ -330,7 +330,7 @@ class SettingsController extends Controller
      */
     public function registerTelegramWebhook()
     {
-        $token = env('TELEGRAM_BOT_TOKEN');
+        $token = config('services.telegram.bot_token');
 
         if (!$token) {
             return back()->with('error', __('notifications.telegram_bot_token_missing'));

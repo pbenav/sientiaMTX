@@ -38,7 +38,7 @@ class TelegramWebhookController extends Controller
      */
     protected function sendMessage($chatId, $text)
     {
-        $token = env('TELEGRAM_BOT_TOKEN');
+        $token = config('services.telegram.bot_token');
 
         if (!$token) {
             Log::error('Telegram Bot Token missing for webhook response.');
