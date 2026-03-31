@@ -93,21 +93,32 @@
         <div class="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10 shrink-0">
             <form action="{{ route('legal.accept') }}" method="POST" class="flex flex-col md:flex-row items-center justify-between gap-6">
                 @csrf
-                <div class="flex items-start gap-3 flex-1">
-                    <div class="pt-0.5">
-                        <input type="checkbox" name="accept" id="accept" required class="w-5 h-5 rounded-lg border-gray-300 text-violet-600 focus:ring-violet-500 transition-all cursor-pointer">
+                <div class="flex flex-col gap-4 flex-1">
+                    <div class="flex items-start gap-3">
+                        <div class="pt-0.5">
+                            <input type="checkbox" name="accept" id="accept" required class="w-5 h-5 rounded-lg border-gray-300 text-violet-600 focus:ring-violet-500 transition-all cursor-pointer">
+                        </div>
+                        <label for="accept" class="text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer">
+                            {{ __('He leído y acepto los') }}
+                            <a href="{{ route('terms') }}" target="_blank" class="font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 underline decoration-gray-200 dark:decoration-gray-700 underline-offset-4">{{ __('Términos de Servicio') }}</a>,
+                            {{ __('la') }}
+                            <a href="{{ route('privacy') }}" target="_blank" class="font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 underline decoration-gray-200 dark:decoration-gray-700 underline-offset-4">{{ __('Política de Privacidad') }}</a>
+                            {{ __('y la') }}
+                            <a href="{{ route('cookies') }}" target="_blank" class="font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 underline decoration-gray-200 dark:decoration-gray-700 underline-offset-4">{{ __('Política de Cookies') }}</a>.
+                            @error('accept')
+                                <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p>
+                            @enderror
+                        </label>
                     </div>
-                    <label for="accept" class="text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer">
-                        {{ __('He leído y acepto los') }}
-                        <a href="{{ route('terms') }}" target="_blank" class="font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 underline decoration-gray-200 dark:decoration-gray-700 underline-offset-4">{{ __('Términos de Servicio') }}</a>,
-                        {{ __('la') }}
-                        <a href="{{ route('privacy') }}" target="_blank" class="font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 underline decoration-gray-200 dark:decoration-gray-700 underline-offset-4">{{ __('Política de Privacidad') }}</a>
-                        {{ __('y la') }}
-                        <a href="{{ route('cookies') }}" target="_blank" class="font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 underline decoration-gray-200 dark:decoration-gray-700 underline-offset-4">{{ __('Política de Cookies') }}</a>.
-                        @error('accept')
-                            <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p>
-                        @enderror
-                    </label>
+
+                    <div class="flex items-start gap-3">
+                        <div class="pt-0.5">
+                            <input type="checkbox" name="marketing" id="marketing" class="w-5 h-5 rounded-lg border-gray-300 text-violet-600 focus:ring-violet-500 transition-all cursor-pointer">
+                        </div>
+                        <label for="marketing" class="text-sm font-medium text-gray-500 dark:text-gray-400 cursor-pointer">
+                            {{ __('Deseo recibir actualizaciones y noticias sobre Sientia (Opcional).') }}
+                        </label>
+                    </div>
                 </div>
                 
                 <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 rounded-xl font-bold text-base shadow-xl shadow-violet-600/30 hover:shadow-violet-600/40 transition-all active:scale-95 shrink-0">

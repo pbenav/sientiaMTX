@@ -80,6 +80,7 @@ class LegalController extends Controller
         $user->update([
             'privacy_policy_accepted_at' => now(),
             'terms_accepted_at' => now(),
+            'marketing_accepted_at' => $request->has('marketing') ? now() : null,
         ]);
 
         return redirect()->route('dashboard')->with('success', __('¡Gracias por aceptar los nuevos términos!'));
