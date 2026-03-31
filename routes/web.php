@@ -156,6 +156,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');
     Route::get('/media/{attachment}/download', [\App\Http\Controllers\MediaController::class, 'download'])->name('media.download');
     Route::delete('/media/{attachment}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
+
+    // Documentación y Manuales
+    Route::get('/docs/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('docs');
 });
 
 require __DIR__.'/auth.php';
