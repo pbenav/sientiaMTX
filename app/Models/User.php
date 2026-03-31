@@ -35,6 +35,7 @@ class User extends Authenticatable implements HasLocalePreference
         'google_refresh_token',
         'disk_quota',
         'disk_used',
+        'show_welcome_messages',
     ];
 
     /**

@@ -30,6 +30,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        // Show welcome message if the user prefers it
+        if ($user->show_welcome_messages) {
+            $request->session()->flash('show_welcome_modal', true);
+        }
+
         // Process pending invitations if a token was provided
         if ($request->has('invitation')) {
             $invitation = \App\Models\TeamInvitation::where('token', $request->invitation)

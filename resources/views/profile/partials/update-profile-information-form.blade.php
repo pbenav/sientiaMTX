@@ -55,6 +55,24 @@
             <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
         </div>
 
+        <!-- Welcome Messages Toggle -->
+        <div class="flex items-center gap-3 bg-violet-50/50 dark:bg-violet-900/10 p-4 rounded-2xl border border-violet-100 dark:border-violet-800 group hover:shadow-md transition-all duration-300">
+            <div class="flex-1">
+                <label for="show_welcome_messages" class="block text-sm font-bold text-violet-700 dark:text-violet-400 cursor-pointer">
+                    {{ __('Mensajes de Bienvenida') }}
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Recibe un saludo alegre e inspirador cada vez que inicies sesión.') }}
+                </p>
+            </div>
+            <div class="relative inline-flex items-center cursor-pointer">
+                <input type="hidden" name="show_welcome_messages" value="0">
+                <input type="checkbox" id="show_welcome_messages" name="show_welcome_messages" value="1" 
+                    {{ old('show_welcome_messages', $user->show_welcome_messages) ? 'checked' : '' }}
+                    class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('profile.save') }}</x-primary-button>
 

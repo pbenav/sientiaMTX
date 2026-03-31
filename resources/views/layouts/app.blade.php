@@ -98,6 +98,7 @@
 }">
 
     @include('layouts.navigation-sidebar')
+    @include('partials.welcome-modal')
 
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}

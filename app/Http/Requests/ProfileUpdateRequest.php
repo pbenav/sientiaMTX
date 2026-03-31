@@ -27,6 +27,7 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'locale' => ['required', 'string', 'in:en,es'],
             'timezone' => ['required', 'string', 'timezone'],
+            'show_welcome_messages' => ['nullable', 'boolean'],
         ];
     }
 }
