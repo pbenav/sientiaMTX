@@ -20,6 +20,8 @@ return [
     'scheduled_date' => 'Scheduled Date',
     'created_by' => 'Created by',
     'created_at' => 'Created',
+    'hide_completed'   => 'Hide completed',
+    'show_completed'   => 'Show all',
     'no_tasks' => 'No tasks found.',
     'edit' => 'Edit Task',
     'delete' => 'Delete',

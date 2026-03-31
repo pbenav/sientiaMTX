@@ -162,6 +162,9 @@ Route::middleware('auth')->group(function () {
 
     // Créditos
     Route::get('/credits', [\App\Http\Controllers\CreditsController::class, 'index'])->name('credits');
+
+    // Preferencias de usuario (sesión)
+    Route::post('/preferences/hide-completed', [\App\Http\Controllers\TaskController::class, 'toggleHideCompleted'])->name('tasks.toggle-hide-completed');
 });
 
 require __DIR__.'/auth.php';
