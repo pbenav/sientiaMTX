@@ -12,7 +12,7 @@ class WebPushController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $this->validate($request, [
+        $request->validate([
             'endpoint' => 'required',
             'keys.auth' => 'required',
             'keys.p256dh' => 'required',
@@ -33,10 +33,10 @@ class WebPushController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        $this->validate($request, ['endpoint' => 'required']);
+        $request->validate(['endpoint' => 'required']);
 
         $request->user()->deletePushSubscription($request->endpoint);
 
-        return response()->json(['success' => true], 204);
+        return response()->json(['success' => true], 200);
     }
 }
