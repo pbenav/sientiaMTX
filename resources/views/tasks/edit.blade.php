@@ -478,13 +478,13 @@
         }
 
         /* Ajuste de coordenadas del editor para respetar el layout de Sientia */
-        .CodeMirror-fullscreen,
-        .editor-preview-active-side {
-            z-index: 40 !important; /* Menor que z-50 del header para estar debajo */
-            top: 64px !important;   /* Altura del header (h-16) */
+        .EasyMDEContainer .CodeMirror-fullscreen {
+            z-index: 40 !important;
+            top: 64px !important;
             height: calc(100vh - 64px) !important;
             left: 0 !important;
             width: 100% !important;
+            position: fixed !important;
         }
 
         .editor-toolbar.fullscreen {
@@ -493,24 +493,48 @@
             left: 0 !important;
             width: 100% !important;
             border-top: 1px solid #e5e7eb;
+            position: fixed !important;
         }
 
-        /* Si el layout es VERTICAL y el sidebar está abierto (clase controlada por Alpine) */
+        /* Panel de previsualización: respetamos su ancho nativo del 50% */
+        .editor-preview-side {
+            z-index: 42 !important;
+            top: 64px !important;
+            height: calc(100vh - 64px) !important;
+            background: #fff !important;
+        }
+
+        .dark .editor-preview-side {
+            background: #111827 !important;
+            border-color: #374151 !important;
+        }
+
+        /* Si el layout es VERTICAL y el sidebar está abierto */
         @media (min-width: 1024px) {
-            .layout-vertical.sidebar-is-open .CodeMirror-fullscreen,
-            .layout-vertical.sidebar-is-open .editor-preview-active-side,
+            .layout-vertical.sidebar-is-open .EasyMDEContainer .CodeMirror-fullscreen,
             .layout-vertical.sidebar-is-open .editor-toolbar.fullscreen {
                 left: 256px !important;
                 width: calc(100% - 256px) !important;
             }
 
-            /* Si el sidebar está cerrado, el editor ocupa todo el ancho */
-            .layout-vertical.sidebar-is-closed .CodeMirror-fullscreen,
-            .layout-vertical.sidebar-is-closed .editor-preview-active-side,
+            /* La previsualización también debe encogerse para dejar sitio al sidebar si está abierto */
+            .layout-vertical.sidebar-is-open .editor-preview-side {
+                width: calc(50% - 128px) !important;
+            }
+
+            .layout-vertical.sidebar-is-closed .EasyMDEContainer .CodeMirror-fullscreen,
             .layout-vertical.sidebar-is-closed .editor-toolbar.fullscreen {
                 left: 0 !important;
                 width: 100% !important;
             }
+        }
+
+        /* Forzamos que en modo side-by-side los paneles internos NO hereden el ancho 100% */
+        .CodeMirror-side-by-side {
+            width: 50% !important;
+        }
+        .editor-preview-side {
+            width: 50% !important;
         }
 
         /* Responsividad para móviles y tablets en Vista Dual */
