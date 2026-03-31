@@ -159,6 +159,9 @@ Route::middleware('auth')->group(function () {
 
     // Documentación y Manuales
     Route::get('/docs/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('docs');
+
+    // Créditos
+    Route::get('/credits', [\App\Http\Controllers\CreditsController::class, 'index'])->name('credits');
 });
 
 require __DIR__.'/auth.php';
