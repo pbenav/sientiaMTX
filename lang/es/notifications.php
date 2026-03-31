@@ -51,4 +51,5 @@ return [
     'webhook_registered_success' => '¡App vinculada con Telegram! Webhook registrado en: :url',
     'webhook_registered_error' => 'Error al vincular con Telegram: :error',
     'config_saved' => 'Configuración guardada correctamente.',
+    'webhook_troubleshoot' => 'Asegúrate de que tu servidor sea accesible vía HTTPS con un certificado válido y que no haya firewalls bloqueando a Telegram.',
 ];

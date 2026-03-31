@@ -40,9 +40,26 @@ class SettingsController extends Controller
                 'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10), // Max tasks in completed section
             ],
             'telegram' => [
-                'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+                'bot_token' => config('services.telegram.bot_token'),
+                'webhook_info' => $this->getTelegramWebhookInfo(),
             ]
         ]);
+    }
+
+    /**
+     * Get the current webhook status from Telegram.
+     */
+    protected function getTelegramWebhookInfo()
+    {
+        $token = config('services.telegram.bot_token');
+        if (!$token) return null;
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$token}/getWebhookInfo");
+            return $response->json('result');
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -344,7 +361,8 @@ class SettingsController extends Controller
             ]);
 
             if ($response->successful()) {
-                return back()->with('success', __('notifications.webhook_registered_success', ['url' => $webhookUrl]));
+                $result = $response->json();
+                return back()->with('success', __('notifications.webhook_registered_success', ['url' => $webhookUrl]) . ' Detail: ' . json_encode($result));
             }
 
             return back()->with('error', __('notifications.webhook_registered_error', ['error' => $response->body()]));
