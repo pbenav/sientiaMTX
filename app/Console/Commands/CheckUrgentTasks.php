@@ -61,7 +61,18 @@ class CheckUrgentTasks extends Command
                 continue;
             }
 
-            foreach ($task->assignedTo as $user) {
+            $usersToNotify = $task->assignedTo->collect();
+            if ($task->creator && !$usersToNotify->contains('id', $task->created_by_id)) {
+                $usersToNotify->push($task->creator);
+                \Illuminate\Support\Facades\Log::info("  - Añadiendo al creador ({$task->creator->name}) a la lista de avisos.");
+            }
+
+            if ($usersToNotify->isEmpty()) {
+                \Illuminate\Support\Facades\Log::info("  - Ignorada: No hay usuarios asignados ni creador válido.");
+                continue;
+            }
+
+            foreach ($uniqueUsers = $usersToNotify->unique('id') as $user) {
                 $settings = $user->notification_settings ?? $user->defaultNotificationSettings();
                 $leadHours = (int) ($settings['notify_before_hours'] ?? 24);
                 $diffHours = $task->due_date->diffInHours(now());
