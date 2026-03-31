@@ -8,7 +8,7 @@
     <div x-data="{ show: true }" 
          x-show="show" 
          x-init="setTimeout(() => $el.classList.remove('invisible'), 100)"
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 invisible"
+         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 invisible"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
