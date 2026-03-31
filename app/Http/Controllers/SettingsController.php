@@ -38,6 +38,9 @@ class SettingsController extends Controller
                 'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100), // In MB
                 'session_lifetime' => env('SESSION_LIFETIME', 120), // In minutes
                 'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10), // Max tasks in completed section
+            ],
+            'telegram' => [
+                'bot_token' => env('TELEGRAM_BOT_TOKEN'),
             ]
         ]);
     }
@@ -192,6 +195,7 @@ class SettingsController extends Controller
             'DEFAULT_DISK_QUOTA' => 'sometimes|nullable|numeric',
             'SESSION_LIFETIME' => 'sometimes|nullable|numeric|min:1',
             'KANBAN_COMPLETED_LIMIT' => 'sometimes|nullable|numeric|min:1|max:100',
+            'TELEGRAM_BOT_TOKEN' => 'sometimes|nullable|string',
             'update_existing_users' => 'sometimes|boolean',
         ]);
 
@@ -291,8 +295,64 @@ class SettingsController extends Controller
     }
 
     /**
-     * Update a value in the .env file.
+     * Send a test Telegram message.
      */
+    public function testTelegram(Request $request)
+    {
+        $request->validate([
+            'test_chat_id' => 'required|string',
+        ]);
+
+        $token = env('TELEGRAM_BOT_TOKEN');
+
+        if (!$token) {
+            return back()->with('error', __('notifications.telegram_bot_token_missing'));
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $request->test_chat_id,
+                'text' => "🧪 *SientiaMTX - Mensaje de Prueba*\n\n¡La conexión con tu bot de Telegram funciona correctamente! 🎉",
+                'parse_mode' => 'Markdown',
+            ]);
+
+            if ($response->successful()) {
+                return back()->with('success', __('notifications.telegram_test_success'));
+            }
+
+            return back()->with('error', __('notifications.telegram_test_error', ['error' => $response->body()]));
+        } catch (\Exception $e) {
+            return back()->with('error', __('notifications.telegram_test_error', ['error' => $e->getMessage()]));
+        }
+    }
+    /**
+     * Register the Telegram Webhook URL.
+     */
+    public function registerTelegramWebhook()
+    {
+        $token = env('TELEGRAM_BOT_TOKEN');
+
+        if (!$token) {
+            return back()->with('error', __('notifications.telegram_bot_token_missing'));
+        }
+
+        $webhookUrl = route('telegram.webhook');
+
+        try {
+            $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", [
+                'url' => $webhookUrl,
+            ]);
+
+            if ($response->successful()) {
+                return back()->with('success', __('notifications.webhook_registered_success', ['url' => $webhookUrl]));
+            }
+
+            return back()->with('error', __('notifications.webhook_registered_error', ['error' => $response->body()]));
+        } catch (\Exception $e) {
+            return back()->with('error', __('notifications.webhook_registered_error', ['error' => $e->getMessage()]));
+        }
+    }
+
     protected function updateEnv($key, $value)
     {
         $path = base_path('.env');

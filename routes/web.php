@@ -12,6 +12,9 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\GDPRController;
 use Illuminate\Support\Facades\Route;
 
+// Telegram Webhook (Public)
+Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
+
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
     return view('welcome');
@@ -52,6 +55,9 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.notifications.update');
+    Route::post('/notifications/subscribe', [\App\Http\Controllers\WebPushController::class, 'store'])->name('webpush.subscribe');
+    Route::post('/notifications/unsubscribe', [\App\Http\Controllers\WebPushController::class, 'destroy'])->name('webpush.unsubscribe');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/profile/export', [GDPRController::class, 'export'])->name('profile.export');
 
@@ -134,6 +140,8 @@ Route::middleware('auth')->group(function () {
         // Legal Settings
         Route::get('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'legalSettings'])->name('settings.legal');
         Route::post('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'updateLegalSettings'])->name('settings.legal.update');
+        Route::post('/settings/telegram/test', [\App\Http\Controllers\SettingsController::class, 'testTelegram'])->name('settings.telegram.test');
+        Route::post('/settings/telegram/register', [\App\Http\Controllers\SettingsController::class, 'registerTelegramWebhook'])->name('settings.telegram.register');
     });
 
     // Google Services

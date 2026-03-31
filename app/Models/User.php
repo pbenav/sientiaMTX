@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasPushSubscriptions;
 
     /**
      * The attributes that are mass assignable.
@@ -39,6 +40,8 @@ class User extends Authenticatable implements HasLocalePreference
         'privacy_policy_accepted_at',
         'terms_accepted_at',
         'marketing_accepted_at',
+        'notification_settings',
+        'telegram_chat_id',
     ];
 
     /**
@@ -67,6 +70,70 @@ class User extends Authenticatable implements HasLocalePreference
             'privacy_policy_accepted_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
             'marketing_accepted_at' => 'datetime',
+            'notification_settings' => 'array',
+        ];
+    }
+
+    /**
+     * Determine if the user wants to be notified via a specific channel.
+     */
+    public function wantsNotification(string $channel, string $priority = 'medium'): bool
+    {
+        $settings = $this->notification_settings ?? $this->defaultNotificationSettings();
+        
+        // Channel disabled?
+        if (!($settings[$channel] ?? false)) {
+            return false;
+        }
+
+        // Quiet hours check
+        if ($this->isInQuietHours()) {
+            return false;
+        }
+
+        // Priority filter (High/Critical always pass if channel is on, low only if specifically allowed)
+        // For simplicity, we'll assume the channel setting implies permission unless it's a "loud" channel
+        return true;
+    }
+
+    /**
+     * Check if user is currently in their "Quiet Hours".
+     */
+    public function isInQuietHours(): bool
+    {
+        $settings = $this->notification_settings ?? $this->defaultNotificationSettings();
+        
+        if (!($settings['quiet_hours_enabled'] ?? false)) {
+            return false;
+        }
+
+        $start = $settings['quiet_hours_start'] ?? '22:00';
+        $end = $settings['quiet_hours_end'] ?? '08:00';
+        
+        $now = now($this->timezone ?? config('app.timezone'))->format('H:i');
+
+        if ($start <= $end) {
+            return $now >= $start && $now <= $end;
+        } else {
+            // Overlapping midnight (e.g. 22:00 to 08:00)
+            return $now >= $start || $now <= $end;
+        }
+    }
+
+    /**
+     * Default notification settings for new users or if not set.
+     */
+    public function defaultNotificationSettings(): array
+    {
+        return [
+            'mail' => true,
+            'web_push' => false,
+            'telegram' => false,
+            'whatsapp' => false,
+            'quiet_hours_enabled' => true,
+            'quiet_hours_start' => '22:00',
+            'quiet_hours_end' => '08:00',
+            'notify_before_hours' => 2,
         ];
     }
 

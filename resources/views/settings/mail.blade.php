@@ -274,6 +274,70 @@
                     </div>
                 </div>
 
+                <!-- Telegram Integration -->
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl sm:rounded-2xl transition-all">
+                    <div class="p-8">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white heading">
+                                    {{ __('notifications.telegram_bot_title') }}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    {{ __('notifications.telegram_bot_desc') }}</p>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('settings.mail.update') }}" class="space-y-6">
+                            @csrf
+
+                            <div class="grid grid-cols-1 gap-6">
+                                <!-- Bot Token -->
+                                <div>
+                                    <x-input-label for="TELEGRAM_BOT_TOKEN" :value="__('notifications.telegram_bot_token')" />
+                                    <x-text-input id="TELEGRAM_BOT_TOKEN" name="TELEGRAM_BOT_TOKEN" type="password"
+                                        class="mt-1 block w-full" :value="old('TELEGRAM_BOT_TOKEN', $telegram['bot_token'])"
+                                        placeholder="123456789:ABCDefgh-IJKlmno..." />
+                                    <x-input-error :messages="$errors->get('TELEGRAM_BOT_TOKEN')" class="mt-2" />
+                                </div>
+
+                                <div class="p-4 bg-sky-50 dark:bg-sky-900/10 rounded-xl border border-sky-100 dark:border-sky-800 flex gap-3 text-xs text-sky-700 dark:text-sky-400 leading-relaxed">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        {{ __('notifications.telegram_bot_instructions') }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-gray-800">
+                                <div class="flex gap-4">
+                                    <button type="button" x-data=""
+                                        x-on:click.prevent="$dispatch('open-modal', 'test-telegram-modal')"
+                                        class="text-sm font-bold text-sky-600 dark:text-sky-400 hover:text-sky-500 transition-colors uppercase tracking-widest">{{ __('notifications.test_telegram') }}</button>
+                                    
+                                    <form method="POST" action="{{ route('settings.telegram.register') }}" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                            class="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors uppercase tracking-widest">{{ __('notifications.register_webhook') }}</button>
+                                    </form>
+                                </div>
+
+                                <x-primary-button
+                                    class="px-8 py-3 bg-sky-600 hover:bg-sky-500 focus:bg-sky-500 active:bg-sky-700">
+                                    {{ __('notifications.save_telegram_config') }}
+                                </x-primary-button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Hint about config cache -->
                 <div
                     class="p-6 bg-amber-50 dark:bg-gray-800/50 border border-amber-200 dark:border-amber-900/30 rounded-2xl flex gap-4 transition-colors">
@@ -318,6 +382,37 @@
 
                 <x-primary-button>
                     {{ __('Send Test') }}
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Test Telegram Modal -->
+    <x-modal name="test-telegram-modal" focusable>
+        <form method="POST" action="{{ route('settings.telegram.test') }}" class="p-8">
+            @csrf
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white heading mb-2">
+                {{ __('notifications.send_test_telegram') }}
+            </h2>
+
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                {{ __('notifications.telegram_bot_test_instruction') }}
+            </p>
+
+            <div>
+                <x-input-label for="test_chat_id" :value="__('notifications.telegram_chat_id')" />
+                <x-text-input id="test_chat_id" name="test_chat_id" type="text" class="mt-1 block w-full"
+                    placeholder="Ej: 123456789" required />
+                <x-input-error :messages="$errors->get('test_chat_id')" class="mt-2" />
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    {{ __('profile.cancel') }}
+                </x-secondary-button>
+
+                <x-primary-button class="bg-sky-600 hover:bg-sky-500">
+                    {{ __('notifications.confirm_ok') }}
                 </x-primary-button>
             </div>
         </form>

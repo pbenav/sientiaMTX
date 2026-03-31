@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'theme',
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            '/telegram/webhook',
+        ]);
+
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {

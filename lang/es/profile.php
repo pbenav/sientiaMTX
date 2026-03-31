@@ -21,4 +21,6 @@ return [
     'delete_account_confirm_title' => '¿Estás seguro de que quieres eliminar tu cuenta?',
     'delete_account_confirm_text' => 'Una vez que se elimine tu cuenta, todos sus recursos y datos se eliminarán permanentemente. Ingresa tu contraseña para confirmar que deseas eliminar tu cuenta de forma permanente.',
     'cancel' => 'Cancelar',
+    'welcome_messages' => 'Mensajes de Bienvenida',
+    'welcome_messages_desc' => 'Recibe un saludo alegre e inspirador cada vez que inicies sesión.',
 ];

@@ -29,6 +29,13 @@
             </div>
 
             <div
+                class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-all hover:shadow-lg duration-300">
+                <div class="max-w-xl">
+                    @include('profile.partials.notification-settings-form')
+                </div>
+            </div>
+
+            <div
                 class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
                 <div class="max-w-xl">
                     @include('profile.partials.delete-user-form')
