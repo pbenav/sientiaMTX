@@ -8,8 +8,8 @@
 @if ($showWelcome && $greeting && $quote)
     <div x-data="{ show: true }" 
          x-show="show" 
-         x-init="setTimeout(() => $el.classList.remove('invisible'), 100)"
-         class="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 invisible"
+         x-cloak
+         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
@@ -18,7 +18,7 @@
          x-transition:leave-end="opacity-0 scale-95">
         
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="show = false"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-md" @click="show = false"></div>
 
         <!-- Modal Content -->
         <div class="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">

@@ -58,6 +58,10 @@
         .heading {
             font-family: 'Space Grotesk', sans-serif;
         }
+
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -97,6 +101,7 @@
     }
 }">
 
+    @include('partials.welcome-modal')
     @include('layouts.navigation-sidebar')
 
     <!-- Navigation -->
@@ -509,7 +514,7 @@
         })();
     </script>
     
-    @include('partials.welcome-modal')
+    @stack('scripts')
 </body>
 
 </html>
