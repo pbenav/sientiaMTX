@@ -40,18 +40,36 @@ class CheckUrgentTasks extends Command
         
         $tasks = Task::with('assignedTo')
             ->whereIn('status', ['pending', 'in_progress'])
-            ->whereIn('urgency', ['high', 'critical'])
             ->whereNotNull('due_date')
-            ->where('due_date', '>', now())
             ->get();
 
         foreach ($tasks as $task) {
+            \Illuminate\Support\Facades\Log::info("Analizando tarea [ID: {$task->id}]: {$task->title}");
+
+            if (!in_array($task->urgency, ['high', 'critical'])) {
+                \Illuminate\Support\Facades\Log::info("  - Ignorada: Urgencia '{$task->urgency}' no es alta/crítica.");
+                continue;
+            }
+
+            if ($task->due_date->isPast()) {
+                \Illuminate\Support\Facades\Log::info("  - Ignorada: Ya ha vencido ({$task->due_date}).");
+                continue;
+            }
+
+            if ($task->assignedTo->isEmpty()) {
+                \Illuminate\Support\Facades\Log::info("  - Ignorada: No tiene usuarios asignados.");
+                continue;
+            }
+
             foreach ($task->assignedTo as $user) {
                 $settings = $user->notification_settings ?? $user->defaultNotificationSettings();
                 $leadHours = (int) ($settings['notify_before_hours'] ?? 24);
+                $diffHours = $task->due_date->diffInHours(now());
                 
+                \Illuminate\Support\Facades\Log::info("  - Usuario {$user->name} (Antelación: {$leadHours}h, Faltan: {$diffHours}h)");
+
                 // Si la tarea vence dentro del rango de antelación del usuario
-                if ($task->due_date->diffInHours(now()) <= $leadHours) {
+                if ($diffHours <= $leadHours) {
                     $metadata = $task->metadata ?? [];
                     $lastNotified = $metadata['last_reminder_sent_at'] ?? null;
 
@@ -59,7 +77,12 @@ class CheckUrgentTasks extends Command
                     if (!$lastNotified || now()->parse($lastNotified)->addHours(12)->isPast()) {
                         $userTasks[$user->id]['user'] = $user;
                         $userTasks[$user->id]['tasks'][] = $task;
+                        \Illuminate\Support\Facades\Log::info("  - ¡NOTIFICACIÓN PROGRAMADA!");
+                    } else {
+                        \Illuminate\Support\Facades\Log::info("  - Ignorada: Ya notificada hace poco ({$lastNotified}).");
                     }
+                } else {
+                    \Illuminate\Support\Facades\Log::info("  - Ignorada: Falta demasiado tiempo para el aviso.");
                 }
             }
         }
