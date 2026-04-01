@@ -204,45 +204,47 @@
     </div>
 
     <!-- Completed Tasks Zone -->
-    <div class="mt-16 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div
-            class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors quadrant-container">
+    @if(!$hideCompleted)
+        <div class="mt-16 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
             <div
-                class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                d="M5 13l4 4L19 7" />
-                        </svg>
+                class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors quadrant-container">
+                <div
+                    class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-500/60" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h3 class="text-[12px] font-black uppercase tracking-[0.25em] text-gray-900 dark:text-gray-100">
+                            {{ __('teams.completed_tasks') }}</h3>
                     </div>
-                    <h3 class="text-[12px] font-black uppercase tracking-[0.25em] text-gray-900 dark:text-gray-100">
-                        {{ __('teams.completed_tasks') }}</h3>
+                    <span
+                        class="text-xs font-bold text-gray-400 dark:text-gray-600 q-count mr-2">{{ $tasks->where('status', 'completed')->count() }}</span>
                 </div>
-                <span
-                    class="text-xs font-bold text-gray-400 dark:text-gray-600 q-count mr-2">{{ $tasks->where('status', 'completed')->count() }}</span>
-            </div>
 
-            <div class="min-h-[140px] quadrant-list p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-                data-q="completed">
-                @forelse($tasks->where('status', 'completed') as $task)
-                    <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer task-card"
-                        data-id="{{ $task->id }}" data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
-                        <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
-                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                            class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
-                            {{ $task->title }}
-                        </a>
-                    </div>
-                @empty
-                    <div class="col-span-full py-20 text-center text-xs text-gray-700 italic empty-msg">
-                        {{ __('teams.drop_to_complete') }}
-                    </div>
-                @endforelse
+                <div class="min-h-[140px] quadrant-list p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                    data-q="completed">
+                    @forelse($tasks->where('status', 'completed') as $task)
+                        <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer task-card"
+                            data-id="{{ $task->id }}" data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
+                            <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
+                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
+                                class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                                {{ $task->title }}
+                            </a>
+                        </div>
+                    @empty
+                        <div class="col-span-full py-20 text-center text-xs text-gray-700 italic empty-msg">
+                            {{ __('teams.drop_to_complete') }}
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
-    </div>
+    @endif
 
     <!-- Summary row -->
     <div class="mt-6 flex flex-wrap gap-3 text-xs text-gray-500 border-t border-white/5 pt-4">

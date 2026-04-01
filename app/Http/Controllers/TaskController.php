@@ -69,13 +69,13 @@ class TaskController extends Controller
         }
 
         // --- Hide completed filter (session-based preference) ---
-        if (session('hide_completed_tasks', false)) {
+        if (session('hide_completed_tasks', true)) {
             $query->whereNotIn('status', ['completed', 'cancelled']);
         }
 
         $tasks = $query->paginate(20)->withQueryString();
         $members = $team->members;
-        $hideCompleted = session('hide_completed_tasks', false);
+        $hideCompleted = session('hide_completed_tasks', true);
 
         return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted'));
     }
@@ -569,7 +569,7 @@ class TaskController extends Controller
                 ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
                 ->operationalFor(auth()->user(), $team)
                 ->with(['assignedTo', 'tags'])
-                ->when(session('hide_completed_tasks', false), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+                ->when(session('hide_completed_tasks', true), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
                 ->get()
                 ->filter(function ($task) use ($q) {
                     return $this->getQuadrant($task) === $q;
@@ -579,7 +579,7 @@ class TaskController extends Controller
 
         return response()->json([
             'quadrants' => $quadrants,
-            'hide_completed' => session('hide_completed_tasks', false),
+            'hide_completed' => session('hide_completed_tasks', true),
         ]);
     }
 
@@ -588,7 +588,7 @@ class TaskController extends Controller
      */
     public function toggleHideCompleted(Request $request)
     {
-        $current = session('hide_completed_tasks', false);
+        $current = session('hide_completed_tasks', true);
         session(['hide_completed_tasks' => !$current]);
         return response()->json(['hide_completed' => !$current]);
     }

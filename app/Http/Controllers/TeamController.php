@@ -292,7 +292,9 @@ class TeamController extends Controller
             }
         }
 
-        return view('teams.dashboard', compact('team', 'quadrants', 'tasks'));
+        $hideCompleted = session('hide_completed_tasks', true);
+
+        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted'));
     }
 
     /**

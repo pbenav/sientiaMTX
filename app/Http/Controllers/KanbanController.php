@@ -30,6 +30,9 @@ class KanbanController extends Controller
                 $query->visibleTo($user, $isManager)
                       ->operationalFor($user, $team)
                       ->where('is_archived', false)
+                      ->when(session('hide_completed_tasks', true), function($sq) {
+                          return $sq->whereNotIn('status', ['completed', 'cancelled']);
+                      })
                       ->orderBy('priority', 'desc')
                       ->orderBy('urgency', 'desc')
                       ->orderBy('kanban_order', 'asc');
@@ -58,7 +61,9 @@ class KanbanController extends Controller
             ->limit(env('KANBAN_COMPLETED_LIMIT', 10))
             ->get();
 
-        return view('tasks.kanban', compact('team', 'columns', 'completedTasks'));
+        $hideCompleted = session('hide_completed_tasks', true);
+
+        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted'));
     }
 
     public function update(Request $request, Team $team, Task $task)

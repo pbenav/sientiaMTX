@@ -65,6 +65,7 @@ class GanttController extends Controller
 
         $allGanttTasks = Task::with(['parent', 'assignedUser'])
             ->whereIn('id', $uniqueIds)
+            ->when(session('hide_completed_tasks', true), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
