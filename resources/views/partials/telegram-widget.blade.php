@@ -94,12 +94,21 @@
 
 <script>
     function telegramChat() {
+        @php
+            $routeTeamId = null;
+            if (request()->route('team')) {
+                $routeTeamId = is_object(request()->route('team')) 
+                    ? request()->route('team')->id 
+                    : request()->route('team');
+            }
+        @endphp
+
         return {
             open: false,
             loading: false,
             unread: 0,
             newMessage: '',
-            teamId: {{ isset($team) ? $team->id : 'null' }},
+            teamId: {{ $routeTeamId ?: 'null' }},
             messages: [],
             lastMessageId: 0,
             initChat() {
