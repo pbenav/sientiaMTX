@@ -285,6 +285,8 @@ class TeamController extends Controller
             4 => [],
         ];
 
+        $hideCompleted = session('hide_completed_tasks', true);
+
         foreach ($allTasks as $task) {
             $isCompleted = in_array($task->status, ['completed', 'cancelled']);
             if (!$hideCompleted || !$isCompleted) {
@@ -292,8 +294,6 @@ class TeamController extends Controller
                 $quadrants[$quadrant][] = $task;
             }
         }
-
-        $hideCompleted = session('hide_completed_tasks', true);
 
         return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted'));
     }
