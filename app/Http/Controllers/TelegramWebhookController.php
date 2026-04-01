@@ -22,10 +22,18 @@ class TelegramWebhookController extends Controller
         }
 
         $chatId = $update['message']['chat']['id'];
-        $text = $update['message']['text'] ?? '';
+        $text = $update['message']['text'] ?? $update['message']['caption'] ?? '';
         $messageId = $update['message']['message_id'] ?? null;
         $from = $update['message']['from'] ?? [];
-        $authorName = ($from['first_name'] ?? 'Usuario') . ' ' . ($from['last_name'] ?? '');
+        $firstName = $from['first_name'] ?? 'Usuario';
+        $lastName = $from['last_name'] ?? '';
+        $authorName = trim($firstName . ' ' . $lastName);
+
+        // Handle Photo
+        $photoPath = null;
+        if (isset($update['message']['photo'])) {
+            $photoPath = $this->downloadPhoto($update['message']['photo']);
+        }
 
         // 1. Check if it's a private chat /start
         if ($chatId > 0 && str_starts_with($text, '/start')) {
@@ -46,14 +54,45 @@ class TelegramWebhookController extends Controller
         if ($team) {
             \App\Models\TelegramMessage::create([
                 'team_id' => $team->id,
-                'author_name' => trim($authorName),
+                'author_name' => $authorName,
                 'text' => $text,
+                'photo_path' => $photoPath,
                 'telegram_message_id' => $messageId,
                 'is_from_web' => false,
             ]);
         }
 
         return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * Download photo from Telegram.
+     */
+    protected function downloadPhoto($photoArray): ?string
+    {
+        try {
+            $token = config('services.telegram.bot_token');
+            // Take the largest version
+            $fileId = end($photoArray)['file_id'];
+            
+            $fileResponse = Http::get("https://api.telegram.org/bot{$token}/getFile", ['file_id' => $fileId]);
+            if (!$fileResponse->successful()) return null;
+            
+            $filePath = $fileResponse->json()['result']['file_path'];
+            $fileContent = Http::get("https://api.telegram.org/file/bot{$token}/{$filePath}");
+            
+            if (!$fileContent->successful()) return null;
+
+            $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            $localName = 'telegram/photos/' . uniqid() . '.' . $ext;
+            
+            \Illuminate\Support\Facades\Storage::disk('public')->put($localName, $fileContent->body());
+            
+            return $localName;
+        } catch (\Exception $e) {
+            Log::error("Error downloading Telegram photo: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**

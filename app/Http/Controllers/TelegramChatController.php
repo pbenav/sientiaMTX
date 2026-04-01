@@ -87,6 +87,7 @@ class TelegramChatController extends Controller
         }
 
         $messages = TelegramMessage::where('team_id', $teamId)
+            ->where('is_deleted_on_telegram', false)
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
@@ -99,9 +100,36 @@ class TelegramChatController extends Controller
                     'author' => $msg->author_name,
                     'from_me' => $msg->user_id === auth()->id() && $msg->is_from_web,
                     'time' => $msg->created_at->format('H:i'),
+                    'photo' => $msg->photo_url,
                 ];
             });
 
         return response()->json(['messages' => $messages]);
+    }
+
+    /**
+     * Eliminar un mensaje tanto localmente como en Telegram.
+     */
+    public function destroy(TelegramMessage $message)
+    {
+        $this->authorize('delete', $message); // Optional: check if can delete
+
+        $token = config('services.telegram.bot_token');
+        $chatId = $message->team->telegram_chat_id;
+
+        if ($message->telegram_message_id && $chatId) {
+            try {
+                Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
+                    'chat_id' => $chatId,
+                    'message_id' => $message->telegram_message_id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Error deleting message from Telegram: " . $e->getMessage());
+            }
+        }
+
+        $message->update(['is_deleted_on_telegram' => true]);
+        
+        return response()->json(['success' => true]);
     }
 }

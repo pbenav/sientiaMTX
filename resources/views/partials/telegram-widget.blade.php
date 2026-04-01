@@ -4,7 +4,7 @@
      x-init="initChat()"
      @keydown.escape="open = false">
     
-    <!-- Ventana de Chat (también forzamos estilos básicos si falla TW) -->
+    <!-- Ventana de Chat -->
     <div x-show="open" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 scale-90 translate-y-10"
@@ -12,7 +12,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-90 translate-y-10"
-         class="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5"
+         class="mb-4 w-[350px] sm:w-[400px] h-[550px] bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5"
          style="background: white; border: 1px solid #eee; overflow: hidden; display: none;"
          :style="open ? 'display: flex !important;' : 'display: none !important;'"
          x-cloak>
@@ -43,39 +43,68 @@
         <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-950/50 custom-scrollbar" id="telegram-messages-container"
              style="background-color: rgba(249, 250, 251, 0.5); flex: 1; overflow-y: auto;">
             <template x-for="msg in messages" :key="msg.id">
-                <div :class="msg.from_me ? 'flex justify-end' : 'flex justify-start'">
+                <div :class="msg.from_me ? 'flex justify-end' : 'flex justify-start'" class="group relative">
                     <div :class="msg.from_me 
                         ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2 shadow-md max-w-[85%]' 
-                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-none px-4 py-2 shadow-sm border border-gray-100 dark:border-gray-700 max-w-[85%]' shadow-sm"
-                        :style="msg.from_me ? 'background-color: #2563eb; color: white;' : 'background-color: white; border: 1px solid #f3f4f6; color: #374151;'"
-                        class="rounded-2xl px-4 py-2">
+                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-none px-4 py-2 shadow-sm border border-gray-100 dark:border-gray-700 max-w-[85%]'"
+                        class="px-4 py-2 relative overflow-hidden">
+                        
                         <span x-show="!msg.from_me" class="block text-[10px] font-bold mb-1 uppercase tracking-tight opacity-70" x-text="msg.author"></span>
-                        <p class="text-sm leading-relaxed" x-text="msg.text" style="font-size: 14px;"></p>
-                        <span :class="msg.from_me ? 'text-white/60' : 'text-gray-400'" class="text-[9px] block text-right mt-1" x-text="msg.time"></span>
+                        
+                        <!-- Imagen si existe -->
+                        <template x-if="msg.photo">
+                            <div class="mb-2 -mx-2 -mt-2 overflow-hidden border-b border-black/5 bg-gray-100 dark:bg-gray-900">
+                                <img :src="msg.photo" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:scale-105 transition-transform duration-300" 
+                                     @click="window.open(msg.photo, '_blank')">
+                            </div>
+                        </template>
+
+                        <p class="text-sm leading-relaxed whitespace-pre-wrap" x-text="msg.text" x-show="msg.text"></p>
+                        
+                        <!-- Footer del mensaje: Hora y acciones -->
+                        <div class="flex items-center justify-between gap-4 mt-1.5 border-t border-black/5 pt-1">
+                            <span :class="msg.from_me ? 'text-white/60' : 'text-gray-400'" class="text-[9px] block" x-text="msg.time"></span>
+                            
+                            <!-- Botón de borrar -->
+                            <button @click="deleteMsg(msg.id)"
+                                    class="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity font-bold uppercase tracking-tighter"
+                                    :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-red-400 hover:text-red-500'">
+                                {{ __('Eliminar') }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </template>
         </div>
 
         <!-- Input -->
-        <form @submit.prevent="send()" class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800" style="padding: 1rem; background: white; border-top: 1px solid #f3f4f6;" x-data="{ showEmojis: false }">
+        <form @submit.prevent="send()" class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 relative" x-data="{ showEmojis: false }">
+            <!-- Emoji Picker -->
             <div x-show="showEmojis" @click.outside="showEmojis = false"
-                 class="absolute bottom-20 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl p-3 grid grid-cols-7 gap-2 z-50 origin-bottom"
+                 class="absolute bottom-20 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl p-4 z-50 origin-bottom flex flex-col"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0 translate-y-2 scale-95"
                  x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                 style="display: none;">
-                <template x-for="emo in ['😀','😂','🥰','😎','🤔','😅','👍','👎','👏','🔥','🎉','❤️','✅','❌','👀','🚀','⚠️','💡','💪','✨','🙏']">
-                    <button type="button" @click="newMessage += emo; $refs.chatInput.focus(); showEmojis = false;" class="text-xl hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 rounded-lg transition-colors" x-text="emo"></button>
-                </template>
+                 style="display: none; max-height: 250px;">
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="grid grid-cols-7 gap-2">
+                        @foreach([
+                            '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','👋','👌','👍','👎','👏','🙏','💪','❤️','🔥','✨','🚀','✅','❌','⚠️','💡'
+                        ] as $emoji)
+                            <button type="button" @click="newMessage += '{{ $emoji }}'; $refs.chatInput.focus();" 
+                                    class="text-xl hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-xl transition-all hover:scale-125">{{ $emoji }}</button>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">
+                    Selector de Emojis
+                </div>
             </div>
             
             <div class="relative flex items-center gap-2">
                 <button type="button" @click="showEmojis = !showEmojis" :disabled="!teamId"
-                        class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
+                        class="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors disabled:opacity-50"
                         title="Emojis">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </button>
@@ -83,16 +112,14 @@
                        type="text" 
                        placeholder="Escribe un mensaje..."
                        :disabled="!teamId"
-                       class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                       style="background: #f3f4f6; border-radius: 1rem; padding: 0.5rem 1rem; flex: 1;">
+                       class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 <button type="submit" 
                         :disabled="!newMessage.trim() || !teamId"
-                        class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
-                        style="background: #2563eb; color: white; border-radius: 0.75rem; padding: 0.6rem;">
+                        class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                 </button>
             </div>
-            <p class="text-[9px] text-gray-400 mt-2 text-center" style="font-size: 9px; color: #9ca3af; text-align: center; margin-top: 0.5rem;">Conectado vía @SientiaBot</p>
+            <p class="text-[9px] text-gray-400 mt-2 text-center">Conectado vía @SientiaBot</p>
         </form>
     </div>
 
@@ -136,11 +163,8 @@
                     return;
                 }
                 
-                // Carga inicial de mensajes
                 this.refreshMessages();
-
-                // Polling para nuevos mensajes cada 5 segundos
-                setInterval(() => this.refreshMessages(), 5000);
+                setInterval(() => this.refreshMessages(), 8000); // Polling cada 8s
             },
             async refreshMessages() {
                 if (!this.teamId) return;
@@ -149,18 +173,22 @@
                     const response = await fetch(`{{ route('telegram.chat.messages') }}?team_id=${this.teamId}`);
                     const data = await response.json();
                     
-                    if (data.messages && data.messages.length > 0) {
-                        const newMsgCount = data.messages.filter(m => m.id > this.lastMessageId).length;
+                    if (data.messages) {
+                        const newMsgs = data.messages;
+                        const hasNew = newMsgs.length > 0 && (this.messages.length === 0 || newMsgs[newMsgs.length-1].id > this.lastMessageId);
                         
-                        if (newMsgCount > 0) {
-                            if (!this.open) this.unread += newMsgCount;
-                            this.messages = data.messages;
-                            this.lastMessageId = data.messages[data.messages.length - 1].id;
+                        if (hasNew) {
+                            if (!this.open && this.messages.length > 0) this.unread += (newMsgs.length - this.messages.length);
+                            this.messages = newMsgs;
+                            this.lastMessageId = newMsgs[newMsgs.length - 1].id;
                             if (this.open) this.scrollToBottom();
+                        } else if (newMsgs.length < this.messages.length) {
+                            // Si hay menos mensajes, es que se ha borrado alguno
+                            this.messages = newMsgs;
                         }
                     }
                 } catch (e) {
-                    console.error('Error al actualizar mensajes:', e);
+                    console.error('Error al actualizar:', e);
                 }
             },
             async send() {
@@ -183,40 +211,37 @@
                         })
                     });
                     
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        console.error('Validation or Server Error:', data);
-                        alert(data.message || 'Error al enviar el mensaje');
-                        return;
-                    }
-
-                    if (data.reply) {
-                        this.messages.push({
-                            id: Date.now(),
-                            text: data.reply,
-                            author: 'SientiaBot',
-                            from_me: false,
-                            time: 'Ahora'
-                        });
-                        this.scrollToBottom();
-                    } else if (data.success) {
+                    if (response.ok) {
                         this.refreshMessages();
                     }
                 } catch (e) {
-                    console.error('Error enviando a Telegram:', e);
+                    console.error('Error enviando:', e);
+                }
+            },
+            async deleteMsg(msgId) {
+                if (!confirm('¿Borrar mensaje? Se eliminará de Telegram y del historial.')) return;
+                
+                try {
+                    const response = await fetch(`/telegram-chat/messages/${msgId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        this.messages = this.messages.filter(m => m.id !== msgId);
+                    }
+                } catch (e) {
+                    console.error('Error deleting message:', e);
                 }
             },
             scrollToBottom() {
-                // Doble trigger para asegurar que ocurre durante y después de la transición de Alpine
                 setTimeout(() => {
                     const container = document.getElementById('telegram-messages-container');
-                    if (container) container.scrollTop = container.scrollHeight;
+                    if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
                 }, 100);
-                setTimeout(() => {
-                    const container = document.getElementById('telegram-messages-container');
-                    if (container) container.scrollTop = container.scrollHeight;
-                }, 350);
             }
         }
     }

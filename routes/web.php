@@ -167,8 +167,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/preferences/hide-completed', [\App\Http\Controllers\TaskController::class, 'toggleHideCompleted'])->name('tasks.toggle-hide-completed');
     // --- Telegram Chat Experiment ---
     Route::prefix('telegram-chat')->name('telegram.chat.')->group(function () {
-        Route::get('/messages', [App\Http\Controllers\TelegramChatController::class, 'getMessages'])->name('messages');
-        Route::post('/send', [App\Http\Controllers\TelegramChatController::class, 'sendMessage'])->name('send');
+        Route::get('/messages', [\App\Http\Controllers\TelegramChatController::class, 'getMessages'])->name('messages');
+        Route::post('/send', [\App\Http\Controllers\TelegramChatController::class, 'sendMessage'])->name('send');
+        Route::delete('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'destroy'])->name('delete');
     });
 });
 
