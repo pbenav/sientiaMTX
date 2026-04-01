@@ -28,6 +28,8 @@ return [
     'clear_filters'    => 'Limpiar filtros',
     'hide_completed'   => 'Ocultar completadas',
     'show_completed'   => 'Mostrar todas',
+    'completed_hidden' => 'Completadas: Ocultas',
+    'completed_visible' => 'Completadas: Visibles',
     'no_tasks' => 'No se encontraron tareas.',
     'edit' => 'Edición de tarea',
     'delete' => 'Eliminar',

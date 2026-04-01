@@ -22,6 +22,8 @@ return [
     'created_at' => 'Created',
     'hide_completed'   => 'Hide completed',
     'show_completed'   => 'Show all',
+    'completed_hidden' => 'Completed tasks: Hidden',
+    'completed_visible' => 'Completed tasks: Visible',
     'no_tasks' => 'No tasks found.',
     'edit' => 'Edit Task',
     'delete' => 'Delete',
