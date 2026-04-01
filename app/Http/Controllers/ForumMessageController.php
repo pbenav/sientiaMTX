@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\ForumMessage;
 use App\Models\ForumThread;
 use App\Models\Team;
+use App\Models\User;
+use App\Notifications\NewForumMessageNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class ForumMessageController extends Controller
 {
@@ -26,13 +29,45 @@ class ForumMessageController extends Controller
             'content' => 'required|string|max:10000',
         ]);
 
-        $thread->messages()->create([
+        $message = $thread->messages()->create([
             'user_id' => auth()->id(),
             'content' => $validated['content'],
         ]);
 
         // Touch the thread to push it to the top
         $thread->touch();
+
+        // --- Notification Logic ---
+        $recipients = collect();
+        
+        // 1. Thread creator
+        $recipients->push($thread->user);
+        
+        // 2. Task owner/assignees if associated
+        if ($thread->task) {
+            $recipients->push($thread->task->creator);
+            if ($thread->task->assignedUser) {
+                $recipients->push($thread->task->assignedUser);
+            }
+            $recipients = $recipients->merge($thread->task->assignedTo);
+        }
+        
+        // 3. Other people who commented (optional but good for engagement)
+        $previousCommenters = $thread->messages()
+            ->where('user_id', '!=', auth()->id())
+            ->with('user')
+            ->get()
+            ->pluck('user');
+        $recipients = $recipients->merge($previousCommenters);
+
+        // Filter: Unique users, exclude current sender, and must have an email
+        $recipients = $recipients->filter(function($u) {
+            return $u && $u->id !== auth()->id() && !empty($u->email);
+        })->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new NewForumMessageNotification($message));
+        }
 
         return back()->with('success', __('forum.message_created'));
     }

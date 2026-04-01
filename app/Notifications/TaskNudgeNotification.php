@@ -33,7 +33,32 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = ['mail', 'database'];
+
+        if ($notifiable instanceof \App\Models\User && $notifiable->wantsNotification('telegram')) {
+            $channels[] = \App\Notifications\Channels\TelegramChannel::class;
+        }
+
+        return $channels;
+    }
+
+    /**
+     * Get the telegram representation of the notification.
+     */
+    public function toTelegram(object $notifiable): array
+    {
+        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        
+        $message = __('tasks.nudges.' . $this->type, [
+            'title' => $this->task->title,
+            'progress' => $this->teamProgress
+        ]);
+
+        return [
+            'text' => "👉 *¡AVISO!*\n\n" .
+                      "{$message}\n\n" .
+                      "[Continuar trabajando]({$url})"
+        ];
     }
 
     /**

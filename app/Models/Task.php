@@ -290,6 +290,41 @@ class Task extends Model
             }
         });
     }
+
+    /**
+     * Specialized scope for the Kanban board.
+     * Focuses on actionable items (Leaf tasks) vs Summary tasks.
+     */
+    public function scopeOperationalForKanban($query, $user, Team $team)
+    {
+        $isCoordinator = $team->isCoordinator($user);
+        $isModerator = $team->isModerator($user);
+        $userId = $user->id;
+
+        return $query->where(function ($q) use ($userId, $isCoordinator, $isModerator) {
+            // ALWAYS: Tasks directly assigned to me
+            $q->where('assigned_user_id', $userId)
+              ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+
+            if ($isCoordinator || $isModerator) {
+                // MANAGERS also see:
+                // 1. Plain root tasks with no children (no assignments yet)
+                $q->orWhere(function($sub) {
+                    $sub->whereNull('parent_id')->whereDoesntHave('children');
+                });
+                // 2. All instances/subtasks (actual work being tracked)
+                $q->orWhere(function($sub) {
+                    $sub->whereNotNull('parent_id');
+                });
+            } else {
+                // EXECUTORS also see root tasks they created IF they have no subtasks
+                $q->orWhere(function($sub) use ($userId) {
+                    $sub->where('created_by_id', $userId)->whereNull('parent_id')->whereDoesntHave('children');
+                });
+            }
+        })
+        ->where('is_template', false); // Never show master template cards in Kanban.
+    }
     public function scopeDueThisWeek($query)
     {
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
@@ -311,9 +346,11 @@ class Task extends Model
     public function syncKanbanColumn(): void
     {
         $type = 'in_progress';
-        if ($this->progress_percentage == 100 || $this->status === 'completed') {
+        $currentProgress = $this->progress;
+
+        if ($currentProgress == 100 || $this->status === 'completed') {
             $type = 'done';
-        } elseif ($this->progress_percentage == 0 && ($this->status === 'pending' || $this->status === 'todo')) {
+        } elseif ($currentProgress == 0 && ($this->status === 'pending' || $this->status === 'todo')) {
             $type = 'todo';
         }
 

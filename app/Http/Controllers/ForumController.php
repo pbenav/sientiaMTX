@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\ForumThread;
 use App\Models\Task;
 use App\Models\Team;
+use App\Notifications\NewForumMessageNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class ForumController extends Controller
 {
@@ -71,10 +73,14 @@ class ForumController extends Controller
             // If the root task already has a thread, append the message instead of creating a new one
             if ($task->forumThread) {
                 $thread = $task->forumThread;
-                $thread->messages()->create([
+                $message = $thread->messages()->create([
                     'user_id' => auth()->id(),
                     'content' => $validated['content'],
                 ]);
+                
+                $thread->touch();
+                $this->notifyThreadParticipants($thread, $message);
+
                 return redirect()->route('teams.forum.show', [$team, $thread])
                     ->with('success', __('forum.thread_already_existed') ?? 'Esta tarea principal ya tenía un hilo activo; el mensaje se ha añadido allí.');
             }
@@ -86,13 +92,52 @@ class ForumController extends Controller
             'task_id' => $task ? $task->id : null,
         ]);
 
-        $thread->messages()->create([
+        $message = $thread->messages()->create([
             'user_id' => auth()->id(),
             'content' => $validated['content'],
         ]);
 
+        $this->notifyThreadParticipants($thread, $message);
+
         return redirect()->route('teams.forum.show', [$team, $thread])
             ->with('success', __('forum.thread_created'));
+    }
+
+    /**
+     * Internal helper to notify participants of a new message.
+     */
+    protected function notifyThreadParticipants($thread, $message)
+    {
+        $recipients = collect();
+        
+        // 1. Thread creator
+        if ($thread->user) $recipients->push($thread->user);
+        
+        // 2. Task owner/assignees if associated
+        if ($thread->task) {
+            $recipients->push($thread->task->creator);
+            if ($thread->task->assignedUser) {
+                $recipients->push($thread->task->assignedUser);
+            }
+            $recipients = $recipients->merge($thread->task->assignedTo);
+        }
+        
+        // 3. Other people who commented
+        $previousCommenters = $thread->messages()
+            ->where('user_id', '!=', auth()->id())
+            ->with('user')
+            ->get()
+            ->pluck('user');
+        $recipients = $recipients->merge($previousCommenters);
+
+        // Filter: Unique users, exclude current sender, and must have an email
+        $recipients = $recipients->filter(function($u) {
+            return $u && $u->id !== auth()->id() && !empty($u->email);
+        })->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new NewForumMessageNotification($message));
+        }
     }
 
     /**

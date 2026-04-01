@@ -690,28 +690,16 @@ class TaskController extends Controller
             }
         }
 
-        if ($task->isInstance() && $request->has('status') && $task->status === 'completed') {
-            $parent = $task->parent;
-            $totalChildren = $parent->children()->count();
-            $completedChildren = $parent->children()->where('status', 'completed')->count();
-            $progress = $totalChildren > 0 ? ($completedChildren / $totalChildren) * 100 : 0;
-
-            if ($completedChildren === $totalChildren && $parent->status !== 'completed') {
-                $parent->update(['status' => 'completed', 'progress_percentage' => 100]);
-            }
-
-            if (in_array((int)$progress, [50, 75, 100])) {
-                $team->creator->notify(new \App\Notifications\TaskMilestoneNotification($parent, (int)$progress));
-            }
-        }
-
-        if ($task->parent_id && $request->has('progress_percentage')) {
+        if ($task->isInstance() && ($request->has('status') || $request->has('progress_percentage'))) {
             $currentParent = $task->parent;
             while ($currentParent) {
+                // For template tasks, we must update the progress_percentage column 
+                // so that queries/scopes that don't use the attribute still work.
                 $currentParent->update(['progress_percentage' => $currentParent->progress]);
+                $currentParent->syncKanbanColumn(); // Update its column if needed
                 $currentParent = $currentParent->parent;
             }
-            $task->refresh(); // Clear relation cache
+            $task->refresh();
         }
 
         $task->syncKanbanColumn();

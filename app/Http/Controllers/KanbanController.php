@@ -28,7 +28,7 @@ class KanbanController extends Controller
         $columns = $team->kanbanColumns()
             ->with(['tasks' => function ($query) use ($team, $user, $isManager) {
                 $query->visibleTo($user, $isManager)
-                      ->operationalFor($user, $team)
+                      ->operationalForKanban($user, $team)
                       ->where('is_archived', false)
                       ->when(session('hide_completed_tasks', true), function($sq) {
                           return $sq->whereNotIn('status', ['completed', 'cancelled']);

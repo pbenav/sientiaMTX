@@ -32,7 +32,29 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = ['mail', 'database'];
+
+        if ($notifiable instanceof User && $notifiable->wantsNotification('telegram')) {
+            $channels[] = \App\Notifications\Channels\TelegramChannel::class;
+        }
+
+        return $channels;
+    }
+
+    /**
+     * Get the telegram representation of the notification.
+     */
+    public function toTelegram(object $notifiable): array
+    {
+        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+
+        return [
+            'text' => "🚫 *¡TAREA BLOQUEADA!*\n\n" .
+                      "*Tarea*: {$this->task->title}\n" .
+                      "*Reportado por*: {$this->reportedBy->name}\n\n" .
+                      "Se requiere atención para desbloquear esta tarea.\n\n" .
+                      "[Abrir tarea en Sientia]({$url})"
+        ];
     }
 
     /**
