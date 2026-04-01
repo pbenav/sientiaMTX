@@ -63,11 +63,12 @@
                 <input x-model="newMessage" 
                        type="text" 
                        placeholder="Escribe un mensaje..."
-                       class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all"
+                       :disabled="!teamId"
+                       class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                        style="background: #f3f4f6; border-radius: 1rem; padding: 0.5rem 1rem; flex: 1;">
                 <button type="submit" 
-                        :disabled="!newMessage.trim()"
-                        class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:grayscale"
+                        :disabled="!newMessage.trim() || !teamId"
+                        class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                         style="background: #2563eb; color: white; border-radius: 0.75rem; padding: 0.6rem;">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                 </button>
