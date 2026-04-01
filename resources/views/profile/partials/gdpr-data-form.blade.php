@@ -1,6 +1,6 @@
 <section class="space-y-6">
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 italic">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Privacidad y Portabilidad de Datos') }}
         </h2>
 
@@ -19,7 +19,7 @@
     </div>
 
     <div class="mt-4 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-        <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed italic">
+        <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
             <strong>{{ __('Nota:') }}</strong> {{ __('Tus consentimientos actuales:') }}
             <br>
             - {{ __('Políticas aceptadas el:') }} {{ auth()->user()->privacy_policy_accepted_at?->format('d/m/Y H:i') ?? __('No disponible') }}
