@@ -102,7 +102,10 @@
             messages: [],
             lastMessageId: 0,
             initChat() {
-                if (!this.teamId) return;
+                if (!this.teamId) {
+                    this.messages = [{ id: 1, text: '⚠️ Entra en el panel de un equipo concreto para usar el chat de Telegram.', author: 'SientiaBot', from_me: false, time: 'Sistema' }];
+                    return;
+                }
                 
                 // Carga inicial de mensajes
                 this.refreshMessages();
@@ -142,6 +145,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({ 
@@ -151,6 +155,13 @@
                     });
                     
                     const data = await response.json();
+                    
+                    if (!response.ok) {
+                        console.error('Validation or Server Error:', data);
+                        alert(data.message || 'Error al enviar el mensaje');
+                        return;
+                    }
+
                     if (data.reply) {
                         this.messages.push({
                             id: Date.now(),
