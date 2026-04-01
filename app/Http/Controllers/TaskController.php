@@ -63,8 +63,9 @@ class TaskController extends Controller
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
         } else {
-            // Default sort: Priority (Critical -> Low) and Progress (High -> Low)
+            // Default sort: Priority (Critical -> Low), Status (Pending -> Others), and Progress (High -> Low)
             $query->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
+                  ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
                   ->orderBy('progress_percentage', 'desc');
         }
 
