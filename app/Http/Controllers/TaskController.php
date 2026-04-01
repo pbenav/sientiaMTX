@@ -387,6 +387,15 @@ class TaskController extends Controller
             $task->save();
         }
 
+        // Parent progress sync
+        if ($task->parent_id) {
+            $currentParent = $task->parent;
+            while ($currentParent) {
+                $currentParent->update(['progress_percentage' => $currentParent->progress]);
+                $currentParent = $currentParent->parent;
+            }
+        }
+
         // If this is a template, sync core fields to instances
         if ($task->is_template) {
             $task->instances()->update([
@@ -611,6 +620,7 @@ class TaskController extends Controller
             'scheduled_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'is_archived' => 'nullable|boolean',
+            'assigned_user_id' => 'nullable|exists:users,id',
         ]);
 
         $oldStatus = $task->status;
@@ -623,6 +633,9 @@ class TaskController extends Controller
         if ($request->has('is_archived')) {
             $task->is_archived = (bool) $validated['is_archived'];
             \Log::info('Setting is_archived to:', ['val' => $task->is_archived]);
+        }
+        if ($request->has('assigned_user_id') && $task->isInstance()) {
+            $task->assigned_user_id = $validated['assigned_user_id'];
         }
         
         if ($request->has('status')) {
@@ -693,8 +706,12 @@ class TaskController extends Controller
         }
 
         if ($task->parent_id && $request->has('progress_percentage')) {
-            $parent = $task->parent;
-            $parent->update(['progress_percentage' => $parent->progress]);
+            $currentParent = $task->parent;
+            while ($currentParent) {
+                $currentParent->update(['progress_percentage' => $currentParent->progress]);
+                $currentParent = $currentParent->parent;
+            }
+            $task->refresh(); // Clear relation cache
         }
 
         $task->syncKanbanColumn();
@@ -729,6 +746,8 @@ class TaskController extends Controller
         }
 
         $task->assignedUser->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress));
+
+        $task->increment('nudge_count');
 
         return response()->json([
             'success' => true,

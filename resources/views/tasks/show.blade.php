@@ -221,7 +221,7 @@
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
                                 @foreach ($instances as $inst)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
-                                        <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                        <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-3">
                                                 <div
                                                     class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
@@ -233,15 +233,26 @@
                                                         ?
                                                     @endif
                                                 </div>
-                                                <span class="font-medium text-gray-700 dark:text-gray-300">
-                                                    @if ($inst->assignedUser)
-                                                        {{ $inst->assignedUser->name }}
-                                                    @elseif($inst->assignedTo->count() > 0)
-                                                        {{ $inst->assignedTo->pluck('name')->join(', ') }}
-                                                    @else
-                                                        {{ __('tasks.unassigned') ?? 'Sin asignar' }}
-                                                    @endif
-                                                </span>
+                                                @if ($team->isCoordinator(auth()->user()))
+                                                    <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-xs bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-lg focus:ring-0 cursor-pointer font-medium text-gray-700 dark:text-gray-300 px-2 py-1 -ml-2 transition-colors">
+                                                        <option value="">{{ __('tasks.unassigned') ?? 'Sin asignar' }}</option>
+                                                        @foreach($team->members as $member)
+                                                            <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }}>
+                                                                {{ $member->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    <span class="font-medium text-gray-700 dark:text-gray-300">
+                                                        @if ($inst->assignedUser)
+                                                            {{ $inst->assignedUser->name }}
+                                                        @elseif($inst->assignedTo->count() > 0)
+                                                            {{ $inst->assignedTo->pluck('name')->join(', ') }}
+                                                        @else
+                                                            {{ __('tasks.unassigned') ?? 'Sin asignar' }}
+                                                        @endif
+                                                    </span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="px-4 py-3">
@@ -263,15 +274,18 @@
                                         </td>
                                         <td class="px-4 py-3 text-right">
                                             @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
-                                                <button onclick="nudgeUser({{ $inst->id }})"
+                                                <button onclick="event.stopPropagation(); nudgeUser({{ $inst->id }})"
                                                     class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
                                                     title="{{ __('tasks.nudge_user') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                                         stroke-width="2">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                                     </svg>
+                                                    @if ($inst->nudge_count > 0)
+                                                        <span class="ml-1 text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 dark:bg-violet-900/50 rounded-full">{{ $inst->nudge_count }}</span>
+                                                    @endif
                                                 </button>
                                             @endif
                                         </td>
@@ -301,6 +315,19 @@
                                     {{ __('tasks.personal_instance_notice') }}
                                 @else
                                     {{ __('tasks.personal_instance_notice_others', ['name' => $task->assignedUser->name ?? 'User']) }}
+                                @endif
+                                
+                                @if ($team->isCoordinator(auth()->user()))
+                                    <div class="inline-block relative">
+                                        <select onchange="reassignTask({{ $task->id }}, this.value)" class="text-xs bg-white dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 hover:border-indigo-300 rounded-lg ml-2 px-2 py-1 shadow-sm font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer">
+                                            <option value="">{{ __('Reasignar a...') }}</option>
+                                            @foreach($team->members()->orderBy('name')->get() as $member)
+                                                <option value="{{ $member->id }}" {{ $task->assigned_user_id === $member->id ? 'selected' : '' }}>
+                                                    {{ $member->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 @endif
                             </p>
                             <p class="text-xs text-indigo-700/70 dark:text-indigo-400/80 font-medium">
@@ -897,7 +924,7 @@
                                             '#111827' : '#fff',
                                         color: document.documentElement.classList.contains('dark') ?
                                             '#fff' : '#111827'
-                                    });
+                                    }).then(() => location.reload());
                                 }
                             })
                             .catch(error => {
@@ -913,6 +940,45 @@
                                 });
                             });
                     }
+                });
+            }
+
+            function reassignTask(taskId, userId) {
+                if (!userId) return;
+                
+                fetch(`/teams/{{ $team->id }}/tasks/${taskId}/move`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        assigned_user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'bottom-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Asignación actualizada'
+                        }).then(() => location.reload());
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se ha podido cambiar la asignación.',
+                        icon: 'error'
+                    });
                 });
             }
 
