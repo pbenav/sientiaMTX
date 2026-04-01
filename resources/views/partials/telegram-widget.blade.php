@@ -58,9 +58,28 @@
         </div>
 
         <!-- Input -->
-        <form @submit.prevent="send()" class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800" style="padding: 1rem; background: white; border-top: 1px solid #f3f4f6;">
+        <form @submit.prevent="send()" class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800" style="padding: 1rem; background: white; border-top: 1px solid #f3f4f6;" x-data="{ showEmojis: false }">
+            <div x-show="showEmojis" @click.outside="showEmojis = false"
+                 class="absolute bottom-20 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl p-3 grid grid-cols-7 gap-2 z-50 origin-bottom"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                 style="display: none;">
+                <template x-for="emo in ['😀','😂','🥰','😎','🤔','😅','👍','👎','👏','🔥','🎉','❤️','✅','❌','👀','🚀','⚠️','💡','💪','✨','🙏']">
+                    <button type="button" @click="newMessage += emo; $refs.chatInput.focus(); showEmojis = false;" class="text-xl hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 rounded-lg transition-colors" x-text="emo"></button>
+                </template>
+            </div>
+            
             <div class="relative flex items-center gap-2">
-                <input x-model="newMessage" 
+                <button type="button" @click="showEmojis = !showEmojis" :disabled="!teamId"
+                        class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
+                        title="Emojis">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </button>
+                <input x-ref="chatInput" x-model="newMessage" 
                        type="text" 
                        placeholder="Escribe un mensaje..."
                        :disabled="!teamId"
@@ -189,10 +208,15 @@
                 }
             },
             scrollToBottom() {
+                // Doble trigger para asegurar que ocurre durante y después de la transición de Alpine
                 setTimeout(() => {
                     const container = document.getElementById('telegram-messages-container');
                     if (container) container.scrollTop = container.scrollHeight;
                 }, 100);
+                setTimeout(() => {
+                    const container = document.getElementById('telegram-messages-container');
+                    if (container) container.scrollTop = container.scrollHeight;
+                }, 350);
             }
         }
     }

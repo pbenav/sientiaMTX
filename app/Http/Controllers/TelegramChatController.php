@@ -87,9 +87,11 @@ class TelegramChatController extends Controller
         }
 
         $messages = TelegramMessage::where('team_id', $teamId)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
+            ->reverse()
+            ->values()
             ->map(function ($msg) {
                 return [
                     'id' => $msg->id,
