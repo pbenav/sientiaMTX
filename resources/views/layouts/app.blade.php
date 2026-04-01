@@ -456,6 +456,9 @@
         </div>
     </footer>
 
+    <!-- Telegram Chat Experiment -->
+    @include('partials.telegram-widget')
+
     @stack('scripts')
     <script>
         window.confirmDelete = function(formId, message) {

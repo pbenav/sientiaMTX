@@ -14,7 +14,14 @@ class Team extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'slug', 'description', 'created_by_id', 'quadrant_colors'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'telegram_chat_id',
+        'created_by_id',
+        'quadrant_colors',
+    ];
 
     protected $casts = [
         'quadrant_colors' => 'array',

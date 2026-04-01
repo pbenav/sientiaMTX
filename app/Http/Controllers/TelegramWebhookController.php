@@ -17,19 +17,40 @@ class TelegramWebhookController extends Controller
         
         Log::info('Telegram Update Received:', $update);
 
-        // Basic validation
         if (!isset($update['message']['chat']['id'])) {
             return response()->json(['status' => 'ignored']);
         }
 
         $chatId = $update['message']['chat']['id'];
         $text = $update['message']['text'] ?? '';
+        $messageId = $update['message']['message_id'] ?? null;
+        $from = $update['message']['from'] ?? [];
+        $authorName = ($from['first_name'] ?? 'Usuario') . ' ' . ($from['last_name'] ?? '');
 
-        // If the user sends /start, we return their chat ID
-        if (str_starts_with($text, '/start')) {
+        // 1. Check if it's a private chat /start
+        if ($chatId > 0 && str_starts_with($text, '/start')) {
             $this->sendMessage($chatId, "👋 *¡Hola! Bienvenido a SientiaMTX.*\n\n" .
-                "Tu Chat ID para recibir notificaciones es:\n`{$chatId}`\n\n" .
-                "Cópialo y pégalo en tu *Perfil > Notificaciones* dentro de la aplicación.");
+                "Tu Chat ID personal es:\n`{$chatId}`\n\n" .
+                "Si quieres vincular un *EQUIPO*, añade este bot a un grupo y escribe `/vincular` allí.");
+            return response()->json(['status' => 'success']);
+        }
+
+        // 2. Check for /vincular command in group
+        if (str_starts_with($text, '/vincular')) {
+            $this->sendMessage($chatId, "🔗 *¡Oído cocina!*\n\nPara vincular este grupo a un equipo de SientiaMTX, copia este ID en la configuración de tu equipo:\n\n`{$chatId}`");
+            return response()->json(['status' => 'success']);
+        }
+
+        // 3. Handle messages from groups that are already linked to a team
+        $team = \App\Models\Team::where('telegram_chat_id', $chatId)->first();
+        if ($team) {
+            \App\Models\TelegramMessage::create([
+                'team_id' => $team->id,
+                'author_name' => trim($authorName),
+                'text' => $text,
+                'telegram_message_id' => $messageId,
+                'is_from_web' => false,
+            ]);
         }
 
         return response()->json(['status' => 'success']);

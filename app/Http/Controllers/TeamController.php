@@ -92,6 +92,7 @@ class TeamController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
             'description' => 'nullable|string|max:1000',
+            'telegram_chat_id' => 'nullable|string|max:255',
         ]);
 
         $validated['slug'] = str($validated['name'])->slug();

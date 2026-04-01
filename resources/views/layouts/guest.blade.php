@@ -30,6 +30,9 @@
             {{ $slot }}
         </div>
     </div>
+
+    <!-- Telegram Chat Experiment -->
+    @include('partials.telegram-widget')
 </body>
 
 </html>

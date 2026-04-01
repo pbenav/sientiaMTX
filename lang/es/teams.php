@@ -70,4 +70,7 @@ return [
     'confirm_ok' => 'Aceptar',
     'confirm_cancel' => 'Cancelar',
     'recent_tasks' => 'Tareas recientes',
+    'telegram_chat_id' => 'ID de Grupo de Telegram',
+    'telegram_chat_id_description' => 'Introduce el ID del grupo vinculado. Usa /vincular en Telegram para obtenerlo.',
+    'telegram_integration' => 'Integración con Telegram',
 ];
