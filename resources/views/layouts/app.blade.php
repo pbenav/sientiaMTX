@@ -384,8 +384,8 @@
     @endif
 
     <!-- Page content -->
-    <main id="mainContent" class="px-4 sm:px-6 lg:px-8 py-8"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 {{ $maxWidth }} mx-auto' : '{{ $maxWidth }} mx-auto') : '{{ $maxWidth }} mx-auto'">
+    <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8"
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full {{ $maxWidth }} mx-auto' : 'w-full {{ $maxWidth }} mx-auto') : 'w-full {{ $maxWidth }} mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"

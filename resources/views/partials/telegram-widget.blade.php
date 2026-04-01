@@ -12,7 +12,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-90 translate-y-10"
-         class="mb-4 w-[350px] sm:w-[400px] h-[550px] bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5"
+         class="mb-4 w-[350px] sm:w-[400px] h-[620px] max-h-[85vh] sm:h-[550px] bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5"
          style="background: white; border: 1px solid #eee; overflow: hidden; display: none;"
          :style="open ? 'display: flex !important;' : 'display: none !important;'"
          x-cloak>
