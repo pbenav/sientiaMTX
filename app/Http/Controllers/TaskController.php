@@ -63,13 +63,13 @@ class TaskController extends Controller
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
         } else {
-            // Default sort
-            $query->orderBy('due_date', 'asc')
-                  ->orderBy('priority', 'desc');
+            // Default sort: Priority (Critical -> Low) and Progress (High -> Low)
+            $query->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
+                  ->orderBy('progress_percentage', 'desc');
         }
 
         // --- Hide completed filter (session-based preference) ---
-        if (session('hide_completed_tasks', true)) {
+        if (session('hide_completed_tasks', true) && !$request->status) {
             $query->whereNotIn('status', ['completed', 'cancelled']);
         }
 
@@ -569,7 +569,7 @@ class TaskController extends Controller
                 ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
                 ->operationalFor(auth()->user(), $team)
                 ->with(['assignedTo', 'tags'])
-                ->when(session('hide_completed_tasks', true), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+                ->when(session('hide_completed_tasks', true) && !$request->status, fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
                 ->get()
                 ->filter(function ($task) use ($q) {
                     return $this->getQuadrant($task) === $q;

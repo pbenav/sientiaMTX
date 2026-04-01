@@ -286,7 +286,8 @@ class TeamController extends Controller
         ];
 
         foreach ($allTasks as $task) {
-            if ($task->status !== 'completed') {
+            $isCompleted = in_array($task->status, ['completed', 'cancelled']);
+            if (!$hideCompleted || !$isCompleted) {
                 $quadrant = $this->getQuadrant($task);
                 $quadrants[$quadrant][] = $task;
             }

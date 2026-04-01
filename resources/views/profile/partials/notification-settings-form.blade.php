@@ -244,10 +244,40 @@
                         } else {
                             showStatus('⚠️ Suscripción guardada pero el servidor devolvió un error. Recarga la página.', 'warning');
                         }
-                    }).catch(err => {
+                    }).catch(async err => {
                         console.error('Failed to subscribe:', err);
+                        
+                        // Si el error es por cambio de claves VAPID (común si se resetearon en el servidor), 
+                        // intentamos desuscribir la antigua y volver a intentar automáticamente.
+                        if (err.message.includes('application server key already exists')) {
+                            showStatus('🔄 Actualizando claves de servidor... por favor espera.', 'info');
+                            try {
+                                const registration = await navigator.serviceWorker.ready;
+                                const subscription = await registration.pushManager.getSubscription();
+                                if (subscription) {
+                                    await subscription.unsubscribe();
+                                }
+                                // Reintentar suscripción
+                                setTimeout(() => subscribeUser(), 500);
+                                return;
+                            } catch (retryErr) {
+                                console.error('Error al intentar limpiar suscripción antigua:', retryErr);
+                            }
+                        }
+
                         webPushCheckbox.checked = false;
-                        showStatus('❌ Error al suscribirse: ' + err.message, 'error');
+                        
+                        // Traducción amigable de errores comunes del navegador
+                        let friendlyMsg = err.message;
+                        if (err.name === 'NotAllowedError' || err.message.includes('permission denied')) {
+                            friendlyMsg = 'Permiso denegado. Por favor, habilita las notificaciones en la configuración de tu navegador.';
+                        } else if (err.message.includes('application server key already exists')) {
+                            friendlyMsg = 'Conflicto con una suscripción anterior. Intenta recargar la página.';
+                        } else if (err.message.includes('ServiceWorker')) {
+                            friendlyMsg = 'Error relacionado con el Service Worker. Intenta recargar la página.';
+                        }
+
+                        showStatus('❌ Error al suscribirse: ' + friendlyMsg, 'error');
                     });
                 });
             }

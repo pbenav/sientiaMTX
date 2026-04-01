@@ -11,6 +11,8 @@
             @include('layouts.partials.zoom-controls')
             @include('layouts.partials.language-toggle')
 
+            @include('teams.partials.hide-completed-toggle')
+            <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
             @auth
                 <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
                 <!-- User menu for vertical header -->
