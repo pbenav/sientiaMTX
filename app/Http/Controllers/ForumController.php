@@ -62,6 +62,22 @@ class ForumController extends Controller
         $task = null;
         if ($validated['task_id']) {
             $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
+            
+            // Force link to the root task
+            while ($task->parent_id && $task->parent) {
+                $task = $task->parent;
+            }
+
+            // If the root task already has a thread, append the message instead of creating a new one
+            if ($task->forumThread) {
+                $thread = $task->forumThread;
+                $thread->messages()->create([
+                    'user_id' => auth()->id(),
+                    'content' => $validated['content'],
+                ]);
+                return redirect()->route('teams.forum.show', [$team, $thread])
+                    ->with('success', __('forum.thread_already_existed') ?? 'Esta tarea principal ya tenía un hilo activo; el mensaje se ha añadido allí.');
+            }
         }
 
         $thread = $team->forumThreads()->create([

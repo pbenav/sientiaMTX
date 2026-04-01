@@ -205,7 +205,7 @@
                     <select id="task_id" name="task_id"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-md shadow-sm sm:text-sm">
                         <option value="">{{ __('forum.none') ?? '-- Ninguna --' }}</option>
-                        @foreach (\App\Models\Task::where('team_id', $team->id)->whereDoesntHave('forumThread')->orderBy('title')->get() as $t)
+                        @foreach (\App\Models\Task::where('team_id', $team->id)->whereNull('parent_id')->whereDoesntHave('forumThread')->orderBy('title')->get() as $t)
                             <option value="{{ $t->id }}">[{{ __('tasks.statuses.' . $t->status) }}]
                                 {{ $t->title }}</option>
                         @endforeach
