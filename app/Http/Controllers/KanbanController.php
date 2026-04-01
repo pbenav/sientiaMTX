@@ -33,8 +33,9 @@ class KanbanController extends Controller
                       ->when(session('hide_completed_tasks', true), function($sq) {
                           return $sq->whereNotIn('status', ['completed', 'cancelled']);
                       })
-                      ->orderBy('priority', 'desc')
-                      ->orderBy('urgency', 'desc')
+                      ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
+                      ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
+                      ->orderBy('progress_percentage', 'desc')
                       ->orderBy('kanban_order', 'asc');
             }])
             ->orderBy('order_index', 'asc')

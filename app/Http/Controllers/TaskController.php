@@ -570,7 +570,10 @@ class TaskController extends Controller
                 ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
                 ->operationalFor(auth()->user(), $team)
                 ->with(['assignedTo', 'tags'])
-                ->when(session('hide_completed_tasks', true) && !$request->status, fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+                ->when(session('hide_completed_tasks', true), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+                ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
+                ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
+                ->orderBy('progress_percentage', 'desc')
                 ->get()
                 ->filter(function ($task) use ($q) {
                     return $this->getQuadrant($task) === $q;
