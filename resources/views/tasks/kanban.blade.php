@@ -396,14 +396,17 @@
             }
 
             // Completed tasks drop zone
-            new Sortable(document.getElementById('completed-tasks-zone'), {
-                group: 'tasks',
-                animation: 200,
-                onAdd: function(evt) {
-                    const taskId = evt.item.dataset.taskId;
-                    archiveTask(taskId);
-                }
-            });
+            const completedZone = document.getElementById('completed-tasks-zone');
+            if (completedZone) {
+                new Sortable(completedZone, {
+                    group: 'tasks',
+                    animation: 200,
+                    onAdd: function(evt) {
+                        const taskId = evt.item.dataset.taskId;
+                        archiveTask(taskId);
+                    }
+                });
+            }
 
             function updateTaskProgress(taskId, progress) {
                 fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {

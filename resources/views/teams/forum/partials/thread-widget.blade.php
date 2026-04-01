@@ -1,4 +1,10 @@
 <!-- Forum Thread Widget -->
+@php
+    $rootTask = $task;
+    while ($rootTask->parent_id && $rootTask->parent) {
+        $rootTask = $rootTask->parent;
+    }
+@endphp
 <div
     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors">
     <div class="flex items-center justify-between mb-4">
@@ -11,15 +17,15 @@
             {{ __('forum.discussion') }}
         </h3>
 
-        @if ($task->forumThread)
-            <a href="{{ route('teams.forum.show', [$team, $task->forumThread]) }}"
+        @if ($rootTask->forumThread)
+            <a href="{{ route('teams.forum.show', [$team, $rootTask->forumThread]) }}"
                 class="text-[10px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-md font-bold transition-colors">
                 {{ __('forum.view_full') }}
             </a>
         @endif
     </div>
 
-    @if (!$task->forumThread)
+    @if (!$rootTask->forumThread)
         <div class="text-center py-6">
             <div
                 class="w-12 h-12 bg-violet-50 dark:bg-violet-900/30 text-violet-500 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -34,10 +40,10 @@
 
             <form action="{{ route('teams.forum.store', $team) }}" method="POST">
                 @csrf
-                <input type="hidden" name="task_id" value="{{ $task->id }}">
-                <input type="hidden" name="title" value="Discusión: {{ $task->title }}">
+                <input type="hidden" name="task_id" value="{{ $rootTask->id }}">
+                <input type="hidden" name="title" value="Discusión: {{ $rootTask->title }}">
                 <input type="hidden" name="content"
-                    value="Hilo de discusión abierto para la tarea: {{ $task->title }}">
+                    value="Hilo de discusión abierto para la tarea: {{ $rootTask->title }}">
 
                 <button type="submit"
                     class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2">
@@ -53,7 +59,7 @@
         <div class="space-y-4">
             <div class="max-h-[300px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
                 id="widget-messages-container">
-                @forelse($task->forumThread->messages()->with('user')->get() as $message)
+                @forelse($rootTask->forumThread->messages()->with('user')->get() as $message)
                     <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 {{ $loop->last ? 'mb-1' : '' }}">
                         <div class="flex items-center justify-between mb-1.5">
                             <div class="flex items-center gap-1.5">
@@ -78,26 +84,67 @@
                 @endforelse
             </div>
 
-            @if (!$task->forumThread->is_locked)
-                <form action="{{ route('teams.forum.messages.store', [$team, $task->forumThread]) }}" method="POST"
-                    class="mt-3 relative">
+            @if (!$rootTask->forumThread->is_locked)
+                <form action="{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}" method="POST"
+                    class="mt-3 relative" x-data="{ showEmojiPicker: false }">
                     @csrf
-                    <textarea name="content" rows="2"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border {{ $errors->has('content') ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500' }} rounded-xl text-xs py-2 pl-3 pr-10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors resize-none"
+                    <textarea name="content" rows="2" id="forum-thread-textarea-{{ $rootTask->id }}"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border {{ $errors->has('content') ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500' }} rounded-xl text-xs py-2 pl-3 pr-[4.5rem] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors resize-none"
                         placeholder="{{ __('forum.write_message') }}..." required></textarea>
-                    <button type="submit"
-                        class="absolute right-2 bottom-2 p-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                    </button>
+                    
+                    <div class="absolute right-2 bottom-2 flex items-center gap-1">
+                        <!-- Emoji Button -->
+                        <div class="relative">
+                            <button type="button" @click="showEmojiPicker = !showEmojiPicker" @click.outside="showEmojiPicker = false"
+                                class="p-1.5 text-gray-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/40 rounded-lg transition-colors"
+                                title="Añadir emoticono">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
+                            <!-- Simple Emoji Panel -->
+                            <div x-show="showEmojiPicker" x-transition style="display: none;"
+                                class="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-2 z-50 w-48 max-h-48 overflow-y-auto grid grid-cols-5 gap-1 text-base">
+                                @php
+                                    $emojis = ['😊','😂','😉','😍','😘','😜','😎','😭','😡','🥺','👍','👎','👏','🙌','🤝','🔥','✨','❤️','🎉','💯'];
+                                @endphp
+                                @foreach($emojis as $emoji)
+                                    <button type="button" onclick="insertEmoji('{{ $emoji }}', 'forum-thread-textarea-{{ $rootTask->id }}')" 
+                                        class="hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 transition-colors text-center cursor-pointer">
+                                        {{ $emoji }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                            class="p-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors shadow-sm"
+                            title="Enviar mensaje">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                        </button>
+                    </div>
                 </form>
                 @error('content')
                     <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>
                 @enderror
 
                 <script>
+                    function insertEmoji(emoji, targetId) {
+                        const input = document.getElementById(targetId);
+                        if (input) {
+                            const start = input.selectionStart;
+                            const end = input.selectionEnd;
+                            const text = input.value;
+                            input.value = text.substring(0, start) + emoji + text.substring(end);
+                            const newPos = start + emoji.length;
+                            input.setSelectionRange(newPos, newPos);
+                            input.focus();
+                        }
+                    }
+
                     // Auto-scroll to bottom of widget messages
                     document.addEventListener('DOMContentLoaded', function() {
                         const container = document.getElementById('widget-messages-container');
