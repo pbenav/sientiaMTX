@@ -56,7 +56,7 @@ class TaskController extends Controller
         }
 
         // --- Sorting ---
-        $sort = $request->get('sort', 'due_date');
+        $sort = $request->get('sort');
         $direction = $request->get('direction', 'asc');
         
         $allowedSorts = ['title', 'status', 'priority', 'due_date', 'created_at', 'progress_percentage'];
