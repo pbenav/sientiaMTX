@@ -140,8 +140,8 @@
                     {{ __('tasks.delete_selection') }}
                 </button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto min-h-[200px]">
+                <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
                             <th class="px-4 py-4 w-10 text-center">
@@ -170,21 +170,21 @@
                                 </a>
                             </th>
                             <th
-                                class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap hidden lg:table-cell">
                                 {{ __('tasks.owner') }}
                             </th>
                             <th
                                 class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 {{ __('tasks.assigned_to') }}
                             </th>
-                            <th class="px-4 py-4 whitespace-nowrap">
+                            <th class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'progress_percentage', 'direction' => request('sort') == 'progress_percentage' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.progress') }}
                                     <x-sort-icon column="progress_percentage" />
                                 </a>
                             </th>
-                            <th class="px-4 py-4 whitespace-nowrap">
+                            <th class="px-4 py-4 whitespace-nowrap hidden md:table-cell">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'due_date', 'direction' => request('sort') == 'due_date' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.due_date') }}
@@ -232,9 +232,10 @@
                                         @else
                                             <div class="w-5 mr-1"></div>
                                         @endif
-                                        <div>
+                                        <div class="min-w-0">
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                                class="text-sm font-semibold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                class="text-sm font-semibold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-all truncate block max-w-[140px] sm:max-w-xs md:max-w-md lg:max-w-lg"
+                                                title="{{ $task->title }}">
                                                 {{ $task->title }}
                                             </a>
                                             @if ($task->visibility === 'private')
@@ -297,13 +298,13 @@
                                 <td class="px-4 py-4 text-xs whitespace-nowrap">
                                     {{ __("tasks.priorities.{$task->priority}") }}
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">
                                     {{ $task->creator?->name ?? '—' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     {{ $task->assignedUser?->name ?? __('tasks.unassigned') }}
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">
                                     <div class="flex items-center gap-2">
                                         <div
                                             class="flex-1 w-20 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
@@ -314,7 +315,7 @@
                                             class="text-[10px] font-bold text-gray-400 dark:text-gray-500 w-6">{{ $task->progress }}%</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap hidden md:table-cell">
                                     <span
                                         class="text-xs text-gray-500">{{ $task->due_date ? $task->due_date->format('d/m/y') : '—' }}</span>
                                 </td>
@@ -374,13 +375,13 @@
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         {{ __("tasks.priorities.{$subtask->priority}") }}
                                     </td>
-                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap hidden lg:table-cell">
                                         {{ $subtask->creator?->name ?? '—' }}
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         {{ $subtask->assignedUser?->name ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">
                                         <div class="flex items-center gap-2">
                                             <div
                                                 class="flex-1 w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
@@ -391,7 +392,7 @@
                                                 class="text-[9px] font-bold text-gray-400 dark:text-gray-500 w-5">{{ $subtask->progress }}%</span>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap hidden md:table-cell">
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
                                     </td>
                                     <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
