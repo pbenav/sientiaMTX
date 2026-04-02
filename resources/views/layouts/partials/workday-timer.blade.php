@@ -17,7 +17,7 @@
             .then(res => res.json())
             .then(data => {
                 this.working = data.is_working;
-                this.elapsed = data.workday_elapsed;
+                this.elapsed = Math.floor(data.workday_elapsed);
                 this.activeTask = data.active_task_id;
             });
     },

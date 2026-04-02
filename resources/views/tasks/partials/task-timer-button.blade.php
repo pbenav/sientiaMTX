@@ -21,7 +21,7 @@
             .then(data => {
                 this.activeTask = data.active_task_id;
                 if (this.activeTask === this.taskId) {
-                    this.elapsed = data.task_elapsed;
+                    this.elapsed = Math.floor(data.task_elapsed);
                     this.startTimer();
                 }
             });
