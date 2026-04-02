@@ -171,6 +171,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/send', [\App\Http\Controllers\TelegramChatController::class, 'sendMessage'])->name('send');
         Route::delete('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'destroy'])->name('delete');
     });
+
+    // Time Tracking routes
+    Route::prefix('time-logs')->name('time-logs.')->group(function () {
+        Route::post('/toggle-workday', [\App\Http\Controllers\TimeLogController::class, 'toggleWorkday'])->name('toggle-workday');
+        Route::post('/toggle-task/{task}', [\App\Http\Controllers\TimeLogController::class, 'toggleTask'])->name('toggle-task');
+        Route::get('/status', [\App\Http\Controllers\TimeLogController::class, 'status'])->name('status');
+    });
 });
 
 require __DIR__.'/auth.php';

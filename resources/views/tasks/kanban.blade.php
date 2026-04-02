@@ -127,16 +127,19 @@
                                         <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                             {{ $task->title }}
                                         </a>
-                                        <div class="shrink-0 flex items-center gap-1.5">
-                                            @if(!$task->is_archived)
-                                                <button onclick="archiveTask({{ $task->id }})" 
-                                                        class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-colors"
-                                                        title="{{ __('tasks.mark_as_completed_and_archive') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                </button>
-                                            @endif
+                                        <div class="shrink-0 flex flex-col items-end gap-1.5">
+                                            <div class="flex items-center gap-1.5">
+                                                @include('tasks.partials.task-timer-button')
+                                                @if(!$task->is_archived)
+                                                    <button onclick="archiveTask({{ $task->id }})" 
+                                                            class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-colors"
+                                                            title="{{ __('tasks.mark_as_completed_and_archive') }}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                            </div>
                                             <a href="{{ route('teams.dashboard', $team) }}" 
                                                onclick="event.stopPropagation()"
                                                class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter hover:ring-2 hover:ring-violet-500 transition-all cursor-pointer shadow-sm"

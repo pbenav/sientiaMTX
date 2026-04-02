@@ -488,4 +488,36 @@ class Task extends Model
             ]);
         }
     }
+
+    // Time Tracking Relationships
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TimeLog::class);
+    }
+
+    /**
+     * Get total time spent on this task in seconds.
+     */
+    public function totalTrackedSeconds(): int
+    {
+        $logs = $this->timeLogs()->whereNotNull('end_at')->get();
+        return $logs->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+    }
+
+    /**
+     * Get human-readable total time (e.g. 2h 30m).
+     */
+    public function totalTrackedTimeHuman(): string
+    {
+        $seconds = $this->totalTrackedSeconds();
+        if ($seconds === 0) return '0m';
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        
+        if ($hours > 0) {
+            return "{$hours}h {$minutes}m";
+        }
+        return "{$minutes}m";
+    }
 }

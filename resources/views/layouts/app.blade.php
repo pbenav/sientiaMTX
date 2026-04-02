@@ -259,6 +259,7 @@
                         </div>
                     @endauth
 
+                    @auth @include('layouts.partials.workday-timer') @endauth
                     @include('layouts.partials.theme-toggle')
                     @include('layouts.partials.layout-toggle')
                     @include('layouts.partials.zoom-controls')

@@ -221,5 +221,21 @@ class User extends Authenticatable implements HasLocalePreference
         $role = \DB::table('team_roles')->where('id', $membership->pivot->role_id)->first();
         return $role ? $role->name : null;
     }
+
+    // Time Tracking Relationships
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TimeLog::class);
+    }
+
+    public function activeWorkdayLog(): ?TimeLog
+    {
+        return $this->timeLogs()->where('type', 'workday')->whereNull('end_at')->first();
+    }
+
+    public function activeTaskLog(): ?TimeLog
+    {
+        return $this->timeLogs()->where('type', 'task')->whereNull('end_at')->first();
+    }
 }
 
