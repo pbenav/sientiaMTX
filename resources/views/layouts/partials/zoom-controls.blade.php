@@ -1,36 +1,45 @@
-<div class="relative" x-data="{ open: false }">
-    <button @click="open = !open" @click.outside="open = false"
-        class="flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 w-9 h-9 rounded-lg transition-all"
-        title="{{ __('Zoom Controls') }}">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+<div class="flex items-center gap-3 bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm transition-all" 
+     x-data="{ 
+        zoom: parseFloat(localStorage.getItem('global_zoom') || '1.0'),
+        updateZoom(val) {
+            this.zoom = parseFloat(val);
+            localStorage.setItem('global_zoom', this.zoom.toFixed(2));
+            if (typeof applyGlobalZoom === 'function') {
+                applyGlobalZoom(this.zoom);
+            }
+        }
+     }">
+    <!-- Icono Alejar -->
+    <button @click="updateZoom(Math.max(0.5, zoom - 0.05))" class="text-gray-400 hover:text-violet-500 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10H7" />
         </svg>
     </button>
-    <div x-show="open" x-transition
-        class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 p-2">
-        <div class="flex items-center justify-between gap-2">
-            <!-- Alejar -->
-            <button onclick="adjustGlobalZoom(-0.1)" 
-                class="flex-1 p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
-                </svg>
-            </button>
-            
-            <!-- Reset -->
-            <button onclick="localStorage.setItem('global_zoom', '1.0'); applyGlobalZoom(1.0)"
-                class="px-2 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 rounded-lg min-w-[50px] text-center"
-                id="global-zoom-label" title="{{ __('Reset Zoom') }}">
-                100%
-            </button>
 
-            <!-- Acercar -->
-            <button onclick="adjustGlobalZoom(0.1)" 
-                class="flex-1 p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-            </button>
-        </div>
+    <!-- Slider -->
+    <div class="flex items-center group relative">
+        <input type="range" min="0.5" max="1.5" step="0.05" x-model="zoom" @input="updateZoom($event.target.value)"
+            class="w-20 md:w-28 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-500 transition-all hover:h-2"
+            title="{{ __('Adjust Zoom') }}">
+        
+        <!-- Tooltip con el porcentaje -->
+        <span class="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-md bg-gray-900 text-white text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <span x-text="Math.round(zoom * 100) + '%'"></span>
+        </span>
     </div>
+
+    <!-- Icono Acercar -->
+    <button @click="updateZoom(Math.min(1.5, zoom + 0.05))" class="text-gray-400 hover:text-violet-500 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 7v3m0 0v3m0-3h3m-3 0H7" />
+        </svg>
+    </button>
+
+    <!-- Label / Reset -->
+    <button @click="updateZoom(1.0)" 
+            class="text-[9px] font-black text-violet-600 dark:text-violet-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded-md shadow-sm border border-gray-200/50 dark:border-gray-600/50 hover:scale-110 transition-transform active:scale-95"
+            title="{{ __('Reset Zoom') }}">
+        <span x-text="Math.round(zoom * 100) + '%'"></span>
+    </button>
 </div>

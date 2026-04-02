@@ -549,7 +549,7 @@
             window.adjustGlobalZoom = function(delta) {
                 let currentZoom = parseFloat(localStorage.getItem('global_zoom') || '1.0');
                 currentZoom = Math.round((currentZoom + delta) * 100) / 100;
-                currentZoom = Math.max(0.8, Math.min(1.2, currentZoom));
+                currentZoom = Math.max(0.5, Math.min(1.5, currentZoom));
                 localStorage.setItem('global_zoom', currentZoom);
                 window.applyGlobalZoom(currentZoom);
             }
