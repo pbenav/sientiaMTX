@@ -265,6 +265,7 @@
                                                     {{ __('tasks.public') }}
                                                 </span>
                                             @endif
+                                            @if ($task->is_template)
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded shadow-sm inline-flex items-center">{{ __('tasks.template') }}</span>
                                             @elseif ($task->isInstance())
