@@ -96,4 +96,28 @@ class TimeLogController extends Controller
             'task_elapsed' => $user->activeTaskLog() ? $user->activeTaskLog()->start_at->diffInSeconds(now()) : 0,
         ]);
     }
+
+    /**
+     * Display time tracking reports.
+     */
+    public function index(Request $request, \App\Models\Team $team)
+    {
+        $user = auth()->user();
+        
+        // Get all my tasks in this team that have time logged
+        $tasks = $team->tasks()->whereHas('timeLogs', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->with(['timeLogs' => function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        }])->get();
+
+        // Get my recent workdays
+        $workdayLogs = $user->timeLogs()
+            ->where('type', 'workday')
+            ->orderBy('start_at', 'desc')
+            ->limit(30)
+            ->get();
+            
+        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs'));
+    }
 }

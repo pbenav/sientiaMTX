@@ -16,4 +16,6 @@ return [
     'task_list' => 'Tasks',
     'users' => 'Users',
     'task_detail' => 'Task Detail',
+    'zoom_controls' => 'Zoom Controls',
+    'reset_zoom' => 'Reset Zoom (100%)',
 ];

@@ -178,6 +178,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/toggle-task/{task}', [\App\Http\Controllers\TimeLogController::class, 'toggleTask'])->name('toggle-task');
         Route::get('/status', [\App\Http\Controllers\TimeLogController::class, 'status'])->name('status');
     });
+
+    Route::get('/teams/{team}/time-reports', [\App\Http\Controllers\TimeLogController::class, 'index'])->name('teams.time-reports');
 });
 
 require __DIR__.'/auth.php';
