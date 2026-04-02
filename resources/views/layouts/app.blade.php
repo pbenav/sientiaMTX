@@ -119,8 +119,8 @@
 
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
-        class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50">
-        <div class="max-w-none lg:{{ $maxWidth }} lg:mx-auto px-2 sm:px-6 lg:px-8">
+        class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50 w-full max-w-[100vw] left-0">
+        <div class="max-w-none lg:{{ $maxWidth }} mx-auto px-2 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
                 <!-- Logo -->
@@ -402,7 +402,8 @@
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
-            class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
+            class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 w-full max-w-[100vw] left-0">
+            <div class="mx-auto max-w-none lg:{{ $maxWidth }}">
             <div class="flex items-start gap-4">
                 <!-- Toggle button ONLY when closed -->
                 <button x-show="!sidebarOpen" @click="sidebarOpen = true"
@@ -429,6 +430,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
         @if (isset($header) && $layout === 'horizontal')
             <div class="mb-6">
