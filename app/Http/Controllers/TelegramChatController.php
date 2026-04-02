@@ -76,20 +76,27 @@ class TelegramChatController extends Controller
     }
 
     /**
-     * Obtener el historial de mensajería de un equipo.
+     * Obtener el historial de mensajería de un equipo (paginado).
      */
     public function getMessages(Request $request)
     {
         $teamId = $request->query('team_id');
+        $beforeId = $request->query('before_id');
         
         if (!$teamId) {
             return response()->json(['messages' => []]);
         }
 
-        $messages = TelegramMessage::where('team_id', $teamId)
+        $query = TelegramMessage::where('team_id', $teamId)
             ->where('is_deleted_on_telegram', false)
-            ->orderBy('created_at', 'desc')
-            ->take(50)
+            ->orderBy('created_at', 'desc');
+
+        // Optional: Pagination to load older messages
+        if ($beforeId) {
+            $query->where('id', '<', $beforeId);
+        }
+
+        $messages = $query->take(25)
             ->get()
             ->reverse()
             ->values()

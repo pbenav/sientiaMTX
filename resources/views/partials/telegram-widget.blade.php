@@ -42,6 +42,17 @@
         <!-- Área de Mensajes -->
         <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-950/50 custom-scrollbar" id="telegram-messages-container"
              style="background-color: rgba(249, 250, 251, 0.5); flex: 1; overflow-y: auto;">
+            
+            <!-- Botón Cargar Más -->
+            <div class="flex justify-center mb-4" x-show="canLoadMore">
+                <button @click="loadOlderMessages()" 
+                        class="px-4 py-1.5 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-[10px] font-black text-gray-400 hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm uppercase tracking-widest disabled:opacity-50"
+                        :disabled="loading">
+                    <span x-show="!loading">Ver anteriores</span>
+                    <span x-show="loading">Cargando...</span>
+                </button>
+            </div>
+
             <template x-for="msg in messages" :key="msg.id">
                 <div :class="msg.from_me ? 'flex justify-end' : 'flex justify-start'" class="group relative">
                     <div :class="msg.from_me 
@@ -157,38 +168,79 @@
             teamId: {{ $routeTeamId ?: 'null' }},
             messages: [],
             lastMessageId: 0,
+            firstMessageId: 0,
+            canLoadMore: true,
             initChat() {
                 if (!this.teamId) {
                     this.messages = [{ id: 1, text: '⚠️ Entra en el panel de un equipo concreto para usar el chat de Telegram.', author: 'SientiaBot', from_me: false, time: 'Sistema' }];
+                    this.canLoadMore = false;
                     return;
                 }
                 
-                this.refreshMessages();
+                this.refreshMessages(true);
                 setInterval(() => this.refreshMessages(), 8000); // Polling cada 8s
             },
-            async refreshMessages() {
-                if (!this.teamId) return;
+            async refreshMessages(initial = false) {
+                if (!this.teamId || this.loading) return;
 
                 try {
                     const response = await fetch(`{{ route('telegram.chat.messages') }}?team_id=${this.teamId}`);
                     const data = await response.json();
                     
-                    if (data.messages) {
+                    if (data.messages && data.messages.length > 0) {
                         const newMsgs = data.messages;
-                        const hasNew = newMsgs.length > 0 && (this.messages.length === 0 || newMsgs[newMsgs.length-1].id > this.lastMessageId);
+                        const latestIncomingId = newMsgs[newMsgs.length - 1].id;
                         
-                        if (hasNew) {
-                            if (!this.open && this.messages.length > 0) this.unread += (newMsgs.length - this.messages.length);
+                        if (initial) {
                             this.messages = newMsgs;
-                            this.lastMessageId = newMsgs[newMsgs.length - 1].id;
-                            if (this.open) this.scrollToBottom();
-                        } else if (newMsgs.length < this.messages.length) {
-                            // Si hay menos mensajes, es que se ha borrado alguno
-                            this.messages = newMsgs;
+                            this.firstMessageId = newMsgs[0].id;
+                            this.lastMessageId = latestIncomingId;
+                            this.scrollToBottom();
+                        } else if (latestIncomingId > this.lastMessageId) {
+                            // Solo añadimos los nuevos al final
+                            const filtered = newMsgs.filter(m => m.id > this.lastMessageId);
+                            if (filtered.length > 0) {
+                                if (!this.open) this.unread += filtered.length;
+                                this.messages = [...this.messages, ...filtered];
+                                this.lastMessageId = latestIncomingId;
+                                if (this.open) this.scrollToBottom();
+                            }
                         }
                     }
                 } catch (e) {
                     console.error('Error al actualizar:', e);
+                }
+            },
+            async loadOlderMessages() {
+                if (!this.teamId || this.loading || !this.canLoadMore) return;
+                
+                this.loading = true;
+                const container = document.getElementById('telegram-messages-container');
+                const oldHeight = container.scrollHeight;
+
+                try {
+                    const response = await fetch(`{{ route('telegram.chat.messages') }}?team_id=${this.teamId}&before_id=${this.firstMessageId}`);
+                    const data = await response.json();
+                    
+                    if (data.messages && data.messages.length > 0) {
+                        this.messages = [...data.messages, ...this.messages];
+                        this.firstMessageId = data.messages[0].id;
+                        
+                        // Mantener la posición del scroll
+                        this.$nextTick(() => {
+                            container.scrollTop = container.scrollHeight - oldHeight;
+                        });
+
+                        if (data.messages.length < 25) {
+                            this.canLoadMore = false;
+                        }
+                    } else {
+                        this.canLoadMore = false;
+                    }
+                } catch (e) {
+                    console.error('Error cargando anteriores:', e);
+                } finally {
+                    this.loading = false;
                 }
             },
             async send() {
