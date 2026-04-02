@@ -11,9 +11,8 @@
     $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
 @endphp
 
-@if ($layout === 'horizontal')
     <div
-        class="flex items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 mr-2 shadow-sm">
+        class="flex items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 mr-2 shadow-sm overflow-x-auto no-scrollbar">
         @php
             $views = [
                 [
@@ -96,4 +95,3 @@
         <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center"></div>
         @include('teams.partials.hide-completed-toggle')
     </div>
-@endif
