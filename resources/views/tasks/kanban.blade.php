@@ -48,7 +48,7 @@
             <div class="flex h-full gap-4 px-4 sm:px-6 w-max min-w-full items-stretch pb-4" id="kanban-board">
                 @foreach($columns as $column)
                     <div class="shrink-0 flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
-                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40; width: 320px; max-width: 100%;"
+                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40; width: 320px; flex: 0 0 320px;"
                          data-column-id="{{ $column->id }}">
                         <!-- Accent Top Bar -->
                         <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>
