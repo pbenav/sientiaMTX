@@ -82,13 +82,15 @@
                 <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center shrink-0"></div>
             @endif
             <a href="{{ $view['route'] }}"
-                class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all min-w-[64px] sm:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
+                class="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl transition-all min-w-[64px] sm:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
                 title="{{ $view['name'] }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="{{ $view['active'] ? '3' : '2.5' }}">
-                    {!! $view['icon'] !!}
-                </svg>
-                <span class="text-[9px] font-black uppercase tracking-tighter whitespace-nowrap leading-none">{{ $view['name'] }}</span>
+                <div class="flex items-center justify-center h-5 w-5 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="{{ $view['active'] ? '2.5' : '2' }}">
+                        {!! $view['icon'] !!}
+                    </svg>
+                </div>
+                <span class="text-[9px] font-bold uppercase tracking-tight whitespace-nowrap leading-none">{{ $view['name'] }}</span>
             </a>
         @endforeach
 
