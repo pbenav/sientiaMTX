@@ -1,8 +1,7 @@
 <div class="relative" x-data="{ 
     open: false,
-    zoomVal: 100, // Zoom aplicado a la página
-    tempZoomVal: 100, // Zoom temporal (solo visualmente en el número)
-    dragging: false,
+    zoomVal: 100,
+    tempZoomVal: 100,
     
     init() {
         const saved = localStorage.getItem('global_zoom') || '1.0';
@@ -10,8 +9,8 @@
         this.tempZoomVal = this.zoomVal;
     },
 
-    saveAndApply() {
-        this.zoomVal = this.tempZoomVal;
+    apply() {
+        this.zoomVal = parseInt(this.tempZoomVal);
         const floatZoom = (this.zoomVal / 100).toFixed(2);
         localStorage.setItem('global_zoom', floatZoom);
         if (typeof applyGlobalZoom === 'function') {
@@ -28,7 +27,7 @@
         </svg>
     </button>
 
-    <!-- Desplegable con Slider -->
+    <!-- Desplegable -->
     <div x-show="open" 
          @click.outside="open = false"
          x-transition:enter="transition ease-out duration-200"
@@ -37,53 +36,49 @@
          class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl z-[60] p-4 text-gray-900 dark:text-white">
         
         <div class="flex flex-col gap-4">
-            <!-- Header -->
+            <!-- Header con Porcentaje ACTUAL -->
             <div class="flex items-center justify-between">
                 <div>
-                   <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('navigation.zoom_controls') }}</span>
-                   <p x-show="dragging" class="text-[9px] text-violet-500 animate-pulse font-bold mt-1">{{ __('tasks.release_to_apply') }}</p>
+                   <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Zoom</span>
                 </div>
-                <button @click="tempZoomVal = 100; saveAndApply()" 
+                <button @click="tempZoomVal = 100; apply()" 
                         class="text-[10px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-1 rounded-lg hover:scale-105 transition-transform"
                         title="{{ __('navigation.reset_zoom') }}">
                     <span x-text="tempZoomVal + '%'"></span>
                 </button>
             </div>
 
-            <!-- Area del Slider -->
-            <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                <!-- Alejar (-) -->
-                <button @click="tempZoomVal = Math.max(50, tempZoomVal - 5); saveAndApply()" 
-                        class="text-gray-400 hover:text-violet-500 transition-colors shrink-0 p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <!-- Area del Slider Mejorada -->
+            <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                <!-- Botón Menos (-) -->
+                <button @click="tempZoomVal = Math.max(50, tempZoomVal - 5); apply()" 
+                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors shadow-sm shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H6" />
                     </svg>
                 </button>
 
-                <!-- Input Range (Estable: solo actualiza tempZoomVal) -->
+                <!-- Input Range Absoluto -->
                 <input type="range" min="50" max="150" step="5" 
                     x-model.number="tempZoomVal" 
-                    @mousedown="dragging = true"
-                    @mouseup="dragging = false; saveAndApply()"
-                    class="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-500">
+                    @change="apply()"
+                    class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-500">
 
-                <!-- Acercar (+) -->
-                <button @click="tempZoomVal = Math.min(150, tempZoomVal + 5); saveAndApply()" 
-                        class="text-gray-400 hover:text-violet-500 transition-colors shrink-0 p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <!-- Botón Más (+) -->
+                <button @click="tempZoomVal = Math.min(150, tempZoomVal + 5); apply()" 
+                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors shadow-sm shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
                     </svg>
                 </button>
             </div>
 
-            <!-- Etiquetas de apoyo -->
-            <div class="flex justify-between px-1">
-                <span class="text-[9px] font-bold text-gray-500">50%</span>
-                <div class="flex gap-1 items-center">
-                    <div class="w-1.5 h-1.5 rounded-full" :class="tempZoomVal == 100 ? 'bg-violet-500' : 'bg-gray-300'"></div>
-                    <span class="text-[9px] font-bold" :class="tempZoomVal == 100 ? 'text-violet-500' : 'text-gray-500'">100%</span>
-                </div>
-                <span class="text-[9px] font-bold text-gray-500">150%</span>
+            <!-- Ayuda Visual -->
+            <div class="flex justify-between px-1 text-[9px] font-bold text-gray-400">
+                <span>50%</span>
+                <span class="text-violet-500" x-show="tempZoomVal == 100">Normal</span>
+                <span x-show="tempZoomVal != 100">Original (100%)</span>
+                <span>150%</span>
             </div>
         </div>
     </div>
