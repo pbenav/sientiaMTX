@@ -120,7 +120,7 @@
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
         class="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-50">
-        <div class="max-w-none lg:{{ $maxWidth }} mx-auto px-2 sm:px-6 lg:px-8">
+        <div class="max-w-none lg:{{ $maxWidth }} lg:mx-auto px-2 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
                 <!-- Logo -->
@@ -398,7 +398,7 @@
 
     <!-- Page content -->
     <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8 overflow-x-visible"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'">
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
@@ -443,7 +443,7 @@
     <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-4"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : ''">
         <div
-            class="max-w-none lg:{{ $maxWidth }} mx-auto px-2 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
+            class="max-w-none lg:{{ $maxWidth }} lg:mx-auto px-2 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
             <div class="mb-2 md:mb-0 flex items-center gap-2">
                 <span class="font-bold">© {{ date('Y') }} Sientia</span>
                 <span class="mx-1">|</span>
