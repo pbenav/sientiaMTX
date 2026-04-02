@@ -411,12 +411,12 @@
     @endif
 
     <!-- Page content -->
-    <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8 overflow-x-visible"
+    <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8 overflow-x-hidden"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
-            class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-4 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 w-full max-w-[100vw] left-0">
+            class="sticky top-0 z-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-4 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 w-full max-w-[100vw] left-0">
             <div class="mx-auto max-w-none lg:{{ $maxWidth }}">
             <div class="flex items-start gap-4">
                 <!-- Toggle button ONLY when closed -->
