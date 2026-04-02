@@ -1,9 +1,10 @@
-@php
-    $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
-@endphp
+@auth
+    @php
+        $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
+    @endphp
 
-@if ($layout === 'vertical')
-    <!-- Overlay for mobile when sidebar is open -->
+    @if ($layout === 'vertical')
+        <!-- Overlay for mobile when sidebar is open -->
     <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
@@ -50,6 +51,11 @@
             <!-- Navigation Links -->
             <nav class="flex-1 space-y-2">
                 @auth
+                    <!-- Workday Compact Timer -->
+                    <div class="px-3 mb-4">
+                        @include('layouts.partials.workday-timer', ['compact' => true])
+                    </div>
+
                     <!-- My Teams -->
                     <a href="{{ route('teams.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all {{ request()->routeIs('teams.index') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
@@ -290,3 +296,4 @@
         </div>
     </aside>
 @endif
+@endauth
