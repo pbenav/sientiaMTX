@@ -79,16 +79,16 @@
 
         @foreach ($views as $index => $view)
             @if ($index === 4)
-                <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center"></div>
+                <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center shrink-0"></div>
             @endif
             <a href="{{ $view['route'] }}"
-                class="flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold transition-all {{ $view['active'] ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
+                class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all min-w-[64px] sm:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
                 title="{{ $view['name'] }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="{{ $view['active'] ? '3' : '2.5' }}">
                     {!! $view['icon'] !!}
                 </svg>
-                <span class="text-[9px] uppercase tracking-widest whitespace-nowrap">{{ $view['name'] }}</span>
+                <span class="text-[9px] font-black uppercase tracking-tighter whitespace-nowrap leading-none">{{ $view['name'] }}</span>
             </a>
         @endforeach
 

@@ -3,16 +3,15 @@
 @endphp
 
 @if ($layout === 'vertical')
-    <div class="flex items-center gap-4">
-        <!-- Minimal selectors for vertical layout header -->
-        <div class="flex items-center gap-3">
+    <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Compact selectors for vertical layout header -->
+        <div class="flex items-center gap-1">
             @include('layouts.partials.theme-toggle')
             @include('layouts.partials.layout-toggle')
             @include('layouts.partials.zoom-controls')
             @include('layouts.partials.language-toggle')
 
-            @include('teams.partials.hide-completed-toggle')
-            <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
+            <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1 shrink-0"></div>
             @auth
                 <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
                 <!-- User menu for vertical header -->
