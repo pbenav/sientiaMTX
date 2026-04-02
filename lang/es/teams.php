@@ -73,4 +73,5 @@ return [
     'telegram_chat_id' => 'ID de Grupo de Telegram',
     'telegram_chat_id_description' => 'Introduce el ID del grupo vinculado. Usa /vincular en Telegram para obtenerlo.',
     'telegram_integration' => 'Integración con Telegram',
+    'members_of' => 'Miembros de :name',
 ];
