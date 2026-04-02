@@ -240,10 +240,10 @@
                                             </a>
                                             @if ($task->visibility === 'private')
                                                 <span
-                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded relative z-30"
+                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded shadow-sm inline-flex items-center"
                                                     title="{{ __('tasks.private') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                                        class="h-2.5 w-2.5 inline mr-0.5 mb-0.5" fill="none"
+                                                        class="h-2.5 w-2.5 mr-0.5" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="3"
@@ -253,10 +253,10 @@
                                                 </span>
                                             @else
                                                 <span
-                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded relative z-30"
+                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded shadow-sm inline-flex items-center"
                                                     title="{{ __('tasks.public') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                                        class="h-2.5 w-2.5 inline mr-0.5 mb-0.5" fill="none"
+                                                        class="h-2.5 w-2.5 mr-0.5" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="3"
@@ -265,11 +265,10 @@
                                                     {{ __('tasks.public') }}
                                                 </span>
                                             @endif
-                                            @if ($task->is_template)
                                                 <span
-                                                    class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded relative z-30">{{ __('tasks.template') }}</span>
+                                                    class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded shadow-sm inline-flex items-center">{{ __('tasks.template') }}</span>
                                             @elseif ($task->isInstance())
-                                                <div class="flex items-center gap-1.5 mt-1 relative z-30">
+                                                <div class="flex items-center gap-1.5 mt-1">
                                                     <span
                                                         class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 rounded-md shadow-sm">
                                                         ↳ {{ __('tasks.subtask') }}
