@@ -112,22 +112,34 @@ class TelegramChatController extends Controller
      */
     public function destroy(TelegramMessage $message)
     {
-        $this->authorize('delete', $message); // Optional: check if can delete
+        $user = auth()->user();
+        $team = $message->team;
+        $isManager = $team->isManager($user);
+        
+        // Manual authorization check: Only author or a team manager can delete
+        if ($message->user_id !== $user->id && !$isManager) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
 
         $token = config('services.telegram.bot_token');
-        $chatId = $message->team->telegram_chat_id;
+        $chatId = $team->telegram_chat_id;
 
         if ($message->telegram_message_id && $chatId) {
             try {
-                Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
+                $response = Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
                     'chat_id' => $chatId,
                     'message_id' => $message->telegram_message_id,
                 ]);
+                
+                if (!$response->successful()) {
+                    Log::warning("Telegram deleteMessage failed: " . $response->body());
+                }
             } catch (\Exception $e) {
                 Log::error("Error deleting message from Telegram: " . $e->getMessage());
             }
         }
 
+        // We mark as deleted locally so it doesn't show up in history
         $message->update(['is_deleted_on_telegram' => true]);
         
         return response()->json(['success' => true]);
