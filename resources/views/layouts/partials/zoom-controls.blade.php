@@ -1,14 +1,17 @@
 <div class="relative" x-data="{ 
     open: false,
-    zoomVal: 100,
+    zoomVal: 100, // Zoom aplicado a la página
+    tempZoomVal: 100, // Zoom temporal (solo visualmente en el número)
     dragging: false,
     
     init() {
         const saved = localStorage.getItem('global_zoom') || '1.0';
         this.zoomVal = Math.round(parseFloat(saved) * 100);
+        this.tempZoomVal = this.zoomVal;
     },
 
     saveAndApply() {
+        this.zoomVal = this.tempZoomVal;
         const floatZoom = (this.zoomVal / 100).toFixed(2);
         localStorage.setItem('global_zoom', floatZoom);
         if (typeof applyGlobalZoom === 'function') {
@@ -25,7 +28,7 @@
         </svg>
     </button>
 
-    <!-- Desplegable con Slider (w-72 para evitar desbordamientos) -->
+    <!-- Desplegable con Slider -->
     <div x-show="open" 
          @click.outside="open = false"
          x-transition:enter="transition ease-out duration-200"
@@ -38,32 +41,34 @@
             <div class="flex items-center justify-between">
                 <div>
                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('navigation.zoom_controls') }}</span>
+                   <p x-show="dragging" class="text-[9px] text-violet-500 animate-pulse font-bold mt-1">{{ __('tasks.release_to_apply') }}</p>
                 </div>
-                <button @click="zoomVal = 100; saveAndApply()" 
+                <button @click="tempZoomVal = 100; saveAndApply()" 
                         class="text-[10px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-1 rounded-lg hover:scale-105 transition-transform"
                         title="{{ __('navigation.reset_zoom') }}">
-                    <span x-text="zoomVal + '%'"></span>
+                    <span x-text="tempZoomVal + '%'"></span>
                 </button>
             </div>
 
             <!-- Area del Slider -->
             <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
                 <!-- Alejar (-) -->
-                <button @click="zoomVal = Math.max(50, zoomVal - 5); saveAndApply()" 
+                <button @click="tempZoomVal = Math.max(50, tempZoomVal - 5); saveAndApply()" 
                         class="text-gray-400 hover:text-violet-500 transition-colors shrink-0 p-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H6" />
                     </svg>
                 </button>
 
-                <!-- Input Range (Vinculación pura .number) -->
+                <!-- Input Range (Estable: solo actualiza tempZoomVal) -->
                 <input type="range" min="50" max="150" step="5" 
-                    x-model.number="zoomVal" 
-                    @input="saveAndApply()"
+                    x-model.number="tempZoomVal" 
+                    @mousedown="dragging = true"
+                    @mouseup="dragging = false; saveAndApply()"
                     class="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-500">
 
                 <!-- Acercar (+) -->
-                <button @click="zoomVal = Math.min(150, zoomVal + 5); saveAndApply()" 
+                <button @click="tempZoomVal = Math.min(150, tempZoomVal + 5); saveAndApply()" 
                         class="text-gray-400 hover:text-violet-500 transition-colors shrink-0 p-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
@@ -75,8 +80,8 @@
             <div class="flex justify-between px-1">
                 <span class="text-[9px] font-bold text-gray-500">50%</span>
                 <div class="flex gap-1 items-center">
-                    <div class="w-1.5 h-1.5 rounded-full" :class="zoomVal == 100 ? 'bg-violet-500' : 'bg-gray-300'"></div>
-                    <span class="text-[9px] font-bold" :class="zoomVal == 100 ? 'text-violet-500' : 'text-gray-500'">100% (Normal)</span>
+                    <div class="w-1.5 h-1.5 rounded-full" :class="tempZoomVal == 100 ? 'bg-violet-500' : 'bg-gray-300'"></div>
+                    <span class="text-[9px] font-bold" :class="tempZoomVal == 100 ? 'text-violet-500' : 'text-gray-500'">100%</span>
                 </div>
                 <span class="text-[9px] font-bold text-gray-500">150%</span>
             </div>
