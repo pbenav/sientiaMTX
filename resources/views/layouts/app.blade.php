@@ -114,7 +114,8 @@
     }
 }">
 
-    @include('partials.welcome-modal')
+    <div id="app-root" class="min-h-screen flex flex-col">
+        @include('partials.welcome-modal')
     @include('layouts.navigation-sidebar')
 
     <!-- Navigation -->
@@ -537,9 +538,9 @@
     <script>
         (function() {
             window.applyGlobalZoom = function(val) {
-                const mainContent = document.getElementById('mainContent');
-                if (mainContent) {
-                    mainContent.style.zoom = val;
+                const appRoot = document.getElementById('app-root');
+                if (appRoot) {
+                    appRoot.style.zoom = val;
                 }
                 
                 const label = document.getElementById('global-zoom-label');
@@ -563,6 +564,7 @@
             });
         })();
     </script>
+    </div>
     
     @stack('scripts')
 </body>
