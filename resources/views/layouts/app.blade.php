@@ -62,6 +62,19 @@
         [x-cloak] {
             display: none !important;
         }
+
+        /* Prevent layout clipping on mobile for wide content like Kanban */
+        @media (max-width: 1024px) {
+            html, body {
+                overflow-x: auto !important;
+                position: relative;
+            }
+            #mainContent {
+                max-width: none !important;
+                width: 100% !important;
+                overflow-x: visible !important;
+            }
+        }
     </style>
 </head>
 
@@ -384,8 +397,8 @@
     @endif
 
     <!-- Page content -->
-    <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} mx-auto'">
+    <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8 overflow-x-visible"
+        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'">
 
         <!-- Header for Vertical Layout -->
         <div x-show="layout === 'vertical'"
