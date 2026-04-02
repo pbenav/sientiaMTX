@@ -45,20 +45,13 @@
         const s = seconds % 60;
         return [h, m, s].map(v => v < 10 ? '0' + v : v).join(':');
     }
-}" class="flex items-center gap-2" :class="compact ? 'w-full justify-between' : ''">
+}" class="flex items-center gap-3" :class="compact ? 'w-full justify-start' : ''">
     
-    <!-- Contador Digital -->
-    <div x-show="working" x-cloak
-         class="flex items-center gap-2 px-2.5 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl">
-        <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-        <span class="text-[10px] font-mono font-bold text-violet-700 dark:text-violet-300" x-text="formatTime(elapsed)"></span>
-    </div>
-
-    <!-- Botón de Conmutación -->
+    <!-- Botón de Conmutación (Ancla fija a la izquierda) -->
     <button @click="toggle()" :disabled="loading"
             class="flex items-center justify-center transition-all duration-300 shadow-sm border font-bold"
             :class="[
-                compact ? 'w-10 h-10 rounded-xl shrink-0' : 'px-4 py-2 rounded-xl gap-2 text-xs',
+                compact ? 'w-10 h-10 rounded-xl shrink-0' : 'px-4 py-2 rounded-xl text-xs sm:px-3 sm:py-2',
                 working 
                     ? 'bg-red-50 border-red-100 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' 
                     : 'bg-white border-gray-200 text-gray-700 hover:border-violet-500 hover:text-violet-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
@@ -66,16 +59,15 @@
             :title="working ? '{{ __('tasks.stop_workday') }}' : '{{ __('tasks.start_workday') }}'">
         
         <template x-if="!loading">
-            <div class="flex items-center" :class="compact ? '' : 'gap-2'">
-                <svg x-show="!working" xmlns="http://www.w3.org/2000/svg" :class="compact ? 'h-5 w-5' : 'h-4 w-4'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex items-center justify-center">
+                <svg x-show="!working" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <svg x-show="working" xmlns="http://www.w3.org/2000/svg" :class="compact ? 'h-5 w-5' : 'h-4 w-4'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg x-show="working" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <rect x="7" y="7" width="10" height="10" rx="2" stroke-width="2.5" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span x-show="!compact" x-text="working ? '{{ __('tasks.stop_workday') }}' : '{{ __('tasks.start_workday') }}'"></span>
             </div>
         </template>
 
@@ -86,4 +78,11 @@
             </svg>
         </template>
     </button>
+
+    <!-- Contador Digital (Aparece a la derecha) -->
+    <div x-show="working" x-cloak
+         class="flex items-center gap-2 px-2.5 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl transition-all duration-300">
+        <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+        <span class="text-[10px] font-mono font-bold text-violet-700 dark:text-violet-300" x-text="formatTime(elapsed)"></span>
+    </div>
 </div>
