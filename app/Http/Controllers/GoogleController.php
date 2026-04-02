@@ -129,15 +129,21 @@ class GoogleController extends Controller
         $tasksData = collect($tasks)->map(function($task) use ($teamId, $user) {
             $due = $task->getDue() ?: now()->toIso8601String();
             $title = $task->getTitle();
+            $googleId = 'task:' . $task->id;
             
+            // Robust matching: prioritized by google_id, then by title+date (ignoring exact time)
             $exists = \App\Models\Task::where('team_id', $teamId)
-                ->where('created_by_id', $user->id)
-                ->where('title', $title)
-                ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($due)))
+                ->where(function($q) use ($googleId, $title, $due) {
+                    $q->where('google_id', $googleId)
+                      ->orWhere(function($sub) use ($title, $due) {
+                          $sub->where('title', 'LIKE', $title . '%')
+                              ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
+                      });
+                })
                 ->exists();
 
             return [
-                'id' => 'task:' . $task->id,
+                'id' => $googleId,
                 'title' => $title,
                 'description' => ($task->getNotes() ?: '') . ($task->listTitle ? " [" . $task->listTitle . "]" : ""),
                 'start' => $due,

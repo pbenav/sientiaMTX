@@ -302,23 +302,21 @@ class Task extends Model
         $isModerator = $team->isModerator($user);
 
         return $query->where(function ($q) use ($userId, $isCoordinator, $isModerator) {
-            // 1. ALWAYS: Tasks directly assigned to me
+            // 1. Tasks directly assigned to me
             $q->where(function($assigned) use ($userId) {
                 $assigned->where('assigned_user_id', $userId)
                          ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
             })
-            // 2. ALSO: Root tasks I created that are NOT templates (direct individual work)
+            // 2. OR: Root tasks I created
             ->orWhere(function($ownRoot) use ($userId) {
                 $ownRoot->where('created_by_id', $userId)
-                        ->whereNull('parent_id')
-                        ->whereDoesntHave('children');
+                        ->whereNull('parent_id');
             });
 
-            // Note: We removed the logic that allowed Coordinators/Moderators to see EVERYTHING
-            // in the Kanban mode to fulfill the privacy/focus requirement.
-            // Managers can still see the big picture in Matrix and List views.
+            // Note: Managers could see everything before, but now we keep it personal for focus.
         })
-        ->where('is_template', false); // Never show master template cards in Kanban.
+        ->where('is_template', false)
+        ->whereDoesntHave('children'); // CRITICAL: Never show tasks that act as groups or parents in Kanban.
     }
     public function scopeDueThisWeek($query)
     {
