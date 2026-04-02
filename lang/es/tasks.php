@@ -217,4 +217,6 @@ return [
     'no_task_logs' => 'No has registrado tiempo en ninguna tarea todavía.',
     'no_workday_logs' => 'No hay jornadas registradas.',
     'back_to_kanban' => 'Volver al Kanban',
+    'selected_tasks' => 'tareas seleccionadas',
+    'delete_selection' => 'Eliminar Selección',
 ];

@@ -2,7 +2,7 @@
     @section('title', __('teams.members') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
             <div class="flex items-start gap-4 min-w-0 flex-1">
                 <a href="{{ route('teams.index') }}"
                     class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
@@ -19,15 +19,16 @@
                     </h1>
                 </div>
             </div>
-
-            <div class="flex items-center gap-3 shrink-0">
-                @include('teams.partials.header-actions')
-            </div>
         </div>
 
         <!-- View Switcher Sub-Header -->
         <div class="mt-8 mb-4">
             @include('teams.partials.view-switcher')
+        </div>
+
+        <!-- Action Buttons Row -->
+        <div class="flex items-center gap-3 shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+            @include('teams.partials.header-actions')
         </div>
     </x-slot>
 

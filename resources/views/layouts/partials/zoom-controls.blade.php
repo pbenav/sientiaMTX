@@ -39,7 +39,7 @@
             <!-- Header con Porcentaje ACTUAL -->
             <div class="flex items-center justify-between">
                 <div>
-                   <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Zoom</span>
+                   <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('navigation.zoom') }}</span>
                 </div>
                 <button @click="tempZoomVal = 100; apply()" 
                         class="text-[10px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-1 rounded-lg hover:scale-105 transition-transform"
@@ -76,8 +76,8 @@
             <!-- Ayuda Visual -->
             <div class="flex justify-between px-1 text-[9px] font-bold text-gray-400">
                 <span>50%</span>
-                <span class="text-violet-500" x-show="tempZoomVal == 100">Normal</span>
-                <span x-show="tempZoomVal != 100">Original (100%)</span>
+                <span class="text-violet-500" x-show="tempZoomVal == 100">{{ __('navigation.normal') }}</span>
+                <span x-show="tempZoomVal != 100">{{ __('navigation.original_zoom') }}</span>
                 <span>150%</span>
             </div>
         </div>

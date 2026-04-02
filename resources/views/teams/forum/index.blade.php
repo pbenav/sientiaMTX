@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
             <div class="flex items-center justify-between min-w-0 flex-1 gap-4 select-none">
                 <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate flex items-center gap-3 tracking-tight">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none"
@@ -10,26 +10,26 @@
                     </svg>
                     {{ __('forum.title') ?? 'Anuncios' }}
                 </h1>
-
-                <button type="button" x-data=""
-                    x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
-                    class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo Hilo' }}</span>
-                </button>
-            </div>
-
-            <div class="flex items-center gap-3 shrink-0">
-                @include('teams.partials.header-actions')
             </div>
         </div>
 
         <!-- View Switcher Sub-Header -->
         <div class="mt-8 mb-4">
             @include('teams.partials.view-switcher')
+        </div>
+
+        <!-- Action Buttons Row -->
+        <div class="flex items-center gap-3 shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+            <button type="button" x-data=""
+                x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
+                class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo Hilo' }}</span>
+            </button>
+            @include('teams.partials.header-actions')
         </div>
     </x-slot>
 

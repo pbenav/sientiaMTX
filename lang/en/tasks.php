@@ -195,4 +195,6 @@ return [
     'no_task_logs' => 'You haven\'t logged time on any tasks yet.',
     'no_workday_logs' => 'No workdays recorded.',
     'back_to_kanban' => 'Back to Kanban',
+    'selected_tasks' => 'selected tasks',
+    'delete_selection' => 'Delete Selection',
 ];

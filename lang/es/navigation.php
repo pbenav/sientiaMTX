@@ -16,6 +16,9 @@ return [
     'kanban' => 'Kanban',
     'users' => 'Usuarios',
     'task_detail' => 'Detalle de la tarea',
-    'zoom_controls' => 'Controles de Zoom',
+    'zoom' => 'Zoom',
+    'zoom_controls' => 'Control de Zoom',
+    'normal' => 'Normal',
     'reset_zoom' => 'Restablecer Zoom (100%)',
+    'original_zoom' => 'Original (100%)',
 ];

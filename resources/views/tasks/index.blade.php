@@ -2,7 +2,7 @@
     @section('title', __('navigation.task_list') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
             <div class="flex items-start gap-4 min-w-0 flex-1">
                 <a href="{{ route('teams.dashboard', $team) }}"
                     class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
@@ -19,15 +19,16 @@
                     </h1>
                 </div>
             </div>
-
-            <div class="flex items-center gap-3 shrink-0">
-                @include('teams.partials.header-actions')
-            </div>
         </div>
 
         <!-- View Switcher Sub-Header -->
         <div class="mt-8 mb-4">
             @include('teams.partials.view-switcher')
+        </div>
+
+        <!-- Action Buttons Row -->
+        <div class="flex items-center gap-3 shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+            @include('teams.partials.header-actions')
         </div>
     </x-slot>
     <div class="space-y-4">
@@ -132,11 +133,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    <span><span id="selectedCount">0</span> tareas seleccionadas</span>
+                    <span><span id="selectedCount">0</span> {{ __('tasks.selected_tasks') }}</span>
                 </span>
                 <button type="button" onclick="confirmBulkDelete()"
                     class="px-4 py-1.5 bg-red-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:bg-red-600 transition focus:ring focus:ring-red-500/30">
-                    Eliminar Selección
+                    {{ __('tasks.delete_selection') }}
                 </button>
             </div>
             <div class="overflow-x-auto">
