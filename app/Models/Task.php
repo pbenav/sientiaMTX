@@ -297,31 +297,26 @@ class Task extends Model
      */
     public function scopeOperationalForKanban($query, $user, Team $team)
     {
+        $userId = $user->id;
         $isCoordinator = $team->isCoordinator($user);
         $isModerator = $team->isModerator($user);
-        $userId = $user->id;
 
         return $query->where(function ($q) use ($userId, $isCoordinator, $isModerator) {
-            // ALWAYS: Tasks directly assigned to me
-            $q->where('assigned_user_id', $userId)
-              ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+            // 1. ALWAYS: Tasks directly assigned to me
+            $q->where(function($assigned) use ($userId) {
+                $assigned->where('assigned_user_id', $userId)
+                         ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+            })
+            // 2. ALSO: Root tasks I created that are NOT templates (direct individual work)
+            ->orWhere(function($ownRoot) use ($userId) {
+                $ownRoot->where('created_by_id', $userId)
+                        ->whereNull('parent_id')
+                        ->whereDoesntHave('children');
+            });
 
-            if ($isCoordinator || $isModerator) {
-                // MANAGERS also see:
-                // 1. Plain root tasks with no children (no assignments yet)
-                $q->orWhere(function($sub) {
-                    $sub->whereNull('parent_id')->whereDoesntHave('children');
-                });
-                // 2. All instances/subtasks (actual work being tracked)
-                $q->orWhere(function($sub) {
-                    $sub->whereNotNull('parent_id');
-                });
-            } else {
-                // EXECUTORS also see root tasks they created IF they have no subtasks
-                $q->orWhere(function($sub) use ($userId) {
-                    $sub->where('created_by_id', $userId)->whereNull('parent_id')->whereDoesntHave('children');
-                });
-            }
+            // Note: We removed the logic that allowed Coordinators/Moderators to see EVERYTHING
+            // in the Kanban mode to fulfill the privacy/focus requirement.
+            // Managers can still see the big picture in Matrix and List views.
         })
         ->where('is_template', false); // Never show master template cards in Kanban.
     }

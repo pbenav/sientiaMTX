@@ -20,10 +20,15 @@ class KanbanController extends Controller
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
-        // Sync tasks that don't have a column yet
-        $team->tasks()->whereNull('kanban_column_id')->get()->each(function ($task) {
-            $task->syncKanbanColumn();
-        });
+        // Sync tasks that don't have a column yet (Only operational tasks, no templates)
+        $team->tasks()
+            ->whereNull('kanban_column_id')
+            ->operationalForKanban($user, $team)
+            ->where('is_archived', false)
+            ->limit(50) // Safety for large datasets
+            ->get()->each(function ($task) {
+                $task->syncKanbanColumn();
+            });
 
         $columns = $team->kanbanColumns()
             ->with(['tasks' => function ($query) use ($team, $user, $isManager) {
@@ -31,7 +36,9 @@ class KanbanController extends Controller
                       ->operationalForKanban($user, $team)
                       ->where('is_archived', false)
                       ->when(session('hide_completed_tasks', true), function($sq) {
-                          return $sq->whereNotIn('status', ['completed', 'cancelled']);
+                          // Hide also if progress is 100% to ensure Done column is clean
+                          return $sq->whereNotIn('status', ['completed', 'cancelled', 'archive'])
+                                    ->where('progress_percentage', '<', 100);
                       })
                       ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
                       ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
