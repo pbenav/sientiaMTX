@@ -2,20 +2,32 @@
     @section('title', __('teams.members') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('teams.dashboard', $team) }}"
-                    class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                <a href="{{ route('teams.index') }}"
+                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ __('teams.members') }} —
-                    {{ $team->name }}</h1>
+                <div class="min-w-0 flex-1">
+                    @include('teams.partials.breadcrumb')
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
+                        {{ __('teams.members_of') }} {{ $team->name }}
+                    </h1>
+                </div>
             </div>
 
-            @include('teams.partials.header-actions')
+            <div class="flex items-center gap-3 shrink-0">
+                @include('teams.partials.header-actions')
+            </div>
+        </div>
+
+        <!-- View Switcher Sub-Header -->
+        <div class="mt-8 mb-4">
+            @include('teams.partials.view-switcher')
         </div>
     </x-slot>
 

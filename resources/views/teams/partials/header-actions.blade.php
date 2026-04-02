@@ -9,9 +9,6 @@
 @endphp
 
 <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-
-    @include('teams.partials.view-switcher')
-
     <!-- Management Actions -->
     <div class="flex items-center gap-2 flex-wrap">
 

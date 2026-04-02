@@ -1,12 +1,31 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-black text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('tasks.worked_time') }} - {{ $team->name }}
-            </h2>
-            <a href="{{ route('teams.kanban', $team) }}" class="text-sm font-bold text-violet-600 dark:text-violet-400 hover:underline">
-                &larr; {{ __('tasks.back_to_kanban') }}
-            </a>
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                <a href="{{ route('teams.index') }}"
+                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <div class="min-w-0 flex-1">
+                    @include('teams.partials.breadcrumb')
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
+                        {{ __('tasks.worked_time') }}
+                    </h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+                @include('teams.partials.header-actions')
+            </div>
+        </div>
+
+        <!-- View Switcher Sub-Header -->
+        <div class="mt-8 mb-4">
+            @include('teams.partials.view-switcher')
         </div>
     </x-slot>
 
