@@ -322,20 +322,48 @@ class GoogleController extends Controller
             // Determine which side is newer
             // If Google is newer than the last sync AND newer than local
             if ($googleUpdated > $lastSynced && $googleUpdated > $localUpdated) {
+                $oldTitle = $task->title;
+                $newTitle = $googleTask->getTitle();
+                $titleChanged = ($oldTitle !== $newTitle);
+
                 // Remote is newer, update local
                 $task->update([
-                    'title' => $googleTask->getTitle(),
+                    'title' => $newTitle,
                     'description' => $googleTask->getNotes() ?: $task->description,
                     'status' => $googleTask->getStatus() === 'completed' ? 'completed' : $task->status,
                     'progress_percentage' => $googleTask->getStatus() === 'completed' ? 100 : $task->progress_percentage,
                     'google_synced_at' => now(),
                 ]);
                 
+                // --- Title propagation (Architectural requirement) ---
+                if ($titleChanged) {
+                    if ($task->is_template) {
+                        // If template name changes, all instances follow
+                        $task->instances()->update(['title' => $newTitle]);
+                    } elseif ($task->parent_id) {
+                        // If an instance name changes, we update the parent name and all siblings
+                        $parent = $task->parent;
+                        $parent->update(['title' => $newTitle]);
+                        $parent->instances()->where('id', '!=', $task->id)->update(['title' => $newTitle]);
+                    }
+                }
+
                 // If it was marked as completed in Google, ensure local status reflects it
                 if ($googleTask->getStatus() === 'completed' && $task->status !== 'completed') {
                     $task->status = 'completed';
                     $task->progress_percentage = 100;
-                    $task->save();
+                }
+                
+                $task->save();
+                
+                // --- Parent sync (Architectural requirement) ---
+                if ($task->parent_id) {
+                    $currentParent = $task->parent;
+                    while ($currentParent) {
+                        $currentParent->update(['progress_percentage' => $currentParent->progress]);
+                        $currentParent->syncKanbanColumn();
+                        $currentParent = $currentParent->parent;
+                    }
                 }
 
                 return back()->with('success', __('google.sync_from_remote_success'));

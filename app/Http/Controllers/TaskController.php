@@ -405,6 +405,17 @@ class TaskController extends Controller
                 'priority' => $task->priority,
                 'urgency' => $task->urgency,
             ]);
+        } elseif ($task->parent_id && $task->status !== 'cancelled') {
+            // If it's a subtask (instance) and title changed, propagate to parent and siblings
+            // NOTE: We only do this if it's NOT template, as templates already push DOWN.
+            // This ensures a "single source of Truth" for the Name across the hierarchy.
+            if ($oldValues['title'] !== $task->title) {
+                $parent = $task->parent;
+                if ($parent) {
+                    $parent->update(['title' => $task->title]);
+                    $parent->instances()->where('id', '!=', $task->id)->update(['title' => $task->title]);
+                }
+            }
         }
 
         // Log changes to history

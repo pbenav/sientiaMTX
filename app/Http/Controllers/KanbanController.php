@@ -112,6 +112,18 @@ class KanbanController extends Controller
         }
 
         $task->save();
+        
+        // --- Parent sync (Architectural requirement) ---
+        if ($task->parent_id) {
+            $currentParent = $task->parent;
+            while ($currentParent) {
+                // Update Parent's aggregate progress (calculated by its subtasks)
+                // This ensures consistency across all board/list views
+                $currentParent->update(['progress_percentage' => $currentParent->progress]);
+                $currentParent->syncKanbanColumn(); // Ensure parent moves to the correct Kanban column (todo -> in_progress -> done)
+                $currentParent = $currentParent->parent;
+            }
+        }
 
         // Log history if column changed
         if ($oldColumnId != $task->kanban_column_id) {
