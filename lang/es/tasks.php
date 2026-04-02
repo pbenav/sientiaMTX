@@ -195,4 +195,11 @@ return [
     'top_25' => 'Top 25',
     'top_50' => 'Top 50',
     'top_100' => 'Top 100',
+    'workday_timer' => 'Cronómetro de Jornada',
+    'start_workday' => 'Empezar Jornada',
+    'stop_workday' => 'Terminar Jornada',
+    'start_task_tracking' => 'Iniciar trabajo',
+    'stop_task_tracking' => 'Detener trabajo',
+    'release_to_apply' => 'Suelte para aplicar...',
+    'worked_time' => 'Tiempo trabajado',
 ];

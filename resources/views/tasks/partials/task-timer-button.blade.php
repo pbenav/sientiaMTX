@@ -16,7 +16,6 @@
 
     checkStatus() {
         // Sync with global active task from server or global state
-        // For simplicity, we can fetch, but ideally we use a shared store
         fetch('{{ route('time-logs.status') }}')
             .then(res => res.json())
             .then(data => {
@@ -83,6 +82,7 @@ class="flex flex-col items-end gap-1">
         <!-- Toggle Button -->
         <button @click.stop="toggle()" :disabled="loading"
                 class="p-1.5 rounded-lg transition-all duration-300 shadow-sm border group"
+                :title="timer ? '{{ __('tasks.stop_task_tracking') }}' : '{{ __('tasks.start_task_tracking') }}'"
                 :class="timer 
                     ? 'bg-violet-600 border-violet-500 text-white hover:bg-violet-700' 
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 hover:border-violet-500 hover:text-violet-500'">

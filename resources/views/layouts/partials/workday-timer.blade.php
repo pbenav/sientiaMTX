@@ -58,7 +58,8 @@
             class="flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 shadow-sm border font-bold text-xs"
             :class="working 
                 ? 'bg-red-50 border-red-100 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' 
-                : 'bg-white border-gray-200 text-gray-700 hover:border-violet-500 hover:text-violet-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'">
+                : 'bg-white border-gray-200 text-gray-700 hover:border-violet-500 hover:text-violet-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'"
+            :title="working ? '{{ __('tasks.stop_workday') }}' : '{{ __('tasks.start_workday') }}'">
         
         <template x-if="!loading">
             <div class="flex items-center gap-2">
@@ -68,7 +69,7 @@
                 <svg x-show="working" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7" />
                 </svg>
-                <span x-text="working ? 'Terminar Jornada' : 'Empezar Jornada'"></span>
+                <span x-text="working ? '{{ __('tasks.stop_workday') }}' : '{{ __('tasks.start_workday') }}'"></span>
             </div>
         </template>
 
