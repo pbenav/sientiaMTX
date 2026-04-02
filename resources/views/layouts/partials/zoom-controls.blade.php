@@ -24,6 +24,7 @@
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+         :style="'zoom: ' + (1/zoom)"
          class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl z-[60] p-4">
         
         <div class="flex flex-col gap-4">
