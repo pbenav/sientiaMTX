@@ -418,13 +418,13 @@
         <div x-show="layout === 'vertical'"
             class="sticky top-0 z-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-4 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 w-full max-w-[100vw] left-0">
             <div class="mx-auto max-w-none lg:{{ $maxWidth }}">
-                <div class="flex flex-col gap-4">
-                    <!-- Top Line: Mobile Menu & Global Tools -->
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
+                <div class="flex items-start justify-between gap-6">
+                    <div class="flex items-start gap-4 min-w-0">
+                        <!-- Burger Menu Wrapper -->
+                        <div class="flex items-center shrink-0 pt-1">
                             <!-- Toggle button ONLY when closed -->
                             <button x-show="!sidebarOpen" @click="sidebarOpen = true"
-                                class="p-2 -mt-1 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all shrink-0"
+                                class="p-2 -mt-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all"
                                 title="{{ __('Open Sidebar') }}" x-cloak>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
@@ -434,17 +434,17 @@
                             </button>
                         </div>
 
-                        <!-- System Tools (Top Right) -->
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
+                        <!-- Main Header Slot (Breadcrumb, Title, Switchers) -->
+                        <div class="flex-1 min-w-0 prose-headers:m-0">
+                            @if (isset($header))
+                                {{ $header }}
+                            @endif
                         </div>
                     </div>
 
-                    <!-- Main Header Slot (Breadcrumb, Title, Switchers) -->
-                    <div class="w-full">
-                        @if (isset($header))
-                            {{ $header }}
-                        @endif
+                    <!-- System Tools (Top Right - same line) -->
+                    <div class="flex items-center gap-1.5 shrink-0 pt-1">
+                        @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
                     </div>
                 </div>
         </div>
