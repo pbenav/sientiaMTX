@@ -26,6 +26,23 @@ class Task extends Model
                 $model->uuid = (string) Str::uuid();
             }
         });
+
+        static::saving(function (self $model) {
+            // Unarchive tasks that are not 100% completed
+            if ($model->isDirty('progress_percentage') || $model->isDirty('status')) {
+                if ($model->progress_percentage < 100 && $model->status === 'completed') {
+                    $model->status = 'in_progress';
+                    $model->is_archived = false;
+                } elseif ($model->progress_percentage == 100 && !in_array($model->status, ['completed', 'cancelled'])) {
+                    $model->status = 'completed';
+                }
+            }
+
+            // Sync archived status: If not completed, it should NOT be archived
+            if ($model->status !== 'completed' && $model->is_archived) {
+                $model->is_archived = false;
+            }
+        });
     }
 
 
