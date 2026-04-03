@@ -220,4 +220,5 @@ return [
     'selected_tasks' => 'tareas seleccionadas',
     'delete_selection' => 'Eliminar Selección',
     'time_statistics' => 'Estadísticas de Tiempo',
+    'search_task' => 'Buscar tarea...',
 ];

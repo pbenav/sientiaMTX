@@ -198,4 +198,5 @@ return [
     'selected_tasks' => 'selected tasks',
     'delete_selection' => 'Delete Selection',
     'time_statistics' => 'Time Statistics',
+    'search_task' => 'Search task...',
 ];
