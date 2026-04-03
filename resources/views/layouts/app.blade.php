@@ -499,7 +499,9 @@
     </footer>
 
     <!-- Telegram Chat Experiment -->
-    @include('partials.telegram-widget')
+    @auth
+        @include('partials.telegram-widget')
+    @endauth
 
     @stack('scripts')
     <script>

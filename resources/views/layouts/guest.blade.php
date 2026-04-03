@@ -31,8 +31,7 @@
         </div>
     </div>
 
-    <!-- Telegram Chat Experiment -->
-    @include('partials.telegram-widget')
+    </div>
 </body>
 
 </html>
