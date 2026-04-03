@@ -400,6 +400,8 @@
     <script>
         let gantt;
         let allTasks = [];
+        let collapsedTasks = new Set();
+        let currentMode = 'Week';
 
         async function fetchTasks(quadrant = 'all') {
             const urlParams = new URLSearchParams(window.location.search);
@@ -409,10 +411,38 @@
             return await response.json();
         }
 
-        async function initGantt(quadrant = 'all') {
-            const tasks = await fetchTasks(quadrant);
+        function refreshGanttDisplay() {
+            // Filter tasks based on collapse state
+            const tasksToDisplay = allTasks.filter(task => {
+                // If it's the today marker, always show
+                if (task.id === 'today_marker') return true;
+                
+                // If the parent is collapsed, hide this task
+                if (task.dependencies && collapsedTasks.has(task.dependencies)) {
+                    return false;
+                }
+                return true;
+            }).map(task => {
+                // Clone task to avoid modifying original
+                const t = { ...task };
+                
+                // Update label with arrow if it has children
+                if (t.has_children) {
+                    const icon = collapsedTasks.has(t.id) ? '▶ ' : '▼ ';
+                    t.name = icon + t.name.replace(/^[▶▼] /, '');
+                }
+                return t;
+            });
 
-            if (tasks.length === 0) {
+            // If gantt exists, we refresh it (though Frappe Gantt doesn't have a perfect refresh for tree views, 
+            // re-init is often safer to ensure correct layout and row heights).
+            renderGantt(tasksToDisplay);
+        }
+
+        async function initGantt(quadrant = 'all') {
+            allTasks = await fetchTasks(quadrant);
+
+            if (allTasks.length === 0 || (allTasks.length === 1 && allTasks[0].id === 'today_marker')) {
                 document.getElementById('gantt-container').innerHTML = `
                     <div class="flex flex-col items-center justify-center p-20 text-gray-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -425,6 +455,10 @@
                 return;
             }
 
+            refreshGanttDisplay();
+        }
+
+        function renderGantt(tasks) {
             document.getElementById('gantt-container').innerHTML = '';
 
             gantt = new Gantt("#gantt-container", tasks, {
@@ -436,9 +470,11 @@
                 bar_corner_radius: 6,
                 arrow_curve: 5,
                 padding: 18,
-                view_mode: 'Week',
+                view_mode: currentMode,
                 language: 'es',
                 custom_popup_html: function(task) {
+                    if (task.id === 'today_marker') return ''; // No popup for dummy task
+
                     const statusLabels = {
                         'pending': 'Pendiente',
                         'in_progress': 'En curso',
@@ -457,7 +493,7 @@
                     const parentHtml = task.parent_title ? `
                         <div class="flex items-center gap-1 mt-1 mb-2">
                             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
-                                ↳ {{ __('tasks.subtask') }} 
+                                ↳ Subtarea 
                             </span>
                             <span class="text-[10px] text-gray-400 truncate max-w-[120px]">${task.parent_title}</span>
                         </div>
@@ -487,11 +523,21 @@
                     `;
                 },
                 on_click: function(task) {
-                    // Redirect to task show view
-                    window.location.href = `{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}`;
+                    if (task.has_children) {
+                        // Toggle collapse
+                        if (collapsedTasks.has(task.id)) {
+                            collapsedTasks.delete(task.id);
+                        } else {
+                            collapsedTasks.add(task.id);
+                        }
+                        refreshGanttDisplay();
+                    } else {
+                        // Redirect to task show view if not collapsible
+                        window.location.href = `{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}`;
+                    }
                 },
                 on_date_change: function(task, start, end) {
-                    console.log('Date changed', task, start, end);
+                    if (task.id === 'today_marker') return;
 
                     // Update task dates via AJAX
                     fetch(`{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}/move`, {
@@ -509,8 +555,12 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // Optional: Show a small toast or notification
-                                console.log('Task updated successfully');
+                                // Update current local data to reflect changes if needed
+                                let updated = allTasks.find(t => t.id === task.id);
+                                if (updated) {
+                                    updated.start = start;
+                                    updated.end = end;
+                                }
                             }
                         })
                         .catch(error => console.error('Error updating task:', error));
@@ -524,6 +574,7 @@
                     if (el) el.setAttribute('data-status', t.status);
                 });
             }, 500);
+            
             // Center today line and add custom line
             setTimeout(() => {
                 centerToday();
@@ -538,13 +589,6 @@
                 const x = parseFloat(todayElement.getAttribute('x'));
                 const containerWidth = container.offsetWidth;
                 container.scrollLeft = x - (containerWidth / 2);
-            } else {
-                // Fallback: If no highlight (should not happen with our enforcer), center last task
-                const bars = container.querySelectorAll('.bar');
-                if (bars.length > 0) {
-                    const lastBar = bars[bars.length - 1];
-                    container.scrollLeft = parseFloat(lastBar.getAttribute('x')) - (container.offsetWidth / 2);
-                }
             }
         }
 
@@ -553,14 +597,7 @@
             const svg = container.querySelector('svg');
             const todayHighlight = container.querySelector('.today-highlight');
 
-            if (!svg || !todayHighlight) {
-                // Retry once after a short delay if not ready
-                if (!window._gantt_retry) {
-                    window._gantt_retry = true;
-                    setTimeout(drawTodayLine, 1000);
-                }
-                return;
-            };
+            if (!svg || !todayHighlight) return;
 
             const existing = document.getElementById('today-line');
             if (existing) existing.remove();
@@ -577,8 +614,8 @@
         }
 
         function changeView(mode) {
+            currentMode = mode;
             gantt.change_view_mode(mode);
-            window._gantt_retry = false;
             setTimeout(() => {
                 centerToday();
                 drawTodayLine();
@@ -586,7 +623,6 @@
         }
 
         function filterTasks(quadrant) {
-            window._gantt_retry = false;
             initGantt(quadrant);
         }
 

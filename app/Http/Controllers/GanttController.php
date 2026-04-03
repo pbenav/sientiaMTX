@@ -139,10 +139,19 @@ class GanttController extends Controller
             if ($task->is_template || $task->is_autoprogrammable) {
                 $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
             } elseif ($task->assignedUser) {
-                $label = '👤 ' . $task->assignedUser->name . ': ' . $task->title;
+                $label = '👤 ' . ($task->assignedUser->short_name ?: $task->assignedUser->name) . ': ' . $task->title;
             } else {
                 $label = $task->title;
             }
+
+            // Add visual indentation for subtasks
+            if ($task->parent_id) {
+                $label = '   ↳ ' . $label;
+            }
+
+            // Determine custom classes for styling
+            $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
+            $colorClass = $task->getGanttColorClass();
 
             return [
                 'id'           => (string) $task->id,
@@ -151,11 +160,12 @@ class GanttController extends Controller
                 'end'          => $end->format('Y-m-d'),
                 'progress'     => $progress,
                 'dependencies' => $task->metadata['dependency_id'] ?? ($task->parent_id ? (string) $task->parent_id : ''),
-                'custom_class' => $task->getGanttColorClass(),
+                'custom_class' => "{$typeClass} {$colorClass}",
                 'status'       => $task->status,
                 'priority'     => $task->priority,
                 'urgency'      => $task->urgency,
                 'is_template'  => $task->is_template,
+                'has_children' => $task->children->count() > 0,
                 'assigned_to'  => $task->assignedUser?->name,
                 'parent_title' => $task->parent?->title,
             ];
