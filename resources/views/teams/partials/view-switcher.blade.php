@@ -12,7 +12,8 @@
 @endphp
 
     <div
-        class="flex items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 mr-2 shadow-sm overflow-x-auto no-scrollbar">
+        class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm min-w-0">
+        <div class="flex items-center overflow-x-auto no-scrollbar flex-1 min-w-0">
         @php
             $views = [
                 [
@@ -93,7 +94,10 @@
                 <span class="text-[9px] font-bold uppercase tracking-tight whitespace-nowrap leading-none">{{ $view['name'] }}</span>
             </a>
         @endforeach
+        </div>
 
-        <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center"></div>
-        @include('teams.partials.hide-completed-toggle')
+        <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center shrink-0"></div>
+        <div class="shrink-0 px-1">
+            @include('teams.partials.hide-completed-toggle')
+        </div>
     </div>

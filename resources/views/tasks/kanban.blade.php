@@ -36,7 +36,7 @@
         </div>
 
         <!-- View Switcher Sub-Header -->
-        <div class="mt-4 mb-2">
+        <div class="mt-4 mb-2 flex w-full">
             @include('teams.partials.view-switcher')
         </div>
 
@@ -50,9 +50,9 @@
         $quadrantConfig = $team->getQuadrantConfig();
     @endphp
 
-    <div class="flex flex-col min-h-[calc(100vh-180px)] min-w-full w-max pb-10">
+    <div class="flex flex-col min-h-[calc(100vh-180px)] w-full pb-10">
         <!-- Kanban Board Container -->
-        <div class="flex-1 overflow-x-visible pb-6 pt-2">
+        <div class="flex-1 overflow-x-auto pb-6 pt-2 no-scrollbar">
             <div class="flex h-full gap-4 px-4 sm:px-6 w-max min-w-full items-stretch pb-4" id="kanban-board">
                 @foreach($columns as $column)
                     <div class="shrink-0 flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 

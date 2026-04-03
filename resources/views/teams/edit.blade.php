@@ -22,7 +22,7 @@
         </div>
 
         <!-- View Switcher Sub-Header -->
-        <div class="mt-4 mb-2">
+        <div class="mt-4 mb-2 flex w-full">
             @include('teams.partials.view-switcher')
         </div>
 

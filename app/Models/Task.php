@@ -316,7 +316,13 @@ class Task extends Model
             // Note: Managers could see everything before, but now we keep it personal for focus.
         })
         ->where('is_template', false)
-        ->whereDoesntHave('children'); // CRITICAL: Never show tasks that act as groups or parents in Kanban.
+        ->where(function ($q) use ($userId) {
+            // Usually we only show leaf tasks (no children), but if a task with children 
+            // is directly assigned to the user, we show it so they can track it in Kanban.
+            $q->whereDoesntHave('children')
+              ->orWhere('assigned_user_id', $userId)
+              ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+        });
     }
     public function scopeDueThisWeek($query)
     {
