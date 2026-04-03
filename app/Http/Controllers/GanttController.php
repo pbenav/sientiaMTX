@@ -96,7 +96,19 @@ class GanttController extends Controller
             })
             ->get();
 
-        // Step 3: Optional quadrant filter (applied after expansion to keep siblings coherent)
+        // Step 3: Sort hierarchically (Template/Parent first, then its instances/children)
+        $allGanttTasks = $allGanttTasks->sortBy(function ($task) {
+            // Group by the parent's ID. If no parent, it's a root task, so use its own ID.
+            $groupId = $task->parent_id ?? $task->id;
+            // Within the group, parents (is_template = true or parent_id = null) come first.
+            // Templates/master tasks get 0, children/instances get 1.
+            $isChild = $task->parent_id ? 1 : 0;
+            
+            // Return a sort key: GroupID_isChild_TaskID
+            return sprintf('%010d-%d-%010d', $groupId, $isChild, $task->id);
+        })->values();
+
+        // Step 4: Optional quadrant filter (applied after expansion and sorting to keep siblings coherent)
         if ($request->filled('quadrant') && $request->quadrant !== 'all') {
             $q             = (int) $request->quadrant;
             $priorityHigh  = ['high', 'critical'];
