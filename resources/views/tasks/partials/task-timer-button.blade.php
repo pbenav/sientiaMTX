@@ -2,8 +2,8 @@
     taskId: {{ $task->id }},
     loading: false,
     
-    get timer() { return Alpine.store('timer').activeTaskId === this.taskId ? Alpine.store('timer').timer : null },
-    get elapsed() { return Alpine.store('timer').activeTaskId === this.taskId ? Alpine.store('timer').elapsed : 0 },
+    get timer() { return Alpine.store('timer').activeTaskId == this.taskId ? Alpine.store('timer').timer : null },
+    get elapsed() { return Alpine.store('timer').activeTaskId == this.taskId ? Alpine.store('timer').elapsed : 0 },
     humanTime: '{{ $task->totalTrackedTimeHuman() }}',
 
     toggle() {

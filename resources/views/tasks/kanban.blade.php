@@ -126,7 +126,12 @@
                                     $quadrant = $task->getQuadrant($task);
                                     $qCfg = $quadrantConfig[$quadrant] ?? null;
                                 @endphp
-                                <div class="bg-white dark:bg-gray-900 backdrop-blur-sm rounded-2xl shadow-md border-l-[6px] p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
+                                <div x-data="{ 
+                                         taskId: {{ $task->id }},
+                                         get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
+                                     }"
+                                     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'bg-white dark:bg-gray-900'"
+                                     class="backdrop-blur-sm rounded-2xl shadow-md border-l-[6px] p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
                                      data-task-id="{{ $task->id }}"
                                      style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms">
                                     

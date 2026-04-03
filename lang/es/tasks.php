@@ -221,4 +221,6 @@ return [
     'delete_selection' => 'Eliminar Selección',
     'time_statistics' => 'Estadísticas de Tiempo',
     'search_task' => 'Buscar tarea...',
+    'totals' => 'Totales',
+    'total' => 'Total',
 ];

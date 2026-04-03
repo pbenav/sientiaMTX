@@ -199,4 +199,6 @@ return [
     'delete_selection' => 'Delete Selection',
     'time_statistics' => 'Time Statistics',
     'search_task' => 'Search task...',
+    'totals' => 'Totals',
+    'total' => 'Total',
 ];
