@@ -219,4 +219,5 @@ return [
     'back_to_kanban' => 'Volver al Kanban',
     'selected_tasks' => 'tareas seleccionadas',
     'delete_selection' => 'Eliminar Selección',
+    'time_statistics' => 'Estadísticas de Tiempo',
 ];

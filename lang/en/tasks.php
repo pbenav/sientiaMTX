@@ -197,4 +197,5 @@ return [
     'back_to_kanban' => 'Back to Kanban',
     'selected_tasks' => 'selected tasks',
     'delete_selection' => 'Delete Selection',
+    'time_statistics' => 'Time Statistics',
 ];
