@@ -45,39 +45,47 @@
             <form method="POST" action="{{ route('teams.update', $team) }}" class="p-6 space-y-6">
                 @csrf @method('PATCH')
 
-                <div class="space-y-4">
-                    <div>
-                        <x-input-label for="name" :value="__('teams.name')"
-                            class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
-                        <x-text-input id="name" name="name" type="text" class="block w-full"
-                            :value="old('name', $team->name)" required autofocus />
-                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                    </div>
-
-                    <div>
-                        <x-input-label for="description" :value="__('teams.description')"
-                            class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
-                        <textarea id="description" name="description" rows="4"
-                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all resize-none placeholder-gray-400">{{ old('description', $team->description) }}</textarea>
-                        <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                    </div>
-
-                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                            </span>
-                            <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{{ __('teams.telegram_integration') }}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                    <!-- Left Column: Primary Info -->
+                    <div class="md:col-span-8 space-y-6">
+                        <div>
+                            <x-input-label for="name" :value="__('teams.name')"
+                                class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                            <x-text-input id="name" name="name" type="text" class="block w-full border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 focus:bg-white dark:focus:bg-gray-800 transition-all"
+                                :value="old('name', $team->name)" required autofocus />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
-                        
-                        <x-input-label for="telegram_chat_id" :value="__('teams.telegram_chat_id')"
-                            class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
-                        <x-text-input id="telegram_chat_id" name="telegram_chat_id" type="text" class="block w-full font-mono text-xs"
-                            :value="old('telegram_chat_id', $team->telegram_chat_id)" placeholder="-123456789" />
-                        <p class="mt-2 text-[10px] text-gray-500">{{ __('teams.telegram_chat_id_description') }}</p>
-                        <x-input-error :messages="$errors->get('telegram_chat_id')" class="mt-2" />
+
+                        <div>
+                            <x-input-label for="description" :value="__('teams.description')"
+                                class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                            <textarea id="description" name="description" rows="5"
+                                class="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all resize-none placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800">{{ old('description', $team->description) }}</textarea>
+                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Integrations & Meta -->
+                    <div class="md:col-span-4 space-y-6">
+                        <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </span>
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('teams.telegram_integration') }}</h3>
+                            </div>
+                            
+                            <div>
+                                <x-input-label for="telegram_chat_id" :value="__('teams.telegram_chat_id')"
+                                    class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                <x-text-input id="telegram_chat_id" name="telegram_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
+                                    :value="old('telegram_chat_id', $team->telegram_chat_id)" placeholder="-123456789" />
+                                <p class="mt-3 text-[10px] leading-relaxed text-gray-400">{{ __('teams.telegram_chat_id_description') }}</p>
+                                <x-input-error :messages="$errors->get('telegram_chat_id')" class="mt-2" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
