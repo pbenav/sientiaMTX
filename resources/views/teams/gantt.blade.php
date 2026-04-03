@@ -286,6 +286,33 @@
             fill: #9ca3af !important;
         }
 
+        /* Hierarchical Styling */
+        .gantt .gantt-master .bar {
+            stroke: rgba(0, 0, 0, 0.2) !important;
+            stroke-width: 1px !important;
+        }
+
+        .dark .gantt .gantt-master .bar {
+            stroke: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .gantt .gantt-instance .bar {
+            rx: 12 !important; /* Extra rounded for instances */
+            ry: 12 !important;
+            height: 22px !important; /* Thinner bars for subtasks */
+            y: 4px !important; /* Vertical offset to center the thinner bar */
+        }
+        
+        .gantt .gantt-instance .bar-filled {
+            height: 22px !important;
+            y: 4px !important;
+        }
+
+        .gantt .gantt-instance .bar-label {
+            font-size: 10px !important;
+            opacity: 0.8;
+        }
+
         /* Popover styling */
         .gantt-container .header-wrapper {
             display: none;
