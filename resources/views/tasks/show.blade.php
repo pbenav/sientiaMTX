@@ -133,6 +133,24 @@
         };
 
         $personalInstance = null;
+
+        // Calculate Time Tracking Statistics
+        $taskIds = $task->children()->pluck('id')->push($task->id);
+        $allLogs = TimeLog::whereIn('task_id', $taskIds)->whereNotNull('end_at')->with('user')->get();
+        
+        $timeStats = $allLogs->groupBy('user_id')
+            ->map(function ($logs) {
+                $totalSeconds = $logs->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+                return [
+                    'user' => $logs->first()->user,
+                    'seconds' => $totalSeconds,
+                    'formatted' => (floor($totalSeconds / 3600) > 0 ? floor($totalSeconds / 3600) . "h " : "") . floor(($totalSeconds % 3600) / 60) . "m"
+                ];
+            })
+            ->sortByDesc('seconds');
+
+        $totalSecondsTask = $timeStats->sum('seconds');
+        $totalFormattedTask = (floor($totalSecondsTask / 3600) > 0 ? floor($totalSecondsTask / 3600) . "h " : "") . floor(($totalSecondsTask % 3600) / 60) . "m";
     @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -376,6 +394,51 @@
                     <div
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
                         {!! str($task->observations)->markdown() !!}
+                    </div>
+                </div>
+            @endif
+
+            <!-- Time Statistics Card -->
+            @if($totalSecondsTask > 0)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-transparent flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </span>
+                            <h3 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-widest">{{ __('tasks.time_statistics') ?? 'Estadísticas de Tiempo' }}</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-black text-indigo-600 dark:text-indigo-400">{{ $totalFormattedTask }}</span>
+                            <span class="text-[10px] text-gray-400 uppercase tracking-tighter ml-1">{{ __('Total') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="p-6 space-y-5">
+                        @foreach($timeStats as $stat)
+                            @php
+                                $userPerc = $totalSecondsTask > 0 ? ($stat['seconds'] / $totalSecondsTask) * 100 : 0;
+                            @endphp
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
+                                            {{ strtoupper(substr($stat['user']->name ?? '?', 0, 2)) }}
+                                        </div>
+                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $stat['user']->name ?? '—' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-black text-gray-900 dark:text-white">{{ $stat['formatted'] }}</span>
+                                        <span class="text-[10px] text-gray-400 tabular-nums">({{ round($userPerc) }}%)</span>
+                                    </div>
+                                </div>
+                                <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endif
