@@ -300,7 +300,8 @@
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                         <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
                         @foreach ($tasks as $t)
-                            <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}>
+                            <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
+                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
                                 {{ $t->title }}
                             </option>
                         @endforeach
@@ -521,6 +522,23 @@
                     direction: "asc"
                 },
                 placeholder: '{{ __("tasks.search_task") ?? "Buscar tarea..." }}',
+                render: {
+                    option: function(data, escape) {
+                        return '<div class="flex flex-col py-0.5">' +
+                            '<span class="font-bold text-gray-900 dark:text-gray-100">' + escape(data.text) + '</span>' +
+                            '<span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">' + 
+                                '<i class="inline-block w-1 h-1 rounded-full bg-violet-400 mr-1.5 opacity-60"></i>' + 
+                                escape(data.assignee) + 
+                            '</span>' +
+                        '</div>';
+                    },
+                    item: function(data, escape) {
+                        return '<div class="flex items-center gap-2">' + 
+                            '<span>' + escape(data.text) + '</span>' +
+                            '<span class="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-mono">@' + escape(data.assignee) + '</span>' +
+                        '</div>';
+                    }
+                }
             });
         });
     </script>

@@ -91,7 +91,7 @@ class TaskController extends Controller
         $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
-        $tasks = $team->tasks()->orderBy('title')->get();
+        $tasks = $team->tasks()->with('assignedUser')->orderBy('title')->get();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -287,7 +287,7 @@ class TaskController extends Controller
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
-        $tasks = $team->tasks()->where('id', '!=', $task->id)->orderBy('title')->get();
+        $tasks = $team->tasks()->with('assignedUser')->where('id', '!=', $task->id)->orderBy('title')->get();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
