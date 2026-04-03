@@ -81,6 +81,8 @@
                 </form>
             @endcan
 
+            @include('tasks.partials.task-timer-button', ['task' => $task])
+
             @include('teams.partials.header-actions')
         </div>
     </x-slot>

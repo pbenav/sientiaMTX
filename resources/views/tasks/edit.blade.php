@@ -21,7 +21,7 @@
     </x-slot>
 
     <div id="task-edit-container" 
-        class="layout-{{ $layout }} max-w-2xl mx-auto space-y-5 transition-all duration-300"
+        class="layout-{{ $layout }} max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-5 transition-all duration-300"
         :class="{ 
             'sidebar-is-open': sidebarOpen, 
             'sidebar-is-closed': !sidebarOpen,

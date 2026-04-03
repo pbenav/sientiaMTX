@@ -153,10 +153,14 @@
                                                 @endif
                                                 <span class="truncate">{{ $task->title }}</span>
                                             </a>
-                                            <!-- Owner initials -->
-                                            <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
-                                                title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
-                                                {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                            <!-- Timer and Owner -->
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                @include('tasks.partials.task-timer-button', ['task' => $task])
+                                                <!-- Owner initials -->
+                                                <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+                                                    title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
+                                                    {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                                </div>
                                             </div>
                                             @if ($task->due_date)
                                                 <span
