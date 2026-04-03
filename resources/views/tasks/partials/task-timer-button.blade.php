@@ -1,46 +1,10 @@
 <div x-data="{ 
     taskId: {{ $task->id }},
-    activeTask: null,
     loading: false,
-    elapsed: 0,
-    timer: null,
-    humanTime: '{{ $task->totalTrackedTimeHuman() }}',
     
-    init() {
-        this.checkStatus();
-        // Listen for global status updates
-        window.addEventListener('workday-toggled', (e) => {
-             if (!e.detail.working) this.stopTimer();
-        });
-    },
-
-    checkStatus() {
-        // Sync with global active task from server or global state
-        fetch('{{ route('time-logs.status') }}')
-            .then(res => res.json())
-            .then(data => {
-                this.activeTask = data.active_task_id;
-                if (this.activeTask === this.taskId) {
-                    this.elapsed = Math.floor(data.task_elapsed);
-                    this.startTimer();
-                }
-            });
-    },
-
-    startTimer() {
-        if (this.timer) clearInterval(this.timer);
-        this.timer = setInterval(() => {
-            this.elapsed++;
-        }, 1000);
-    },
-
-    stopTimer() {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-        this.activeTask = null;
-    },
+    get timer() { return Alpine.store('timer').activeTaskId === this.taskId ? Alpine.store('timer').timer : null },
+    get elapsed() { return Alpine.store('timer').activeTaskId === this.taskId ? Alpine.store('timer').elapsed : 0 },
+    humanTime: '{{ $task->totalTrackedTimeHuman() }}',
 
     toggle() {
         this.loading = true;
@@ -51,14 +15,10 @@
         .then(res => res.json())
         .then(data => {
             if (data.status === 'started') {
-                this.activeTask = this.taskId;
-                this.elapsed = 0;
-                this.startTimer();
-                // Notify others to stop if they were active
                 window.dispatchEvent(new CustomEvent('task-started', { detail: { taskId: this.taskId } }));
             } else {
-                this.stopTimer();
-                window.location.reload(); // To update the human time total from server
+                if (Alpine.store('timer')) Alpine.store('timer').stop();
+                window.location.reload();
             }
             this.loading = false;
         });

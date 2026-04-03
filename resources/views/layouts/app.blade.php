@@ -35,6 +35,36 @@
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Global Alpine Store for Timer (Performance optimization N -> 1) -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('timer', {
+                activeTaskId: null,
+                elapsed: 0,
+                timer: null,
+                async fetch() {
+                    try {
+                        const res = await fetch('{{ route('time-logs.status') }}');
+                        const data = await res.json();
+                        this.activeTaskId = data.active_task_id;
+                        this.elapsed = Math.floor(data.task_elapsed);
+                        if (this.activeTaskId) this.tick();
+                    } catch(e) { console.error('Timer sync failed', e); }
+                },
+                tick() {
+                    if (this.timer) clearInterval(this.timer);
+                    this.timer = setInterval(() => { this.elapsed++; }, 1000);
+                },
+                stop() {
+                    if (this.timer) clearInterval(this.timer);
+                    this.timer = null;
+                    this.activeTaskId = null;
+                }
+            });
+            Alpine.store('timer').fetch();
+        });
+    </script>
+
     <style>
         :root {
             --color-q1: #ef4444;
@@ -294,7 +324,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <div x-show="open" x-transition
+                            <div x-show="open" x-transition x-cloak
                                 class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
                                 <div
                                     class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent">
@@ -363,7 +393,7 @@
 
     <!-- Flash Messages -->
     @if (session('success'))
-        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 4000)"
+        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 4000)" x-cloak
             class="fixed top-20 right-4 z-50 max-w-sm w-full bg-emerald-50 dark:bg-emerald-900/90 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-emerald-400" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -376,7 +406,7 @@
     @endif
 
     @if (session('warning'))
-        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 6000)"
+        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 6000)" x-cloak
             class="fixed top-20 right-4 z-50 max-w-sm w-full bg-amber-50 dark:bg-amber-900/90 border border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-200 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-amber-400" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -390,7 +420,7 @@
     @endif
 
     @if (session('error') || $errors->any())
-        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 6000)"
+        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 6000)" x-cloak
             class="fixed top-20 right-4 z-50 max-w-sm w-full bg-red-50 dark:bg-red-900/90 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-200 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 mt-0.5 text-red-400" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -415,7 +445,7 @@
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'">
 
         <!-- Header for Vertical Layout -->
-        <div x-show="layout === 'vertical'"
+        <div x-show="layout === 'vertical'" x-cloak
             class="sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-4 mb-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
             <div class="mx-auto max-w-none lg:{{ $maxWidth }}">
                 <div class="flex items-start justify-between gap-6">
@@ -424,7 +454,7 @@
                         <div class="flex items-center shrink-0 pt-1">
                             <!-- Toggle button ONLY when closed -->
                             <button x-show="!sidebarOpen" @click="sidebarOpen = true"
-                                class="p-2 -mt-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all"
+                                class="p-2 -mt-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all shadow-sm"
                                 title="{{ __('Open Sidebar') }}" x-cloak>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
@@ -584,7 +614,23 @@
         })();
     </script>
     </div>
-    
+
+    <!-- Global Timer Sync Listener -->
+    <script>
+        window.addEventListener('task-started', (e) => {
+            if (Alpine.store('timer')) {
+                Alpine.store('timer').activeTaskId = e.detail.taskId;
+                Alpine.store('timer').elapsed = 0;
+                Alpine.store('timer').tick();
+            }
+        });
+        window.addEventListener('workday-toggled', (e) => {
+            if (!e.detail.working && Alpine.store('timer')) {
+                Alpine.store('timer').stop();
+            }
+        });
+    </script>
+
     @stack('scripts')
 </body>
 
