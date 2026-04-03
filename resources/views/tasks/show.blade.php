@@ -136,7 +136,7 @@
 
         // Calculate Time Tracking Statistics
         $taskIds = $task->children()->pluck('id')->push($task->id);
-        $allLogs = TimeLog::whereIn('task_id', $taskIds)->whereNotNull('end_at')->with('user')->get();
+        $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->whereNotNull('end_at')->with('user')->get();
         
         $timeStats = $allLogs->groupBy('user_id')
             ->map(function ($logs) {
