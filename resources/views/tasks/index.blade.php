@@ -48,7 +48,7 @@
                         </div>
                         <input type="text" name="search" value="{{ request('search') }}"
                             placeholder="{{ __('tasks.search') }}..."
-                            class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                            class="w-full pl-10 pr-4 py-2 {{ request('search') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
                     </div>
                     <button type="submit" 
                         class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-sm transition-all flex items-center justify-center lg:hidden"
@@ -62,7 +62,7 @@
                 <!-- Status Filter -->
                 <div class="w-40">
                     <select name="status" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('status') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.status') }}</option>
                         @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
                             <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>
@@ -75,7 +75,7 @@
                 <!-- Priority Filter -->
                 <div class="w-40">
                     <select name="priority" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('priority') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.priority') }}</option>
                         @foreach (['low', 'medium', 'high', 'critical'] as $priority)
                             <option value="{{ $priority }}"
@@ -89,7 +89,7 @@
                 <!-- Assigned To Filter -->
                 <div class="w-48">
                     <select name="assigned_to" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('assigned_to') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.assigned_to') }}</option>
                         @foreach ($members as $member)
                             <option value="{{ $member->id }}"
@@ -103,7 +103,7 @@
                 <!-- Type Filter -->
                 <div class="w-40">
                     <select name="type" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('type') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.type') }}</option>
                         <option value="template" {{ request('type') === 'template' ? 'selected' : '' }}>
                             {{ __('tasks.template') }}</option>

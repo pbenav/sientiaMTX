@@ -176,7 +176,7 @@
                     <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
                         {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
                     </label>
-                    <select name="parent_id"
+                    <select name="parent_id" id="parent_id_select"
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                         <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
                         @foreach ($tasks as $t)
@@ -562,7 +562,16 @@
         .dark .editor-toolbar.fullscreen {
             border-color: #374151;
         }
+
+        .ts-control { border-radius: 0.75rem !important; border-color: #e5e7eb !important; background-color: #f9fafb !important; padding: 0.625rem 1rem !important; transition: all 0.2s; }
+        .dark .ts-control { background-color: #1f2937 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
+        .ts-control:focus { border-color: #7c3aed !important; ring-color: rgba(124, 58, 237, 0.2) !important; }
+        .ts-dropdown { border-radius: 1rem !important; border-color: #e5e7eb !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; margin-top: 5px !important; }
+        .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
+        .ts-dropdown .active { background-color: #7c3aed !important; color: white !important; }
+        .ts-dropdown .option { padding: 0.5rem 1rem !important; }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -573,12 +582,12 @@
                     enabled: false,
                 },
                 status: false,
-                minHeight: '150px',
-                placeholder: 'Añade observaciones aquí...',
+                minHeight: '200px',
+                placeholder: 'Añade observaciones detalladas aquí...',
                 toolbar: [
-                    "bold", "italic", "heading", "|", 
-                    "quote", "unordered-list", "ordered-list", "|", 
-                    "link", "image", "table", "|", 
+                    "bold", "italic", "strikethrough", "heading", "|", 
+                    "quote", "code", "unordered-list", "ordered-list", "|", 
+                    "link", "image", "table", "horizontal-rule", "|", 
                     "preview", 
                     {
                         name: "side-by-side",
@@ -595,6 +604,10 @@
                     },
                     "fullscreen", "|", "guide"
                 ],
+                renderingConfig: {
+                    singleLineBreaks: false,
+                    codeSyntaxHighlighting: true,
+                },
             });
 
             const quadrantData = @json(__('tasks.quadrants'));
@@ -648,6 +661,17 @@
             priorityEl?.addEventListener('change', updatePreview);
             urgencyEl?.addEventListener('change', updatePreview);
             updatePreview();
+
+            // TomSelect for Searchable Dependencies
+            new TomSelect("#parent_id_select", {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                },
+                placeholder: '{{ __("tasks.search_task") ?? "Buscar tarea..." }}',
+            });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 </x-app-layout>

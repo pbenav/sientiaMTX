@@ -74,10 +74,7 @@
                                 {{ $message->created_at->diffForHumans() }}
                             </span>
                         </div>
-                        <div
-                            class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap">
-                            {{ $message->content }}
-                        </div>
+                        <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap">{{ $message->content }}</div>
                     </div>
                 @empty
                     <p class="text-xs text-gray-400 italic text-center py-2">{{ __('forum.no_comments_yet') }}</p>

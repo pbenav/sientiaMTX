@@ -21,4 +21,6 @@ return [
     'normal' => 'Normal',
     'reset_zoom' => 'Reset Zoom (100%)',
     'original_zoom' => 'Original (100%)',
+    'adjust_view' => 'Adjust View',
+    'custom' => 'Custom',
 ];

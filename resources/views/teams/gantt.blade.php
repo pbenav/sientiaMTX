@@ -47,13 +47,13 @@
                     </div>
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="{{ __('tasks.search') }}..."
-                        class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                        class="w-full pl-10 pr-4 py-2 {{ request('search') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
                 </div>
 
                 <!-- Status Filter -->
                 <div class="w-40">
                     <select name="status" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('status') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.status') }}</option>
                         @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
                             <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>
@@ -66,7 +66,7 @@
                 <!-- Priority Filter -->
                 <div class="w-40">
                     <select name="priority" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('priority') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.priority') }}</option>
                         @foreach (['low', 'medium', 'high', 'critical'] as $priority)
                             <option value="{{ $priority }}"
@@ -80,7 +80,7 @@
                 <!-- Assigned To Filter -->
                 <div class="w-48">
                     <select name="assigned_to" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('assigned_to') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.assigned_to') }}</option>
                         @if (isset($members))
                             @foreach ($members as $member)
@@ -96,7 +96,7 @@
                 <!-- Type Filter -->
                 <div class="w-40">
                     <select name="type" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('type') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="">{{ __('tasks.type') }}</option>
                         <option value="template" {{ request('type') === 'template' ? 'selected' : '' }}>
                             {{ __('tasks.template') }}</option>
@@ -110,7 +110,7 @@
                 <!-- Time Range Filter -->
                 <div class="w-40">
                     <select name="time_range" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ (request('time_range') && request('time_range') !== 'all') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="all" {{ request('time_range') === 'all' ? 'selected' : '' }}>{{ __('tasks.all_time') ?? 'Cualquier fecha' }}</option>
                         <option value="1" {{ request('time_range') === '1' ? 'selected' : '' }}>{{ __('tasks.next_month') ?? 'Próximo mes' }}</option>
                         <option value="3" {{ request('time_range') === '3' ? 'selected' : '' }}>{{ __('tasks.next_3_months') ?? 'Próximos 3 meses' }}</option>
@@ -121,7 +121,7 @@
                 <!-- Limit Filter -->
                 <div class="w-32">
                     <select name="limit" onchange="this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ (request('limit') && request('limit') !== 'all') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
                         <option value="all" {{ request('limit') === 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Sin límite' }}</option>
                         <option value="25" {{ request('limit') === '25' ? 'selected' : '' }}>{{ __('tasks.top_25') ?? 'Top 25' }}</option>
                         <option value="50" {{ request('limit') === '50' ? 'selected' : '' }}>{{ __('tasks.top_50') ?? 'Top 50' }}</option>
