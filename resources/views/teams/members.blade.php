@@ -15,7 +15,7 @@
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
                     <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
-                        {{ __('teams.members_of') }} {{ $team->name }}
+                        {{ __('teams.members_of', ['name' => $team->name]) }}
                     </h1>
                 </div>
             </div>
