@@ -32,7 +32,7 @@
         </div>
     </x-slot>
 
-    <div class="max-w-2xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <!-- Edit form -->
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
