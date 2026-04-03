@@ -39,9 +39,10 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('timer', {
-                activeTaskId: null,
-                elapsed: 0,
+                activeTaskId: {{ auth()->check() ? (auth()->user()->activeTaskLog()?->task_id ?? 'null') : 'null' }},
+                elapsed: {{ auth()->check() && auth()->user()->activeTaskLog() ? auth()->user()->activeTaskLog()->start_at->diffInSeconds(now()) : 0 }},
                 timer: null,
+                
                 async fetch() {
                     try {
                         const res = await fetch('{{ route('time-logs.status') }}');
@@ -49,6 +50,7 @@
                         this.activeTaskId = data.active_task_id;
                         this.elapsed = Math.floor(data.task_elapsed);
                         if (this.activeTaskId) this.tick();
+                        else this.stop();
                     } catch(e) { console.error('Timer sync failed', e); }
                 },
                 tick() {
@@ -59,8 +61,24 @@
                     if (this.timer) clearInterval(this.timer);
                     this.timer = null;
                     this.activeTaskId = null;
+                },
+                init() {
+                    if (this.activeTaskId) this.tick();
+                    
+                    // Listeners Centralized
+                    window.addEventListener('task-started', (e) => {
+                        this.activeTaskId = e.detail.taskId;
+                        this.elapsed = 0;
+                        this.tick();
+                    });
+                    
+                    window.addEventListener('workday-toggled', (e) => {
+                        if (!e.detail.working) this.stop();
+                    });
                 }
             });
+            
+            // Initial sync (background)
             Alpine.store('timer').fetch();
         });
     </script>
@@ -615,21 +633,6 @@
     </script>
     </div>
 
-    <!-- Global Timer Sync Listener -->
-    <script>
-        window.addEventListener('task-started', (e) => {
-            if (Alpine.store('timer')) {
-                Alpine.store('timer').activeTaskId = e.detail.taskId;
-                Alpine.store('timer').elapsed = 0;
-                Alpine.store('timer').tick();
-            }
-        });
-        window.addEventListener('workday-toggled', (e) => {
-            if (!e.detail.working && Alpine.store('timer')) {
-                Alpine.store('timer').stop();
-            }
-        });
-    </script>
 
     @stack('scripts')
 </body>
