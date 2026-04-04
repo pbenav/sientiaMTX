@@ -233,6 +233,7 @@ class TaskController extends Controller
      */
     public function show(Team $team, Task $task)
     {
+        \Log::info("Visualizando tarea #{$task->id} en equipo #{$team->id} — User: " . auth()->id());
         $this->authorize('view', $task);
         // Proactively ensure the creator has a personal instance if this is a template task
         if ($task->is_template && !$task->instances()->where('assigned_user_id', $task->created_by_id)->exists()) {
