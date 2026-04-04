@@ -80,9 +80,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/groups/{group}/members', [GroupController::class, 'addMember'])->name('teams.groups.addMember');
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
-    // Tasks routes (nested under teams)
+    // Tasks routes: Override show/edit/update to avoid Scoped Binding and handle SoftDeletes (fixes 404s for Global Goals)
+    Route::prefix('teams/{team}')->group(function() {
+        Route::get('tasks/{task}', [TaskController::class, 'show'])->name('teams.tasks.show')->withTrashed()->withoutScopedBindings();
+        Route::get('tasks/{task}/edit', [TaskController::class, 'edit'])->name('teams.tasks.edit')->withTrashed()->withoutScopedBindings();
+    });
+
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
-    Route::resource('teams.tasks', TaskController::class)->scoped([]);
+    Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit']);
 
     // Forum routes inside team
     Route::get('/teams/{team}/forum', [ForumController::class, 'index'])->name('teams.forum.index');
