@@ -498,11 +498,11 @@
                     </form>
                 </div>
 
-                @if ($task->attachments->isEmpty() && (!$task->parent_id || $task->parent->attachments->isEmpty()))
+                @if ($task->attachments->isEmpty() && (!$task->parent || $task->parent->attachments->isEmpty()))
                     <p class="text-xs text-gray-400 italic">{{ __('tasks.no_attachments') }}</p>
                 @else
                     <div class="space-y-4">
-                        @if ($task->parent_id && $task->parent->attachments->isNotEmpty())
+                        @if ($task->parent && $task->parent->attachments->isNotEmpty())
                             <div>
                                 <h4
                                     class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight mb-2 flex items-center gap-1.5">
