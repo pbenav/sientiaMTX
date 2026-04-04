@@ -322,7 +322,7 @@
                                 </td>
                                 <td class="px-4 py-4 text-right whitespace-nowrap min-w-[124px]">
                                     <div
-                                        class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        class="flex items-center justify-end gap-1 transition-opacity">
                                         @include('tasks.partials.task-timer-button', ['task' => $task, 'size' => 'xs'])
                                         @can('update', $task)
                                             <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
@@ -399,7 +399,7 @@
                                     </td>
                                     <td class="px-4 py-3 text-right whitespace-nowrap min-w-[124px]">
                                         <div
-                                            class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            class="flex items-center justify-end gap-1 transition-opacity">
                                             @include('tasks.partials.task-timer-button', ['task' => $subtask, 'size' => 'xs'])
                                             <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}"
                                                 class="p-1 text-gray-400 hover:text-violet-400 transition-colors">

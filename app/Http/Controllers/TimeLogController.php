@@ -66,9 +66,25 @@ class TimeLogController extends Controller
         }
 
         // Ensure user has an active workday to track tasks (Optional, depends on business rule)
-        // If not, we could auto-start workday here.
         if (!$user->activeWorkdayLog()) {
              $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+        }
+
+        // Update task status to in_progress if it's actionable and not already in progress
+        if (!in_array($task->status, ['completed', 'cancelled', 'in_progress'])) {
+            $task->update(['status' => 'in_progress']);
+            $task->syncKanbanColumn();
+            
+            // Sync parent if exists (Recursive up)
+            $current = $task;
+            while ($current->parent_id) {
+                $parent = $current->parent;
+                if (!in_array($parent->status, ['completed', 'cancelled', 'in_progress'])) {
+                    $parent->update(['status' => 'in_progress']);
+                    $parent->syncKanbanColumn();
+                }
+                $current = $parent;
+            }
         }
 
         $user->timeLogs()->create([
@@ -79,7 +95,8 @@ class TimeLogController extends Controller
 
         return response()->json([
             'status' => 'started',
-            'message' => __('Working on: ') . $task->title
+            'message' => __('Working on: ') . $task->title,
+            'new_task_status' => $task->status
         ]);
     }
 

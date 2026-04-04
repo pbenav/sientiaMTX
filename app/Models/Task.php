@@ -375,6 +375,8 @@ class Task extends Model
 
         if ($currentProgress == 100 || $this->status === 'completed') {
             $type = 'done';
+        } elseif ($this->status === 'in_progress') {
+            $type = 'in_progress';
         } elseif ($currentProgress == 0 && ($this->status === 'pending' || $this->status === 'todo')) {
             $type = 'todo';
         }
