@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->json('notification_settings')->nullable()->after('marketing_accepted_at');
-            $table->string('telegram_chat_id')->nullable()->after('notification_settings');
+            if (!Schema::hasColumn('users', 'notification_settings')) {
+                $table->json('notification_settings')->nullable()->after('marketing_accepted_at');
+            }
+            if (!Schema::hasColumn('users', 'telegram_chat_id')) {
+                $table->string('telegram_chat_id')->nullable()->after('notification_settings');
+            }
         });
     }
 

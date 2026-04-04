@@ -13,15 +13,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::connection(config('webpush.database_connection'))->create(config('webpush.table_name'), function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->morphs('subscribable', 'push_subscriptions_subscribable_morph_idx');
-            $table->string('endpoint', 500)->unique();
-            $table->string('public_key')->nullable();
-            $table->string('auth_token')->nullable();
-            $table->string('content_encoding')->nullable();
-            $table->timestamps();
-        });
+        $connection = config('webpush.database_connection');
+        $table = config('webpush.table_name');
+
+        if (!Schema::connection($connection)->hasTable($table)) {
+            Schema::connection($connection)->create($table, function (Blueprint $table) {
+                $table->bigIncrements('id');
+                $table->morphs('subscribable', 'push_subscriptions_subscribable_morph_idx');
+                $table->string('endpoint', 500)->unique();
+                $table->string('public_key')->nullable();
+                $table->string('auth_token')->nullable();
+                $table->string('content_encoding')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

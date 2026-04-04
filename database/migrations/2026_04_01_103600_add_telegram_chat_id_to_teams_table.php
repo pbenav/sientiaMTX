@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->string('telegram_chat_id')->nullable()->after('name');
+            if (!Schema::hasColumn('teams', 'telegram_chat_id')) {
+                $table->string('telegram_chat_id')->nullable()->after('name');
+            }
         });
     }
 
