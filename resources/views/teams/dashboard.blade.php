@@ -107,7 +107,7 @@
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
                                 {{-- Skip instance if its parent is already being shown in the same quadrant --}}
-                                @if($task->parent_id && ($qTasks->contains('id', $task->parent_id) || ($task->parent && $task->parent->created_by_id === auth()->id() && $task->getQuadrant($task) === $task->getQuadrant($task->parent))))
+                                @if($task->parent_id && (collect($qTasks)->contains('id', $task->parent_id) || ($task->parent && $task->parent->created_by_id === auth()->id() && $task->getQuadrant($task) === $task->getQuadrant($task->parent))))
                                     @continue
                                 @endif
 

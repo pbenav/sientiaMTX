@@ -28,6 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Prevent accidental redirection to JSON webhooks or other non-HTML routes
+        if (session()->has('url.intended') && (str_contains(session('url.intended'), 'telegram') || str_contains(session('url.intended'), 'webhook'))) {
+            session()->forget('url.intended');
+        }
+
         $user = Auth::user();
 
         // Show welcome message if the user prefers it
