@@ -106,6 +106,11 @@
                         <div class="flex-1 overflow-y-auto quadrant-list p-2 sm:p-4 min-h-[100px] sm:min-h-[180px] space-y-1 sm:space-y-2"
                             data-q="{{ $q }}">
                             @forelse($qTasks as $task)
+                                {{-- Skip instance if its parent is already being shown in the same quadrant --}}
+                                @if($task->parent_id && ($qTasks->contains('id', $task->parent_id) || ($task->parent && $task->parent->created_by_id === auth()->id() && $task->getQuadrant($task) === $task->getQuadrant($task->parent))))
+                                    @continue
+                                @endif
+
                                 @if ($task->status !== 'completed')
                                     <div class="flex flex-col gap-1 w-full relative group/task cursor-pointer task-card"
                                         data-id="{{ $task->id }}"

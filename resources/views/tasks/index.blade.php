@@ -199,7 +199,8 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @foreach ($tasks as $task)
-                            @if ($task->parent_id && $tasks->contains('id', $task->parent_id))
+                            {{-- Skip if it's an instance and its template/parent is also being shown as root in THIS view --}}
+                            @if ($task->parent_id && ($tasks->contains('id', $task->parent_id) || ($task->parent && $task->parent->created_by_id === auth()->id())))
                                 @continue
                             @endif
 

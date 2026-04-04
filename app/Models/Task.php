@@ -295,7 +295,15 @@ class Task extends Model
                 $main->where(function ($incl) use ($user) {
                     $incl->where('assigned_user_id', $user->id)
                          ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                         ->orWhere('created_by_id', $user->id);
+                         ->orWhere(function ($own) use ($user) {
+                             $own->where('created_by_id', $user->id)
+                                 ->where(function ($filterOthers) use ($user) {
+                                     // Only show top-level or my own instances if I created them
+                                     $filterOthers->whereNull('parent_id')
+                                                 ->orWhere('is_template', true)
+                                                 ->orWhere('assigned_user_id', $user->id);
+                                 });
+                         });
                 })
                 ->whereNot(function ($excl) use ($user) {
                     $excl->where('is_template', true)
