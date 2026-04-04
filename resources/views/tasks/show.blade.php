@@ -243,12 +243,17 @@
                                 <tr>
                                     <th class="px-4 py-3">{{ __('teams.members') }}</th>
                                     <th class="px-4 py-3">{{ __('tasks.status') }}</th>
+                                    <th class="px-4 py-3 text-right">{{ __('tasks.time_spent') ?? 'Tiempo' }}</th>
                                     <th class="px-4 py-3 text-right">{{ __('tasks.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
+                                @php
+                                    // Eager load time logs for instances to avoid N+1
+                                    $instances->load('timeLogs');
+                                @endphp
                                 @foreach ($instances as $inst)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button|select')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
                                         <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-3">
                                                 <div
@@ -299,6 +304,13 @@
                                                 <span
                                                     class="text-xs font-bold uppercase tracking-tight">{{ __('tasks.statuses.' . $inst->status) }}</span>
                                             </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            @php
+                                                $instSeconds = (int) $inst->timeLogs->whereNotNull('end_at')->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at));
+                                                $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
+                                            @endphp
+                                            <span class="text-xs font-black text-gray-900 dark:text-white tabular-nums">{{ $instSeconds > 0 ? $instFormatted : '—' }}</span>
                                         </td>
                                         <td class="px-4 py-3 text-right">
                                             @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
