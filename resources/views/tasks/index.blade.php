@@ -320,9 +320,10 @@
                                     <span
                                         class="text-xs text-gray-500">{{ $task->due_date ? $task->due_date->format('d/m/y') : '—' }}</span>
                                 </td>
-                                <td class="px-4 py-4 text-right whitespace-nowrap min-w-[100px]">
+                                <td class="px-4 py-4 text-right whitespace-nowrap min-w-[124px]">
                                     <div
                                         class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        @include('tasks.partials.task-timer-button', ['task' => $task, 'size' => 'xs'])
                                         @can('update', $task)
                                             <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
                                                 class="p-1.5 text-gray-400 hover:text-blue-500 transition-colors">
@@ -396,9 +397,10 @@
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap hidden md:table-cell">
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
+                                    <td class="px-4 py-3 text-right whitespace-nowrap min-w-[124px]">
                                         <div
                                             class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            @include('tasks.partials.task-timer-button', ['task' => $subtask, 'size' => 'xs'])
                                             <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}"
                                                 class="p-1 text-gray-400 hover:text-violet-400 transition-colors">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
