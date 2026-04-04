@@ -298,10 +298,11 @@ class Task extends Model
                          ->orWhere(function ($own) use ($user) {
                              $own->where('created_by_id', $user->id)
                                  ->where(function ($filterOthers) use ($user) {
-                                     // Only show top-level or my own instances if I created them
+                                     // Show root tasks created by me ONLY if they don't have instances for me
                                      $filterOthers->whereNull('parent_id')
-                                                 ->orWhere('is_template', true)
-                                                 ->orWhere('assigned_user_id', $user->id);
+                                                 ->whereDoesntHave('instances', function($iq) use ($user) {
+                                                     $iq->where('assigned_user_id', $user->id);
+                                                 });
                                  });
                          });
                 })
@@ -527,12 +528,24 @@ class Task extends Model
     }
 
     /**
-     * Get total time spent on this task in seconds.
+     * Get total time spent on this task and its children in seconds.
      */
     public function totalTrackedSeconds(): int
     {
-        $logs = $this->timeLogs()->whereNotNull('end_at')->get();
-        return $logs->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+        // Own logs
+        $ownSeconds = (int) $this->timeLogs()->whereNotNull('end_at')->get()
+            ->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+
+        // Children logs (for template/parent tasks)
+        $childrenSeconds = 0;
+        if ($this->children()->exists()) {
+             // Efficiently calculate time from all descendants
+             $childrenIds = $this->children()->pluck('id');
+             $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)->whereNotNull('end_at')->get();
+             $childrenSeconds = (int) $childrenLogs->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+        }
+
+        return $ownSeconds + $childrenSeconds;
     }
 
     /**
