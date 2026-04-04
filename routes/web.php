@@ -82,7 +82,7 @@ Route::middleware('auth')->group(function () {
 
     // Tasks routes (nested under teams)
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
-    Route::resource('teams.tasks', TaskController::class);
+    Route::resource('teams.tasks', TaskController::class)->withoutScopedBindings();
 
     // Forum routes inside team
     Route::get('/teams/{team}/forum', [ForumController::class, 'index'])->name('teams.forum.index');
