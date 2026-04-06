@@ -168,20 +168,19 @@
                 </div>
             </div>
             <!-- Dynamic Skill Tree section -->
-            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-8">
-                <div class="p-6 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-violet-50/10 dark:bg-violet-950/10">
+            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-6">
+                <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-violet-50/10 dark:bg-violet-950/10">
                     <div class="flex flex-col">
-                        <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            Árbol de Habilidades (Skill Tree)
+                            Especialización (Skill Tree)
                         </h4>
-                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter mt-1">Nivel de especialización por competencias</p>
                     </div>
                 </div>
-                <div class="p-8">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="p-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-3">
                         @php
                             $allSkills = \App\Models\Skill::all();
                             $userSkills = auth()->user()->skills->keyBy('id');
@@ -198,23 +197,20 @@
                                 $progress = $level >= 5 ? 100 : (($xp - $prevThreshold) / max(1, $nextThreshold - $prevThreshold)) * 100;
                             @endphp
                             <div class="flex flex-col items-center group">
-                                <div class="relative w-24 h-24 flex items-center justify-center mb-4">
-                                    <!-- Circular Progress -->
+                                <div class="relative w-12 h-12 flex items-center justify-center mb-2">
                                     <svg class="w-full h-full transform -rotate-90">
-                                        <circle cx="48" cy="48" r="42" stroke="currentColor" stroke-width="6" fill="transparent" class="text-gray-100 dark:text-gray-800" />
-                                        <circle cx="48" cy="48" r="42" stroke="currentColor" stroke-width="6" fill="transparent" 
-                                            stroke-dasharray="264" 
-                                            stroke-dashoffset="{{ 264 - (264 * $progress / 100) }}"
+                                        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="4" fill="transparent" class="text-gray-100 dark:text-gray-800" />
+                                        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="4" fill="transparent" 
+                                            stroke-dasharray="132" 
+                                            stroke-dashoffset="{{ 132 - (132 * $progress / 100) }}"
                                             class="text-violet-500 transition-all duration-1000 ease-out" />
                                     </svg>
-                                    <div class="absolute inset-0 flex items-center justify-center flex-col">
-                                        <span class="text-xl font-black text-gray-900 dark:text-white">{{ $level }}</span>
-                                        <span class="text-[8px] font-black uppercase text-gray-400">Nivel</span>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <span class="text-xs font-black text-gray-900 dark:text-white">{{ $level }}</span>
                                     </div>
                                 </div>
-                                <h5 class="text-[10px] font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest text-center">{{ $skill->name }}</h5>
-                                <p class="text-[9px] text-gray-400 font-bold uppercase">{{ $skill->category }}</p>
-                                <div class="mt-2 text-[9px] font-black text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800">
+                                <h5 class="text-[8px] font-black text-gray-900 dark:text-gray-100 uppercase tracking-tighter text-center leading-none">{{ $skill->name }}</h5>
+                                <div class="mt-1 text-[7px] font-black text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded-full border border-violet-100 dark:border-violet-800">
                                     {{ $xp }} XP
                                 </div>
                             </div>
@@ -224,26 +220,21 @@
             </div>
 
             <!-- Full Width Territorial Map -->
-            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-8">
-                <div class="p-6 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-6">
+                <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
                     <div class="flex flex-col">
-                        <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Mapa de Resiliencia Colectiva (Impacto Real)
+                            Mapa de Impacto Real
                         </h4>
-                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter mt-1">Visualización geolocalizada de la red de dinamizadores</p>
                     </div>
                     
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = true" class="px-4 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase rounded-xl tracking-widest border border-emerald-100 dark:border-emerald-800/50 transition-all flex items-center gap-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            Mi Zona
+                        <button @click="open = true" class="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase rounded-lg tracking-widest border border-emerald-100 dark:border-emerald-800/50 transition-all flex items-center gap-2">
+                            Mi Zona de Resiliencia 📍
                         </button>
 
                         <!-- User Zone Settings Modal -->
@@ -297,7 +288,7 @@
                     </div>
                 </div>
                 
-                <div class="flex-1 relative min-h-[600px] z-0">
+                <div class="flex-1 relative min-h-[380px] z-0">
                     <!-- Interactive Heatmap Container -->
                     <div id="resilience-heatmap" class="absolute inset-0 z-0"></div>
                     
