@@ -75,6 +75,7 @@ class Task extends Model
         'cognitive_load',
         'is_backstage',
         'impact_human_metric',
+        'skill_id',
     ];
  
     protected $casts = [
@@ -89,6 +90,7 @@ class Task extends Model
         'cognitive_load' => 'integer',
         'is_backstage' => 'boolean',
         'impact_human_metric' => 'integer',
+        'skill_id' => 'integer',
     ];
 
     // Relationship: A task belongs to a team
@@ -571,5 +573,10 @@ class Task extends Model
             return "{$hours}h {$minutes}m";
         }
         return "{$minutes}m";
+    }
+
+    public function skill(): BelongsTo
+    {
+        return $this->belongsTo(Skill::class);
     }
 }
