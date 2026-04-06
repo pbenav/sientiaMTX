@@ -335,7 +335,23 @@
                         <h4 class="text-sm font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">Impacto y Bienestar</h4>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Skill Category Selection -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                Skill del Árbol (Categoría)
+                            </label>
+                            <select name="skill_id" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white">
+                                <option value="">General / Sin Skill específica</option>
+                                @foreach($skills as $skill)
+                                    <option value="{{ $skill->id }}" {{ old('skill_id') == $skill->id ? 'selected' : '' }}>
+                                        {{ $skill->name }} ({{ $skill->category }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-2">Asocia esta tarea a una habilidad para ganar XP específica.</p>
+                        </div>
+
                         <!-- Cognitive Load (Energy Drain) -->
                         <div x-data="{ load: 1 }">
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">

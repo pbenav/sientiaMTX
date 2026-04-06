@@ -92,6 +92,7 @@ class TaskController extends Controller
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->with('assignedUser')->orderBy('title')->get();
+        $skills = \App\Models\Skill::all();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -101,7 +102,7 @@ class TaskController extends Controller
         }
         $backUrl = session("back_url_task_create_{$team->id}", route('teams.dashboard', $team));
 
-        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl'));
+        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills'));
     }
 
     /**
@@ -123,6 +124,7 @@ class TaskController extends Controller
             'visibility' => 'required|in:public,private',
             'is_autoprogrammable' => 'nullable|boolean',
             'autoprogram_settings' => 'nullable|array',
+            'skill_id' => 'nullable|integer|exists:skills,id',
         ]);
 
         $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
@@ -224,6 +226,7 @@ class TaskController extends Controller
                     'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
                     'cognitive_load' => $task->cognitive_load,
                     'is_backstage' => $task->is_backstage,
+                    'skill_id' => $task->skill_id,
                 ]);
             }
         }
@@ -295,6 +298,7 @@ class TaskController extends Controller
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
         $tasks = $team->tasks()->with('assignedUser')->where('id', '!=', $task->id)->orderBy('title')->get();
+        $skills = \App\Models\Skill::all();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -304,7 +308,7 @@ class TaskController extends Controller
         }
         $backUrl = session("back_url_task_edit_{$task->id}", route('teams.tasks.show', [$team, $task]));
 
-        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl'));
+        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl', 'skills'));
     }
 
     /**
@@ -330,6 +334,7 @@ class TaskController extends Controller
             'visibility' => 'required|in:public,private',
             'is_autoprogrammable' => 'nullable|boolean',
             'autoprogram_settings' => 'nullable|array',
+            'skill_id' => 'nullable|integer|exists:skills,id',
         ]);
 
         // Store old values for history
@@ -381,6 +386,7 @@ class TaskController extends Controller
             'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
+            'skill_id' => $validated['skill_id'] ?? null,
         ]);
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
@@ -505,8 +511,10 @@ class TaskController extends Controller
                             'created_by_id' => $task->created_by_id, // Owner stays owner
                             'observations' => null,
                             'parent_id' => $task->id,
-                            'is_template' => false,
-                            'assigned_user_id' => $userId,
+                            'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
+                            'cognitive_load' => $task->cognitive_load,
+                            'is_backstage' => $task->is_backstage,
+                            'skill_id' => $task->skill_id,
                             'visibility' => 'private',
                         ]);
                     }
@@ -873,6 +881,29 @@ class TaskController extends Controller
         $user->increment('experience_points', $xp);
         $user->increment('resilience_points', $resilience);
         
+        // Skill-specific XP
+        if ($task->skill_id) {
+            $userSkill = $user->skills()->where('skill_id', $task->skill_id)->first();
+            if (!$userSkill) {
+                $user->skills()->attach($task->skill_id, ['total_xp' => $xp, 'level' => 1]);
+            } else {
+                $newTotalXp = $userSkill->pivot->total_xp + $xp;
+                // Simple leveling logic: level = floor(sqrt(xp/10)) + 1 or similar. 
+                // Let's use: Level 1: 0, Level 2: 50, Level 3: 150, Level 4: 350, Level 5: 750
+                $newLevel = $userSkill->pivot->level;
+                $levelThresholds = [1 => 0, 2 => 50, 3 => 150, 4 => 350, 5 => 750];
+                foreach ($levelThresholds as $level => $threshold) {
+                    if ($newTotalXp >= $threshold) {
+                        $newLevel = $level;
+                    }
+                }
+                $user->skills()->updateExistingPivot($task->skill_id, [
+                    'total_xp' => $newTotalXp,
+                    'level' => $newLevel
+                ]);
+            }
+        }
+
         // Energy can't go below 0
         $newEnergy = max(0, $user->energy_level - $energyDrain);
         $user->update(['energy_level' => $newEnergy]);

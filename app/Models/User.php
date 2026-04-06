@@ -251,7 +251,7 @@ class User extends Authenticatable implements HasLocalePreference
     // Gamification Relationships
     public function skills(): BelongsToMany
     {
-        return $this->belongsToMany(Skill::class, 'user_skills')->withPivot('level')->withTimestamps();
+        return $this->belongsToMany(Skill::class, 'user_skills')->withPivot('level', 'total_xp')->withTimestamps();
     }
 
     public function receivedKudos(): HasMany

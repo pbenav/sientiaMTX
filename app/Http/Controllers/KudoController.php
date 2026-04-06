@@ -48,6 +48,9 @@ class KudoController extends Controller
             'description' => "Recibido Kudo: " . $kudo->type . " de " . auth()->user()->name,
         ]);
 
+        // Notify Receiver
+        $receiver->notify(new \App\Notifications\KudoReceivedNotification($kudo, auth()->user()));
+
         return back()->with('success', '¡Kudo enviado con éxito! Has alegrado el día de un compañero.');
     }
 }
