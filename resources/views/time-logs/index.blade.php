@@ -457,77 +457,88 @@
             if (!mapContainer) return;
 
             const heatmapPoints = {!! $heatmapData->toJson() !!};
-            console.log("Heatmap data loaded:", heatmapPoints);
+            console.log("Team Map Data:", heatmapPoints);
             
             // Default center: España
             let center = [40.4168, -3.7038]; 
             let zoom = 12;
 
-            if (heatmapPoints.length > 0) {
+            // Prioridad al centro del usuario actual si tiene coordenadas
+            @if(auth()->user()->location_lat)
+                center = [{{ auth()->user()->location_lat }}, {{ auth()->user()->location_lng }}];
+                zoom = 13;
+            @elseif(count($heatmapData) > 0)
                 const avgLat = heatmapPoints.reduce((sum, p) => sum + p.lat, 0) / heatmapPoints.length;
                 const avgLng = heatmapPoints.reduce((sum, p) => sum + p.lng, 0) / heatmapPoints.length;
                 center = [avgLat, avgLng];
-            } else {
-                zoom = 6; // Ver toda España si no hay datos
-            }
+            @else
+                zoom = 6; 
+            @endif
 
             const map = L.map('resilience-heatmap', {
                 center: center,
                 zoom: zoom,
-                zoomControl: false,
-                attributionControl: false
+                zoomControl: true, // Habilitar controles para navegar mejor en rural
+                attributionControl: true
             });
 
-            // Capa de mapa (CartoDB con fallback a OSM)
-            const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 19
-            });
-            const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            });
-
-            cartoTiles.addTo(map).on('tileerror', function() {
-                console.warn("Carto tiles failed. Falling back to OpenStreetMap.");
-                map.removeLayer(cartoTiles);
-                osmTiles.addTo(map);
-            });
+            // OpenStreetMap Estándar (Más legible para el territorio real)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
 
             if (heatmapPoints.length > 0) {
                 // Layer for Heatmap
-                const heatData = heatmapPoints.map(p => [p.lat, p.lng, p.count || 20]);
+                const heatData = heatmapPoints.map(p => [p.lat, p.lng, parseFloat(p.count) || 10]);
                 L.heatLayer(heatData, {
-                    radius: 35,
-                    blur: 25,
-                    maxZoom: 17,
-                    gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
+                    radius: 40,
+                    blur: 30,
+                    maxZoom: 16,
+                    gradient: {0.4: '#3b82f6', 0.65: '#10b981', 1: '#ef4444'}
                 }).addTo(map);
 
                 // Marcadores y círculos
                 const markers = [];
                 heatmapPoints.forEach(p => {
+                    // Círculo de influencia
                     const circle = L.circle([p.lat, p.lng], {
                         color: '#10b981',
                         fillColor: '#10b981',
-                        fillOpacity: 0.1,
-                        radius: p.radius || 10000,
-                        weight: 1,
-                        dashArray: '5, 5'
+                        fillOpacity: 0.15,
+                        radius: p.radius || 5000,
+                        weight: 2,
+                        dashArray: '8, 8'
                     }).addTo(map);
                     
                     circle.bindPopup(`
-                        <div class="p-2 dark:text-gray-100">
-                            <p class="text-xs font-black uppercase text-emerald-600 mb-1">${p.name}</p>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">${p.area}</p>
+                        <div class="p-3 dark:text-gray-100 min-w-[150px]">
+                            <p class="text-[10px] font-black uppercase text-emerald-600 mb-1 tracking-widest">${p.name}</p>
+                            <p class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">${p.area || 'Sin nombre de área'}</p>
+                            <div class="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                                <span class="text-[8px] font-black uppercase text-gray-400">Impacto</span>
+                                <span class="text-xs font-black text-emerald-500">${Math.round(p.count)} XP</span>
+                            </div>
                         </div>
-                    `, { className: 'custom-popup rounded-2xl' });
+                    `, { className: 'custom-popup rounded-3xl overflow-hidden' });
                     
-                    markers.push(L.marker([p.lat, p.lng]));
+                    const marker = L.marker([p.lat, p.lng], {
+                        opacity: 0.8
+                    });
+                    markers.push(marker);
                 });
 
-                // Auto-fit bounds si hay puntos
-                const group = L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.5));
+                // Auto-fit bounds solo si hay varios puntos y no es el zoom manual inicial
+                if (heatmapPoints.length > 1) {
+                    const group = L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.3));
+                }
             }
+
+            // Forzar actualización de tamaño por si acaso el parpadeo del flexbox afectó a Leaflet
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 500);
         });
     </script>
 
