@@ -54,16 +54,31 @@
                             </div>
                         </div>
 
-                        <div>
-                            <x-input-label for="locale" :value="__('navigation.language')" />
-                            <select id="locale" name="locale"
-                                class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all cursor-pointer">
-                                <option value="es" {{ old('locale') === 'es' ? 'selected' : '' }}>{{ __('Spanish') }}
-                                </option>
-                                <option value="en" {{ old('locale') === 'en' ? 'selected' : '' }}>{{ __('English') }}
-                                </option>
-                            </select>
-                            <x-input-error class="mt-2" :messages="$errors->get('locale')" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <x-input-label for="locale" :value="__('navigation.language')" />
+                                <select id="locale" name="locale"
+                                    class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all cursor-pointer">
+                                    <option value="es" {{ old('locale') === 'es' ? 'selected' : '' }}>{{ __('Spanish') }}
+                                    </option>
+                                    <option value="en" {{ old('locale') === 'en' ? 'selected' : '' }}>{{ __('English') }}
+                                    </option>
+                                </select>
+                                <x-input-error class="mt-2" :messages="$errors->get('locale')" />
+                            </div>
+
+                            <div>
+                                <x-input-label for="timezone" :value="__('Timezone')" />
+                                <select id="timezone" name="timezone"
+                                    class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all cursor-pointer">
+                                    @foreach($timezones as $tz)
+                                        <option value="{{ $tz }}" {{ old('timezone', \App\Models\Setting::get('site_timezone', 'Europe/Madrid', true)) === $tz ? 'selected' : '' }}>
+                                            {{ $tz }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
+                            </div>
                         </div>
 
                         <div class="flex items-center gap-4 mt-6">

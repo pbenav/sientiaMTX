@@ -79,6 +79,19 @@
                             </div>
 
                             <div>
+                                <x-input-label for="timezone" :value="__('Timezone')" />
+                                <select id="timezone" name="timezone"
+                                    class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all cursor-pointer">
+                                    @foreach($timezones as $tz)
+                                        <option value="{{ $tz }}" {{ old('timezone', $user->timezone ?? \App\Models\Setting::get('site_timezone', 'Europe/Madrid', true)) === $tz ? 'selected' : '' }}>
+                                            {{ $tz }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
+                            </div>
+
+                            <div>
                                 <x-input-label for="disk_quota" :value="__('Disk Quota') . ' (MB)'" />
                                 <x-text-input id="disk_quota" name="disk_quota" type="number" class="mt-1 block w-full"
                                     :value="old('disk_quota', $user->disk_quota / 1024 / 1024)" required min="1" />

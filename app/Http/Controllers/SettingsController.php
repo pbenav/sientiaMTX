@@ -82,7 +82,8 @@ class SettingsController extends Controller
      */
     public function createUser()
     {
-        return view('settings.user-create');
+        $timezones = \DateTimeZone::listIdentifiers();
+        return view('settings.user-create', compact('timezones'));
     }
 
     /**
@@ -95,13 +96,17 @@ class SettingsController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'locale' => 'required|string|in:en,es',
+            'timezone' => 'nullable|timezone',
         ]);
+
+        $siteTimezone = \App\Models\Setting::get('site_timezone', 'Europe/Madrid', true);
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'locale' => $validated['locale'],
+            'timezone' => $validated['timezone'] ?? $siteTimezone,
             'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
         ]);
 
@@ -131,8 +136,9 @@ class SettingsController extends Controller
     {
         $user->load('teams');
         $invitations = TeamInvitation::where('email', $user->email)->with('team', 'role')->get();
+        $timezones = \DateTimeZone::listIdentifiers();
         
-        return view('settings.user-edit', compact('user', 'invitations'));
+        return view('settings.user-edit', compact('user', 'invitations', 'timezones'));
     }
 
     /**
@@ -146,12 +152,14 @@ class SettingsController extends Controller
             'locale' => 'required|string|in:en,es',
             'password' => 'nullable|string|min:8|confirmed',
             'disk_quota' => 'required|numeric|min:1',
+            'timezone' => 'nullable|timezone',
         ]);
 
         $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'locale' => $validated['locale'],
+            'timezone' => $validated['timezone'] ?? $user->timezone,
             'disk_quota' => $validated['disk_quota'] * 1024 * 1024,
         ]);
 
