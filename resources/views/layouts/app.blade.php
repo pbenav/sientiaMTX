@@ -607,13 +607,11 @@
             window.applyGlobalZoom = function(val) {
                 const appRoot = document.getElementById('app-root');
                 if (appRoot) {
-                    appRoot.style.zoom = val;
+                    const zoomPercent = (parseFloat(val) * 100);
+                    appRoot.style.zoom = zoomPercent + '%';
                 }
-                
-                const label = document.getElementById('global-zoom-label');
-                if (label) {
-                    label.innerText = Math.round(val * 100) + '%';
-                }
+                // Avisar a los componentes de UI del cambio de zoom
+                window.dispatchEvent(new CustomEvent('global-zoom-changed', { detail: val }));
             }
 
             window.adjustGlobalZoom = function(delta) {
