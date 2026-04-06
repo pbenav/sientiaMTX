@@ -42,6 +42,13 @@ class User extends Authenticatable implements HasLocalePreference
         'marketing_accepted_at',
         'notification_settings',
         'telegram_chat_id',
+        'resilience_points',
+        'experience_points',
+        'energy_level',
+        'working_area_name',
+        'location_lat',
+        'location_lng',
+        'impact_radius',
     ];
 
     /**
@@ -71,6 +78,9 @@ class User extends Authenticatable implements HasLocalePreference
             'terms_accepted_at' => 'datetime',
             'marketing_accepted_at' => 'datetime',
             'notification_settings' => 'array',
+            'resilience_points' => 'integer',
+            'experience_points' => 'integer',
+            'energy_level' => 'integer',
         ];
     }
 
@@ -236,6 +246,27 @@ class User extends Authenticatable implements HasLocalePreference
     public function activeTaskLog(): ?TimeLog
     {
         return $this->timeLogs()->where('type', 'task')->whereNull('end_at')->first();
+    }
+
+    // Gamification Relationships
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'user_skills')->withPivot('level')->withTimestamps();
+    }
+
+    public function receivedKudos(): HasMany
+    {
+        return $this->hasMany(Kudo::class, 'to_user_id');
+    }
+
+    public function givenKudos(): HasMany
+    {
+        return $this->hasMany(Kudo::class, 'from_user_id');
+    }
+
+    public function gamificationLogs(): HasMany
+    {
+        return $this->hasMany(GamificationLog::class);
     }
 }
 

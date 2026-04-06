@@ -161,6 +161,9 @@ class TaskController extends Controller
             'visibility' => $validated['visibility'],
             'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
             'autoprogram_settings' => $request->input('autoprogram_settings'),
+            'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
+            'cognitive_load' => $request->input('cognitive_load', 1),
+            'is_backstage' => $request->boolean('is_backstage'),
         ]);
 
         if ($task->is_autoprogrammable) {
@@ -218,6 +221,9 @@ class TaskController extends Controller
                     'is_template' => false,
                     'assigned_user_id' => $userId,
                     'visibility' => 'private',
+                    'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
+                    'cognitive_load' => $task->cognitive_load,
+                    'is_backstage' => $task->is_backstage,
                 ]);
             }
         }
@@ -372,6 +378,9 @@ class TaskController extends Controller
             'visibility' => $validated['visibility'],
             'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
             'autoprogram_settings' => $request->input('autoprogram_settings'),
+            'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
+            'cognitive_load' => $request->input('cognitive_load', 1),
+            'is_backstage' => $request->boolean('is_backstage'),
         ]);
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
@@ -386,6 +395,11 @@ class TaskController extends Controller
         } elseif ($task->progress_percentage < 100 && $task->status === 'completed') {
             $task->status = 'in_progress';
             $task->save();
+        }
+
+        // Gamification: Award points if completed
+        if ($task->status === 'completed' && $oldValues['status'] !== 'completed') {
+            $this->awardGamificationPoints($task);
         }
 
         // Parent progress sync
@@ -834,5 +848,44 @@ class TaskController extends Controller
         $attachment->delete();
 
         return back()->with('success', 'Archivo eliminado correctamente.');
+    }
+
+    /**
+     * Award points and handle energy for gamification.
+     */
+    protected function awardGamificationPoints(Task $task)
+    {
+        $user = auth()->user();
+        $xp = 10;
+        $resilience = 0;
+        $energyDrain = $task->cognitive_load * 5; // Drain energy based on cognitive load
+
+        if ($task->is_out_of_skill_tree) {
+            $resilience = 20; // Extra resilience for tasks out of skill tree
+            $xp = 5; // Less normal XP
+        }
+
+        if ($task->is_backstage) {
+            $xp += 5; // Bonus for preparation tasks
+        }
+
+        // Update User
+        $user->increment('experience_points', $xp);
+        $user->increment('resilience_points', $resilience);
+        
+        // Energy can't go below 0
+        $newEnergy = max(0, $user->energy_level - $energyDrain);
+        $user->update(['energy_level' => $newEnergy]);
+
+        // Log the achievement
+        \App\Models\GamificationLog::create([
+            'user_id' => $user->id,
+            'team_id' => $task->team_id,
+            'points' => $xp + $resilience,
+            'type' => $resilience > 0 ? 'resilience' : 'task',
+            'source_type' => 'App\Models\Task',
+            'source_id' => $task->id,
+            'description' => "Completada: " . $task->title . ($resilience > 0 ? " (Reto de Resiliencia)" : ""),
+        ]);
     }
 }

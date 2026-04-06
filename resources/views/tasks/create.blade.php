@@ -324,6 +324,66 @@
                     </div>
                 </div>
 
+                <!-- Gamification Features (Resiliencia Colectiva) -->
+                <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-sm font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">Impacto y Bienestar</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Cognitive Load (Energy Drain) -->
+                        <div x-data="{ load: 1 }">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
+                                <span>Carga Cognitiva (Drenaje de Energía)</span>
+                                <span :class="{
+                                    'text-emerald-500': load == 1,
+                                    'text-blue-500': load == 2,
+                                    'text-amber-500': load == 3,
+                                    'text-orange-500': load == 4,
+                                    'text-red-500': load == 5
+                                }" class="font-black tabular-nums transition-colors" x-text="load">1</span>
+                            </label>
+                            <input type="range" name="cognitive_load" min="1" max="5" step="1" x-model="load"
+                                class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-2 font-black uppercase tracking-tighter">
+                                <span>Baja</span>
+                                <span>Media</span>
+                                <span>Extrema</span>
+                            </div>
+                        </div>
+
+                        <!-- Skill Tree & Backstage -->
+                        <div class="space-y-4">
+                            <label class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group">
+                                <input type="checkbox" name="is_out_of_skill_tree" value="1" class="peer sr-only">
+                                <div class="w-5 h-5 rounded border-2 border-gray-200 dark:border-gray-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all flex items-center justify-center text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Fuera de mi Skill Tree</span>
+                                    <span class="text-[9px] text-gray-400 uppercase font-black">+ Puntos de Resiliencia</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group">
+                                <input type="checkbox" name="is_backstage" value="1" class="peer sr-only">
+                                <div class="w-5 h-5 rounded border-2 border-gray-200 dark:border-gray-600 peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-all flex items-center justify-center text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Backstage / Preparación</span>
+                                    <span class="text-[9px] text-gray-400 uppercase font-black">Visibiliza el esfuerzo invisible</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     @if ($users->count() > 0)

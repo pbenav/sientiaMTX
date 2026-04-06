@@ -35,8 +35,8 @@ class ProfileController extends Controller
         $request->user()->save();
 
         if ($request->has('locale')) {
-            session(['locale' => $request->locale]);
-            app()->setLocale($request->locale);
+            session(['locale' => $request->input('locale')]);
+            app()->setLocale($request->input('locale'));
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
@@ -84,6 +84,23 @@ class ProfileController extends Controller
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'notifications-updated');
+    }
+
+    /**
+     * Update the user's geographical action area.
+     */
+    public function updateZone(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'working_area_name' => 'required|string|max:255',
+            'location_lat' => 'required|numeric|between:-90,90',
+            'location_lng' => 'required|numeric|between:-180,180',
+            'impact_radius' => 'required|integer|min:1|max:100',
+        ]);
+
+        $request->user()->update($validated);
+
+        return back()->with('success', '¡Zona de acción actualizada! Tu impacto ahora es visible en el mapa.');
     }
 
     /**

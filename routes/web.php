@@ -46,7 +46,7 @@ Route::get('/dashboard', function () {
     $firstTeam = $user->teams()->first();
     
     if ($firstTeam) {
-        return redirect()->route('teams.dashboard', $firstTeam);
+        return redirect()->route('teams.time-reports', $firstTeam);
     }
     
     return view('dashboard');
@@ -59,7 +59,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/subscribe', [\App\Http\Controllers\WebPushController::class, 'store'])->name('webpush.subscribe');
     Route::post('/notifications/unsubscribe', [\App\Http\Controllers\WebPushController::class, 'destroy'])->name('webpush.unsubscribe');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile/zone', [ProfileController::class, 'updateZone'])->name('user.update-zone');
     Route::get('/profile/export', [GDPRController::class, 'export'])->name('profile.export');
+    Route::post('/kudos', [App\Http\Controllers\KudoController::class, 'store'])->name('kudos.store');
 
     // Teams routes
     Route::resource('teams', TeamController::class);

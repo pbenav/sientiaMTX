@@ -134,7 +134,19 @@ class TimeLogController extends Controller
             ->orderBy('start_at', 'desc')
             ->limit(30)
             ->get();
+        $teamMembers = $team->members->reject(fn($u) => $u->id === $user->id);
+        
+        $heatmapData = $team->members->whereNotNull('location_lat')->map(function($u) {
+            return [
+                'lat' => (float)$u->location_lat,
+                'lng' => (float)$u->location_lng,
+                'count' => max(10, $u->experience_points / 2), // Intensity based on effort (min 10)
+                'name' => $u->name,
+                'area' => $u->working_area_name,
+                'radius' => (int)($u->impact_radius ?? 10) * 1000 // meters
+            ];
+        });
             
-        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs'));
+        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData'));
     }
 }

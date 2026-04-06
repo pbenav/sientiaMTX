@@ -70,8 +70,11 @@ class Task extends Model
         'is_archived',
         'kanban_column_id',
         'kanban_order',
-        'is_autoprogrammable',
         'autoprogram_settings',
+        'is_out_of_skill_tree',
+        'cognitive_load',
+        'is_backstage',
+        'impact_human_metric',
     ];
  
     protected $casts = [
@@ -81,8 +84,11 @@ class Task extends Model
         'original_due_date' => 'datetime',
         'google_synced_at' => 'datetime',
         'is_archived' => 'boolean',
-        'is_autoprogrammable' => 'boolean',
         'autoprogram_settings' => 'array',
+        'is_out_of_skill_tree' => 'boolean',
+        'cognitive_load' => 'integer',
+        'is_backstage' => 'boolean',
+        'impact_human_metric' => 'integer',
     ];
 
     // Relationship: A task belongs to a team
