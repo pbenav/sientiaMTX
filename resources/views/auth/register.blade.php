@@ -93,5 +93,13 @@
                 {{ __('Register') }}
             </x-primary-button>
         </div>
+
+        <input type="hidden" name="timezone" id="timezone" value="Europe/Madrid">
+        <script>
+            try {
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                if (tz) document.getElementById('timezone').value = tz;
+            } catch (e) {}
+        </script>
     </form>
 </x-guest-layout>
