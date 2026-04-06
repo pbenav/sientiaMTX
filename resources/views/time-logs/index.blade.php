@@ -179,8 +179,8 @@
                         </h4>
                     </div>
                 </div>
-                <div class="p-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-3">
+                <div class="p-6">
+                    <div class="flex flex-wrap justify-between gap-y-6 gap-x-2">
                         @php
                             $allSkills = \App\Models\Skill::all();
                             $userSkills = auth()->user()->skills->keyBy('id');
@@ -196,21 +196,21 @@
                                 $prevThreshold = $levelThresholds[$level];
                                 $progress = $level >= 5 ? 100 : (($xp - $prevThreshold) / max(1, $nextThreshold - $prevThreshold)) * 100;
                             @endphp
-                            <div class="flex flex-col items-center group">
-                                <div class="relative w-12 h-12 flex items-center justify-center mb-2">
+                            <div class="flex flex-col items-center group w-[120px] shrink-0">
+                                <div class="relative w-16 h-16 flex items-center justify-center mb-2">
                                     <svg class="w-full h-full transform -rotate-90">
-                                        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="4" fill="transparent" class="text-gray-100 dark:text-gray-800" />
-                                        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="4" fill="transparent" 
-                                            stroke-dasharray="132" 
-                                            stroke-dashoffset="{{ 132 - (132 * $progress / 100) }}"
+                                        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent" class="text-gray-100 dark:text-gray-800" />
+                                        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent" 
+                                            stroke-dasharray="176" 
+                                            stroke-dashoffset="{{ 176 - (176 * $progress / 100) }}"
                                             class="text-violet-500 transition-all duration-1000 ease-out" />
                                     </svg>
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <span class="text-xs font-black text-gray-900 dark:text-white">{{ $level }}</span>
+                                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                        <span class="text-sm font-black text-gray-900 dark:text-white">{{ $level }}</span>
                                     </div>
                                 </div>
-                                <h5 class="text-[8px] font-black text-gray-900 dark:text-gray-100 uppercase tracking-tighter text-center leading-none">{{ $skill->name }}</h5>
-                                <div class="mt-1 text-[7px] font-black text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded-full border border-violet-100 dark:border-violet-800">
+                                <h5 class="text-[9px] font-black text-gray-900 dark:text-gray-100 uppercase tracking-tighter text-center leading-tight h-5 flex items-center">{{ $skill->name }}</h5>
+                                <div class="mt-1 text-[8px] font-black text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800">
                                     {{ $xp }} XP
                                 </div>
                             </div>
