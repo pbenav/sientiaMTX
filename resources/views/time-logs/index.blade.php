@@ -220,21 +220,21 @@
             </div>
 
             <!-- Full Width Territorial Map -->
-            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-6">
-                <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-200 dark:border-gray-800 flex flex-col mb-6">
+                <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-emerald-50/5 dark:bg-emerald-950/5">
                     <div class="flex flex-col">
                         <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Mapa de Impacto Real
+                            Mapa de Impacto (Resiliencia)
                         </h4>
                     </div>
                     
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = true" class="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase rounded-lg tracking-widest border border-emerald-100 dark:border-emerald-800/50 transition-all flex items-center gap-2">
-                            Mi Zona de Resiliencia 📍
+                        <button @click="open = true" class="px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase rounded-xl border border-emerald-200 dark:border-emerald-700 transition-all flex items-center gap-2 shadow-sm">
+                            <span class="animate-pulse">📍</span> Mi Zona
                         </button>
 
                         <!-- User Zone Settings Modal -->
@@ -288,7 +288,7 @@
                     </div>
                 </div>
                 
-                <div class="flex-1 relative min-h-[380px] z-0">
+                <div class="relative h-[400px] w-full z-0">
                     <!-- Interactive Heatmap Container -->
                     <div id="resilience-heatmap" class="absolute inset-0 z-0"></div>
                     
