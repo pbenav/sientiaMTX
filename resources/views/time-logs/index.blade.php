@@ -217,10 +217,9 @@
                         @endforeach
                     </div>
                 </div>
-            </div>
-
-            <!-- Full Width Territorial Map -->
+             <!-- Full Width Territorial Map -->
             <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-200 dark:border-gray-800 flex flex-col mb-6">
+                <!-- Header -->
                 <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-emerald-50/5 dark:bg-emerald-950/5">
                     <div class="flex flex-col">
                         <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
@@ -232,18 +231,18 @@
                         </h4>
                     </div>
                     
-                    <div x-data="{ open: false }" class="relative">
+                    <div x-data="{ open: false }">
                         <button @click="open = true" class="px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase rounded-xl border border-emerald-200 dark:border-emerald-700 transition-all flex items-center gap-2 shadow-sm">
                             <span class="animate-pulse">📍</span> Mi Zona
                         </button>
 
                         <!-- User Zone Settings Modal -->
-                        <div x-show="open" class="fixed inset-0 z-[100] overflow-y-auto" style="display: none;">
+                        <div x-show="open" class="fixed inset-0 z-[999] overflow-y-auto" style="display: none;">
                             <div class="flex items-center justify-center min-h-screen px-4 py-6 text-center sm:block sm:p-0">
                                 <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" @click="open = false"></div>
-                                <div class="inline-block w-full max-w-lg p-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 relative z-[101]">
+                                <div class="inline-block w-full max-w-lg p-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 relative z-[1000]">
                                     <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/xml" class="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         </svg>
                                         Tu Área de Dinamización
@@ -288,19 +287,21 @@
                     </div>
                 </div>
                 
-                <div class="relative h-[400px] w-full z-0">
-                    <!-- Interactive Heatmap Container -->
-                    <div id="resilience-heatmap" class="absolute inset-0 z-0"></div>
+                <!-- Map Container with forced height -->
+                <div class="relative w-full" style="height: 420px; min-height: 420px;">
+                    <div id="resilience-heatmap" class="h-full w-full"></div>
                     
-                    <!-- Heatmap Overlay Info (Floating) -->
-                    <div class="absolute bottom-6 left-6 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-2xl">
-                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 italic">Intensidad de Resiliencia</p>
-                             <div class="flex items-center gap-2">
-                                <div class="w-24 h-2 rounded-full bg-gradient-to-r from-blue-500 via-emerald-500 to-red-500"></div>
-                                <span class="text-[8px] font-black text-gray-500 uppercase">Baja → Extrema</span>
-                             </div>
+                    <!-- Floating Legend -->
+                    <div class="absolute bottom-4 left-4 z-[500] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl">
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 italic">Presencia Territorial</p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-24 h-1.5 rounded-full bg-gradient-to-r from-blue-400 via-emerald-400 to-rose-400"></div>
+                            <span class="text-[8px] font-bold text-gray-500 uppercase">Baja → Alta</span>
+                        </div>
                     </div>
                 </div>
+            </div>
+     </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
