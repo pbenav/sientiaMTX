@@ -40,24 +40,44 @@
                             <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrator') }}</option>
                             <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('User') }}</option>
                         </select>
-                        <button type="submit" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm shadow-violet-500/20">
-                            {{ __('Filtrar') }}
-                        </button>
-                        @if($search || $role)
-                            <a href="{{ route('settings.users') }}" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                                {{ __('Limpiar') }}
-                            </a>
-                        @endif
+
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
+                                {{ __('Filtrar') }}
+                            </button>
+                            @if($search || $role)
+                                <a href="{{ route('settings.users') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
+                                    {{ __('Limpiar') }}
+                                </a>
+                            @endif
+                        </div>
                     </form>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Name') }}</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Email') }}</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Role') }}</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">{{ __('Actions') }}</th>
+                                @foreach([
+                                    'name' => __('Name'),
+                                    'email' => __('Email'),
+                                    'is_admin' => __('Role')
+                                ] as $field => $label)
+                                    <th class="px-6 py-4">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => $field, 'direction' => $sort === $field && $direction === 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === $field ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
+                                            {{ $label }}
+                                            <div class="flex flex-col {{ $sort === $field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === $field && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === $field && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </a>
+                                    </th>
+                                @endforeach
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">

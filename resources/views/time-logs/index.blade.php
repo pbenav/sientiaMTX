@@ -281,7 +281,7 @@
                             📍 Mi Zona
                         </button>
                     </div>
-                    <div class="relative w-full group z-10 isolate h-[350px]">
+                    <div class="relative w-full group h-[350px]">
                         <div id="resilience-heatmap" class="h-full w-full rounded-b-3xl"></div>
                         <div class="absolute top-3 right-3 z-10 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm px-2 py-1 rounded-lg border border-gray-100 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                             <p class="text-[8px] font-black text-gray-500 uppercase tracking-tighter">Ctrl + 🖱️ Zoom</p>
@@ -441,7 +441,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const heatmapPoints = {!! $heatmapData->toJson() !!};
+            const heatmapPoints = @json($heatmapData ?? []);
             
             // Validamos que los puntos tengan coordenadas para no romper el mapa
             const validPoints = heatmapPoints.filter(p => p.lat && p.lng);

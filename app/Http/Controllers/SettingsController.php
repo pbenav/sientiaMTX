@@ -70,7 +70,12 @@ class SettingsController extends Controller
      */
     public function users(Request $request)
     {
-        $query = User::withCount('invitations')->latest();
+        $query = User::withCount('invitations');
+
+        // Sorting
+        $sort = $request->get('sort', 'name');
+        $direction = $request->get('direction', 'asc');
+        $query->orderBy($sort, $direction);
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -91,6 +96,8 @@ class SettingsController extends Controller
             'users' => $users,
             'search' => $request->get('search', ''),
             'role' => $request->get('role', ''),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 

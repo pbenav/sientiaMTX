@@ -34,6 +34,11 @@ class TeamController extends Controller
 
         $query = Team::with(['members', 'creator']);
 
+        // Sorting
+        $sort = $request->get('sort', 'name');
+        $direction = $request->get('direction', 'asc');
+        $query->orderBy($sort, $direction);
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -42,9 +47,13 @@ class TeamController extends Controller
             });
         }
 
-        $teams = $query->latest()->paginate(20)->withQueryString();
+        $teams = $query->paginate(20)->withQueryString();
 
-        return view('settings.teams', compact('teams'));
+        return view('settings.teams', [
+            'teams' => $teams,
+            'sort' => $sort,
+            'direction' => $direction,
+        ]);
     }
 
     /**
