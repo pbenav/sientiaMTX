@@ -438,6 +438,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <style>
+        .custom-div-icon { z-index: 1000 !important; }
+        .leaflet-popup { z-index: 2000 !important; }
+    </style>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -472,6 +476,10 @@
             });
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            // Forzamos el orden de las capas para que los popups nunca se queden detrás
+            map.getPane('markerPane').style.zIndex = 650;
+            map.getPane('popupPane').style.zIndex = 750;
             
             if (validPoints.length > 0) {
                 const heatData = validPoints.map(p => [p.lat, p.lng, p.count || 10]);
