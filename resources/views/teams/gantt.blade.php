@@ -175,10 +175,30 @@
         </div>
     </div>
 
-    <!-- Drag Indicator -->
-    <div id="drag-date-indicator" style="display: none" class="fixed z-[9999] pointer-events-none bg-indigo-600 text-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-2 transition-transform duration-75">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-        <span id="drag-start-label"></span>
+    <!-- Drag Indicator (Enriched) -->
+    <div id="drag-date-indicator" style="display: none; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);" class="fixed z-[9999] pointer-events-none bg-gray-900/95 dark:bg-violet-900/95 text-white p-4 rounded-3xl flex flex-col gap-3 transition-transform duration-75 border border-white/10 backdrop-blur-xl min-w-[240px]">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <div class="flex flex-col">
+                <span class="text-[8px] uppercase opacity-60 tracking-[0.2em]" id="drag-type-label">Planificando</span>
+                <span id="drag-task-name" class="text-xs font-black truncate max-w-[180px]">Tarea</span>
+            </div>
+            <div class="bg-white/10 px-2 py-1 rounded-lg">
+                <span id="drag-duration" class="text-[10px] font-black uppercase">0 días</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col">
+                <span class="text-[7px] uppercase opacity-50 font-black">Empezará</span>
+                <span id="drag-start-label" class="text-[11px] font-bold"></span>
+            </div>
+            <div class="flex flex-col text-right">
+                <span class="text-[7px] uppercase opacity-50 font-black">Termina</span>
+                <span id="drag-end-label" class="text-[11px] font-bold"></span>
+            </div>
+        </div>
+        <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <div id="drag-progress-bar" class="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+        </div>
     </div>
 
     <div id="gantt-tooltip" style="display: none" class="fixed z-[100] pointer-events-none bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-2xl p-4 min-w-[260px]"></div>
@@ -266,46 +286,88 @@
         }
 
         function setupCustomInteractions() {
-            const container = document.getElementById('gantt-container');
-            let isDragging = false, dragPart = null;
+            let isDragging = false;
+            let dragPart = null;
+            let lastUpdate = 0;
 
-            container.addEventListener('mousedown', e => {
+            // Delegación de eventos para capturar el inicio del arrastre
+            document.addEventListener('mousedown', e => {
                 const wrapper = e.target.closest('.bar-wrapper');
-                if(wrapper) {
+                const handle = e.target.closest('.handle');
+                
+                if (wrapper) {
                     isDragging = true;
-                    if(e.target.closest('.handle.left')) dragPart = 'start';
-                    else if(e.target.closest('.handle.right')) dragPart = 'end';
-                    else dragPart = 'range';
+                    if (handle) {
+                        dragPart = handle.classList.contains('left') ? 'start' : 'end';
+                    } else {
+                        dragPart = 'range';
+                    }
                 }
             });
 
-            document.addEventListener('mouseup', () => { isDragging = false; dragIndicator.style.display='none'; });
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                dragIndicator.style.display = 'none';
+                dragPart = null;
+            });
 
             document.addEventListener('mousemove', e => {
+                // Tooltip normal (hover)
                 const wrapper = e.target.closest('.bar-wrapper');
-                if(wrapper && !isDragging) {
+                if (wrapper && !isDragging) {
                     const t = allTasks.find(x => x.id == wrapper.dataset.id);
-                    if(t) showTooltip(t, e);
-                } else if(!e.target.closest('#gantt-tooltip')) tooltip.style.display='none';
+                    if (t) showTooltip(t, e);
+                } else if (!isDragging && !e.target.closest('#gantt-tooltip')) {
+                    tooltip.style.display = 'none';
+                }
 
-                if(isDragging && gantt) {
-                    const rect = container.getBoundingClientRect();
-                    const x = e.clientX - rect.left + container.scrollLeft;
-                    const bRect = container.querySelector('.bar-wrapper.active .bar');
-                    if(bRect) {
-                        const xStart = parseFloat(bRect.getAttribute('x')), w = parseFloat(bRect.getAttribute('width'));
-                        const dStart = gantt.get_date_from_x(xStart), dEnd = gantt.get_date_from_x(xStart + w);
-                        const fmt = d => d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
-                        
-                        let label = '';
-                        if(dragPart === 'start') label = `Inicio: ${fmt(dStart)}`;
-                        else if(dragPart === 'end') label = `Fin: ${fmt(dEnd)}`;
-                        else label = `${fmt(dStart)} — ${fmt(dEnd)}`;
-                        
-                        document.getElementById('drag-start-label').innerText = label;
-                        dragIndicator.style.display = 'flex';
-                        dragIndicator.style.left = (e.clientX + 15) + 'px';
-                        dragIndicator.style.top = (e.clientY - 40) + 'px';
+                // Tooltip de arrastre (drag)
+                if (isDragging && gantt) {
+                    // Evitamos actualizaciones excesivas
+                    if (Date.now() - lastUpdate < 16) return; 
+                    lastUpdate = Date.now();
+
+                    // Buscamos la barra que está siendo manipulada por Frappe Gantt
+                    // La librería suele añadir clases o podemos buscar la que tiene .active
+                    const barWrapper = document.querySelector('.bar-wrapper.active, .bar-wrapper.dragging, .bar-wrapper.resizing') 
+                                     || e.target.closest('.bar-wrapper');
+                    
+                    if (barWrapper) {
+                        const bar = barWrapper.querySelector('.bar');
+                        if (bar) {
+                            const taskId = barWrapper.dataset.id;
+                            const task = allTasks.find(x => x.id == taskId);
+                            const xStart = parseFloat(bar.getAttribute('x'));
+                            const width = parseFloat(bar.getAttribute('width'));
+                            
+                            const dateStart = gantt.get_date_from_x(xStart);
+                            const dateEnd = gantt.get_date_from_x(xStart + width);
+                            
+                            const fmt = d => d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                            const diffDays = Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1;
+                            
+                            let labelStart = fmt(dateStart);
+                            let labelEnd = fmt(dateEnd);
+                            let type = 'Ajustando';
+                            
+                            if (dragPart === 'start') type = 'Nuevo Inicio';
+                            else if (dragPart === 'end') type = 'Nueva Entrega';
+                            else type = 'Reubicando';
+
+                            if (task) {
+                                document.getElementById('drag-task-name').innerText = task.name;
+                                document.getElementById('drag-progress-bar').style.width = task.progress + '%';
+                            }
+                            
+                            document.getElementById('drag-type-label').innerText = type;
+                            document.getElementById('drag-duration').innerText = `${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+                            document.getElementById('drag-start-label').innerText = labelStart;
+                            document.getElementById('drag-end-label').innerText = labelEnd;
+                            
+                            dragIndicator.style.display = 'flex';
+                            dragIndicator.style.left = (e.clientX + 25) + 'px';
+                            dragIndicator.style.top = (e.clientY - 80) + 'px';
+                        }
                     }
                 }
             });
