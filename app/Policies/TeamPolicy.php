@@ -8,6 +8,18 @@ use App\Models\User;
 class TeamPolicy
 {
     /**
+     * Perform pre-authorization checks.
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->is_admin) {
+            return true;
+        }
+
+        return null;
+    }
+
+    /**
      * Determine whether the user can view the team.
      */
     public function view(User $user, Team $team): bool

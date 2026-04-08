@@ -65,9 +65,10 @@ class TimeLogController extends Controller
             $activeLog->update(['end_at' => now()]);
         }
 
-        // Ensure user has an active workday to track tasks (Optional, depends on business rule)
+        $workdayStarted = false;
         if (!$user->activeWorkdayLog()) {
-             $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+            $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+            $workdayStarted = true;
         }
 
         // Update task status to in_progress if it's actionable and not already in progress
@@ -95,6 +96,7 @@ class TimeLogController extends Controller
 
         return response()->json([
             'status' => 'started',
+            'workday_started' => $workdayStarted,
             'message' => __('Working on: ') . $task->title,
             'new_task_status' => $task->status
         ]);
@@ -106,11 +108,13 @@ class TimeLogController extends Controller
     public function status()
     {
         $user = auth()->user();
+        $activeTaskLog = $user->activeTaskLog();
         return response()->json([
             'is_working' => (bool)$user->activeWorkdayLog(),
-            'active_task_id' => $user->activeTaskLog()?->task_id,
+            'active_task_id' => $activeTaskLog?->task_id,
+            'active_task_title' => $activeTaskLog?->task?->title,
             'workday_elapsed' => $user->activeWorkdayLog() ? $user->activeWorkdayLog()->start_at->diffInSeconds(now()) : 0,
-            'task_elapsed' => $user->activeTaskLog() ? $user->activeTaskLog()->start_at->diffInSeconds(now()) : 0,
+            'task_elapsed' => $activeTaskLog ? $activeTaskLog->start_at->diffInSeconds(now()) : 0,
         ]);
     }
 
@@ -121,18 +125,23 @@ class TimeLogController extends Controller
     {
         $user = auth()->user();
         
+        $effortLimit = (int) $request->input('effort_limit', 10);
+        $presenceLimit = (int) $request->input('presence_limit', 10);
+
         // Get all my tasks in this team that have time logged
         $tasks = $team->tasks()->whereHas('timeLogs', function($q) use ($user) {
             $q->where('user_id', $user->id);
         })->with(['timeLogs' => function($q) use ($user) {
             $q->where('user_id', $user->id);
-        }])->get();
+        }])
+        ->limit($effortLimit)
+        ->get();
 
         // Get my recent workdays
         $workdayLogs = $user->timeLogs()
             ->where('type', 'workday')
             ->orderBy('start_at', 'desc')
-            ->limit(30)
+            ->limit($presenceLimit)
             ->get();
         $teamMembers = $team->members->reject(fn($u) => $u->id === $user->id);
         
@@ -145,7 +154,7 @@ class TimeLogController extends Controller
                 'area' => $u->working_area_name,
                 'radius' => (int)($u->impact_radius ?? 10) * 1000 // meters
             ];
-        });
+        })->values();
             
         return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData'));
     }

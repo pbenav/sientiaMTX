@@ -20,7 +20,7 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
-            <form method="POST" action="{{ route('teams.tasks.store', $team) }}" class="space-y-6">
+            <form method="POST" action="{{ route('teams.tasks.store', $team) }}" class="space-y-6" enctype="multipart/form-data">
                 @csrf
 
                 <!-- Title -->
@@ -88,10 +88,43 @@
                     </div>
                 </div>
 
-                <!-- Quadrant preview (calculated in JS) -->
+                <!-- Quadrant preview -->
                 <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
                     <span class="font-semibold" id="qp-label"></span>
                     <span class="text-gray-400 ml-1" id="qp-desc"></span>
+                </div>
+
+                <!-- Dates -->
+                <div class="grid grid-cols-2 gap-4 font-mono">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">{{ __('tasks.scheduled_date') }}</label>
+                        <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date') }}"
+                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">{{ __('tasks.due_date') }}</label>
+                        <input type="datetime-local" name="due_date" value="{{ old('due_date') }}"
+                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
+                    </div>
+                </div>
+
+                <!-- Dependency -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                        {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
+                    </label>
+                    <select name="parent_id" id="parent_id_select" style="display: none;"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                        <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
+                        @foreach ($tasks as $t)
+                            <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
+                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
+                                {{ $t->title }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <!-- Visibility -->
@@ -142,8 +175,6 @@
                         </label>
                     </div>
                 </div>
-
-
 
                 <!-- Autoprogrammable (Recurrence) -->
                 <div x-data="{ 
@@ -291,70 +322,36 @@
                     </div>
                 </div>
 
-                <!-- Dependency -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                        {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
-                    </label>
-                    <select name="parent_id" id="parent_id_select"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                        <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
-                        @foreach ($tasks as $t)
-                            <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
-                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
-                                {{ $t->title }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Dates -->
-                <div class="grid grid-cols-2 gap-4 font-mono">
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">{{ __('tasks.scheduled_date') }}</label>
-                        <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date') }}"
-                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">{{ __('tasks.due_date') }}</label>
-                        <input type="datetime-local" name="due_date" value="{{ old('due_date') }}"
-                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
-                    </div>
-                </div>
-
                 <!-- Gamification Features (Resiliencia Colectiva) -->
                 <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
                     <div class="flex items-center gap-3 mb-2">
-                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shadow-sm border border-amber-200/20">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
-                        <h4 class="text-sm font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">Impacto y Bienestar</h4>
+                        <h4 class="text-sm font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">Impacto y Bienestar</h4>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <!-- Skill Category Selection -->
-                        <div>
+                        <div x-data="{ selectedSkills: @json(old('skills', [])) }">
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Skill del Árbol (Categoría)
+                                Árbol de Capacidades (Selección Múltiple)
                             </label>
-                            <select name="skill_id" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white">
-                                <option value="">General / Sin Skill específica</option>
+                            <select name="skills[]" multiple class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white h-32">
                                 @foreach($skills as $skill)
-                                    <option value="{{ $skill->id }}" {{ old('skill_id') == $skill->id ? 'selected' : '' }}>
+                                    <option value="{{ $skill->id }}" :selected="selectedSkills.includes('{{ $skill->id }}') || selectedSkills.includes({{ $skill->id }})">
                                         {{ $skill->name }} ({{ $skill->category }})
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="text-[10px] text-gray-500 mt-2">Asocia esta tarea a una habilidad para ganar XP específica.</p>
+                            <p class="text-[10px] text-gray-500 mt-2">Mantén presionado Ctrl (o Cmd) para seleccionar varias habilidades.</p>
                         </div>
 
                         <!-- Cognitive Load (Energy Drain) -->
                         <div x-data="{ load: 1 }">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
+                            <label class="flex items-center justify-between text-sm font-bold text-gray-700 dark:text-gray-300 mb-4">
                                 <span>Carga Cognitiva (Drenaje de Energía)</span>
                                 <span :class="{
                                     'text-emerald-500': load == 1,
@@ -448,6 +445,34 @@
                     @endif
                 </div>
 
+                <!-- Integrated Attachments Section -->
+                <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.attachments') }}</h3>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('tasks.attachments_hint') ?? 'Sube archivos relevantes para esta tarea' }}</p>
+                            </div>
+                        </div>
+                        <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                            </svg>
+                            {{ __('tasks.add_attachment') }}
+                            <input type="file" name="attachments[]" multiple class="hidden" onchange="updateFileList(this)">
+                        </label>
+                    </div>
+
+                    <div id="file-list-preview" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
+                        <!-- Temporary list for selected files -->
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
                     <a href="{{ route('teams.dashboard', $team) }}"
                         class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all font-medium">{{ __('tasks.back') }}</a>
@@ -460,8 +485,11 @@
         </div>
     </div>
 
+    @push('scripts')
     <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <style>
         .EasyMDEContainer .CodeMirror {
             background: #f9fafb;
@@ -477,8 +505,6 @@
             color: #f3f4f6;
         }
 
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <style>
         .ts-control { border-radius: 0.75rem !important; border-color: #e5e7eb !important; background-color: #f9fafb !important; padding: 0.625rem 1rem !important; transition: all 0.2s; }
         .dark .ts-control { background-color: #1f2937 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
         .ts-control:focus { border-color: #7c3aed !important; ring-color: rgba(124, 58, 237, 0.2) !important; }
@@ -512,31 +538,52 @@
             background: #374151;
             color: white;
         }
+
+        /* Ocultar el select original para evitar duplicidad if TomSelect tarda un instante */
+        #parent_id_select { display: none; }
+
+        /* Normalizar tamaños de fuente en el editor EasyMDE (modo edición) */
+        .CodeMirror .cm-header-1 { font-size: 1.35rem !important; font-weight: 800 !important; }
+        .CodeMirror .cm-header-2 { font-size: 1.25rem !important; font-weight: 700 !important; }
+        .CodeMirror .cm-header-3 { font-size: 1.15rem !important; font-weight: 700 !important; }
+        .CodeMirror .cm-header-4, .CodeMirror .cm-header-5, .CodeMirror .cm-header-6 { font-size: 1rem !important; font-weight: 700 !important; }
+        .CodeMirror pre.CodeMirror-line, .CodeMirror-scroll { 
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+            line-height: 1.6 !important;
+        }
+        .CodeMirror {
+            border-bottom-left-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            font-size: 0.9rem !important;
+        }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const easyMDE = new EasyMDE({
-                element: document.getElementById('observations'),
-                spellChecker: false,
-                autosave: {
-                    enabled: false,
-                },
-                status: false,
-                minHeight: '200px',
-                placeholder: 'Añade observaciones detalladas aquí...',
-                toolbar: [
-                    "bold", "italic", "strikethrough", "heading", "|", 
-                    "quote", "code", "unordered-list", "ordered-list", "|", 
-                    "link", "image", "table", "horizontal-rule", "|", 
-                    "preview", "side-by-side", "fullscreen", "|", 
-                    "guide"
-                ],
-                renderingConfig: {
-                    singleLineBreaks: false,
-                    codeSyntaxHighlighting: true,
-                },
-            });
+            const observationsEl = document.getElementById('observations');
+            if (observationsEl) {
+                const easyMDE = new EasyMDE({
+                    element: observationsEl,
+                    spellChecker: false,
+                    autosave: {
+                        enabled: false,
+                    },
+                    status: false,
+                    minHeight: '200px',
+                    placeholder: 'Añade observaciones detalladas aquí...',
+                    toolbar: [
+                        "bold", "italic", "strikethrough", "heading", "|", 
+                        "quote", "code", "unordered-list", "ordered-list", "|", 
+                        "link", "image", "table", "horizontal-rule", "|", 
+                        "preview", "side-by-side", "fullscreen", "|", 
+                        "guide"
+                    ],
+                    renderingConfig: {
+                        singleLineBreaks: false,
+                        codeSyntaxHighlighting: true,
+                    },
+                });
+            }
 
             const quadrantData = @json(__('tasks.quadrants'));
             const priorityEl = document.querySelector('[name="priority"]');
@@ -546,28 +593,21 @@
 
             const qColors = {
                 1: {
-                    border: 'border-red-200 dark:border-red-700',
-                    bg: 'bg-red-50 dark:bg-red-950/30',
-                    text: 'text-red-600 dark:text-red-300'
+                    border: 'border-red-200 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600 dark:text-red-300'
                 },
                 2: {
-                    border: 'border-blue-200 dark:border-blue-700',
-                    bg: 'bg-blue-50 dark:bg-blue-950/30',
-                    text: 'text-blue-600 dark:text-blue-300'
+                    border: 'border-blue-200 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-300'
                 },
                 3: {
-                    border: 'border-amber-200 dark:border-amber-700',
-                    bg: 'bg-amber-50 dark:bg-amber-950/30',
-                    text: 'text-amber-600 dark:text-amber-300'
+                    border: 'border-amber-200 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-300'
                 },
                 4: {
-                    border: 'border-gray-200 dark:border-gray-700',
-                    bg: 'bg-gray-50 dark:bg-gray-800',
-                    text: 'text-gray-600 dark:text-gray-300'
+                    border: 'border-gray-200 dark:border-gray-700', bg: 'bg-gray-50 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-300'
                 },
             };
 
             function updatePreview() {
+                if (!priorityEl || !urgencyEl || !preview) return;
                 const imp = highLevels.includes(priorityEl.value);
                 const urg = highLevels.includes(urgencyEl.value);
                 let q = 4;
@@ -576,13 +616,11 @@
                 else if (urg) q = 3;
 
                 const cfg = qColors[q];
-                preview.className =
-                    `rounded-xl border p-3 text-xs transition-all shadow-sm dark:shadow-none ${cfg.border} ${cfg.bg}`;
+                preview.className = `rounded-xl border p-3 text-xs transition-all shadow-sm dark:shadow-none ${cfg.border} ${cfg.bg}`;
                 preview.classList.remove('hidden');
                 document.getElementById('qp-label').className = `font-bold uppercase tracking-wider ${cfg.text}`;
                 document.getElementById('qp-label').textContent = `Q${q}: ${quadrantData[q].label}`;
-                document.getElementById('qp-desc').className =
-                    `text-gray-500 dark:text-gray-400 ml-1 italic font-medium`;
+                document.getElementById('qp-desc').className = `text-gray-500 dark:text-gray-400 ml-1 italic font-medium`;
                 document.getElementById('qp-desc').textContent = `— ${quadrantData[q].description}`;
             }
 
@@ -591,32 +629,60 @@
             updatePreview();
 
             // TomSelect for Searchable Dependencies
-            new TomSelect("#parent_id_select", {
-                create: false,
-                sortField: {
-                    field: "text",
-                    direction: "asc"
-                },
-                placeholder: '{{ __("tasks.search_task") ?? "Buscar tarea..." }}',
-                render: {
-                    option: function(data, escape) {
-                        return '<div class="flex flex-col py-0.5">' +
-                            '<span class="font-bold text-gray-900 dark:text-gray-100">' + escape(data.text) + '</span>' +
-                            '<span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">' + 
-                                '<i class="inline-block w-1 h-1 rounded-full bg-violet-400 mr-1.5 opacity-60"></i>' + 
-                                escape(data.assignee) + 
-                            '</span>' +
-                        '</div>';
+            const parenSelectEl = document.getElementById('parent_id_select');
+            if (parenSelectEl) {
+                new TomSelect("#parent_id_select", {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
                     },
-                    item: function(data, escape) {
-                        return '<div class="flex items-center gap-2">' + 
-                            '<span>' + escape(data.text) + '</span>' +
-                            '<span class="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-mono">@' + escape(data.assignee) + '</span>' +
-                        '</div>';
+                    placeholder: '{{ __("tasks.search_task") ?? "Buscar tarea..." }}',
+                    render: {
+                        option: function(data, escape) {
+                            return '<div class="flex flex-col py-0.5">' +
+                                '<div class="flex items-center gap-2">' +
+                                    '<span class="text-[10px] font-mono font-black px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">#' + escape(data.value) + '</span>' +
+                                    '<span class="font-bold text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
+                                '</div>' +
+                                '<span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-1">' + 
+                                    '<i class="inline-block w-1 h-1 rounded-full bg-violet-400 mr-1.5 opacity-60"></i>' + 
+                                    escape(data.assignee) + 
+                                '</span>' +
+                            '</div>';
+                        },
+                        item: function(data, escape) {
+                            return '<div class="flex items-center gap-2">' + 
+                                '<span class="text-[9px] font-mono font-bold text-gray-400">#' + escape(data.value) + '</span>' +
+                                '<span>' + escape(data.text) + '</span>' +
+                                '<span class="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-mono">@' + escape(data.assignee) + '</span>' +
+                            '</div>';
+                        }
                     }
-                }
-            });
+                });
+            }
         });
+
+        window.updateFileList = function(input) {
+            const list = document.getElementById('file-list-preview');
+            list.innerHTML = '';
+            if (input.files.length > 0) {
+                Array.from(input.files).forEach(file => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
+                    div.innerHTML = `
+                        <div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-gray-400 shadow-sm border border-gray-100 dark:border-gray-800 font-mono text-[9px]">
+                            ${file.name.split('.').pop().toUpperCase()}
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">${file.name}</span>
+                            <span class="text-[10px] text-gray-400">${(file.size / 1024).toFixed(1)} KB</span>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+        }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    @endpush
 </x-app-layout>

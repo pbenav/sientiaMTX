@@ -8,8 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+use App\Traits\AwardsGamification;
+
 class GoogleController extends Controller
 {
+    use AwardsGamification;
+
     protected $googleService;
 
     public function __construct(GoogleService $googleService)
@@ -131,10 +135,10 @@ class GoogleController extends Controller
             $title = $task->getTitle();
             $googleId = 'task:' . $task->id;
             
-            // Robust matching: prioritized by google_id, then by title+date (ignoring exact time)
+            // Robust matching: prioritized by google_task_id, then by title+date (ignoring exact time)
             $exists = \App\Models\Task::where('team_id', $teamId)
                 ->where(function($q) use ($googleId, $title, $due) {
-                    $q->where('google_id', $googleId)
+                    $q->where('google_task_id', $googleId)
                       ->orWhere(function($sub) use ($title, $due) {
                           $sub->where('title', 'LIKE', $title . '%')
                               ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
@@ -199,7 +203,7 @@ class GoogleController extends Controller
                         ->first();
 
                     if (!$existing) {
-                        \App\Models\Task::create([
+                        $taskModel = \App\Models\Task::create([
                             'team_id' => $teamId,
                             'title' => $title,
                             'description' => $event->getDescription() ?: '',
@@ -234,7 +238,7 @@ class GoogleController extends Controller
                         ->first();
 
                     if (!$existing) {
-                        \App\Models\Task::create([
+                        $taskModel = \App\Models\Task::create([
                             'team_id' => $teamId,
                             'title' => $title,
                             'description' => ($task->getNotes() ?: '') . ($task->listTitle ? " [" . $task->listTitle . "]" : ""),
@@ -245,8 +249,13 @@ class GoogleController extends Controller
                             'visibility' => $visibility,
                             'priority' => 'low',
                             'urgency' => 'low',
-                            'status' => 'pending',
+                            'status' => $task->getStatus() === 'completed' ? 'completed' : 'pending',
                         ]);
+
+                        if ($taskModel->status === 'completed') {
+                            $this->awardGamificationPoints($taskModel);
+                        }
+
                         $syncCount++;
                     }
                 }
@@ -358,9 +367,11 @@ class GoogleController extends Controller
                 if ($googleTask->getStatus() === 'completed' && $task->status !== 'completed') {
                     $task->status = 'completed';
                     $task->progress_percentage = 100;
+                    $task->save();
+                    $this->awardGamificationPoints($task);
+                } else {
+                    $task->save();
                 }
-                
-                $task->save();
                 
                 // --- Parent sync (Architectural requirement) ---
                 if ($task->parent_id) {

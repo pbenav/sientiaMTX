@@ -76,6 +76,7 @@ class Task extends Model
         'is_backstage',
         'impact_human_metric',
         'skill_id',
+        'matrix_order',
     ];
  
     protected $casts = [
@@ -142,6 +143,16 @@ class Task extends Model
     public function tags(): HasMany
     {
         return $this->hasMany(TaskTag::class);
+    }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class);
+    }
+
+    public function skill(): BelongsTo
+    {
+        return $this->belongsTo(Skill::class);
     }
 
     // Relationship: A task can have a parent task (dependency)
@@ -378,6 +389,17 @@ class Task extends Model
      */
     public function syncKanbanColumn(): void
     {
+        $team = $this->team;
+
+        // Fallback: If relationship is not loaded but team_id exists, try to find it
+        if (!$team && $this->team_id) {
+            $team = Team::find($this->team_id);
+        }
+
+        if (!$team) {
+            return;
+        }
+
         $type = 'in_progress';
         $currentProgress = $this->progress;
 
@@ -389,7 +411,7 @@ class Task extends Model
             $type = 'todo';
         }
 
-        $column = $this->team->kanbanColumns()
+        $column = $team->kanbanColumns()
             ->where('type', $type)
             ->orderBy('order_index')
             ->first();
@@ -575,8 +597,4 @@ class Task extends Model
         return "{$minutes}m";
     }
 
-    public function skill(): BelongsTo
-    {
-        return $this->belongsTo(Skill::class);
-    }
 }

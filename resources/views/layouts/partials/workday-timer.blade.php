@@ -4,6 +4,7 @@
     timer: null,
     loading: false,
     activeTask: null,
+    activeTaskTitle: null,
     compact: {{ isset($compact) && $compact ? 'true' : 'false' }},
     
     init() {
@@ -11,6 +12,12 @@
         setInterval(() => {
             if (this.working) this.elapsed++;
         }, 1000);
+
+        // SYNC: If a task is started, ensure workday reflects it
+        window.addEventListener('task-started', () => {
+             this.working = true;
+             this.fetchStatus(); 
+        });
     },
     
     fetchStatus() {
@@ -20,6 +27,7 @@
                 this.working = data.is_working;
                 this.elapsed = Math.floor(data.workday_elapsed);
                 this.activeTask = data.active_task_id;
+                this.activeTaskTitle = data.active_task_title;
             });
     },
     
@@ -79,10 +87,16 @@
         </template>
     </button>
 
-    <!-- Contador Digital (Aparece a la derecha) -->
+    <!-- Contador Digital y Tarea Activa (Aparece a la derecha) -->
     <div x-show="working" x-cloak
          class="flex items-center gap-2 px-2.5 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl transition-all duration-300">
         <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
         <span class="text-[10px] font-mono font-bold text-violet-700 dark:text-violet-300" x-text="formatTime(elapsed)"></span>
+        <template x-if="activeTaskTitle">
+            <div class="flex items-center gap-1.5 pl-2 ml-2 border-l border-violet-200 dark:border-violet-700">
+                <span class="text-[9px] uppercase tracking-wider text-violet-400 dark:text-violet-500 font-bold">{{ __('tasks.working_on') }}:</span>
+                <span class="text-[10px] font-bold text-violet-700 dark:text-violet-300 truncate max-w-[120px]" x-text="activeTaskTitle"></span>
+            </div>
+        </template>
     </div>
 </div>

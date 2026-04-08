@@ -6,11 +6,12 @@ use App\Models\Task;
 use App\Models\Team;
 use App\Models\TaskAttachment;
 use App\Traits\HandlesEisenhowerMatrix;
+use App\Traits\AwardsGamification;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    use HandlesEisenhowerMatrix;
+    use HandlesEisenhowerMatrix, AwardsGamification;
     public function index(Request $request, Team $team)
     {
         $user = auth()->user();
@@ -32,6 +33,14 @@ class TaskController extends Controller
 
         if ($request->filled('assigned_to')) {
             $query->where('assigned_user_id', $request->assigned_to);
+        }
+
+        if ($request->filled('skill_id')) {
+            $skillId = $request->skill_id;
+            $query->where(function ($q) use ($skillId) {
+                $q->where('skill_id', $skillId)
+                  ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
+            });
         }
 
         if ($request->filled('type')) {
@@ -74,11 +83,23 @@ class TaskController extends Controller
             $query->whereNotIn('status', ['completed', 'cancelled']);
         }
 
-        $tasks = $query->paginate(20)->withQueryString();
+        // --- Pagination ---
+        $perPage = $request->get('per_page', 20);
+        if (!in_array($perPage, [10, 25, 50, 100, 'all'])) {
+            $perPage = 20;
+        }
+
+        if ($perPage === 'all') {
+            // Secure "all" fetch
+            $tasks = $query->paginate($query->count())->withQueryString();
+        } else {
+            $tasks = $query->paginate($perPage)->withQueryString();
+        }
         $members = $team->members;
+        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
         $hideCompleted = session('hide_completed_tasks', true);
 
-        return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted'));
+        return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted', 'skills'));
     }
 
     /**
@@ -92,7 +113,7 @@ class TaskController extends Controller
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->with('assignedUser')->orderBy('title')->get();
-        $skills = \App\Models\Skill::all();
+        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -124,7 +145,10 @@ class TaskController extends Controller
             'visibility' => 'required|in:public,private',
             'is_autoprogrammable' => 'nullable|boolean',
             'autoprogram_settings' => 'nullable|array',
-            'skill_id' => 'nullable|integer|exists:skills,id',
+            'matrix_order' => 'nullable|integer|min:0',
+            'skills' => 'nullable|array',
+            'skills.*' => 'integer|exists:skills,id',
+            'skill_id' => 'nullable|integer|exists:skills,id', // Legacy
         ]);
 
         $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
@@ -176,6 +200,28 @@ class TaskController extends Controller
             $task->update(['autoprogram_settings' => $settings]);
         }
 
+        \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
+        $task->syncKanbanColumn();
+
+        // Sync Skills
+        $skillIds = $request->skills ?? ($request->skill_id ? [$request->skill_id] : []);
+        if (!empty($skillIds)) {
+            $task->skills()->sync($skillIds);
+        }
+
+        // Handle Attachments directly from the create form
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments', 'public');
+                $task->attachments()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                ]);
+            }
+        }
+
         if ($isTemplate) {
             $userIds = collect($validated['assigned_to'] ?? []);
 
@@ -199,7 +245,7 @@ class TaskController extends Controller
             $uniqueUserIds = $userIds->unique();
 
             foreach ($uniqueUserIds as $userId) {
-                // Create Assignment record (for history/legacy compatibility)
+                // Create Assignment record
                 if (in_array($userId, $validated['assigned_to'] ?? [])) {
                     $task->assignments()->create([
                         'user_id' => $userId,
@@ -208,7 +254,7 @@ class TaskController extends Controller
                 }
 
                 // Create Individual Instance
-                $team->tasks()->create([
+                $instance = $team->tasks()->create([
                     'title' => $task->title,
                     'description' => $task->description,
                     'priority' => $task->priority,
@@ -218,7 +264,7 @@ class TaskController extends Controller
                     'due_date' => $task->due_date,
                     'original_due_date' => $task->due_date,
                     'created_by_id' => $task->created_by_id,
-                    'observations' => null, // Reset observations for private task
+                    'observations' => null,
                     'parent_id' => $task->id,
                     'is_template' => false,
                     'assigned_user_id' => $userId,
@@ -228,9 +274,14 @@ class TaskController extends Controller
                     'is_backstage' => $task->is_backstage,
                     'skill_id' => $task->skill_id,
                 ]);
+
+                if (!empty($skillIds)) {
+                    $instance->skills()->sync($skillIds);
+                }
             }
         }
 
+        \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
         $task->syncKanbanColumn();
 
         return redirect()->route('teams.tasks.show', [$team, $task])
@@ -291,6 +342,8 @@ class TaskController extends Controller
             return redirect()->route('teams.tasks.show', [$team, $task])
                 ->with('warning', __('No tienes permisos para modificar esta tarea privada.'));
         }
+
+        $task->load('attachments');
         $allMembers = $team->members; // All members — for owner selector
         // Exclude the current user from assignee list: creator is implicit owner
         $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
@@ -298,7 +351,7 @@ class TaskController extends Controller
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
         $tasks = $team->tasks()->with('assignedUser')->where('id', '!=', $task->id)->orderBy('title')->get();
-        $skills = \App\Models\Skill::all();
+        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -339,7 +392,7 @@ class TaskController extends Controller
 
         // Store old values for history
         $oldValues = $task->getAttributes();
-        $statusChanged = $task->status !== $validated['status'];
+        $statusChanged = $task->status !== ($validated['status'] ?? $task->status);
 
         // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
         $autoPublic = false;
@@ -370,28 +423,39 @@ class TaskController extends Controller
         }
 
         $task->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'priority' => $validated['priority'],
-            'urgency' => $validated['urgency'],
-            'status' => $validated['status'],
-            'scheduled_date' => $validated['scheduled_date'],
-            'due_date' => $validated['due_date'],
-            'observations' => $validated['observations'],
-            'parent_id' => $validated['parent_id'] ?? null,
+            'title' => $validated['title'] ?? $task->title,
+            'description' => $validated['description'] ?? $task->description,
+            'priority' => $validated['priority'] ?? $task->priority,
+            'urgency' => $validated['urgency'] ?? $task->urgency,
+            'status' => $validated['status'] ?? $task->status,
+            'scheduled_date' => $validated['scheduled_date'] ?? $task->scheduled_date,
+            'due_date' => $validated['due_date'] ?? $task->due_date,
+            'observations' => $validated['observations'] ?? $task->observations,
+            'parent_id' => $validated['parent_id'] ?? $task->parent_id,
             'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
-            'visibility' => $validated['visibility'],
+            'visibility' => $validated['visibility'] ?? $task->visibility,
             'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
             'autoprogram_settings' => $request->input('autoprogram_settings'),
             'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
-            'skill_id' => $validated['skill_id'] ?? null,
+            'skill_id' => $validated['skill_id'] ?? $task->skill_id,
         ]);
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
             $task->created_by_id = $validated['created_by_id'];
             $task->save();
+        }
+
+        // Sync Skills
+        $skillIds = $request->skills ?? ($request->skill_id ? [$request->skill_id] : []);
+        $task->skills()->sync($skillIds);
+
+        // Propagate skills to instances if this is a template
+        if ($task->is_template) {
+            foreach($task->instances as $inst) {
+                $inst->skills()->sync($skillIds);
+            }
         }
 
         // Sync status based on progress
@@ -655,6 +719,9 @@ class TaskController extends Controller
             'due_date' => 'nullable|date',
             'is_archived' => 'nullable|boolean',
             'assigned_user_id' => 'nullable|exists:users,id',
+            'matrix_order' => 'nullable|integer|min:0',
+            'full_order' => 'nullable|array',
+            'full_order.*' => 'integer|exists:tasks,id',
         ]);
 
         $oldStatus = $task->status;
@@ -688,6 +755,11 @@ class TaskController extends Controller
                     $parent->update(['status' => 'in_progress']);
                 }
             }
+
+            // Gamification: Award points if newly completed via move
+            if ($task->status === 'completed' && $oldStatus !== 'completed') {
+                $this->awardGamificationPoints($task);
+            }
         }
 
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
@@ -702,8 +774,23 @@ class TaskController extends Controller
             if (!$request->has('status')) $task->status = 'in_progress';
         }
 
+        if ($request->has('matrix_order')) {
+            $task->matrix_order = $validated['matrix_order'];
+        }
+
         // Final save for the main task
         $task->save();
+
+        // Handle bulk reordering if full_order is provided
+        if ($request->has('full_order') && is_array($request->full_order)) {
+            foreach ($request->full_order as $index => $id) {
+                // Bulk update to minimize DB queries or keep it simple?
+                // For safety and triggers, individual update is okay for matrix size
+                \App\Models\Task::where('id', $id)
+                    ->where('team_id', $team->id)
+                    ->update(['matrix_order' => $index]);
+            }
+        }
 
         // Secondary Effects (Notifications & Syncs)
         if ($task->is_template && ($request->has('scheduled_date') || $request->has('due_date'))) {
@@ -736,6 +823,7 @@ class TaskController extends Controller
             $task->refresh();
         }
 
+        \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
         $task->syncKanbanColumn();
 
         return response()->json([
@@ -845,6 +933,11 @@ class TaskController extends Controller
 
     public function destroyAttachment(Team $team, TaskAttachment $attachment)
     {
+        // Authorization: Only owner or team manager can delete
+        if (auth()->id() !== $attachment->user_id && !$team->isManager(auth()->user())) {
+            abort(403);
+        }
+
         // Remove file from disk if exists
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($attachment->file_path);
@@ -856,67 +949,5 @@ class TaskController extends Controller
         $attachment->delete();
 
         return back()->with('success', 'Archivo eliminado correctamente.');
-    }
-
-    /**
-     * Award points and handle energy for gamification.
-     */
-    protected function awardGamificationPoints(Task $task)
-    {
-        $user = auth()->user();
-        $xp = 10;
-        $resilience = 0;
-        $energyDrain = $task->cognitive_load * 5; // Drain energy based on cognitive load
-
-        if ($task->is_out_of_skill_tree) {
-            $resilience = 20; // Extra resilience for tasks out of skill tree
-            $xp = 5; // Less normal XP
-        }
-
-        if ($task->is_backstage) {
-            $xp += 5; // Bonus for preparation tasks
-        }
-
-        // Update User
-        $user->increment('experience_points', $xp);
-        $user->increment('resilience_points', $resilience);
-        
-        // Skill-specific XP
-        if ($task->skill_id) {
-            $userSkill = $user->skills()->where('skill_id', $task->skill_id)->first();
-            if (!$userSkill) {
-                $user->skills()->attach($task->skill_id, ['total_xp' => $xp, 'level' => 1]);
-            } else {
-                $newTotalXp = $userSkill->pivot->total_xp + $xp;
-                // Simple leveling logic: level = floor(sqrt(xp/10)) + 1 or similar. 
-                // Let's use: Level 1: 0, Level 2: 50, Level 3: 150, Level 4: 350, Level 5: 750
-                $newLevel = $userSkill->pivot->level;
-                $levelThresholds = [1 => 0, 2 => 50, 3 => 150, 4 => 350, 5 => 750];
-                foreach ($levelThresholds as $level => $threshold) {
-                    if ($newTotalXp >= $threshold) {
-                        $newLevel = $level;
-                    }
-                }
-                $user->skills()->updateExistingPivot($task->skill_id, [
-                    'total_xp' => $newTotalXp,
-                    'level' => $newLevel
-                ]);
-            }
-        }
-
-        // Energy can't go below 0
-        $newEnergy = max(0, $user->energy_level - $energyDrain);
-        $user->update(['energy_level' => $newEnergy]);
-
-        // Log the achievement
-        \App\Models\GamificationLog::create([
-            'user_id' => $user->id,
-            'team_id' => $task->team_id,
-            'points' => $xp + $resilience,
-            'type' => $resilience > 0 ? 'resilience' : 'task',
-            'source_type' => 'App\Models\Task',
-            'source_id' => $task->id,
-            'description' => "Completada: " . $task->title . ($resilience > 0 ? " (Reto de Resiliencia)" : ""),
-        ]);
     }
 }

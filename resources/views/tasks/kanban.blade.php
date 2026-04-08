@@ -130,7 +130,7 @@
                                          taskId: {{ $task->id }},
                                          get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
                                      }"
-                                     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'bg-white dark:bg-gray-900'"
+                                     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ $task->status === 'completed' ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
                                      class="backdrop-blur-sm rounded-2xl shadow-md border-l-[6px] p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
                                      data-task-id="{{ $task->id }}"
                                      style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms">
@@ -230,10 +230,9 @@
             </div>
         </div>
 
-        <!-- Completed Tasks Zone -->
-        @if(!$hideCompleted)
-            <div class="mt-16 w-full px-4 pb-16">
-                <div class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors">
+        <!-- Completed Tasks Zone (Archive) -->
+        <div class="mt-16 w-full px-4 pb-16" x-show="{{ $hideCompleted ? 'false' : 'true' }}" x-transition>
+            <div class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors">
                     <div class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
@@ -273,7 +272,7 @@
                     </div>
                 </div>
             </div>
-        @endif
+        </div>
     </div>
 
     @push('scripts')
@@ -333,37 +332,33 @@
             });
 
             function updateTaskPosition(taskId, columnId, order) {
-                fetch(`{{ route('teams.tasks.kanban.update', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
-                    method: 'PATCH',
+                // Get all tasks in the target column to sync the entire order
+                const columnEl = document.querySelector(`.task-list[data-column-id="${columnId}"]`);
+                if (!columnEl) return;
+
+                const tasks = Array.from(columnEl.querySelectorAll('[data-task-id]')).map((el, index) => {
+                    return {
+                        id: el.dataset.taskId,
+                        kanban_order: index
+                    };
+                });
+
+                fetch(`{{ route('teams.kanban.tasks.order', $team) }}`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        kanban_column_id: columnId,
-                        kanban_order: order
+                        column_id: columnId,
+                        tasks: tasks,
+                        moved_task_id: taskId
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // If bidirectional update triggered a move in backend (e.g. status change)
-                        // we might need to refresh or update the card UI
-                        // For now, let's just show a toast if needed
-                        console.log('Task moved successfully');
-                        
-                        // If progress was updated automatically by backend due to move
-                        // Update the slider on the card
-                        const card = document.querySelector(`[data-task-id="${taskId}"]`);
-                        if (card) {
-                            const slider = card.querySelector('.progress-slider');
-                            const label = card.querySelector('.progress-label');
-                            if (slider) slider.value = data.progress;
-                            if (label) label.textContent = data.progress + '%';
-                            
-                            // Possibly move to another column if it was changed by backend?
-                            // Actually the user MOVED it, so we just update the card's state.
-                        }
+                        console.log('Column order synchronized successfully');
                     }
                 })
                 .catch(error => console.error('Error:', error));

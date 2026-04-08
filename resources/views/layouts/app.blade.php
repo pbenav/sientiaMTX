@@ -551,7 +551,6 @@
         @include('partials.telegram-widget')
     @endauth
 
-    @stack('scripts')
     <script>
         window.confirmDelete = function(formId, message) {
             Swal.fire({

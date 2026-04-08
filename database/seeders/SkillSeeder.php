@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Skill;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class SkillSeeder extends Seeder
 {
@@ -14,26 +13,31 @@ class SkillSeeder extends Seeder
     public function run(): void
     {
         $skills = [
-            ['name' => 'Derecho', 'category' => 'Jurídico', 'icon' => 'scale'],
-            ['name' => 'Pedagogía', 'category' => 'Educación', 'icon' => 'academic-cap'],
-            ['name' => 'Psicología', 'category' => 'Salud', 'icon' => 'heart'],
-            ['name' => 'Animación Sociocultural', 'category' => 'Social', 'icon' => 'user-group'],
-            ['name' => 'Docencia', 'category' => 'Educación', 'icon' => 'presentation-chart-line'],
-            ['name' => 'Internet', 'category' => 'Tecnología', 'icon' => 'globe-alt'],
-            ['name' => 'Informática', 'category' => 'Tecnología', 'icon' => 'device-tablet'],
-            ['name' => 'Asesoramiento Fiscal', 'category' => 'Gestión', 'icon' => 'banknotes'],
-            ['name' => 'Laboral', 'category' => 'Gestión', 'icon' => 'briefcase'],
-            ['name' => 'Jurídico General', 'category' => 'Jurídico', 'icon' => 'shield-check'],
+            [1, 'Pedagogía', '🎓', '#8b5cf6'],
+            [2, 'Soporte Técnico', '🛠️', '#3b82f6'],
+            [3, 'Administración', '📋', '#64748b'],
+            [4, 'Gestión Emocional', '🧠', '#ec4899'],
+            [5, 'Impacto Rural', '🌲', '#10b981'],
+            [6, 'Derecho', '⚖️', '#b91c1c'],
+            [7, 'Psicología', '💜', '#d946ef'],
+            [8, 'Animación Sociocultural', '🎭', '#f59e0b'],
+            [9, 'Docencia', '👨‍🏫', '#06b6d4'],
+            [10, 'Internet', '🌐', '#3b82f6'],
+            [11, 'Informática', '💻', '#0ea5e9'],
+            [12, 'Asesoramiento Fiscal', '💰', '#f43f5e'],
+            [13, 'Laboral', '💼', '#f97316'],
+            [14, 'Jurídico General', '📜', '#475569'],
         ];
 
-        foreach ($skills as $skill) {
-            DB::table('skills')->updateOrInsert(
-                ['slug' => Str::slug($skill['name'])],
-                array_merge($skill, [
-                    'slug' => Str::slug($skill['name']),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ])
+        foreach ($skills as $data) {
+            Skill::updateOrCreate(
+                ['id' => $data[0]],
+                [
+                    'name' => $data[1],
+                    'slug' => \Illuminate\Support\Str::slug($data[1]),
+                    'icon' => $data[2],
+                    'color' => $data[3],
+                ]
             );
         }
     }

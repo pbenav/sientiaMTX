@@ -253,7 +253,7 @@
                                     $instances->load('timeLogs');
                                 @endphp
                                 @foreach ($instances as $inst)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button|select')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
                                         <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-3">
                                                 <div
@@ -384,6 +384,22 @@
                         class="text-xs font-bold text-indigo-600 dark:text-indigo-300 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-500 px-5 py-2.5 bg-white dark:bg-indigo-500/10 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-500/20 transition-all text-center">
                         {{ __('tasks.view_global_goal') }}
                     </a>
+                </div>
+            @endif
+
+            <!-- Skills / Árbol de Capacidades -->
+            @php $taskSkills = $task->skills; @endphp
+            @if($taskSkills->isNotEmpty())
+                <div class="flex flex-wrap gap-2 mb-6 ml-1">
+                    @foreach($taskSkills as $skill)
+                        <div class="group inline-flex items-center gap-2.5 px-3.5 py-2 bg-white dark:bg-gray-900 border border-amber-100 dark:border-amber-900/40 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-300 dark:hover:border-amber-700 transition-all duration-300 cursor-default">
+                            <div class="w-2 h-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-sm shadow-amber-500/20 group-hover:scale-125 transition-transform"></div>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest leading-none">{{ $skill->name }}</span>
+                                <span class="text-[8px] text-amber-600/50 dark:text-amber-500/30 font-bold uppercase tracking-tighter mt-0.5 leading-none">{{ $skill->category }}</span>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             @endif
             @if ($task->description)

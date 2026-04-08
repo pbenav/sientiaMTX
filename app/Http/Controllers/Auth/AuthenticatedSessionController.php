@@ -60,7 +60,7 @@ class AuthenticatedSessionController extends Controller
         $firstTeam = $user->teams()->first();
 
         if ($firstTeam) {
-            return redirect()->intended(route('teams.dashboard', $firstTeam));
+            return redirect()->intended(route('dashboard'));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

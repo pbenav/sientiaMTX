@@ -38,6 +38,29 @@
 
     <!-- Matrix Labels & Grid -->
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Filters -->
+        <div class="mb-8">
+            <form action="{{ route('teams.dashboard', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
+                <!-- Skill Filter -->
+                <div class="w-48">
+                    <select name="skill_id" onchange="this.form.submit()"
+                        class="w-full {{ request('skill_id') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 focus:ring-2 focus:ring-violet-500/50 cursor-pointer shadow-sm">
+                        <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
+                        @foreach($skills as $skill)
+                            <option value="{{ $skill->id }}" {{ request('skill_id') == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if (request()->filled('skill_id'))
+                    <a href="{{ route('teams.dashboard', $team) }}"
+                        class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
+                        {{ __('tasks.clear_filters') ?? 'Limpiar' }}
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <!-- Horizontal Urgency labels -->
         <div
             class="flex justify-between mb-4 sm:mb-8 ml-10 sm:ml-16 mr-2 sm:mr-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-400 dark:text-gray-500">
@@ -351,7 +374,9 @@
                                         quadrant: targetQuadrant === 'completed' ?
                                             null : targetQuadrant,
                                         status: targetQuadrant === 'completed' ?
-                                            'completed' : 'in_progress'
+                                            'completed' : 'in_progress',
+                                        matrix_order: evt.newIndex,
+                                        full_order: Array.from(evt.to.querySelectorAll('.task-card')).map(el => el.getAttribute('data-id')),
                                     })
                                 })
                                 .then(response => response.json())

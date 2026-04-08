@@ -76,7 +76,7 @@
                                     <input type="checkbox" name="events[]" value="{{ $event['id'] }}"
                                         id="checkbox-{{ $event['id'] }}"
                                         class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-800 transition-all pointer-events-none"
-                                        {{ $event['exists'] ? 'disabled' : 'checked' }}>
+                                        {{ $event['exists'] ? 'disabled' : '' }}>
                                     <div class="mt-2 text-center">
                                         @if ($event['type'] === 'calendar')
                                             <svg xmlns="http://www.w3.org/2000/svg"

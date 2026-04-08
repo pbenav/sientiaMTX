@@ -7,11 +7,12 @@ use App\Models\Task;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\AwardsGamification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class KanbanController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, AwardsGamification;
 
     public function index(Team $team)
     {
@@ -25,7 +26,6 @@ class KanbanController extends Controller
             ->whereNull('kanban_column_id')
             ->operationalForKanban($user, $team)
             ->where('is_archived', false)
-            ->limit(50) // Safety for large datasets
             ->get()->each(function ($task) {
                 $task->syncKanbanColumn();
             });
@@ -35,15 +35,11 @@ class KanbanController extends Controller
                 $query->visibleTo($user, $isManager)
                       ->operationalForKanban($user, $team)
                       ->where('is_archived', false)
-                      ->when(session('hide_completed_tasks', true), function($sq) {
-                          // Hide also if progress is 100% to ensure Done column is clean
-                          return $sq->whereNotIn('status', ['completed', 'cancelled', 'archive'])
-                                    ->where('progress_percentage', '<', 100);
-                      })
+                      ->where('is_archived', false)
+                      ->orderBy('kanban_order', 'asc')
                       ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
                       ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
-                      ->orderBy('progress_percentage', 'desc')
-                      ->orderBy('kanban_order', 'asc');
+                      ->orderBy('progress_percentage', 'desc');
             }])
             ->orderBy('order_index', 'asc')
             ->get();
@@ -63,10 +59,9 @@ class KanbanController extends Controller
 
         $completedTasks = $team->tasks()
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team)
             ->where('is_archived', true)
             ->orderBy('updated_at', 'desc')
-            ->limit(env('KANBAN_COMPLETED_LIMIT', 10))
+            ->limit(50)
             ->get();
 
         $hideCompleted = session('hide_completed_tasks', true);
@@ -77,6 +72,7 @@ class KanbanController extends Controller
     public function update(Request $request, Team $team, Task $task)
     {
         $this->authorize('update', $task);
+        $oldStatus = $task->status;
 
         $validated = $request->validate([
             'kanban_column_id' => 'required|exists:kanban_columns,id',
@@ -119,6 +115,11 @@ class KanbanController extends Controller
         }
 
         $task->save();
+        
+        // Gamification: Award points if newly completed via Kanban
+        if ($task->status === 'completed' && $oldStatus !== 'completed') {
+            $this->awardGamificationPoints($task);
+        }
         
         // --- Parent sync (Architectural requirement) ---
         if ($task->parent_id) {
@@ -185,6 +186,73 @@ class KanbanController extends Controller
             'success' => true,
             'column' => $column
         ]);
+    }
+
+    public function updateTasksOrder(Request $request, Team $team)
+    {
+        $validated = $request->validate([
+            'column_id' => 'required|exists:kanban_columns,id',
+            'tasks' => 'required|array',
+            'tasks.*.id' => 'required|exists:tasks,id',
+            'tasks.*.kanban_order' => 'required|integer',
+            'moved_task_id' => 'nullable|exists:tasks,id'
+        ]);
+
+        $column = KanbanColumn::findOrFail($validated['column_id']);
+
+        foreach ($validated['tasks'] as $taskData) {
+            $task = Task::where('id', $taskData['id'])
+                ->where('team_id', $team->id)
+                ->first();
+
+            if (!$task) continue;
+
+            $oldColumnId = $task->kanban_column_id;
+            $task->kanban_order = $taskData['kanban_order'];
+            $task->kanban_column_id = $column->id;
+
+            // If this is the task that was just moved, trigger the status/progress logic
+            if ($validated['moved_task_id'] == $task->id && $oldColumnId != $column->id) {
+                if ($column->type === 'todo') {
+                    $task->progress_percentage = 0;
+                    $task->status = 'pending';
+                } elseif ($column->type === 'done') {
+                    $task->progress_percentage = 100;
+                    $task->status = 'completed';
+                } elseif ($column->type === 'in_progress' || $column->type === 'custom') {
+                    if ($column->default_progress !== null) {
+                        $task->progress_percentage = $column->default_progress;
+                    } elseif ($task->progress_percentage == 0) {
+                        $task->progress_percentage = 10;
+                    }
+                    if ($task->status === 'completed' || $task->status === 'pending') {
+                        $task->status = 'in_progress';
+                    }
+                }
+
+                // Log history for move
+                $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'moved_column',
+                    'old_values' => ['kanban_column_id' => $oldColumnId],
+                    'new_values' => [
+                        'kanban_column_id' => $task->kanban_column_id, 
+                        'status' => $task->status, 
+                        'progress' => $task->progress_percentage
+                    ],
+                ]);
+            }
+
+            $oldStatus = $task->getOriginal('status');
+            $task->save();
+
+            // Gamification: Award points if newly completed via Kanban (drag to Done)
+            if ($task->status === 'completed' && $oldStatus !== 'completed') {
+                $this->awardGamificationPoints($task);
+            }
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function updateColumnOrder(Request $request, Team $team)

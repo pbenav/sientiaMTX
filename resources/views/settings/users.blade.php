@@ -23,6 +23,33 @@
             @include('settings.partials.tabs')
 
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                <!-- Filtros -->
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                    <form method="GET" action="{{ route('settings.users') }}" class="flex flex-wrap items-center gap-3">
+                        <div class="relative flex-1 min-w-[200px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input type="text" name="search" value="{{ $search }}"
+                                   placeholder="{{ __('Buscar por nombre o email…') }}"
+                                   class="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400">
+                        </div>
+                        <select name="role"
+                                class="text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
+                            <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('Todos los roles') }}</option>
+                            <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrator') }}</option>
+                            <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('User') }}</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm shadow-violet-500/20">
+                            {{ __('Filtrar') }}
+                        </button>
+                        @if($search || $role)
+                            <a href="{{ route('settings.users') }}" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                                {{ __('Limpiar') }}
+                            </a>
+                        @endif
+                    </form>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>

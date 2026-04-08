@@ -16,6 +16,9 @@
         .then(data => {
             if (data.status === 'started') {
                 window.dispatchEvent(new CustomEvent('task-started', { detail: { taskId: this.taskId } }));
+                if (data.workday_started) {
+                    window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: true } }));
+                }
             } else {
                 if (Alpine.store('timer')) Alpine.store('timer').stop();
                 window.location.reload();

@@ -1,0 +1,140 @@
+<x-app-layout>
+    @section('title', 'Gestión Global de Equipos')
+
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Gestión de Equipos</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Administración global de todos los equipos del sistema.</p>
+            </div>
+            <div>
+                <a href="{{ route('teams.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-violet-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nuevo Equipo
+                </a>
+            </div>
+        </div>
+    </x-slot>
+
+    <div class="py-12 px-4">
+        <div class="max-w-7xl mx-auto">
+            @include('settings.partials.tabs')
+
+            <div class="mb-6">
+                <form action="{{ route('settings.teams') }}" method="GET" class="flex gap-2">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" name="search" value="{{ request('search') }}" 
+                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
+                            placeholder="Buscar por nombre o descripción del equipo...">
+                    </div>
+                    <button type="submit" class="px-6 py-2.5 bg-gray-900 dark:bg-violet-600 hover:bg-gray-800 dark:hover:bg-violet-700 text-white text-sm font-bold rounded-2xl transition-all shadow-lg">
+                        Filtrar
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('settings.teams') }}" class="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-bold rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center">
+                            Limpiar
+                        </a>
+                    @endif
+                </form>
+            </div>
+
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Equipo</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Creador</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Miembros</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @foreach ($teams as $team)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black text-xs uppercase shadow-sm">
+                                                {{ substr($team->name, 0, 2) }}
+                                            </div>
+                                            <div>
+                                                <a href="{{ route('teams.show', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors">
+                                                    {{ $team->name }}
+                                                </a>
+                                                <div class="text-[10px] text-gray-400 uppercase font-black tracking-tight mt-0.5">
+                                                    {{ $team->slug }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                        {{ $team->creator->name ?? 'Sistema' }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                            {{ $team->members->count() }} miembros
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <a href="{{ route('teams.edit', $team) }}" class="inline-flex items-center p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </a>
+                                        
+                                        <form action="{{ route('teams.destroy', $team) }}" method="POST" class="inline" id="delete-team-{{ $team->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" 
+                                                onclick="confirmDelete({{ $team->id }}, '{{ $team->name }}')"
+                                                class="inline-flex items-center p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @if($teams->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                        {{ $teams->links() }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        function confirmDelete(teamId, teamName) {
+            Swal.fire({
+                title: '¿Eliminar equipo?',
+                text: "Estás a punto de eliminar el equipo '" + teamName + "'. Esta acción no se puede deshacer y se borrarán todas sus tareas y datos asociados.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, eliminar equipo',
+                cancelButtonText: 'Cancelar',
+                background: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-team-' + teamId).submit();
+                }
+            });
+        }
+    </script>
+    @endpush
+</x-app-layout>

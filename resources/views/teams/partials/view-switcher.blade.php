@@ -49,7 +49,7 @@
                     'route' => route('teams.gantt', $teamId),
                     'active' => $isGantt,
                     'icon' =>
-                        '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 012 2h2a2 2 0 012-2V7a2 2 0 01-2-2h-2a2 2 0 01-2 2" />',
+                        '<path stroke-linecap="round" stroke-linejoin="round" d="M3 10h4V7a1 1 0 011-1h3a1 1 0 011 1v3h4V7a1 1 0 011-1h3a1 1 0 011 1v3h1M3 14h18M3 18h5v-3a1 1 0 011-1h3a1 1 0 011 1v3h4v-3a1 1 0 011-1h3a1 1 0 011 1v3h1" />',
                 ],
                 [
                     'name' => __('navigation.kanban'),
@@ -79,11 +79,11 @@
         @endphp
 
         @foreach ($views as $index => $view)
-            @if ($index === 4)
+            @if ($index === 6)
                 <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center shrink-0"></div>
             @endif
             <a href="{{ $view['route'] }}"
-                class="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl transition-all min-w-[64px] sm:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
+                class="flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl transition-all min-w-[64px] sm:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:bg-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
                 title="{{ $view['name'] }}">
                 <div class="flex items-center justify-center h-5 w-5 shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"

@@ -100,6 +100,17 @@
                     </select>
                 </div>
 
+                <!-- Skill Filter -->
+                <div class="w-48">
+                    <select name="skill_id" onchange="this.form.submit()"
+                        class="w-full {{ request('skill_id') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
+                        @foreach($skills as $skill)
+                            <option value="{{ $skill->id }}" {{ request('skill_id') == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <!-- Type Filter -->
                 <div class="w-40">
                     <select name="type" onchange="this.form.submit()"
@@ -114,7 +125,19 @@
                     </select>
                 </div>
 
-                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type']))
+                <!-- Per Page -->
+                <div class="w-32">
+                    <select name="per_page" onchange="this.form.submit()"
+                        class="w-full {{ request('per_page') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="25" {{ request('per_page', 20) == 25 || request('per_page') == 20 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="all" {{ request('per_page') == 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Todas' }}</option>
+                    </select>
+                </div>
+
+                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type', 'per_page']))
                     <a href="{{ route('teams.tasks.index', $team) }}"
                         class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
                         {{ __('tasks.clear_filters') }}
@@ -126,7 +149,7 @@
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-2xl overflow-hidden transition-all">
             <div id="bulkActionBar"
-                class="hidden bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 p-3 flex justify-between items-center transition-all animate-fade-in">
+                class="hidden bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 p-3 justify-between items-center transition-all animate-fade-in">
                 <span class="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -287,12 +310,16 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2.5 py-1 text-[11px] font-bold rounded-lg border 
-                                    @if ($task->status === 'completed') bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400
-                                    @elseif($task->status === 'in_progress') bg-blue-50 border-blue-100 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400
-                                    @elseif($task->status === 'blocked') bg-red-50 border-red-100 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400
-                                    @else bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-500/10 dark:border-gray-500/20 dark:text-gray-400 @endif uppercase">
+                                    @php
+                                        $statusClasses = [
+                                            'completed'   => 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',
+                                            'in_progress' => 'bg-blue-50 border-blue-100 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400',
+                                            'blocked'     => 'bg-red-50 border-red-100 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400',
+                                            'default'     => 'bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-500/10 dark:border-gray-500/20 dark:text-gray-400'
+                                        ];
+                                        $currentClass = $statusClasses[$task->status] ?? $statusClasses['default'];
+                                    @endphp
+                                    <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg border {{ $currentClass }} uppercase">
                                         {{ __("tasks.statuses.{$task->status}") }}
                                     </span>
                                 </td>

@@ -68,12 +68,29 @@ class SettingsController extends Controller
     /**
      * Display the users list.
      */
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::withCount('invitations')->latest()->paginate(20);
-        
+        $query = User::withCount('invitations')->latest();
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->get('role') === 'admin') {
+            $query->where('is_admin', true);
+        } elseif ($request->get('role') === 'user') {
+            $query->where('is_admin', false);
+        }
+
+        $users = $query->paginate(20)->withQueryString();
+
         return view('settings.users', [
-            'users' => $users
+            'users' => $users,
+            'search' => $request->get('search', ''),
+            'role' => $request->get('role', ''),
         ]);
     }
 
@@ -242,10 +259,24 @@ class SettingsController extends Controller
             // Clear config cache to apply changes
             Artisan::call('config:clear');
 
-            // If requested, update all existing users to the new quota
-            if (isset($data['DEFAULT_DISK_QUOTA']) && $request->has('update_existing_users')) {
-                $newQuotaBytes = $data['DEFAULT_DISK_QUOTA'] * 1024 * 1024;
-                \App\Models\User::query()->update(['disk_quota' => $newQuotaBytes]);
+            // If requested, update all existing users (and teams if applicable) to the new values
+            if ($request->has('update_existing_users')) {
+                $updateData = [];
+
+                if (isset($data['DEFAULT_DISK_QUOTA'])) {
+                    $updateData['disk_quota'] = $data['DEFAULT_DISK_QUOTA'] * 1024 * 1024;
+                }
+
+                if ($request->has('site_timezone') || isset($request->site_timezone)) {
+                    $updateData['timezone'] = $request->site_timezone;
+                }
+
+                if (!empty($updateData)) {
+                    \App\Models\User::query()->update($updateData);
+                }
+
+                // Note: Teams in sientiaMTX currently do not have disk_quota or timezone fields,
+                // so we explicitly update the user fields which are the relevant ones here.
             }
 
             return back()->with('success', __('notifications.config_saved'));

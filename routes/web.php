@@ -17,6 +17,9 @@ Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookControlle
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
     return view('welcome');
 })->name('home');
 
@@ -61,7 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/zone', [ProfileController::class, 'updateZone'])->name('user.update-zone');
     Route::get('/profile/export', [GDPRController::class, 'export'])->name('profile.export');
-    Route::post('/kudos', [App\Http\Controllers\KudoController::class, 'store'])->name('kudos.store');
+    Route::post('/teams/{team}/kudos', [App\Http\Controllers\KudoController::class, 'store'])->name('teams.kudos.store');
 
     // Teams routes
     Route::resource('teams', TeamController::class);
@@ -86,10 +89,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
     Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit']);
 
-    // Override show/edit/update to avoid Scoped Binding and handle SoftDeletes (fixes 404s for Global Goals)
+    // Override show/edit/update/destroy to avoid Scoped Binding and handle SoftDeletes
     Route::prefix('teams/{team}')->group(function() {
         Route::get('tasks/{task}', [TaskController::class, 'show'])->name('teams.tasks.show')->withTrashed()->withoutScopedBindings();
         Route::get('tasks/{task}/edit', [TaskController::class, 'edit'])->name('teams.tasks.edit')->withTrashed()->withoutScopedBindings();
+        Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('teams.tasks.update')->withTrashed()->withoutScopedBindings();
+        Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('teams.tasks.destroy')->withTrashed()->withoutScopedBindings();
     });
 
     // Forum routes inside team
@@ -125,6 +130,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/kanban/columns/{column}', [KanbanController::class, 'updateColumn'])->name('teams.kanban.columns.update');
     Route::post('/teams/{team}/kanban/columns', [KanbanController::class, 'storeColumn'])->name('teams.kanban.columns.store');
     Route::post('/teams/{team}/kanban/columns/order', [KanbanController::class, 'updateColumnOrder'])->name('teams.kanban.columns.order');
+    Route::post('/teams/{team}/kanban/tasks/order', [KanbanController::class, 'updateTasksOrder'])->name('teams.kanban.tasks.order');
     Route::delete('/teams/{team}/kanban/columns/{column}', [KanbanController::class, 'destroyColumn'])->name('teams.kanban.columns.destroy');
     
     // Theme route
@@ -133,6 +139,7 @@ Route::middleware('auth')->group(function () {
 
     // Global Settings routes
     Route::middleware('can:admin')->group(function () {
+        Route::get('/settings/teams', [\App\Http\Controllers\TeamController::class, 'indexAdmin'])->name('settings.teams');
         Route::get('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'mailSettings'])->name('settings.mail');
         Route::post('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'updateMailSettings'])->name('settings.mail.update');
         Route::post('/settings/mail/test', [\App\Http\Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');
@@ -150,6 +157,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'updateLegalSettings'])->name('settings.legal.update');
         Route::post('/settings/telegram/test', [\App\Http\Controllers\SettingsController::class, 'testTelegram'])->name('settings.telegram.test');
         Route::post('/settings/telegram/register', [\App\Http\Controllers\SettingsController::class, 'registerTelegramWebhook'])->name('settings.telegram.register');
+
+        // Global Skills Management (Global scope only)
+        Route::get('/settings/skills', [\App\Http\Controllers\SkillController::class, 'index'])->name('settings.skills');
+        Route::post('/settings/skills', [\App\Http\Controllers\SkillController::class, 'store'])->name('settings.skills.store');
+        Route::patch('/settings/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'update'])->name('settings.skills.update');
+        Route::delete('/settings/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'destroy'])->name('settings.skills.destroy');
+    });
+
+    // Team-specific Skills Management
+    Route::prefix('teams/{team}')->name('teams.')->group(function () {
+        Route::get('/skills', [\App\Http\Controllers\SkillController::class, 'index'])->name('skills.index');
+        Route::post('/skills', [\App\Http\Controllers\SkillController::class, 'store'])->name('skills.store');
+        Route::patch('/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'update'])->name('skills.update');
+        Route::delete('/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'destroy'])->name('skills.destroy');
+        Route::post('/skills/inherit', [\App\Http\Controllers\SkillController::class, 'inherit'])->name('skills.inherit');
     });
 
     // Google Services

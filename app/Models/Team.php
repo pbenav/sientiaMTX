@@ -77,6 +77,11 @@ class Team extends Model
         return $this->hasMany(KanbanColumn::class)->orderBy('order_index');
     }
 
+    public function skills(): HasMany
+    {
+        return $this->hasMany(Skill::class);
+    }
+
     // Get creator of the team
     public function creator()
     {
@@ -101,7 +106,7 @@ class Team extends Model
      */
     public function isManager(User $user): bool
     {
-        return $this->isCoordinator($user) || $this->isModerator($user);
+        return $user->is_admin || $this->isCoordinator($user) || $this->isModerator($user);
     }
 
     /**

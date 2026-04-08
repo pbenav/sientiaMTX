@@ -26,6 +26,28 @@ class TeamController extends Controller
     }
 
     /**
+     * Display a listing of all teams for site administrators
+     */
+    public function indexAdmin(Request $request)
+    {
+        $this->authorize('admin'); // Ensure only global admins can access
+
+        $query = Team::with(['members', 'creator']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%");
+            });
+        }
+
+        $teams = $query->latest()->paginate(20)->withQueryString();
+
+        return view('settings.teams', compact('teams'));
+    }
+
+    /**
      * Show the form for creating a new team
      */
     public function create()
@@ -78,8 +100,11 @@ class TeamController extends Controller
     public function edit(Team $team)
     {
         $this->authorize('update', $team);
+        
+        $skills = $team->skills()->withCount('tasks')->orderBy('name')->get();
+        $teams = collect([$team]); // Solo este equipo es relevante en este contexto
 
-        return view('teams.edit', compact('team'));
+        return view('teams.edit', compact('team', 'skills', 'teams'));
     }
 
     /**
@@ -254,9 +279,15 @@ class TeamController extends Controller
         $isManager = $team->isManager($user);
 
         $query = $team->tasks()
-            ->with(['assignedTo', 'assignedGroups', 'tags', 'children', 'assignedUser'])
+            ->with(['assignedTo', 'assignedGroups', 'tags', 'children', 'assignedUser', 'skills'])
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team);
+            ->operationalFor($user, $team)
+            ->when(request('skill_id'), function ($q, $skillId) {
+                $q->where(function ($sq) use ($skillId) {
+                    $sq->where('skill_id', $skillId)
+                        ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
+                });
+            });
 
         // Matrix-specific filter for managers (as requested: ensure owner visibility + backlog)
         // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
@@ -273,6 +304,8 @@ class TeamController extends Controller
                 ->orWhere('assigned_user_id', $user->id);
             });
         }
+
+        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
 
 
         $allTasks = $query->get();
@@ -296,7 +329,18 @@ class TeamController extends Controller
             }
         }
 
-        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted'));
+        // Sort each quadrant by matrix_order (nulls last, preserving user-defined positions)
+        foreach ($quadrants as &$qTasks) {
+            usort($qTasks, function ($a, $b) {
+                if ($a->matrix_order === null && $b->matrix_order === null) return 0;
+                if ($a->matrix_order === null) return 1;
+                if ($b->matrix_order === null) return -1;
+                return $a->matrix_order <=> $b->matrix_order;
+            });
+        }
+        unset($qTasks);
+
+        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted', 'skills'));
     }
 
     /**

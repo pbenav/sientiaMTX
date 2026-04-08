@@ -1,631 +1,347 @@
 <x-app-layout>
     @section('title', __('navigation.gantt') . ' — ' . $team->name)
 
+    <style>
+        /* Modern Gantt Aesthetics */
+        #gantt-container svg { background-color: transparent !important; }
+        .gantt .grid-row:nth-child(even) { fill: #f9fafb; }
+        .gantt .grid-row:nth-child(odd) { fill: #ffffff; }
+        .gantt .grid-header { fill: #ffffff; stroke: #e5e7eb; }
+        .gantt .upper-text { fill: #9ca3af; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .gantt .lower-text { fill: #4b5563; font-weight: 800; font-size: 11px; }
+        .gantt .tick { stroke: #f3f4f6; }
+
+        .dark .gantt .grid-row:nth-child(even) { fill: #0f172a; }
+        .dark .gantt .grid-row:nth-child(odd) { fill: #111827; }
+        .dark .gantt .grid-header { fill: #1f2937; stroke: #374151; }
+        .dark .gantt .upper-text { fill: #6b7280; }
+        .dark .gantt .lower-text { fill: #e5e7eb; }
+        .dark .gantt .tick { stroke: #1f2937; }
+
+        .gantt .bar-wrapper { cursor: pointer; transition: transform 0.2s; }
+        .gantt .bar { fill: #e5e7eb; stroke: none; opacity: 0.85; }
+        .gantt .bar-progress { fill: currentColor; opacity: 1; }
+        .gantt .bar-label { fill: #1f2937; font-weight: 700; font-size: 11px; }
+        .dark .gantt .bar-label { fill: #ffffff; }
+        .dark .gantt .bar { fill: #374151; }
+
+        /* Quadrant Colors */
+        svg.gantt .bar-wrapper.gantt-color-q1 rect.bar { fill: #fecaca !important; }
+        svg.gantt .bar-wrapper.gantt-color-q1 rect.bar-progress { fill: #ef4444 !important; }
+        svg.gantt .bar-wrapper.gantt-color-q2 rect.bar { fill: #bfdbfe !important; }
+        svg.gantt .bar-wrapper.gantt-color-q2 rect.bar-progress { fill: #3b82f6 !important; }
+        svg.gantt .bar-wrapper.gantt-color-q3 rect.bar { fill: #fde68a !important; }
+        svg.gantt .bar-wrapper.gantt-color-q3 rect.bar-progress { fill: #f59e0b !important; }
+        svg.gantt .bar-wrapper.gantt-color-q4 rect.bar { fill: #e5e7eb !important; }
+        svg.gantt .bar-wrapper.gantt-color-q4 rect.bar-progress { fill: #6b7280 !important; }
+
+        .dark svg.gantt .bar-wrapper.gantt-color-q1 rect.bar { fill: #7f1d1d !important; fill-opacity: 0.4 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q1 rect.bar-progress { fill: #f87171 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q2 rect.bar { fill: #1e3a8a !important; fill-opacity: 0.4 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q2 rect.bar-progress { fill: #60a5fa !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q3 rect.bar { fill: #78350f !important; fill-opacity: 0.4 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q3 rect.bar-progress { fill: #fbbf24 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q4 rect.bar { fill: #374151 !important; fill-opacity: 0.4 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-color-q4 rect.bar-progress { fill: #9ca3af !important; }
+
+        .gantt .handle { fill: #9ca3af; }
+        .gantt .today-highlight { fill: rgba(16, 185, 129, 0.05) !important; }
+        #today-line { stroke: #10b981; stroke-width: 2; }
+    </style>
+
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
             <div class="flex items-start gap-4 min-w-0 flex-1">
-                <a href="{{ route('teams.index') }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="3">
+                <a href="{{ route('teams.index') }}" class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50" title="Volver">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
-                        {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white truncate tracking-tight">
+                        {{ __('navigation.gantt') }}
                     </h1>
                 </div>
             </div>
         </div>
-
-        <!-- View Switcher Sub-Header -->
-        <div class="mt-4 mb-2 flex w-full">
-            @include('teams.partials.view-switcher')
-        </div>
-
-        <!-- Action Buttons Row -->
-        <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-            @include('teams.partials.header-actions')
-        </div>
+        <div class="mt-4 mb-2 flex w-full">@include('teams.partials.view-switcher')</div>
+        <div class="flex items-center gap-3 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">@include('teams.partials.header-actions')</div>
     </x-slot>
 
     <div class="py-6 space-y-4">
-        <!-- Filters and Search Bar -->
-        <div
-            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm transition-all">
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
             <form action="{{ route('teams.gantt', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
-                <!-- Search -->
                 <div class="flex-1 min-w-[200px] relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <input type="text" name="search" value="{{ request('search') }}"
-                        placeholder="{{ __('tasks.search') }}..."
-                        class="w-full pl-10 pr-4 py-2 {{ request('search') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('tasks.search') }}..." class="w-full pl-4 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
                 </div>
-
-                <!-- Status Filter -->
-                <div class="w-40">
-                    <select name="status" onchange="this.form.submit()"
-                        class="w-full {{ request('status') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
-                        <option value="">{{ __('tasks.status') }}</option>
-                        @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
-                            <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>
-                                {{ __("tasks.statuses.{$status}") }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Priority Filter -->
-                <div class="w-40">
-                    <select name="priority" onchange="this.form.submit()"
-                        class="w-full {{ request('priority') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
-                        <option value="">{{ __('tasks.priority') }}</option>
-                        @foreach (['low', 'medium', 'high', 'critical'] as $priority)
-                            <option value="{{ $priority }}"
-                                {{ request('priority') === $priority ? 'selected' : '' }}>
-                                {{ __("tasks.priorities.{$priority}") }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Assigned To Filter -->
-                <div class="w-48">
-                    <select name="assigned_to" onchange="this.form.submit()"
-                        class="w-full {{ request('assigned_to') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
-                        <option value="">{{ __('tasks.assigned_to') }}</option>
-                        @if (isset($members))
-                            @foreach ($members as $member)
-                                <option value="{{ $member->id }}"
-                                    {{ request('assigned_to') == $member->id ? 'selected' : '' }}>
-                                    {{ $member->name }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-
-                <!-- Type Filter -->
-                <div class="w-40">
-                    <select name="type" onchange="this.form.submit()"
-                        class="w-full {{ request('type') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
-                        <option value="">{{ __('tasks.type') }}</option>
-                        <option value="template" {{ request('type') === 'template' ? 'selected' : '' }}>
-                            {{ __('tasks.template') }}</option>
-                        <option value="instance" {{ request('type') === 'instance' ? 'selected' : '' }}>
-                            {{ __('tasks.subtask') }}</option>
-                        <option value="plain" {{ request('type') === 'plain' ? 'selected' : '' }}>
-                            {{ __('tasks.task') }}</option>
-                    </select>
-                </div>
-
-                <!-- Time Range Filter -->
-                <div class="w-40">
-                    <select name="time_range" onchange="this.form.submit()"
-                        class="w-full {{ (request('time_range') && request('time_range') !== 'all') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
-                        <option value="all" {{ request('time_range') === 'all' ? 'selected' : '' }}>{{ __('tasks.all_time') ?? 'Cualquier fecha' }}</option>
-                        <option value="1" {{ request('time_range') === '1' ? 'selected' : '' }}>{{ __('tasks.next_month') ?? 'Próximo mes' }}</option>
-                        <option value="3" {{ request('time_range') === '3' ? 'selected' : '' }}>{{ __('tasks.next_3_months') ?? 'Próximos 3 meses' }}</option>
-                        <option value="6" {{ request('time_range') === '6' ? 'selected' : '' }}>{{ __('tasks.next_6_months') ?? 'Próximos 6 meses' }}</option>
-                    </select>
-                </div>
-
-                <!-- Limit Filter -->
-                <div class="w-32">
-                    <select name="limit" onchange="this.form.submit()"
-                        class="w-full {{ (request('limit') && request('limit') !== 'all') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
-                        <option value="all" {{ request('limit') === 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Sin límite' }}</option>
-                        <option value="25" {{ request('limit') === '25' ? 'selected' : '' }}>{{ __('tasks.top_25') ?? 'Top 25' }}</option>
-                        <option value="50" {{ request('limit') === '50' ? 'selected' : '' }}>{{ __('tasks.top_50') ?? 'Top 50' }}</option>
-                        <option value="100" {{ request('limit') === '100' ? 'selected' : '' }}>{{ __('tasks.top_100') ?? 'Top 100' }}</option>
-                    </select>
-                </div>
-
-                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type', 'time_range', 'limit']))
-                    <a href="{{ route('teams.gantt', $team) }}"
-                        class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
-                        {{ __('tasks.clear_filters') }}
-                    </a>
+                <select name="status" onchange="this.form.submit()" class="w-40 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.status') }}</option>
+                    @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
+                        <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>{{ __("tasks.statuses.{$status}") }}</option>
+                    @endforeach
+                </select>
+                <select name="priority" onchange="this.form.submit()" class="w-40 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.priority') }}</option>
+                    @foreach(['low','medium','high','critical'] as $p)
+                        <option value="{{$p}}" {{request('priority')==$p?'selected':''}}>{{__("tasks.priorities.{$p}")}}</option>
+                    @endforeach
+                </select>
+                @if(request()->anyFilled(['search','status','priority']))
+                    <a href="{{ route('teams.gantt', $team) }}" class="text-xs font-bold text-red-500 uppercase tracking-widest">Limpiar</a>
                 @endif
             </form>
         </div>
 
-        <div
-            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm dark:shadow-none overflow-hidden transition-colors">
-            <div
-                class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-transparent flex justify-between items-center text-xs text-gray-500">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-transparent flex justify-between items-center text-xs text-gray-500">
                 <div class="flex gap-4">
-                    <span class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-red-500"></div> Q1: Hacer
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-blue-500"></div> Q2: Planificar
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-amber-500"></div> Q3: Delegar
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-gray-500"></div> Q4: Eliminar
-                    </span>
+                    <span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-red-500"></div> Q1: Hacer</span>
+                    <span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Q2: Planificar</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="changeView('Day')"
-                        class="hover:text-violet-600 font-bold uppercase tracking-tighter transition-colors">Día</button>
-                    <button onclick="changeView('Week')"
-                        class="hover:text-violet-600 font-bold uppercase tracking-tighter transition-colors">Semana</button>
-                    <button onclick="changeView('Month')"
-                        class="hover:text-violet-600 font-bold uppercase tracking-tighter transition-colors">Mes</button>
+                    <button onclick="changeView('Day')" class="hover:text-violet-600 font-bold uppercase">Día</button>
+                    <button onclick="changeView('Week')" class="hover:text-violet-600 font-bold uppercase">Semana</button>
+                    <button onclick="changeView('Month')" class="hover:text-violet-600 font-bold uppercase">Mes</button>
                 </div>
             </div>
 
-            <div id="gantt-container" class="gantt-target overflow-x-auto min-h-[500px]"></div>
+            <!-- Action Wave -->
+            <div class="px-8 py-6 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 relative overflow-hidden">
+                <div class="flex items-center justify-between mb-6 relative z-10">
+                    <div class="flex flex-col">
+                        <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-1">Onda de Resiliencia Colectiva</h4>
+                        <span class="text-lg font-black text-gray-900 dark:text-white">{{ now()->translatedFormat('F Y') }}</span>
+                    </div>
+                </div>
+
+                @php
+                    $maxWeight = collect($actionHeat)->max('weight') ?: 1;
+                    $width = 100 / ($daysInMonth - 1);
+                    $pts = []; $upts = [];
+                    foreach($actionHeat as $day => $d) {
+                        $h = ($d['weight'] / $maxWeight) * 100;
+                        $uh = ($d['user_weight'] / $maxWeight) * 100;
+                        $pts[] = ($day-1)*$width . ',' . (100-$h);
+                        $upts[] = ($day-1)*$width . ',' . (100-$uh);
+                    }
+                    $pathData = "M0,100 L" . implode(" L", $pts) . " L100,100 Z";
+                    $userLineData = "M" . implode(" L", $upts);
+                @endphp
+
+                <div class="relative h-24 mb-6">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full overflow-visible">
+                        <defs><linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:rgba(124, 58, 237, 0.3)"/><stop offset="100%" style="stop-color:rgba(59, 130, 246, 0.05)"/></linearGradient></defs>
+                        <path id="wave-team-path" d="{{$pathData}}" fill="url(#waveGradient)" class="transition-all duration-1000" />
+                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" class="drop-shadow-[0_0_8px_rgba(16,185,129,0.6)] transition-all duration-1000" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-end gap-px">
+                        @for($i=1; $i<=$daysInMonth; $i++)
+                            @php 
+                                $d = $actionHeat[$i]??['weight'=>0,'user_weight'=>0,'count'=>0,'user_count'=>0];
+                                $pct = $d['weight']/$maxWeight;
+                                $color = "hsl(".((1-$pct)*220).", 70%, 50%)";
+                            @endphp
+                            <div class="flex-1 h-full relative cursor-pointer z-10 wave-pillar"
+                                 onmouseenter="updateWaveTooltip(this, event)" onmouseleave="hideWaveTooltip()"
+                                 data-day="{{$i}}" data-count="{{$d['count']}}" data-weight="{{$d['weight']}}"
+                                 data-user-count="{{$d['user_count']}}" data-user-weight="{{$d['user_weight']}}"
+                                 data-pct="{{round($pct*100)}}" data-color="{{$color}}">
+                                <div class="absolute inset-x-0 bottom-0 h-0 hover:h-full bg-gray-400/5 transition-all"></div>
+                                <div class="team-dot absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 transition-all opacity-0 hover:opacity-100" style="bottom: {{$pct*100}}%; border-color: {{$color}}"></div>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wave Tooltip -->
+            <div id="wave-tooltip" class="fixed z-[9999] pointer-events-none opacity-0 transition-all p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border dark:border-gray-800 min-w-[200px]">
+                <div class="flex flex-col gap-1">
+                    <span id="w-tooltip-day" class="text-[10px] font-black uppercase text-gray-400"></span>
+                    <span class="text-sm font-black dark:text-white">Carga de Trabajo</span>
+                    <div class="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full mt-2 overflow-hidden">
+                        <div id="w-tooltip-bar" class="h-full transition-all duration-500"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-3 text-[10px] font-bold">
+                        <div><p class="text-gray-400 uppercase text-[8px]">Equipo</p><p id="w-tooltip-weight" class="dark:text-white"></p></div>
+                        <div><p class="text-emerald-500 uppercase text-[8px]">Propia</p><p id="w-tooltip-user-weight" class="text-emerald-600"></p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="gantt-container" class="w-full overflow-x-auto min-h-[500px]"></div>
         </div>
     </div>
 
-    <!-- Frappe Gantt Resources -->
+    <!-- Drag Indicator -->
+    <div id="drag-date-indicator" style="display: none" class="fixed z-[9999] pointer-events-none bg-indigo-600 text-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-2 transition-transform duration-75">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        <span id="drag-start-label"></span>
+    </div>
+
+    <div id="gantt-tooltip" style="display: none" class="fixed z-[100] pointer-events-none bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-2xl p-4 min-w-[260px]"></div>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
 
-    <style>
-        /* Custom styles for Frappe Gantt matching MTX theme */
-        .gantt-target {
-            background-color: transparent !important;
-        }
-
-        .gantt .grid-header {
-            fill: #f9fafb !important;
-            stroke: #e5e7eb !important;
-        }
-
-        .dark .gantt .grid-header {
-            fill: #111827 !important;
-            stroke: #374151 !important;
-        }
-
-        .gantt .grid-row {
-            fill: transparent !important;
-        }
-
-        .gantt .grid-row:nth-child(even) {
-            fill: rgba(0, 0, 0, 0.01) !important;
-        }
-
-        .dark .gantt .grid-row:nth-child(even) {
-            fill: rgba(255, 255, 255, 0.01) !important;
-        }
-
-        .gantt .tick {
-            stroke: #e5e7eb !important;
-        }
-
-        .dark .gantt .tick {
-            stroke: #1f2937 !important;
-        }
-
-        .gantt .upper-text {
-            fill: #6b7280 !important;
-            font-weight: 600 !important;
-            text-transform: uppercase !important;
-            font-size: 10px !important;
-        }
-
-        .gantt .lower-text {
-            fill: #9ca3af !important;
-            font-size: 10px !important;
-        }
-
-        /* Bar styles by quadrant */
-        .gantt .bar {
-            fill: #7c3aed;
-        }
-
-        /* Q1: Red */
-        .gantt .gantt-q1 .bar-filled {
-            fill: #ef4444 !important;
-        }
-
-        .gantt .gantt-q1 .bar {
-            fill: rgba(239, 68, 68, 0.4) !important;
-        }
-
-        /* Q2: Blue */
-        .gantt .gantt-q2 .bar-filled {
-            fill: #3b82f6 !important;
-        }
-
-        .gantt .gantt-q2 .bar {
-            fill: rgba(59, 130, 246, 0.4) !important;
-        }
-
-        /* Q3: Amber */
-        .gantt .gantt-q3 .bar-filled {
-            fill: #f59e0b !important;
-        }
-
-        .gantt .gantt-q3 .bar {
-            fill: rgba(245, 158, 11, 0.4) !important;
-        }
-
-        /* Q4: Gray */
-        .gantt .gantt-q4 .bar-filled {
-            fill: #6b7280 !important;
-        }
-
-        .gantt .gantt-q4 .bar {
-            fill: rgba(107, 114, 128, 0.4) !important;
-        }
-
-        .gantt .bar-label {
-            fill: #111827 !important;
-            font-weight: 500 !important;
-            font-size: 11px !important;
-        }
-
-        .dark .gantt .bar-label {
-            fill: #f3f4f6 !important;
-        }
-
-        .gantt .arrow {
-            stroke: #9ca3af !important;
-            stroke-width: 1.5 !important;
-        }
-
-        .dark .gantt .arrow {
-            stroke: #4b5563 !important;
-        }
-
-        .gantt .handle {
-            fill: #9ca3af !important;
-        }
-
-        /* Hierarchical Styling */
-        .gantt .gantt-master .bar {
-            stroke: rgba(0, 0, 0, 0.2) !important;
-            stroke-width: 1px !important;
-        }
-
-        .dark .gantt .gantt-master .bar {
-            stroke: rgba(255, 255, 255, 0.2) !important;
-        }
-
-        .gantt .gantt-instance .bar {
-            rx: 12 !important; /* Extra rounded for instances */
-            ry: 12 !important;
-            height: 22px !important; /* Thinner bars for subtasks */
-            y: 4px !important; /* Vertical offset to center the thinner bar */
-        }
-        
-        .gantt .gantt-instance .bar-filled {
-            height: 22px !important;
-            y: 4px !important;
-        }
-
-        .gantt .gantt-instance .bar-label {
-            font-size: 10px !important;
-            opacity: 0.8;
-        }
-
-        /* Popover styling */
-        .gantt-container .header-wrapper {
-            display: none;
-        }
-
-        /* Sobreescritura del contenedor BASE de Frappe Gantt */
-        .gantt-container .popup-wrapper {
-            background: #f9fafb !important; /* bg-gray-50 */
-            border-radius: 16px !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-            padding: 0 !important;
-            color: #111827 !important;
-            border: 1px solid #e5e7eb !important;
-            opacity: 1 !important;
-            min-width: 280px !important;
-        }
-
-        .dark .gantt-container .popup-wrapper {
-            background: #1f2937 !important; /* bg-gray-800 */
-            border-color: #374151 !important;
-            color: #f3f4f6 !important;
-        }
-
-        /* Limpiamos el contenedor interno para que no duplique estilos */
-        .frappe-gantt .details-container {
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            padding: 16px !important;
-        }
-
-        /* Variables de Estilo Sientia */
-        :root {
-            --gantt-title: #111827;
-            --gantt-label: #6b7280;
-            --gantt-value: #374151;
-            --gantt-sep: #e5e7eb;
-        }
-
-        .dark {
-            --gantt-title: #FFFFFF;
-            --gantt-label: #9ca3af;
-            --gantt-value: #f3f4f6;
-            --gantt-sep: #4b5563;
-        }
-
-        /* Today line highlight */
-        .gantt .today-highlight {
-            fill: rgba(16, 185, 129, 0.05) !important;
-        }
-
-        #today-line {
-            stroke: #10b981;
-            stroke-width: 1;
-            /* Solid line for better visibility on screen */
-        }
-
-        /* Hide the dummy task used to extend range */
-        .gantt .gantt-today-marker-task .bar-group,
-        .gantt .gantt-today-marker-task .bar-label {
-            display: none !important;
-        }
-
-        /* Blocked task pulse in Gantt */
-        .gantt .bar-group[data-status="blocked"] .bar {
-            fill: #ef4444 !important;
-            animation: pulse-red 2s infinite;
-        }
-
-        @keyframes pulse-red {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.6;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-    </style>
-
     <script>
-        let gantt;
-        let allTasks = [];
-        let collapsedTasks = new Set();
-        let currentMode = 'Week';
+        let gantt, allTasks = [], collapsedTasks = new Set(), currentMode = 'Week';
+        const tooltip = document.getElementById('gantt-tooltip');
+        const dragIndicator = document.getElementById('drag-date-indicator');
 
-        async function fetchTasks(quadrant = 'all') {
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('quadrant', quadrant);
-            const url = `{{ route('teams.gantt.data', $team) }}?${urlParams.toString()}`;
-            const response = await fetch(url);
-            return await response.json();
-        }
-
-        function refreshGanttDisplay() {
-            // Filter tasks based on collapse state
-            const tasksToDisplay = allTasks.filter(task => {
-                // If it's the today marker, always show
-                if (task.id === 'today_marker') return true;
-                
-                // If the parent is collapsed, hide this task
-                if (task.dependencies && collapsedTasks.has(task.dependencies)) {
-                    return false;
-                }
-                return true;
-            }).map(task => {
-                // Clone task to avoid modifying original
-                const t = { ...task };
-                
-                // Update label with arrow if it has children
-                if (t.has_children) {
-                    const icon = collapsedTasks.has(t.id) ? '▶ ' : '▼ ';
-                    t.name = icon + t.name.replace(/^[▶▼] /, '');
-                }
-                return t;
-            });
-
-            // If gantt exists, we refresh it (though Frappe Gantt doesn't have a perfect refresh for tree views, 
-            // re-init is often safer to ensure correct layout and row heights).
-            renderGantt(tasksToDisplay);
-        }
-
-        async function initGantt(quadrant = 'all') {
-            allTasks = await fetchTasks(quadrant);
-
-            if (allTasks.length === 0 || (allTasks.length === 1 && allTasks[0].id === 'today_marker')) {
-                document.getElementById('gantt-container').innerHTML = `
-                    <div class="flex flex-col items-center justify-center p-20 text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        <p class="font-medium">No hay tareas para mostrar en este cuadrante.</p>
-                        <p class="text-xs mt-1">Asegúrate de que las tareas tengan fechas asignadas.</p>
-                    </div>
-                `;
+        async function initGantt() {
+            const url = `{{ route('teams.gantt.data', $team) }}?${new URLSearchParams(window.location.search).toString()}`;
+            const res = await fetch(url);
+            allTasks = await res.json();
+            
+            if (allTasks.length === 0) {
+                document.getElementById('gantt-container').innerHTML = '<div class="p-20 text-center text-gray-500 font-bold">Sin tareas.</div>';
                 return;
             }
 
+            allTasks.forEach(t => { if(t.has_children) collapsedTasks.add(t.id); });
+            renderActionWave();
             refreshGanttDisplay();
+            setupCustomInteractions();
         }
 
-        function renderGantt(tasks) {
+        function refreshGanttDisplay() {
+            const display = allTasks.filter(t => !t.dependencies || !collapsedTasks.has(t.dependencies))
+                .map(t => {
+                    const obj = {...t};
+                    if(obj.has_children) obj.name = (collapsedTasks.has(obj.id)?'▶ ':'▼ ') + obj.name.replace(/^[▶▼] /,'');
+                    return obj;
+                });
+            
             document.getElementById('gantt-container').innerHTML = '';
-
-            gantt = new Gantt("#gantt-container", tasks, {
-                header_height: 50,
-                column_width: 30,
-                step: 24,
-                view_modes: ['Day', 'Week', 'Month'],
-                bar_height: 30,
-                bar_corner_radius: 6,
-                arrow_curve: 5,
-                padding: 18,
-                view_mode: currentMode,
-                language: 'es',
-                custom_popup_html: function(task) {
-                    if (task.id === 'today_marker') return ''; // No popup for dummy task
-
-                    const statusLabels = {
-                        'pending': 'Pendiente',
-                        'in_progress': 'En curso',
-                        'completed': 'Terminada',
-                        'cancelled': 'Cancelada',
-                        'blocked': 'Bloqueada'
-                    };
-                    const statusColors = {
-                        'pending': 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
-                        'in_progress': 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                        'completed': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
-                        'cancelled': 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-                        'blocked': 'bg-red-500 text-white shadow-lg animate-pulse',
-                    };
-
-                    const parentHtml = task.parent_title ? `
-                        <div class="flex items-center gap-1 mt-1 mb-2">
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
-                                ↳ Subtarea 
-                            </span>
-                            <span class="text-[10px] text-gray-400 truncate max-w-[120px]">${task.parent_title}</span>
-                        </div>
-                    ` : '';
-
-                    return `
-                        <div class="p-1 min-w-[240px]">
-                            <a href="{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}" class="hover:underline decoration-2">
-                                <h4 class="font-black text-base mb-1 truncate" style="color: var(--gantt-title) !important;" title="${task.name}">${task.name}</h4>
-                            </a>
-                            ${parentHtml}
-                            <div class="flex items-center gap-3 mb-3">
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase ${statusColors[task.status]}" style="color: inherit !important;">${statusLabels[task.status]}</span>
-                                <span class="text-xs font-black" style="color: var(--gantt-label) !important;">${task.progress}%</span>
-                            </div>
-                            <div class="text-xs flex flex-col gap-2 border-t pt-3 mt-1 font-bold" style="border-color: var(--gantt-sep) !important;">
-                                <div class="flex justify-between items-center" style="margin-bottom: 2px;">
-                                    <span style="color: var(--gantt-label) !important;">📅 INICIO</span> 
-                                    <span style="color: var(--gantt-value) !important; font-weight: 900; font-family: monospace;">${task.start}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span style="color: var(--gantt-label) !important;">🏁 FIN</span> 
-                                    <span style="color: var(--gantt-value) !important; font-weight: 900; font-family: monospace;">${task.end}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+            gantt = new Gantt("#gantt-container", display, {
+                header_height: 50, column_width: 30, step: 24, view_modes: ['Day', 'Week', 'Month'],
+                bar_height: 30, bar_corner_radius: 6, view_mode: currentMode, language: 'es',
+                custom_popup_html: () => '',
+                on_click: t => {
+                    if(t.has_children) { (collapsedTasks.has(t.id)?collapsedTasks.delete(t.id):collapsedTasks.add(t.id)); refreshGanttDisplay(); }
+                    else window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}`;
                 },
-                on_click: function(task) {
-                    if (task.has_children) {
-                        // Toggle collapse
-                        if (collapsedTasks.has(task.id)) {
-                            collapsedTasks.delete(task.id);
-                        } else {
-                            collapsedTasks.add(task.id);
-                        }
-                        refreshGanttDisplay();
-                    } else {
-                        // Redirect to task show view if not collapsible
-                        window.location.href = `{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}`;
-                    }
-                },
-                on_date_change: function(task, start, end) {
-                    if (task.id === 'today_marker') return;
+                on_date_change: (t, start, end) => {
+                    const fmt = (d) => d.toISOString().split('T')[0];
+                    const payload = { scheduled_date: fmt(start), due_date: fmt(end) };
+                    fetch(`{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}/move`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify(payload)
+                    }).then(r => r.json()).then(data => {
+                        if(data.success) {
+                            const idx = allTasks.findIndex(x => x.id == t.id);
+                            if(idx!==-1) { allTasks[idx].start = payload.scheduled_date; allTasks[idx].end = payload.due_date; renderActionWave(); }
+                        } else refreshGanttDisplay();
+                    });
+                }
+            });
+            setTimeout(() => { centerToday(); drawTodayLine(); }, 500);
+        }
 
-                    // Update task dates via AJAX
-                    fetch(`{{ url('/teams/' . $team->id . '/tasks') }}/${task.id}/move`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                scheduled_date: start,
-                                due_date: end
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Update current local data to reflect changes if needed
-                                let updated = allTasks.find(t => t.id === task.id);
-                                if (updated) {
-                                    updated.start = start;
-                                    updated.end = end;
-                                }
-                            }
-                        })
-                        .catch(error => console.error('Error updating task:', error));
+        function renderActionWave() {
+            const days = {{ $daysInMonth }};
+            const userId = {{ auth()->id() }};
+            const mStart = new Date("{{ now()->startOfMonth()->format('Y-m-d') }}T00:00:00");
+            const heat = [];
+            for(let i=1; i<=days; i++) {
+                const cur = new Date(mStart); cur.setDate(mStart.getDate()+(i-1)); cur.setHours(0,0,0,0);
+                const dayT = allTasks.filter(t => {
+                    const s = new Date(t.start+'T00:00:00'), e = new Date(t.end+'T23:59:59');
+                    return cur >= s && cur <= e;
+                });
+                heat[i] = { weight: dayT.reduce((a,t)=>a+(parseFloat(t.weight)||0),0), uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+(parseFloat(t.weight)||0),0) };
+            }
+            const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
+            const wFact = 100/(days-1);
+            let pts = [], upts = [];
+            for(let i=1; i<=days; i++) {
+                const x = (i-1)*wFact, h = (heat[i].weight/max)*100, uh = (heat[i].uweight/max)*100;
+                pts.push(`${x},${100-h}`); upts.push(`${x},${100-uh}`);
+            }
+            document.getElementById('wave-team-path')?.setAttribute('d', `M0,100 L${pts.join(' L')} L100,100 Z`);
+            document.getElementById('wave-user-line')?.setAttribute('d', `M${upts.join(' L')}`);
+        }
+
+        function setupCustomInteractions() {
+            const container = document.getElementById('gantt-container');
+            let isDragging = false, dragPart = null;
+
+            container.addEventListener('mousedown', e => {
+                const wrapper = e.target.closest('.bar-wrapper');
+                if(wrapper) {
+                    isDragging = true;
+                    if(e.target.closest('.handle.left')) dragPart = 'start';
+                    else if(e.target.closest('.handle.right')) dragPart = 'end';
+                    else dragPart = 'range';
                 }
             });
 
-            // Post-initialization: Add status attributes to bar groups for CSS targeting
-            setTimeout(() => {
-                tasks.forEach(t => {
-                    const el = document.querySelector(`.bar-group[data-id="${t.id}"]`);
-                    if (el) el.setAttribute('data-status', t.status);
-                });
-            }, 500);
-            
-            // Center today line and add custom line
-            setTimeout(() => {
-                centerToday();
-                drawTodayLine();
-            }, 800);
+            document.addEventListener('mouseup', () => { isDragging = false; dragIndicator.style.display='none'; });
+
+            document.addEventListener('mousemove', e => {
+                const wrapper = e.target.closest('.bar-wrapper');
+                if(wrapper && !isDragging) {
+                    const t = allTasks.find(x => x.id == wrapper.dataset.id);
+                    if(t) showTooltip(t, e);
+                } else if(!e.target.closest('#gantt-tooltip')) tooltip.style.display='none';
+
+                if(isDragging && gantt) {
+                    const rect = container.getBoundingClientRect();
+                    const x = e.clientX - rect.left + container.scrollLeft;
+                    const bRect = container.querySelector('.bar-wrapper.active .bar');
+                    if(bRect) {
+                        const xStart = parseFloat(bRect.getAttribute('x')), w = parseFloat(bRect.getAttribute('width'));
+                        const dStart = gantt.get_date_from_x(xStart), dEnd = gantt.get_date_from_x(xStart + w);
+                        const fmt = d => d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+                        
+                        let label = '';
+                        if(dragPart === 'start') label = `Inicio: ${fmt(dStart)}`;
+                        else if(dragPart === 'end') label = `Fin: ${fmt(dEnd)}`;
+                        else label = `${fmt(dStart)} — ${fmt(dEnd)}`;
+                        
+                        document.getElementById('drag-start-label').innerText = label;
+                        dragIndicator.style.display = 'flex';
+                        dragIndicator.style.left = (e.clientX + 15) + 'px';
+                        dragIndicator.style.top = (e.clientY - 40) + 'px';
+                    }
+                }
+            });
         }
 
-        function centerToday() {
-            const container = document.getElementById('gantt-container');
-            const todayElement = container.querySelector('.today-highlight');
-            if (todayElement) {
-                const x = parseFloat(todayElement.getAttribute('x'));
-                const containerWidth = container.offsetWidth;
-                container.scrollLeft = x - (containerWidth / 2);
-            }
+        function showTooltip(task, e) {
+            tooltip.innerHTML = `<div class="space-y-3"><h4 class="font-black text-gray-900 dark:text-white truncate">${task.name}</h4><div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-violet-100 text-violet-600">${task.status}</span><span class="text-xs font-bold text-gray-500 font-mono">${task.progress}%</span></div><div class="grid grid-cols-2 gap-4 pt-3 border-t dark:border-gray-700 font-black text-[10px] uppercase"><div><p class="text-gray-400">Inicio</p><p>${task.start}</p></div><div><p class="text-gray-400">Fin</p><p>${task.end}</p></div></div></div>`;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.clientX + 20) + 'px';
+            tooltip.style.top = (e.clientY + 20) + 'px';
         }
 
+        function updateWaveTooltip(el, e) {
+            const d = el.dataset;
+            document.getElementById('w-tooltip-day').innerText = `${d.day} {{ now()->translatedFormat('M') }}`;
+            document.getElementById('w-tooltip-weight').innerText = `${d.weight}u`;
+            document.getElementById('w-tooltip-user-weight').innerText = `${d.userWeight}u`;
+            document.getElementById('w-tooltip-bar').style.width = d.pct+'%';
+            document.getElementById('w-tooltip-bar').style.backgroundColor = d.color;
+            const tt = document.getElementById('wave-tooltip');
+            tt.style.opacity = '1'; tt.style.left = (e.clientX-100)+'px'; tt.style.top = (e.clientY-140)+'px';
+        }
+
+        function hideWaveTooltip() { document.getElementById('wave-tooltip').style.opacity = '0'; }
+        function changeView(m) { currentMode = m; refreshGanttDisplay(); }
+        function centerToday() { const c = document.getElementById('gantt-container'), h = c.querySelector('.today-highlight'); if(h) c.scrollLeft = parseFloat(h.getAttribute('x')) - (c.offsetWidth/2); }
         function drawTodayLine() {
-            const container = document.getElementById('gantt-container');
-            const svg = container.querySelector('svg');
-            const todayHighlight = container.querySelector('.today-highlight');
-
-            if (!svg || !todayHighlight) return;
-
-            const existing = document.getElementById('today-line');
-            if (existing) existing.remove();
-
-            const x = parseFloat(todayHighlight.getAttribute('x'));
-
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('id', 'today-line');
-            line.setAttribute('x1', x);
-            line.setAttribute('y1', 0);
-            line.setAttribute('x2', x);
-            line.setAttribute('y2', '100%');
-            svg.appendChild(line);
+            const c = document.getElementById('gantt-container'), s = c.querySelector('svg'), h = c.querySelector('.today-highlight');
+            if(!s || !h) return;
+            const old = document.getElementById('today-line'); if(old) old.remove();
+            const x = parseFloat(highlight.getAttribute('x')), l = document.createElementNS('http://www.w3.org/2000/svg','line');
+            l.setAttribute('id','today-line'); l.setAttribute('x1',x); l.setAttribute('y1',0); l.setAttribute('x2',x); l.setAttribute('y2','100%');
+            l.setAttribute('stroke','#10b981'); l.setAttribute('stroke-width','2'); l.setAttribute('stroke-dasharray','4');
+            s.appendChild(l);
         }
 
-        function changeView(mode) {
-            currentMode = mode;
-            gantt.change_view_mode(mode);
-            setTimeout(() => {
-                centerToday();
-                drawTodayLine();
-            }, 500);
-        }
-
-        function filterTasks(quadrant) {
-            initGantt(quadrant);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => initGantt());
+        document.addEventListener('DOMContentLoaded', initGantt);
     </script>
 </x-app-layout>
