@@ -175,29 +175,64 @@
         </div>
     </div>
 
-    <!-- Drag Indicator (Enriched) -->
-    <div id="drag-date-indicator" style="display: none; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);" class="fixed z-[9999] pointer-events-none bg-gray-900/95 dark:bg-violet-900/95 text-white p-4 rounded-3xl flex flex-col gap-3 transition-transform duration-75 border border-white/10 backdrop-blur-xl min-w-[240px]">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-            <div class="flex flex-col">
-                <span class="text-[8px] uppercase opacity-60 tracking-[0.2em]" id="drag-type-label">Planificando</span>
-                <span id="drag-task-name" class="text-xs font-black truncate max-w-[180px]">Tarea</span>
+    <!-- Drag Indicator (Ultra Rich) -->
+    <div id="drag-date-indicator" style="display: none; box-shadow: 0 30px 60px -12px rgb(0 0 0 / 0.6);" class="fixed z-[9999] pointer-events-none bg-gray-900 dark:bg-slate-900 text-white p-5 rounded-[2rem] flex flex-col gap-4 transition-transform duration-75 border border-white/10 shadow-2xl min-w-[300px]">
+        <!-- Cabecera: Nombre y Prioridad -->
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex flex-col flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span id="drag-type-badge" class="px-2 py-0.5 rounded-md bg-violet-500 text-[7px] font-black uppercase tracking-wider text-white">PLANIFICANDO</span>
+                    <span id="drag-priority-badge" class="px-2 py-0.5 rounded-md bg-gray-700 text-[7px] font-black uppercase tracking-wider text-white">PRIORIDAD</span>
+                </div>
+                <span id="drag-task-name" class="text-sm font-black leading-tight truncate">Tarea</span>
             </div>
-            <div class="bg-white/10 px-2 py-1 rounded-lg">
-                <span id="drag-duration" class="text-[10px] font-black uppercase">0 días</span>
-            </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div class="flex flex-col">
-                <span class="text-[7px] uppercase opacity-50 font-black">Empezará</span>
-                <span id="drag-start-label" class="text-[11px] font-bold"></span>
-            </div>
-            <div class="flex flex-col text-right">
-                <span class="text-[7px] uppercase opacity-50 font-black">Termina</span>
-                <span id="drag-end-label" class="text-[11px] font-bold"></span>
+            <div class="flex flex-col items-center justify-center p-2 bg-white/5 rounded-2xl border border-white/5">
+                <span id="drag-duration-days" class="text-lg font-black leading-none">0</span>
+                <span class="text-[7px] font-bold uppercase opacity-50">Días</span>
             </div>
         </div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3 py-3 border-y border-white/5">
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[8px] font-black uppercase opacity-40">Responsable</span>
+                <div class="flex items-center gap-2">
+                    <div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[8px] font-black text-white">??</div>
+                    <span id="drag-user-name" class="text-[10px] font-bold truncate">Asignado</span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-0.5 text-right">
+                <span class="text-[8px] font-black uppercase opacity-40">Estado Actual</span>
+                <span id="drag-task-status" class="text-[10px] font-bold uppercase tracking-wide">PENDIENTE</span>
+            </div>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[8px] font-black uppercase opacity-40">Habilidades</span>
+                <div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div>
+            </div>
+            <div class="flex flex-col gap-0.5 text-right">
+                <span class="text-[8px] font-black uppercase opacity-40">Progreso</span>
+                <span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-400">0%</span>
+            </div>
+        </div>
+
+        <!-- Cronología -->
+        <div class="flex items-center justify-between gap-4 px-1">
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[7px] font-black uppercase opacity-40">Inicia el</span>
+                <span id="drag-start-label" class="text-xs font-black"></span>
+            </div>
+            <div class="flex-1 flex items-center px-4">
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            </div>
+            <div class="flex flex-col gap-0.5 text-right">
+                <span class="text-[7px] font-black uppercase opacity-40">Finaliza el</span>
+                <span id="drag-end-label" class="text-xs font-black"></span>
+            </div>
+        </div>
+
+        <!-- Barra de progreso visual -->
         <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-            <div id="drag-progress-bar" class="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+            <div id="drag-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-300"></div>
         </div>
     </div>
 
@@ -357,16 +392,39 @@
                             if (task) {
                                 document.getElementById('drag-task-name').innerText = task.name;
                                 document.getElementById('drag-progress-bar').style.width = task.progress + '%';
+                                document.getElementById('drag-task-progress-text').innerText = task.progress + '%';
+                                document.getElementById('drag-user-avatar').innerText = task.user_initials || '??';
+                                document.getElementById('drag-user-name').innerText = task.user_name || 'Sin asignar';
+                                document.getElementById('drag-task-status').innerText = task.status_label || task.status;
+                                document.getElementById('drag-priority-badge').innerText = task.priority_label || task.priority;
+                                
+                                // Color prioridad
+                                const pColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
+                                document.getElementById('drag-priority-badge').style.backgroundColor = pColors[task.priority] || '#374151';
+
+                                // Skills
+                                const skillsC = document.getElementById('drag-task-skills');
+                                skillsC.innerHTML = '';
+                                if (task.skills && task.skills.length > 0) {
+                                    task.skills.slice(0, 3).forEach(sk => {
+                                        const s = document.createElement('span');
+                                        s.className = 'px-1.5 py-0.5 rounded-md bg-white/10 text-[6px] font-black uppercase border border-white/5';
+                                        s.innerText = sk.name;
+                                        skillsC.appendChild(s);
+                                    });
+                                } else {
+                                    skillsC.innerHTML = '<span class="text-[6px] opacity-30 italic">Sin skills</span>';
+                                }
                             }
                             
-                            document.getElementById('drag-type-label').innerText = type;
-                            document.getElementById('drag-duration').innerText = `${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+                            document.getElementById('drag-type-badge').innerText = type.toUpperCase();
+                            document.getElementById('drag-duration-days').innerText = diffDays;
                             document.getElementById('drag-start-label').innerText = labelStart;
                             document.getElementById('drag-end-label').innerText = labelEnd;
                             
                             dragIndicator.style.display = 'flex';
-                            dragIndicator.style.left = (e.clientX + 25) + 'px';
-                            dragIndicator.style.top = (e.clientY - 80) + 'px';
+                            dragIndicator.style.left = (e.clientX + 30) + 'px';
+                            dragIndicator.style.top = (e.clientY - 120) + 'px';
                         }
                     }
                 }
