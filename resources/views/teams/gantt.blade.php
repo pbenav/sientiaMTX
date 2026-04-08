@@ -175,66 +175,6 @@
         </div>
     </div>
 
-    <!-- Drag Indicator (Ultra Rich) -->
-    <div id="drag-date-indicator" style="display: none; box-shadow: 0 30px 60px -12px rgb(0 0 0 / 0.6);" class="fixed z-[9999] pointer-events-none bg-gray-900 dark:bg-slate-900 text-white p-5 rounded-[2rem] flex flex-col gap-4 transition-transform duration-75 border border-white/10 shadow-2xl min-w-[300px]">
-        <!-- Cabecera: Nombre y Prioridad -->
-        <div class="flex items-start justify-between gap-4">
-            <div class="flex flex-col flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span id="drag-type-badge" class="px-2 py-0.5 rounded-md bg-violet-500 text-[7px] font-black uppercase tracking-wider text-white">PLANIFICANDO</span>
-                    <span id="drag-priority-badge" class="px-2 py-0.5 rounded-md bg-gray-700 text-[7px] font-black uppercase tracking-wider text-white">PRIORIDAD</span>
-                </div>
-                <span id="drag-task-name" class="text-sm font-black leading-tight truncate">Tarea</span>
-            </div>
-            <div class="flex flex-col items-center justify-center p-2 bg-white/5 rounded-2xl border border-white/5">
-                <span id="drag-duration-days" class="text-lg font-black leading-none">0</span>
-                <span class="text-[7px] font-bold uppercase opacity-50">Días</span>
-            </div>
-        </div>
-
-        <!-- Info Grid -->
-        <div class="grid grid-cols-2 gap-x-6 gap-y-3 py-3 border-y border-white/5">
-            <div class="flex flex-col gap-0.5">
-                <span class="text-[8px] font-black uppercase opacity-40">Responsable</span>
-                <div class="flex items-center gap-2">
-                    <div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[8px] font-black text-white">??</div>
-                    <span id="drag-user-name" class="text-[10px] font-bold truncate">Asignado</span>
-                </div>
-            </div>
-            <div class="flex flex-col gap-0.5 text-right">
-                <span class="text-[8px] font-black uppercase opacity-40">Estado Actual</span>
-                <span id="drag-task-status" class="text-[10px] font-bold uppercase tracking-wide">PENDIENTE</span>
-            </div>
-            <div class="flex flex-col gap-0.5">
-                <span class="text-[8px] font-black uppercase opacity-40">Habilidades</span>
-                <div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div>
-            </div>
-            <div class="flex flex-col gap-0.5 text-right">
-                <span class="text-[8px] font-black uppercase opacity-40">Progreso</span>
-                <span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-400">0%</span>
-            </div>
-        </div>
-
-        <!-- Cronología -->
-        <div class="flex items-center justify-between gap-4 px-1">
-            <div class="flex flex-col gap-0.5">
-                <span class="text-[7px] font-black uppercase opacity-40">Inicia el</span>
-                <span id="drag-start-label" class="text-xs font-black"></span>
-            </div>
-            <div class="flex-1 flex items-center px-4">
-                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            </div>
-            <div class="flex flex-col gap-0.5 text-right">
-                <span class="text-[7px] font-black uppercase opacity-40">Finaliza el</span>
-                <span id="drag-end-label" class="text-xs font-black"></span>
-            </div>
-        </div>
-
-        <!-- Barra de progreso visual -->
-        <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-            <div id="drag-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-300"></div>
-        </div>
-    </div>
 
     <div id="gantt-tooltip" style="display: none"></div>
 
@@ -406,9 +346,17 @@
 
                             updateRichPanel(task, x, w, type);
                             
+                            // Posicionamiento inteligente para que no se salga de la pantalla
+                            let left = e.clientX + 25;
+                            let top = e.clientY - 120;
+                            
+                            // Ajustes básicos de bordes
+                            if (left + 300 > window.innerWidth) left = e.clientX - 325;
+                            if (top < 10) top = e.clientY + 20;
+
+                            richTooltip.style.left = left + 'px';
+                            richTooltip.style.top = top + 'px';
                             richTooltip.style.display = 'flex';
-                            richTooltip.style.left = (e.clientX + 25) + 'px';
-                            richTooltip.style.top = (e.clientY - 120) + 'px';
                         }
                     }
                 } else {
@@ -439,7 +387,7 @@
             const c = document.getElementById('gantt-container'), s = c.querySelector('svg'), h = c.querySelector('.today-highlight');
             if(!s || !h) return;
             const old = document.getElementById('today-line'); if(old) old.remove();
-            const x = parseFloat(highlight.getAttribute('x')), l = document.createElementNS('http://www.w3.org/2000/svg','line');
+            const x = parseFloat(h.getAttribute('x')), l = document.createElementNS('http://www.w3.org/2000/svg','line');
             l.setAttribute('id','today-line'); l.setAttribute('x1',x); l.setAttribute('y1',0); l.setAttribute('x2',x); l.setAttribute('y2','100%');
             l.setAttribute('stroke','#10b981'); l.setAttribute('stroke-width','2'); l.setAttribute('stroke-dasharray','4');
             s.appendChild(l);
@@ -447,4 +395,32 @@
 
         document.addEventListener('DOMContentLoaded', initGantt);
     </script>
+    <!-- Unified Ultra-Rich Tooltip -->
+    <div id="drag-date-indicator" style="display: none; box-shadow: 0 30px 60px -12px rgb(0 0 0 / 0.6);" class="fixed z-[10000] pointer-events-none bg-gray-900 text-white p-5 rounded-[2rem] flex flex-col gap-4 border border-white/10 shadow-2xl min-w-[300px] backdrop-blur-xl">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex flex-col flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span id="drag-type-badge" class="px-2 py-0.5 rounded-md bg-violet-500 text-[7px] font-black uppercase tracking-wider text-white">REUBICANDO</span>
+                    <span id="drag-priority-badge" class="px-2 py-0.5 rounded-md bg-gray-700 text-[7px] font-black uppercase tracking-wider text-white">PRIORIDAD</span>
+                </div>
+                <span id="drag-task-name" class="text-sm font-black leading-tight truncate">Tarea</span>
+            </div>
+            <div class="flex flex-col items-center justify-center p-2 bg-white/5 rounded-2xl border border-white/5">
+                <span id="drag-duration-days" class="text-lg font-black leading-none">0</span>
+                <span class="text-[7px] font-bold uppercase opacity-50">Días</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3 py-3 border-y border-white/5">
+            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-40">Responsable</span><div class="flex items-center gap-2"><div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[8px] font-black text-white">??</div><span id="drag-user-name" class="text-[10px] font-bold truncate">Asignado</span></div></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-40">Estado</span><span id="drag-task-status" class="text-[10px] font-bold uppercase tracking-wide">PENDIENTE</span></div>
+            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-40">Habilidades</span><div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-40">Progreso</span><span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-400">0%</span></div>
+        </div>
+        <div class="flex items-center justify-between gap-4 px-1">
+            <div class="flex flex-col gap-0.5"><span class="text-[7px] font-black uppercase opacity-40">Inicia</span><span id="drag-start-label" class="text-xs font-black"></span></div>
+            <div class="flex-1 flex items-center px-4"><div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[7px] font-black uppercase opacity-40">Termina</span><span id="drag-end-label" class="text-xs font-black"></span></div>
+        </div>
+        <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden"><div id="drag-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div></div>
+    </div>
 </x-app-layout>
