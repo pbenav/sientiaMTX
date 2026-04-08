@@ -236,7 +236,7 @@
         </div>
     </div>
 
-    <div id="gantt-tooltip" style="display: none" class="fixed z-[100] pointer-events-none bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-2xl p-4 min-w-[260px]"></div>
+    <div id="gantt-tooltip" style="display: none"></div>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
@@ -324,118 +324,101 @@
             let isDragging = false;
             let dragPart = null;
             let lastUpdate = 0;
+            const richTooltip = document.getElementById('drag-date-indicator');
 
-            // Delegación de eventos para capturar el inicio del arrastre
+            function updateRichPanel(task, x, width, type = 'Detalles') {
+                const dateStart = gantt.get_date_from_x(x);
+                const dateEnd = gantt.get_date_from_x(x + width);
+                const fmt = d => d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                const diffDays = Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1;
+
+                document.getElementById('drag-task-name').innerText = task.name;
+                document.getElementById('drag-progress-bar').style.width = task.progress + '%';
+                document.getElementById('drag-task-progress-text').innerText = task.progress + '%';
+                document.getElementById('drag-user-avatar').innerText = task.user_initials || '??';
+                document.getElementById('drag-user-name').innerText = task.user_name || 'Sin asignar';
+                document.getElementById('drag-task-status').innerText = (task.status_label || task.status).toUpperCase();
+                document.getElementById('drag-priority-badge').innerText = (task.priority_label || task.priority).toUpperCase();
+                
+                const pColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
+                document.getElementById('drag-priority-badge').style.backgroundColor = pColors[task.priority] || '#374151';
+
+                const skillsC = document.getElementById('drag-task-skills');
+                skillsC.innerHTML = '';
+                if (task.skills && task.skills.length > 0) {
+                    task.skills.slice(0, 3).forEach(sk => {
+                        const s = document.createElement('span');
+                        s.className = 'px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white text-[6px] font-black uppercase border border-gray-200 dark:border-white/5';
+                        s.innerText = sk.name;
+                        skillsC.appendChild(s);
+                    });
+                } else {
+                    skillsC.innerHTML = '<span class="text-[6px] opacity-30 italic">Sin skills</span>';
+                }
+
+                document.getElementById('drag-type-badge').innerText = type.toUpperCase();
+                document.getElementById('drag-duration-days').innerText = diffDays;
+                document.getElementById('drag-start-label').innerText = fmt(dateStart);
+                document.getElementById('drag-end-label').innerText = fmt(dateEnd);
+            }
+
             document.addEventListener('mousedown', e => {
                 const wrapper = e.target.closest('.bar-wrapper');
                 const handle = e.target.closest('.handle');
-                
                 if (wrapper) {
                     isDragging = true;
-                    if (handle) {
-                        dragPart = handle.classList.contains('left') ? 'start' : 'end';
-                    } else {
-                        dragPart = 'range';
-                    }
+                    dragPart = handle ? (handle.classList.contains('left') ? 'start' : 'end') : 'range';
                 }
-            });
+            }, true);
 
             document.addEventListener('mouseup', () => {
                 isDragging = false;
-                dragIndicator.style.display = 'none';
+                richTooltip.style.display = 'none';
                 dragPart = null;
-            });
+            }, true);
 
             document.addEventListener('mousemove', e => {
-                // Tooltip normal (hover)
                 const wrapper = e.target.closest('.bar-wrapper');
-                if (wrapper && !isDragging) {
-                    const t = allTasks.find(x => x.id == wrapper.dataset.id);
-                    if (t) showTooltip(t, e);
-                } else if (!isDragging && !e.target.closest('#gantt-tooltip')) {
-                    tooltip.style.display = 'none';
-                }
+                const isDragState = isDragging || wrapper;
 
-                // Tooltip de arrastre (drag)
-                if (isDragging && gantt) {
-                    // Evitamos actualizaciones excesivas
-                    if (Date.now() - lastUpdate < 16) return; 
-                    lastUpdate = Date.now();
-
-                    // Buscamos la barra que está siendo manipulada por Frappe Gantt
-                    // La librería suele añadir clases o podemos buscar la que tiene .active
-                    const barWrapper = document.querySelector('.bar-wrapper.active, .bar-wrapper.dragging, .bar-wrapper.resizing') 
-                                     || e.target.closest('.bar-wrapper');
+                if (isDragState) {
+                    const activeWrapper = isDragging 
+                                ? (document.querySelector('.bar-wrapper.active, .bar-wrapper.dragging, .bar-wrapper.resizing') || wrapper)
+                                : wrapper;
                     
-                    if (barWrapper) {
-                        const bar = barWrapper.querySelector('.bar');
-                        if (bar) {
-                            const taskId = barWrapper.dataset.id;
-                            const task = allTasks.find(x => x.id == taskId);
-                            const xStart = parseFloat(bar.getAttribute('x'));
-                            const width = parseFloat(bar.getAttribute('width'));
-                            
-                            const dateStart = gantt.get_date_from_x(xStart);
-                            const dateEnd = gantt.get_date_from_x(xStart + width);
-                            
-                            const fmt = d => d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-                            const diffDays = Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1;
-                            
-                            let labelStart = fmt(dateStart);
-                            let labelEnd = fmt(dateEnd);
-                            let type = 'Ajustando';
-                            
-                            if (dragPart === 'start') type = 'Nuevo Inicio';
-                            else if (dragPart === 'end') type = 'Nueva Entrega';
-                            else type = 'Reubicando';
+                    if (activeWrapper) {
+                        const task = allTasks.find(x => x.id == activeWrapper.dataset.id);
+                        const bar = activeWrapper.querySelector('.bar');
+                        
+                        if (task && bar) {
+                            if (Date.now() - lastUpdate < 16) return;
+                            lastUpdate = Date.now();
 
-                            if (task) {
-                                document.getElementById('drag-task-name').innerText = task.name;
-                                document.getElementById('drag-progress-bar').style.width = task.progress + '%';
-                                document.getElementById('drag-task-progress-text').innerText = task.progress + '%';
-                                document.getElementById('drag-user-avatar').innerText = task.user_initials || '??';
-                                document.getElementById('drag-user-name').innerText = task.user_name || 'Sin asignar';
-                                document.getElementById('drag-task-status').innerText = task.status_label || task.status;
-                                document.getElementById('drag-priority-badge').innerText = task.priority_label || task.priority;
-                                
-                                // Color prioridad
-                                const pColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
-                                document.getElementById('drag-priority-badge').style.backgroundColor = pColors[task.priority] || '#374151';
-
-                                // Skills
-                                const skillsC = document.getElementById('drag-task-skills');
-                                skillsC.innerHTML = '';
-                                if (task.skills && task.skills.length > 0) {
-                                    task.skills.slice(0, 3).forEach(sk => {
-                                        const s = document.createElement('span');
-                                        s.className = 'px-1.5 py-0.5 rounded-md bg-white/10 text-[6px] font-black uppercase border border-white/5';
-                                        s.innerText = sk.name;
-                                        skillsC.appendChild(s);
-                                    });
-                                } else {
-                                    skillsC.innerHTML = '<span class="text-[6px] opacity-30 italic">Sin skills</span>';
-                                }
+                            const x = parseFloat(bar.getAttribute('x'));
+                            const w = parseFloat(bar.getAttribute('width'));
+                            let type = 'Detalles';
+                            
+                            if (isDragging) {
+                                if (dragPart === 'start') type = 'Nuevo Inicio';
+                                else if (dragPart === 'end') type = 'Nueva Entrega';
+                                else type = 'Reubicando';
                             }
+
+                            updateRichPanel(task, x, w, type);
                             
-                            document.getElementById('drag-type-badge').innerText = type.toUpperCase();
-                            document.getElementById('drag-duration-days').innerText = diffDays;
-                            document.getElementById('drag-start-label').innerText = labelStart;
-                            document.getElementById('drag-end-label').innerText = labelEnd;
-                            
-                            dragIndicator.style.display = 'flex';
-                            dragIndicator.style.left = (e.clientX + 30) + 'px';
-                            dragIndicator.style.top = (e.clientY - 120) + 'px';
+                            richTooltip.style.display = 'flex';
+                            richTooltip.style.left = (e.clientX + 25) + 'px';
+                            richTooltip.style.top = (e.clientY - 120) + 'px';
                         }
                     }
+                } else {
+                    richTooltip.style.display = 'none';
                 }
-            });
+            }, true);
         }
 
         function showTooltip(task, e) {
-            tooltip.innerHTML = `<div class="space-y-3"><h4 class="font-black text-gray-900 dark:text-white truncate">${task.name}</h4><div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-violet-100 text-violet-600">${task.status}</span><span class="text-xs font-bold text-gray-500 font-mono">${task.progress}%</span></div><div class="grid grid-cols-2 gap-4 pt-3 border-t dark:border-gray-700 font-black text-[10px] uppercase"><div><p class="text-gray-400">Inicio</p><p>${task.start}</p></div><div><p class="text-gray-400">Fin</p><p>${task.end}</p></div></div></div>`;
-            tooltip.style.display = 'block';
-            tooltip.style.left = (e.clientX + 20) + 'px';
-            tooltip.style.top = (e.clientY + 20) + 'px';
+            // Unificado
         }
 
         function updateWaveTooltip(el, e) {
