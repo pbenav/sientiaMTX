@@ -254,7 +254,9 @@
                 });
                 heat[i] = { 
                     weight: dayT.reduce((a,t)=>a+(parseFloat(t.weight)||0),0), 
-                    uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+(parseFloat(t.weight)||0),0) 
+                    uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+(parseFloat(t.weight)||0),0),
+                    count: dayT.length,
+                    user_count: dayT.filter(t=>t.user_id==userId).length
                 };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
@@ -263,6 +265,25 @@
             for(let i=1; i<=days; i++) {
                 const x = (i-1)*wFact, h = (heat[i].weight/max)*100, uh = (heat[i].uweight/max)*100;
                 pts.push(`${x},${100-h}`); upts.push(`${x},${100-uh}`);
+
+                // Real-time update of tooltip pillars
+                const pillar = document.querySelector(`.wave-pillar[data-day="${i}"]`);
+                if(pillar) {
+                    const pct = heat[i].weight / max;
+                    const color = `hsl(${(1-pct)*220}, 70%, 50%)`;
+                    pillar.dataset.weight = heat[i].weight;
+                    pillar.dataset.userWeight = heat[i].uweight;
+                    pillar.dataset.count = heat[i].count;
+                    pillar.dataset.userCount = heat[i].user_count;
+                    pillar.dataset.pct = Math.round(pct * 100);
+                    pillar.dataset.color = color;
+                    
+                    const dot = pillar.querySelector('.team-dot');
+                    if(dot) {
+                        dot.style.bottom = (pct * 100) + '%';
+                        dot.style.borderColor = color;
+                    }
+                }
             }
             document.getElementById('wave-team-path')?.setAttribute('d', `M0,100 L${pts.join(' L')} L100,100 Z`);
             document.getElementById('wave-user-line')?.setAttribute('d', `M${upts.join(' L')}`);
