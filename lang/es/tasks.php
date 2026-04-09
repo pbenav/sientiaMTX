@@ -205,6 +205,7 @@ return [
     'workday_timer' => 'Cronómetro de Jornada',
     'release_to_apply' => 'Suelte para aplicar...',
     'worked_time' => 'Tiempo trabajado',
+    'time_spent' => 'Tiempo',
     'active_tasks' => 'Tareas Activas',
     'tasks_with_time_logged' => 'Tareas con tiempo registrado en este equipo',
     'last_workday' => 'Última Jornada',

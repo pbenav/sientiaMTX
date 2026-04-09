@@ -180,6 +180,7 @@ return [
     'stop_task_tracking' => 'Stop Task Tracking',
     'release_to_apply' => 'Release to apply...',
     'worked_time' => 'Worked time',
+    'time_spent' => 'Time',
     'active_tasks' => 'Active Tasks',
     'tasks_with_time_logged' => 'Tasks with time logged in this team',
     'last_workday' => 'Last Workday',

@@ -43,8 +43,8 @@ class GanttController extends Controller
             });
 
             $actionHeat[$i] = [
-                'weight' => $dayTasks->sum('cognitive_load'),
-                'user_weight' => $dayTasks->where('assigned_user_id', $userId)->sum('cognitive_load'),
+                'weight' => $dayTasks->sum(fn($t) => $t->cognitive_load ?? 1),
+                'user_weight' => $dayTasks->where('assigned_user_id', $userId)->sum(fn($t) => $t->cognitive_load ?? 1),
                 'count' => $dayTasks->count(),
                 'user_count' => $dayTasks->where('assigned_user_id', $userId)->count(),
             ];
@@ -105,6 +105,7 @@ class GanttController extends Controller
                                     : '??',
                 'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
                 'weight'       => $task->cognitive_load ?? 1,
+                'parent_id'    => $task->parent_id,
                 'parent_title' => $task->parent?->title,
                 'readonly'     => auth()->user()->cannot('update', $task),
                 'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),

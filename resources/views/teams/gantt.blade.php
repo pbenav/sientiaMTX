@@ -239,7 +239,20 @@
                     }).then(r => r.json()).then(data => {
                         if(data.success) {
                             const idx = allTasks.findIndex(x => x.id == t.id);
-                            if(idx!==-1) { allTasks[idx].start = payload.scheduled_date; allTasks[idx].end = payload.due_date; renderActionWave(); }
+                            if(idx!==-1) { 
+                                allTasks[idx].start = payload.scheduled_date; 
+                                allTasks[idx].end = payload.due_date; 
+                                
+                                // Propagate move to all instances if this was a master task
+                                allTasks.forEach(child => {
+                                    if (child.parent_id == t.id) {
+                                        child.start = payload.scheduled_date;
+                                        child.end = payload.due_date;
+                                    }
+                                });
+
+                                renderActionWave(); 
+                            }
                         } else refreshGanttDisplay();
                     });
                 }
@@ -252,9 +265,8 @@
             const userId = {{ auth()->id() }};
             const mStart = new Date("{{ now()->startOfMonth()->format('Y-m-d') }}T00:00:00");
             
-            // Identify Leaf Tasks to avoid double counting (Master + Instance)
-            const parentIds = new Set(allTasks.map(t => t.dependencies).filter(d => d && !isNaN(d)));
-            const leafTasks = allTasks.filter(t => !parentIds.has(t.id));
+            // Identify Leaf Tasks to avoid double counting effort (exclude masters that have children)
+            const leafTasks = allTasks.filter(t => !t.has_children);
 
             const heat = [];
             for(let i=1; i<=days; i++) {
