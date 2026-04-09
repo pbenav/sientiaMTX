@@ -116,13 +116,30 @@ class GanttController extends Controller
 
         // Step 2: Expansion rules
         $ganttTaskIds = collect();
+        $showCompleted = !session('hide_completed_tasks', true) || $request->status;
+
         foreach ($baseTasks as $task) {
-            $ganttTaskIds->push($task->id);
+            $isTaskCompleted = in_array($task->status, ['completed', 'cancelled']);
+
+            // Only add the task itself if it's not completed OR we are showing completed tasks
+            if ($showCompleted || !$isTaskCompleted) {
+                $ganttTaskIds->push($task->id);
+            }
+
             if ($task->is_template && $team->isCoordinator($user)) {
-                $task->children->each(fn ($child) => $ganttTaskIds->push($child->id));
+                // For coordinators, we push children
+                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted) {
+                    if ($showCompleted || !in_array($child->status, ['completed', 'cancelled'])) {
+                        $ganttTaskIds->push($child->id);
+                    }
+                });
             } elseif ($task->isInstance()) {
                 if ($task->assigned_user_id === $user->id) {
-                    $ganttTaskIds->push($task->parent_id);
+                    // Only pull the parent into the chart if the instance pulling it is still active
+                    // This avoids "ghost" Master tasks with no visible children for the user.
+                    if ($showCompleted || !$isTaskCompleted) {
+                        $ganttTaskIds->push($task->parent_id);
+                    }
                 }
             }
         }
