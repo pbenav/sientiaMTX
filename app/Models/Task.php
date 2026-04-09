@@ -273,12 +273,12 @@ class Task extends Model
      * Scope for "What I should be working on or managing right now".
      * This handles the hierarchy to avoid showing both master and instance.
      */
-    public function scopeOperationalFor($query, $user, Team $team)
+    public function scopeOperationalFor($query, $user, Team $team, $deduplicate = false)
     {
         $isCoordinator = $team->isCoordinator($user);
         $isModerator   = $team->isModerator($user);
 
-        return $query->where(function ($main) use ($user, $isCoordinator, $isModerator) {
+        return $query->where(function ($main) use ($user, $isCoordinator, $isModerator, $deduplicate) {
             if ($isCoordinator) {
                 // COORDINATOR VIEW: Full Project Skeleton.
                 $main->where(function ($incl) {
@@ -292,13 +292,16 @@ class Task extends Model
                 ->whereNot(function ($excl) {
                     $excl->whereNotNull('parent_id')
                          ->whereHas('parent', fn ($p) => $p->where('is_template', true));
-                })
-                // NEW: Deduplicate Parent/Child if user is executor
-                ->whereNot(function ($excl) use ($user) {
-                    $excl->whereHas('children', function ($q) use ($user) {
-                        $q->where('assigned_user_id', $user->id);
-                    });
                 });
+
+                // Conditional deduplication (for Matrix)
+                if ($deduplicate) {
+                    $main->whereNot(function ($excl) use ($user) {
+                        $excl->whereHas('children', function ($q) use ($user) {
+                            $q->where('assigned_user_id', $user->id);
+                        });
+                    });
+                }
             } elseif ($isModerator) {
                 // MODERATOR (SUPERVISOR) VIEW: Skeleton + Own Instances.
                 $main->where(function ($incl) use ($user) {
@@ -352,7 +355,7 @@ class Task extends Model
         $isCoordinator = $team->isCoordinator($user);
         $isModerator = $team->isModerator($user);
 
-        return $query->where(function ($q) use ($userId, $isCoordinator, $isModerator) {
+        return $query->where(function ($q) use ($userId) {
             // 1. Tasks directly assigned to me
             $q->where(function($assigned) use ($userId) {
                 $assigned->where('assigned_user_id', $userId)
@@ -363,8 +366,12 @@ class Task extends Model
                 $ownRoot->where('created_by_id', $userId)
                         ->whereNull('parent_id');
             });
-
             // Note: Managers could see everything before, but now we keep it personal for focus.
+        })
+        // HARD DEDUPLICATION: Hide any task that has a child assigned to the current user.
+        // This prevents double-cards (Master + Instance) even if both are assigned to the user.
+        ->whereDoesntHave('children', function ($q) use ($userId) {
+            $q->where('assigned_user_id', $userId);
         })
         ->where('is_template', false)
         ->where(function ($q) use ($userId) {
@@ -373,10 +380,6 @@ class Task extends Model
             $q->whereDoesntHave('children')
               ->orWhere('assigned_user_id', $userId)
               ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
-        })
-        // NEW: Deduplicate Parent/Child in Kanban Focus
-        ->whereDoesntHave('children', function ($q) use ($userId) {
-            $q->where('assigned_user_id', $userId);
         });
     }
     public function scopeDueThisWeek($query)
