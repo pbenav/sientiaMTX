@@ -85,8 +85,8 @@
                 <form action="{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}" method="POST"
                     class="mt-3 relative" x-data="{ showEmojiPicker: false }">
                     @csrf
-                    <textarea name="content" rows="2" id="forum-thread-textarea-{{ $rootTask->id }}"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border {{ $errors->has('content') ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500' }} rounded-xl text-xs py-2 pl-3 pr-[4.5rem] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors resize-none"
+                    <textarea name="content" rows="3" id="forum-thread-textarea-{{ $rootTask->id }}"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border {{ $errors->has('content') ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500' }} rounded-xl text-xs py-2 pl-3 pr-[4.5rem] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors resize-y"
                         placeholder="{{ __('forum.write_message') }}..." required></textarea>
                     
                     <div class="absolute right-2 bottom-2 flex items-center gap-1">
