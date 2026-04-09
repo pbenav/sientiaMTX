@@ -142,16 +142,21 @@ class GanttController extends Controller
             }
 
             if ($task->is_template && $team->isCoordinator($user)) {
-                // For coordinators, we push children
-                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted) {
+                // For coordinators, we push children EXCEPT their own (to avoid redundancy with the master bar)
+                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user) {
                     if ($showCompleted || !in_array($child->status, ['completed', 'cancelled'])) {
-                        $ganttTaskIds->push($child->id);
+                        // Skip my own instance if I'm already seeing the master
+                        if ($child->assigned_user_id !== $user->id) {
+                            $ganttTaskIds->push($child->id);
+                        }
                     }
                 });
             } elseif ($task->isInstance()) {
-                if ($task->assigned_user_id === $user->id) {
-                    // Only pull the parent into the chart if the instance pulling it is still active
-                    // This avoids "ghost" Master tasks with no visible children for the user.
+                // REDUNDANCY RULE: Only pull the parent if we are NOT the assignee 
+                // Members see their instance but hide the master.
+                $isMyAssignedInstance = ($task->assigned_user_id === $user->id);
+                
+                if (!$isMyAssignedInstance) {
                     if ($showCompleted || !$isTaskCompleted) {
                         $ganttTaskIds->push($task->parent_id);
                     }

@@ -253,23 +253,33 @@ class Task extends Model
 
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        if ($isManager) {
-            return $query;
-        }
-
-        return $query->where(function($q) use ($user) {
-            // 1. Any team member can see PUBLIC tasks
-            $q->where('visibility', 'public')
-            // 2. Owners (creators) can see their OWN tasks (public or private)
-              ->orWhere('created_by_id', $user->id)
-            // 3. Directly assigned users or collaborators can see tasks assigned to them
-              ->orWhere('assigned_user_id', $user->id)
-              ->orWhereHas('assignedTo', function($subq) use ($user) {
-                  $subq->where('users.id', $user->id);
-              })
-              ->orWhereHas('assignedGroups.users', function($subq) use ($user) {
-                  $subq->where('users.id', $user->id);
-              });
+        return $query->where(function ($q) use ($user, $isManager) {
+            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
+            if ($isManager) {
+                $q->where('visibility', 'public')
+                  ->orWhere('is_template', true)
+                  ->orWhere('created_by_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id);
+            } else {
+                // 2. EJECUCIÓN (Miembros): Solo ven lo público donde participan y sus privadas
+                $q->where(function ($public) use ($user) {
+                    $public->where('visibility', 'public')
+                        ->where(function ($access) use ($user) {
+                            $access->where('created_by_id', $user->id)
+                                ->orWhere('assigned_user_id', $user->id)
+                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
+                                ->orWhereHas('assignedGroups.users', fn($sub) => $sub->where('users.id', $user->id));
+                        });
+                })
+                ->orWhere(function ($private) use ($user) {
+                    $private->where('visibility', 'private')
+                        ->where(function ($owner) use ($user) {
+                            $owner->where('created_by_id', $user->id)
+                                ->orWhere('assigned_user_id', $user->id)
+                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id));
+                        });
+                });
+            }
         });
     }
 
@@ -283,17 +293,33 @@ class Task extends Model
 
         return $query->where(function ($main) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // MANAGEMENT VIEW: Project Skeleton (All Tier 0 and Tier 1)
-                $main->whereNull('parent_id')
-                     ->orWhere('is_template', true);
+                // COORDINADOR: Ve el esqueleto (Plantillas y Raíces)
+                $main->where(function($mgmt) {
+                    $mgmt->whereNull('parent_id')
+                         ->orWhere('is_template', true);
+                })
+                // DEDUPLICACIÓN PARA COORDINADOR: Oculta su propia hija si ya ve el padre (redundancia)
+                ->where(function($dedup) use ($user) {
+                    $dedup->where('assigned_user_id', '!=', $user->id)
+                          ->orWhereNull('parent_id')
+                          ->orWhere('is_template', true);
+                });
             } else {
-                // EXECUTION VIEW: My assigned work + its skeleton
+                // MIEMBRO: Ve su trabajo asignado
                 $main->where('assigned_user_id', $user->id)
                      ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
                      ->orWhere(function ($own) use ($user) {
                          $own->where('created_by_id', $user->id)
                              ->whereNull('parent_id');
                      });
+                
+                // DEDUPLICACIÓN PARA MIEMBRO: Si ve la hija, ocultamos el padre (redundancia)
+                $main->whereDoesntHave('children', function ($q) use ($user) {
+                    $q->where(function($sub) use ($user) {
+                        $sub->where('assigned_user_id', $user->id)
+                            ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id));
+                    });
+                });
             }
         });
     }
@@ -308,27 +334,33 @@ class Task extends Model
         $isCoordinator = $team->isCoordinator($user);
 
         return $query->where(function ($q) use ($userId, $isCoordinator) {
-            // 1. My assigned tasks (Actionable items)
-            $q->where(function($assigned) use ($userId) {
-                $assigned->where('assigned_user_id', $userId)
-                         ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
-            });
-
-            // 2. For Coordinators: Also see general templates to manage them
             if ($isCoordinator) {
-                $q->orWhere(function($mgmt) use ($userId) {
-                    $mgmt->where('is_template', true)
-                         ->orWhere(function($roots) {
-                             $roots->whereNull('parent_id')
-                                   ->whereDoesntHave('children');
-                         });
-                });
+                // COORDINADOR: Ve plantillas y tareas raíz sin hijos
+                $q->where('is_template', true)
+                  ->orWhere(function($roots) {
+                      $roots->whereNull('parent_id')
+                            ->whereDoesntHave('children');
+                  });
+            } else {
+                // MIEMBRO: Ve su trabajo asignado
+                $q->where('assigned_user_id', $userId)
+                  ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
             }
         })
-        // 3. DEDUPLICATION (The Silk Rule)
-        // If I have an instance assigned, hide the parent (it's redundant for personal action)
-        ->whereDoesntHave('children', function ($q) use ($userId) {
-            $q->where('assigned_user_id', $userId);
+        // DEDUPLICACIÓN: Aplicar la misma regla que en scopeOperationalFor
+        ->where(function($q) use ($user, $isCoordinator) {
+            if ($isCoordinator) {
+                // Ocultar mi instancia si soy coordinador (ya veo la plantilla)
+                $q->where('assigned_user_id', '!=', $user->id)
+                  ->orWhereNull('parent_id')
+                  ->orWhere('is_template', true);
+            } else {
+                // Ocultar el padre si soy miembro (ya veo mi instancia)
+                $q->whereDoesntHave('children', function ($sub) use ($user) {
+                    $sub->where('assigned_user_id', $user->id)
+                        ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id));
+                });
+            }
         });
     }
 

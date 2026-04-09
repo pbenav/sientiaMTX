@@ -36,39 +36,43 @@ class TaskPolicy
             return false;
         }
 
-        // 2. Coordinators, team owner or task owner can always view
-        $isCreator     = $user->id === $task->created_by_id;
+        // 2. PRIVACY RULE: If private, only creator or assigned (user/collaborator/group) can view.
+        // Even coordinators are blocked if they are not part of it.
+        $isCreator = $user->id === $task->created_by_id;
+        $isAssigned = $user->id === $task->assigned_user_id ||
+                   $task->assignedTo()->where('users.id', $user->id)->exists() ||
+                   $task->assignedGroups()->whereHas('users', function($q) use ($user) {
+                       $q->where('users.id', $user->id);
+                   })->exists();
+
+        if ($task->visibility === 'private') {
+            if ($isCreator || $isAssigned) {
+                return true;
+            }
+            \Log::warning("TaskPolicy@view DENIED [strict_private] task#{$task->id} user#{$user->id}");
+            return false;
+        }
+
+        // 3. PUBLIC Tasks:
+        // Coordinators, team owner or task creator can always view
         $isTeamOwner   = $task->team->created_by_id === $user->id;
         $isManager     = $task->team->isManager($user);
-        if ($isCreator || $isTeamOwner || $isManager) {
+        
+        if ($isCreator || $isTeamOwner || $isManager || $isAssigned) {
             return true;
         }
 
-        // 3. If public, everyone in team can view
-        if ($task->visibility === 'public') {
-            return true;
-        }
-
-        // 4. If private, check direct assignment, collaborators or group assignment
-        if ($user->id === $task->assigned_user_id ||
-               $task->assignedTo()->where('users.id', $user->id)->exists() ||
-               $task->assignedGroups()->whereHas('users', function($q) use ($user) {
-                   $q->where('users.id', $user->id);
-               })->exists()) {
-            return true;
-        }
-
-        // 5. Context access: If user has a personal instance of this parent task, they can view the parent for context
+        // 4. Context access: If user has a personal instance of this parent task, they can view the parent for context
         if ($task->instances()->where('assigned_user_id', $user->id)->exists()) {
             return true;
         }
 
-        // 6. Project Visibility: Owners/Creators of the parent task can always see their subtasks
+        // 5. Project Visibility: Owners/Creators of the parent task can always see their subtasks
         if ($task->parent_id && $task->parent->created_by_id === $user->id) {
             return true;
         }
 
-        \Log::warning("TaskPolicy@view DENIED [all_checks_failed] task#{$task->id} user#{$user->id} team#{$task->team_id} isCreator={$isCreator} isTeamOwner={$isTeamOwner} isManager={$isManager} visibility={$task->visibility}");
+        \Log::warning("TaskPolicy@view DENIED [all_checks_failed] task#{$task->id} user#{$user->id} team#{$task->team_id}");
         return false;
     }
 
@@ -78,8 +82,16 @@ class TaskPolicy
             return $user->id === $task->created_by_id;
         }
 
-        $isManager = $task->team->isManager($user);
         $isCreator = $user->id === $task->created_by_id;
+        $isAssigned = $user->id === $task->assigned_user_id ||
+                   $task->assignedTo()->where('users.id', $user->id)->exists();
+
+        // STRICT PRIVACY: If private, even coordinators can't update unless creator or assigned
+        if ($task->visibility === 'private') {
+            return $isCreator || $isAssigned;
+        }
+
+        $isManager = $task->team->isManager($user);
         $isTeamOwner = $task->team->created_by_id === $user->id;
 
         // RULE: Only authoritative roles can update Templates/Masters
@@ -91,9 +103,7 @@ class TaskPolicy
         return $isCreator || 
                $isTeamOwner ||
                $isManager ||
-               $user->id === $task->assigned_user_id ||
-               $task->assignedTo()->where('users.id', $user->id)->exists() ||
-               ($task->visibility === 'public' && $task->team->members()->where('user_id', $user->id)->exists());
+               $isAssigned;
     }
 
     public function delete(User $user, Task $task): bool
