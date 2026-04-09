@@ -254,11 +254,16 @@ class Task extends Model
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
         return $query->where(function($q) use ($user, $isManager) {
-            // 1. Any team member can see PUBLIC tasks
+            // 1. Coordinator Override: Coordinators see EVERYTHING in the team
+            if ($isManager) {
+                return $q->where('team_id', $user->current_team_id ?? $q->getQuery()->from === 'tasks' ? 'tasks.team_id' : 'team_id');
+            }
+
+            // 2. Any team member can see PUBLIC tasks
             $q->where('visibility', 'public')
-            // 2. Owners (creators) can see their OWN tasks (public or private)
+            // 3. Owners (creators) can see their OWN tasks (public or private)
               ->orWhere('created_by_id', $user->id)
-            // 3. Directly assigned users or collaborators can see tasks assigned to them
+            // 4. Directly assigned users or collaborators can see tasks assigned to them
               ->orWhere('assigned_user_id', $user->id)
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
@@ -273,115 +278,71 @@ class Task extends Model
      * Scope for "What I should be working on or managing right now".
      * This handles the hierarchy to avoid showing both master and instance.
      */
-    public function scopeOperationalFor($query, $user, Team $team, $deduplicate = false)
+    public function scopeOperationalFor($query, $user, Team $team)
     {
         $isCoordinator = $team->isCoordinator($user);
-        $isModerator   = $team->isModerator($user);
 
-        return $query->where(function ($main) use ($user, $isCoordinator, $isModerator, $deduplicate) {
+        return $query->where(function ($main) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // COORDINATOR VIEW: Full Project Skeleton.
-                $main->where(function ($incl) {
-                    $incl->whereNull('parent_id')
-                         ->orWhere('is_template', true)
-                         ->orWhere(function ($hierarchical) {
-                             $hierarchical->whereNotNull('parent_id')
-                                          ->whereHas('parent', fn ($p) => $p->where('is_template', false));
-                         });
-                })
-                ->whereNot(function ($excl) {
-                    $excl->whereNotNull('parent_id')
-                         ->whereHas('parent', fn ($p) => $p->where('is_template', true));
-                });
-
-                // Conditional deduplication (for Matrix)
-                if ($deduplicate) {
-                    $main->whereNot(function ($excl) use ($user) {
-                        $excl->whereHas('children', function ($q) use ($user) {
-                            $q->where('assigned_user_id', $user->id);
-                        });
-                    });
-                }
-            } elseif ($isModerator) {
-                // MODERATOR (SUPERVISOR) VIEW: Skeleton + Own Instances.
-                $main->where(function ($incl) use ($user) {
-                    // 1. Project Skeleton (Templates & Root Tasks)
-                    $incl->where('is_template', true)
-                         ->orWhereNull('parent_id')
-                         // 2. My own assigned instances
-                         ->orWhere('assigned_user_id', $user->id)
-                         ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id));
-                })
-                // PRIVACY: Hide instances of other users (children of templates not assigned to me).
-                ->whereNot(function ($excl) use ($user) {
-                    $excl->whereNotNull('parent_id')
-                         ->whereHas('parent', fn ($p) => $p->where('is_template', true))
-                         ->where('assigned_user_id', '!=', $user->id);
-                });
+                // MANAGEMENT VIEW: Project Skeleton (All Tier 0 and Tier 1)
+                $main->whereNull('parent_id')
+                     ->orWhere('is_template', true);
             } else {
-                // EXECUTION VIEW: My work.
-                $main->where(function ($incl) use ($user) {
-                    $incl->where('assigned_user_id', $user->id)
-                         ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                         ->orWhere(function ($own) use ($user) {
-                             $own->where('created_by_id', $user->id)
-                                 ->where(function ($filterOthers) use ($user) {
-                                     // Show root tasks created by me ONLY if they don't have instances for me
-                                     $filterOthers->whereNull('parent_id')
-                                                 ->whereDoesntHave('instances', function($iq) use ($user) {
-                                                     $iq->where('assigned_user_id', $user->id);
-                                                 });
-                                 });
-                         });
-                })
-                ->whereNot(function ($excl) use ($user) {
-                    $excl->where('is_template', true)
-                         ->whereHas('instances', function ($iq) use ($user) {
-                             $iq->where('assigned_user_id', $user->id)
-                                ->orWhereHas('assignedTo', fn ($q) => $q->where('users.id', $user->id));
-                         });
-                });
+                // EXECUTION VIEW: My assigned work + its skeleton
+                $main->where('assigned_user_id', $user->id)
+                     ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
+                     ->orWhere(function ($own) use ($user) {
+                         $own->where('created_by_id', $user->id)
+                             ->whereNull('parent_id');
+                     });
             }
         });
     }
 
     /**
-     * Specialized scope for the Kanban board.
-     * Focuses on actionable items (Leaf tasks) vs Summary tasks.
+     * Specialized scope for focused views (Kanban/Matrix).
+     * Filters for actionable items and applies deduplication for managers.
      */
-    public function scopeOperationalForKanban($query, $user, Team $team)
+    public function scopeFocusedFor($query, $user, Team $team)
     {
         $userId = $user->id;
         $isCoordinator = $team->isCoordinator($user);
-        $isModerator = $team->isModerator($user);
 
-        return $query->where(function ($q) use ($userId) {
-            // 1. Tasks directly assigned to me
+        return $query->where(function ($q) use ($userId, $isCoordinator) {
+            // 1. My assigned tasks (Actionable items)
             $q->where(function($assigned) use ($userId) {
                 $assigned->where('assigned_user_id', $userId)
                          ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
-            })
-            // 2. OR: Root tasks I created
-            ->orWhere(function($ownRoot) use ($userId) {
-                $ownRoot->where('created_by_id', $userId)
-                        ->whereNull('parent_id');
             });
-            // Note: Managers could see everything before, but now we keep it personal for focus.
+
+            // 2. For Coordinators: Also see general templates to manage them
+            if ($isCoordinator) {
+                $q->orWhere(function($mgmt) use ($userId) {
+                    $mgmt->where('is_template', true)
+                         ->orWhere(function($roots) {
+                             $roots->whereNull('parent_id')
+                                   ->whereDoesntHave('children');
+                         });
+                });
+            }
         })
-        // HARD DEDUPLICATION: Hide any task that has a child assigned to the current user.
-        // This prevents double-cards (Master + Instance) even if both are assigned to the user.
+        // 3. DEDUPLICATION (The Silk Rule)
+        // If I have an instance assigned, hide the parent (it's redundant for personal action)
         ->whereDoesntHave('children', function ($q) use ($userId) {
             $q->where('assigned_user_id', $userId);
-        })
-        ->where('is_template', false)
-        ->where(function ($q) use ($userId) {
-            // Usually we only show leaf tasks (no children), but if a task with children 
-            // is directly assigned to the user, we show it so they can track it in Kanban.
-            $q->whereDoesntHave('children')
-              ->orWhere('assigned_user_id', $userId)
-              ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
         });
     }
+
+    /**
+     * Specialized scope for the Kanban board.
+     * Legacy wrapper for scopeFocusedFor.
+     */
+    public function scopeOperationalForKanban($query, $user, Team $team)
+    {
+        return $this->scopeFocusedFor($query, $user, $team)
+                    ->where('is_template', false);
+    }
+
     public function scopeDueThisWeek($query)
     {
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])

@@ -290,7 +290,7 @@ class TeamController extends Controller
         $query = $team->tasks()
             ->with(['assignedTo', 'assignedGroups', 'tags', 'children', 'assignedUser', 'skills'])
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team, true)
+            ->focusedFor($user, $team)
             ->when(request('skill_id'), function ($q, $skillId) {
                 $q->where(function ($sq) use ($skillId) {
                     $sq->where('skill_id', $skillId)
