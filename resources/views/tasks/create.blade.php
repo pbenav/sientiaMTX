@@ -135,7 +135,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <label class="relative flex cursor-pointer">
                             <input type="radio" name="visibility" value="public" class="peer sr-only"
-                                {{ old('visibility', 'public') === 'public' ? 'checked' : '' }}>
+                                {{ old('visibility', 'private') === 'public' ? 'checked' : '' }}>
                             <div
                                 class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
                                 <div
@@ -155,7 +155,7 @@
                         </label>
                         <label class="relative flex cursor-pointer">
                             <input type="radio" name="visibility" value="private" class="peer sr-only"
-                                {{ old('visibility') === 'private' ? 'checked' : '' }}>
+                                {{ old('visibility', 'private') === 'private' ? 'checked' : '' }}>
                             <div
                                 class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
                                 <div
