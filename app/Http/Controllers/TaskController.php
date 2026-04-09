@@ -522,8 +522,8 @@ class TaskController extends Controller
         if ($request->has('title') && $isCoordinator) {
             $task->assignments()->delete();
             
-            $assignedTo = $request->input('assigned_to', []);
-            $assignedGroups = $request->input('assigned_groups', []);
+            $assignedTo = array_filter((array) $request->input('assigned_to', []), fn($v) => !is_null($v) && $v !== '');
+            $assignedGroups = array_filter((array) $request->input('assigned_groups', []), fn($v) => !is_null($v) && $v !== '');
 
             foreach ($assignedTo as $userId) {
                 $task->assignments()->create([
@@ -560,26 +560,31 @@ class TaskController extends Controller
                 $uniqueUserIds = $userIds->unique();
 
                 // Sync instances
+                // Delete instances not belonging to the new user set (including orphaned null-assigned ones)
                 $task->instances()->whereNotIn('assigned_user_id', $uniqueUserIds)->delete();
+                $task->instances()->whereNull('assigned_user_id')->delete();
+
                 foreach ($uniqueUserIds as $userId) {
                     if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
                         $team->tasks()->create([
-                            'title' => $task->title,
-                            'description' => $task->description,
-                            'priority' => $task->priority,
-                            'urgency' => $task->urgency,
-                            'status' => 'pending',
-                            'scheduled_date' => $task->scheduled_date,
-                            'due_date' => $task->due_date,
-                            'original_due_date' => $task->due_date,
-                            'created_by_id' => $task->created_by_id, // Owner stays owner
-                            'observations' => null,
-                            'parent_id' => $task->id,
+                            'title'              => $task->title,
+                            'description'        => $task->description,
+                            'priority'           => $task->priority,
+                            'urgency'            => $task->urgency,
+                            'status'             => 'pending',
+                            'scheduled_date'     => $task->scheduled_date,
+                            'due_date'           => $task->due_date,
+                            'original_due_date'  => $task->due_date,
+                            'created_by_id'      => $task->created_by_id,
+                            'observations'       => null,
+                            'parent_id'          => $task->id,
+                            'is_template'        => false,
+                            'assigned_user_id'   => $userId,
                             'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
-                            'cognitive_load' => $task->cognitive_load,
-                            'is_backstage' => $task->is_backstage,
-                            'skill_id' => $task->skill_id,
-                            'visibility' => 'private',
+                            'cognitive_load'     => $task->cognitive_load,
+                            'is_backstage'       => $task->is_backstage,
+                            'skill_id'           => $task->skill_id,
+                            'visibility'         => 'private',
                         ]);
                     }
                 }
