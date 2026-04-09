@@ -11,22 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('time_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('task_id')->nullable()->constrained()->onDelete('cascade');
-            
-            $table->enum('type', ['workday', 'task'])->default('task');
-            $table->timestamp('start_at')->nullable();
-            $table->timestamp('end_at')->nullable();
-            
-            $table->string('note')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('time_logs')) {
+            Schema::create('time_logs', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('task_id')->nullable()->constrained()->onDelete('cascade');
+                
+                $table->enum('type', ['workday', 'task'])->default('task');
+                $table->timestamp('start_at')->nullable();
+                $table->timestamp('end_at')->nullable();
+                
+                $table->string('note')->nullable();
+                $table->timestamps();
 
-            // Indexes for faster reporting
-            $table->index(['user_id', 'type']);
-            $table->index(['task_id', 'user_id']);
-        });
+                // Indexes for faster reporting
+                $table->index(['user_id', 'type']);
+                $table->index(['task_id', 'user_id']);
+            });
+        }
     }
 
     /**

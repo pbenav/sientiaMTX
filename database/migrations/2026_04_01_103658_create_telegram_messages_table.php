@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telegram_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('team_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Null if from Telegram side
-            $table->string('author_name');
-            $table->text('text');
-            $table->string('telegram_message_id')->nullable();
-            $table->boolean('is_from_web')->default(false);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('telegram_messages')) {
+            Schema::create('telegram_messages', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('team_id')->nullable()->constrained()->onDelete('cascade');
+                $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Null if from Telegram side
+                $table->string('author_name');
+                $table->text('text');
+                $table->string('telegram_message_id')->nullable();
+                $table->boolean('is_from_web')->default(false);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -12,61 +12,83 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Skills Table (The "Skill Tree")
-        Schema::create('skills', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('category')->default('General'); // Pedagogía, Soporte Técnico, Administración, Gestión Emocional
-            $table->string('icon')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('skills')) {
+            Schema::create('skills', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('slug')->unique();
+                $table->string('category')->default('General'); // Pedagogía, Soporte Técnico, Administración, Gestión Emocional
+                $table->string('icon')->nullable();
+                $table->timestamps();
+            });
+        }
 
         // 2. User Skills Pivot
-        Schema::create('user_skills', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('skill_id')->constrained()->onDelete('cascade');
-            $table->integer('level')->default(1); // 1-5
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('user_skills')) {
+            Schema::create('user_skills', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('skill_id')->constrained()->onDelete('cascade');
+                $table->integer('level')->default(1); // 1-5
+                $table->timestamps();
+            });
+        }
 
         // 3. Kudos (Social Economy)
-        Schema::create('kudos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('from_user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('to_user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('team_id')->constrained()->onDelete('cascade');
-            $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('message')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('kudos')) {
+            Schema::create('kudos', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('from_user_id')->constrained('users')->onDelete('cascade');
+                $table->foreignId('to_user_id')->constrained('users')->onDelete('cascade');
+                $table->foreignId('team_id')->constrained()->onDelete('cascade');
+                $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null');
+                $table->string('message')->nullable();
+                $table->timestamps();
+            });
+        }
 
         // 4. Gamification Logs (History of effort recognition)
-        Schema::create('gamification_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('team_id')->constrained()->onDelete('cascade');
-            $table->integer('points');
-            $table->string('type'); // resilience, task, backstage, kudo
-            $table->string('source_type')->nullable(); // App\Models\Task, etc.
-            $table->unsignedBigInteger('source_id')->nullable();
-            $table->string('description')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('gamification_logs')) {
+            Schema::create('gamification_logs', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('team_id')->constrained()->onDelete('cascade');
+                $table->integer('points');
+                $table->string('type'); // resilience, task, backstage, kudo
+                $table->string('source_type')->nullable(); // App\Models\Task, etc.
+                $table->unsignedBigInteger('source_id')->nullable();
+                $table->string('description')->nullable();
+                $table->timestamps();
+            });
+        }
 
         // 5. Alter Tasks Table
         Schema::table('tasks', function (Blueprint $table) {
-            $table->boolean('is_out_of_skill_tree')->default(false);
-            $table->integer('cognitive_load')->default(1); // 1-5 (Semáforo de bienestar)
-            $table->boolean('is_backstage')->default(false); // Registro de "Backstage" (estudio/preparación)
-            $table->integer('impact_human_metric')->nullable(); // Traducir a impacto humano (ej: horas ahorradas)
+            if (!Schema::hasColumn('tasks', 'is_out_of_skill_tree')) {
+                $table->boolean('is_out_of_skill_tree')->default(false);
+            }
+            if (!Schema::hasColumn('tasks', 'cognitive_load')) {
+                $table->integer('cognitive_load')->default(1); // 1-5 (Semáforo de bienestar)
+            }
+            if (!Schema::hasColumn('tasks', 'is_backstage')) {
+                $table->boolean('is_backstage')->default(false); // Registro de "Backstage" (estudio/preparación)
+            }
+            if (!Schema::hasColumn('tasks', 'impact_human_metric')) {
+                $table->integer('impact_human_metric')->nullable(); // Traducir a impacto humano (ej: horas ahorradas)
+            }
         });
 
         // 6. Alter Users Table
         Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('resilience_points')->default(0);
-            $table->unsignedBigInteger('experience_points')->default(0);
-            $table->integer('energy_level')->default(100); // 0-100
+            if (!Schema::hasColumn('users', 'resilience_points')) {
+                $table->unsignedBigInteger('resilience_points')->default(0);
+            }
+            if (!Schema::hasColumn('users', 'experience_points')) {
+                $table->unsignedBigInteger('experience_points')->default(0);
+            }
+            if (!Schema::hasColumn('users', 'energy_level')) {
+                $table->integer('energy_level')->default(100); // 0-100
+            }
         });
 
         // Seed some initial skills
@@ -79,10 +101,13 @@ return new class extends Migration
         ];
 
         foreach ($initialSkills as $skill) {
-            \Illuminate\Support\Facades\DB::table('skills')->insert(array_merge($skill, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            $exists = \Illuminate\Support\Facades\DB::table('skills')->where('slug', $skill['slug'])->exists();
+            if (!$exists) {
+                \Illuminate\Support\Facades\DB::table('skills')->insert(array_merge($skill, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]));
+            }
         }
     }
 

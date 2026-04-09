@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('telegram_messages', function (Blueprint $table) {
-            $table->string('photo_path', 255)->nullable()->after('text');
-            $table->boolean('is_deleted_on_telegram')->default(false)->after('is_from_web');
+            if (!Schema::hasColumn('telegram_messages', 'photo_path')) {
+                $table->string('photo_path', 255)->nullable()->after('text');
+            }
+            if (!Schema::hasColumn('telegram_messages', 'is_deleted_on_telegram')) {
+                $table->boolean('is_deleted_on_telegram')->default(false)->after('is_from_web');
+            }
         });
     }
 

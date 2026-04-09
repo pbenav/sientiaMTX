@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_skills', function (Blueprint $table) {
-            $table->unsignedBigInteger('total_xp')->default(0)->after('level');
+            if (!Schema::hasColumn('user_skills', 'total_xp')) {
+                $table->unsignedBigInteger('total_xp')->default(0)->after('level');
+            }
         });
     }
 

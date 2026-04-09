@@ -12,13 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('skill_task', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('skill_id')->constrained()->onDelete('cascade');
-            $table->foreignId('task_id')->constrained()->onDelete('cascade');
-            $table->unique(['skill_id', 'task_id']);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('skill_task')) {
+            Schema::create('skill_task', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('skill_id')->constrained()->onDelete('cascade');
+                $table->foreignId('task_id')->constrained()->onDelete('cascade');
+                $table->unique(['skill_id', 'task_id']);
+                $table->timestamps();
+            });
+        }
 
         // Data migration: move current skill_id to the pivot table
         $tasksWithSkills = DB::table('tasks')->whereNotNull('skill_id')->select('id', 'skill_id', 'created_at', 'updated_at')->get();

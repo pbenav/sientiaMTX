@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->unsignedInteger('matrix_order')->nullable()->after('kanban_order');
+            if (!Schema::hasColumn('tasks', 'matrix_order')) {
+                $table->unsignedInteger('matrix_order')->nullable()->after('kanban_order');
+            }
         });
     }
 
