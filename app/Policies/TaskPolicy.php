@@ -78,10 +78,20 @@ class TaskPolicy
             return $user->id === $task->created_by_id;
         }
 
-        return $user->id === $task->created_by_id || 
+        $isManager = $task->team->isManager($user);
+        $isCreator = $user->id === $task->created_by_id;
+        $isTeamOwner = $task->team->created_by_id === $user->id;
+
+        // RULE: Only authoritative roles can update Templates/Masters
+        if ($task->is_template) {
+            return $isCreator || $isTeamOwner || $isManager;
+        }
+
+        // RULE: Regular tasks/instances: Assignee, Creator, Managers, or Public access
+        return $isCreator || 
+               $isTeamOwner ||
+               $isManager ||
                $user->id === $task->assigned_user_id ||
-               $task->team->created_by_id === $user->id ||
-               $task->team->isManager($user) ||
                ($task->visibility === 'public' && $task->team->members()->where('user_id', $user->id)->exists());
     }
 
