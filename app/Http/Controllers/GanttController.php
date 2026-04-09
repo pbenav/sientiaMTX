@@ -78,7 +78,9 @@ class GanttController extends Controller
             if ($task->parent_id) $label = '   ↳ ' . $label;
 
             $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
-            $readonlyClass = auth()->user()->cannot('update', $task) ? 'gantt-readonly' : '';
+            // Only templates should be forced readonly for regular members in this context
+            $isReadonly = $task->is_template && auth()->user()->cannot('update', $task);
+            $readonlyClass = $isReadonly ? 'gantt-readonly' : '';
             $colorClass = $task->getGanttColorClass();
 
             return [

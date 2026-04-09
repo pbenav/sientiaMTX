@@ -51,10 +51,6 @@
         .gantt-readonly {
             opacity: 0.8 !important;
         }
-        .bar-wrapper.gantt-readonly {
-            pointer-events: none !important;
-            cursor: not-allowed !important;
-        }
         .bar-wrapper.gantt-readonly .handle-group {
             display: none !important;
         }
@@ -231,7 +227,10 @@
                     else window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}`;
                 },
                 on_date_change: (t, start, end) => {
-                    if (t.readonly) return;
+                    if (t.readonly) {
+                        refreshGanttDisplay();
+                        return;
+                    }
                     const fmt = (d) => d.toISOString().split('T')[0];
                     const payload = { scheduled_date: fmt(start), due_date: fmt(end) };
                     fetch(`{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}/move`, {

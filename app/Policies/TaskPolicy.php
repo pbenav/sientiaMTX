@@ -87,11 +87,12 @@ class TaskPolicy
             return $isCreator || $isTeamOwner || $isManager;
         }
 
-        // RULE: Regular tasks/instances: Assignee, Creator, Managers, or Public access
+        // RULE: Regular tasks/instances: Assignee, Creator, Managers, Collaborators or Public access
         return $isCreator || 
                $isTeamOwner ||
                $isManager ||
                $user->id === $task->assigned_user_id ||
+               $task->assignedTo()->where('users.id', $user->id)->exists() ||
                ($task->visibility === 'public' && $task->team->members()->where('user_id', $user->id)->exists());
     }
 
