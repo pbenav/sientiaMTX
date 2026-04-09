@@ -308,8 +308,30 @@
 
             function updateRichPanel(task, x, width, type = 'Detalles') {
                 if (!task) return;
-                const dateStart = gantt.get_date_from_x(x);
-                const dateEnd = gantt.get_date_from_x(x + width);
+                
+                let dateStart, dateEnd;
+                try {
+                    if (!isDragging) {
+                        // Use task data directly when hovering
+                        dateStart = new Date(task.start + 'T00:00:00');
+                        dateEnd = new Date(task.end + 'T00:00:00');
+                    } else {
+                        // Manual calculation during drag/resize
+                        const colWidth = gantt.options.column_width;
+                        const step = gantt.options.step;
+                        const offsetStart = (x / colWidth) * step;
+                        const offsetEnd = ((x + width) / colWidth) * step;
+                        
+                        dateStart = new Date(gantt.gantt_start);
+                        dateStart.setHours(dateStart.getHours() + offsetStart);
+                        dateEnd = new Date(gantt.gantt_start);
+                        dateEnd.setHours(dateEnd.getHours() + offsetEnd);
+                    }
+                } catch (e) {
+                    dateStart = new Date();
+                    dateEnd = new Date();
+                }
+
                 const fmt = d => (d instanceof Date && !isNaN(d)) ? d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '??';
                 const diffDays = (dateStart instanceof Date && dateEnd instanceof Date) ? Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
 
