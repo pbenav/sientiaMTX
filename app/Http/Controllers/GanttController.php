@@ -98,10 +98,12 @@ class GanttController extends Controller
                 'urgency'      => $task->urgency,
                 'is_template'  => $task->is_template,
                 'has_children' => $task->children->count() > 0,
-                'assigned_to'  => $task->assignedUser?->name,
-                'user_name'    => $task->assignedUser?->name ?? 'Sin asignar',
-                'user_initials' => $task->assignedUser ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) : '??',
-                'user_id'      => $task->assigned_user_id,
+                'assigned_to'  => $task->assignedUser?->name ?? $task->creator?->name,
+                'user_name'    => $task->assignedUser?->name ?? ($task->creator?->name ?? 'Sin asignar'),
+                'user_initials' => ($task->assignedUser ?: $task->creator) 
+                                    ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(($task->assignedUser ?: $task->creator)->name, 0, 2)) 
+                                    : '??',
+                'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
                 'weight'       => $task->cognitive_load ?? 1,
                 'parent_title' => $task->parent?->title,
                 'readonly'     => auth()->user()->cannot('update', $task),
@@ -122,7 +124,7 @@ class GanttController extends Controller
 
         // Step 1: Base operational set (visibility)
         $baseTasks = $team->tasks()
-            ->with(['parent', 'children', 'assignedUser', 'skills'])
+            ->with(['parent', 'children', 'assignedUser', 'creator', 'skills'])
             ->visibleTo($user, $isManager)
             ->operationalFor($user, $team)
             ->get();

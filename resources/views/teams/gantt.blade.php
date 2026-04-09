@@ -345,7 +345,14 @@
                 if (progressBarEl) progressBarEl.style.width = (task.progress || 0) + '%';
 
                 const avatarEl = document.getElementById('drag-user-avatar');
-                if (avatarEl) avatarEl.innerText = task.user_initials || '??';
+                if (avatarEl) {
+                    avatarEl.innerText = task.user_initials || '??';
+                    if (task.user_initials === '??') {
+                        avatarEl.className = 'w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[8px] font-black text-gray-500 dark:text-gray-400 shadow-inner ring-1 ring-black/5';
+                    } else {
+                        avatarEl.className = 'w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm ring-1 ring-white/20';
+                    }
+                }
 
                 const userNameEl = document.getElementById('drag-user-name');
                 if (userNameEl) userNameEl.innerText = task.user_name || 'Sin asignar';
