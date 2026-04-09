@@ -253,17 +253,16 @@ class Task extends Model
 
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        return $query->where(function($q) use ($user, $isManager) {
-            // 1. Coordinator Override: Coordinators see EVERYTHING in the team
-            if ($isManager) {
-                return $q->where('team_id', $user->current_team_id ?? $q->getQuery()->from === 'tasks' ? 'tasks.team_id' : 'team_id');
-            }
+        if ($isManager) {
+            return $query;
+        }
 
-            // 2. Any team member can see PUBLIC tasks
+        return $query->where(function($q) use ($user) {
+            // 1. Any team member can see PUBLIC tasks
             $q->where('visibility', 'public')
-            // 3. Owners (creators) can see their OWN tasks (public or private)
+            // 2. Owners (creators) can see their OWN tasks (public or private)
               ->orWhere('created_by_id', $user->id)
-            // 4. Directly assigned users or collaborators can see tasks assigned to them
+            // 3. Directly assigned users or collaborators can see tasks assigned to them
               ->orWhere('assigned_user_id', $user->id)
               ->orWhereHas('assignedTo', function($subq) use ($user) {
                   $subq->where('users.id', $user->id);
