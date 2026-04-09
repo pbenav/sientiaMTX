@@ -351,6 +351,29 @@
                 }
             }, true);
 
+            document.addEventListener('mousedown', e => {
+                const wrapper = e.target.closest('.bar-wrapper');
+                if (wrapper && wrapper.classList.contains('gantt-readonly')) {
+                    // Block Gantt from starting a drag/resize
+                    e.stopImmediatePropagation();
+                    
+                    // Since we blocked mousedown, Gantt's on_click won't fire. 
+                    // We handle it manually on 'click' to allow expansion/details.
+                    wrapper.onclick = (event) => {
+                        const id = wrapper.dataset.id;
+                        const task = allTasks.find(t => t.id == id);
+                        if (!task) return;
+
+                        if (task.has_children) {
+                            (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
+                            refreshGanttDisplay();
+                        } else {
+                            window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                        }
+                    };
+                }
+            }, true);
+
             document.addEventListener('mouseup', () => {
                 isDragging = false;
                 richTooltip.style.display = 'none';
