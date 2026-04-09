@@ -293,19 +293,19 @@ class Task extends Model
 
         return $query->where(function ($main) use ($user, $isCoordinator) {
             if ($isCoordinator) {
-                // COORDINADOR: Ve el esqueleto (Plantillas y Raíces)
+                // COORDINADOR (Contexto Gestión): Ve el esqueleto (Plantillas y Raíces)
                 $main->where(function($mgmt) {
                     $mgmt->whereNull('parent_id')
                          ->orWhere('is_template', true);
                 })
-                // DEDUPLICACIÓN PARA COORDINADOR: Oculta su propia hija si ya ve el padre (redundancia)
+                // DEDUPLICACIÓN EN GESTIÓN: Oculta su propia hija si ya ve el padre (redundancia visión global)
                 ->where(function($dedup) use ($user) {
                     $dedup->where('assigned_user_id', '!=', $user->id)
                           ->orWhereNull('parent_id')
                           ->orWhere('is_template', true);
                 });
             } else {
-                // MIEMBRO: Ve su trabajo asignado
+                // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado
                 $main->where('assigned_user_id', $user->id)
                      ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
                      ->orWhere(function ($own) use ($user) {
@@ -313,7 +313,7 @@ class Task extends Model
                              ->whereNull('parent_id');
                      });
                 
-                // DEDUPLICACIÓN PARA MIEMBRO: Si ve la hija, ocultamos el padre (redundancia)
+                // DEDUPLICACIÓN EN EJECUCIÓN (Miembro): Si ve la hija, ocultamos el padre
                 $main->whereDoesntHave('children', function ($q) use ($user) {
                     $q->where(function($sub) use ($user) {
                         $sub->where('assigned_user_id', $user->id)
@@ -334,33 +334,26 @@ class Task extends Model
         $isCoordinator = $team->isCoordinator($user);
 
         return $query->where(function ($q) use ($userId, $isCoordinator) {
+            // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces sin hijos
+            $q->where('assigned_user_id', $userId)
+              ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+              ->orWhere(function($roots) {
+                  $roots->whereNull('parent_id')
+                        ->whereDoesntHave('children');
+              });
+
             if ($isCoordinator) {
-                // COORDINADOR: Ve plantillas y tareas raíz sin hijos
-                $q->where('is_template', true)
-                  ->orWhere(function($roots) {
-                      $roots->whereNull('parent_id')
-                            ->whereDoesntHave('children');
-                  });
-            } else {
-                // MIEMBRO: Ve su trabajo asignado
-                $q->where('assigned_user_id', $userId)
-                  ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+                // El coordinador en vistas enfocadas también ve plantillas maestras para supervisar
+                $q->orWhere('is_template', true);
             }
         })
-        // DEDUPLICACIÓN: Aplicar la misma regla que en scopeOperationalFor
-        ->where(function($q) use ($user, $isCoordinator) {
-            if ($isCoordinator) {
-                // Ocultar mi instancia si soy coordinador (ya veo la plantilla)
-                $q->where('assigned_user_id', '!=', $user->id)
-                  ->orWhereNull('parent_id')
-                  ->orWhere('is_template', true);
-            } else {
-                // Ocultar el padre si soy miembro (ya veo mi instancia)
-                $q->whereDoesntHave('children', function ($sub) use ($user) {
-                    $sub->where('assigned_user_id', $user->id)
-                        ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id));
-                });
-            }
+        // DEDUPLICACIÓN EN VISTAS ENFOCADAS: 
+        // Siempre priorizamos la ejecución (la Hija/Instancia) sobre la gestión (la Plantilla)
+        ->whereDoesntHave('children', function ($q) use ($userId) {
+            $q->where(function($sub) use ($userId) {
+                $sub->where('assigned_user_id', $userId)
+                    ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $userId));
+            });
         });
     }
 
