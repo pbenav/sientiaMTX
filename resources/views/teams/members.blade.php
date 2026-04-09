@@ -238,7 +238,10 @@
                             <select name="role_id" required
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}">{{ __('teams.' . $role->name) }}</option>
+                                    <option value="{{ $role->id }}"
+                                        {{ old('role_id', $roles->where('name', 'user')->first()?->id) == $role->id ? 'selected' : '' }}>
+                                        {{ __('teams.' . $role->name) }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
