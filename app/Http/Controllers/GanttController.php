@@ -78,6 +78,7 @@ class GanttController extends Controller
             if ($task->parent_id) $label = '   ↳ ' . $label;
 
             $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
+            $readonlyClass = auth()->user()->cannot('update', $task) ? 'gantt-readonly' : '';
             $colorClass = $task->getGanttColorClass();
 
             return [
@@ -87,7 +88,7 @@ class GanttController extends Controller
                 'end'          => $end->format('Y-m-d'),
                 'progress'     => $progress,
                 'dependencies' => $task->metadata['dependency_id'] ?? ($task->parent_id ? (string) $task->parent_id : ''),
-                'custom_class' => "{$typeClass} {$colorClass}",
+                'custom_class' => "{$typeClass} {$colorClass} {$readonlyClass}",
                 'status'       => $task->status,
                 'priority'     => $task->priority,
                 'urgency'      => $task->urgency,
@@ -97,6 +98,7 @@ class GanttController extends Controller
                 'user_id'      => $task->assigned_user_id,
                 'weight'       => $task->cognitive_load ?? 1,
                 'parent_title' => $task->parent?->title,
+                'readonly'     => auth()->user()->cannot('update', $task),
             ];
         });
 

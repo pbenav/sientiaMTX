@@ -47,6 +47,17 @@
         .gantt .handle { fill: #9ca3af; }
         .gantt .today-highlight { fill: rgba(16, 185, 129, 0.05) !important; }
         #today-line { stroke: #10b981; stroke-width: 2; }
+
+        .gantt-readonly {
+            opacity: 0.8 !important;
+            cursor: not-allowed !important;
+        }
+        .gantt-readonly .bar-wrapper {
+            pointer-events: none !important;
+        }
+        .gantt-readonly .handle-group {
+            display: none !important;
+        }
     </style>
 
     <x-slot name="header">
