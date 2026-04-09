@@ -307,39 +307,63 @@
             const richTooltip = document.getElementById('drag-date-indicator');
 
             function updateRichPanel(task, x, width, type = 'Detalles') {
+                if (!task) return;
                 const dateStart = gantt.get_date_from_x(x);
                 const dateEnd = gantt.get_date_from_x(x + width);
-                const fmt = d => d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-                const diffDays = Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1;
+                const fmt = d => (d instanceof Date && !isNaN(d)) ? d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '??';
+                const diffDays = (dateStart instanceof Date && dateEnd instanceof Date) ? Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
 
-                document.getElementById('drag-task-name').innerText = task.name;
-                document.getElementById('drag-progress-bar').style.width = task.progress + '%';
-                document.getElementById('drag-task-progress-text').innerText = task.progress + '%';
-                document.getElementById('drag-user-avatar').innerText = task.user_initials || '??';
-                document.getElementById('drag-user-name').innerText = task.user_name || 'Sin asignar';
-                document.getElementById('drag-task-status').innerText = (task.status_label || task.status).toUpperCase();
-                document.getElementById('drag-priority-badge').innerText = (task.priority_label || task.priority).toUpperCase();
-                
-                const pColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
-                document.getElementById('drag-priority-badge').style.backgroundColor = pColors[task.priority] || '#374151';
+                const nameEl = document.getElementById('drag-task-name');
+                if (nameEl) nameEl.innerText = task.name || 'Tarea';
 
-                const skillsC = document.getElementById('drag-task-skills');
-                skillsC.innerHTML = '';
-                if (task.skills && task.skills.length > 0) {
-                    task.skills.slice(0, 3).forEach(sk => {
-                        const s = document.createElement('span');
-                        s.className = 'px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white text-[6px] font-black uppercase border border-gray-200 dark:border-white/5';
-                        s.innerText = sk.name;
-                        skillsC.appendChild(s);
-                    });
-                } else {
-                    skillsC.innerHTML = '<span class="text-[6px] opacity-30 italic">Sin skills</span>';
+                const progressTextEl = document.getElementById('drag-task-progress-text');
+                if (progressTextEl) progressTextEl.innerText = (task.progress || 0) + '%';
+
+                const progressBarEl = document.getElementById('drag-progress-bar');
+                if (progressBarEl) progressBarEl.style.width = (task.progress || 0) + '%';
+
+                const avatarEl = document.getElementById('drag-user-avatar');
+                if (avatarEl) avatarEl.innerText = task.user_initials || '??';
+
+                const userNameEl = document.getElementById('drag-user-name');
+                if (userNameEl) userNameEl.innerText = task.user_name || 'Sin asignar';
+
+                const statusEl = document.getElementById('drag-task-status');
+                if (statusEl) statusEl.innerText = (task.status_label || task.status || 'PENDIENTE').toString().toUpperCase();
+
+                const priorityEl = document.getElementById('drag-priority-badge');
+                if (priorityEl) {
+                    priorityEl.innerText = (task.priority_label || task.priority || 'NORMAL').toString().toUpperCase();
+                    const pColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
+                    priorityEl.style.backgroundColor = pColors[task.priority] || '#374151';
                 }
 
-                document.getElementById('drag-type-badge').innerText = type.toUpperCase();
-                document.getElementById('drag-duration-days').innerText = diffDays;
-                document.getElementById('drag-start-label').innerText = fmt(dateStart);
-                document.getElementById('drag-end-label').innerText = fmt(dateEnd);
+                const skillsC = document.getElementById('drag-task-skills');
+                if (skillsC) {
+                    skillsC.innerHTML = '';
+                    if (task.skills && task.skills.length > 0) {
+                        task.skills.slice(0, 3).forEach(sk => {
+                            const s = document.createElement('span');
+                            s.className = 'px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white text-[6px] font-black uppercase border border-gray-200 dark:border-white/5';
+                            s.innerText = sk.name;
+                            skillsC.appendChild(s);
+                        });
+                    } else {
+                        skillsC.innerHTML = '<span class="text-[6px] opacity-30 italic">Sin skills</span>';
+                    }
+                }
+
+                const typeBadgeEl = document.getElementById('drag-type-badge');
+                if (typeBadgeEl) typeBadgeEl.innerText = type.toUpperCase();
+
+                const durationEl = document.getElementById('drag-duration-days');
+                if (durationEl) durationEl.innerText = diffDays;
+
+                const startLabelEl = document.getElementById('drag-start-label');
+                if (startLabelEl) startLabelEl.innerText = fmt(dateStart);
+
+                const endLabelEl = document.getElementById('drag-end-label');
+                if (endLabelEl) endLabelEl.innerText = fmt(dateEnd);
             }
 
             document.addEventListener('mousedown', e => {
@@ -381,49 +405,51 @@
             }, true);
 
             document.addEventListener('mousemove', e => {
-                const wrapper = e.target.closest('.bar-wrapper');
-                const isDragState = isDragging || wrapper;
+                try {
+                    const wrapper = e.target.closest('.bar-wrapper');
+                    const isDragState = isDragging || wrapper;
 
-                if (isDragState) {
-                    const activeWrapper = isDragging 
-                                ? (document.querySelector('.bar-wrapper.active, .bar-wrapper.dragging, .bar-wrapper.resizing') || wrapper)
-                                : wrapper;
-                    
-                    if (activeWrapper) {
-                        const task = allTasks.find(x => x.id == activeWrapper.dataset.id);
-                        const bar = activeWrapper.querySelector('.bar');
+                    if (isDragState) {
+                        const activeWrapper = isDragging 
+                                    ? (document.querySelector('.bar-wrapper.active, .bar-wrapper.dragging, .bar-wrapper.resizing') || wrapper)
+                                    : wrapper;
                         
-                        if (task && bar) {
-                            if (Date.now() - lastUpdate < 16) return;
-                            lastUpdate = Date.now();
-
-                            const x = parseFloat(bar.getAttribute('x'));
-                            const w = parseFloat(bar.getAttribute('width'));
-                            let type = 'Detalles';
+                        if (activeWrapper) {
+                            const task = allTasks.find(x => x.id == activeWrapper.dataset.id);
+                            const bar = activeWrapper.querySelector('.bar');
                             
-                            if (isDragging) {
-                                if (dragPart === 'start') type = 'Nuevo Inicio';
-                                else if (dragPart === 'end') type = 'Nueva Entrega';
-                                else type = 'Reubicando';
+                            if (task && bar) {
+                                if (Date.now() - lastUpdate < 16) return;
+                                lastUpdate = Date.now();
+
+                                const x = parseFloat(bar.getAttribute('x'));
+                                const w = parseFloat(bar.getAttribute('width'));
+                                let type = 'Detalles';
+                                
+                                if (isDragging) {
+                                    if (dragPart === 'start') type = 'Nuevo Inicio';
+                                    else if (dragPart === 'end') type = 'Nueva Entrega';
+                                    else type = 'Reubicando';
+                                }
+
+                                updateRichPanel(task, x, w, type);
+                                
+                                let left = e.clientX + 25;
+                                let top = e.clientY - 120;
+                                
+                                if (left + 300 > window.innerWidth) left = e.clientX - 325;
+                                if (top < 10) top = e.clientY + 20;
+
+                                richTooltip.style.left = left + 'px';
+                                richTooltip.style.top = top + 'px';
+                                richTooltip.style.display = 'flex';
                             }
-
-                            updateRichPanel(task, x, w, type);
-                            
-                            // Posicionamiento inteligente para que no se salga de la pantalla
-                            let left = e.clientX + 25;
-                            let top = e.clientY - 120;
-                            
-                            // Ajustes básicos de bordes
-                            if (left + 300 > window.innerWidth) left = e.clientX - 325;
-                            if (top < 10) top = e.clientY + 20;
-
-                            richTooltip.style.left = left + 'px';
-                            richTooltip.style.top = top + 'px';
-                            richTooltip.style.display = 'flex';
                         }
+                    } else {
+                        richTooltip.style.display = 'none';
                     }
-                } else {
-                    richTooltip.style.display = 'none';
+                } catch (err) {
+                    console.error("Gantt Tooltip Error:", err);
                 }
             }, true);
         }
