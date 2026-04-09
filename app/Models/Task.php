@@ -292,6 +292,12 @@ class Task extends Model
                 ->whereNot(function ($excl) {
                     $excl->whereNotNull('parent_id')
                          ->whereHas('parent', fn ($p) => $p->where('is_template', true));
+                })
+                // NEW: Deduplicate Parent/Child if user is executor
+                ->whereNot(function ($excl) use ($user) {
+                    $excl->whereHas('children', function ($q) use ($user) {
+                        $q->where('assigned_user_id', $user->id);
+                    });
                 });
             } elseif ($isModerator) {
                 // MODERATOR (SUPERVISOR) VIEW: Skeleton + Own Instances.
@@ -367,6 +373,10 @@ class Task extends Model
             $q->whereDoesntHave('children')
               ->orWhere('assigned_user_id', $userId)
               ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+        })
+        // NEW: Deduplicate Parent/Child in Kanban Focus
+        ->whereDoesntHave('children', function ($q) use ($userId) {
+            $q->where('assigned_user_id', $userId);
         });
     }
     public function scopeDueThisWeek($query)

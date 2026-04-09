@@ -354,7 +354,7 @@
                                 @if($task->assigned_user_id === auth()->id())
                                     {{ __('tasks.personal_instance_notice') }}
                                 @else
-                                    {{ __('tasks.personal_instance_notice_others', ['name' => $task->assignedUser->name ?? 'User']) }}
+                                    {{ __('tasks.personal_instance_notice_others', ['name' => ($task->assignedUser?->name ?? ($task->creator?->name ?? 'User'))]) }}
                                 @endif
                                 
                                 @if ($team->isCoordinator(auth()->user()))

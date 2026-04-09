@@ -189,7 +189,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
 
     <script>
-        let gantt, allTasks = [], collapsedTasks = new Set(), currentMode = 'Week';
+        let gantt, allTasks = [], collapsedTasks = new Set(), currentMode = 'Day';
         const tooltip = document.getElementById('gantt-tooltip');
         const dragIndicator = document.getElementById('drag-date-indicator');
 
