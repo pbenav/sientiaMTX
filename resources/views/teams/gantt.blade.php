@@ -240,14 +240,22 @@
             const days = {{ $daysInMonth }};
             const userId = {{ auth()->id() }};
             const mStart = new Date("{{ now()->startOfMonth()->format('Y-m-d') }}T00:00:00");
+            
+            // Identify Leaf Tasks to avoid double counting (Master + Instance)
+            const parentIds = new Set(allTasks.map(t => t.dependencies).filter(d => d && !isNaN(d)));
+            const leafTasks = allTasks.filter(t => !parentIds.has(t.id));
+
             const heat = [];
             for(let i=1; i<=days; i++) {
                 const cur = new Date(mStart); cur.setDate(mStart.getDate()+(i-1)); cur.setHours(0,0,0,0);
-                const dayT = allTasks.filter(t => {
+                const dayT = leafTasks.filter(t => {
                     const s = new Date(t.start+'T00:00:00'), e = new Date(t.end+'T23:59:59');
                     return cur >= s && cur <= e;
                 });
-                heat[i] = { weight: dayT.reduce((a,t)=>a+(parseFloat(t.weight)||0),0), uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+(parseFloat(t.weight)||0),0) };
+                heat[i] = { 
+                    weight: dayT.reduce((a,t)=>a+(parseFloat(t.weight)||0),0), 
+                    uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+(parseFloat(t.weight)||0),0) 
+                };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
             const wFact = 100/(days-1);

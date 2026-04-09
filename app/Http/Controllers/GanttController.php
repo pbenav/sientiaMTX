@@ -28,11 +28,15 @@ class GanttController extends Controller
         $actionHeat = [];
         $userId = auth()->id();
 
+        // 2.1: Identify Leaf Tasks to avoid double counting effort (Master + Instance)
+        $parentIds = $tasks->pluck('parent_id')->filter()->unique();
+        $leafTasks = $tasks->filter(fn($t) => !$parentIds->contains($t->id));
+
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $currentDay = $startOfMonth->copy()->addDays($i - 1);
             
-            // Filter tasks active this specific day from the already filtered set
-            $dayTasks = $tasks->filter(function($t) use ($currentDay) {
+            // Filter leaf tasks active this specific day from the already filtered set
+            $dayTasks = $leafTasks->filter(function($t) use ($currentDay) {
                 $start = $t->scheduled_date ?? $t->created_at;
                 $end = $t->due_date ?? $start;
                 return $currentDay->between($start->startOfDay(), $end->endOfDay());
