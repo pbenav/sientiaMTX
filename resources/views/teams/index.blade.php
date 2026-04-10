@@ -38,15 +38,15 @@
             </a>
         </div>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="teams-grid">
             @foreach ($teams as $team)
                 @php
                     $total = $team->tasks()->count();
                     $done = $team->tasks()->where('status', 'completed')->count();
                     $progress = $total > 0 ? round(($done / $total) * 100) : 0;
                 @endphp
-                <div
-                    class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-600 dark:hover:border-violet-800 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-xl hover:shadow-violet-500/10">
+                <div data-id="{{ $team->id }}"
+                    class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-600 dark:hover:border-violet-800 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-xl hover:shadow-violet-500/10 cursor-grab active:cursor-grabbing">
                     <div class="flex items-start justify-between">
                         <div
                             class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white font-bold text-sm">
@@ -155,5 +155,42 @@
             @endforeach
         </div>
         <div class="mt-8">{{ $teams->links() }}</div>
+
+        @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const grid = document.getElementById('teams-grid');
+                if (!grid) return;
+
+                new Sortable(grid, {
+                    animation: 250,
+                    ghostClass: 'opacity-40',
+                    chosenClass: 'scale-[1.02]',
+                    dragClass: 'shadow-2xl',
+                    onEnd: function() {
+                        const order = Array.from(grid.querySelectorAll('[data-id]')).map(el => el.dataset.id);
+                        
+                        fetch('{{ route('teams.update-order') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ order: order })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Optional: simple success toast or feedback
+                                console.log('Orden guardado');
+                            }
+                        })
+                        .catch(err => console.error('Error guardando orden:', err));
+                    }
+                });
+            });
+        </script>
+        @endpush
     @endif
 </x-app-layout>

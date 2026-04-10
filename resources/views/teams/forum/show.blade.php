@@ -41,7 +41,7 @@
                 </div>
 
                 @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
-                    <div class="flex items-center gap-2 shrink-0 hidden md:flex">
+                    <div class="items-center gap-2 shrink-0 hidden md:inline-flex">
                         <form action="{{ route('teams.forum.update', [$team, $thread]) }}" method="POST">
                             @csrf
                             @method('PATCH')
@@ -161,10 +161,23 @@
                                 </div>
                             </div>
 
-                            <!-- Edit/Delete actions (visible on hover) -->
-                            @if (!$thread->is_locked && ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator'))
-                                <div
-                                    class="absolute top-0 {{ $isCurrentUser ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2' }} opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                            <!-- Edit/Delete/Reply actions (visible on hover) -->
+                            <div
+                                class="absolute top-0 {{ $isCurrentUser ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2' }} opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                
+                                <!-- Reply Button -->
+                                @if (!$thread->is_locked)
+                                    <button type="button"
+                                        onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
+                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                        title="Responder citando">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
+                                        </svg>
+                                    </button>
+                                @endif
+
+                                @if (!$thread->is_locked && ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator'))
                                     @if ($isCurrentUser)
                                         <button type="button"
                                             onclick="editMessage({{ $message->id }}, `{{ addslashes($message->content) }}`)"
@@ -193,8 +206,8 @@
                                             </button>
                                         </form>
                                     @endif
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -277,6 +290,16 @@
     </x-modal>
 
     <script>
+        function quoteMessage(name, content) {
+            const textarea = document.getElementById('reply-content');
+            if (textarea) {
+                const quote = `> ${name}: ${content}\n\n`;
+                textarea.value = quote + textarea.value;
+                textarea.focus();
+                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
         function editMessage(messageId, content) {
             const form = document.getElementById('edit-message-form');
             form.action = `/teams/{{ $team->id }}/forum/messages/${messageId}`;

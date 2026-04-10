@@ -20,7 +20,11 @@ class TeamController extends Controller
      */
     public function index()
     {
-        $teams = auth()->user()->teams()->with(['members'])->paginate(15);
+        $teams = auth()->user()->teams()
+            ->with(['members'])
+            ->orderByPivot('sort_order', 'asc')
+            ->orderBy('name', 'asc')
+            ->paginate(15);
 
         return view('teams.index', compact('teams'));
     }
@@ -416,6 +420,23 @@ class TeamController extends Controller
         $team->save(); // Forzado de guardado
 
         \Log::emergency("CRITICAL DEBUG: Team {$team->id} color saved. Q: {$validated['quadrant']}, Color: {$color}. Total array: " . json_encode($colors));
+
+        return response()->json(['success' => true]);
+    }
+    /**
+     * Update the sort order of teams for the authenticated user.
+     */
+    public function updateOrder(Request $request)
+    {
+        $validated = $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'required|integer|exists:teams,id',
+        ]);
+
+        $user = auth()->user();
+        foreach ($validated['order'] as $index => $teamId) {
+            $user->teams()->updateExistingPivot($teamId, ['sort_order' => $index]);
+        }
 
         return response()->json(['success' => true]);
     }

@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/members/{user}/info', [TeamController::class, 'updateMemberInfo'])->name('teams.updateMemberInfo');
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.removeMember');
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamController::class, 'removeInvitation'])->name('teams.invitations.destroy');
+    Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');
 
     // Groups routes
     Route::post('/teams/{team}/groups', [GroupController::class, 'store'])->name('teams.groups.store');

@@ -327,42 +327,62 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
                     <div class="p-6 border-b border-gray-50 bg-rose-50/30 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 flex items-center gap-2">Kudos Recibidos</h4>
+                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">Kudos Recibidos</h4>
                         <span class="text-xs font-black text-rose-600 uppercase tracking-widest">{{ auth()->user()->receivedKudos()->count() }}</span>
                     </div>
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->receivedKudos()->with('sender')->orderBy('created_at', 'desc')->limit(5)->get() as $kudo)
-                            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50">
-                                <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 text-xs font-black">{{ substr($kudo->sender->name, 0, 2) }}</div>
-                                <div>
-                                    <span class="text-sm font-bold text-gray-900">{{ $kudo->sender->name }}</span>
-                                    <p class="text-xs text-gray-500 italic mt-1">"{{ $kudo->message }}"</p>
+                            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                                <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 text-xs font-black">{{ substr($kudo->sender->name ?? '?', 0, 2) }}</div>
+                                <div class="min-w-0">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->sender->name ?? 'Anónimo' }}</span>
+                                    <p class="text-xs text-gray-500 italic mt-1 break-words">"{{ $kudo->message }}"</p>
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center text-gray-500 py-8 italic">Sin reconocimientos aún.</p>
+                            <p class="text-center text-gray-500 py-8 italic text-xs">Sin reconocimientos aún.</p>
                         @endforelse
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100">
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
+                    <div class="p-6 border-b border-gray-50 bg-amber-50/30 flex items-center justify-between">
+                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">Kudos Enviados</h4>
+                        <span class="text-xs font-black text-amber-600 uppercase tracking-widest">{{ auth()->user()->givenKudos()->count() }}</span>
+                    </div>
+                    <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
+                        @forelse(auth()->user()->givenKudos()->with('receiver')->orderBy('created_at', 'desc')->limit(5)->get() as $kudo)
+                            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                                <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-xs font-black">{{ substr($kudo->receiver->name ?? '?', 0, 2) }}</div>
+                                <div class="min-w-0">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->receiver->name ?? 'Anónimo' }}</span>
+                                    <p class="text-xs text-gray-500 italic mt-1 break-words">"{{ $kudo->message }}"</p>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-center text-gray-500 py-8 italic text-xs">No has enviado kudos aún.</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
                     <div class="p-6 border-b border-gray-50 bg-violet-50/30 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 flex items-center gap-2">Logros Recientes</h4>
+                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">Logros Recientes</h4>
                     </div>
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->gamificationLogs()->orderBy('created_at', 'desc')->limit(10)->get() as $log)
-                            <div class="flex items-start gap-3 p-3 rounded-2xl bg-gray-50">
-                                <div class="w-8 h-8 rounded-full flex items-center font-black justify-center text-[10px] {{ $log->type === 'resilience' ? 'bg-violet-100 text-violet-600' : 'bg-emerald-100 text-emerald-600' }}">+{{ $log->points }}</div>
+                            <div class="flex items-start gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                                <div class="w-8 h-8 rounded-full flex items-center font-black justify-center text-[10px] {{ $log->type === 'resilience' ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' }} shrink-0">+{{ $log->points }}</div>
                                 <div class="flex flex-col min-w-0">
-                                    <span class="text-xs font-bold text-gray-900 truncate">{{ $log->description }}</span>
+                                    <span class="text-xs font-bold text-gray-900 dark:text-gray-100 truncate">{{ $log->description }}</span>
                                     <span class="text-[9px] text-gray-400 uppercase">{{ $log->created_at->diffForHumans() }}</span>
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center text-gray-500 py-8 italic">¡Empieza tu aventura!</p>
+                            <p class="text-center text-gray-500 py-8 italic text-xs">¡Empieza tu aventura!</p>
                         @endforelse
                     </div>
                 </div>
