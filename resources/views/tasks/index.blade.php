@@ -600,6 +600,25 @@
                     }
                 }
 
+                function confirmPurgeTrash() {
+                    Swal.fire({
+                        title: '¿Vaciar papelera?',
+                        text: 'Se eliminarán PERMANENTEMENTE todas las tareas de este equipo que estén en la papelera, junto con sus historiales y archivos. Esta acción no se puede deshacer.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, vaciar papelera',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('purgeTrashForm').submit();
+                        }
+                    });
+                }
+
             </script>
         @endpush
         <form id="individualDeleteForm" method="POST" class="hidden">
@@ -612,5 +631,9 @@
             @csrf
             @method('DELETE')
             <div id="bulkDeleteInputs"></div>
+        </form>
+
+        <form id="purgeTrashForm" action="{{ route('teams.tasks.purge-trash', $team) }}" method="POST" class="hidden">
+            @csrf
         </form>
 </x-app-layout>

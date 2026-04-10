@@ -43,6 +43,17 @@ class Task extends Model
                 $model->is_archived = false;
             }
         });
+
+        // Cascade soft-delete to all direct children (each child's deleting hook
+        // will in turn cascade to its own children, making this fully recursive).
+        static::deleting(function (self $model) {
+            // When force deleting, we should force delete all children too
+            if ($model->isForceDeleting()) {
+                $model->children()->withTrashed()->each(fn (self $child) => $child->forceDelete());
+            } else {
+                $model->children()->each(fn (self $child) => $child->delete());
+            }
+        });
     }
 
 

@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
 
     // Tasks routes
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
+    Route::post('/teams/{team}/tasks/purge-trash', [TaskController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
     Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit']);
 
     // Override show/edit/update/destroy to avoid Scoped Binding and handle SoftDeletes

@@ -7,11 +7,12 @@ use App\Models\Team;
 use App\Models\TaskAttachment;
 use App\Traits\HandlesEisenhowerMatrix;
 use App\Traits\AwardsGamification;
+use App\Traits\ManagesTaskDeletion;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    use HandlesEisenhowerMatrix, AwardsGamification;
+    use HandlesEisenhowerMatrix, AwardsGamification, ManagesTaskDeletion;
     public function index(Request $request, Team $team)
     {
         $user = auth()->user();
@@ -659,6 +660,32 @@ class TaskController extends Controller
 
         return redirect()->route('teams.tasks.index', $team)
             ->with('success', "$deletedCount tareas eliminadas correctamente.");
+    }
+
+    /**
+     * Permanently remove all trashed tasks for this team.
+     */
+    public function purgeTrash(Request $request, Team $team)
+    {
+        // Only coordinators or global admins can purge
+        if (!$team->isCoordinator(auth()->user()) && !auth()->user()->is_admin) {
+            abort(403, 'No tienes permisos para vaciar la papelera.');
+        }
+
+        $trashedQuery = Task::onlyTrashed()->where('team_id', $team->id);
+        $trashedCount = $trashedQuery->count();
+
+        if ($trashedCount === 0) {
+            return redirect()->back()->with('info', 'No hay tareas eliminadas para purgar.');
+        }
+
+        $tasks = $trashedQuery->get();
+
+        foreach ($tasks as $task) {
+            $this->deepPurgeTask($task);
+        }
+
+        return redirect()->back()->with('success', "Se han eliminado permanentemente $trashedCount tareas y sus registros asociados.");
     }
 
     /**

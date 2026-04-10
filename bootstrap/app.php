@@ -11,6 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Outermost wrapper: catches TokenMismatchException before Laravel converts it to HttpException(419)
+        $middleware->web(prepend: [
+            \App\Http\Middleware\HandleSessionExpiration::class,
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\EnsureLatestLegalConsent::class,
@@ -31,7 +36,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('app:tasks-autoprogram-wakeup')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
-            return redirect()->route('login')->with('warning', 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.');
-        });
+        // TokenMismatchException is handled by HandleSessionExpiration middleware
+        // (withExceptions callbacks receive it already converted to HttpException, so they can't redirect)
     })->create();
