@@ -35,11 +35,19 @@
                             placeholder="Buscar por nombre o descripción del equipo...">
                     </div>
                     
+                    <select name="per_page" onchange="this.form.submit()"
+                        class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none text-gray-700 dark:text-gray-300 cursor-pointer">
+                        <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                        <option value="25" {{ request('per_page', 25) == 25 || request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+
                     <div class="flex items-center gap-2">
                         <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
                             Filtrar
                         </button>
-                        @if(request('search'))
+                        @if(request()->anyFilled(['search', 'per_page']))
                             <a href="{{ route('settings.teams') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
                                 Limpiar
                             </a>
@@ -94,6 +102,9 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                        {{ $team->created_at->format('d/m/Y H:i') }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $team->creator->name ?? 'Sistema' }}

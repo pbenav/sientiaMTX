@@ -72,47 +72,53 @@
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
                         </div>
-                        @can('manageMembers', $team)
-                            <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"
-                                class="shrink-0">
-                                @csrf @method('PATCH')
-                                <select name="role_id" onchange="this.form.submit()"
-                                    class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 px-3 py-2 rounded-lg focus:border-violet-500 outline-none cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-all">
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->id }}"
-                                            {{ ($member->pivot->role_id ?? null) == $role->id ? 'selected' : '' }}>
-                                            {{ __('teams.' . $role->name) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </form>
-                            @if ($member->id !== $team->created_by_id)
-                                <div class="flex items-center gap-1">
-                                    <button type="button" x-data=""
-                                        x-on:click="$dispatch('open-modal', 'edit-member-{{ $member->id }}')"
-                                        class="text-gray-600 hover:text-violet-400 transition-colors p-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                    </button>
+                        <div class="flex items-center gap-4 justify-end min-w-[200px]">
+                            @can('manageMembers', $team)
+                                <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"
+                                    class="shrink-0">
+                                    @csrf @method('PATCH')
+                                    <select name="role_id" onchange="this.form.submit()"
+                                        @if($member->id === $team->created_by_id) disabled @endif
+                                        class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 px-3 py-2 rounded-lg focus:border-violet-500 outline-none @if($member->id !== $team->created_by_id) cursor-pointer hover:bg-white dark:hover:bg-gray-700 @else opacity-75 cursor-not-allowed @endif transition-all min-w-[110px]">
+                                        @foreach ($roles as $role)
+                                            <option value="{{ $role->id }}"
+                                                {{ ($member->pivot->role_id ?? null) == $role->id ? 'selected' : '' }}>
+                                                {{ __('teams.' . $role->name) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </form>
 
-                                    <form id="remove-member-{{ $member->id }}" method="POST"
-                                        action="{{ route('teams.removeMember', [$team, $member]) }}"
-                                        onsubmit="event.preventDefault(); confirmDelete('remove-member-{{ $member->id }}', '{{ __('teams.delete_confirm') }}')"
-                                        class="shrink-0">
-                                        @csrf @method('DELETE')
-                                        <button type="submit"
-                                            class="text-gray-600 hover:text-red-400 transition-colors p-1">
+                                <div class="flex items-center gap-1 w-[48px] justify-center">
+                                    @if ($member->id !== $team->created_by_id)
+                                        <button type="button" x-data=""
+                                            x-on:click="$dispatch('open-modal', 'edit-member-{{ $member->id }}')"
+                                            class="text-gray-400 hover:text-violet-500 transition-colors p-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
-                                    </form>
+
+                                        <form id="remove-member-{{ $member->id }}" method="POST"
+                                            action="{{ route('teams.removeMember', [$team, $member]) }}"
+                                            onsubmit="event.preventDefault(); confirmDelete('remove-member-{{ $member->id }}', '{{ __('teams.delete_confirm') }}')"
+                                            class="shrink-0">
+                                            @csrf @method('DELETE')
+                                            <button type="submit"
+                                                class="text-gray-400 hover:text-red-400 transition-colors p-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
+                            @endcan
+                        </div>
 
                                 <x-modal name="edit-member-{{ $member->id }}" focusable>
                                     <form method="post" action="{{ route('teams.updateMemberInfo', [$team, $member]) }}"

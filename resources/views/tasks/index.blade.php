@@ -62,7 +62,7 @@
                 <!-- Status Filter -->
                 <div class="w-40">
                     <select name="status" onchange="this.form.submit()"
-                        class="w-full {{ request('status') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('status') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.status') }}</option>
                         @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
                             <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>
@@ -75,7 +75,7 @@
                 <!-- Priority Filter -->
                 <div class="w-40">
                     <select name="priority" onchange="this.form.submit()"
-                        class="w-full {{ request('priority') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('priority') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.priority') }}</option>
                         @foreach (['low', 'medium', 'high', 'critical'] as $priority)
                             <option value="{{ $priority }}"
@@ -89,7 +89,7 @@
                 <!-- Assigned To Filter -->
                 <div class="w-48">
                     <select name="assigned_to" onchange="this.form.submit()"
-                        class="w-full {{ request('assigned_to') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('assigned_to') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.assigned_to') }}</option>
                         @foreach ($members as $member)
                             <option value="{{ $member->id }}"
@@ -103,7 +103,7 @@
                 <!-- Skill Filter -->
                 <div class="w-48">
                     <select name="skill_id" onchange="this.form.submit()"
-                        class="w-full {{ request('skill_id') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('skill_id') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
                         @foreach($skills as $skill)
                             <option value="{{ $skill->id }}" {{ request('skill_id') == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
@@ -114,7 +114,7 @@
                 <!-- Type Filter -->
                 <div class="w-40">
                     <select name="type" onchange="this.form.submit()"
-                        class="w-full {{ request('type') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('type') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.type') }}</option>
                         <option value="template" {{ request('type') === 'template' ? 'selected' : '' }}>
                             {{ __('tasks.template') }}</option>
@@ -128,7 +128,7 @@
                 <!-- Per Page -->
                 <div class="w-32">
                     <select name="per_page" onchange="this.form.submit()"
-                        class="w-full {{ request('per_page') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 focus:ring-2 focus:ring-violet-500/50 cursor-pointer">
+                        class="w-full {{ request('per_page') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="25" {{ request('per_page', 20) == 25 || request('per_page') == 20 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>

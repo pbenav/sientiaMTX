@@ -361,10 +361,17 @@ class Task extends Model
      * Specialized scope for the Kanban board.
      * Legacy wrapper for scopeFocusedFor.
      */
-    public function scopeOperationalForKanban($query, $user, Team $team)
+    public function scopeOperationalForKanban($query, $user, $team)
     {
-        return $this->scopeFocusedFor($query, $user, $team)
-                    ->where('is_template', false);
+        // EL KANBAN ES SAGRADO: Solo tareas finales (sin hijos) y que no sean plantillas maestras.
+        // Aplicamos un filtro de "túnel" para ignorar cualquier otro orWhere de scopes anteriores.
+        return $query->where(function($q) {
+                $q->whereDoesntHave('children')
+                  ->where('is_template', false);
+            })
+            ->where(function($q) use ($user, $team) {
+                $this->scopeFocusedFor($q, $user, $team);
+            });
     }
 
     public function scopeDueThisWeek($query)
@@ -594,5 +601,31 @@ class Task extends Model
         }
         return "{$minutes}m";
     }
+    /**
+     * Get all attachments associated with this task, its parent, and its children.
+     */
+    public function getAllAttachmentsAttribute()
+    {
+        $attachments = $this->attachments()
+            ->with('task') // eager load to access team/context if needed
+            ->get();
 
+        // Add parent attachments if any
+        if ($this->parent_id) {
+            $parent = $this->parent()->with('attachments')->first();
+            if ($parent) {
+                $attachments = $attachments->merge($parent->attachments);
+            }
+        }
+
+        // Add children attachments recursively? Let's stay at primary descendants for now 
+        // to avoid performance issues in huge projects.
+        if ($this->children()->exists()) {
+            $childrenIds = $this->children()->pluck('id');
+            $childAttachments = \App\Models\TaskAttachment::whereIn('task_id', $childrenIds)->get();
+            $attachments = $attachments->merge($childAttachments);
+        }
+
+        return $attachments->unique('id');
+    }
 }

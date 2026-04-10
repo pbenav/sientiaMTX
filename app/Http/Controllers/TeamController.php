@@ -47,7 +47,12 @@ class TeamController extends Controller
             });
         }
 
-        $teams = $query->paginate(20)->withQueryString();
+        $perPage = $request->get('per_page', 25);
+        if ($perPage === 'all') {
+            $perPage = $query->count() ?: 1;
+        }
+
+        $teams = $query->paginate($perPage)->withQueryString();
 
         return view('settings.teams', [
             'teams' => $teams,

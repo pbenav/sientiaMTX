@@ -33,21 +33,29 @@
                                class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400">
                     </div>
                     <select name="role"
-                            class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
-                        <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('Todos los roles') }}</option>
-                        <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrator') }}</option>
-                        <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('User') }}</option>
+                            class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
+                        <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('Todos') }}</option>
+                        <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrador') }}</option>
+                        <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('Usuario') }}</option>
+                    </select>
+
+                    <select name="per_page" onchange="this.form.submit()"
+                            class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300 cursor-pointer">
+                        <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                        <option value="25" {{ request('per_page', 25) == 25 || request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
                     </select>
 
                     <div class="flex items-center gap-2">
                         <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
                             {{ __('Filtrar') }}
                         </button>
-                        @if($search || $role)
-                            <a href="{{ route('settings.users') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
-                                {{ __('Limpiar') }}
-                            </a>
-                        @endif
+                @if (request()->anyFilled(['search', 'role']))
+                    <a href="{{ route('settings.users') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
+                        {{ __('Limpiar') }}
+                    </a>
+                @endif
                     </div>
                 </form>
             </div>
@@ -142,8 +150,6 @@
                     </div>
                 @endif
             </div>
-        </div>
-    </div>
         </div>
     </div>
 

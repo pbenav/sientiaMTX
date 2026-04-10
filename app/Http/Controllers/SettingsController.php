@@ -90,7 +90,12 @@ class SettingsController extends Controller
             $query->where('is_admin', false);
         }
 
-        $users = $query->paginate(20)->withQueryString();
+        $perPage = $request->get('per_page', 25);
+        if ($perPage === 'all') {
+            $perPage = $query->count() ?: 1;
+        }
+
+        $users = $query->paginate($perPage)->withQueryString();
 
         return view('settings.users', [
             'users' => $users,

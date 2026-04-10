@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
 
         // Show welcome message if the user prefers it
         if ($user->show_welcome_messages) {
-            $request->session()->flash('show_welcome_modal', true);
+            $request->session()->put('show_welcome_modal', true);
         }
 
         // Process pending invitations if a token was provided

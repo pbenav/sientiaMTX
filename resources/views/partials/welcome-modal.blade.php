@@ -1,5 +1,8 @@
 @php
     $showWelcome = session('show_welcome_modal');
+    if ($showWelcome) {
+        session()->forget('show_welcome_modal');
+    }
     $messages = app(\App\Services\QuoteService::class)->getWelcomeMessage();
     $greeting = $messages['greeting'];
     $quote = $messages['quote'];

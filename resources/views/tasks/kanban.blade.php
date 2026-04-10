@@ -183,24 +183,24 @@
 
                                     <!-- Card Footer -->
                                     <div class="mt-4 flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                                        <div class="flex -space-x-2">
-                                            @if($task->assignedUser)
-                                                <div class="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
-                                                    {{ strtoupper(substr($task->assignedUser->name, 0, 1)) }}
-                                                </div>
-                                            @elseif($task->assignedTo->count() > 0)
-                                                @foreach($task->assignedTo->take(3) as $user)
-                                                    <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
-                                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex -space-x-2">
+                                                @if($task->assignedUser)
+                                                    <div class="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
+                                                        {{ strtoupper(substr($task->assignedUser->name, 0, 1)) }}
                                                     </div>
-                                                @endforeach
-                                                @if($task->assignedTo->count() > 3)
-                                                    <div class="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center text-[8px] text-white font-bold border-2 border-white dark:border-gray-800" title="...">
-                                                        +{{ $task->assignedTo->count() - 3 }}
-                                                    </div>
+                                                @elseif($task->assignedTo->count() > 0)
+                                                    @foreach($task->assignedTo->take(3) as $user)
+                                                        <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
+                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                        </div>
+                                                    @endforeach
                                                 @endif
-                                            @else
-                                                <span class="text-[10px] text-gray-400 italic font-medium">{{ __('tasks.unassigned') }}</span>
+                                            </div>
+                                            @if($task->assignedUser)
+                                                <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
+                                                    {{ $task->assignedUser->id === auth()->id() ? __('Tú') : explode(' ', $task->assignedUser->name)[0] }}
+                                                </span>
                                             @endif
                                         </div>
                                         

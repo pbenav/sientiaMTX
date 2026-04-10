@@ -62,6 +62,20 @@
                     </button>
                 </form>
             @endcan
+            
+            @if ($task->is_template && ($team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id))
+                <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit"
+                        title="{{ __('Sobreescribir títulos y descripciones de todos los miembros con los datos de esta plantilla') }}"
+                        class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-600/20 font-bold border border-transparent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {{ __('tasks.sync_members') }}
+                    </button>
+                </form>
+            @endif
 
             @can('delete', $task)
                 <form id="delete-task-form-{{ $task->id }}"
@@ -526,145 +540,95 @@
                     </form>
                 </div>
 
-                @if ($task->attachments->isEmpty() && (!$task->parent || $task->parent->attachments->isEmpty()))
+                @php $allAttachments = $task->all_attachments; @endphp
+                @if ($allAttachments->isEmpty())
                     <p class="text-xs text-gray-400 italic">{{ __('tasks.no_attachments') }}</p>
                 @else
-                    <div class="space-y-4">
-                        @if ($task->parent && $task->parent->attachments->isNotEmpty())
-                            <div>
-                                <h4
-                                    class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight mb-2 flex items-center gap-1.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                    </svg>
-                                    {{ __('tasks.parent_attachments') ?? 'Archivos de la Tarea Principal' }}
-                                </h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 opacity-80">
-                                    @foreach ($task->parent->attachments as $attachment)
-                                        <div
-                                            class="group flex items-center justify-between p-3 bg-indigo-50/30 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-800/20 rounded-xl hover:border-indigo-200 transition-all">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div
-                                                    class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-indigo-500 shadow-sm border border-indigo-50 dark:border-indigo-900/30 shrink-0">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate"
-                                                        title="{{ $attachment->file_name }}">
-                                                        {{ $attachment->file_name }}
-                                                    </p>
-                                                    <p class="text-[10px] text-gray-400">
-                                                        {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
-                                                        • {{ __('tasks.shared') ?? 'Compartido' }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
-                                                class="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors"
-                                                title="{{ __('tasks.download') }}">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach ($allAttachments as $attachment)
+                            @php 
+                                $isFromMe = $attachment->user_id === auth()->id();
+                                $isFromParent = $attachment->task_id === $task->parent_id;
+                                $isFromChild = $attachment->task_id !== $task->id && $attachment->task_id !== $task->parent_id;
+                            @endphp
+                            <div
+                                class="group flex items-center justify-between p-3 {{ $isFromParent ? 'bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-100/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50' }} border rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center {{ $isFromParent ? 'text-indigo-500' : 'text-violet-600 dark:text-violet-400' }} shadow-sm border border-gray-100 dark:border-gray-700 shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate"
+                                            title="{{ $attachment->file_name }}">
+                                            {{ $attachment->file_name }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-400">
+                                            {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
+                                            •
+                                            @if($isFromParent) 
+                                                <span class="text-indigo-500 font-bold uppercase tracking-tighter">{{ __('tasks.shared') ?? 'Plan' }}</span>
+                                            @elseif($isFromChild)
+                                                <span class="text-amber-500 font-bold uppercase tracking-tighter">{{ $attachment->task?->assignedUser?->name ?? 'Equipo' }}</span>
+                                            @else
+                                                {{ $attachment->created_at->diffForHumans() }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
+                                        class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                        title="{{ __('tasks.download') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                    </a>
+                                    @if($attachment->task_id === $task->id)
+                                        @can('update', $task)
+                                            <button type="button"
+                                                onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
+                                                class="p-1.5 text-gray-500 hover:text-blue-600 transition-colors"
+                                                title="{{ __('tasks.edit') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
-                                                        d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
-                                            </a>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($task->attachments->isNotEmpty())
-                            <div>
-                                @if ($task->parent_id)
-                                    <h4
-                                        class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight mb-2">
-                                        {{ __('tasks.your_attachments') ?? 'Tus Archivos' }}
-                                    </h4>
-                                @endif
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    @foreach ($task->attachments as $attachment)
-                                        <div
-                                            class="group flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div
-                                                    class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700 shrink-0">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate"
-                                                        title="{{ $attachment->file_name }}">
-                                                        {{ $attachment->file_name }}
-                                                    </p>
-                                                    <p class="text-[10px] text-gray-400">
-                                                        {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
-                                                        •
-                                                        {{ $attachment->created_at->diffForHumans() }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div
-                                                class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
-                                                    class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
-                                                    title="{{ __('tasks.download') }}">
+                                            </button>
+                                            <form
+                                                action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
+                                                method="POST" class="inline"
+                                                id="delete-attachment-{{ $attachment->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    onclick="confirmAttachmentDelete({{ $attachment->id }})"
+                                                    class="p-1.5 text-gray-500 hover:text-red-600 transition-colors"
+                                                    title="{{ __('tasks.delete') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
-                                                            d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
-                                                </a>
-                                                @can('update', $task)
-                                                    <button type="button"
-                                                        onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
-                                                        class="p-1.5 text-gray-500 hover:text-blue-600 transition-colors"
-                                                        title="{{ __('tasks.edit') }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                        </svg>
-                                                    </button>
-                                                    <form
-                                                        action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
-                                                        method="POST" class="inline"
-                                                        id="delete-attachment-{{ $attachment->id }}">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="button"
-                                                            onclick="confirmAttachmentDelete({{ $attachment->id }})"
-                                                            class="p-1.5 text-gray-500 hover:text-red-600 transition-colors"
-                                                            title="{{ __('tasks.delete') }}">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-                                                @endcan
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    @endif
                                 </div>
                             </div>
-                        @endif
+                        @endforeach
                     </div>
                 @endif
             </div>

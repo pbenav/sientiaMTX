@@ -56,7 +56,12 @@ class TaskController extends Controller
         // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
         if ($request->filled('search')) {
             $searchTerm = $request->search;
-            $query->where('title', 'like', '%' . $searchTerm . '%');
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('parent', function($pq) use ($searchTerm) {
+                      $pq->where('title', 'like', '%' . $searchTerm . '%');
+                  });
+            });
 
             // Also filter the children relationship so only matched subtasks are shown in the nested view
             $query->with(['children' => function($q) use ($searchTerm) {
@@ -84,9 +89,9 @@ class TaskController extends Controller
         }
 
         // --- Pagination ---
-        $perPage = $request->get('per_page', 20);
+        $perPage = $request->get('per_page', 25);
         if (!in_array($perPage, [10, 25, 50, 100, 'all'])) {
-            $perPage = 20;
+            $perPage = 25;
         }
 
         if ($perPage === 'all') {
@@ -239,8 +244,11 @@ class TaskController extends Controller
                 }
             }
 
-            // Always include the creator in the work distribution for template tasks
-            $userIds->push($task->created_by_id);
+            // Optional: Include the creator in the work distribution only if they are in the 'assigned_to' list
+            // or if no one else is assigned (to ensure at least one instance exists for templates)
+            if (in_array($task->created_by_id, $validated['assigned_to'] ?? []) || empty($uniqueUserIds)) {
+                $userIds->push($task->created_by_id);
+            }
 
             $uniqueUserIds = $userIds->unique();
 
@@ -481,7 +489,13 @@ class TaskController extends Controller
             }
         }
 
-        // If this is a template, sync core fields to instances
+        // SCENARIO B: Metadata Independence
+        // We no longer automatically sync titles and descriptions across the hierarchy.
+        // This allows members to have their own 'aliases' and notes without affecting the project skeleton.
+        // Aggregate progress and status are still synced (handled above).
+        
+        /* 
+        // Legacy Sync Logic (Scenario A)
         if ($task->is_template) {
             $task->instances()->update([
                 'title' => $task->title,
@@ -490,18 +504,8 @@ class TaskController extends Controller
                 'priority' => $task->priority,
                 'urgency' => $task->urgency,
             ]);
-        } elseif ($task->parent_id && $task->status !== 'cancelled') {
-            // If it's a subtask (instance) and title changed, propagate to parent and siblings
-            // NOTE: We only do this if it's NOT template, as templates already push DOWN.
-            // This ensures a "single source of Truth" for the Name across the hierarchy.
-            if ($oldValues['title'] !== $task->title) {
-                $parent = $task->parent;
-                if ($parent) {
-                    $parent->update(['title' => $task->title]);
-                    $parent->instances()->where('id', '!=', $task->id)->update(['title' => $task->title]);
-                }
-            }
         }
+        */
 
         // Log changes to history
         $newValues = $task->getAttributes();
@@ -554,8 +558,10 @@ class TaskController extends Controller
                     }
                 }
 
-                // Always include the creator in the work distribution for template tasks
-                $userIds->push($task->created_by_id);
+                // Optional: Include the creator in the work distribution only if they are in the 'assigned_to' list
+                if (in_array($task->created_by_id, $assignedTo)) {
+                    $userIds->push($task->created_by_id);
+                }
 
                 $uniqueUserIds = $userIds->unique();
 
@@ -864,10 +870,29 @@ class TaskController extends Controller
 
         $task->increment('nudge_count');
 
-        return response()->json([
-            'success' => true,
-            'message' => __('tasks.nudge_sent')
+        return redirect()->back()->with('success', __('tasks.nudge_sent'));
+    }
+
+    /**
+     * Manual Sync (Scenario B): Push master template changes to all assigned instances.
+     */
+    public function syncToChildren(Request $request, Team $team, Task $task)
+    {
+        $this->authorize('update', $task);
+
+        if (!$task->is_template) {
+            return redirect()->back()->with('error', 'Only templates can be synced.');
+        }
+
+        $task->instances()->update([
+            'title' => $task->title,
+            'description' => $task->description,
+            'due_date' => $task->due_date,
+            'priority' => $task->priority,
+            'urgency' => $task->urgency,
         ]);
+
+        return redirect()->back()->with('success', 'Changes synced successfully to all members.');
     }
 
     public function uploadAttachment(\Illuminate\Http\Request $request, Team $team, Task $task)
