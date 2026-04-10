@@ -640,15 +640,20 @@
                             </div>
                         </div>
 
-                        <button type="button" onclick="document.getElementById('attachment-input').click()"
-                            class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                            {{ __('tasks.add_attachment') }}
-                        </button>
+                        <div class="flex flex-col items-end">
+                            <button type="button" onclick="document.getElementById('attachment-input').click()"
+                                class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                {{ __('tasks.add_attachment') }}
+                            </button>
+                            <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-tighter font-medium">
+                                {{ __('Máx. :size por archivo', ['size' => ini_get('upload_max_filesize')]) }}
+                            </span>
+                        </div>
                     </div>
 
                     @if ($task->attachments->isEmpty())
@@ -757,7 +762,7 @@
             method="POST" enctype="multipart/form-data" class="hidden">
             @csrf
             <input type="file" id="attachment-input" name="file"
-                onchange="document.getElementById('attachment-form').submit()">
+                onchange="handleAttachmentUpload(this)">
         </form>
 
         {{-- Hidden Forms for Attachment Deletion (Outside Main Form) --}}
@@ -1138,6 +1143,39 @@
                             document.getElementById(`delete-attachment-${id}`).submit();
                         }
                     });
+                }
+
+                window.handleAttachmentUpload = function(input) {
+                    const file = input.files[0];
+                    if (!file) return;
+
+                    const limit = "{{ ini_get('upload_max_filesize') }}";
+                    const limitBytes = parsePHPSize(limit);
+
+                    if (file.size > limitBytes) {
+                        Swal.fire({
+                            title: '{{ __('Archivo demasiado grande') }}',
+                            text: `El archivo excede el límite de ${limit} configurado en el servidor.`,
+                            icon: 'error',
+                            background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                        });
+                        input.value = '';
+                        return;
+                    }
+
+                    document.getElementById('attachment-form').submit();
+                }
+
+                function parsePHPSize(size) {
+                    const unit = size.slice(-1).toUpperCase();
+                    const value = parseFloat(size);
+                    switch (unit) {
+                        case 'G': return value * 1024 * 1024 * 1024;
+                        case 'M': return value * 1024 * 1024;
+                        case 'K': return value * 1024;
+                        default: return value;
+                    }
                 }
             });
         </script>
