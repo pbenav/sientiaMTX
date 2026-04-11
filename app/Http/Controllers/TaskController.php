@@ -896,8 +896,13 @@ class TaskController extends Controller
         $task->assignedUser->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress));
 
         $task->increment('nudge_count');
+        $task->refresh();
 
-        return redirect()->back()->with('success', __('tasks.nudge_sent'));
+        return response()->json([
+            'success' => true, 
+            'message' => __('tasks.nudge_sent'),
+            'nudge_count' => $task->nudge_count
+        ]);
     }
 
     /**
