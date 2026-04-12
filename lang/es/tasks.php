@@ -5,6 +5,7 @@ return [
     'create' => 'Crear tarea',
     'created' => 'Tarea creada correctamente.',
     'updated' => 'Tarea actualizada correctamente.',
+    'synced_success' => 'Cambios sincronizados correctamente con todos los miembros.',
     'deleted' => 'Tarea eliminada correctamente.',
     'name' => 'Título',
     'description' => 'Descripción',

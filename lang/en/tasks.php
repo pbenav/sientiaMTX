@@ -5,6 +5,7 @@ return [
     'create' => 'Create Task',
     'created' => 'Task created successfully.',
     'updated' => 'Task updated successfully.',
+    'synced_success' => 'Changes synced successfully to all members.',
     'deleted' => 'Task deleted successfully.',
     'name' => 'Title',
     'description' => 'Description',

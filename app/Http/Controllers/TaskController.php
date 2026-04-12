@@ -938,7 +938,7 @@ class TaskController extends Controller
             'urgency' => $task->urgency,
         ]);
 
-        return redirect()->back()->with('success', 'Changes synced successfully to all members.');
+        return redirect()->back()->with('success', __('tasks.synced_success'));
     }
 
     public function uploadAttachment(\Illuminate\Http\Request $request, Team $team, Task $task)
