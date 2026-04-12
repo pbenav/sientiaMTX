@@ -51,10 +51,10 @@
             </button>
         </div>
 
-        <div x-show="activeTab === 'members'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div x-show="activeTab === 'members'" class="w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Members list -->
             <div
-                class="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors flex flex-col">
+                class="lg:col-span-2 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-y-auto overflow-x-hidden shadow-sm dark:shadow-none transition-colors flex flex-col">
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
                     <h2 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
                         {{ __('teams.members') }}
