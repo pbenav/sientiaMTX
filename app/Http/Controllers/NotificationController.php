@@ -8,6 +8,8 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Task;
 use App\Models\ForumMessage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
@@ -28,17 +30,27 @@ class NotificationController extends Controller
      */
     public function markAsRead(string $id): RedirectResponse
     {
+        Log::emergency('ENTERING markAsRead', ['id' => $id, 'user_id' => Auth::id()]);
+
+        // Intentar encontrar la notificación
         $notification = Auth::user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
+        
+        // Marcar como leída de forma EXPLÍCITA y FORZADA
+        // Usamos update directo en la DB para evitar problemas de eventos o estados del modelo
+        DB::table('notifications')->where('id', $id)->update(['read_at' => now()]);
+        
+        Log::emergency('Notification updated in DB', ['id' => $id]);
 
         // PRIORIDAD 1: Comprobación de Tarea (Task)
         if (isset($notification->data['task_id']) && isset($notification->data['team_id'])) {
             $taskExists = Task::where('id', $notification->data['task_id'])->exists();
             
             if (!$taskExists) {
+                Log::emergency('Task NOT found, redirecting back with warning');
                 return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'tarea']));
             }
 
+            Log::emergency('Task found, redirecting to task show');
             return redirect()->route('teams.tasks.show', [$notification->data['team_id'], $notification->data['task_id']]);
         }
 
@@ -55,11 +67,13 @@ class NotificationController extends Controller
             }
         }
 
-        // PRIORIDAD 3: URL explícita (Solo si no hemos redirigido por ID específico arriba)
+        // PRIORIDAD 3: URL explícita
         if (isset($notification->data['url'])) {
+            Log::emergency('Redirecting to explicit URL', ['url' => $notification->data['url']]);
             return redirect($notification->data['url']);
         }
 
+        Log::emergency('No specific redirection found, going back');
         return redirect()->back()->with('status', 'notification-read');
     }
 
