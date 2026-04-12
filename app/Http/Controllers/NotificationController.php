@@ -63,7 +63,7 @@ class NotificationController extends Controller
             }
 
             if (isset($notification->data['thread_id'])) {
-                return redirect()->route('teams.forum.threads.show', [$notification->data['team_id'], $notification->data['thread_id']]);
+                return redirect()->route('teams.forum.show', [$notification->data['team_id'], $notification->data['thread_id']]);
             }
         }
 
