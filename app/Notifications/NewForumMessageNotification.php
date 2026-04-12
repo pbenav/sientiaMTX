@@ -10,9 +10,12 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
+
 class NewForumMessageNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $message;
     protected $thread;
@@ -27,19 +30,16 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the Web Push representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
-        $channels = ['mail', 'database'];
-        
-        if ($notifiable instanceof \App\Models\User && $notifiable->wantsNotification('telegram')) {
-            $channels[] = \App\Notifications\Channels\TelegramChannel::class;
-        }
-        
-        return $channels;
+        return (new WebPushMessage)
+            ->title('Nuevo comentario - ' . $this->thread->title)
+            ->icon('/images/logo-icon.png')
+            ->body($this->message->user->name . ': ' . Str::limit($this->message->content, 50))
+            ->action('Ver comentario', 'view_forum_message')
+            ->options(['TTL' => 1000]);
     }
 
     /**

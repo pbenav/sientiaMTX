@@ -7,10 +7,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class TaskNudgeNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $task;
     protected $type;
@@ -27,19 +29,21 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the Web Push representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
-        $channels = ['mail', 'database'];
+        $message = __('tasks.nudges.' . $this->type, [
+            'title' => $this->task->title,
+            'progress' => $this->teamProgress
+        ]);
 
-        if ($notifiable instanceof \App\Models\User && $notifiable->wantsNotification('telegram')) {
-            $channels[] = \App\Notifications\Channels\TelegramChannel::class;
-        }
-
-        return $channels;
+        return (new WebPushMessage)
+            ->title(__('tasks.notifications.nudge_received', ['title' => $this->task->title]))
+            ->icon('/images/logo-icon.png')
+            ->body($message)
+            ->action(__('notifications.view_task'), 'view_task')
+            ->options(['TTL' => 1000]);
     }
 
     /**

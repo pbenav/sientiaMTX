@@ -9,9 +9,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
+
 class KudoReceivedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $kudo;
     protected $sender;
@@ -26,17 +29,33 @@ class KudoReceivedNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
+     * Get the mail representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toMail(object $notifiable): MailMessage
     {
-        $channels = ['database'];
+        $url = route('teams.time-reports', $this->kudo->team_id);
 
-        if ($notifiable instanceof User && $notifiable->wantsNotification('telegram')) {
-            $channels[] = \App\Notifications\Channels\TelegramChannel::class;
-        }
+        return (new MailMessage)
+                    ->subject('✨ ¡Has recibido un Kudo!')
+                    ->greeting(__('notifications.hello', ['name' => $notifiable->name]))
+                    ->line("{$this->sender->name} te ha enviado un Kudo por tu trabajo.")
+                    ->line("**Motivo**: {$this->kudo->type}")
+                    ->line("\"" . ($this->kudo->message ?? '¡Sigue así!') . "\"")
+                    ->action('Ver en el Dashboard', $url)
+                    ->line(__('notifications.thank_you'));
+    }
 
-        return $channels;
+    /**
+     * Get the Web Push representation of the notification.
+     */
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title('✨ ¡Has recibido un Kudo!')
+            ->icon('/images/logo-icon.png')
+            ->body("{$this->sender->name}: " . ($this->kudo->message ?? '¡Buen trabajo!'))
+            ->action('Ver Dashboard', 'view_dashboard')
+            ->options(['TTL' => 1000]);
     }
 
     /**

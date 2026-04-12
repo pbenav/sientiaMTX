@@ -86,6 +86,47 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'notifications-updated');
     }
 
+    public function testTelegram(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'chat_id' => 'required|string',
+        ]);
+
+        $token = config('services.telegram.bot_token');
+
+        if (!$token) {
+            return response()->json([
+                'success' => false, 
+                'message' => __('notifications.telegram_bot_token_missing')
+            ], 400);
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $request->chat_id,
+                'text' => "🧪 *SientiaMTX - Prueba Personal*\n\nHola " . auth()->user()->name . ", ¡tu vinculación con Telegram funciona perfectamente! 🎉",
+                'parse_mode' => 'Markdown',
+            ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => __('notifications.telegram_test_success')
+                ]);
+            }
+
+            return response()->json([
+                'success' => false, 
+                'message' => $response->json('description') ?? 'Error desconocido de Telegram'
+            ], 400);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Update the user's geographical action area.
      */

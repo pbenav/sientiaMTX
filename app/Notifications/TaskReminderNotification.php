@@ -9,11 +9,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
-use App\Notifications\Channels\TelegramChannel;
+use App\Traits\DeterminesNotificationChannels;
 
 class TaskReminderNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $task;
 
@@ -23,30 +23,6 @@ class TaskReminderNotification extends Notification implements ShouldQueue
     public function __construct(Task $task)
     {
         $this->task = $task;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
-    {
-        $channels = ['database'];
-
-        if ($notifiable->wantsNotification('mail')) {
-            $channels[] = 'mail';
-        }
-
-        if ($notifiable->wantsNotification('web_push')) {
-            $channels[] = WebPushChannel::class;
-        }
-
-        if ($notifiable->wantsNotification('telegram')) {
-            $channels[] = TelegramChannel::class;
-        }
-
-        return $channels;
     }
 
     /**

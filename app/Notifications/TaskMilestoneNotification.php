@@ -8,9 +8,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
+
 class TaskMilestoneNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $task;
     protected $progress;
@@ -25,13 +28,31 @@ class TaskMilestoneNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the telegram representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toTelegram(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $key = 'p' . $this->progress;
+
+        return [
+            'text' => "🎯 *HITO ALCANZADO*\n\n" .
+                      "¡Felicidades! Se ha alcanzado el *{$this->progress}%* en la tarea: *{$this->task->title}*.\n\n" .
+                      "[Ver Tarea]($url)"
+        ];
+    }
+
+    /**
+     * Get the Web Push representation of the notification.
+     */
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title(__('Progreso: :percent%', ['percent' => $this->progress]))
+            ->icon('/images/logo-icon.png')
+            ->body(__('Se ha alcanzado un nuevo hito en: :title', ['title' => $this->task->title]))
+            ->action(__('Ver tarea'), 'view_task')
+            ->options(['TTL' => 1000]);
     }
 
     /**

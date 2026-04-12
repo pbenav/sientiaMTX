@@ -9,9 +9,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
+
 class TaskBlockedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $task;
     protected $reportedBy;
@@ -26,19 +29,16 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the Web Push representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
-        $channels = ['mail', 'database'];
-
-        if ($notifiable instanceof User && $notifiable->wantsNotification('telegram')) {
-            $channels[] = \App\Notifications\Channels\TelegramChannel::class;
-        }
-
-        return $channels;
+        return (new WebPushMessage)
+            ->title(__('tasks.notifications.blocked_alert', ['title' => $this->task->title]))
+            ->icon('/images/logo-icon.png')
+            ->body(__('tasks.notifications.blocked_alert', ['title' => $this->task->title]) . ' - ' . $this->reportedBy->name)
+            ->action(__('notifications.view_task'), 'view_task')
+            ->options(['TTL' => 1000]);
     }
 
     /**

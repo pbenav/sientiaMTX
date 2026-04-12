@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/subscribe', [\App\Http\Controllers\WebPushController::class, 'store'])->name('webpush.subscribe');
     Route::post('/notifications/unsubscribe', [\App\Http\Controllers\WebPushController::class, 'destroy'])->name('webpush.unsubscribe');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/telegram/test', [ProfileController::class, 'testTelegram'])->name('profile.telegram.test');
     Route::patch('/profile/zone', [ProfileController::class, 'updateZone'])->name('user.update-zone');
     Route::get('/profile/export', [GDPRController::class, 'export'])->name('profile.export');
     Route::post('/teams/{team}/kudos', [App\Http\Controllers\KudoController::class, 'store'])->name('teams.kudos.store');
