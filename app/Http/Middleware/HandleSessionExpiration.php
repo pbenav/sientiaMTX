@@ -27,10 +27,11 @@ class HandleSessionExpiration
                 ], 419);
             }
 
-            // Normal requests: redirect to login with a warning flash
+            // Normal requests: redirect to home directly to avoid showing 419 error page
+            // The 419 view (resources/views/errors/419.blade.php) handles the redirect if it reaches the error handler
             \Illuminate\Support\Facades\Log::warning("Session expiration intercepted for URL: " . $request->fullUrl());
             
-            return redirect()->route('login')
+            return redirect()->route('dashboard')
                 ->with('warning', 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.');
         }
     }
