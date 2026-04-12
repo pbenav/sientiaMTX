@@ -82,7 +82,7 @@
                     </div>
                     <div class="flex items-center gap-1.5 pt-1">
                         <!-- List View -->
-                        <a href="{{ route('teams.tasks.index', $team) }}"
+                        <a href="{{ route('teams.tasks.index', $team) }}" @click.stop
                             class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                             title="{{ __('navigation.task_list') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -93,7 +93,7 @@
                         </a>
 
                         <!-- Matrix View -->
-                        <a href="{{ route('teams.dashboard', $team) }}"
+                        <a href="{{ route('teams.dashboard', $team) }}" @click.stop
                             class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all border border-violet-100 dark:border-violet-800/50"
                             title="{{ __('teams.eisenhower_matrix') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -104,7 +104,7 @@
                         </a>
 
                         <!-- Gantt View -->
-                        <a href="{{ route('teams.gantt', $team) }}"
+                        <a href="{{ route('teams.gantt', $team) }}" @click.stop
                             class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                             title="{{ __('navigation.gantt') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -115,7 +115,7 @@
                         </a>
 
                         <!-- Kanban View -->
-                        <a href="{{ route('teams.kanban', $team) }}"
+                        <a href="{{ route('teams.kanban', $team) }}" @click.stop
                             class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                             title="{{ __('navigation.kanban') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -126,7 +126,7 @@
                         </a>
 
                         <!-- Members -->
-                        <a href="{{ route('teams.members', $team) }}"
+                        <a href="{{ route('teams.members', $team) }}" @click.stop
                             class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                             title="{{ __('teams.members') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -138,7 +138,7 @@
 
                         @can('update', $team)
                             <!-- Settings -->
-                            <a href="{{ route('teams.edit', $team) }}"
+                            <a href="{{ route('teams.edit', $team) }}" @click.stop
                                 class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all border border-gray-200 dark:border-gray-700"
                                 title="{{ __('teams.settings') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
