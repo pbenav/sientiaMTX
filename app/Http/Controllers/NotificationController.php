@@ -107,12 +107,16 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark all unread notifications as read.
+     * Get unread notifications for polling.
      */
-    public function markAllAsRead(): RedirectResponse
+    public function getUnread(Request $request): \Illuminate\Http\JsonResponse
     {
-        Auth::user()->unreadNotifications->markAsRead();
+        $unread = $request->user()->unreadNotifications()->latest()->limit(5)->get();
+        $count = $request->user()->unreadNotifications()->count();
 
-        return redirect()->back()->with('status', 'all-notifications-read');
+        return response()->json([
+            'unread' => $unread,
+            'count' => $count
+        ]);
     }
 }

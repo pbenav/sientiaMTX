@@ -83,7 +83,7 @@
                         </button>
                     </form>
 
-                    <form action="{{ route('notifications.bulk-action') }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar estas notificaciones?')">
+                    <form id="bulk-delete-notifications" action="{{ route('notifications.bulk-action') }}" method="POST" class="inline" onsubmit="window.confirmDelete('bulk-delete-notifications', '¿Estás seguro de que quieres eliminar estas notificaciones?'); return false;">
                         @csrf
                         <template x-for="id in selected" :key="id">
                             <input type="hidden" name="notification_ids[]" :value="id">

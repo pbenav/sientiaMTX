@@ -78,6 +78,52 @@
                 }
             });
             
+            Alpine.store('notifications', {
+                count: {{ auth()->check() ? Auth::user()->unreadNotifications->count() : 0 }},
+                lastChecked: Date.now(),
+                
+                async check() {
+                    try {
+                        const res = await fetch('{{ route('notifications.unread-count') }}');
+                        const data = await res.json();
+                        
+                        // If count increased, show a toast for the newest notification
+                        if (data.count > this.count && data.unread.length > 0) {
+                            const latest = data.unread[0];
+                            Swal.fire({
+                                title: '{{ __("Nueva notificación") }}',
+                                text: latest.data.message || '{{ __("Tienes una nueva actualización") }}',
+                                icon: 'info',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 5000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                                    toast.addEventListener('click', () => {
+                                        window.location.href = '{{ route("notifications.index") }}';
+                                    })
+                                }
+                            });
+                            
+                            // Emit global event for potential UI updates (like the bell badge)
+                            window.dispatchEvent(new CustomEvent('notifications-updated', { detail: { count: data.count } }));
+                        }
+                        
+                        this.count = data.count;
+                    } catch(e) { console.error('Notification check failed', e); }
+                },
+                
+                init() {
+                    @auth
+                    // Poll every 60 seconds
+                    setInterval(() => this.check(), 60000);
+                    @endauth
+                }
+            });
+
             // Initial sync (background)
             Alpine.store('timer').fetch();
         });
@@ -329,18 +375,22 @@
 
                     @auth
                         <!-- Notifications Bell -->
-                        <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10" title="{{ __('Notificaciones') }}">
+                        <a href="{{ route('notifications.index') }}" 
+                           class="relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10" 
+                           title="{{ __('Notificaciones') }}"
+                           x-data
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            @if(Auth::user()->unreadNotifications->count() > 0)
+                            <template x-if="$store.notifications.count > 0">
                                 <span class="absolute top-1 right-1 flex h-4 w-4">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white font-bold items-center justify-center">
-                                        {{ Auth::user()->unreadNotifications->count() > 99 ? '99+' : Auth::user()->unreadNotifications->count() }}
+                                    <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white font-bold items-center justify-center"
+                                          x-text="$store.notifications.count > 99 ? '99+' : $store.notifications.count">
                                     </span>
                                 </span>
-                            @endif
+                            </template>
                         </a>
 
                         <!-- User menu -->
