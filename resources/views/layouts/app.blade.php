@@ -256,7 +256,8 @@
 
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
-        class="bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 sticky top-0 z-50 w-full max-w-[100vw] left-0">
+        x-data="{ mobileMenuOpen: false }"
+        class="bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 sticky top-0 z-50 w-full overflow-hidden">
         <div class="max-w-none lg:{{ $maxWidth }} mx-auto px-2 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
@@ -405,7 +406,8 @@
                             @endif
                         </div>
                     @endauth
-                    <div class="flex items-center gap-1 pl-2 ml-1 border-l border-gray-200 dark:border-gray-800">
+                    <!-- Utility controls: hidden on mobile, shown on sm+ -->
+                    <div class="hidden sm:flex items-center gap-1 pl-2 ml-1 border-l border-gray-200 dark:border-gray-800">
                         @auth @include('layouts.partials.workday-timer') @endauth
                         @include('layouts.partials.theme-toggle')
                         @include('layouts.partials.layout-toggle')
@@ -413,12 +415,35 @@
                         @include('layouts.partials.language-toggle')
                     </div>
 
+                    <!-- Mobile: just notifications bell + hamburger -->
+                    <div class="flex items-center sm:hidden gap-2 ml-auto">
+                        @auth
+                        <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-400" x-data>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <template x-if="$store.notifications.count > 0">
+                                <span class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-red-500 text-[9px] font-bold text-white flex items-center justify-center"
+                                      x-text="$store.notifications.count > 9 ? '9+' : $store.notifications.count"></span>
+                            </template>
+                        </a>
+                        @endauth
+                        <!-- Hamburger -->
+                        <button @click="window.dispatchEvent(new CustomEvent('mobile-menu-open'))"
+                            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            aria-label="Menu">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+
 
 
                     @auth
-                        <!-- Notifications Bell -->
+                        <!-- Notifications Bell: hidden on mobile (in mobile block above) -->
                         <a href="{{ route('notifications.index') }}" 
-                           class="relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10" 
+                           class="hidden sm:inline-flex relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10" 
                            title="{{ __('Notificaciones') }}"
                            x-data
                         >
@@ -435,8 +460,8 @@
                             </template>
                         </a>
 
-                        <!-- User menu -->
-                        <div class="relative" x-data="{ open: false }">
+                        <!-- User menu: hidden on mobile -->
+                        <div class="hidden sm:block relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.outside="open = false"
                                 class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
                                 <div
@@ -515,6 +540,177 @@
             </div>
         </div>
     </nav>
+
+    {{-- ============================================================
+         MOBILE SLIDE-IN DRAWER
+         Full navigation panel triggered by hamburger button
+         ============================================================ --}}
+    @auth
+    @php
+        $drawerTeamId = null;
+        if (request()->route('team')) {
+            $drawerTeamId = is_object(request()->route('team'))
+                ? request()->route('team')->id
+                : request()->route('team');
+        }
+    @endphp
+    {{-- Drawer controlled via custom window event 'mobile-menu-open' --}}
+    <div id="mobile-drawer"
+         x-data="{ open: false }"
+         x-init="
+            window.addEventListener('mobile-menu-open', () => open = true);
+            window.addEventListener('mobile-menu-close', () => open = false);
+         "
+         class="sm:hidden">
+
+        {{-- Backdrop --}}
+        <div x-show="open"
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="open = false"
+             class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+             style="display:none"></div>
+
+        {{-- Drawer panel --}}
+        <div x-show="open"
+             x-transition:enter="transition ease-out duration-250"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             class="fixed inset-y-0 left-0 z-[70] w-72 bg-white dark:bg-gray-900 shadow-2xl flex flex-col overflow-y-auto transform"
+             style="display:none">
+
+            {{-- Drawer header --}}
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <span class="font-bold text-gray-900 dark:text-white text-lg" style="font-family:'Space Grotesk',sans-serif">
+                    sientia<span class="text-violet-600 dark:text-violet-400">MTX</span>
+                </span>
+                <button @click="open = false" class="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {{-- User info --}}
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white shadow">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                </div>
+                <div class="min-w-0">
+                    <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-400 truncate">{{ auth()->user()->email }}</p>
+                </div>
+            </div>
+
+            {{-- Navigation links --}}
+            <nav class="flex-1 px-3 py-4 space-y-1">
+
+                {{-- Main --}}
+                <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Principal</p>
+                <a href="{{ route('teams.index') }}" @click="open = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                          {{ request()->routeIs('teams.index') ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {{ __('navigation.my_teams') }}
+                </a>
+                <a href="{{ route('notifications.index') }}" @click="open = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                          {{ request()->routeIs('notifications.*') ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    Notificaciones
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <span class="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5">{{ auth()->user()->unreadNotifications->count() }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('media.index') }}" @click="open = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                          {{ request()->routeIs('media.index') ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                    </svg>
+                    {{ __('tasks.disk_quota') }}
+                </a>
+                <a href="{{ route('docs') }}" @click="open = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Documentación
+                </a>
+
+                {{-- Team views (if inside a team) --}}
+                @if($drawerTeamId)
+                <div class="pt-3">
+                    <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Vistas del Equipo</p>
+                    @php
+                        $drawerViews = [
+                            ['name' => 'Escritorio', 'route' => route('teams.time-reports', $drawerTeamId), 'active' => request()->routeIs('teams.time-reports')],
+                            ['name' => __('forum.title') ?? 'Foro', 'route' => route('teams.forum.index', $drawerTeamId), 'active' => request()->routeIs('teams.forum.*')],
+                            ['name' => __('navigation.task_list'), 'route' => route('teams.tasks.index', $drawerTeamId), 'active' => request()->routeIs('teams.tasks.*')],
+                            ['name' => __('teams.eisenhower_matrix'), 'route' => route('teams.dashboard', $drawerTeamId), 'active' => request()->routeIs('teams.dashboard')],
+                            ['name' => __('navigation.gantt'), 'route' => route('teams.gantt', $drawerTeamId), 'active' => request()->routeIs('teams.gantt')],
+                            ['name' => __('navigation.kanban'), 'route' => route('teams.kanban', $drawerTeamId), 'active' => request()->routeIs('teams.kanban')],
+                            ['name' => __('teams.view_members'), 'route' => route('teams.members', $drawerTeamId), 'active' => request()->routeIs('teams.members')],
+                        ];
+                    @endphp
+                    @foreach($drawerViews as $dv)
+                        <a href="{{ $dv['route'] }}" @click="open = false"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                                  {{ $dv['active'] ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                            {{ $dv['name'] }}
+                        </a>
+                    @endforeach
+                </div>
+                @endif
+
+                @can('admin')
+                <div class="pt-3">
+                    <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Administración</p>
+                    <a href="{{ route('settings.users') }}" @click="open = false"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        {{ __('navigation.users') }}
+                    </a>
+                    <a href="{{ route('settings.mail') }}" @click="open = false"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        {{ __('navigation.settings') }}
+                    </a>
+                </div>
+                @endcan
+            </nav>
+
+            {{-- Footer actions --}}
+            <div class="px-3 py-4 border-t border-gray-100 dark:border-gray-800 space-y-1">
+                <a href="{{ route('profile.edit') }}" @click="open = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Mi Perfil
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        {{ __('navigation.logout') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endauth
 
     <!-- Flash Messages -->
     @if (session('success'))

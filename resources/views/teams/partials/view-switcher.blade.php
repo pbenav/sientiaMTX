@@ -63,6 +63,7 @@
     }
 @endphp
 
+<div class="hidden sm:block w-full">
 <div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
     {{-- Scrollable tab strip --}}
     <div class="flex-1 min-w-0 overflow-x-auto no-scrollbar">
@@ -92,4 +93,5 @@
     <div class="shrink-0">
         @include('teams.partials.hide-completed-toggle')
     </div>
+</div>
 </div>
