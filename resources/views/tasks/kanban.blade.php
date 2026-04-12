@@ -13,6 +13,41 @@
             background-color: var(--col-bg);
             opacity: 0.3;
         }
+
+        /* Responsive Kanban column widths */
+        @media (max-width: 640px) {
+            .kanban-column {
+                width: 280px !important;
+                flex: 0 0 280px !important;
+            }
+            .kanban-column .column-title {
+                font-size: 11px;
+                letter-spacing: 0.05em;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+            /* iPad/Tablet: smaller columns to fit 2-3 without horizontal scroll */
+            .kanban-column {
+                width: 260px !important;
+                flex: 0 0 260px !important;
+            }
+            .kanban-column .column-title {
+                font-size: 10px;
+                letter-spacing: 0.05em;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            /* Desktop: standard 320px columns */
+            .kanban-column {
+                width: 320px !important;
+                flex: 0 0 320px !important;
+            }
+            .kanban-column .column-title {
+                font-size: 13px;
+            }
+        }
     </style>
 
     <x-slot name="header">
@@ -53,65 +88,66 @@
     <div class="flex flex-col min-h-[calc(100vh-180px)] w-full pb-10">
         <!-- Kanban Board Container -->
         <div class="flex-1 overflow-x-auto pb-6 pt-2 no-scrollbar">
-            <div class="flex h-full gap-4 px-4 sm:px-6 w-max min-w-full items-stretch pb-4" id="kanban-board">
+            <div class="flex h-full gap-2 sm:gap-3 md:gap-4 px-2 sm:px-3 md:px-6 w-max min-w-full items-stretch pb-4" id="kanban-board">
                 @foreach($columns as $column)
-                    <div class="shrink-0 flex flex-col min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
-                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40; width: 320px; flex: 0 0 320px;"
+                    <div class="shrink-0 flex flex-col min-h-[600px] sm:min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
+                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40; width: 280px; flex: 0 0 280px;"
+                         class="lg:basis-[320px]"
                          data-column-id="{{ $column->id }}">
                         <!-- Accent Top Bar -->
                         <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>
                         
                         <!-- Column Header -->
-                        <div class="p-4 flex flex-col gap-2 cursor-grab active:cursor-grabbing column-handle">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 group/title">
-                                    <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title" 
+                        <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-grab active:cursor-grabbing column-handle">
+                            <div class="flex items-center justify-between gap-1">
+                                <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                                    <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title truncate" 
                                         contenteditable="true" 
                                         onblur="updateColumnTitle({{ $column->id }}, this.innerText)"
                                         onclick="event.stopPropagation()">
                                         {{ $column->title }}
                                     </h3>
-                                    <span class="px-2.5 py-1 rounded-xl bg-black/5 dark:bg-white/10 text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm">
+                                    <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/10 text-[10px] sm:text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm shrink-0">
                                         {{ count($column->tasks->filter(fn($t) => !$t->is_archived)) }}
                                     </span>
 
                                     <!-- Trash Icon for Custom Columns -->
                                     @if($column->type === 'custom')
                                         <button onclick="deleteColumn({{ $column->id }})" 
-                                                class="p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-200/50 dark:border-red-500/20"
+                                                class="p-1 sm:p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-200/50 dark:border-red-500/20 shrink-0"
                                                 title="Eliminar columna">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 w-3 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
                                     @endif
                                 </div>
-                                        <div class="flex items-center gap-2" onclick="event.stopPropagation()">
-                                            <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                        <div class="flex items-center gap-1 sm:gap-2 shrink-0" onclick="event.stopPropagation()">
+                                            <div class="flex items-center gap-1 sm:gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
                                                 <!-- Palette Icon -->
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 sm:h-3 w-2.5 sm:w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-3" />
                                                 </svg>
                                                 @foreach(['#fee2e2', '#dbeafe', '#dcfce7', '#fef3c7'] as $hex)
                                                     <button onclick="updateColumnColor({{ $column->id }}, '{{ $hex }}')" 
-                                                            class="w-3.5 h-3.5 rounded-full border border-gray-300/50 dark:border-gray-600/50 hover:scale-125 transition-transform shadow-sm"
+                                                            class="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5 rounded-full border border-gray-300/50 dark:border-gray-600/50 hover:scale-125 transition-transform shadow-sm"
                                                             style="background-color: {{ $hex }};"
                                                             title="Cambiar color"></button>
                                                 @endforeach
                                                 <!-- Custom Color Picker -->
                                                 <div class="relative flex items-center justify-center">
                                                     <button onclick="this.nextElementSibling.click()" 
-                                                            class="w-3.5 h-3.5 rounded-full border-2 border-dashed border-gray-400 dark:border-gray-500 hover:scale-125 hover:border-violet-500 transition-all flex items-center justify-center bg-transparent"
+                                                            class="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5 rounded-full border-2 border-dashed border-gray-400 dark:border-gray-500 hover:scale-125 hover:border-violet-500 transition-all flex items-center justify-center bg-transparent"
                                                             title="Color personalizado">
-                                                        <span class="text-[8px] font-bold text-gray-500">+</span>
+                                                        <span class="text-[6px] sm:text-[7px] md:text-[8px] font-bold text-gray-500">+</span>
                                                     </button>
                                                     <input type="color" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" 
                                                            onchange="updateColumnColor({{ $column->id }}, this.value)" 
                                                            value="{{ $column->color ?? '#f9fafb' }}">
                                                 </div>
                                             </div>
-                                    <div class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <div class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 md:h-4 w-3 sm:w-3.5 md:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                                         </svg>
                                     </div>
@@ -120,7 +156,7 @@
                         </div>
 
                         <!-- Tasks List -->
-                        <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
+                        <div class="flex-1 overflow-y-auto px-1.5 sm:px-2 pb-2.5 sm:pb-3.5 md:pb-4 space-y-2 sm:space-y-2.5 md:space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
                             @foreach($column->tasks->filter(fn($t) => !$t->is_archived) as $task)
                                 @php
                                     $quadrant = $task->getQuadrant($task);
@@ -131,7 +167,7 @@
                                          get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
                                      }"
                                      :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ $task->status === 'completed' ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
-                                     class="backdrop-blur-sm rounded-2xl shadow-md border-l-[6px] p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
+                                     class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
                                      data-task-id="{{ $task->id }}"
                                      style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms">
                                     
