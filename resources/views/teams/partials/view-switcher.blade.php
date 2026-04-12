@@ -64,16 +64,16 @@
 @endphp
 
 <div class="w-full">
-<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm overflow-x-auto no-scrollbar">
+<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm overflow-x-auto no-scrollbar gap-1.5">
     {{-- Scrollable tab strip --}}
     <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-0.5 w-max pr-2">
+        <div class="flex items-center gap-0.5">
             @foreach ($views as $index => $view)
                 @if ($index === 7)
-                    <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-1.5 shrink-0"></div>
+                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 shrink-0"></div>
                 @endif
                 <a href="{{ $view['route'] }}"
-                    class="flex flex-col items-center justify-center gap-0.5 px-2 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max sm:min-w-[60px]
+                    class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
                         {{ $view['active']
                             ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60' }}"
@@ -89,7 +89,7 @@
     </div>
 
     {{-- Divider + toggle --}}
-    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1.5 shrink-0"></div>
+    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 shrink-0"></div>
     <div class="shrink-0">
         @include('teams.partials.hide-completed-toggle')
     </div>
