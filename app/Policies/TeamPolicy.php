@@ -8,22 +8,12 @@ use App\Models\User;
 class TeamPolicy
 {
     /**
-     * Perform pre-authorization checks.
-     */
-    public function before(User $user, string $ability): ?bool
-    {
-        if ($user->is_admin) {
-            return true;
-        }
-
-        return null;
-    }
-
-    /**
      * Determine whether the user can view the team.
      */
     public function view(User $user, Team $team): bool
     {
+        // Solo miembros pueden ver la operativa del equipo.
+        // Si un admin necesita entrar, debe invitarse a sí mismo (dejando rastro).
         return $team->members()->where('user_id', $user->id)->exists();
     }
 
@@ -32,7 +22,8 @@ class TeamPolicy
      */
     public function update(User $user, Team $team): bool
     {
-        return $team->created_by_id === $user->id
+        return $user->is_admin 
+            || $team->created_by_id === $user->id
             || $this->isCoordinator($user, $team);
     }
 
@@ -41,7 +32,7 @@ class TeamPolicy
      */
     public function delete(User $user, Team $team): bool
     {
-        return $team->created_by_id === $user->id;
+        return $user->is_admin || $team->created_by_id === $user->id;
     }
 
     /**
@@ -49,7 +40,7 @@ class TeamPolicy
      */
     public function transferOwnership(User $user, Team $team): bool
     {
-        return $team->created_by_id === $user->id;
+        return $user->is_admin || $team->created_by_id === $user->id;
     }
 
     /**
@@ -65,7 +56,8 @@ class TeamPolicy
      */
     public function manageMembers(User $user, Team $team): bool
     {
-        return $team->isOwner($user)
+        return $user->is_admin
+            || $team->isOwner($user)
             || $team->isCoordinator($user);
     }
 
