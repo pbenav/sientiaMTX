@@ -313,6 +313,14 @@
                             friendlyMsg = 'Conflicto con una suscripción anterior. Intenta recargar la página.';
                         } else if (err.message.includes('ServiceWorker')) {
                             friendlyMsg = 'Error relacionado con el Service Worker. Intenta recargar la página.';
+                        } else if (err.message.includes('push service error')) {
+                            // Detección especial para Brave
+                            const isBrave = navigator.brave && await navigator.brave.isBrave();
+                            if (isBrave) {
+                                friendlyMsg = 'Brave bloquea las notificaciones por defecto. Ve a brave://settings/privacy y activa "Usar servicios de Google para la mensajería push", luego reinicia el navegador.';
+                            } else {
+                                friendlyMsg = 'El navegador no pudo conectar con el servicio de notificaciones. Verifica tu conexión o intenta con otro navegador.';
+                            }
                         }
 
                         showStatus('❌ Error al suscribirse: ' + friendlyMsg, 'error');
