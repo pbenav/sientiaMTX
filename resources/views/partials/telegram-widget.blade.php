@@ -1,6 +1,10 @@
 <div x-data="telegramChat()" 
-     class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end"
-     style="position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 9999;"
+     class="fixed z-[9999] flex flex-col items-end"
+     :style="`position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 9999; transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
+     @mousemove.window="drag($event)"
+     @touchmove.window="drag($event)"
+     @mouseup.window="stopDrag()"
+     @touchend.window="stopDrag()"
      x-init="initChat()"
      @keydown.escape="open = false">
     
@@ -135,9 +139,12 @@
     </div>
 
     <!-- Botón Flotante -->
-    <button @click="open = !open; if(open) scrollToBottom()" 
-            class="group relative w-14 h-14 bg-gradient-to-br from-sky-400 to-blue-600 rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 hover:scale-110 active:scale-95 ring-4 ring-white dark:ring-gray-950"
-            style="width: 56px; height: 56px; background: linear-gradient(135deg, #38bdf8, #2563eb); border-radius: 9999px; display: flex; align-items: center; justify-center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border: 4px solid white;">
+    <button @mousedown="startDrag($event)" 
+            @touchstart="startDrag($event)" 
+            @click="toggleChat($event)" 
+            class="group relative w-14 h-14 bg-gradient-to-br from-sky-400 to-blue-600 rounded-full shadow-2xl flex items-center justify-center transition-transform duration-300 active:scale-95 ring-4 ring-white dark:ring-gray-950"
+            :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab group-hover:scale-110'"
+            style="width: 56px; height: 56px; background: linear-gradient(135deg, #38bdf8, #2563eb); border-radius: 9999px; display: flex; align-items: center; justify-center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border: 4px solid white; touch-action: none;">
         <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-gray-950 shadow-sm" 
              style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; background: #ef4444; color: white; border-radius: 9999px; display: none;" 
              x-show="unread > 0" x-text="unread" x-cloak></div>
@@ -170,6 +177,51 @@
             lastMessageId: 0,
             firstMessageId: 0,
             canLoadMore: true,
+            
+            pos: { x: 0, y: 0 },
+            isDragging: false,
+            wasDragged: false,
+            startX: 0,
+            startY: 0,
+            
+            startDrag(e) {
+                if (this.open) return;
+                this.isDragging = true;
+                this.wasDragged = false;
+                const event = e.type.includes('touch') ? e.touches[0] : e;
+                this.startX = event.clientX - this.pos.x;
+                this.startY = event.clientY - this.pos.y;
+            },
+            drag(e) {
+                if (!this.isDragging) return;
+                if (e.type.includes('touch') && e.cancelable) {
+                    e.preventDefault();
+                }
+                
+                const event = e.type.includes('touch') ? e.touches[0] : e;
+                const newX = event.clientX - this.startX;
+                const newY = event.clientY - this.startY;
+                
+                if (Math.abs(newX - this.pos.x) > 3 || Math.abs(newY - this.pos.y) > 3) {
+                    this.wasDragged = true;
+                }
+                
+                this.pos.x = newX;
+                this.pos.y = newY;
+            },
+            stopDrag() {
+                setTimeout(() => { this.isDragging = false; }, 50);
+            },
+            toggleChat(e) {
+                if (this.wasDragged) {
+                    if (e) e.preventDefault();
+                    this.wasDragged = false;
+                    return;
+                }
+                this.open = !this.open;
+                if(this.open) this.scrollToBottom();
+            },
+
             initChat() {
                 if (!this.teamId) {
                     this.messages = [{ id: 1, text: '⚠️ Entra en el panel de un equipo concreto para usar el chat de Telegram.', author: 'SientiaBot', from_me: false, time: 'Sistema' }];
