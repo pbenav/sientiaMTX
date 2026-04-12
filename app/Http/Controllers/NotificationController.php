@@ -107,6 +107,16 @@ class NotificationController extends Controller
     }
 
     /**
+     * Mark all notifications as read.
+     */
+    public function markAllAsRead(Request $request): RedirectResponse
+    {
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
+        return redirect()->back()->with('success', __('notifications.all_read_success') ?? 'Notificaciones marcadas como leídas.');
+    }
+
+    /**
      * Get unread notifications for polling.
      */
     public function getUnread(Request $request): \Illuminate\Http\JsonResponse
