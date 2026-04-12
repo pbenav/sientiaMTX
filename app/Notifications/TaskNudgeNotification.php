@@ -39,7 +39,7 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
         ]);
 
         return (new WebPushMessage)
-            ->title(__('tasks.notifications.nudge_received', ['title' => $this->task->title]))
+            ->title(__('tasks.nudge_received', ['title' => $this->task->title]))
             ->icon('/images/logo-icon.png')
             ->body($message)
             ->action(__('notifications.view_task'), 'view_task')
@@ -78,7 +78,7 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
         ]);
 
         return (new MailMessage)
-            ->subject(__('tasks.notifications.nudge_received', ['title' => $this->task->title]))
+            ->subject(__('tasks.nudge_received', ['title' => $this->task->title]))
             ->greeting(__('notifications.hello', ['name' => $notifiable->name]))
             ->line($message)
             ->action(__('notifications.view_task'), $url)

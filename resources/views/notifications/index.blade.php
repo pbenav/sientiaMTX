@@ -1,9 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Notificaciones') }}
-            </h2>
+            <div class="flex items-center gap-3">
+                <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('dashboard') }}" class="p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400" title="{{ __('Volver') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ __('Notificaciones') }}
+                </h2>
+            </div>
             <div class="flex gap-2">
                 @if($notifications->where('read_at', null)->count() > 0)
                     <form action="{{ route('notifications.mark-all-as-read') }}" method="POST">
