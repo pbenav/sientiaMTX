@@ -1,30 +1,6 @@
 <x-app-layout>
     @push('styles')
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
         <style>
-            .EasyMDEContainer .editor-toolbar {
-                border-top-left-radius: 1rem;
-                border-top-right-radius: 1rem;
-                background: #f9fafb;
-                border-color: #e5e7eb;
-            }
-            .dark .EasyMDEContainer .editor-toolbar {
-                background: #1f2937;
-                border-color: #374151;
-            }
-            .dark .EasyMDEContainer .editor-toolbar button { color: #d1d5db; }
-            .dark .EasyMDEContainer .editor-toolbar button.active,
-            .dark .EasyMDEContainer .editor-toolbar button:hover { background: #374151; color: #fff; }
-            .dark .EasyMDEContainer .CodeMirror {
-                background: #111827;
-                color: #e5e7eb;
-                border-color: #374151;
-            }
-            .EasyMDEContainer .CodeMirror {
-                border-bottom-left-radius: 1rem;
-                border-bottom-right-radius: 1rem;
-                min-height: 150px;
-            }
             /* Markdown Content Styling */
             .markdown-content ul { list-style-type: disc !important; padding-left: 1.5rem; margin-bottom: 1rem; }
             .markdown-content ol { list-style-type: decimal !important; padding-left: 1.5rem; margin-bottom: 1rem; }
@@ -36,13 +12,7 @@
             .markdown-content blockquote { border-left: 4px solid #8b5cf6; padding-left: 1rem; font-style: italic; color: #6b7280; margin-bottom: 1rem; }
             .dark .markdown-content blockquote { color: #9ca3af; }
             .markdown-content a { color: #8b5cf6; text-decoration: underline; }
-            /* Fix modal EasyMDE issues */
-            .CodeMirror { z-index: 100 !important; }
         </style>
-    @endpush
-
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
     @endpush
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -214,7 +184,9 @@
                                     <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
-                                        <textarea id="edit-content-{{ $message->id }}" name="content" class="w-full">{{ $message->content }}</textarea>
+                                        <textarea id="edit-content-{{ $message->id }}" name="content" 
+                                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm p-4 dark:text-gray-200 transition-colors"
+                                            rows="5">{{ $message->content }}</textarea>
                                         <div class="flex justify-end gap-2 mt-2">
                                             <button type="button" onclick="cancelEdit({{ $message->id }})" 
                                                 class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
@@ -327,34 +299,14 @@
     </div>
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                window.replyEditor = new EasyMDE({
-                    element: document.getElementById('reply-content'),
-                    spellChecker: false,
-                    autosave: { enabled: true, uniqueId: "reply-{{ $thread->id }}", delay: 1000 },
-                    status: false,
-                    placeholder: "Escribe tu respuesta aquí...",
-                    toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
-                });
-
-                window.editEditor = new EasyMDE({
-                    element: document.getElementById('edit_content'),
-                    spellChecker: false,
-                    status: false,
-                    toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
-                });
-            });
-
-            window.inlineEditors = {};
-
             function quoteMessage(name, content) {
-                if (window.replyEditor) {
+                const textarea = document.getElementById('reply-content');
+                if (textarea) {
                     const quote = `> **${name}**: ${content}\n\n`;
-                    window.replyEditor.value(quote + window.replyEditor.value());
-                    window.replyEditor.codemirror.focus();
-                    document.querySelector('.EasyMDEContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    textarea.value = quote + textarea.value;
+                    textarea.focus();
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
 
@@ -362,23 +314,7 @@
                 // Show edit form, hide message
                 document.getElementById(`message-view-${messageId}`).classList.add('hidden');
                 document.getElementById(`message-edit-${messageId}`).classList.remove('hidden');
-
-                // Initialize editor if not already done
-                if (!window.inlineEditors[messageId]) {
-                    window.inlineEditors[messageId] = new EasyMDE({
-                        element: document.getElementById(`edit-content-${messageId}`),
-                        spellChecker: false,
-                        status: false,
-                        toolbar: ["bold", "italic", "heading", "|", "quote", "|", "link", "code", "guide"],
-                    });
-                } else {
-                    window.inlineEditors[messageId].value(content);
-                }
-                
-                setTimeout(() => {
-                    window.inlineEditors[messageId].codemirror.refresh();
-                    window.inlineEditors[messageId].codemirror.focus();
-                }, 10);
+                document.getElementById(`edit-content-${messageId}`).focus();
             }
 
             function cancelEdit(messageId) {
