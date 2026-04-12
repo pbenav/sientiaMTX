@@ -63,26 +63,26 @@
     }
 @endphp
 
-<div class="hidden sm:block w-full">
-<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+<div class="w-full">
+<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm overflow-x-auto no-scrollbar">
     {{-- Scrollable tab strip --}}
-    <div class="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+    <div class="flex-1 min-w-0">
         <div class="flex items-center gap-0.5 w-max pr-2">
             @foreach ($views as $index => $view)
                 @if ($index === 7)
                     <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-1.5 shrink-0"></div>
                 @endif
                 <a href="{{ $view['route'] }}"
-                    class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all shrink-0 min-w-[60px]
+                    class="flex flex-col items-center justify-center gap-0.5 px-2 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max sm:min-w-[60px]
                         {{ $view['active']
                             ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60' }}"
                     title="{{ $view['name'] }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="{{ $view['active'] ? '2.5' : '2' }}">
                         {!! $view['icon'] !!}
                     </svg>
-                    <span class="text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $view['name'] }}</span>
+                    <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $view['name'] }}</span>
                 </a>
             @endforeach
         </div>

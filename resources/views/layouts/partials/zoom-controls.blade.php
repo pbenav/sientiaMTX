@@ -60,7 +60,7 @@
          x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
          x-cloak style="display: none"
-         class="absolute right-0 mt-3 w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl z-[70] p-6 text-gray-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5">
+         class="absolute right-0 mt-3 w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl z-[90] p-6 text-gray-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5">
         
         <div class="flex flex-col gap-6">
             <!-- Header -->

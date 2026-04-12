@@ -257,7 +257,7 @@
     <!-- Navigation -->
     <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
         x-data="{ mobileMenuOpen: false }"
-        class="bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 sticky top-0 z-50 w-full overflow-hidden">
+        class="bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 sticky top-0 z-[80] w-full overflow-visible">
         <div class="max-w-none lg:{{ $maxWidth }} mx-auto px-2 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
@@ -412,7 +412,7 @@
                         @include('layouts.partials.theme-toggle')
                         @include('layouts.partials.layout-toggle')
                         @include('layouts.partials.zoom-controls')
-                        @include('layouts.partials.language-toggle')
+                        @include('layouts.partials/language-toggle')
                     </div>
 
                     <!-- Mobile: just notifications bell + hamburger -->
@@ -475,7 +475,7 @@
                                 </svg>
                             </button>
                             <div x-show="open" x-transition x-cloak style="display: none"
-                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-[90]">
                                 <div
                                     class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent">
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -572,8 +572,8 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              @click="open = false"
-             class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-             style="display:none"></div>
+             class="fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm">
+        </div>
 
         {{-- Drawer panel --}}
         <div x-show="open"
@@ -583,8 +583,8 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="-translate-x-full"
-             class="fixed inset-y-0 left-0 z-[70] w-72 bg-white dark:bg-gray-900 shadow-2xl flex flex-col overflow-y-auto transform"
-             style="display:none">
+             class="fixed inset-y-0 left-0 z-[9999] w-72 bg-white dark:bg-gray-900 shadow-2xl flex flex-col overflow-y-auto transform">
+        
 
             {{-- Drawer header --}}
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
