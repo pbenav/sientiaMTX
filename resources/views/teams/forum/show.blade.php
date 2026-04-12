@@ -170,8 +170,9 @@
                         </div>
 
                         <div class="relative group w-full">
-                            <!-- Actions Bar (Top right for user, Top left for others) -->
-                            <div class="absolute -top-3 {{ $isCurrentUser ? 'right-0' : 'left-0' }} z-10 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <!-- Actions Bar -->
+                            <div id="actions-{{ $message->id }}" 
+                                class="absolute -top-3 {{ $isCurrentUser ? 'right-0' : 'left-0' }} z-10 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 @if (!$thread->is_locked)
                                     <!-- Reply -->
                                     <button type="button"
@@ -224,12 +225,12 @@
 
                             <!-- Edit Mode (Hidden) -->
                             @if ($isCurrentUser)
-                                <div id="message-edit-{{ $message->id }}" class="hidden w-full">
+                                <div id="message-edit-{{ $message->id }}" class="hidden w-full pt-2">
                                     <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
                                         <textarea id="edit-content-{{ $message->id }}" name="content" 
-                                            class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-violet-500 dark:border-violet-600 rounded-2xl focus:ring-0 text-sm p-4 dark:text-gray-200 transition-colors shadow-inner"
+                                            class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-violet-500 dark:border-violet-600 rounded-2xl focus:ring-0 text-sm p-4 dark:text-gray-200 transition-colors shadow-inner min-h-[150px]"
                                             rows="5">{{ $message->content }}</textarea>
                                         <div class="flex justify-end gap-2 mt-2">
                                             <button type="button" onclick="cancelEdit({{ $message->id }})" 
@@ -237,7 +238,7 @@
                                                 Cancelar
                                             </button>
                                             <button type="submit" 
-                                                class="px-4 py-1.5 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-all shadow-md shadow-violet-600/20">
+                                                class="px-4 py-1.5 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 active:scale-95">
                                                 Guardar Cambios
                                             </button>
                                         </div>
@@ -307,14 +308,16 @@
             }
 
             function editMessage(messageId, content) {
-                // Show edit form, hide message
+                // Show edit form, hide message and actions
                 document.getElementById(`message-view-${messageId}`).classList.add('hidden');
+                document.getElementById(`actions-${messageId}`).classList.add('hidden');
                 document.getElementById(`message-edit-${messageId}`).classList.remove('hidden');
                 document.getElementById(`edit-content-${messageId}`).focus();
             }
 
             function cancelEdit(messageId) {
                 document.getElementById(`message-view-${messageId}`).classList.remove('hidden');
+                document.getElementById(`actions-${messageId}`).classList.remove('hidden');
                 document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
             }
         </script>
