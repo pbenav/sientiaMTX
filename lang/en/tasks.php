@@ -135,7 +135,7 @@ return [
 
     'nudges' => [
         'collaborative' => 'Hello! 👋 The team has already completed :progress% of the task ":title". Only you are left to reach the goal. Do you need help with anything to finish your part?',
-        'deadline' => '⏳ Countdown! The task ":title" is due in less than 24 hours. Make sure to mark your instance as completed so the group progress updates correctly.',
+        'deadline' => '⏳ Countdown! The task ":title" :time_text. Make sure to mark your instance as completed so the group progress updates correctly.',
         'unblocking' => 'We see your part in ":title" is still pending. 🚩 Is there any blocker or technical doubt preventing you from moving forward? Click here to leave a comment for the manager.',
     ],
     'milestones' => [

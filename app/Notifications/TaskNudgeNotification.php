@@ -33,9 +33,23 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
      */
     public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
+        $timeText = '';
+        if ($this->task->due_date) {
+            $isOverdue = $this->task->due_date->isPast();
+            $diff = $this->task->due_date->diffForHumans(now(), [
+                'parts' => 2,
+                'join' => true,
+                'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+            ]);
+            $timeText = $isOverdue 
+                ? __('notifications.task_expired_ago', ['time' => $diff])
+                : __('notifications.task_expires_in', ['time' => $diff]);
+        }
+
         $message = __('tasks.nudges.' . $this->type, [
             'title' => $this->task->title,
-            'progress' => $this->teamProgress
+            'progress' => $this->teamProgress,
+            'time_text' => $timeText
         ]);
 
         return (new WebPushMessage)
@@ -53,9 +67,23 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
     {
         $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
         
+        $timeText = '';
+        if ($this->task->due_date) {
+            $isOverdue = $this->task->due_date->isPast();
+            $diff = $this->task->due_date->diffForHumans(now(), [
+                'parts' => 2,
+                'join' => true,
+                'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+            ]);
+            $timeText = $isOverdue 
+                ? __('notifications.task_expired_ago', ['time' => $diff])
+                : __('notifications.task_expires_in', ['time' => $diff]);
+        }
+
         $message = __('tasks.nudges.' . $this->type, [
             'title' => $this->task->title,
-            'progress' => $this->teamProgress
+            'progress' => $this->teamProgress,
+            'time_text' => $timeText
         ]);
 
         return [
@@ -72,9 +100,23 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
     {
         $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
         
+        $timeText = '';
+        if ($this->task->due_date) {
+            $isOverdue = $this->task->due_date->isPast();
+            $diff = $this->task->due_date->diffForHumans(now(), [
+                'parts' => 2,
+                'join' => true,
+                'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+            ]);
+            $timeText = $isOverdue 
+                ? __('notifications.task_expired_ago', ['time' => $diff])
+                : __('notifications.task_expires_in', ['time' => $diff]);
+        }
+
         $message = __('tasks.nudges.' . $this->type, [
             'title' => $this->task->title,
-            'progress' => $this->teamProgress
+            'progress' => $this->teamProgress,
+            'time_text' => $timeText
         ]);
 
         return (new MailMessage)
@@ -92,6 +134,19 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $timeText = '';
+        if ($this->task->due_date) {
+            $isOverdue = $this->task->due_date->isPast();
+            $diff = $this->task->due_date->diffForHumans(now(), [
+                'parts' => 2,
+                'join' => true,
+                'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+            ]);
+            $timeText = $isOverdue 
+                ? __('notifications.task_expired_ago', ['time' => $diff])
+                : __('notifications.task_expires_in', ['time' => $diff]);
+        }
+
         return [
             'task_id' => $this->task->id,
             'title' => $this->task->title,
@@ -99,7 +154,8 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
             'type' => 'nudge_' . $this->type,
             'message' => __('tasks.nudges.' . $this->type, [
                 'title' => $this->task->title,
-                'progress' => $this->teamProgress
+                'progress' => $this->teamProgress,
+                'time_text' => $timeText
             ])
         ];
     }

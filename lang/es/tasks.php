@@ -153,7 +153,7 @@ return [
 
     'nudges' => [
         'collaborative' => '¡Hola! 👋 El equipo ya ha completado el :progress% de la tarea ":title". Solo faltas tú para que lleguemos a la meta. ¿Necesitas ayuda con algo para terminar tu parte?',
-        'deadline' => '⏳ ¡Cuenta atrás! La tarea ":title" vence en menos de 24 horas. Asegúrate de marcar tu instancia como completada para que el progreso del grupo se actualice correctamente.',
+        'deadline' => '⏳ ¡Cuenta atrás! La tarea ":title" :time_text. Asegúrate de marcar tu instancia como completada para que el progreso del grupo se actualice correctamente.',
         'unblocking' => 'Vemos que tu parte en ":title" sigue pendiente. 🚩 ¿Hay algún bloqueo o duda técnica que te impida avanzar? Pulsa aquí para dejar un comentario al gestor.',
     ],
     'milestones' => [
