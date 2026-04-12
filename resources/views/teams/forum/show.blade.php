@@ -170,6 +170,50 @@
                         </div>
 
                         <div class="relative group w-full">
+                            <!-- Actions Bar (Top right for user, Top left for others) -->
+                            <div class="absolute -top-3 {{ $isCurrentUser ? 'right-0' : 'left-0' }} z-10 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                @if (!$thread->is_locked)
+                                    <!-- Reply -->
+                                    <button type="button"
+                                        onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
+                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                        title="Responder citando">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Edit -->
+                                    @if ($isCurrentUser)
+                                        <button type="button"
+                                            onclick="editMessage({{ $message->id }}, `{{ addslashes($message->content) }}`)"
+                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                            title="Editar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                    @endif
+
+                                    <!-- Delete -->
+                                    @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
+                                        <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}"
+                                            method="POST" onsubmit="return confirm('{{ $isFirst ? 'Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?' : '¿Eliminar este mensaje?' }}');"
+                                            class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                                title="Eliminar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endif
+                            </div>
+
                             <!-- View Mode -->
                             <div id="message-view-{{ $message->id }}"
                                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }}">
@@ -185,7 +229,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <textarea id="edit-content-{{ $message->id }}" name="content" 
-                                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm p-4 dark:text-gray-200 transition-colors"
+                                            class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-violet-500 dark:border-violet-600 rounded-2xl focus:ring-0 text-sm p-4 dark:text-gray-200 transition-colors shadow-inner"
                                             rows="5">{{ $message->content }}</textarea>
                                         <div class="flex justify-end gap-2 mt-2">
                                             <button type="button" onclick="cancelEdit({{ $message->id }})" 
@@ -194,59 +238,12 @@
                                             </button>
                                             <button type="submit" 
                                                 class="px-4 py-1.5 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-all shadow-md shadow-violet-600/20">
-                                                Guardar
+                                                Guardar Cambios
                                             </button>
                                         </div>
                                     </form>
                                 </div>
                             @endif
-
-                            <!-- Edit/Delete/Reply actions (visible on hover) -->
-                            <div
-                                @if (!$thread->is_locked)
-                                    <button type="button"
-                                        onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
-                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
-                                        title="Responder citando">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
-                                        </svg>
-                                    </button>
-                                @endif
-
-                                @if (!$thread->is_locked)
-                                    @if ($isCurrentUser)
-                                        <button type="button"
-                                            onclick="editMessage({{ $message->id }}, `{{ addslashes($message->content) }}`)"
-                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
-                                        </button>
-                                    @endif
-
-                                    {{-- Delete Permission: Owner of post OR Coordinator --}}
-                                    @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
-                                        <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}"
-                                            method="POST" onsubmit="return confirm('{{ $isFirst ? 'Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?' : '¿Eliminar este mensaje?' }}');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                    stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    @endif
-                                @endif
-                            </div>
-                            </div>
                         </div>
                     </div>
                 </div>
