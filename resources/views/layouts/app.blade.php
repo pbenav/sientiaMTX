@@ -286,7 +286,7 @@
                     @auth
                         <!-- My Teams -->
                         <a href="{{ route('teams.index') }}"
-                            class="hidden sm:flex flex-col items-center justify-center min-w-[4rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10 relative group"
+                            class="hidden sm:flex flex-col items-center justify-center min-w-[3rem] xl:min-w-[4rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10 relative group"
                             title="{{ __('navigation.my_teams') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
@@ -304,7 +304,7 @@
 
                         <!-- Disk Usage -->
                         <a href="{{ route('media.index') }}"
-                            class="hidden sm:flex flex-col items-center justify-center min-w-[4rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all rounded-xl hover:bg-blue-50 dark:hover:bg-blue-500/10 {{ request()->routeIs('media.index') ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : '' }}"
+                            class="hidden sm:flex flex-col items-center justify-center min-w-[3rem] xl:min-w-[4rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all rounded-xl hover:bg-blue-50 dark:hover:bg-blue-500/10 {{ request()->routeIs('media.index') ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : '' }}"
                             title="{{ __('tasks.disk_quota') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
@@ -315,7 +315,7 @@
                         </a>
 
                         <a href="{{ route('docs') }}"
-                            class="hidden sm:flex flex-col items-center justify-center min-w-[3.5rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->is('docs*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
+                            class="hidden sm:flex flex-col items-center justify-center min-w-[3rem] xl:min-w-[3.5rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->is('docs*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
                             title="{{ __('Documentación') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
@@ -327,7 +327,7 @@
 
                         @can('admin')
                             <a href="{{ route('settings.users') }}"
-                                class="hidden sm:flex flex-col items-center justify-center min-w-[4.5rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('settings.users') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
+                                class="hidden sm:flex flex-col items-center justify-center min-w-[3rem] xl:min-w-[4.5rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('settings.users') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
                                 title="{{ __('navigation.users') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" stroke-width="2">
@@ -338,7 +338,7 @@
                             </a>
 
                             <a href="{{ route('settings.mail') }}"
-                                class="hidden sm:flex flex-col items-center justify-center min-w-[5.5rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('settings.mail*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
+                                class="hidden sm:flex flex-col items-center justify-center min-w-[3rem] xl:min-w-[5.5rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->routeIs('settings.mail*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
                                 title="{{ __('navigation.settings') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
