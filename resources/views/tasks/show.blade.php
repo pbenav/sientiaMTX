@@ -282,7 +282,7 @@
                                                 </div>
                                                 @if ($team->isCoordinator(auth()->user()))
                                                     <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-xs bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-lg focus:ring-0 cursor-pointer font-medium text-gray-700 dark:text-gray-300 px-2 py-1 -ml-2 transition-colors">
-                                                        <option value="unassign">{{ __('tasks.unassigned') ?? 'Sin asignar' }}</option>
+                                                        <option value="unassign">{{ __('tasks.unassigned') ?? 'Pendiente de asignación' }}</option>
                                                         @foreach($team->members as $member)
                                                             <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }}>
                                                                 {{ $member->name }}
@@ -296,7 +296,7 @@
                                                         @elseif($inst->assignedTo->count() > 0)
                                                             {{ $inst->assignedTo->pluck('name')->join(', ') }}
                                                         @else
-                                                            {{ __('tasks.unassigned') ?? 'Sin asignar' }}
+                                                            {{ __('tasks.unassigned') ?? 'Pendiente de asignación' }}
                                                         @endif
                                                     </span>
                                                 @endif
@@ -383,7 +383,7 @@
                                     <div class="inline-block relative">
                                         <select onchange="reassignTask({{ $task->id }}, this.value)" class="text-xs bg-white dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 hover:border-indigo-300 rounded-lg ml-2 px-2 py-1 shadow-sm font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer">
                                             <option value="" disabled {{ !$task->assigned_user_id ? 'selected' : '' }}>{{ __('Reasignar a...') }}</option>
-                                            <option value="unassign">-- {{ __('Eliminar asignación') }} --</option>
+                                            <option value="unassign">-- {{ __('Pendiente de asignación') }} --</option>
                                             @foreach($team->members()->orderBy('name')->get() as $member)
                                                 <option value="{{ $member->id }}" {{ $task->assigned_user_id === $member->id ? 'selected' : '' }}>
                                                     {{ $member->name }}

@@ -16,7 +16,7 @@ return [
     'urgency' => 'Urgencia',
     'status' => 'Estado',
     'assigned_to' => 'Asignado a',
-    'unassigned' => 'Sin asignar',
+    'unassigned' => 'Pendiente de asignación',
     'template' => 'Plantilla',
     'subtask' => 'Subtarea',
     'parent_task' => 'Tarea principal',
