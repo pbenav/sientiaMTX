@@ -52,4 +52,7 @@ return [
     'webhook_registered_error' => 'Error al vincular con Telegram: :error',
     'config_saved' => 'Configuración guardada correctamente.',
     'webhook_troubleshoot' => 'Asegúrate de que tu servidor sea accesible vía HTTPS con un certificado válido y que no haya firewalls bloqueando a Telegram.',
+    'resource_deleted' => 'La :resource ya no existe o ha sido eliminada.',
+    'bulk_read_success' => 'Notificaciones marcadas como leídas correctamente.',
+    'bulk_delete_success' => 'Notificaciones eliminadas correctamente.',
 ];

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Task;
+use App\Models\ForumMessage;
 
 class NotificationController extends Controller
 {
@@ -22,24 +24,69 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark a specific notification as read.
+     * Mark a specific notification as read and redirect to resource.
      */
     public function markAsRead(string $id): RedirectResponse
     {
         $notification = Auth::user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        // Si la notificación tiene una URL de destino en sus datos, redirigir allí
+        // 1. Check for explicit URL
         if (isset($notification->data['url'])) {
             return redirect($notification->data['url']);
         }
 
-        // Si es una tarea, forum, etc, intentar construir la URL si no viene explícita
+        // 2. Check for Task resource
         if (isset($notification->data['task_id']) && isset($notification->data['team_id'])) {
+            $taskExists = Task::where('id', $notification->data['task_id'])->exists();
+            
+            if (!$taskExists) {
+                return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'tarea']));
+            }
+
             return redirect()->route('teams.tasks.show', [$notification->data['team_id'], $notification->data['task_id']]);
         }
 
+        // 3. Check for Forum Message resource
+        if (isset($notification->data['message_id']) && isset($notification->data['team_id'])) {
+            $messageExists = ForumMessage::where('id', $notification->data['message_id'])->exists();
+            
+            if (!$messageExists) {
+                return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'mensaje']));
+            }
+
+            // Dependiendo de cómo estén las rutas del foro...
+            // Asumimos que redirige al hilo si tenemos thread_id
+            if (isset($notification->data['thread_id'])) {
+                return redirect()->route('teams.forum.threads.show', [$notification->data['team_id'], $notification->data['thread_id']]);
+            }
+        }
+
         return redirect()->back()->with('status', 'notification-read');
+    }
+
+    /**
+     * Process bulk actions on notifications.
+     */
+    public function bulkAction(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'notification_ids' => 'required|array',
+            'notification_ids.*' => 'string',
+            'action' => 'required|in:mark_as_read,delete'
+        ]);
+
+        $notifications = Auth::user()->notifications()->whereIn('id', $request->notification_ids);
+
+        if ($request->action === 'mark_as_read') {
+            $notifications->update(['read_at' => now()]);
+            $message = __('notifications.bulk_read_success');
+        } elseif ($request->action === 'delete') {
+            $notifications->delete();
+            $message = __('notifications.bulk_delete_success');
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**

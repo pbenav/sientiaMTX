@@ -9,4 +9,7 @@ return [
     'thank_you' => 'Thank you for using our application!',
     'confirm_ok' => 'Accept',
     'confirm_cancel' => 'Cancel',
+    'resource_deleted' => 'The :resource no longer exists or has been deleted.',
+    'bulk_read_success' => 'Notifications marked as read successfully.',
+    'bulk_delete_success' => 'Notifications deleted successfully.',
 ];
