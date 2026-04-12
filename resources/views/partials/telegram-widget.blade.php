@@ -1,6 +1,6 @@
 <div x-data="telegramChat()" 
      class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end"
-     style="position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;"
+     style="position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 9999;"
      x-init="initChat()"
      @keydown.escape="open = false">
     
