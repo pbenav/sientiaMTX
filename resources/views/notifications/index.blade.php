@@ -159,18 +159,11 @@
                                 </div>
                                 <div class="mt-2 flex items-center gap-3">
                                     @if($notification->unread())
-                                        <form action="{{ route('notifications.mark-as-read', $notification->id) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors uppercase tracking-wider">
-                                                {{ __('Ver / Marcar como leída') }}
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('notifications.mark-as-read', $notification->id) }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors uppercase tracking-wider">
+                                            {{ __('Ver / Marcar como leída') }}
+                                        </a>
                                     @elseif(isset($notification->data['url']) || (isset($notification->data['task_id']) && isset($notification->data['team_id'])))
-                                        @php
-                                            $url = $notification->data['url'] ?? route('teams.tasks.show', [$notification->data['team_id'], $notification->data['task_id']]);
-                                        @endphp
-                                        <a href="{{ $url }}" class="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors uppercase tracking-wider">
+                                        <a href="{{ route('notifications.mark-as-read', $notification->id) }}" class="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors uppercase tracking-wider">
                                             {{ __('Ver de nuevo') }}
                                         </a>
                                     @endif
