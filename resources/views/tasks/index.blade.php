@@ -194,7 +194,7 @@
                             </th>
                             <th
                                 class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap hidden lg:table-cell">
-                                {{ __('tasks.owner') }}
+                                {{ __('tasks.owner') ?? 'Responsable' }}
                             </th>
                             <th
                                 class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
@@ -327,10 +327,34 @@
                                     {{ __("tasks.priorities.{$task->priority}") }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">
-                                    {{ $task->creator?->name ?? '—' }}
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[8px] font-bold text-gray-500">
+                                            {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                        </div>
+                                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ $task->creator?->name ?? '—' }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
-                                    {{ $task->assignedUser?->name ?? __('tasks.unassigned') }}
+                                    @if($task->assignedUser)
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[8px] font-bold text-violet-600 dark:text-violet-400">
+                                                {{ strtoupper(substr($task->assignedUser->name, 0, 2)) }}
+                                            </div>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $task->assignedUser->name }}</span>
+                                        </div>
+                                    @else
+                                        <div class="flex items-center gap-2 opacity-75">
+                                            <div class="w-5 h-5 rounded-full bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center text-[8px] font-bold text-gray-400 border border-gray-100 dark:border-gray-700">
+                                                {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ $task->creator?->name ?? '—' }}</span>
+                                                <span class="text-[8px] font-black uppercase tracking-widest text-violet-500/70 dark:text-violet-400/50">
+                                                    {{ $task->is_template ? (__('tasks.template') ?? 'Plantilla') : (__('tasks.owner_short') ?? 'Prop.') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">
                                     <div class="flex items-center gap-2">

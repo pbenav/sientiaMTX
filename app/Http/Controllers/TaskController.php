@@ -681,8 +681,9 @@ class TaskController extends Controller
 
         $tasks = $trashedQuery->get();
 
-        foreach ($tasks as $task) {
-            $this->deepPurgeTask($task);
+        /** @var \App\Models\Task $taskToPurge */
+        foreach ($tasks as $taskToPurge) {
+            $this->deepPurgeTask($taskToPurge);
         }
 
         return redirect()->back()->with('success', "Se han eliminado permanentemente $trashedCount tareas y sus registros asociados.");
@@ -893,7 +894,16 @@ class TaskController extends Controller
             $type = 'deadline';
         }
 
-        $task->assignedUser->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress));
+        $recipient = $task->assignedUser ?: $task->creator;
+
+        if (!$recipient) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No hay ningún usuario asociado a esta tarea para notificar.'
+            ], 400);
+        }
+
+        $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress));
 
         $task->increment('nudge_count');
         $task->refresh();

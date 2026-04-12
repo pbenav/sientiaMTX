@@ -22,6 +22,7 @@ return [
     'created_by' => 'Creada por',
     'created_at' => 'Creada',
     'owner' => 'Propietario',
+    'owner_short' => 'Prop.',
     'search' => 'Buscar tareas',
     'skill' => 'Especialidad',
     'type' => 'Tipo',
