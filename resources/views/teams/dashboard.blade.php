@@ -180,6 +180,12 @@
                                                     </svg>
                                                 @endif
                                                 <span class="truncate">{{ $task->title }}</span>
+                                                @if ($task->is_template)
+                                                    <span class="px-1 py-0.5 rounded-[4px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-violet-200 dark:border-violet-700/50 shadow-sm" title="{{ __('tasks.plan_master') }}">M</span>
+                                                @endif
+                                                @if ($task->assigned_user_id === auth()->id() && $task->parent_id)
+                                                    <span class="px-1 py-0.5 rounded-[4px] bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-emerald-200 dark:border-emerald-700/50 shadow-sm" title="{{ __('tasks.your_execution') }}">ME</span>
+                                                @endif
                                             </a>
                                             <!-- Timer and Owner -->
                                             <div class="flex items-center gap-2 shrink-0">

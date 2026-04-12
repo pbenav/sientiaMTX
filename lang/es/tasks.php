@@ -240,4 +240,6 @@ return [
     'start_task_tracking' => 'Iniciar seguimiento',
     'stop_task_tracking' => 'Detener seguimiento',
     'unauthorized_view' => 'No tienes permiso para ver esta tarea privada.',
+    'plan_master' => 'Plan Maestro',
+    'your_execution' => 'Tu Ejecución',
 ];

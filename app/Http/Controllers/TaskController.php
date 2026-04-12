@@ -573,8 +573,9 @@ class TaskController extends Controller
 
                 // Sync instances
                 // Delete instances not belonging to the new user set (including orphaned null-assigned ones)
-                $task->instances()->whereNotIn('assigned_user_id', $uniqueUserIds)->delete();
-                $task->instances()->whereNull('assigned_user_id')->delete();
+                // ONLY delete instances that were previously assigned to users who are no longer in the set.
+                // We PROTECT "unassigned" subtasks (Project Skeleton / Manual Subtasks) by ignoring whereNull.
+                $task->instances()->whereNotNull('assigned_user_id')->whereNotIn('assigned_user_id', $uniqueUserIds)->delete();
 
                 foreach ($uniqueUserIds as $userId) {
                     if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
@@ -602,7 +603,7 @@ class TaskController extends Controller
                 }
             } else {
                 // Not a template anymore: clean up
-                $task->instances()->delete();
+                $task->instances()->whereNotNull('assigned_user_id')->delete();
                 $task->assigned_user_id = null; // Mark as unassigned
             }
             $task->save();
@@ -779,7 +780,7 @@ class TaskController extends Controller
             $task->is_archived = (bool) $validated['is_archived'];
             \Log::info('Setting is_archived to:', ['val' => $task->is_archived]);
         }
-        if ($request->has('assigned_user_id') && $task->isInstance()) {
+        if ($request->has('assigned_user_id')) {
             $task->assigned_user_id = $validated['assigned_user_id'];
         }
         

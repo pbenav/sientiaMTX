@@ -173,9 +173,23 @@
                                     
                                     <!-- Card Content -->
                                     <div class="flex items-start justify-between gap-2 mb-2">
-                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
-                                            {{ $task->title }}
-                                        </a>
+                                        <div class="flex flex-col gap-1 flex-1">
+                                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                {{ $task->title }}
+                                            </a>
+                                            <div class="flex flex-wrap gap-1 mt-0.5">
+                                                @if ($task->is_template)
+                                                    <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[8px] font-black uppercase tracking-tighter border border-violet-200 dark:border-violet-700/50 shadow-sm">
+                                                        {{ __('tasks.plan_master') }}
+                                                    </span>
+                                                @endif
+                                                @if ($task->assigned_user_id === auth()->id() && $task->parent_id)
+                                                    <span class="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[8px] font-black uppercase tracking-tighter border border-emerald-200 dark:border-emerald-700/50 shadow-sm">
+                                                        {{ __('tasks.your_execution') }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
                                         <div class="shrink-0 flex flex-col items-end gap-1.5">
                                             <div class="flex items-center gap-1.5">
                                                 @include('tasks.partials.task-timer-button')
