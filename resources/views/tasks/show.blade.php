@@ -759,7 +759,7 @@
                                 class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none transition-none {{ $isAutomatic ? 'cursor-not-allowed opacity-60' : 'cursor-pointer accent-violet-600' }}"
                                 {{ $isAutomatic ? 'disabled' : '' }}
                                 oninput="document.getElementById('progress-val').innerText = this.value"
-                                onchange="updateTaskProgress(this.value, {{ $sliderTask->id }})">
+                                onchange="updateTaskProgress(this.value, {{ $sliderTask->id }}, '{{ $sliderTask->status }}')">
 
                             @if ($isAutomatic)
                                 <span
@@ -1141,9 +1141,7 @@
                 });
             }
 
-            function updateTaskProgress(progress, taskId = {{ $task->id }}) {
-                // Store current status to compare later
-                const currentStatus = '{{ $task->status }}';
+            function updateTaskProgress(progress, taskId = {{ $task->id }}, currentStatus = '{{ $task->status }}') {
 
                 fetch(`/teams/{{ $team->id }}/tasks/${taskId}/move`, {
                         method: 'POST',
