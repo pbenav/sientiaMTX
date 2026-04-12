@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'locale' => $request->input('locale'),
-            'timezone' => $request->input('timezone', 'Europe/Madrid'),
+            'timezone' => $request->input('timezone', config('app.timezone', 'UTC')),
             'is_admin' => $isFirstUser,
             'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
             'privacy_policy_accepted_at' => now(),

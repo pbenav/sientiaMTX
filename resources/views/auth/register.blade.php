@@ -94,7 +94,7 @@
             </x-primary-button>
         </div>
 
-        <input type="hidden" name="timezone" id="timezone" value="Europe/Madrid">
+        <input type="hidden" name="timezone" id="timezone" value="{{ config('app.timezone', 'UTC') }}">
         <script>
             try {
                 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
