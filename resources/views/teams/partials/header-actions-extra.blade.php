@@ -12,7 +12,8 @@
             @include('layouts.partials.language-toggle')
 
             <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1 shrink-0"></div>
-            <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
+            @auth
+                <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
             
             <!-- Notifications Bell -->
             <a href="{{ route('notifications.index') }}" class="relative p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-500/10" title="{{ __('Notificaciones') }}">
