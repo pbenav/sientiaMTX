@@ -74,7 +74,9 @@ class CheckUrgentTasks extends Command
                 $this->line("  ID:{$task->id} '{$task->title}' — due={$task->due_date} (UTC) restanH={$diffHours} leadH={$leadHours} user={$user->name}");
 
                 // Solo notificar si está dentro del margen de antelación del usuario
-                if ($diffHours >= 0 && $diffHours <= $leadHours) {
+                // Usar un margen pequeño (0.1 horas = 6 minutos) para evitar problemas de precisión con decimales
+                $toleranceBuffer = 0.1;
+                if ($diffHours >= -$toleranceBuffer && $diffHours <= ($leadHours + $toleranceBuffer)) {
                     $metadata = $task->metadata ?? [];
                     $lastNotified = $metadata['last_reminder_sent_at'] ?? null;
 
