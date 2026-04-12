@@ -847,23 +847,40 @@
             <!-- Dates -->
             @if ($task->due_date || $task->scheduled_date)
                 <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
-                    @if ($task->due_date)
-                        <div class="flex items-center justify-between font-mono">
-                            <span
-                                class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide font-sans">{{ __('tasks.due_date') }}</span>
-                            <span
-                                class="text-[11px] {{ now()->isAfter($task->due_date) && $task->status !== 'completed' ? 'text-red-500 font-bold' : 'text-gray-700 dark:text-gray-300' }}">
-                                {{ $task->due_date->format('d M Y, H:i') }}
-                            </span>
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors">
+                    
+                    @if ($task->scheduled_date)
+                        <div class="flex items-center justify-between font-mono mb-3 pb-3 border-b border-gray-50 dark:border-gray-800/50">
+                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide font-sans">{{ __('tasks.scheduled_date') ?? 'Fecha de Inicio' }}</span>
+                            <span class="text-[11px] text-gray-700 dark:text-gray-300 font-medium">{{ $task->scheduled_date->format('d M Y, H:i') }}</span>
                         </div>
                     @endif
-                    @if ($task->scheduled_date)
-                        <div class="flex items-center justify-between font-mono">
-                            <span
-                                class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide font-sans">{{ __('tasks.scheduled_date') }}</span>
-                            <span
-                                class="text-[11px] text-gray-700 dark:text-gray-300 font-medium">{{ $task->scheduled_date->format('d M Y, H:i') }}</span>
+
+                    @if ($task->due_date)
+                        <div class="mt-2">
+                            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest block mb-2">{{ __('tasks.due_date') }}</span>
+                            @php
+                                $isPast = now()->isAfter($task->due_date) && $task->status !== 'completed';
+                                $isNear = now()->diffInDays($task->due_date, false) <= 2 && now()->diffInDays($task->due_date, false) >=0 && $task->status !== 'completed';
+                                $dueBg = $isPast ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400' : 
+                                        ($isNear ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400' : 
+                                        'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200');
+                            @endphp
+                            <div class="flex items-center gap-3 p-3 rounded-xl border {{ $dueBg }} transition-colors">
+                                <div class="shrink-0 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-black truncate font-mono tracking-tight">{{ $task->due_date->format('d M Y, H:i') }}</p>
+                                    @if($isPast)
+                                        <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-90">{{ __('tasks.overdue') ?? 'Vencida' }}</p>
+                                    @elseif($isNear)
+                                        <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-90">{{ __('tasks.expires_soon') ?? 'Vence pronto' }}</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     @endif
                 </div>
