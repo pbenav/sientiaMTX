@@ -7,6 +7,7 @@ return [
     'profile' => 'Perfil',
     'dashboard' => 'Inicio',
     'my_teams' => 'Mis equipos',
+    'teams_management' => 'Gestión de equipos',
     'language' => 'Idioma',
     'settings' => 'Configuración',
     'task_list' => 'Tareas',

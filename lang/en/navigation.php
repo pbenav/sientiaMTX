@@ -7,6 +7,7 @@ return [
     'profile' => 'Profile',
     'dashboard' => 'Dashboard',
     'my_teams' => 'My Teams',
+    'teams_management' => 'Teams Management',
     'language' => 'Language',
     'settings' => 'Settings',
     'welcome' => 'Welcome',
