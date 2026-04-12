@@ -118,47 +118,45 @@
                                     @endif
                                 </div>
                             @endcan
+
+                            <x-modal name="edit-member-{{ $member->id }}" focusable>
+                                <form method="post" action="{{ route('teams.updateMemberInfo', [$team, $member]) }}"
+                                    class="p-6">
+                                    @csrf
+                                    @method('patch')
+
+                                    <h2 class="text-lg font-medium text-gray-900 dark:text-white heading">
+                                        {{ __('teams.edit_member') }}
+                                    </h2>
+
+                                    <div class="mt-6 space-y-4">
+                                        <div>
+                                            <x-input-label for="name_{{ $member->id }}" :value="__('teams.name')" />
+                                            <x-text-input id="name_{{ $member->id }}" name="name" type="text"
+                                                class="mt-1 block w-full" :value="$member->name" required />
+                                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <x-input-label for="email_{{ $member->id }}" :value="__('teams.email')" />
+                                            <x-text-input id="email_{{ $member->id }}" name="email" type="email"
+                                                class="mt-1 block w-full" :value="$member->email" required />
+                                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-6 flex justify-end gap-3">
+                                        <x-secondary-button x-on:click="$dispatch('close')">
+                                            {{ __('teams.cancel') }}
+                                        </x-secondary-button>
+
+                                        <x-primary-button>
+                                            {{ __('teams.save_changes') }}
+                                        </x-primary-button>
+                                    </div>
+                                </form>
+                            </x-modal>
                         </div>
-
-                                <x-modal name="edit-member-{{ $member->id }}" focusable>
-                                    <form method="post" action="{{ route('teams.updateMemberInfo', [$team, $member]) }}"
-                                        class="p-6">
-                                        @csrf
-                                        @method('patch')
-
-                                        <h2 class="text-lg font-medium text-gray-900 dark:text-white heading">
-                                            {{ __('teams.edit_member') }}
-                                        </h2>
-
-                                        <div class="mt-6 space-y-4">
-                                            <div>
-                                                <x-input-label for="name_{{ $member->id }}" :value="__('teams.name')" />
-                                                <x-text-input id="name_{{ $member->id }}" name="name" type="text"
-                                                    class="mt-1 block w-full" :value="$member->name" required />
-                                                <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                                            </div>
-
-                                            <div>
-                                                <x-input-label for="email_{{ $member->id }}" :value="__('teams.email')" />
-                                                <x-text-input id="email_{{ $member->id }}" name="email" type="email"
-                                                    class="mt-1 block w-full" :value="$member->email" required />
-                                                <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                                            </div>
-                                        </div>
-
-                                        <div class="mt-6 flex justify-end gap-3">
-                                            <x-secondary-button x-on:click="$dispatch('close')">
-                                                {{ __('teams.cancel') }}
-                                            </x-secondary-button>
-
-                                            <x-primary-button>
-                                                {{ __('teams.save_changes') }}
-                                            </x-primary-button>
-                                        </div>
-                                    </form>
-                                </x-modal>
-                            @endif
-                        @endcan
                     </div>
                 @empty
                     <div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm italic font-medium">
