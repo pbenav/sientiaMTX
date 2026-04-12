@@ -101,6 +101,10 @@ class TeamController extends Controller
      */
     public function show(Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
+
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
@@ -164,7 +168,9 @@ class TeamController extends Controller
      */
     public function members(Team $team)
     {
-        $this->authorize('viewMembers', $team);
+        if (auth()->user()->cannot('viewMembers', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
 
         $members = $team->members()
             ->paginate(20, ['*'], 'members_page');
@@ -291,7 +297,9 @@ class TeamController extends Controller
      */
     public function dashboard(Team $team)
     {
-        $this->authorize('view', $team);
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
 
         $user = auth()->user();
         $isManager = $team->isManager($user);

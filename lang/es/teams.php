@@ -74,4 +74,5 @@ return [
     'telegram_chat_id_description' => 'Introduce el ID del grupo vinculado. Usa /vincular en Telegram para obtenerlo.',
     'telegram_integration' => 'Integración con Telegram',
     'members_of' => 'Miembros de :name',
+    'unauthorized_access' => 'No tienes permiso para acceder a la operativa de este equipo.',
 ];

@@ -71,4 +71,5 @@ return [
     'confirm_cancel' => 'Cancel',
     'recent_tasks' => 'Recent tasks',
     'members_of' => 'Members of :name',
+    'unauthorized_access' => 'You do not have permission to access this team\'s operations.',
 ];
