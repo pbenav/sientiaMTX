@@ -72,7 +72,7 @@
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
                         </div>
-                        <div class="flex items-center gap-4 justify-end min-w-[200px]">
+                        <div class="flex items-center gap-4 justify-end flex-wrap">
                             @can('manageMembers', $team)
                                 <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"
                                     class="shrink-0">
