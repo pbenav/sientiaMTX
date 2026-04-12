@@ -51,10 +51,10 @@
             </button>
         </div>
 
-        <div x-show="activeTab === 'members'" class="w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div x-show="activeTab === 'members'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Members list -->
             <div
-                class="lg:col-span-2 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-y-auto overflow-x-hidden shadow-sm dark:shadow-none transition-colors flex flex-col">
+                class="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
                     <h2 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
                         {{ __('teams.members') }}
@@ -62,7 +62,7 @@
                 </div>
                 @forelse($members as $member)
                     <div
-                        class="w-full px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                        class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                         <div
                             class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm">
                             {{ strtoupper(substr($member->name, 0, 2)) }}
@@ -72,7 +72,7 @@
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
                         </div>
-                        <div class="flex items-center gap-4 justify-end flex-wrap">
+                        <div class="flex items-center gap-4 justify-end min-w-[200px]">
                             @can('manageMembers', $team)
                                 <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"
                                     class="shrink-0">
@@ -118,6 +118,7 @@
                                     @endif
                                 </div>
                             @endcan
+                        </div>
 
                                 <x-modal name="edit-member-{{ $member->id }}" focusable>
                                     <form method="post" action="{{ route('teams.updateMemberInfo', [$team, $member]) }}"
@@ -156,7 +157,9 @@
                                         </div>
                                     </form>
                                 </x-modal>
-                            </div>
+                            @endif
+                        @endcan
+                    </div>
                 @empty
                     <div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm italic font-medium">
                         {{ __('teams.no_members') }}</div>
