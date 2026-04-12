@@ -168,6 +168,9 @@
                     ghostClass: 'opacity-40',
                     chosenClass: 'scale-[1.02]',
                     dragClass: 'shadow-2xl',
+                    cancel: 'a, button, [role="button"]',
+                    delay: 100,
+                    delayOnTouchOnly: true,
                     onEnd: function() {
                         const order = Array.from(grid.querySelectorAll('[data-id]')).map(el => el.dataset.id);
                         
