@@ -9,6 +9,8 @@ return [
     'thank_you' => '¡Gracias por usar nuestra aplicación!',
     'confirm_ok' => 'Aceptar',
     'confirm_cancel' => 'Cancelar',
+    'task_expires_in' => 'expira en :time',
+    'task_expired_ago' => 'expiró hace :time',
 
     // Settings UI
     'settings_title' => 'Configuración de Notificaciones',

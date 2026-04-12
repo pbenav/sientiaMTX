@@ -81,45 +81,87 @@
             Alpine.store('notifications', {
                 count: {{ auth()->check() ? Auth::user()->unreadNotifications->count() : 0 }},
                 lastChecked: Date.now(),
+                firstCheck: true,
                 
                 async check() {
                     try {
                         const res = await fetch('{{ route('notifications.unread-count') }}');
                         const data = await res.json();
                         
-                        // If count increased, show a toast for the newest notification
-                        if (data.count > this.count && data.unread.length > 0) {
-                            const latest = data.unread[0];
-                            Swal.fire({
-                                title: '{{ __("Nueva notificación") }}',
-                                text: latest.data.message || '{{ __("Tienes una nueva actualización") }}',
-                                icon: 'info',
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 5000,
-                                timerProgressBar: true,
-                                didOpen: (toast) => {
-                                    toast.addEventListener('mouseenter', Swal.stopTimer)
-                                    toast.addEventListener('mouseleave', Swal.resumeTimer)
-                                    toast.addEventListener('click', () => {
-                                        window.location.href = '{{ route("notifications.index") }}';
-                                    })
-                                }
-                            });
-                            
-                            // Emit global event for potential UI updates (like the bell badge)
+                        // If it's the first check and there are unread notifications, notify about pending work
+                        if (this.firstCheck && data.count > 0) {
+                            if (data.count === 1) {
+                                this.showToast(data.unread[0]);
+                            } else {
+                                Swal.fire({
+                                    title: '{{ __("Pendientes") }}',
+                                    text: '{{ __("Tienes :count notificaciones pendientes", ["count" => ""]) }}'.replace('""', data.count) + data.count,
+                                    icon: 'info',
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 7000,
+                                    timerProgressBar: true,
+                                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+                                    color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
+                                    didOpen: (toast) => {
+                                        toast.style.zIndex = '9999'; // Force super high z-index
+                                        toast.addEventListener('click', () => { window.location.href = '{{ route("notifications.index") }}'; })
+                                    }
+                                });
+                            }
+                            this.firstCheck = false;
+                        } 
+                        // If count increased during session, show the new one
+                        else if (data.count > this.count && data.unread.length > 0) {
+                            this.showToast(data.unread[0]);
+                        }
+                        
+                        if (data.count !== this.count) {
                             window.dispatchEvent(new CustomEvent('notifications-updated', { detail: { count: data.count } }));
                         }
                         
                         this.count = data.count;
                     } catch(e) { console.error('Notification check failed', e); }
                 },
+
+                showToast(notification) {
+                    Swal.fire({
+                        title: '{{ __("Nueva notificación") }}',
+                        text: notification.data.message || '{{ __("Tienes una nueva actualización") }}',
+                        icon: 'info',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 6000,
+                        timerProgressBar: true,
+                        background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
+                        didOpen: (toast) => {
+                            toast.style.zIndex = '9999'; // Ensure it's above everything
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            toast.addEventListener('click', () => {
+                                window.location.href = '{{ route("notifications.index") }}';
+                            })
+                        }
+                    });
+                },
                 
                 init() {
                     @auth
-                    // Poll every 60 seconds
-                    setInterval(() => this.check(), 60000);
+                    // Initial check
+                    this.check();
+
+                    // Poll more frequently for "real-time" (15 seconds)
+                    setInterval(() => this.check(), 15000);
+
+                    // Re-check when coming back to the tab
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') {
+                            this.check();
+                        }
+                    });
                     @endauth
                 }
             });

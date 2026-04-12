@@ -38,8 +38,19 @@ class TaskSummaryNotification extends Notification implements ShouldQueue
             ->greeting(__('notifications.hello', ['name' => $notifiable->name]))
             ->line(__('notifications.task_summary_intro', ['count' => $count]));
 
+        $now = now();
         foreach ($this->tasks as $task) {
-            $mail->line("- **{$task->title}** (Vence: {$task->due_date->format('d/m/Y H:i')})");
+            $isOverdue = $task->due_date->isPast();
+            $diff = $task->due_date->diffForHumans($now, [
+                'parts' => 1, // Summary is shorter
+                'join' => true,
+                'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+            ]);
+            $expiryText = $isOverdue 
+                ? __('notifications.task_expired_ago', ['time' => $diff])
+                : __('notifications.task_expires_in', ['time' => $diff]);
+
+            $mail->line("- **{$task->title}** (Vence: {$task->due_date->format('d/m/Y H:i')} — _{$expiryText}_)");
         }
 
         if ($this->quoteData['quote']) {

@@ -31,6 +31,18 @@ class TaskReminderNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        
+        $now = now();
+        $isOverdue = $this->task->due_date->isPast();
+        $diff = $this->task->due_date->diffForHumans($now, [
+            'parts' => 2,
+            'join' => true,
+            'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+        ]);
+
+        $expiryText = $isOverdue 
+            ? __('notifications.task_expired_ago', ['time' => $diff])
+            : __('notifications.task_expires_in', ['time' => $diff]);
 
         return (new MailMessage)
             ->subject(__('notifications.task_reminder_subject', ['title' => $this->task->title]))
@@ -38,7 +50,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
             ->line(__('notifications.task_reminder_line', [
                 'title' => $this->task->title,
                 'due' => $this->task->due_date->format('d/m/Y H:i')
-            ]))
+            ]) . ' (' . $expiryText . ')')
             ->action(__('notifications.view_task'), $url)
             ->line(__('notifications.thank_you'));
     }
