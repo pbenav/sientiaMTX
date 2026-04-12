@@ -311,12 +311,20 @@
                                                     default => 'text-gray-500 dark:text-gray-400',
                                                 };
                                             @endphp
-                                            <div class="flex items-center gap-1.5 {{ $instStatusColor }}">
-                                                <div
-                                                    class="w-1.5 h-1.5 rounded-full {{ str_contains($instStatusColor, 'text-') ? str_replace('text-', 'bg-', explode(' ', $instStatusColor)[0]) : 'bg-gray-400' }}">
+                                            <div class="flex flex-col gap-1.5">
+                                                <div class="flex items-center gap-1.5 {{ $instStatusColor }}">
+                                                    <div
+                                                        class="w-1.5 h-1.5 rounded-full {{ str_contains($instStatusColor, 'text-') ? str_replace('text-', 'bg-', explode(' ', $instStatusColor)[0]) : 'bg-gray-400' }}">
+                                                    </div>
+                                                    <span
+                                                        class="text-xs font-bold uppercase tracking-tight">{{ __('tasks.statuses.' . $inst->status) }}</span>
                                                 </div>
-                                                <span
-                                                    class="text-xs font-bold uppercase tracking-tight">{{ __('tasks.statuses.' . $inst->status) }}</span>
+                                                <div class="flex items-center gap-2 w-28">
+                                                    <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500" style="width: {{ $inst->progress }}%"></div>
+                                                    </div>
+                                                    <span class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right">
