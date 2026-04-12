@@ -157,7 +157,6 @@
                                         </div>
                                     </form>
                                 </x-modal>
-                            @endif
                         @endcan
                     </div>
                 @empty
