@@ -35,6 +35,8 @@ class Task extends Model
                     $model->is_archived = false;
                 } elseif ($model->progress_percentage == 100 && !in_array($model->status, ['completed', 'cancelled'])) {
                     $model->status = 'completed';
+                } elseif ($model->progress_percentage > 0 && $model->progress_percentage < 100 && in_array($model->status, ['pending', 'todo'])) {
+                    $model->status = 'in_progress';
                 }
             }
 
