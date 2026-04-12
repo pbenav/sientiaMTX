@@ -207,9 +207,15 @@
                                 
                                 <!-- Reply Button -->
                                 @if (!$thread->is_locked)
+                            <!-- Edit/Delete/Reply actions -->
+                            <div
+                                class="absolute top-0 {{ $isCurrentUser ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2' }} flex items-center gap-1">
+                                
+                                <!-- Reply Button -->
+                                @if (!$thread->is_locked)
                                     <button type="button"
                                         onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
-                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
                                         title="Responder citando">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
@@ -217,11 +223,11 @@
                                     </button>
                                 @endif
 
-                                @if (!$thread->is_locked && ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator'))
+                                @if (!$thread->is_locked)
                                     @if ($isCurrentUser)
                                         <button type="button"
                                             onclick="editMessage({{ $message->id }}, `{{ addslashes($message->content) }}`)"
-                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -229,14 +235,15 @@
                                             </svg>
                                         </button>
                                     @endif
-                                    @if (!$isFirst)
-                                        <!-- Don't allow deleting the first message easily, user should delete the thread -->
+
+                                    {{-- Delete Permission: Owner of post OR Coordinator --}}
+                                    @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
                                         <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}"
-                                            method="POST" onsubmit="return confirm('¿Eliminar este mensaje?');">
+                                            method="POST" onsubmit="return confirm('{{ $isFirst ? 'Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?' : '¿Eliminar este mensaje?' }}');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                                     stroke-width="2">
@@ -247,6 +254,7 @@
                                         </form>
                                     @endif
                                 @endif
+                            </div>
                             </div>
                         </div>
                     </div>
