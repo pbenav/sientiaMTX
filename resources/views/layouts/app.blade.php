@@ -647,22 +647,6 @@
 
 
 
-    @if (session('warning'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                title: '{{ __("Aviso") }}',
-                text: '{{ session("warning") }}',
-                icon: 'warning',
-                confirmButtonColor: '#8b5cf6',
-                confirmButtonText: '{{ __("Entendido") }}',
-                background: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
-            });
-        });
-    </script>
-    @endif
-
     @stack('scripts')
 </body>
 
