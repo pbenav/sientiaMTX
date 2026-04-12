@@ -69,8 +69,8 @@
     <div class="flex-1 min-w-0">
         <div class="flex items-center gap-0.5">
             @foreach ($views as $index => $view)
-                @if ($index === 7)
-                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+                @if ($index === 6)
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
                 @endif
                 <a href="{{ $view['route'] }}"
                     class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
@@ -85,13 +85,13 @@
                     <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $view['name'] }}</span>
                 </a>
             @endforeach
+            {{-- Divider + toggle --}}
+            <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
+            <div class="shrink-0">
+                @include('teams.partials.hide-completed-toggle')
+            </div>
         </div>
     </div>
 
-    {{-- Divider + toggle --}}
-    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 shrink-0"></div>
-    <div class="shrink-0">
-        @include('teams.partials.hide-completed-toggle')
-    </div>
 </div>
 </div>
