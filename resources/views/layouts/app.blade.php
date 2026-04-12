@@ -352,7 +352,7 @@
                     <div class="flex items-center gap-1 sm:gap-3 shrink-0">
 
                         <!-- Google Sync (Global) -->
-                        <div class="hidden md:flex items-center border-l border-gray-200 dark:border-gray-800 pl-4 ml-1">
+                        <div class="hidden xl:flex items-center border-l border-gray-200 dark:border-gray-800 pl-4 ml-1">
                             @if (!auth()->user()->google_token)
                                 <button onclick="openGoogleAuth()"
                                     class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 px-3 py-1.5 transition-all font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -406,8 +406,8 @@
                             @endif
                         </div>
                     @endauth
-                    <!-- Utility controls: hidden on mobile, shown on sm+ -->
-                    <div class="hidden sm:flex items-center gap-1 pl-2 ml-1 border-l border-gray-200 dark:border-gray-800">
+                    <!-- Utility controls: shown on lg+ to prevent cramping tablet/medium views -->
+                    <div class="hidden lg:flex items-center gap-1 pl-2 ml-1 border-l border-gray-200 dark:border-gray-800">
                         @auth @include('layouts.partials.workday-timer') @endauth
                         @include('layouts.partials.theme-toggle')
                         @include('layouts.partials.layout-toggle')
@@ -475,9 +475,9 @@
                                 </svg>
                             </button>
                             <div x-show="open" x-transition x-cloak style="display: none"
-                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-[90]">
+                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-visible z-[90]">
                                 <div
-                                    class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent">
+                                    class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent rounded-t-xl">
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                         {{ auth()->user()->name }}</p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -510,11 +510,19 @@
                                     </svg>
                                     {{ __('tasks.disk_quota') }}
                                 </a>
+
+                                <!-- Embedded Utilities for Tablet View -->
+                                <div class="hidden sm:flex lg:hidden flex-wrap items-center justify-center gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 sm:justify-start dark:bg-gray-800/50">
+                                    @include('layouts.partials.theme-toggle')
+                                    @include('layouts.partials.layout-toggle')
+                                    @include('layouts.partials.language-toggle')
+                                </div>
+
                                 <div class="border-t border-gray-100 dark:border-gray-700">
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit"
-                                            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left font-medium">
+                                            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left font-medium rounded-b-xl">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
