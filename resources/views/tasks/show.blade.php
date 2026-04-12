@@ -321,9 +321,9 @@
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500" style="width: {{ $inst->progress }}%"></div>
+                                                        <div id="inst-progress-bar-{{ $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300" style="width: {{ $inst->progress }}%"></div>
                                                     </div>
-                                                    <span class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
+                                                    <span id="inst-progress-val-{{ $inst->id }}" class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -1154,8 +1154,12 @@
                                 const valSpan = document.getElementById('progress-val');
                                 const gVal = document.getElementById('global-progress-val');
                                 const gBar = document.getElementById('global-progress-bar');
+                                const instBar = document.getElementById(`inst-progress-bar-${taskId}`);
+                                const instVal = document.getElementById(`inst-progress-val-${taskId}`);
 
                                 if (valSpan) valSpan.innerText = progress;
+                                if (instBar) instBar.style.width = progress + '%';
+                                if (instVal) instVal.innerText = progress + '%';
 
                                 // Update global progress factors if we have them
                                 if (data.parent_progress !== null) {
