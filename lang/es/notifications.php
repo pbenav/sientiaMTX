@@ -57,4 +57,5 @@ return [
     'resource_deleted' => 'La :resource ya no existe o ha sido eliminada.',
     'bulk_read_success' => 'Notificaciones marcadas como leídas correctamente.',
     'bulk_delete_success' => 'Notificaciones eliminadas correctamente.',
+    'all_read_success' => 'Todas las notificaciones han sido marcadas como leídas.',
 ];
