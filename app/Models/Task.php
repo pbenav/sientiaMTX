@@ -37,6 +37,8 @@ class Task extends Model
                     $model->status = 'completed';
                 } elseif ($model->progress_percentage > 0 && $model->progress_percentage < 100 && in_array($model->status, ['pending', 'todo'])) {
                     $model->status = 'in_progress';
+                } elseif ($model->progress_percentage == 0 && in_array($model->status, ['in_progress', 'completed'])) {
+                    $model->status = 'pending';
                 }
             }
 
