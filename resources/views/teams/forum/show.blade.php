@@ -1,4 +1,49 @@
 <x-app-layout>
+    @push('styles')
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+        <style>
+            .EasyMDEContainer .editor-toolbar {
+                border-top-left-radius: 1rem;
+                border-top-right-radius: 1rem;
+                background: #f9fafb;
+                border-color: #e5e7eb;
+            }
+            .dark .EasyMDEContainer .editor-toolbar {
+                background: #1f2937;
+                border-color: #374151;
+            }
+            .dark .EasyMDEContainer .editor-toolbar button { color: #d1d5db; }
+            .dark .EasyMDEContainer .editor-toolbar button.active,
+            .dark .EasyMDEContainer .editor-toolbar button:hover { background: #374151; color: #fff; }
+            .dark .EasyMDEContainer .CodeMirror {
+                background: #111827;
+                color: #e5e7eb;
+                border-color: #374151;
+            }
+            .EasyMDEContainer .CodeMirror {
+                border-bottom-left-radius: 1rem;
+                border-bottom-right-radius: 1rem;
+                min-height: 150px;
+            }
+            /* Markdown Content Styling */
+            .markdown-content ul { list-style-type: disc !important; padding-left: 1.5rem; margin-bottom: 1rem; }
+            .markdown-content ol { list-style-type: decimal !important; padding-left: 1.5rem; margin-bottom: 1rem; }
+            .markdown-content h1 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 1rem; }
+            .markdown-content h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.75rem; }
+            .markdown-content code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
+            .dark .markdown-content code { background: #374151; }
+            .markdown-content pre { background: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem; overflow-x: auto; }
+            .markdown-content blockquote { border-left: 4px solid #8b5cf6; padding-left: 1rem; font-style: italic; color: #6b7280; margin-bottom: 1rem; }
+            .dark .markdown-content blockquote { color: #9ca3af; }
+            .markdown-content a { color: #8b5cf6; text-decoration: underline; }
+            /* Fix modal EasyMDE issues */
+            .CodeMirror { z-index: 100 !important; }
+        </style>
+    @endpush
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    @endpush
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-center gap-4 min-w-0 flex-1">
@@ -157,7 +202,8 @@
                         <div class="relative group">
                             <div
                                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }}">
-                                <div class="text-sm whitespace-pre-wrap leading-relaxed">{{ $message->content }}
+                                <div class="text-sm markdown-content leading-relaxed">
+                                    {!! Str::markdown($message->content) !!}
                                 </div>
                             </div>
 
@@ -289,24 +335,49 @@
         </form>
     </x-modal>
 
-    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.replyEditor = new EasyMDE({
+                element: document.getElementById('reply-content'),
+                spellChecker: false,
+                autosave: { enabled: true, uniqueId: "reply-{{ $thread->id }}", delay: 1000 },
+                status: false,
+                placeholder: "Escribe tu respuesta aquí...",
+                toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
+            });
+
+            window.editEditor = new EasyMDE({
+                element: document.getElementById('edit_content'),
+                spellChecker: false,
+                status: false,
+                toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
+            });
+        });
+
         function quoteMessage(name, content) {
-            const textarea = document.getElementById('reply-content');
-            if (textarea) {
-                const quote = `> ${name}: ${content}\n\n`;
-                textarea.value = quote + textarea.value;
-                textarea.focus();
-                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (window.replyEditor) {
+                const quote = `> **${name}**: ${content}\n\n`;
+                window.replyEditor.value(quote + window.replyEditor.value());
+                window.replyEditor.codemirror.focus();
+                document.querySelector('.EasyMDEContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
         function editMessage(messageId, content) {
             const form = document.getElementById('edit-message-form');
             form.action = `/teams/{{ $team->id }}/forum/messages/${messageId}`;
-            document.getElementById('edit_content').value = content;
+            
+            if (window.editEditor) {
+                window.editEditor.value(content);
+            }
+
             window.dispatchEvent(new CustomEvent('open-modal', {
                 detail: 'edit-message-modal'
             }));
+
+            // Refresh EasyMDE when modal opens to fix layout
+            setTimeout(() => {
+                if (window.editEditor) window.editEditor.codemirror.refresh();
+            }, 10);
         }
     </script>
 </x-app-layout>

@@ -1,4 +1,57 @@
 <x-app-layout>
+    @push('styles')
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+        <style>
+            .EasyMDEContainer .editor-toolbar {
+                border-top-left-radius: 1rem;
+                border-top-right-radius: 1rem;
+                background: #f9fafb;
+                border-color: #e5e7eb;
+            }
+            .dark .EasyMDEContainer .editor-toolbar {
+                background: #1f2937;
+                border-color: #374151;
+            }
+            .dark .EasyMDEContainer .editor-toolbar button { color: #d1d5db; }
+            .dark .EasyMDEContainer .editor-toolbar button.active,
+            .dark .EasyMDEContainer .editor-toolbar button:hover { background: #374151; color: #fff; }
+            .dark .EasyMDEContainer .CodeMirror {
+                background: #111827;
+                color: #e5e7eb;
+                border-color: #374151;
+            }
+            .EasyMDEContainer .CodeMirror {
+                border-bottom-left-radius: 1rem;
+                border-bottom-right-radius: 1rem;
+                min-height: 150px;
+            }
+            .CodeMirror { z-index: 100 !important; }
+        </style>
+    @endpush
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const contentEditor = new EasyMDE({
+                    element: document.getElementById('content'),
+                    spellChecker: false,
+                    status: false,
+                    placeholder: "Escribe aquí el contexto de la conversación...",
+                    toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
+                });
+
+                // Refresh EasyMDE when modal opens
+                window.addEventListener('open-modal', (event) => {
+                    if (event.detail === 'create-thread-modal') {
+                        setTimeout(() => {
+                            contentEditor.codemirror.refresh();
+                        }, 10);
+                    }
+                });
+            });
+        </script>
+    @endpush
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
             <div class="flex items-center justify-between min-w-0 flex-1 gap-4 select-none">
