@@ -203,15 +203,6 @@
 
                             <!-- Edit/Delete/Reply actions (visible on hover) -->
                             <div
-                                class="absolute top-0 {{ $isCurrentUser ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2' }} opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                
-                                <!-- Reply Button -->
-                                @if (!$thread->is_locked)
-                            <!-- Edit/Delete/Reply actions -->
-                            <div
-                                class="absolute top-0 {{ $isCurrentUser ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2' }} flex items-center gap-1">
-                                
-                                <!-- Reply Button -->
                                 @if (!$thread->is_locked)
                                     <button type="button"
                                         onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
