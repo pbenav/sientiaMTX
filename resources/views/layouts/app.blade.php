@@ -201,14 +201,14 @@
 
         /* Prevent layout clipping on mobile for wide content like Kanban */
         @media (max-width: 1024px) {
-            html, body {
+            /* Only allow horizontal scroll for specific views that need it */
+            #mainContent[data-wide-content] {
                 overflow-x: auto !important;
-                position: relative;
             }
             #mainContent {
                 max-width: none !important;
                 width: 100% !important;
-                overflow-x: visible !important;
+                overflow-x: hidden !important;
             }
         }
     </style>
