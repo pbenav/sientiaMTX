@@ -46,6 +46,15 @@ class Task extends Model
             if ($model->status !== 'completed' && $model->is_archived) {
                 $model->is_archived = false;
             }
+
+            // Reset reminder tracking if key dates or statuses change so notifications can trigger again
+            if ($model->isDirty(['due_date', 'scheduled_date', 'status', 'priority', 'urgency'])) {
+                $meta = $model->metadata ?? [];
+                if (isset($meta['last_reminder_sent_at'])) {
+                    unset($meta['last_reminder_sent_at']);
+                    $model->metadata = $meta;
+                }
+            }
         });
 
         // Cascade soft-delete to all direct children (each child's deleting hook
