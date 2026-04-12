@@ -118,7 +118,6 @@
                                     @endif
                                 </div>
                             @endcan
-                        </div>
 
                                 <x-modal name="edit-member-{{ $member->id }}" focusable>
                                     <form method="post" action="{{ route('teams.updateMemberInfo', [$team, $member]) }}"
@@ -157,8 +156,7 @@
                                         </div>
                                     </form>
                                 </x-modal>
-                        @endcan
-                    </div>
+                            </div>
                 @empty
                     <div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm italic font-medium">
                         {{ __('teams.no_members') }}</div>
