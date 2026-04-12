@@ -46,15 +46,16 @@
                     $progress = $total > 0 ? round(($done / $total) * 100) : 0;
                 @endphp
                 <div data-id="{{ $team->id }}"
-                    class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-600 dark:hover:border-violet-800 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-xl hover:shadow-violet-500/10 cursor-grab active:cursor-grabbing">
-                    <div class="flex items-start justify-between">
+                    class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-600 dark:hover:border-violet-800 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-xl hover:shadow-violet-500/10">
+                    <div class="flex items-start justify-between group/header cursor-grab active:cursor-grabbing"
+                        data-team-handle>
                         <div
                             class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white font-bold text-sm">
                             {{ strtoupper(substr($team->name, 0, 2)) }}
                         </div>
                         <a href="{{ route('teams.members', $team) }}"
                             class="text-xs text-gray-600 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-300 px-2 py-1 rounded-full transition-colors"
-                            title="{{ __('teams.members') }}">
+                            title="{{ __('teams.members') }}" @click.stop>
                             {{ __('teams.members_count', ['count' => $team->members->count()]) }}
                         </a>
                     </div>
@@ -168,9 +169,7 @@
                     ghostClass: 'opacity-40',
                     chosenClass: 'scale-[1.02]',
                     dragClass: 'shadow-2xl',
-                    cancel: 'a, button, [role="button"]',
-                    delay: 100,
-                    delayOnTouchOnly: true,
+                    handle: '[data-team-handle]',
                     onEnd: function() {
                         const order = Array.from(grid.querySelectorAll('[data-id]')).map(el => el.dataset.id);
                         
