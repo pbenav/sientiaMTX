@@ -23,4 +23,5 @@ return [
     'original_zoom' => 'Original (100%)',
     'adjust_view' => 'Adjust View',
     'custom' => 'Custom',
+    'back' => 'Back',
 ];
