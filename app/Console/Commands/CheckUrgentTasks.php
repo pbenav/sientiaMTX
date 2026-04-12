@@ -68,10 +68,17 @@ class CheckUrgentTasks extends Command
                 $settings = $user->notification_settings ?? $user->defaultNotificationSettings();
                 $leadHours = (int) ($settings['notify_before_hours'] ?? 2);
 
-                // Horas restantes hasta vencimiento (positivo = futuro)
-                $diffHours = now()->diffInHours($task->due_date, false);
+                // Obtener el timezone del usuario (por defecto: config del servidor)
+                $userTimezone = $user->timezone ?? config('app.timezone', 'UTC');
+                
+                // Convertir la hora actual y la fecha vencimiento al timezone del usuario
+                $nowInUserTz = now($userTimezone);
+                $dueInUserTz = $task->due_date->copy()->setTimezone($userTimezone);
+                
+                // Calcular horas restantes en el timezone del usuario
+                $diffHours = $nowInUserTz->diffInHours($dueInUserTz, false);
 
-                $this->line("  ID:{$task->id} '{$task->title}' — due={$task->due_date} (UTC) restanH={$diffHours} leadH={$leadHours} user={$user->name}");
+                $this->line("  ID:{$task->id} '{$task->title}' — due={$dueInUserTz} ({$userTimezone}) restanH={$diffHours} leadH={$leadHours} user={$user->name}");
 
                 // Solo notificar si está dentro del margen de antelación del usuario
                 // Usar un margen pequeño (0.1 horas = 6 minutos) para evitar problemas de precisión con decimales
