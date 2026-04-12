@@ -263,7 +263,7 @@
 
                 <!-- Logo -->
                 <a href="{{ auth()->check() ? (request()->route('team') ? route('teams.dashboard', request()->route('team')) : route('dashboard')) : route('home') }}"
-                    class="flex items-center gap-2 group">
+                    class="flex items-center gap-2 group shrink-0">
                     <div
                         class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-violet-500/30 transition-all duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 24 24"
@@ -280,9 +280,11 @@
                             class="text-violet-600 dark:text-violet-400">MTX</span></span>
                 </a>
 
-                <!-- Right side: nav links + locale + user menu -->
-                <div class="flex items-center gap-1 sm:gap-3">
+                <!-- Right side: flex container taking remaining space -->
+                <div class="flex items-center gap-1 sm:gap-3 flex-1 justify-end min-w-0">
 
+                    <!-- Scrollable Nav Links -->
+                    <div class="flex items-center gap-1 sm:gap-3 overflow-x-auto min-w-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     @auth
                         <!-- My Teams -->
                         <a href="{{ route('teams.index') }}"
@@ -350,6 +352,9 @@
                                 <span class="hidden lg:block text-[9px] font-bold uppercase tracking-tight leading-none text-center px-1">{{ __('navigation.settings') }}</span>
                             </a>
                         @endcan
+                    </div>
+                    <!-- Right Utilities & User Profile (Fixed) -->
+                    <div class="flex items-center gap-1 sm:gap-3 shrink-0">
 
                         <!-- Google Sync (Global) -->
                         <div class="hidden md:flex items-center border-l border-gray-200 dark:border-gray-800 pl-4 ml-1">
@@ -536,6 +541,7 @@
                             {{ __('navigation.register') }}
                         </a>
                     @endauth
+                    </div>
                 </div>
             </div>
         </div>

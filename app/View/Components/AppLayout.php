@@ -9,7 +9,7 @@ class AppLayout extends Component
 {
     public $maxWidth;
 
-    public function __construct($maxWidth = 'max-w-[1600px]')
+    public function __construct($maxWidth = 'max-w-none')
     {
         $this->maxWidth = $maxWidth;
     }
