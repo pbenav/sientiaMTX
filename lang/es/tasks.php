@@ -236,4 +236,5 @@ return [
     'stop_workday' => 'Detener jornada',
     'start_task_tracking' => 'Iniciar seguimiento',
     'stop_task_tracking' => 'Detener seguimiento',
+    'unauthorized_view' => 'No tienes permiso para ver esta tarea privada.',
 ];

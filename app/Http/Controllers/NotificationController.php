@@ -43,14 +43,19 @@ class NotificationController extends Controller
 
         // PRIORIDAD 1: Comprobación de Tarea (Task)
         if (isset($notification->data['task_id']) && isset($notification->data['team_id'])) {
-            $taskExists = Task::where('id', $notification->data['task_id'])->exists();
+            $task = Task::find($notification->data['task_id']);
             
-            if (!$taskExists) {
+            if (!$task) {
                 Log::emergency('Task NOT found, redirecting back with warning');
                 return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'tarea']));
             }
 
-            Log::emergency('Task found, redirecting to task show');
+            if (Auth::user()->cannot('view', $task)) {
+                Log::warning("Acceso preventivo denegado a tarea #{$task->id} vía notificación para usuario #" . Auth::id());
+                return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+            }
+
+            Log::emergency('Task found and authorized, redirecting to task show');
             return redirect()->route('teams.tasks.show', [$notification->data['team_id'], $notification->data['task_id']]);
         }
 

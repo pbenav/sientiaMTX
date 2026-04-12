@@ -202,4 +202,5 @@ return [
     'search_task' => 'Search task...',
     'totals' => 'Totals',
     'total' => 'Total',
+    'unauthorized_view' => 'You do not have permission to view this private task.',
 ];
