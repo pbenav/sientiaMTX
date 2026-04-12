@@ -7,6 +7,8 @@ return [
     'updated' => 'Tarea actualizada correctamente.',
     'synced_success' => 'Cambios sincronizados correctamente con todos los miembros.',
     'deleted' => 'Tarea eliminada correctamente.',
+    'overdue' => 'Vencida',
+    'expires_soon' => 'Vence pronto',
     'name' => 'Título',
     'description' => 'Descripción',
     'observations' => 'Observaciones',
