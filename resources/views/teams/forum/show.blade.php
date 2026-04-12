@@ -199,13 +199,35 @@
                             @endif
                         </div>
 
-                        <div class="relative group">
-                            <div
+                        <div class="relative group w-full">
+                            <!-- View Mode -->
+                            <div id="message-view-{{ $message->id }}"
                                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }}">
                                 <div class="text-sm markdown-content leading-relaxed">
                                     {!! Str::markdown($message->content) !!}
                                 </div>
                             </div>
+
+                            <!-- Edit Mode (Hidden) -->
+                            @if ($isCurrentUser)
+                                <div id="message-edit-{{ $message->id }}" class="hidden w-full">
+                                    <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <textarea id="edit-content-{{ $message->id }}" name="content" class="w-full">{{ $message->content }}</textarea>
+                                        <div class="flex justify-end gap-2 mt-2">
+                                            <button type="button" onclick="cancelEdit({{ $message->id }})" 
+                                                class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                                Cancelar
+                                            </button>
+                                            <button type="submit" 
+                                                class="px-4 py-1.5 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-all shadow-md shadow-violet-600/20">
+                                                Guardar
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endif
 
                             <!-- Edit/Delete/Reply actions (visible on hover) -->
                             <div
@@ -304,37 +326,6 @@
         </div>
     </div>
 
-    <!-- Edit Message Modal -->
-    <x-modal name="edit-message-modal" focusable>
-        <form id="edit-message-form" method="post" action="" class="p-6 dark:bg-gray-900">
-            @csrf
-            @method('PATCH')
-
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                Editar Mensaje
-            </h2>
-
-            <div class="space-y-4">
-                <div>
-                    <label for="edit_content" class="sr-only">Mensaje</label>
-                    <textarea id="edit_content" name="content" rows="5"
-                        class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-md shadow-sm sm:text-sm"
-                        required></textarea>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancelar
-                </x-secondary-button>
-
-                <x-primary-button>
-                    Guardar Cambios
-                </x-primary-button>
-            </div>
-        </form>
-    </x-modal>
-
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
         <script>
@@ -356,6 +347,8 @@
                 });
             });
 
+            window.inlineEditors = {};
+
             function quoteMessage(name, content) {
                 if (window.replyEditor) {
                     const quote = `> **${name}**: ${content}\n\n`;
@@ -366,21 +359,31 @@
             }
 
             function editMessage(messageId, content) {
-                const form = document.getElementById('edit-message-form');
-                form.action = `/teams/{{ $team->id }}/forum/messages/${messageId}`;
-                
-                if (window.editEditor) {
-                    window.editEditor.value(content);
+                // Show edit form, hide message
+                document.getElementById(`message-view-${messageId}`).classList.add('hidden');
+                document.getElementById(`message-edit-${messageId}`).classList.remove('hidden');
+
+                // Initialize editor if not already done
+                if (!window.inlineEditors[messageId]) {
+                    window.inlineEditors[messageId] = new EasyMDE({
+                        element: document.getElementById(`edit-content-${messageId}`),
+                        spellChecker: false,
+                        status: false,
+                        toolbar: ["bold", "italic", "heading", "|", "quote", "|", "link", "code", "guide"],
+                    });
+                } else {
+                    window.inlineEditors[messageId].value(content);
                 }
-
-                window.dispatchEvent(new CustomEvent('open-modal', {
-                    detail: 'edit-message-modal'
-                }));
-
-                // Refresh EasyMDE when modal opens to fix layout
+                
                 setTimeout(() => {
-                    if (window.editEditor) window.editEditor.codemirror.refresh();
+                    window.inlineEditors[messageId].codemirror.refresh();
+                    window.inlineEditors[messageId].codemirror.focus();
                 }, 10);
+            }
+
+            function cancelEdit(messageId) {
+                document.getElementById(`message-view-${messageId}`).classList.remove('hidden');
+                document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
             }
         </script>
     @endpush
