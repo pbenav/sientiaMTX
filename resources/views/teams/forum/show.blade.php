@@ -154,7 +154,7 @@
                     </div>
 
                     <!-- Message Bubble -->
-                    <div class="flex flex-col {{ $isCurrentUser ? 'items-end' : 'items-start' }} max-w-[85%]">
+                    <div class="flex flex-col {{ $isCurrentUser ? 'items-end' : 'items-start' }} w-full max-w-[85%]">
                         <div class="flex items-baseline gap-2 mb-1 px-1">
                             <span
                                 class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $message->user->name }}</span>
