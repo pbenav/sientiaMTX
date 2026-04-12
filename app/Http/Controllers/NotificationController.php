@@ -31,12 +31,7 @@ class NotificationController extends Controller
         $notification = Auth::user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        // 1. Check for explicit URL
-        if (isset($notification->data['url'])) {
-            return redirect($notification->data['url']);
-        }
-
-        // 2. Check for Task resource
+        // PRIORIDAD 1: Comprobación de Tarea (Task)
         if (isset($notification->data['task_id']) && isset($notification->data['team_id'])) {
             $taskExists = Task::where('id', $notification->data['task_id'])->exists();
             
@@ -47,7 +42,7 @@ class NotificationController extends Controller
             return redirect()->route('teams.tasks.show', [$notification->data['team_id'], $notification->data['task_id']]);
         }
 
-        // 3. Check for Forum Message resource
+        // PRIORIDAD 2: Comprobación de Mensaje de Foro (Forum Message)
         if (isset($notification->data['message_id']) && isset($notification->data['team_id'])) {
             $messageExists = ForumMessage::where('id', $notification->data['message_id'])->exists();
             
@@ -55,11 +50,14 @@ class NotificationController extends Controller
                 return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'mensaje']));
             }
 
-            // Dependiendo de cómo estén las rutas del foro...
-            // Asumimos que redirige al hilo si tenemos thread_id
             if (isset($notification->data['thread_id'])) {
                 return redirect()->route('teams.forum.threads.show', [$notification->data['team_id'], $notification->data['thread_id']]);
             }
+        }
+
+        // PRIORIDAD 3: URL explícita (Solo si no hemos redirigido por ID específico arriba)
+        if (isset($notification->data['url'])) {
+            return redirect($notification->data['url']);
         }
 
         return redirect()->back()->with('status', 'notification-read');
