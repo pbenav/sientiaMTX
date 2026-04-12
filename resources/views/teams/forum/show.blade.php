@@ -335,49 +335,53 @@
         </form>
     </x-modal>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            window.replyEditor = new EasyMDE({
-                element: document.getElementById('reply-content'),
-                spellChecker: false,
-                autosave: { enabled: true, uniqueId: "reply-{{ $thread->id }}", delay: 1000 },
-                status: false,
-                placeholder: "Escribe tu respuesta aquí...",
-                toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                window.replyEditor = new EasyMDE({
+                    element: document.getElementById('reply-content'),
+                    spellChecker: false,
+                    autosave: { enabled: true, uniqueId: "reply-{{ $thread->id }}", delay: 1000 },
+                    status: false,
+                    placeholder: "Escribe tu respuesta aquí...",
+                    toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
+                });
+
+                window.editEditor = new EasyMDE({
+                    element: document.getElementById('edit_content'),
+                    spellChecker: false,
+                    status: false,
+                    toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
+                });
             });
 
-            window.editEditor = new EasyMDE({
-                element: document.getElementById('edit_content'),
-                spellChecker: false,
-                status: false,
-                toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "guide"],
-            });
-        });
-
-        function quoteMessage(name, content) {
-            if (window.replyEditor) {
-                const quote = `> **${name}**: ${content}\n\n`;
-                window.replyEditor.value(quote + window.replyEditor.value());
-                window.replyEditor.codemirror.focus();
-                document.querySelector('.EasyMDEContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        function editMessage(messageId, content) {
-            const form = document.getElementById('edit-message-form');
-            form.action = `/teams/{{ $team->id }}/forum/messages/${messageId}`;
-            
-            if (window.editEditor) {
-                window.editEditor.value(content);
+            function quoteMessage(name, content) {
+                if (window.replyEditor) {
+                    const quote = `> **${name}**: ${content}\n\n`;
+                    window.replyEditor.value(quote + window.replyEditor.value());
+                    window.replyEditor.codemirror.focus();
+                    document.querySelector('.EasyMDEContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             }
 
-            window.dispatchEvent(new CustomEvent('open-modal', {
-                detail: 'edit-message-modal'
-            }));
+            function editMessage(messageId, content) {
+                const form = document.getElementById('edit-message-form');
+                form.action = `/teams/{{ $team->id }}/forum/messages/${messageId}`;
+                
+                if (window.editEditor) {
+                    window.editEditor.value(content);
+                }
 
-            // Refresh EasyMDE when modal opens to fix layout
-            setTimeout(() => {
-                if (window.editEditor) window.editEditor.codemirror.refresh();
-            }, 10);
-        }
-    </script>
+                window.dispatchEvent(new CustomEvent('open-modal', {
+                    detail: 'edit-message-modal'
+                }));
+
+                // Refresh EasyMDE when modal opens to fix layout
+                setTimeout(() => {
+                    if (window.editEditor) window.editEditor.codemirror.refresh();
+                }, 10);
+            }
+        </script>
+    @endpush
 </x-app-layout>
