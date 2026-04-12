@@ -151,7 +151,7 @@
                 init() {
                     @auth
                     // Initial check delayed to avoid conflict with welcome modal/greeting
-                    setTimeout(() => this.check(), 5000);
+                    setTimeout(() => this.check(), 30000);
 
                     // Poll more frequently for "real-time" (15 seconds)
                     setInterval(() => this.check(), 15000);
