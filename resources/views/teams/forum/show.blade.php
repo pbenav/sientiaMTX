@@ -229,8 +229,8 @@
                                     <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
-                                        <textarea id="edit-content-{{ $message->id }}" name="content" 
-                                            class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-violet-500 dark:border-violet-600 rounded-2xl focus:ring-0 text-sm p-4 dark:text-gray-200 transition-colors shadow-inner min-h-[400px]"
+                                        <textarea id="edit-content-{{ $message->id }}" name="content" style="min-height: 400px !important;"
+                                            class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-violet-500 dark:border-violet-600 rounded-2xl focus:ring-0 text-sm p-4 dark:text-gray-200 transition-colors shadow-inner"
                                             rows="12">{{ $message->content }}</textarea>
                                         <div class="flex justify-end gap-2 mt-2">
                                             <button type="button" onclick="cancelEdit({{ $message->id }})" 
@@ -271,8 +271,8 @@
                             </div>
                             <div class="flex-1 space-y-3 pl-2">
                                 <label for="reply-content" class="sr-only">Escribe tu respuesta</label>
-                                <textarea id="reply-content" name="content" rows="10"
-                                    class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm p-4 placeholder-gray-400 dark:text-gray-200 transition-colors min-h-[300px]"
+                                <textarea id="reply-content" name="content" rows="10" style="min-height: 300px !important;"
+                                    class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm p-4 placeholder-gray-400 dark:text-gray-200 transition-colors"
                                     placeholder="Escribe tu respuesta aquí..." required></textarea>
 
                                 <div class="flex justify-end relative">

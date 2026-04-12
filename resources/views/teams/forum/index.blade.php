@@ -223,8 +223,8 @@
 
                 <div>
                     <x-input-label for="content" :value="__('forum.initial_message') ?? 'Mensaje inicial'" />
-                    <textarea id="content" name="content" rows="15"
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-xl shadow-sm sm:text-sm p-4 min-h-[400px]"
+                    <textarea id="content" name="content" rows="15" style="min-height: 400px !important;"
+                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-xl shadow-sm sm:text-sm p-4"
                         placeholder="Escribe aquí el contexto de la conversación... (Soporta Markdown)" required></textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('content')" />
                 </div>
