@@ -13,7 +13,7 @@
 
     <div
         class="flex flex-col md:flex-row w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm min-w-0 md:gap-0">
-        <div class="grid grid-cols-4 sm:grid-cols-8 md:flex md:items-center gap-1 md:gap-0 overflow-hidden md:overflow-x-auto no-scrollbar w-full md:flex-1 md:min-w-0">
+        <div class="flex flex-row flex-wrap justify-center md:items-center gap-1.5 md:gap-0 overflow-visible md:overflow-x-auto no-scrollbar w-full md:flex-1 md:min-w-0">
         @php
             $views = [
                 [
@@ -83,7 +83,7 @@
                 <div class="hidden md:block h-8 w-px bg-gray-200 dark:bg-gray-700 mx-2 self-center shrink-0"></div>
             @endif
             <a href="{{ $view['route'] }}"
-                class="flex flex-col items-center justify-center gap-1.5 px-1 py-2 md:px-3 md:py-2.5 rounded-xl transition-all w-full md:w-auto md:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:bg-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50' }}"
+                class="flex flex-col items-center justify-center gap-1.5 px-1 py-2 md:px-3 md:py-2.5 rounded-xl transition-all w-[calc(25%-0.375rem)] sm:w-[calc(12.5%-0.375rem)] md:w-auto md:min-w-[80px] {{ $view['active'] ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:bg-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50' }}"
                 title="{{ $view['name'] }}">
                 <div class="flex items-center justify-center h-5 w-5 shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
