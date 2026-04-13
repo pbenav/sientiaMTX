@@ -1154,8 +1154,8 @@
 
                     if (file.size > limitBytes) {
                         Swal.fire({
-                            title: '{{ __('Archivo demasiado grande') }}',
-                            text: `El archivo excede el límite de ${limit} configurado en el servidor.`,
+                            title: '{{ __('tasks.file_too_large') }}',
+                            text: '{{ __('tasks.file_exceed_limit', ['limit' => ':limit']) }}'.replace(':limit', limit),
                             icon: 'error',
                             background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                             color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'

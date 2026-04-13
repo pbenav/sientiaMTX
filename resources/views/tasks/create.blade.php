@@ -459,13 +459,18 @@
                                 <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('tasks.attachments_hint') ?? 'Sube archivos relevantes para esta tarea' }}</p>
                             </div>
                         </div>
-                        <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                            </svg>
-                            {{ __('tasks.add_attachment') }}
-                            <input type="file" name="attachments[]" multiple class="hidden" onchange="updateFileList(this)">
-                        </label>
+                        <div class="flex flex-col items-end">
+                            <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                                </svg>
+                                {{ __('tasks.add_attachment') }}
+                                <input type="file" name="attachments[]" multiple class="hidden" onchange="updateFileList(this)">
+                            </label>
+                            <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-tighter font-medium">
+                                {{ __('tasks.max_file_size', ['size' => ini_get('upload_max_filesize')]) }}
+                            </span>
+                        </div>
                     </div>
 
                     <div id="file-list-preview" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
@@ -667,7 +672,16 @@
             const list = document.getElementById('file-list-preview');
             list.innerHTML = '';
             if (input.files.length > 0) {
+                const limit = "{{ ini_get('upload_max_filesize') }}";
+                const limitBytes = parsePHPSize(limit);
+                const invalidFiles = [];
+
                 Array.from(input.files).forEach(file => {
+                    if (file.size > limitBytes) {
+                        invalidFiles.push(file.name);
+                        return;
+                    }
+
                     const div = document.createElement('div');
                     div.className = 'flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
                     div.innerHTML = `
@@ -681,6 +695,29 @@
                     `;
                     list.appendChild(div);
                 });
+
+                if (invalidFiles.length > 0) {
+                    Swal.fire({
+                        title: '{{ __('tasks.files_too_large') }}',
+                        text: `{{ __('tasks.files_exceed_limit', ['limit' => ':limit', 'files' => ':files']) }}`.replace(':limit', limit).replace(':files', invalidFiles.join(', ')),
+                        icon: 'error',
+                        background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                    });
+                    input.value = '';
+                    list.innerHTML = '';
+                }
+            }
+        }
+
+        function parsePHPSize(size) {
+            const unit = size.slice(-1).toUpperCase();
+            const value = parseFloat(size);
+            switch (unit) {
+                case 'G': return value * 1024 * 1024 * 1024;
+                case 'M': return value * 1024 * 1024;
+                case 'K': return value * 1024;
+                default: return value;
             }
         }
     </script>

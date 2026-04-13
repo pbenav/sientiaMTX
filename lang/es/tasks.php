@@ -81,6 +81,11 @@ return [
     'delete_file_warning' => 'Esta acción no se puede deshacer y liberará espacio de tu cuota.',
     'completed' => 'Completada',
     'pending' => 'Pendiente',
+    'max_file_size' => 'Máx. :size por archivo',
+    'files_too_large' => 'Archivos demasiado grandes',
+    'file_too_large' => 'Archivo demasiado grande',
+    'files_exceed_limit' => 'Los siguientes archivos exceden el límite de :limit: :files',
+    'file_exceed_limit' => 'El archivo excede el límite de :limit configurado en el servidor.',
 
     'priorities' => [
         'low' => 'Baja',

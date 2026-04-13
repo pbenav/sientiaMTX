@@ -155,6 +155,8 @@ class TaskController extends Controller
             'skills' => 'nullable|array',
             'skills.*' => 'integer|exists:skills,id',
             'skill_id' => 'nullable|integer|exists:skills,id', // Legacy
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
         ]);
 
         $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
@@ -926,8 +928,9 @@ class TaskController extends Controller
 
     public function uploadAttachment(\Illuminate\Http\Request $request, Team $team, Task $task)
     {
+        $maxSizeKB = (int)ini_get('upload_max_filesize') * 1024;
         $request->validate([
-            'file' => 'required|file|max:10240', // 10MB max per file
+            'file' => "required|file|max:$maxSizeKB",
         ]);
 
         $user = auth()->user();
