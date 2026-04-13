@@ -595,9 +595,13 @@
                                         </svg>
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate"
+                                        <p class="text-[12px] font-bold text-gray-800 dark:text-white truncate"
                                             title="{{ $attachment->file_name }}">
-                                            {{ $attachment->file_name }}
+                                            <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}" 
+                                               target="_blank" 
+                                               class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                {{ $attachment->file_name }}
+                                            </a>
                                         </p>
                                         <p class="text-[10px] text-gray-400">
                                             {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB

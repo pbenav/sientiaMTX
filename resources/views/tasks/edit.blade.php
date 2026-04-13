@@ -683,7 +683,11 @@
                                         <div class="min-w-0 font-sans">
                                             <p class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate"
                                                 title="{{ $attachment->file_name }}">
-                                                {{ $attachment->file_name }}
+                                                <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}" 
+                                                   target="_blank" 
+                                                   class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                    {{ $attachment->file_name }}
+                                                </a>
                                             </p>
                                             <p class="text-[10px] text-gray-500 flex items-center gap-2 font-medium">
                                                 <span

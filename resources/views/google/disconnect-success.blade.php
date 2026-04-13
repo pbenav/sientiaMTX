@@ -35,26 +35,41 @@
 
     @push('scripts')
     <script>
-        // Use a more robust way to handle the parent and self
         function finalize() {
+            let handled = false;
             try {
+                // If we have an opener and it's not closed, we're likely in a popup
                 if (window.opener && !window.opener.closed) {
                     window.opener.location.reload();
+                    handled = true;
                 }
             } catch (e) {
                 console.warn('Could not reload parent:', e);
             }
             
-            // Try to close
-            setTimeout(() => {
-                window.close();
-            }, 500);
+            if (handled) {
+                // It was a popup, try to close
+                setTimeout(() => {
+                    window.close();
+                    // Fallback if window.close() is blocked or didn't work
+                    setTimeout(() => {
+                        window.location.href = "{{ route('dashboard') }}";
+                    }, 1500);
+                }, 500);
+            } else {
+                // Not a popup or opener inaccessible, redirect after delay
+                window.location.href = "{{ route('dashboard') }}";
+            }
         }
 
-        // Execute on load
-        window.addEventListener('load', () => {
-            setTimeout(finalize, 2000);
-        });
+        // Execute as soon as possible, but wait for visual cue
+        if (document.readyState === 'complete') {
+            setTimeout(finalize, 1500);
+        } else {
+            window.addEventListener('load', () => {
+                setTimeout(finalize, 1500);
+            });
+        }
     </script>
     @endpush
 </x-app-layout>

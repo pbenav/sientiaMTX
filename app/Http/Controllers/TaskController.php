@@ -960,6 +960,28 @@ class TaskController extends Controller
 
     public function downloadAttachment(Team $team, TaskAttachment $attachment)
     {
+        $this->authorizeAttachmentAccess($team, $attachment);
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
+            return back()->with('error', 'El archivo no se encuentra en el servidor.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+    }
+
+    public function viewAttachment(Team $team, TaskAttachment $attachment)
+    {
+        $this->authorizeAttachmentAccess($team, $attachment);
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
+            return back()->with('error', 'El archivo no se encuentra en el servidor.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->response($attachment->file_path);
+    }
+
+    protected function authorizeAttachmentAccess(Team $team, TaskAttachment $attachment)
+    {
         $task = $attachment->task;
         $isManager = $team->isManager(auth()->user());
         
@@ -970,14 +992,8 @@ class TaskController extends Controller
         }
 
         if (!$hasAccess) {
-            abort(403, 'No tienes permiso para descargar este archivo.');
+            abort(403, 'No tienes permiso para acceder a este archivo.');
         }
-
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
-            return back()->with('error', 'El archivo no se encuentra en el servidor.');
-        }
-
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 
     public function updateAttachment(Request $request, Team $team, TaskAttachment $attachment)
