@@ -467,8 +467,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const heatmapPoints = @json($heatmapData ?? []);
             
-            // Validamos que los puntos tengan coordenadas para no romper el mapa
-            const validPoints = heatmapPoints.filter(p => p.lat && p.lng);
+            // Validamos que los puntos tengan coordenadas válidas y sean números para evitar errores de renderizado
+            const validPoints = heatmapPoints.filter(p => {
+                const lat = parseFloat(p.lat);
+                const lng = parseFloat(p.lng);
+                return !isNaN(lat) && !isNaN(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+            });
             
             let center = [37.17, -3.60]; // Default Andalucía
             let zoom = 8;
@@ -502,8 +506,21 @@
             map.getPane('popupPane').style.zIndex = 750;
             
             if (validPoints.length > 0) {
-                const heatData = validPoints.map(p => [p.lat, p.lng, p.count || 10]);
-                L.heatLayer(heatData, { radius: 35, blur: 20, maxZoom: 16 }).addTo(map);
+                // Obtenemos la intensidad máxima para normalizar y evitar valores extremos que rompan el canvas
+                const maxVal = Math.max(...validPoints.map(p => parseFloat(p.count) || 10));
+                
+                const heatData = validPoints.map(p => [
+                    parseFloat(p.lat), 
+                    parseFloat(p.lng), 
+                    (parseFloat(p.count) || 10) / maxVal // Normalizamos a escala 0-1
+                ]);
+                
+                L.heatLayer(heatData, { 
+                    radius: 35, 
+                    blur: 20, 
+                    maxZoom: 16,
+                    max: 1.0
+                }).addTo(map);
                 
                 validPoints.forEach(p => {
                     // Marcador 'Hito' elegante
