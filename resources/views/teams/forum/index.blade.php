@@ -73,9 +73,9 @@
                                     <span
                                         class="inline-flex items-center justify-center p-1 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-full"
                                         title="{{ __('forum.pinned') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transform -rotate-45"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M5 21l-3-3 8-8V3a1 1 0 011-1h6a1 1 0 011 1v7l8 8-3 3-8-8H5z" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                            viewBox="0 0 24 24" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
                                         </svg>
                                     </span>
                                 @endif
@@ -83,11 +83,9 @@
                                     <span
                                         class="inline-flex items-center justify-center p-1 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 rounded-full"
                                         title="{{ __('forum.locked') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20"
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24"
                                             fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                                                clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
                                         </svg>
                                     </span>
                                 @endif
