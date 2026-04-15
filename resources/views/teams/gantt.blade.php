@@ -18,31 +18,31 @@
         .dark .gantt .lower-text { fill: #e5e7eb; }
         .dark .gantt .tick { stroke: #1f2937; }
 
-        .gantt .bar-wrapper { cursor: pointer; transition: transform 0.2s; }
-        .gantt .bar { fill: #e5e7eb; stroke: none; opacity: 0.85; }
+        .gantt .bar { fill: #e5e7eb; stroke-width: 1.5px; opacity: 1; }
         .gantt .bar-progress { fill: currentColor; opacity: 1; }
-        .gantt .bar-label { fill: #1f2937; font-weight: 700; font-size: 11px; }
-        .dark .gantt .bar-label { fill: #ffffff; }
+        .gantt .bar-label { fill: #1f2937 !important; font-weight: 700; font-size: 11px; text-shadow: none; }
+        .dark .gantt .bar-label { fill: #f9fafb !important; text-shadow: none; }
         .dark .gantt .bar { fill: #374151; }
 
-        /* Quadrant Colors */
-        svg.gantt .bar-wrapper.gantt-color-q1 rect.bar { fill: #fecaca !important; }
-        svg.gantt .bar-wrapper.gantt-color-q1 rect.bar-progress { fill: #ef4444 !important; }
-        svg.gantt .bar-wrapper.gantt-color-q2 rect.bar { fill: #bfdbfe !important; }
-        svg.gantt .bar-wrapper.gantt-color-q2 rect.bar-progress { fill: #3b82f6 !important; }
-        svg.gantt .bar-wrapper.gantt-color-q3 rect.bar { fill: #fde68a !important; }
-        svg.gantt .bar-wrapper.gantt-color-q3 rect.bar-progress { fill: #f59e0b !important; }
-        svg.gantt .bar-wrapper.gantt-color-q4 rect.bar { fill: #e5e7eb !important; }
-        svg.gantt .bar-wrapper.gantt-color-q4 rect.bar-progress { fill: #6b7280 !important; }
+        /* Quadrant Colors - Light Theme (Pastel with vibrant borders) */
+        svg.gantt .bar-wrapper.gantt-q1 rect.bar { fill: #fee2e2 !important; stroke: #ef4444 !important; }
+        svg.gantt .bar-wrapper.gantt-q1 rect.bar-progress { fill: #ef4444 !important; }
+        svg.gantt .bar-wrapper.gantt-q2 rect.bar { fill: #dbeafe !important; stroke: #3b82f6 !important; }
+        svg.gantt .bar-wrapper.gantt-q2 rect.bar-progress { fill: #3b82f6 !important; }
+        svg.gantt .bar-wrapper.gantt-q3 rect.bar { fill: #fef3c7 !important; stroke: #f59e0b !important; }
+        svg.gantt .bar-wrapper.gantt-q3 rect.bar-progress { fill: #f59e0b !important; }
+        svg.gantt .bar-wrapper.gantt-q4 rect.bar { fill: #f3f4f6 !important; stroke: #6b7280 !important; }
+        svg.gantt .bar-wrapper.gantt-q4 rect.bar-progress { fill: #9ca3af !important; }
 
-        .dark svg.gantt .bar-wrapper.gantt-color-q1 rect.bar { fill: #7f1d1d !important; fill-opacity: 0.4 !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q1 rect.bar-progress { fill: #f87171 !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q2 rect.bar { fill: #1e3a8a !important; fill-opacity: 0.4 !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q2 rect.bar-progress { fill: #60a5fa !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q3 rect.bar { fill: #78350f !important; fill-opacity: 0.4 !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q3 rect.bar-progress { fill: #fbbf24 !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q4 rect.bar { fill: #374151 !important; fill-opacity: 0.4 !important; }
-        .dark svg.gantt .bar-wrapper.gantt-color-q4 rect.bar-progress { fill: #9ca3af !important; }
+        /* Quadrant Colors - Dark Theme (Deep colors with glowing borders) */
+        .dark svg.gantt .bar-wrapper.gantt-q1 rect.bar { fill: #7f1d1d !important; stroke: #ef4444 !important; fill-opacity: 0.6 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q1 rect.bar-progress { fill: #ef4444 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q2 rect.bar { fill: #1e3a8a !important; stroke: #3b82f6 !important; fill-opacity: 0.6 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q2 rect.bar-progress { fill: #3b82f6 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q3 rect.bar { fill: #78350f !important; stroke: #f59e0b !important; fill-opacity: 0.6 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q3 rect.bar-progress { fill: #f59e0b !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q4 rect.bar { fill: #374151 !important; stroke: #9ca3af !important; fill-opacity: 0.6 !important; }
+        .dark svg.gantt .bar-wrapper.gantt-q4 rect.bar-progress { fill: #9ca3af !important; }
 
         .gantt .handle { fill: #9ca3af; }
         .gantt .today-highlight { fill: rgba(16, 185, 129, 0.05) !important; }
