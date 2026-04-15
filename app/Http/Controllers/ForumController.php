@@ -178,6 +178,10 @@ class ForumController extends Controller
 
         $thread->update($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'title' => $thread->title]);
+        }
+
         return back()->with('success', __('forum.thread_updated'));
     }
 

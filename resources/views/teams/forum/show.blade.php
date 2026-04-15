@@ -28,16 +28,30 @@
                 </a>
 
                 <div class="min-w-0 flex-1">
-                    <h2
-                        class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center gap-3 truncate">
+                    <div class="flex items-center gap-3">
                         @if ($thread->is_pinned)
-                            <span class="text-violet-500"><svg xmlns="http://www.w3.org/2000/svg"
+                            <span class="text-violet-500 shrink-0"><svg xmlns="http://www.w3.org/2000/svg"
                                     class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                                     <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
                                 </svg></span>
                         @endif
-                        {{ $thread->title }}
-                    </h2>
+                        @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
+                            <h2 id="thread-title-display" onclick="enableTitleEdit()"
+                                class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate cursor-text hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-0.5 rounded transition-colors -ml-2 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                                title="Haz clic para editar el título">
+                                {{ $thread->title }}
+                            </h2>
+                            <form id="thread-title-form" class="hidden w-full max-w-2xl" onsubmit="saveTitle(event)">
+                                <input type="text" id="thread-title-input" value="{{ $thread->title }}"
+                                    class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded px-2 py-0.5 w-full focus:ring-0 focus:outline-none -ml-2"
+                                    onblur="saveTitle(event)">
+                            </form>
+                        @else
+                            <h2 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate">
+                                {{ $thread->title }}
+                            </h2>
+                        @endif
+                    </div>
                     <div class="text-xs text-gray-500 flex items-center gap-3 mt-1.5 font-medium">
                         <span class="flex items-center gap-1.5 shrink-0">
                             <div
@@ -314,6 +328,61 @@
                 document.getElementById(`message-view-${messageId}`).classList.remove('hidden');
                 document.getElementById(`actions-${messageId}`).classList.remove('hidden');
                 document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
+            }
+
+            function enableTitleEdit() {
+                const display = document.getElementById('thread-title-display');
+                if (!display) return;
+                display.classList.add('hidden');
+                document.getElementById('thread-title-form').classList.remove('hidden');
+                const input = document.getElementById('thread-title-input');
+                input.focus();
+                input.selectionStart = input.selectionEnd = input.value.length;
+            }
+
+            function saveTitle(e) {
+                if (e) e.preventDefault();
+                const form = document.getElementById('thread-title-form');
+                if (!form || form.classList.contains('hidden')) return;
+                
+                const input = document.getElementById('thread-title-input');
+                const display = document.getElementById('thread-title-display');
+                const newTitle = input.value.trim();
+                
+                if (!newTitle || newTitle === display.innerText.trim()) {
+                    input.value = display.innerText.trim();
+                    form.classList.add('hidden');
+                    display.classList.remove('hidden');
+                    return;
+                }
+
+                form.classList.add('hidden');
+                display.classList.remove('hidden');
+                display.innerText = newTitle;
+                display.classList.add('opacity-50');
+
+                fetch(`{{ route('teams.forum.update', [$team, $thread]) }}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ title: newTitle })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    display.classList.remove('opacity-50');
+                    if (data.title) {
+                        display.innerText = data.title;
+                        input.value = data.title;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error saving title', err);
+                    display.classList.remove('opacity-50');
+                    alert('Error al guardar el título.');
+                });
             }
 
             // Image Paste Handler for Textareas
