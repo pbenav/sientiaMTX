@@ -12,6 +12,8 @@
             .markdown-content blockquote { border-left: 4px solid #8b5cf6; padding-left: 1rem; font-style: italic; color: #6b7280; margin-bottom: 1rem; }
             .dark .markdown-content blockquote { color: #9ca3af; }
             .markdown-content a { color: #8b5cf6; text-decoration: underline; }
+            .markdown-content img { max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin: 1rem 0; border: 1px solid #e5e7eb; }
+            .dark .markdown-content img { border-color: #374151; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
         </style>
     @endpush
     <x-slot name="header">
@@ -313,6 +315,61 @@
                 document.getElementById(`actions-${messageId}`).classList.remove('hidden');
                 document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
             }
+
+            // Image Paste Handler for Textareas
+            document.addEventListener('paste', function(e) {
+                if (e.target.tagName.toLowerCase() === 'textarea') {
+                    let items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                    let blob = null;
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf("image") === 0) {
+                            blob = items[i].getAsFile();
+                            break;
+                        }
+                    }
+                    
+                    if (blob !== null) {
+                        e.preventDefault();
+                        let textarea = e.target;
+                        
+                        let cursorStart = textarea.selectionStart;
+                        let cursorEnd = textarea.selectionEnd;
+                        let textBefore = textarea.value.substring(0, cursorStart);
+                        let textAfter = textarea.value.substring(cursorEnd, textarea.value.length);
+                        let placeholder = `![Subiendo imagen...]()`;
+                        
+                        textarea.value = textBefore + placeholder + textAfter;
+                        
+                        let formData = new FormData();
+                        formData.append('image', blob);
+                        let tokenStr = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        if (tokenStr) formData.append('_token', tokenStr);
+                        else {
+                            // Fallback to searching input text
+                            const tokenEl = document.querySelector('input[name="_token"]');
+                            if (tokenEl) formData.append('_token', tokenEl.value);
+                        }
+                        
+                        fetch(`{{ route('teams.forum.upload_image', $team) }}`, {
+                            method: 'POST',
+                            headers: { 'Accept': 'application/json' },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.url) {
+                                let markdownImg = `![Imagen adjunta](${data.url})`;
+                                textarea.value = textarea.value.replace(placeholder, markdownImg);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error uploading image', error);
+                            textarea.value = textarea.value.replace(placeholder, '');
+                            alert('Hubo un error al subir la imagen.');
+                        });
+                    }
+                }
+            });
         </script>
     @endpush
 </x-app-layout>
