@@ -109,6 +109,27 @@ class GanttController extends Controller
                 'parent_title' => $task->parent?->title,
                 'readonly'     => auth()->user()->cannot('update', $task),
                 'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),
+                'members_progress' => $task->children->count() > 0 ? $task->children->map(function($child) {
+                    return [
+                        'name' => $child->assignedUser?->short_name ?: ($child->assignedUser?->name ?: 'Desconocido'),
+                        'progress' => $child->progress,
+                        'time_human' => null,
+                        'initials' => $child->assignedUser 
+                            ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($child->assignedUser->name, 0, 2)) 
+                            : '??'
+                    ];
+                })->toArray() : ($task->assignedTo->count() > 1 || $task->timeLogs->count() > 0 ? 
+                    $task->assignedTo->merge($task->timeLogs->pluck('user')->filter())->unique('id')->map(function($user) use ($task) {
+                    $seconds = (int) $task->timeLogs->where('user_id', $user->id)->whereNotNull('end_at')->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+                    $hours = floor($seconds / 3600);
+                    $minutes = floor(($seconds % 3600) / 60);
+                    return [
+                        'name' => $user->short_name ?: $user->name,
+                        'progress' => null,
+                        'time_human' => $seconds > 0 ? "{$hours}h {$minutes}m" : "0h 0m",
+                        'initials' => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 2))
+                    ];
+                })->toArray() : []),
             ];
         });
 
@@ -173,7 +194,7 @@ class GanttController extends Controller
         $uniqueIds = $ganttTaskIds->filter()->unique()->values();
 
         // Step 3: Filters
-        $allGanttTasks = Task::with(['parent', 'assignedUser', 'skills'])
+        $allGanttTasks = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
             ->whereIn('id', $uniqueIds)
             ->when(session('hide_completed_tasks', true) && !$request->status, fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
             ->when($request->search, function ($q, $search) {

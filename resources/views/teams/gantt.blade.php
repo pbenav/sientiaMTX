@@ -405,6 +405,34 @@
 
                 const endLabelEl = document.getElementById('drag-end-label');
                 if (endLabelEl) endLabelEl.innerText = fmt(dateEnd);
+
+                const breakdownContainer = document.getElementById('drag-members-breakdown');
+                const membersList = document.getElementById('drag-members-list');
+                
+                if (breakdownContainer && membersList) {
+                    if (task.members_progress && task.members_progress.length > 0) {
+                        breakdownContainer.style.display = 'flex';
+                        membersList.innerHTML = '';
+                        task.members_progress.forEach(member => {
+                            membersList.innerHTML += `
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 rounded-full bg-indigo-600 flex shrink-0 items-center justify-center text-[6px] font-black text-white shadow-sm">${member.initials}</div>
+                                    <span class="text-[9px] font-bold text-gray-700 dark:text-gray-300 flex-1 truncate">${member.name}</span>
+                                    ${member.progress !== null ? `
+                                        <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 w-6 text-right">${member.progress}%</span>
+                                        <div class="w-12 h-1 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden shrink-0">
+                                            <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: ${member.progress}%"></div>
+                                        </div>
+                                    ` : `
+                                        <span class="text-[9px] font-black text-rose-500 dark:text-rose-400 text-right opacity-80">${member.time_human}</span>
+                                    `}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        breakdownContainer.style.display = 'none';
+                    }
+                }
             }
 
             document.addEventListener('mousedown', e => {
@@ -544,9 +572,13 @@
             <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Responsable</span><div class="flex items-center gap-2"><div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm">??</div><span id="drag-user-name" class="text-[10px] font-extrabold truncate text-gray-700 dark:text-gray-200">Asignado</span></div></div>
             <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Estado</span><span id="drag-task-status" class="text-[10px] font-black uppercase tracking-wide text-gray-800 dark:text-gray-100">PENDIENTE</span></div>
             <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Habilidades</span><div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div></div>
-            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Progreso</span><span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-600 dark:text-emerald-400">0%</span></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Progreso Total</span><span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-600 dark:text-emerald-400">0%</span></div>
         </div>
-        <div class="flex items-center justify-between gap-4 px-1">
+        <div id="drag-members-breakdown" style="display: none;" class="flex-col gap-2 py-3 border-b border-gray-100 dark:border-white/5">
+            <span class="text-[8px] font-black uppercase opacity-50">Desglose de Ejecución</span>
+            <div id="drag-members-list" class="flex flex-col gap-1.5 mt-1"></div>
+        </div>
+        <div class="flex items-center justify-between gap-4 px-1 pb-1">
             <div class="flex flex-col gap-0.5"><span class="text-[7px] font-black uppercase opacity-50">Inicia</span><span id="drag-start-label" class="text-xs font-black text-gray-900 dark:text-white"></span></div>
             <div class="flex-1 flex items-center px-4"><div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-white/20 to-transparent"></div></div>
             <div class="flex flex-col gap-0.5 text-right"><span class="text-[7px] font-black uppercase opacity-50">Termina</span><span id="drag-end-label" class="text-xs font-black text-gray-900 dark:text-white"></span></div>
