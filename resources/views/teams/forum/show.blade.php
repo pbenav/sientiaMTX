@@ -36,7 +36,7 @@
                                 </svg></span>
                         @endif
                         @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
-                            <h2 id="thread-title-display" onclick="enableTitleEdit()"
+                            <h2 id="thread-title-display" onclick="enableTitleEdit(event)"
                                 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate cursor-text hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-0.5 rounded transition-colors -ml-2 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
                                 title="Haz clic para editar el título">
                                 {{ $thread->title }}
@@ -330,14 +330,17 @@
                 document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
             }
 
-            function enableTitleEdit() {
+            function enableTitleEdit(e) {
+                if (e) e.stopPropagation();
                 const display = document.getElementById('thread-title-display');
                 if (!display) return;
                 display.classList.add('hidden');
                 document.getElementById('thread-title-form').classList.remove('hidden');
                 const input = document.getElementById('thread-title-input');
-                input.focus();
-                input.selectionStart = input.selectionEnd = input.value.length;
+                setTimeout(() => {
+                    input.focus();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                }, 50);
             }
 
             function saveTitle() {
