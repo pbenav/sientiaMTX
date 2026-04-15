@@ -41,10 +41,10 @@
                                 title="Haz clic para editar el título">
                                 {{ $thread->title }}
                             </h2>
-                            <form id="thread-title-form" class="hidden w-full max-w-2xl" onsubmit="saveTitle(event)">
+                            <form id="thread-title-form" class="hidden w-full max-w-2xl" onsubmit="event.preventDefault(); saveTitle(); return false;">
                                 <input type="text" id="thread-title-input" value="{{ $thread->title }}"
                                     class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded px-2 py-0.5 w-full focus:ring-0 focus:outline-none -ml-2"
-                                    onblur="saveTitle(event)">
+                                    onblur="saveTitle()">
                             </form>
                         @else
                             <h2 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate">
@@ -340,17 +340,17 @@
                 input.selectionStart = input.selectionEnd = input.value.length;
             }
 
-            function saveTitle(e) {
-                if (e) e.preventDefault();
+            function saveTitle() {
                 const form = document.getElementById('thread-title-form');
                 if (!form || form.classList.contains('hidden')) return;
                 
                 const input = document.getElementById('thread-title-input');
                 const display = document.getElementById('thread-title-display');
                 const newTitle = input.value.trim();
+                const oldTitle = display.innerText.trim();
                 
-                if (!newTitle || newTitle === display.innerText.trim()) {
-                    input.value = display.innerText.trim();
+                if (!newTitle || newTitle === oldTitle) {
+                    input.value = oldTitle;
                     form.classList.add('hidden');
                     display.classList.remove('hidden');
                     return;
@@ -370,10 +370,14 @@
                     },
                     body: JSON.stringify({ title: newTitle })
                 })
-                .then(res => res.json())
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Error en la petición');
+                    return data;
+                })
                 .then(data => {
                     display.classList.remove('opacity-50');
-                    if (data.title) {
+                    if (data && data.title) {
                         display.innerText = data.title;
                         input.value = data.title;
                     }
@@ -381,7 +385,9 @@
                 .catch(err => {
                     console.error('Error saving title', err);
                     display.classList.remove('opacity-50');
-                    alert('Error al guardar el título.');
+                    display.innerText = oldTitle;
+                    input.value = oldTitle;
+                    alert('Error al guardar el título: ' + err.message);
                 });
             }
 
