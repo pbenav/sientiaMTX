@@ -115,7 +115,8 @@ class TaskController extends Controller
     {
         $allMembers = $team->members; // All members — for owner selector
         // Exclude the current user from assignee list: creator is implicit owner
-        $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
+        // Allow the current user to be assigned as well so they can generate instances for themselves if they wish
+        $users = $team->members;
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->with('assignedUser')->orderBy('title')->get();
@@ -157,9 +158,12 @@ class TaskController extends Controller
             'skill_id' => 'nullable|integer|exists:skills,id', // Legacy
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
+            'assignment_mode' => 'nullable|string|in:shared,distributed',
         ]);
 
-        $isTemplate = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
+        $hasAssignments = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
+        $assignmentMode = $request->input('assignment_mode', 'shared');
+        $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
 
         // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
         $autoPublic = false;
@@ -231,41 +235,45 @@ class TaskController extends Controller
             }
         }
 
-        if ($isTemplate) {
-            $userIds = collect($validated['assigned_to'] ?? []);
-
-            if (!empty($validated['assigned_groups'])) {
-                foreach ($validated['assigned_groups'] as $groupId) {
-                    $group = $team->groups()->find($groupId);
-                    if ($group) {
-                        $userIds = $userIds->merge($group->users->pluck('id'));
-                    }
-
-                    $task->assignments()->create([
-                        'group_id' => $groupId,
-                        'assigned_by_id' => auth()->id(),
-                    ]);
+        // Create Role-Based Assignments
+        $userIds = collect($validated['assigned_to'] ?? []);
+        
+        if (!empty($validated['assigned_groups'])) {
+            foreach ($validated['assigned_groups'] as $groupId) {
+                $group = $team->groups()->find($groupId);
+                if ($group) {
+                    $userIds = $userIds->merge($group->users->pluck('id'));
                 }
+                $task->assignments()->create([
+                    'group_id' => $groupId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
+
+        // If it's a template and no one is assigned, assign creator
+        if ($isTemplate && empty($userIds)) {
+            $userIds->push($task->created_by_id);
+        }
+
+        // Add creator if they explicitly selected themselves in shared/distributed mode
+        if (in_array($task->created_by_id, $validated['assigned_to'] ?? [])) {
+            $userIds->push($task->created_by_id);
+        }
+
+        $uniqueUserIds = $userIds->unique();
+
+        foreach ($uniqueUserIds as $userId) {
+            // Create Assignment record for direct users
+            if (in_array($userId, $validated['assigned_to'] ?? [])) {
+                $task->assignments()->create([
+                    'user_id' => $userId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
             }
 
-            // Optional: Include the creator in the work distribution only if they are in the 'assigned_to' list
-            // or if no one else is assigned (to ensure at least one instance exists for templates)
-            if (in_array($task->created_by_id, $validated['assigned_to'] ?? []) || empty($uniqueUserIds)) {
-                $userIds->push($task->created_by_id);
-            }
-
-            $uniqueUserIds = $userIds->unique();
-
-            foreach ($uniqueUserIds as $userId) {
-                // Create Assignment record
-                if (in_array($userId, $validated['assigned_to'] ?? [])) {
-                    $task->assignments()->create([
-                        'user_id' => $userId,
-                        'assigned_by_id' => auth()->id(),
-                    ]);
-                }
-
-                // Create Individual Instance
+            // Create Individual Instance only if it's a Plan Maestro (distributed)
+            if ($isTemplate) {
                 $instance = $team->tasks()->create([
                     'title' => $task->title,
                     'description' => $task->description,
@@ -342,8 +350,8 @@ class TaskController extends Controller
 
         $task->load('attachments');
         $allMembers = $team->members; // All members — for owner selector
-        // Exclude the current user from assignee list: creator is implicit owner
-        $users = $team->members->reject(fn ($u) => $u->id === auth()->id());
+        // Allow the current user to be assigned as well so they can generate instances for themselves if they wish
+        $users = $team->members;
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
@@ -385,6 +393,7 @@ class TaskController extends Controller
             'is_autoprogrammable' => 'nullable|boolean',
             'autoprogram_settings' => 'nullable|array',
             'skill_id' => 'nullable|integer|exists:skills,id',
+            'assignment_mode' => 'nullable|string|in:shared,distributed',
         ]);
 
         // Store old values for history
@@ -533,7 +542,9 @@ class TaskController extends Controller
             }
 
             // Determine if it should still be a template
-            $isTemplate = !empty($assignedTo) || !empty($assignedGroups);
+            $hasAssignments = !empty($assignedTo) || !empty($assignedGroups);
+            $assignmentMode = $request->input('assignment_mode', 'shared');
+            $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
             $task->is_template = $isTemplate;
             $task->save();
             

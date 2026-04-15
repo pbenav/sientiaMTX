@@ -247,4 +247,9 @@ return [
     'unauthorized_view' => 'No tienes permiso para ver esta tarea privada.',
     'plan_master' => 'Plan Maestro',
     'your_execution' => 'Tu Ejecución',
+    'assignment_mode' => 'Modo de Asignación',
+    'shared_task' => 'Tarea Compartida (Colaborativa)',
+    'shared_hint' => 'Es UNA única tarea. Todos trabajan sobre ella, comparten el progreso y el tiempo se suma.',
+    'distributed_task' => 'Plan Maestro (Distribución)',
+    'distributed_hint' => 'Crea un contenedor global (solo-lectura) y genera una copia (instancia) independiente para cada miembro asignado.',
 ];

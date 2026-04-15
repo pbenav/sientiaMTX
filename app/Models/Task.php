@@ -360,30 +360,18 @@ class Task extends Model
     public function scopeFocusedFor($query, $user, Team $team)
     {
         $userId = $user->id;
-        $isCoordinator = $team->isCoordinator($user);
 
-        return $query->where(function ($q) use ($userId, $isCoordinator) {
-            // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces sin hijos
-            $q->where('assigned_user_id', $userId)
-              ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
-              ->orWhere(function($roots) {
-                  $roots->whereNull('parent_id')
-                        ->whereDoesntHave('children');
-              });
-
-            if ($isCoordinator) {
-                // El coordinador en vistas enfocadas también ve plantillas maestras para supervisar
-                $q->orWhere('is_template', true);
-            }
-        })
-        // DEDUPLICACIÓN EN VISTAS ENFOCADAS: 
-        // Siempre priorizamos la ejecución (la Hija/Instancia) sobre la gestión (la Plantilla)
-        ->whereDoesntHave('children', function ($q) use ($userId) {
-            $q->where(function($sub) use ($userId) {
-                $sub->where('assigned_user_id', $userId)
-                    ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $userId));
+        return $query->where('is_template', false) // NUNCA mostrar planes maestros en Vistas Enfocadas (Matrix/Kanban)
+            ->where(function ($q) use ($userId) {
+                // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces sin hijos
+                $q->where('assigned_user_id', $userId)
+                  ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                  ->orWhere(function($roots) use ($userId) {
+                      $roots->whereNull('parent_id')
+                            ->where('created_by_id', $userId) // Show own non-child tasks
+                            ->whereDoesntHave('children'); // No children
+                  });
             });
-        });
     }
 
     /**

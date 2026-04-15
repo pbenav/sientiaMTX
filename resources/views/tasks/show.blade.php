@@ -1,5 +1,14 @@
 <x-app-layout>
-    @section('title', $task->title)
+    @section('title', $task->title)    @php
+        // Find if the current user has a personal instance of this goal (regardless of being a template or not)
+        $personalInstance =
+            $task->is_template || $task->children()->exists()
+                ? $task
+                    ->instances()
+                    ->where('assigned_user_id', auth()->id())
+                    ->first()
+                : null;
+    @endphp
 
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
@@ -95,7 +104,11 @@
                 </form>
             @endcan
 
-            @include('tasks.partials.task-timer-button', ['task' => $task])
+            @if (!$task->is_template)
+                @include('tasks.partials.task-timer-button', ['task' => $task])
+            @elseif ($personalInstance)
+                @include('tasks.partials.task-timer-button', ['task' => $personalInstance])
+            @endif
 
             @include('teams.partials.header-actions')
         </div>
@@ -146,15 +159,18 @@
                 => 'text-amber-600 bg-amber-50 border-amber-100 dark:text-yellow-400 dark:bg-yellow-400/10 dark:border-yellow-800',
         };
 
-        $personalInstance = null;
+
 
         // Calculate Time Tracking Statistics
         $taskIds = $task->children()->pluck('id')->push($task->id);
-        $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->whereNotNull('end_at')->with('user')->get();
+        $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
         
         $timeStats = $allLogs->groupBy('user_id')
             ->map(function ($logs) {
-                $totalSeconds = $logs->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+                $totalSeconds = $logs->sum(function($log) {
+                    $end = $log->end_at ?: now();
+                    return $log->start_at->diffInSeconds($end);
+                });
                 return [
                     'user' => $logs->first()->user,
                     'seconds' => $totalSeconds,
@@ -198,16 +214,7 @@
                 </p>
             </div>
 
-            @php
-                // Find if the current user has a personal instance of this goal (regardless of being a template or not)
-                $personalInstance =
-                    $task->is_template || $task->children()->exists()
-                        ? $task
-                            ->instances()
-                            ->where('assigned_user_id', auth()->id())
-                            ->first()
-                        : null;
-            @endphp
+
 
             @if ($task->is_template || $task->children()->exists())
                 @php
@@ -466,50 +473,6 @@
                 </div>
             @endif
 
-            <!-- Time Statistics Card -->
-            @if($totalSecondsTask > 0)
-                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-transparent flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </span>
-                            <h3 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-widest">{{ __('tasks.time_statistics') ?? 'Estadísticas de Tiempo' }}</h3>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm font-black text-indigo-600 dark:text-indigo-400">{{ $totalFormattedTask }}</span>
-                            <span class="text-[10px] text-gray-400 uppercase tracking-tighter ml-1">{{ __('Total') }}</span>
-                        </div>
-                    </div>
-
-                    <div class="p-6 space-y-5">
-                        @foreach($timeStats as $stat)
-                            @php
-                                $userPerc = $totalSecondsTask > 0 ? ($stat['seconds'] / $totalSecondsTask) * 100 : 0;
-                            @endphp
-                            <div class="space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
-                                            {{ strtoupper(substr($stat['user']->name ?? '?', 0, 2)) }}
-                                        </div>
-                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $stat['user']->name ?? '—' }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-black text-gray-900 dark:text-white">{{ $stat['formatted'] }}</span>
-                                        <span class="text-[10px] text-gray-400 tabular-nums">({{ round($userPerc) }}%)</span>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                    <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
 
             <!-- History -->
             @if ($task->histories->isNotEmpty())
@@ -704,35 +667,96 @@
 
         <!-- Sidebar -->
         <div class="space-y-4">
-            <!-- Quick Actions -->
-            @if (
-                $task->assigned_user_id === auth()->id() ||
-                    $task->created_by_id === auth()->id() ||
-                    $team->isCoordinator(auth()->user()) ||
-                    ($personalInstance && $personalInstance->assigned_user_id === auth()->id()))
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1">
-                        {{ __('tasks.actions') }}</p>
+            <!-- Personal Execution Card (if applicable) -->
+            @if ($personalInstance && $personalInstance->assigned_user_id === auth()->id())
+                <div class="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 pointer-events-none"></div>
+                    <p class="relative text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-widest font-bold mb-1 flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        {{ __('tasks.your_execution') ?? 'Tu Ejecución' }}
+                    </p>
 
-                    @if ($task->status !== 'completed')
-                        <button onclick="updateTaskStatus('completed')"
-                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    @if ($personalInstance->status !== 'completed')
+                        <button onclick="updateTaskStatus('completed', {{ $personalInstance->id }})"
+                            class="relative w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                             {{ __('tasks.mark_complete') }}
                         </button>
                     @else
-                        <button onclick="updateTaskStatus('pending')"
-                            class="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold py-2.5 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
+                        <button onclick="updateTaskStatus('pending', {{ $personalInstance->id }})"
+                            class="relative w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-xs font-bold py-2.5 rounded-xl transition-all border border-indigo-200 dark:border-indigo-700">
                             {{ __('tasks.reopen_task') }}
                         </button>
                     @endif
 
+                    @if ($personalInstance->status === 'blocked')
+                        <button onclick="updateTaskStatus('in_progress', {{ $personalInstance->id }})"
+                            class="relative w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            {{ __('tasks.unblock_task') }}
+                        </button>
+                    @else
+                        <button onclick="updateTaskStatus('blocked', {{ $personalInstance->id }})"
+                            class="relative w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-red-200 dark:border-red-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            {{ __('tasks.report_blocker') }}
+                        </button>
+                    @endif
+
+                    <div class="relative pt-2 border-t border-indigo-100/50 dark:border-indigo-800/30 mt-2">
+                        <label class="flex items-center justify-between text-[10px] text-indigo-400 dark:text-indigo-500 uppercase tracking-widest font-bold mb-3">
+                            <span>{{ __('tasks.your_progress') ?? 'Tu Progreso' }}</span>
+                            <div class="flex items-center gap-1 min-w-[3rem] justify-end">
+                                <span id="personal-progress-val" class="text-indigo-600 dark:text-indigo-400 tabular-nums">{{ $personalInstance->progress }}</span>
+                                <span class="text-indigo-400 text-[8px]">%</span>
+                            </div>
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" min="0" max="100" value="{{ $personalInstance->progress }}"
+                                class="flex-1 h-1.5 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg appearance-none cursor-pointer accent-indigo-600 border border-indigo-200 dark:border-indigo-700/50 shadow-inner"
+                                oninput="document.getElementById('personal-progress-val').innerText = this.value"
+                                onchange="updateTaskProgress(this.value, {{ $personalInstance->id }}, '{{ $personalInstance->status }}')">
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Global / Generic Actions -->
+            @php
+                $showGlobalActions = (!$task->is_template && ($task->assigned_user_id === auth()->id() || $team->isCoordinator(auth()->user()) || $task->created_by_id === auth()->id())) || 
+                                      ($task->is_template && ($team->isCoordinator(auth()->user()) || $task->created_by_id === auth()->id()));
+            @endphp
+
+            @if ($showGlobalActions)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1">
+                        {{ $task->is_template ? __('Acciones del Plan Maestro') : __('tasks.actions') }}
+                    </p>
+
+                    @if ($task->status !== 'completed')
+                        <button onclick="updateTaskStatus('completed', {{ $task->id }})"
+                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            {{ $task->is_template ? __('Cerrar Plan Maestro') : __('tasks.mark_complete') }}
+                        </button>
+                    @else
+                        <button onclick="updateTaskStatus('pending', {{ $task->id }})"
+                            class="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold py-2.5 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
+                            {{ $task->is_template ? __('Reabrir Plan Maestro') : __('tasks.reopen_task') }}
+                        </button>
+                    @endif
+
                     @if ($task->status === 'blocked')
-                        <button onclick="updateTaskStatus('in_progress')"
+                        <button onclick="updateTaskStatus('in_progress', {{ $task->id }})"
                             class="w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm animate-pulse">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -741,7 +765,7 @@
                             {{ __('tasks.unblock_task') }}
                         </button>
                     @else
-                        <button onclick="updateTaskStatus('blocked')"
+                        <button onclick="updateTaskStatus('blocked', {{ $task->id }})"
                             class="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-red-200 dark:border-red-500/20">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -752,44 +776,31 @@
                         </button>
                     @endif
 
-                    <!-- Progress Slider for all tasks -->
-                    @php
-                        $sliderTask = $personalInstance ?: $task;
-                        $isAutomatic = $sliderTask->is_template || $sliderTask->children()->exists();
-                        $currentProgress = $sliderTask->progress;
-                    @endphp
+                    @if (!$personalInstance)
+                        @php
+                            $isAutomatic = $task->is_template || $task->children()->exists();
+                        @endphp
+                        <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                            <label class="flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
+                                <span>{{ $isAutomatic ? (__('tasks.global_progress') ?? 'Progreso Global') : __('tasks.progress') }}</span>
+                                <div class="flex items-center gap-1 min-w-[3rem] justify-end">
+                                    <span id="global-progress-val-sidebar" class="text-violet-600 dark:text-violet-400 tabular-nums">{{ $task->progress }}</span>
+                                    <span class="text-gray-400 text-[8px]">%</span>
+                                </div>
+                            </label>
+                            <div class="flex items-center gap-3">
+                                <input type="range" min="0" max="100" value="{{ $task->progress }}"
+                                    class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none transition-none {{ $isAutomatic ? 'cursor-not-allowed opacity-60' : 'cursor-pointer accent-violet-600' }}"
+                                    {{ $isAutomatic ? 'disabled' : '' }}
+                                    oninput="document.getElementById('global-progress-val-sidebar').innerText = this.value"
+                                    onchange="updateTaskProgress(this.value, {{ $task->id }}, '{{ $task->status }}')">
 
-                    <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-                        <label
-                            class="flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
-                            <span>
-                                @if ($personalInstance)
-                                    {{ __('tasks.your_progress') ?? 'Tu Progreso' }}
-                                @elseif($isAutomatic)
-                                    {{ __('tasks.global_progress') ?? 'Progreso Global' }}
-                                @else
-                                    {{ __('tasks.progress') }}
+                                @if ($isAutomatic)
+                                    <span class="text-[10px] text-gray-400 italic">({{ __('tasks.automatic') ?? 'Auto' }})</span>
                                 @endif
-                            </span>
-                            <div class="flex items-center gap-1 min-w-[3rem] justify-end">
-                                <span id="progress-val"
-                                    class="text-violet-600 dark:text-violet-400 tabular-nums">{{ $currentProgress }}</span>
-                                <span class="text-gray-400 text-[8px]">%</span>
                             </div>
-                        </label>
-                        <div class="flex items-center gap-3">
-                            <input type="range" min="0" max="100" value="{{ $currentProgress }}"
-                                class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none transition-none {{ $isAutomatic ? 'cursor-not-allowed opacity-60' : 'cursor-pointer accent-violet-600' }}"
-                                {{ $isAutomatic ? 'disabled' : '' }}
-                                oninput="document.getElementById('progress-val').innerText = this.value"
-                                onchange="updateTaskProgress(this.value, {{ $sliderTask->id }}, '{{ $sliderTask->status }}')">
-
-                            @if ($isAutomatic)
-                                <span
-                                    class="text-[10px] text-gray-400 italic">({{ __('tasks.automatic') ?? 'Auto' }})</span>
-                            @endif
                         </div>
-                    </div>
+                    @endif
                 </div>
             @endif
 
@@ -940,39 +951,87 @@
             @if ($task->assignedTo->isNotEmpty() || $task->assignedGroups->isNotEmpty())
                 <div
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors text-sans">
-                    @if ($task->assignedTo->isNotEmpty())
+                    @if ($task->assignedTo->isNotEmpty() || (isset($timeStats) && $timeStats->isNotEmpty()))
                         <div>
-                            <p
-                                class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
-                                {{ __('tasks.assigned_to') }}
-                            </p>
-                            <div class="space-y-2.5">
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                                    {{ __('tasks.assigned_to') }}
+                                </p>
+                                @if(isset($totalSecondsTask) && $totalSecondsTask > 0)
+                                    <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider">
+                                        {{ $totalFormattedTask }} {{ mb_strtolower(__('Total')) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="space-y-3">
+                                @php
+                                    $displayedUserIds = [];
+                                @endphp
                                 @foreach ($task->assignedTo as $u)
                                     @php
+                                        $displayedUserIds[] = $u->id;
                                         $instance = $task->is_template
                                             ? $task->instances()->where('assigned_user_id', $u->id)->first()
                                             : null;
+                                        $userStat = isset($timeStats) ? $timeStats->firstWhere('user.id', $u->id) : null;
+                                        $userPerc = ($totalSecondsTask > 0 && $userStat) ? ($userStat['seconds'] / $totalSecondsTask) * 100 : 0;
                                     @endphp
-                                    @if($instance)
-                                        <a href="{{ route('teams.tasks.show', [$team, $instance]) }}" class="flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1.5 -ml-1.5 rounded-lg transition-colors group">
-                                            <div
-                                                class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors">
-                                                {{ strtoupper(substr($u->name, 0, 2)) }}
+                                    <div class="space-y-1.5">
+                                        @if($instance)
+                                            <a href="{{ route('teams.tasks.show', [$team, $instance]) }}" class="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1.5 -ml-1.5 rounded-lg transition-colors group">
+                                                <div class="flex items-center gap-2.5">
+                                                    <div class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors">
+                                                        {{ strtoupper(substr($u->name, 0, 2)) }}
+                                                    </div>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $u->name }}</span>
+                                                </div>
+                                                @if($userStat)
+                                                    <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums">{{ $userStat['formatted'] }}</span>
+                                                @endif
+                                            </a>
+                                        @else
+                                            <div class="flex items-center justify-between p-1.5 -ml-1.5 group">
+                                                <div class="flex items-center gap-2.5">
+                                                    <div class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-500 dark:text-gray-400 shrink-0">
+                                                        {{ strtoupper(substr($u->name, 0, 2)) }}
+                                                    </div>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
+                                                </div>
+                                                @if($userStat)
+                                                    <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums">{{ $userStat['formatted'] }}</span>
+                                                @endif
                                             </div>
-                                            <span
-                                                class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $u->name }}</span>
-                                        </a>
-                                    @else
-                                        <div class="flex items-center gap-2.5 p-1.5 -ml-1.5">
-                                            <div
-                                                class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-500 dark:text-gray-400 shrink-0">
-                                                {{ strtoupper(substr($u->name, 0, 2)) }}
+                                        @endif
+
+                                        @if($userStat && $totalSecondsTask > 0)
+                                            <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden ml-8" style="width: calc(100% - 2rem);">
+                                                <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>
                                             </div>
-                                            <span
-                                                class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
-                                        </div>
-                                    @endif
+                                        @endif
+                                    </div>
                                 @endforeach
+
+                                @if(isset($timeStats))
+                                    @foreach($timeStats->filter(fn($s) => !in_array($s['user']->id, $displayedUserIds)) as $stat)
+                                        @php
+                                            $userPerc = $totalSecondsTask > 0 ? ($stat['seconds'] / $totalSecondsTask) * 100 : 0;
+                                        @endphp
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-center justify-between p-1.5 -ml-1.5">
+                                                <div class="flex items-center gap-2.5">
+                                                    <div class="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-[9px] font-bold text-teal-600 dark:text-teal-400 shrink-0">
+                                                        {{ strtoupper(substr($stat['user']->name, 0, 2)) }}
+                                                    </div>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $stat['user']->name }} <span class="text-[9px] text-gray-400 ml-1">({{ __('tasks.unassigned') ?? 'Ocasional' }})</span></span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums">{{ $stat['formatted'] }}</span>
+                                            </div>
+                                            <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden ml-8" style="width: calc(100% - 2rem);">
+                                                <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -1099,7 +1158,7 @@
                 });
             }
 
-            function updateTaskStatus(status) {
+            function updateTaskStatus(status, taskId = {{ $task->id }}) {
                 const messages = {
                     'completed': '¿Marcar como completada?',
                     'blocked': '¿Informar un bloqueo en esta tarea?',
@@ -1119,7 +1178,7 @@
                     color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/teams/{{ $team->id }}/tasks/{{ $task->id }}/move`, {
+                        fetch(`/teams/{{ $team->id }}/tasks/${taskId}/move`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

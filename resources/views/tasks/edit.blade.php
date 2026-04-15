@@ -66,6 +66,37 @@
                     @enderror
                 </div>
 
+                <!-- Assignment Mode -->
+                <div class="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <label class="block text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('tasks.assignment_mode') ?? 'Modo de Asignación (Si delegas a otros)' }}</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative flex">
+                            <input type="radio" id="mode_shared" name="assignment_mode" value="shared" class="peer sr-only" {{ old('assignment_mode', $task->is_template ? 'distributed' : 'shared') === 'shared' ? 'checked' : '' }}>
+                            <label for="mode_shared" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex gap-3 hover:border-violet-300 dark:hover:border-violet-700/50 group">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
+                                    <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.shared_task') ?? 'Tarea Compartida (Colaborativa)' }}</span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.shared_hint') ?? 'Es UNA única tarea. Todos trabajan sobre ella, comparten el progreso y el tiempo se suma.' }}</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="relative flex">
+                            <input type="radio" id="mode_distributed" name="assignment_mode" value="distributed" class="peer sr-only" {{ old('assignment_mode', $task->is_template ? 'distributed' : 'shared') === 'distributed' ? 'checked' : '' }}>
+                            <label for="mode_distributed" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/30 transition-all flex gap-3 hover:border-indigo-300 dark:hover:border-indigo-700/50 group">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-indigo-400 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center shrink-0 transition-all">
+                                    <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.distributed_task') ?? 'Plan Maestro (Distribución)' }}</span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.distributed_hint') ?? 'Crea un contenedor de solo-lectura y genera una copia (instancia) independiente para cada miembro.' }}</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <label
                         class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.description') }}</label>
@@ -554,6 +585,8 @@
                         </div>
                     </div>
                 </div>
+
+
 
                 <!-- Assigned To -->
                 <!-- Assigned To & Groups -->
