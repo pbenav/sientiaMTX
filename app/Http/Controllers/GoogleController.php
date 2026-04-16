@@ -491,10 +491,34 @@ class GoogleController extends Controller
      */
     public function exportTaskToCalendar(\App\Models\Team $team, \App\Models\Task $task)
     {
-        $user = Auth::user();
+        $user = auth()->user();
 
         if (!$this->googleService->setTokenForUser($user, $team->id)) {
             return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
+        }
+
+        // Toggle: If already exported, delete it
+        if ($task->google_calendar_event_id) {
+            try {
+                if ($this->googleService->deleteEvent($task->google_calendar_event_id)) {
+                    $task->update([
+                        'google_calendar_event_id' => null,
+                        'google_calendar_id' => null,
+                    ]);
+                    return back()->with('success', __('google.calendar_removed_success'));
+                }
+            } catch (\Exception $e) {
+                // If it doesn't exist in Google anymore, just clear it locally
+                if (str_contains($e->getMessage(), '404')) {
+                    $task->update([
+                        'google_calendar_event_id' => null,
+                        'google_calendar_id' => null,
+                    ]);
+                    return back()->with('success', __('google.calendar_removed_success'));
+                }
+                Log::error('Error removing Google Calendar event: ' . $e->getMessage());
+                return back()->with('error', __('google.calendar_remove_failed') . ': ' . $e->getMessage());
+            }
         }
 
         $start = $task->scheduled_date ?: now();

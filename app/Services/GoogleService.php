@@ -240,4 +240,19 @@ class GoogleService
             return null;
         }
     }
+
+    /**
+     * Delete an event from Google Calendar.
+     */
+    public function deleteEvent(string $eventId, string $calendarId = 'primary'): bool
+    {
+        $service = new Calendar($this->client);
+        try {
+            $service->events->delete($calendarId, $eventId);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error deleting Google Calendar event: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

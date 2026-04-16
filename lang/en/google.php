@@ -54,6 +54,9 @@ return [
     'calendar_update' => 'Update Calendar',
     'calendar_export_success' => 'Task successfully exported to Google Calendar.',
     'calendar_export_failed' => 'Error exporting task to Google Calendar.',
+    'calendar_remove' => 'Remove from Calendar',
+    'calendar_removed_success' => 'Task successfully removed from Google Calendar.',
+    'calendar_remove_failed' => 'Error removing task from Google Calendar.',
 
     // Task/Event Metadata
     'details_title' => 'SientiaMTX Details',

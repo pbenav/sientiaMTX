@@ -54,6 +54,9 @@ return [
     'calendar_update' => 'Actualizar Calendario',
     'calendar_export_success' => 'Tarea exportada correctamente a Google Calendar.',
     'calendar_export_failed' => 'Error al exportar la tarea a Google Calendar.',
+    'calendar_remove' => 'Quitar del Calendario',
+    'calendar_removed_success' => 'Tarea quitada correctamente de Google Calendar.',
+    'calendar_remove_failed' => 'Error al quitar la tarea de Google Calendar.',
 
     // Metadatos de Tareas/Eventos
     'details_title' => 'Detalles de SientiaMTX',
