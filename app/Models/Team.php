@@ -89,16 +89,22 @@ class Team extends Model
     }
 
     /**
+     * Get all coordinators for this team
+     */
+    public function coordinators(): BelongsToMany
+    {
+        return $this->members()
+            ->wherePivotIn('role_id', function ($query) {
+                $query->select('id')->from('team_roles')->where('name', 'coordinator');
+            });
+    }
+
+    /**
      * Check if a user is a coordinator for this team (Admin)
      */
     public function isCoordinator(User $user): bool
     {
-        return $this->members()
-            ->where('user_id', $user->id)
-            ->wherePivotIn('role_id', function ($query) {
-                $query->select('id')->from('team_roles')->where('name', 'coordinator');
-            })
-            ->exists();
+        return $this->coordinators()->where('users.id', $user->id)->exists();
     }
 
     /**

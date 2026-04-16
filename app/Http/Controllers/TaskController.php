@@ -476,6 +476,7 @@ class TaskController extends Controller
         // Gamification: Award points if completed
         if ($task->status === 'completed' && $oldValues['status'] !== 'completed') {
             $this->awardGamificationPoints($task);
+            $task->notifyCoordinatorsIfCompleted();
         }
 
         // Parent progress sync

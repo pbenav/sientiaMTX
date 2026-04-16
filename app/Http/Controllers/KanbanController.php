@@ -119,6 +119,7 @@ class KanbanController extends Controller
         // Gamification: Award points if newly completed via Kanban
         if ($task->status === 'completed' && $oldStatus !== 'completed') {
             $this->awardGamificationPoints($task);
+            $task->notifyCoordinatorsIfCompleted();
         }
         
         // --- Parent sync (Architectural requirement) ---
@@ -249,6 +250,7 @@ class KanbanController extends Controller
             // Gamification: Award points if newly completed via Kanban (drag to Done)
             if ($task->status === 'completed' && $oldStatus !== 'completed') {
                 $this->awardGamificationPoints($task);
+                $task->notifyCoordinatorsIfCompleted();
             }
         }
 

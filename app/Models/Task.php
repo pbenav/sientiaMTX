@@ -645,4 +645,33 @@ class Task extends Model
 
         return $attachments->unique('id');
     }
+    /**
+     * Notify coordinators if the task is completed and meets specific criteria.
+     */
+    public function notifyCoordinatorsIfCompleted()
+    {
+        if ($this->status !== 'completed') {
+            return;
+        }
+
+        // Conditions: 
+        // 1. Shared task (more than 1 assigned member)
+        // 2. Supervised (created by a coordinator)
+        
+        $isShared = $this->assignedTo()->count() > 1;
+        $isSupervised = $this->team->isCoordinator($this->creator);
+
+        if ($isShared || $isSupervised) {
+            $actor = auth()->user() ?? $this->assignedUser ?? $this->creator;
+            $actorId = $actor ? $actor->id : null;
+
+            $coordinators = $this->team->coordinators()
+                ->when($actorId, fn($q) => $q->where('users.id', '!=', $actorId))
+                ->get();
+
+            foreach ($coordinators as $coordinator) {
+                $coordinator->notify(new \App\Notifications\TaskCompletedNotification($this, $actor));
+            }
+        }
+    }
 }

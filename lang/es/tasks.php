@@ -168,6 +168,8 @@ return [
     ],
     'notifications' => [
         'blocked_alert' => '🚩 Tarea bloqueada: Un miembro ha reportado un problema en ":title". Requiere tu atención inmediata.',
+        'completed_alert' => '✅ Tarea completada: ":title"',
+        'completed_body' => ':user ha finalizado la tarea ":title".',
     ],
 
     'global_progress' => 'Progreso Global',
