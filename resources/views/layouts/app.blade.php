@@ -395,54 +395,46 @@
                     <!-- Right Utilities & User Profile (Fixed) -->
                     <div class="flex items-center gap-1 sm:gap-3 shrink-0">
 
-                        <!-- Google Sync (Global) -->
+                        <!-- Google Sync (Contextual) -->
+                        @php
+                            $currentTeamId = null;
+                            if (request()->route('team')) {
+                                $currentTeamId = is_object(request()->route('team')) ? request()->route('team')->id : request()->route('team');
+                            }
+                            
+                            $teamMembership = null;
+                            $hasTeamGoogle = false;
+                            if ($currentTeamId) {
+                                $teamMembership = auth()->user()->teams()->where('team_id', $currentTeamId)->first();
+                                $hasTeamGoogle = $teamMembership && $teamMembership->pivot->google_token;
+                            }
+                            $hasGlobalGoogle = auth()->user()->google_token;
+                        @endphp
+
                         <div class="hidden xl:flex items-center border-l border-gray-200 dark:border-gray-800 pl-4 ml-1">
-                            @if (!auth()->user()->google_token)
-                                <button onclick="openGoogleAuth()"
-                                    class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 px-3 py-1.5 transition-all font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
-                                        fill="currentColor">
-                                        <path
-                                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                        <path
-                                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                            fill="#34A853" />
-                                        <path
-                                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                            fill="#FBBC05" />
-                                        <path
-                                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                            fill="#EA4335" />
+                            @if (($currentTeamId && !$hasTeamGoogle) || (!$currentTeamId && !$hasGlobalGoogle))
+                                <button onclick="openGoogleAuth('{{ $currentTeamId }}')"
+                                    class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 px-3 py-1.5 transition-all font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    title="{{ $currentTeamId ? __('Connect Team Google Account') : __('Connect Google') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                                     </svg>
-                                    <span class="hidden lg:inline">{{ __('Connect Google') }}</span>
+                                    <span class="hidden lg:inline">{{ $currentTeamId ? __('Connect') : __('Connect Google') }}</span>
                                 </button>
                             @else
-                                @php
-                                    $currentTeamId = null;
-                                    // Intenta obtener el ID de la ruta si es una ruta vinculada a equipo
-                                    if (request()->route('team')) {
-                                        $currentTeamId = is_object(request()->route('team'))
-                                            ? request()->route('team')->id
-                                            : request()->route('team');
-                                    }
-                                @endphp
-
                                 @if ($currentTeamId)
-                                    <form action="{{ route('google.sync') }}" method="GET"
-                                        class="flex items-center gap-1">
+                                    <form action="{{ route('google.sync') }}" method="GET" class="flex items-center gap-1">
                                         <input type="hidden" name="team_id" value="{{ $currentTeamId }}">
-                                        <select name="visibility"
-                                            class="text-xs py-1.5 border-none bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-violet-500 text-gray-600 dark:text-gray-300 w-28 font-medium">
+                                        <select name="visibility" class="text-xs py-1.5 border-none bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-violet-500 text-gray-600 dark:text-gray-300 w-28 font-medium">
                                             <option value="private" selected>{{ __('google.private') }}</option>
                                             <option value="public">{{ __('google.public') }}</option>
                                         </select>
-                                        <button type="submit"
-                                            class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
-                                            title="{{ __('google.sync') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        <button type="submit" class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all" title="{{ __('google.sync') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
                                         </button>
                                     </form>
@@ -1027,12 +1019,13 @@
         // Alias for compatibility with other views
         window.handleGlobalDelete = window.confirmDelete;
 
-        window.openGoogleAuth = function() {
+        window.openGoogleAuth = function(teamId = null) {
             const width = 600;
             const height = 700;
             const left = (window.innerWidth - width) / 2;
             const top = (window.innerHeight - height) / 2;
-            const url = "{{ route('google.auth') }}?popup=1";
+            let url = "{{ route('google.auth') }}?popup=1";
+            if (teamId) url += "&team_id=" + teamId;
 
             const popup = window.open(url, 'GoogleAuth', `width=${width},height=${height},top=${top},left=${left}`);
 

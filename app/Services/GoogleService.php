@@ -55,28 +55,49 @@ class GoogleService
     }
 
     /**
-     * Set the access token for a user and refresh if necessary.
+     * Set the access token for a user (optionally for a specific team) and refresh if necessary.
      */
-    public function setTokenForUser(User $user): bool
+    public function setTokenForUser(User $user, $teamId = null): bool
     {
-        if (!$user->google_token) {
+        $token = null;
+        $refreshToken = null;
+        $source = null;
+
+        // 1. Try to get team-specific token from pivot
+        if ($teamId) {
+            $membership = $user->teams()->where('team_id', $teamId)->first();
+            if ($membership && $membership->pivot->google_token) {
+                $token = $membership->pivot->google_token;
+                $refreshToken = $membership->pivot->google_refresh_token;
+                $source = $membership->pivot;
+            }
+        }
+
+        // 2. Fallback to global user token if no team token or no team specified
+        if (!$token && $user->google_token) {
+            $token = $user->google_token;
+            $refreshToken = $user->google_refresh_token;
+            $source = $user;
+        }
+
+        if (!$token) {
             return false;
         }
 
-        $token = json_decode($user->google_token, true);
-        $this->client->setAccessToken($token);
+        $tokenData = json_decode($token, true);
+        $this->client->setAccessToken($tokenData);
 
         if ($this->client->isAccessTokenExpired()) {
-            if ($user->google_refresh_token) {
-                $newToken = $this->client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
+            if ($refreshToken) {
+                $newToken = $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
                 
                 if (isset($newToken['error'])) {
-                    Log::error('Google API Error (Refresh Token) for user ' . $user->id . ': ' . json_encode($newToken));
+                    Log::error('Google API Error (Refresh Token) for user ' . $user->id . ' (Team: '.$teamId.'): ' . json_encode($newToken));
                     return false;
                 }
 
-                $user->google_token = json_encode($newToken);
-                $user->save();
+                $source->google_token = json_encode($newToken);
+                $source->save();
                 
                 $this->client->setAccessToken($newToken);
             } else {

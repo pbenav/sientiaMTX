@@ -164,6 +164,7 @@
 
     <form id="google-disconnect-form" action="{{ route('google.disconnect') }}" method="POST" class="hidden">
         @csrf
+        <input type="hidden" name="team_id" value="{{ $team->id }}">
     </form>
 
     @push('scripts')
