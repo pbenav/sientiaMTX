@@ -49,4 +49,9 @@ return [
     'sync_remote_deleted' => 'Task has been deleted locally because it was not found in Google Tasks.',
     'sync_to_remote_success' => 'Google Task updated with local changes.',
     'already_synced' => 'Task is already up to date.',
+    'calendar_export' => 'Export to Calendar',
+    'calendar_view' => 'View in Calendar',
+    'calendar_update' => 'Update Calendar',
+    'calendar_export_success' => 'Task successfully exported to Google Calendar.',
+    'calendar_export_failed' => 'Error exporting task to Google Calendar.',
 ];

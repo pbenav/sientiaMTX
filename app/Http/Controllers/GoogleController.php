@@ -340,13 +340,23 @@ class GoogleController extends Controller
 
         // 1. If not exported yet, export it
         if (!$task->google_task_id) {
+            $notes = ($task->description ?: '') . "\n\n";
+            $notes .= "--- SientiaMTX Details ---\n";
+            $notes .= "Quadrant: " . $task->getQuadrant($task) . "\n";
+            $notes .= "Priority: " . strtoupper($task->priority) . "\n";
+            $notes .= "Urgency: " . strtoupper($task->urgency) . "\n";
+            $notes .= "Team: " . $team->name . "\n";
+
+            $dateToUse = $task->due_date ?? $task->scheduled_date;
+
             $data = [
                 'title' => $task->title,
-                'notes' => $task->description ?: '',
+                'notes' => trim($notes),
             ];
 
-            if ($task->scheduled_date) {
-                $data['due'] = $task->scheduled_date->toRfc3339String();
+            if ($dateToUse) {
+                // Google Tasks API expects RFC3339 for the due field
+                $data['due'] = $dateToUse->toRfc3339String();
             }
 
             try {
@@ -436,14 +446,23 @@ class GoogleController extends Controller
             // If Local is newer than last sync
             if ($localUpdated > $lastSynced) {
                 // Local is newer, update remote
+                $notes = ($task->description ?: '') . "\n\n";
+                $notes .= "--- SientiaMTX Details ---\n";
+                $notes .= "Quadrant: " . $task->getQuadrant($task) . "\n";
+                $notes .= "Priority: " . strtoupper($task->priority) . "\n";
+                $notes .= "Urgency: " . strtoupper($task->urgency) . "\n";
+                $notes .= "Team: " . $team->name . "\n";
+
+                $dateToUse = $task->due_date ?? $task->scheduled_date;
+
                 $data = [
                     'title' => $task->title,
-                    'notes' => $task->description ?: '',
+                    'notes' => trim($notes),
                     'status' => $task->status === 'completed' ? 'completed' : 'needsAction',
                 ];
                 
-                if ($task->scheduled_date) {
-                    $data['due'] = $task->scheduled_date->toRfc3339String();
+                if ($dateToUse) {
+                    $data['due'] = $dateToUse->toRfc3339String();
                 }
 
                 $this->googleService->updateTask($task->google_task_list_id, $task->google_task_id, $data);
@@ -456,10 +475,65 @@ class GoogleController extends Controller
             }
 
             return back()->with('info', __('google.already_synced'));
-
         } catch (\Exception $e) {
-            Log::error('Error syncing with Google Tasks: ' . $e->getMessage());
+            Log::error('Error in bidirectional Google Tasks sync: ' . $e->getMessage());
             return back()->with('error', __('google.sync_failed') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export a specific task to Google Calendar as an Event.
+     */
+    public function exportTaskToCalendar(\App\Models\Team $team, \App\Models\Task $task)
+    {
+        $user = Auth::user();
+
+        if (!$this->googleService->setTokenForUser($user, $team->id)) {
+            return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
+        }
+
+        $start = $task->scheduled_date ?: now();
+        $end = $task->due_date ?: $start->copy()->addHour();
+
+        // Ensure end is after start
+        if ($end->lte($start)) {
+            $end = $start->copy()->addHour();
+        }
+
+        $description = ($task->description ?: '') . "\n\n";
+        $description .= "--- SientiaMTX Details ---\n";
+        $description .= "Quadrant: " . $task->getQuadrant($task) . "\n";
+        $description .= "Priority: " . strtoupper($task->priority) . "\n";
+        $description .= "Urgency: " . strtoupper($task->urgency) . "\n";
+        $description .= "Team: " . $team->name . "\n";
+        $description .= "Direct Link: " . route('teams.tasks.show', [$team, $task]);
+
+        $data = [
+            'summary' => $task->title,
+            'description' => trim($description),
+            'start' => [
+                'dateTime' => $start->toRfc3339String(),
+                'timeZone' => $user->timezone ?: config('app.timezone'),
+            ],
+            'end' => [
+                'dateTime' => $end->toRfc3339String(),
+                'timeZone' => $user->timezone ?: config('app.timezone'),
+            ],
+        ];
+
+        try {
+            $eventId = $this->googleService->createEvent($data);
+            if ($eventId) {
+                $task->update([
+                    'google_calendar_event_id' => $eventId,
+                    'google_calendar_id' => 'primary',
+                ]);
+                return back()->with('success', __('google.calendar_export_success'));
+            }
+            return back()->with('error', __('google.calendar_export_failed'));
+        } catch (\Exception $e) {
+            Log::error('Error exporting task to Google Calendar: ' . $e->getMessage());
+            return back()->with('error', __('google.calendar_export_failed') . ': ' . $e->getMessage());
         }
     }
 }

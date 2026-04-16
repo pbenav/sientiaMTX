@@ -49,4 +49,9 @@ return [
     'sync_remote_deleted' => 'La tarea ha sido eliminada de local porque no se encontró en Google Tasks.',
     'sync_to_remote_success' => 'Tarea actualizada en Google Tasks con los cambios locales.',
     'already_synced' => 'La tarea ya está al día.',
+    'calendar_export' => 'Exportar al Calendario',
+    'calendar_view' => 'Ver en Calendario',
+    'calendar_update' => 'Actualizar Calendario',
+    'calendar_export_success' => 'Tarea exportada correctamente a Google Calendar.',
+    'calendar_export_failed' => 'Error al exportar la tarea a Google Calendar.',
 ];

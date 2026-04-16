@@ -90,6 +90,8 @@ class Task extends Model
         'visibility',
         'google_task_id',
         'google_task_list_id',
+        'google_calendar_event_id',
+        'google_calendar_id',
         'google_synced_at',
         'is_archived',
         'kanban_column_id',

@@ -192,6 +192,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/google/import', [\App\Http\Controllers\GoogleController::class, 'import'])->name('google.import');
     Route::post('/google/disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnect'])->name('google.disconnect');
     Route::post('/teams/{team}/tasks/{task}/google-sync', [\App\Http\Controllers\GoogleController::class, 'syncTask'])->name('google.sync_task');
+    Route::post('/teams/{team}/tasks/{task}/google-calendar', [\App\Http\Controllers\GoogleController::class, 'exportTaskToCalendar'])->name('google.export_calendar');
 
     // Media Management
     Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');
