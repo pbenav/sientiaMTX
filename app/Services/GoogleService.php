@@ -34,7 +34,7 @@ class GoogleService
         $this->client->addScope('email');
         
         $this->client->setAccessType('offline');
-        $this->client->setPrompt('consent');
+        $this->client->setPrompt('select_account consent');
     }
 
     /**

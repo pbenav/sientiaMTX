@@ -95,12 +95,14 @@ class GoogleController extends Controller
             return redirect($route)->with('success', __('google.connected_success'));
         } catch (\Exception $e) {
             Log::error('Google callback exception: ' . $e->getMessage());
+            $errorMsg = addslashes($e->getMessage());
             
-            if ($request->has('state') && str_contains($request->state, 'popup=1')) {
-                return '<html><body><script>alert("Authentication failed."); window.close();</script></body></html>';
+            $stateData = json_decode($request->state, true) ?? [];
+            if ($stateData['popup'] ?? false) {
+                return "<html><body><script>alert(\"Authentication failed: {$errorMsg}\"); window.close();</script></body></html>";
             }
 
-            return redirect()->route('dashboard')->with('error', __('google.auth_failed', ['error' => '']));
+            return redirect()->route('dashboard')->with('error', __('google.auth_failed', ['error' => $e->getMessage()]));
         }
     }
 
