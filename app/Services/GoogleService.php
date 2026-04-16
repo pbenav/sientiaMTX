@@ -27,7 +27,7 @@ class GoogleService
         }
         $this->client->setRedirectUri($redirectUri);
 
-        $this->client->addScope(Calendar::CALENDAR_READONLY);
+        $this->client->addScope(Calendar::CALENDAR);
         $this->client->addScope(Gmail::GMAIL_READONLY);
         $this->client->addScope(Tasks::TASKS); // Read/Write
         $this->client->addScope('profile');

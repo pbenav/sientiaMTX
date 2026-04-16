@@ -533,7 +533,15 @@ class GoogleController extends Controller
             return back()->with('error', __('google.calendar_export_failed'));
         } catch (\Exception $e) {
             Log::error('Error exporting task to Google Calendar: ' . $e->getMessage());
-            return back()->with('error', __('google.calendar_export_failed') . ': ' . $e->getMessage());
+            
+            $errorMsg = $e->getMessage();
+            if (str_contains($errorMsg, 'insufficientPermissions') || 
+                str_contains($errorMsg, '403') || 
+                str_contains($errorMsg, 'authentication scopes')) {
+                return back()->with('error', __('google.reconnect_scopes'));
+            }
+
+            return back()->with('error', __('google.calendar_export_failed') . ': ' . $errorMsg);
         }
     }
 }
