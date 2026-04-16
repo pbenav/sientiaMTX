@@ -53,12 +53,12 @@
                     window.close();
                     // Fallback if window.close() is blocked or didn't work
                     setTimeout(() => {
-                        window.location.href = "{{ route('dashboard') }}";
+                        window.location.href = "{{ $team ? route('teams.dashboard', $team) : route('dashboard') }}";
                     }, 1500);
                 }, 500);
             } else {
                 // Not a popup or opener inaccessible, redirect after delay
-                window.location.href = "{{ route('dashboard') }}";
+                window.location.href = "{{ $team ? route('teams.dashboard', $team) : route('dashboard') }}";
             }
         }
 

@@ -324,7 +324,11 @@ class GoogleController extends Controller
             $user->save();
         }
 
-        return view('google.disconnect-success');
+        $team = $teamId ? \App\Models\Team::find($teamId) : null;
+
+        return view('google.disconnect-success', [
+            'team' => $team
+        ]);
     }
 
     /**
