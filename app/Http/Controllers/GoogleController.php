@@ -70,18 +70,36 @@ class GoogleController extends Controller
             $oauth2 = new \Google\Service\Oauth2($this->googleService->getClient());
             $userInfo = $oauth2->userinfo->get();
 
+            $refreshToken = $token['refresh_token'] ?? null;
+
+            // REINFORCEMENT: If refresh_token is missing, try to recover it from existing records
+            // (Only if Google ID matches, ensuring we don't mix different accounts)
+            if (!$refreshToken) {
+                if ($user->google_id === $userInfo->id && $user->google_refresh_token) {
+                    $refreshToken = $user->google_refresh_token;
+                } else {
+                    $otherMembership = $user->teams()
+                        ->wherePivot('google_id', $userInfo->id)
+                        ->wherePivot('google_refresh_token', '!=', null)
+                        ->first();
+                    if ($otherMembership) {
+                        $refreshToken = $otherMembership->pivot->google_refresh_token;
+                    }
+                }
+            }
+
             if ($teamId) {
                 // Save to Team-User Pivot
                 $user->teams()->updateExistingPivot($teamId, [
                     'google_id' => $userInfo->id,
                     'google_token' => json_encode($token),
-                    'google_refresh_token' => $token['refresh_token'] ?? null,
+                    'google_refresh_token' => $refreshToken,
                 ]);
             } else {
                 // Save to User global profile (Fallback)
                 $user->google_token = json_encode($token);
-                if (isset($token['refresh_token'])) {
-                    $user->google_refresh_token = $token['refresh_token'];
+                if ($refreshToken) {
+                    $user->google_refresh_token = $refreshToken;
                 }
                 $user->google_id = $userInfo->id;
                 $user->save();
