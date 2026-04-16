@@ -221,12 +221,20 @@ class GanttController extends Controller
                     $q->where('is_template', false)->whereNull('parent_id');
                 }
             })
-            ->when($request->time_range && $request->time_range !== 'all', function ($q) use ($request) {
-                $months = (int) $request->time_range;
-                $q->whereBetween('scheduled_date', [
-                    now()->subMonths(1),
-                    now()->addMonths($months)
-                ]);
+            ->when(true, function ($q) use ($request) {
+                $range = $request->get('time_range', '3');
+                if ($range === 'all') return $q;
+                
+                $months = (int) $range;
+                $q->where(function($sq) use ($months) {
+                    $sq->whereBetween('scheduled_date', [
+                        now()->subMonths(1)->startOfMonth(),
+                        now()->addMonths($months - 1)->endOfMonth()
+                    ])->orWhereBetween('due_date', [
+                        now()->subMonths(1)->startOfMonth(),
+                        now()->addMonths($months - 1)->endOfMonth()
+                    ]);
+                });
             })
             ->when($request->limit && $request->limit !== 'all', function ($q) use ($request) {
                 $q->limit((int) $request->limit);
