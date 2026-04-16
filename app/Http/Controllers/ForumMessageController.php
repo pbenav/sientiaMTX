@@ -149,4 +149,20 @@ class ForumMessageController extends Controller
 
         return back()->with('success', __('forum.message_deleted'));
     }
+
+    /**
+     * Upload an image from the Markdown editor via AJAX paste/drag&drop.
+     */
+    public function uploadImage(Request $request, Team $team)
+    {
+        $request->validate([
+            'image' => 'required|image|max:10240', // Max 10MB
+        ]);
+
+        $path = $request->file('image')->store('forum', 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
+    }
 }

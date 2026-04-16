@@ -239,4 +239,62 @@
             </div>
         </form>
     </x-modal>
+
+    @push('scripts')
+        <script>
+            // Image Paste Handler for Textareas
+            document.addEventListener('paste', function(e) {
+                if (e.target.tagName.toLowerCase() === 'textarea') {
+                    let items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                    let blob = null;
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf("image") === 0) {
+                            blob = items[i].getAsFile();
+                            break;
+                        }
+                    }
+                    
+                    if (blob !== null) {
+                        e.preventDefault();
+                        let textarea = e.target;
+                        
+                        let cursorStart = textarea.selectionStart;
+                        let cursorEnd = textarea.selectionEnd;
+                        let textBefore = textarea.value.substring(0, cursorStart);
+                        let textAfter = textarea.value.substring(cursorEnd, textarea.value.length);
+                        let placeholder = `![Subiendo imagen...]()`;
+                        
+                        textarea.value = textBefore + placeholder + textAfter;
+                        
+                        let formData = new FormData();
+                        formData.append('image', blob);
+                        let tokenStr = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        if (tokenStr) formData.append('_token', tokenStr);
+                        else {
+                            const tokenEl = document.querySelector('input[name="_token"]');
+                            if (tokenEl) formData.append('_token', tokenEl.value);
+                        }
+                        
+                        fetch(`{{ route('teams.forum.upload_image', $team) }}`, {
+                            method: 'POST',
+                            headers: { 'Accept': 'application/json' },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.url) {
+                                let markdownImg = `![Imagen adjunta](${data.url})`;
+                                textarea.value = textarea.value.replace(placeholder, markdownImg);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error uploading image', error);
+                            textarea.value = textarea.value.replace(placeholder, '');
+                            alert('Hubo un error al subir la imagen.');
+                        });
+                    }
+                }
+            });
+        </script>
+    @endpush
 </x-app-layout>
