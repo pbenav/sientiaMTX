@@ -511,15 +511,30 @@
 
                                 updateRichPanel(task, x, w, type);
                                 
-                                let left = e.clientX + 25;
-                                let top = e.clientY - 120;
+                                // Temporary show to measure
+                                richTooltip.style.display = 'flex';
+                                richTooltip.style.visibility = 'hidden';
+                                const rect = richTooltip.getBoundingClientRect();
+                                const padding = 20;
                                 
-                                if (left + 300 > window.innerWidth) left = e.clientX - 325;
-                                if (top < 10) top = e.clientY + 20;
+                                let left = e.clientX + 25;
+                                let top = e.clientY - (rect.height / 2); // Default centered vertically to cursor
+                                
+                                // Adjust horizontally
+                                if (left + rect.width + padding > window.innerWidth) {
+                                    left = e.clientX - rect.width - 25;
+                                }
+                                if (left < padding) left = padding;
 
+                                // Adjust vertically
+                                if (top + rect.height + padding > window.innerHeight) {
+                                    top = window.innerHeight - rect.height - padding;
+                                }
+                                if (top < padding) top = padding;
+
+                                richTooltip.style.visibility = 'visible';
                                 richTooltip.style.left = left + 'px';
                                 richTooltip.style.top = top + 'px';
-                                richTooltip.style.display = 'flex';
                             }
                         }
                     } else {
