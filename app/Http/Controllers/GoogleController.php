@@ -451,11 +451,12 @@ class GoogleController extends Controller
             if ($localUpdated > $lastSynced) {
                 // Local is newer, update remote
                 $notes = ($task->description ?: '') . "\n\n";
-                $notes .= "--- SientiaMTX Details ---\n";
-                $notes .= "Quadrant: " . $task->getQuadrant($task) . "\n";
-                $notes .= "Priority: " . strtoupper($task->priority) . "\n";
-                $notes .= "Urgency: " . strtoupper($task->urgency) . "\n";
-                $notes .= "Team: " . $team->name . "\n";
+                $notes .= "--- " . __('google.details_title') . " ---\n";
+                $q = $task->getQuadrant($task);
+                $notes .= __('google.details_quadrant') . ": Q{$q} - " . __('tasks.quadrants.' . $q . '.label') . "\n";
+                $notes .= __('google.details_priority') . ": " . strtoupper(__('tasks.priorities.' . $task->priority)) . "\n";
+                $notes .= __('google.details_urgency') . ": " . strtoupper(__('tasks.urgencies.' . $task->urgency)) . "\n";
+                $notes .= __('google.details_team') . ": " . $team->name . "\n";
 
                 $dateToUse = $task->due_date ?? $task->scheduled_date;
 
@@ -505,12 +506,13 @@ class GoogleController extends Controller
         }
 
         $description = ($task->description ?: '') . "\n\n";
-        $description .= "--- SientiaMTX Details ---\n";
-        $description .= "Quadrant: " . $task->getQuadrant($task) . "\n";
-        $description .= "Priority: " . strtoupper($task->priority) . "\n";
-        $description .= "Urgency: " . strtoupper($task->urgency) . "\n";
-        $description .= "Team: " . $team->name . "\n";
-        $description .= "Direct Link: " . route('teams.tasks.show', [$team, $task]);
+        $description .= "--- " . __('google.details_title') . " ---\n";
+        $q = $task->getQuadrant($task);
+        $description .= __('google.details_quadrant') . ": Q{$q} - " . __('tasks.quadrants.' . $q . '.label') . "\n";
+        $description .= __('google.details_priority') . ": " . strtoupper(__('tasks.priorities.' . $task->priority)) . "\n";
+        $description .= __('google.details_urgency') . ": " . strtoupper(__('tasks.urgencies.' . $task->urgency)) . "\n";
+        $description .= __('google.details_team') . ": " . $team->name . "\n";
+        $description .= __('google.details_link') . ": " . route('teams.tasks.show', [$team, $task]);
 
         $data = [
             'summary' => $task->title,

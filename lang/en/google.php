@@ -54,4 +54,12 @@ return [
     'calendar_update' => 'Update Calendar',
     'calendar_export_success' => 'Task successfully exported to Google Calendar.',
     'calendar_export_failed' => 'Error exporting task to Google Calendar.',
+
+    // Task/Event Metadata
+    'details_title' => 'SientiaMTX Details',
+    'details_quadrant' => 'Quadrant',
+    'details_priority' => 'Priority',
+    'details_urgency' => 'Urgency',
+    'details_team' => 'Team',
+    'details_link' => 'Direct Link',
 ];

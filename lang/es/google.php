@@ -54,4 +54,12 @@ return [
     'calendar_update' => 'Actualizar Calendario',
     'calendar_export_success' => 'Tarea exportada correctamente a Google Calendar.',
     'calendar_export_failed' => 'Error al exportar la tarea a Google Calendar.',
+
+    // Metadatos de Tareas/Eventos
+    'details_title' => 'Detalles de SientiaMTX',
+    'details_quadrant' => 'Cuadrante',
+    'details_priority' => 'Prioridad',
+    'details_urgency' => 'Urgencia',
+    'details_team' => 'Equipo',
+    'details_link' => 'Enlace Directo',
 ];
