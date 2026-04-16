@@ -37,14 +37,18 @@
                         @endif
                         @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
                             <h2 id="thread-title-display" onclick="enableTitleEdit(event)"
-                                class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate cursor-text hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-0.5 rounded transition-colors -ml-2 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-                                title="Haz clic para editar el título">
+                                class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-0.5 rounded transition-colors -ml-2 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                                title="Editar título">
                                 {{ $thread->title }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </h2>
-                            <form id="thread-title-form" class="hidden w-full max-w-2xl" onsubmit="event.preventDefault(); saveTitle(); return false;">
-                                <input type="text" id="thread-title-input" value="{{ $thread->title }}"
-                                    class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded px-2 py-0.5 w-full focus:ring-0 focus:outline-none -ml-2"
-                                    onblur="saveTitle()">
+                            <form id="thread-title-form" class="hidden w-full max-w-2xl flex items-center gap-2" method="POST" action="{{ route('teams.forum.update', [$team, $thread]) }}">
+                                @csrf
+                                @method('PATCH')
+                                <input type="text" name="title" id="thread-title-input" value="{{ $thread->title }}"
+                                    class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded px-2 py-0.5 w-full focus:ring-0 focus:outline-none -ml-2">
+                                <button type="submit" class="px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-bold shadow transition-colors">Guardar</button>
+                                <button type="button" onclick="cancelTitleEdit()" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
                             </form>
                         @else
                             <h2 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate">
@@ -343,55 +347,14 @@
                 }, 50);
             }
 
-            function saveTitle() {
-                const form = document.getElementById('thread-title-form');
-                if (!form || form.classList.contains('hidden')) return;
-                
-                const input = document.getElementById('thread-title-input');
+            function cancelTitleEdit() {
                 const display = document.getElementById('thread-title-display');
-                const newTitle = input.value.trim();
-                const oldTitle = display.innerText.trim();
+                const form = document.getElementById('thread-title-form');
+                const input = document.getElementById('thread-title-input');
                 
-                if (!newTitle || newTitle === oldTitle) {
-                    input.value = oldTitle;
-                    form.classList.add('hidden');
-                    display.classList.remove('hidden');
-                    return;
-                }
-
+                input.value = display.innerText.trim();
                 form.classList.add('hidden');
                 display.classList.remove('hidden');
-                display.innerText = newTitle;
-                display.classList.add('opacity-50');
-
-                fetch(`{{ route('teams.forum.update', [$team, $thread]) }}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ title: newTitle })
-                })
-                .then(async res => {
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.message || 'Error en la petición');
-                    return data;
-                })
-                .then(data => {
-                    display.classList.remove('opacity-50');
-                    if (data && data.title) {
-                        display.innerText = data.title;
-                        input.value = data.title;
-                    }
-                })
-                .catch(err => {
-                    console.error('Error saving title', err);
-                    display.classList.remove('opacity-50');
-                    display.innerText = oldTitle;
-                    input.value = oldTitle;
-                    alert('Error al guardar el título: ' + err.message);
-                });
             }
 
             // Image Paste Handler for Textareas
