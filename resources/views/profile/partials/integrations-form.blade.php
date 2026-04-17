@@ -21,6 +21,7 @@
     allPrefs: {{ $prefs->toJson() }},
     apiKey: '',
     aiModel: '',
+    openSelector: false,
 
     init() { this.updateContext(); },
     
@@ -28,6 +29,20 @@
         const p = this.allPrefs[this.context || 'global'] || {};
         this.apiKey = p.api_key || '';
         this.aiModel = p.ai_model || 'gemini-1.5-flash-latest';
+    },
+
+    setContext(val) {
+        this.context = val;
+        this.updateContext();
+        this.openSelector = false;
+    },
+
+    getCurrentContextName() {
+        if (this.context === '') return '🌍 Mi Configuración Global';
+        @foreach($teams as $team)
+            if (this.context == '{{ $team->id }}') return '👥 Equipo: {{ $team->name }}';
+        @endforeach
+        return 'Seleccionar contexto';
     },
 
     isGoogleConnected() {
@@ -44,14 +59,38 @@
     
     <div class="space-y-8">
         <!-- 🎯 SELECTOR DE CONTEXTO (Maestro absoluto) -->
-        <div class="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-800 space-y-2">
+        <div class="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-800 space-y-2 relative">
             <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block px-1">Integraciones actuales del contexto:</label>
-            <select x-model="context" @change="updateContext()" class="w-full bg-transparent border-none text-lg font-black text-gray-900 dark:text-white focus:ring-0 p-0 cursor-pointer">
-                <option value="">🌍 Mi Configuración Global (IA)</option>
-                @foreach($teams as $team)
-                    <option value="{{ $team->id }}">👥 Equipo: {{ $team->name }}</option>
-                @endforeach
-            </select>
+            
+            <div class="relative">
+                <button @click="openSelector = !openSelector" type="button" class="w-full flex items-center justify-between text-left group">
+                    <span x-text="getCurrentContextName()" class="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors group-hover:text-violet-600" style="font-family: 'Space Grotesk', sans-serif"></span>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-300" :class="openSelector ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown List -->
+                <div x-show="openSelector" 
+                     @click.outside="openSelector = false"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="absolute left-0 right-0 mt-4 p-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl shadow-2xl z-50 overflow-hidden max-h-64 overflow-y-auto">
+                    
+                    <button @click="setContext('')" class="w-full text-left px-4 py-3 rounded-2xl hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all flex items-center gap-3 group">
+                        <span class="text-sm font-bold text-gray-600 dark:text-gray-400 group-hover:text-violet-600" style="font-family: 'Space Grotesk', sans-serif">🌍 Mi Configuración Global (IA)</span>
+                    </button>
+
+                    <div class="h-px bg-gray-50 dark:bg-gray-800 my-1"></div>
+
+                    @foreach($teams as $team)
+                        <button @click="setContext('{{ $team->id }}')" class="w-full text-left px-4 py-3 rounded-2xl hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all flex items-center gap-3 group">
+                            <span class="text-sm font-bold text-gray-600 dark:text-gray-400 group-hover:text-violet-600" style="font-family: 'Space Grotesk', sans-serif">👥 Equipo: {{ $team->name }}</span>
+                        </button>
+                    @endforeach
+                </div>
+            </div>
         </div>
 
         <div class="space-y-4">
