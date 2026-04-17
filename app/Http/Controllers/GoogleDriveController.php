@@ -159,6 +159,7 @@ class GoogleDriveController extends Controller
             'file_id' => 'required|string',
             'file_name' => 'required|string',
             'web_view_link' => 'required|url',
+            'mime_type' => 'nullable|string',
         ]);
 
         try {
@@ -168,6 +169,7 @@ class GoogleDriveController extends Controller
                 'file_name' => $request->file_name,
                 'file_path' => 'google_drive/' . $request->file_id, // Virtual path
                 'file_size' => $request->file_size ?? 0,
+                'mime_type' => $request->mime_type ?? 'application/octet-stream',
                 'storage_provider' => 'google',
                 'provider_file_id' => $request->file_id,
                 'web_view_link' => $request->web_view_link,

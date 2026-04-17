@@ -1499,7 +1499,8 @@
                                                 file_id: file.id,
                                                 file_name: file.name,
                                                 web_view_link: file.webViewLink,
-                                                file_size: file.size || 0
+                                                file_size: file.size || 0,
+                                                mime_type: file.mimeType
                                             })
                                         });
 
