@@ -97,6 +97,7 @@ class GoogleController extends Controller
 
                 $user->teams()->updateExistingPivot($teamId, [
                     'google_id' => $userInfo->id,
+                    'google_email' => $userInfo->email,
                     'google_token' => $token, 
                     'google_refresh_token' => $refreshToken,
                 ]);
@@ -314,6 +315,7 @@ class GoogleController extends Controller
         if ($teamId) {
             $user->teams()->updateExistingPivot($teamId, [
                 'google_id' => null,
+                'google_email' => null,
                 'google_token' => null,
                 'google_refresh_token' => null,
             ]);
@@ -322,6 +324,7 @@ class GoogleController extends Controller
 
         // Legacy/Global disconnect
         $user->google_id = null;
+        $user->google_email = null;
         $user->google_token = null;
         $user->google_refresh_token = null;
         $user->save();

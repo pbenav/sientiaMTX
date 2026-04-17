@@ -156,7 +156,7 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role_id', 'sort_order', 'google_id', 'google_token', 'google_refresh_token')
+            ->withPivot('role_id', 'sort_order', 'google_id', 'google_email', 'google_token', 'google_refresh_token')
             ->withTimestamps();
     }
 

@@ -5,7 +5,10 @@
     // Mapa de conexiones por equipo (Pivots)
     $teamConns = [];
     foreach($teams as $team) {
-        $teamConns[$team->id] = !empty($team->pivot->google_token);
+        $teamConns[$team->id] = [
+            'connected' => !empty($team->pivot->google_token),
+            'email' => $team->pivot->google_email ?? ''
+        ];
     }
     
     // Preferencias de IA
@@ -30,7 +33,12 @@
     isGoogleConnected() {
         // La conexión de Google SOLO existe vinculada a equipos
         if (!this.context) return false;
-        return !!this.teamConns[this.context];
+        return !!this.teamConns[this.context]?.connected;
+    },
+
+    getGoogleEmail() {
+        if (!this.context) return '';
+        return this.teamConns[this.context]?.email || '';
     }
 }">
     
@@ -58,7 +66,8 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-gray-900 dark:text-white">Google Workspace</h4>
-                            <p class="text-[10px] text-gray-400 font-medium">Calendario, Drive y Tareas sincronizados</p>
+                            <p class="text-[10px] text-gray-400 font-medium" x-show="!isGoogleConnected()">Calendario, Drive y Tareas sincronizados</p>
+                            <p class="text-[10px] text-emerald-500 font-bold" x-show="isGoogleConnected()" x-text="getGoogleEmail()"></p>
                         </div>
                     </div>
 
