@@ -268,5 +268,22 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return $this->hasMany(GamificationLog::class);
     }
+
+    // AI & Wellness Relationships
+    public function aiPreferences(): HasMany
+    {
+        return $this->hasMany(UserAiPreference::class);
+    }
+
+    public function aiPreference()
+    {
+        // Fallback global (team_id null)
+        return $this->hasOne(UserAiPreference::class)->whereNull('team_id');
+    }
+
+    public function moodLogs(): HasMany
+    {
+        return $this->hasMany(UserMoodLog::class);
+    }
 }
 

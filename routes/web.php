@@ -10,6 +10,7 @@ use App\Http\Controllers\ForumMessageController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\GDPRController;
+use App\Http\Controllers\GoogleDriveController;
 use Illuminate\Support\Facades\Route;
 
 // Telegram Webhook (Public)
@@ -58,6 +59,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/ai', [ProfileController::class, 'updateAi'])->name('profile.ai.update');
     Route::patch('/profile/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.notifications.update');
     Route::post('/notifications/subscribe', [\App\Http\Controllers\WebPushController::class, 'store'])->name('webpush.subscribe');
     Route::post('/notifications/unsubscribe', [\App\Http\Controllers\WebPushController::class, 'destroy'])->name('webpush.unsubscribe');
@@ -214,6 +216,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'destroy'])->name('delete');
     });
 
+    // --- AI Assistant ---
+    Route::post('/ai/ask', [\App\Http\Controllers\AiChatController::class, 'ask'])->name('ai.ask');
+
     // Time Tracking routes
     Route::prefix('time-logs')->name('time-logs.')->group(function () {
         Route::post('/toggle-workday', [\App\Http\Controllers\TimeLogController::class, 'toggleWorkday'])->name('toggle-workday');
@@ -222,6 +227,13 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/teams/{team}/time-reports', [\App\Http\Controllers\TimeLogController::class, 'index'])->name('teams.time-reports');
+    // Google Drive
+    Route::get('/google/drive/redirect', [GoogleDriveController::class, 'redirect'])->name('google.drive.redirect');
+    Route::get('/google/drive/callback', [GoogleDriveController::class, 'callback'])->name('google.drive.callback');
+    Route::delete('/google/drive/disconnect', [GoogleDriveController::class, 'disconnect'])->name('google.drive.disconnect');
+    Route::post('/teams/{team}/attachments/{attachment}/to-drive', [GoogleDriveController::class, 'uploadToDrive'])->name('teams.attachments.to-drive');
+    Route::post('/google/drive/save-response', [GoogleDriveController::class, 'saveAiResponse'])->name('google.drive.save-response');
+
 });
 
 require __DIR__.'/auth.php';

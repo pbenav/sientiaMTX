@@ -76,14 +76,38 @@ class ProfileController extends Controller
         ]);
 
         $user->notification_settings = $newSettings;
-        
-        if ($request->has('telegram_chat_id')) {
-            $user->telegram_chat_id = $validated['telegram_chat_id'];
-        }
-
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'notifications-updated');
+    }
+
+    /**
+     * Update the user's AI preferences.
+     */
+    public function updateAi(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'api_key' => 'nullable|string|max:255',
+            'ai_model' => 'nullable|string|max:255',
+            'mood_tracking_enabled' => 'boolean',
+            'smart_matching_opt_in' => 'boolean',
+            'team_id' => 'nullable|integer|exists:teams,id',
+        ]);
+
+        $user = $request->user();
+        $apiKey = $validated['api_key'] ? trim($validated['api_key']) : null;
+        
+        $user->aiPreferences()->updateOrCreate(
+            ['team_id' => $validated['team_id']],
+            [
+                'api_key' => $apiKey,
+                'ai_model' => $validated['ai_model'] ?? 'gemini-1.5-flash-latest',
+                'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
+                'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
+            ]
+        );
+
+        return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'ai-updated');
     }
 
     public function testTelegram(Request $request): \Illuminate\Http\JsonResponse

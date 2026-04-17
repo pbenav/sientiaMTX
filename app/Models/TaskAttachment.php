@@ -14,6 +14,9 @@ class TaskAttachment extends Model
         'file_path',
         'file_size',
         'mime_type',
+        'storage_provider',
+        'provider_file_id',
+        'web_view_link',
     ];
 
     public function task(): BelongsTo

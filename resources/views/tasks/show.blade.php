@@ -563,25 +563,46 @@
                                 class="group flex items-center justify-between p-3 {{ $isFromParent ? 'bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-100/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50' }} border rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div
-                                        class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center {{ $isFromParent ? 'text-indigo-500' : 'text-violet-600 dark:text-violet-400' }} shadow-sm border border-gray-100 dark:border-gray-700 shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm border shrink-0 {{ $attachment->storage_provider === 'google' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : ($isFromParent ? 'bg-indigo-50 dark:bg-gray-800 text-indigo-500 border-gray-100 dark:border-gray-700' : 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 border-gray-100 dark:border-gray-700') }}">
+                                        @if($attachment->storage_provider === 'google')
+                                            <svg class="w-6 h-6" viewBox="0 0 48 48">
+                                                <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                            </svg>
+                                        @else
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        @endif
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-[12px] font-bold text-gray-800 dark:text-white truncate"
                                             title="{{ $attachment->file_name }}">
-                                            <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}" 
-                                               target="_blank" 
-                                               class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
-                                                {{ $attachment->file_name }}
-                                            </a>
+                                            @if($attachment->storage_provider === 'google' && $attachment->web_view_link)
+                                                <a href="{{ $attachment->web_view_link }}" 
+                                                   target="_blank" 
+                                                   class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1">
+                                                    {{ $attachment->file_name }}
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                </a>
+                                            @else
+                                                <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}" 
+                                                   target="_blank" 
+                                                   class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                    {{ $attachment->file_name }}
+                                                </a>
+                                            @endif
                                         </p>
-                                        <p class="text-[10px] text-gray-400">
-                                            {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
+                                        <p class="text-[10px] text-gray-400 flex items-center gap-1.5">
+                                            @if($attachment->storage_provider === 'google')
+                                                <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 rounded font-black uppercase text-[8px]">Google Drive</span>
+                                            @else
+                                                {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
+                                            @endif
                                             •
                                             @if($isFromParent) 
                                                 <span class="text-indigo-500 font-bold uppercase tracking-tighter">{{ __('tasks.shared') ?? 'Plan' }}</span>
@@ -595,6 +616,16 @@
                                 </div>
                                 <div
                                     class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    @if($attachment->storage_provider === 'local' && auth()->user()->google_token)
+                                        <form action="{{ route('teams.attachments.to-drive', [$team, $attachment]) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" 
+                                                class="p-1.5 text-gray-500 hover:text-blue-600 transition-colors"
+                                                title="Subir a Google Drive">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            </button>
+                                        </form>
+                                    @endif
                                     <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
                                         target="_blank" rel="noopener noreferrer"
                                         class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"

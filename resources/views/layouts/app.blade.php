@@ -1084,7 +1084,13 @@
     </script>
     </div>
 
-
+    @auth
+        @php
+            $currTeam = request()->route('team');
+            $currTeamId = $currTeam ? (is_object($currTeam) ? $currTeam->id : $currTeam) : null;
+        @endphp
+        <x-ai-assistant :team-id="$currTeamId" />
+    @endauth
 
     @stack('scripts')
 </body>

@@ -14,41 +14,7 @@
     @endphp
 
     <form method="post" action="{{ route('profile.notifications.update') }}" class="mt-6 space-y-6" x-data="{ 
-        telegramEnabled: {{ ($settings['telegram'] ?? false) ? 'true' : 'false' }},
-        testingTelegram: false,
-        telegramTestStatus: '',
-        telegramTestType: '',
-        async testTelegram() {
-            const chatId = document.getElementById('telegram_chat_id').value;
-            if (!chatId) {
-                this.telegramTestStatus = 'Por favor, introduce tu ID de chat primero.';
-                this.telegramTestType = 'error';
-                return;
-            }
-            this.testingTelegram = true;
-            this.telegramTestStatus = 'Enviando mensaje de prueba...';
-            this.telegramTestType = 'info';
-            
-            try {
-                const response = await fetch('{{ route('profile.telegram.test') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ chat_id: chatId })
-                });
-                const data = await response.json();
-                this.telegramTestStatus = data.message;
-                this.telegramTestType = data.success ? 'success' : 'error';
-            } catch (e) {
-                this.telegramTestStatus = 'Error al conectar con el servidor.';
-                this.telegramTestType = 'error';
-            } finally {
-                this.testingTelegram = false;
-                setTimeout(() => { if(this.telegramTestType === 'success') this.telegramTestStatus = ''; }, 5000);
-            }
-        }
+        telegramEnabled: {{ ($settings['telegram'] ?? false) ? 'true' : 'false' }}
     }">
         @csrf
         @method('patch')
@@ -110,48 +76,7 @@
             </div>
         </div>
 
-        <!-- Telegram Config -->
-        <div x-show="telegramEnabled" x-transition class="p-4 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-800 space-y-4">
-            <h3 class="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-                {{ __('notifications.telegram_setup') }}
-            </h3>
-            
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-                {!! __('notifications.telegram_instructions', ['bot_link' => '<a href="https://t.me/SientiaBot" target="_blank" class="text-indigo-600 font-bold hover:underline">@SientiaBot</a>']) !!}
-            </p>
 
-            <div class="flex items-end gap-2">
-                <div class="flex-1">
-                    <x-input-label for="telegram_chat_id" :value="__('notifications.telegram_chat_id')" />
-                    <x-text-input id="telegram_chat_id" name="telegram_chat_id" type="text" class="mt-1 block w-full" :value="old('telegram_chat_id', $user->telegram_chat_id)" placeholder="Ej: 123456789" />
-                </div>
-                <button type="button" @click="testTelegram()" :disabled="testingTelegram"
-                    class="h-11 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2">
-                    <template x-if="!testingTelegram">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                    </template>
-                    <template x-if="testingTelegram">
-                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </template>
-                    {{ __('Probando...') }}
-                </button>
-            </div>
-            <p x-show="telegramTestStatus" x-text="telegramTestStatus" 
-                :class="{
-                    'text-red-600 dark:text-red-400': telegramTestType === 'error',
-                    'text-emerald-600 dark:text-emerald-400': telegramTestType === 'success',
-                    'text-indigo-600 dark:text-indigo-400': telegramTestType === 'info'
-                }" class="text-[10px] font-bold mt-1"></p>
-            <x-input-error class="mt-2" :messages="$errors->get('telegram_chat_id')" />
-        </div>
 
         <!-- Quiet Hours -->
         <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
