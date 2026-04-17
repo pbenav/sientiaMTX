@@ -47,7 +47,8 @@ class Team extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_user')
-            ->withPivot('role_id');
+            ->using(TeamUser::class)
+            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token');
     }
 
     // Relationship: A team has many groups

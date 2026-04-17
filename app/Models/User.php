@@ -81,6 +81,7 @@ class User extends Authenticatable implements HasLocalePreference
             'resilience_points' => 'integer',
             'experience_points' => 'integer',
             'energy_level' => 'integer',
+            'google_token' => 'array',
         ];
     }
 
@@ -154,6 +155,7 @@ class User extends Authenticatable implements HasLocalePreference
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_user')
+            ->using(TeamUser::class)
             ->withPivot('role_id', 'sort_order', 'google_id', 'google_token', 'google_refresh_token')
             ->withTimestamps();
     }

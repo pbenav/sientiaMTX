@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Team;
+use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Services\Google\GoogleDriveService;
 use Illuminate\Http\Request;
@@ -22,14 +23,25 @@ class GoogleDriveController extends Controller
     }
 
     /**
+     * Check if a team is linked to Google
+     */
+    protected function isTeamLinked(User $user, Team $team): bool
+    {
+        return $user->teams()
+            ->where('team_id', $team->id)
+            ->wherePivotNotNull('google_token')
+            ->exists();
+    }
+
+    /**
      * Upload an existing local attachment to Google Drive
      */
     public function uploadToDrive(Team $team, TaskAttachment $attachment)
     {
         $user = auth()->user();
 
-        if (!$user->google_token) {
-            return back()->with('error', 'Debes conectar tu cuenta de Google Drive primero.');
+        if (!$this->isTeamLinked($user, $team)) {
+            return back()->with('error', 'Este equipo no tiene vinculada una cuenta de Google Workspace.');
         }
 
         if ($attachment->storage_provider === 'google') {
@@ -45,11 +57,11 @@ class GoogleDriveController extends Controller
         }
 
         try {
-            // 2. Get/Create Sientia Folder in Drive
-            $folderId = $this->driveService->getOrCreateSientiaFolder($user);
+            // 2. Get/Create Sientia Folder in Drive for this Team account
+            $folderId = $this->driveService->getOrCreateSientiaFolder($user, $team->id);
 
             // 3. Upload to Drive
-            $result = $this->driveService->uploadFileFromPath($user, $localPath, $attachment->file_name, $folderId);
+            $result = $this->driveService->uploadFileFromPath($user, $localPath, $attachment->file_name, $folderId, $team->id);
 
             if ($result) {
                 // 4. Update Attachment record
@@ -80,18 +92,21 @@ class GoogleDriveController extends Controller
     {
         $request->validate([
             'content' => 'required|string',
+            'team_id' => 'required|exists:teams,id',
         ]);
 
         $user = $request->user();
-        if (!$user->google_token) {
-            return response()->json(['success' => false, 'message' => 'No conectado a Google Drive']);
+        $team = Team::findOrFail($request->team_id);
+
+        if (!$this->isTeamLinked($user, $team)) {
+            return response()->json(['success' => false, 'message' => 'Este equipo no tiene Google vinculado']);
         }
 
         try {
-            $folderId = $this->driveService->getOrCreateSientiaFolder($user);
+            $folderId = $this->driveService->getOrCreateSientiaFolder($user, $team->id);
             $filename = 'Respuesta Ax.ia - ' . date('Y-m-d H:i:s') . '.docx';
             
-            $result = $this->driveService->createFileFromText($user, $filename, $request->content, $folderId, true);
+            $result = $this->driveService->createFileFromText($user, $filename, $request->content, $folderId, true, $team->id);
 
             if ($result) {
                 return response()->json([
@@ -110,65 +125,73 @@ class GoogleDriveController extends Controller
     }
 
     /**
-     * Redirect to Google OAuth for Drive access
+     * List Google Drive contents (AJAX)
      */
-    public function redirect()
+    public function listContents(Request $request)
     {
-        $query = http_build_query([
-            'client_id' => config('services.google.client_id'),
-            'redirect_uri' => route('google.drive.callback'),
-            'response_type' => 'code',
-            'scope' => 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
-            'access_type' => 'offline',
-            'prompt' => 'consent',
+        $request->validate([
+            'team_id' => 'required|exists:teams,id',
         ]);
 
-        return redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
+        $user = $request->user();
+        $team = Team::findOrFail($request->team_id);
+        $folderId = $request->query('folderId', 'root');
+        
+        if (!$this->isTeamLinked($user, $team)) {
+            return response()->json(['success' => false, 'message' => 'Equipo no vinculado'], 403);
+        }
+
+        $query = "'{$folderId}' in parents and trashed = false";
+        $files = $this->driveService->listFiles($user, $query, 20, $team->id);
+
+        return response()->json([
+            'files' => $files,
+            'currentFolderId' => $folderId
+        ]);
     }
 
     /**
-     * Handle Google OAuth Callback
+     * Link an existing Drive file to a Task
      */
-    public function callback(Request $request)
+    public function attachFromDrive(Team $team, Task $task, Request $request)
     {
-        if ($request->has('error')) {
-            return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('error', 'Error al conectar con Google: ' . $request->error);
-        }
-
-        $code = $request->code;
-
-        $response = Http::post('https://oauth2.googleapis.com/token', [
-            'client_id' => config('services.google.client_id'),
-            'client_secret' => config('services.google.client_secret'),
-            'redirect_uri' => route('google.drive.callback'),
-            'grant_type' => 'authorization_code',
-            'code' => $code,
+        $request->validate([
+            'file_id' => 'required|string',
+            'file_name' => 'required|string',
+            'web_view_link' => 'required|url',
         ]);
 
-        if ($response->successful()) {
-            $data = $response->json();
-            
-            $request->user()->update([
-                'google_token' => $data['access_token'],
-                'google_refresh_token' => $data['refresh_token'] ?? $request->user()->google_refresh_token,
+        try {
+            $attachment = TaskAttachment::create([
+                'task_id' => $task->id,
+                'user_id' => auth()->id(),
+                'file_name' => $request->file_name,
+                'file_path' => 'google_drive/' . $request->file_id, // Virtual path
+                'file_size' => $request->file_size ?? 0,
+                'storage_provider' => 'google',
+                'provider_file_id' => $request->file_id,
+                'web_view_link' => $request->web_view_link,
             ]);
 
-            return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-connected');
+            return response()->json([
+                'success' => true,
+                'attachment' => $attachment
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
-
-        return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('error', 'Fallo al obtener el token de Google.');
     }
 
     /**
-     * Disconnect Google Drive
+     * Deprecated OAuth methods - Unified under GoogleController
      */
-    public function disconnect(Request $request)
-    {
-        $request->user()->update([
-            'google_token' => null,
-            'google_refresh_token' => null,
-        ]);
+    public function redirect() { return $this->deprecated(); }
+    public function callback() { return $this->deprecated(); }
+    public function disconnect() { return $this->deprecated(); }
 
-        return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-disconnected');
+    protected function deprecated()
+    {
+        return Redirect::route('profile.edit', ['tab' => 'integrations'])
+            ->with('info', 'Usa el panel de integraciones para gestionar tu cuenta de Google.');
     }
 }

@@ -1,8 +1,8 @@
-@props(['user' => auth()->user(), 'teamId' => null])
+@props(['user' => auth()->user(), 'teamId' => null, 'taskId' => null])
 
 <div x-data="sientiaAiAssistant()" 
-     class="fixed z-[9998] flex flex-col items-start font-sans"
-     :style="`position: fixed; bottom: 6rem; left: 1.5rem; z-index: 9998; transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
+     class="fixed z-[50] flex flex-col items-start font-sans"
+     :style="`position: fixed; bottom: 6rem; left: 1.5rem; z-index: 50; transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
      @mousemove.window="drag($event)"
      @touchmove.window="drag($event)"
      @mouseup.window="stopDrag()"
@@ -46,11 +46,14 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-bold text-lg tracking-tight leading-none">Ax.ia</h3>
-                    <span class="text-[10px] text-indigo-200 font-medium uppercase tracking-widest mt-0.5 block">Asistente en línea</span>
+                    <h3 class="font-bold text-lg tracking-tight leading-none">Asistente Ax.ia</h3>
+                    <span class="text-[10px] text-indigo-200 font-medium uppercase tracking-widest mt-0.5 block">Inteligencia Artificial Sientia</span>
                 </div>
             </div>
             <div class="flex items-center space-x-1">
+                <button @click="clearHistory()" class="p-2 text-indigo-200 hover:text-white hover:bg-white/10 rounded-full transition-colors" title="Borrar historial">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
                 <button @click="showHelp = !showHelp" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Ayuda">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </button>
@@ -132,6 +135,10 @@
                                 </svg>
                             </button>
                             @endif
+                            
+                            <button @click="transferToTask(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-violet-600" title="Inyectar en tarea">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                            </button>
                         </div>
                     </template>
                 </div>
@@ -179,7 +186,46 @@
             ],
             
             teamId: {{ $teamId ?: 'null' }},
+            taskId: {{ $taskId ?: 'null' }},
             showHelp: false,
+
+            init() {
+                this.getHistory();
+            },
+
+            async getHistory() {
+                try {
+                    const response = await fetch('{{ route('ai.history') }}?team_id=' + this.teamId);
+                    const data = await response.json();
+                    if (data.messages && data.messages.length > 0) {
+                        this.messages = data.messages.map(m => ({
+                            role: m.role,
+                            content: m.content
+                        }));
+                        this.scrollToBottom();
+                    }
+                } catch (error) {
+                    console.error('Error fetching history:', error);
+                }
+            },
+
+            async clearHistory() {
+                if (!confirm('¿Seguro que quieres borrar todo el historial del chat?')) return;
+                
+                try {
+                    await fetch('{{ route('ai.clear-history') }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+                    this.messages = [
+                        { role: 'ai', content: 'Historial borrado. ¡Empecemos de cero! ¿En qué puedo ayudarte?' }
+                    ];
+                } catch (error) {
+                    console.error('Error clearing history:', error);
+                }
+            },
 
             // Drag variables
             pos: { x: 0, y: 0 },
@@ -238,7 +284,7 @@
                 this.scrollToBottom();
 
                 try {
-                    const response = await fetch('/ai/ask', {
+                    const response = await fetch('{{ route('ai.ask') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -247,7 +293,8 @@
                         },
                         body: JSON.stringify({ 
                             prompt: userText,
-                            team_id: this.teamId
+                            team_id: this.teamId,
+                            task_id: this.taskId
                         })
                     });
                     
@@ -271,8 +318,16 @@
             },
             
             renderMarkdown(text) {
-                // Simple bold and newline formatter for immediate view
-                return text
+                // Format [PAYLOAD] blocks as distinct cards
+                let formatted = text.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
+                    return `<div class="bg-indigo-50/50 dark:bg-indigo-500/5 border-2 border-dashed border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl p-4 my-4 font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 relative group/payload shadow-inner">
+                        <span class="absolute -top-3 left-4 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-200 dark:border-indigo-800 shadow-sm">Contenido Inyectable</span>
+                        ${content.trim().replace(/\n/g, '<br>')}
+                    </div>`;
+                });
+
+                // Simple bold and italic formatter
+                return formatted
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
                     .replace(/\n/g, '<br>');
@@ -313,6 +368,92 @@
                     btn.innerHTML = '<svg class="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>';
                 } finally {
                     setTimeout(() => btn.innerHTML = oldHtml, 3000);
+                }
+            },
+
+            async transferToTask(content) {
+                const { value: target } = await Swal.fire({
+                    title: '<div class="flex items-center justify-center space-x-2"><div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div><span class="text-sm font-black uppercase tracking-[0.2em] text-gray-800 dark:text-white">Acción de Ax.ia</span></div>',
+                    html: '<p class="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-1 mb-4 leading-relaxed">Analizando payload... ¿Dónde inyectamos el grano?</p>',
+                    input: 'radio',
+                    inputOptions: {
+                        'description': '🎯 Descripción (Reemplazar)',
+                        'observations': '📝 Observaciones (Reemplazar)',
+                        'comment': '💬 Comentario de Foro'
+                    },
+                    inputValidator: (value) => {
+                        if (!value) return '¡Selecciona un destino!'
+                    },
+                    padding: '2rem',
+                    confirmButtonText: 'Aplicar Inyección',
+                    confirmButtonColor: '#4f46e5',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                    color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-[0_20px_60px_rgba(0,0,0,0.2)]',
+                        confirmButton: 'rounded-xl px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95',
+                        cancelButton: 'rounded-xl px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-all hover:text-red-500',
+                        input: 'text-sm font-medium text-gray-600 dark:text-gray-300 overflow-hidden'
+                    }
+                });
+
+                if (target) {
+                    const cleanContent = content.replace(/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/gs, '$1').trim();
+
+                    // CASE 1: Persisted Task (Sync via Server)
+                    if (this.taskId) {
+                        try {
+                            const response = await fetch('{{ route('ai.transfer', ['team' => $teamId ?? 0, 'task' => 'TASK_ID']) }}'.replace('TASK_ID', this.taskId), {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    content: cleanContent,
+                                    target: target
+                                })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                Swal.fire({
+                                    title: '¡Hecho!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Transfer error:', error);
+                            Swal.fire('Error', 'No se pudo completar la transferencia', 'error');
+                        }
+                    } 
+                    // CASE 2: New Task / Draft (Local Inject via DOM)
+                    else {
+                        const element = document.getElementById(target);
+                        if (element) {
+                            element.value = cleanContent;
+                            // Trigger input event for frameworks like Alpine/Vue/Livewire
+                            element.dispatchEvent(new Event('input', { bubbles: true }));
+                            
+                            Swal.fire({
+                                title: '¡Inyectado!',
+                                text: 'El texto se ha pegado en el formulario.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('Atención', 'No se encontró el campo ' + target + ' en esta página.', 'warning');
+                        }
+                    }
                 }
             }
         }));

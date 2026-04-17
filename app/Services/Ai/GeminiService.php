@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class GeminiService implements AiAssistantInterface
 {
     protected ?User $user = null;
+    protected ?\App\Models\Task $taskContext = null;
     protected string $apiKey = '';
     protected string $targetModel = 'gemini-1.5-flash-latest';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -23,6 +24,7 @@ class GeminiService implements AiAssistantInterface
     public function forUser(User $user, ?int $teamId = null): self
     {
         $this->user = $user;
+        $this->taskContext = null; // Clear context on brand new session
         
         // Contexto específico o global
         $pref = $user->aiPreferences()->where('team_id', $teamId)->first() 
@@ -40,9 +42,33 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function withTaskContext(\App\Models\Task $task): self
+    {
+        $this->taskContext = $task;
+        return $this;
+    }
+
     public function generateText(string $prompt): string
     {
-        return $this->callGemini($this->targetModel, $prompt);
+        $finalPrompt = $prompt;
+
+        if ($this->taskContext) {
+            $contextInfo = "CONTEXTO DE LA TAREA ACTUAL:\n";
+            $contextInfo .= "- Título: {$this->taskContext->title}\n";
+            $contextInfo .= "- Descripción: " . ($this->taskContext->description ?: 'N/A') . "\n";
+            $contextInfo .= "- Equipo: " . ($this->taskContext->team->name ?? 'N/A') . "\n";
+            $contextInfo .= "- Estado: " . ($this->taskContext->status ?? 'pending') . "\n";
+            $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
+            $contextInfo .= "\nREGLAS CRÍTICAS DE RESPUESTA:\n";
+            $contextInfo .= "1. Puedes saludar y explicar cosas brevemente.\n";
+            $contextInfo .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD].\n";
+            $contextInfo .= "3. NO incluyas introducciones ni despedidas dentro de las etiquetas [PAYLOAD]. Ese bloque debe estar 'limpio de polvo y paja'.\n";
+            $contextInfo .= "\nINSTRUCCIÓN DEL USUARIO: {$prompt}\n";
+            
+            $finalPrompt = "Eres Ax.ia, el asistente de Sientia MTX. Usa siempre [PAYLOAD] para el contenido técnico inyectable.\n\n" . $contextInfo;
+        }
+
+        return $this->callGemini($this->targetModel, $finalPrompt);
     }
 
     public function analyzeEnergyLevel(array $recentData): int

@@ -28,13 +28,13 @@ class GoogleService
         $this->client->setRedirectUri($redirectUri);
 
         $this->client->addScope(Calendar::CALENDAR);
-        $this->client->addScope(Gmail::GMAIL_READONLY);
         $this->client->addScope(Tasks::TASKS); // Read/Write
+        $this->client->addScope('https://www.googleapis.com/auth/drive'); // Full Drive access
         $this->client->addScope('profile');
         $this->client->addScope('email');
         
         $this->client->setAccessType('offline');
-        $this->client->setPrompt('select_account consent');
+        // $this->client->setPrompt('select_account consent');
     }
 
     /**
@@ -84,7 +84,9 @@ class GoogleService
             return false;
         }
 
-        $tokenData = json_decode($token, true);
+        // Since we now use TeamUser pivot with casting, $token might already be an array
+        $tokenData = is_array($token) ? $token : json_decode($token, true);
+        
         $this->client->setAccessToken($tokenData);
 
         if ($this->client->isAccessTokenExpired()) {

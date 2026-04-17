@@ -189,7 +189,7 @@ Route::middleware('auth')->group(function () {
 
     // Google Services
     Route::get('/auth/google', [\App\Http\Controllers\GoogleController::class, 'redirect'])->name('google.auth');
-    Route::get('/auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'callback'])->name('google.callback');
+    Route::get('/google/callback', [\App\Http\Controllers\GoogleController::class, 'callback'])->name('google.callback');
     Route::get('/google/sync', [\App\Http\Controllers\GoogleController::class, 'sync'])->name('google.sync');
     Route::post('/google/import', [\App\Http\Controllers\GoogleController::class, 'import'])->name('google.import');
     Route::post('/google/disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnect'])->name('google.disconnect');
@@ -217,7 +217,10 @@ Route::middleware('auth')->group(function () {
     });
 
     // --- AI Assistant ---
+    Route::get('/ai/history', [\App\Http\Controllers\AiChatController::class, 'getHistory'])->name('ai.history');
     Route::post('/ai/ask', [\App\Http\Controllers\AiChatController::class, 'ask'])->name('ai.ask');
+    Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
+    Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferContent'])->name('ai.transfer');
 
     // Time Tracking routes
     Route::prefix('time-logs')->name('time-logs.')->group(function () {
@@ -227,12 +230,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/teams/{team}/time-reports', [\App\Http\Controllers\TimeLogController::class, 'index'])->name('teams.time-reports');
-    // Google Drive
-    Route::get('/google/drive/redirect', [GoogleDriveController::class, 'redirect'])->name('google.drive.redirect');
-    Route::get('/google/drive/callback', [GoogleDriveController::class, 'callback'])->name('google.drive.callback');
-    Route::delete('/google/drive/disconnect', [GoogleDriveController::class, 'disconnect'])->name('google.drive.disconnect');
+    // Google Drive Actions
     Route::post('/teams/{team}/attachments/{attachment}/to-drive', [GoogleDriveController::class, 'uploadToDrive'])->name('teams.attachments.to-drive');
     Route::post('/google/drive/save-response', [GoogleDriveController::class, 'saveAiResponse'])->name('google.drive.save-response');
+    Route::get('/google/drive/list', [GoogleDriveController::class, 'listContents'])->name('google.drive.list');
+    Route::post('/teams/{team}/tasks/{task}/attachments/from-drive', [GoogleDriveController::class, 'attachFromDrive'])->name('teams.tasks.attachments.from-drive');
 
 });
 

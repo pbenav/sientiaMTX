@@ -8,6 +8,11 @@ interface AiAssistantInterface
      * Set the user executing the action and optional team context.
      */
     public function forUser(\App\Models\User $user, ?int $teamId = null): self;
+    
+    /**
+     * Set the task context for the next generation.
+     */
+    public function withTaskContext(\App\Models\Task $task): self;
 
     /**
      * Generate text based on a prompt.

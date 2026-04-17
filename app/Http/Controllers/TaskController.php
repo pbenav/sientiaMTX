@@ -995,6 +995,10 @@ class TaskController extends Controller
     protected function authorizeAttachmentAccess(Team $team, TaskAttachment $attachment)
     {
         $task = $attachment->task;
+        if (!$task) {
+            abort(404, 'La tarea asociada a este archivo no existe.');
+        }
+
         $isManager = $team->isManager(auth()->user());
         
         $hasAccess = Task::where('id', $task->id)->visibleTo(auth()->user(), $isManager)->exists();

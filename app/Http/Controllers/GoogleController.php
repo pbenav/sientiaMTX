@@ -31,7 +31,10 @@ class GoogleController extends Controller
         }
 
         $state = [];
-        if ($request->has('popup')) $state['popup'] = 1;
+        if ($request->has('popup')) {
+            $state['popup'] = 1;
+            session(['google_auth_is_popup' => true]);
+        }
         if ($request->has('team_id')) $state['team_id'] = $request->team_id;
 
         if (!empty($state)) {
@@ -56,67 +59,63 @@ class GoogleController extends Controller
 
         try {
             $token = $this->googleService->getClient()->fetchAccessTokenWithAuthCode($request->code);
-            
+            Log::info("Google Callback: Token fetched success", ['has_refresh' => isset($token['refresh_token'])]);
+
             if (isset($token['error'])) {
+                Log::error("Google Callback: Token error", ['error' => $token['error']]);
                 return redirect()->route('dashboard')->with('error', __('google.token_error', ['error' => $token['error']]));
             }
 
             $user = Auth::user();
+            if (!$user) {
+                Log::error("Google Callback: NO USER LOGGED IN");
+                return redirect()->route('login')->with('error', 'Sesión expirada');
+            }
+
             $stateData = json_decode($request->state, true) ?? [];
-            $teamId = $stateData['team_id'] ?? null;
-            $isPopup = $stateData['popup'] ?? false;
+            $teamId = $stateData['team_id'] ?? session('google_auth_team_id');
+            Log::info("Google Callback: Context Info", ['user' => $user->id, 'team' => $teamId]);
+
+            // Reliable popup detection via session + state fallback
+            $isPopup = session()->pull('google_auth_is_popup', false) || ($stateData['popup'] ?? false);
 
             // Fetch Google ID for reference
             $oauth2 = new \Google\Service\Oauth2($this->googleService->getClient());
             $userInfo = $oauth2->userinfo->get();
+            Log::info("Google Callback: User Info", ['google_id' => $userInfo->id]);
 
             $refreshToken = $token['refresh_token'] ?? null;
 
-            // REINFORCEMENT: If refresh_token is missing, try to recover it from existing records
-            // (Only if Google ID matches, ensuring we don't mix different accounts)
-            if (!$refreshToken) {
-                if ($user->google_id === $userInfo->id && $user->google_refresh_token) {
-                    $refreshToken = $user->google_refresh_token;
-                } else {
-                    $otherMembership = $user->teams()
-                        ->wherePivot('google_id', $userInfo->id)
-                        ->wherePivot('google_refresh_token', '!=', null)
-                        ->first();
-                    if ($otherMembership) {
-                        $refreshToken = $otherMembership->pivot->google_refresh_token;
-                    }
-                }
-            }
-
             if ($teamId) {
-                // Save to Team-User Pivot
+                // Recover refresh token if missing
+                if (!$refreshToken) {
+                    $existing = $user->teams()->find($teamId);
+                    $refreshToken = $existing ? $existing->pivot->google_refresh_token : null;
+                    Log::info("Google Callback: Recovered Refresh Token from Pivot", ['success' => !!$refreshToken]);
+                }
+
                 $user->teams()->updateExistingPivot($teamId, [
                     'google_id' => $userInfo->id,
-                    'google_token' => json_encode($token),
+                    'google_token' => $token, 
                     'google_refresh_token' => $refreshToken,
                 ]);
-            } else {
-                // Save to User global profile (Fallback)
-                $user->google_token = json_encode($token);
-                if ($refreshToken) {
-                    $user->google_refresh_token = $refreshToken;
-                }
-                $user->google_id = $userInfo->id;
-                $user->save();
+                Log::info("Google Callback: UPDATED PIVOT for team: $teamId");
             }
 
+            $user->save(); 
+            $user->refresh(); 
+
             if ($isPopup) {
+                Log::info("Google Callback: Closing Popup Window");
                 return view('google.callback-success');
             }
 
-            $route = $teamId ? route('teams.dashboard', $teamId) : route('dashboard');
-            return redirect($route)->with('success', __('google.connected_success'));
+            return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-connected');
         } catch (\Exception $e) {
             Log::error('Google callback exception: ' . $e->getMessage());
-            $errorMsg = addslashes($e->getMessage());
             
-            $stateData = json_decode($request->state, true) ?? [];
-            if ($stateData['popup'] ?? false) {
+            if ($isPopup) {
+                $errorMsg = addslashes($e->getMessage());
                 return "<html><body><script>alert(\"Authentication failed: {$errorMsg}\"); window.close();</script></body></html>";
             }
 
@@ -309,7 +308,7 @@ class GoogleController extends Controller
     public function disconnect(Request $request)
     {
         $user = auth()->user();
-        $teamId = $request->input('team_id');
+        $teamId = $request->query('team_id') ?? $request->input('team_id');
 
         if ($teamId) {
             $user->teams()->updateExistingPivot($teamId, [
@@ -317,18 +316,16 @@ class GoogleController extends Controller
                 'google_token' => null,
                 'google_refresh_token' => null,
             ]);
-        } else {
-            $user->google_id = null;
-            $user->google_token = null;
-            $user->google_refresh_token = null;
-            $user->save();
+            return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-team-disconnected');
         }
 
-        $team = $teamId ? \App\Models\Team::find($teamId) : null;
+        // Legacy/Global disconnect
+        $user->google_id = null;
+        $user->google_token = null;
+        $user->google_refresh_token = null;
+        $user->save();
 
-        return view('google.disconnect-success', [
-            'team' => $team
-        ]);
+        return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-disconnected');
     }
 
     /**
@@ -385,10 +382,14 @@ class GoogleController extends Controller
             $googleTask = $this->googleService->getTask($task->google_task_list_id, $task->google_task_id);
 
             if (!$googleTask) {
-                // Task was deleted in Google Tasks. Delete locally as well.
-                $task->delete();
-                return redirect()->route('teams.tasks.index', $team)
-                    ->with('warning', __('google.sync_remote_deleted'));
+                // Task was deleted in Google Tasks. Unlink it locally instead of deleting.
+                $task->update([
+                    'google_task_id' => null,
+                    'google_task_list_id' => null,
+                    'google_synced_at' => null,
+                ]);
+                return redirect()->route('teams.tasks.show', [$team, $task])
+                    ->with('warning', __('google.sync_remote_unlinked'));
             }
 
             $googleUpdated = strtotime($googleTask->getUpdated());

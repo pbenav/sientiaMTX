@@ -254,4 +254,7 @@ return [
     'shared_hint' => 'Es UNA única tarea. Todos trabajan sobre ella, comparten el progreso y el tiempo se suma.',
     'distributed_task' => 'Plan Maestro (Distribución)',
     'distributed_hint' => 'Crea un contenedor global (solo-lectura) y genera una copia (instancia) independiente para cada miembro asignado.',
+    'view_or_download' => 'Ver o descargar',
+    'select_from_drive' => 'Seleccionar de Drive',
+    'drive_explorer' => 'Explorador de Google Drive',
 ];

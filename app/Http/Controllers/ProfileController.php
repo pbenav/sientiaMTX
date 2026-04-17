@@ -78,7 +78,7 @@ class ProfileController extends Controller
         $user->notification_settings = $newSettings;
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'notifications-updated');
+        return Redirect::route('profile.edit', ['tab' => 'notifications'])->with('status', 'notifications-updated');
     }
 
     /**
