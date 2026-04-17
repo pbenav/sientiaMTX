@@ -400,8 +400,6 @@
                 });
 
                 if (target) {
-                    const cleanContent = content.replace(/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/gs, '$1').trim();
-
                     // CASE 1: Persisted Task (Sync via Server)
                     if (this.taskId) {
                         try {
@@ -413,7 +411,7 @@
                                     'Accept': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    content: cleanContent,
+                                    content: content,
                                     target: target
                                 })
                             });
@@ -437,6 +435,14 @@
                     } 
                     // CASE 2: New Task / Draft (Local Inject via DOM)
                     else {
+                        let cleanContent = content;
+                        const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
+                        if (match) {
+                            cleanContent = match[1].trim();
+                        } else {
+                            cleanContent = content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                        }
+
                         const element = document.getElementById(target);
                         if (element) {
                             element.value = cleanContent;
