@@ -953,10 +953,25 @@
 
     <!-- FOOTER -->
     <footer>
-        <p>sientia<strong>MTX</strong> v{{ config('app.version', '0.0.1') }} ·
+        <p>
+            © {{ date('Y') }} <a href="https://www.sientia.com" style="color:white; font-weight: 700;">Sientia</a> · 
+            sientia<strong>MTX</strong> v{{ config('app.version', '0.0.1') }} ·
             {{ app()->getLocale() === 'es' ? 'MTX, Gantt y Kanban para equipos enfocados' : 'MTX, Gantt and Kanban for focused teams' }}
-            · <a href="{{ route('login') }}"
-                style="color:#7c3aed">{{ app()->getLocale() === 'es' ? 'Entrar' : 'Login' }}</a></p>
+        </p>
+        
+        <div style="margin-top: 16px; display: flex; justify-content: center; gap: 24px; font-size: 13px; font-weight: 500;">
+            <a href="https://www.patreon.com/cw/sientia" target="_blank"
+                class="hover:text-orange-400 transition-colors flex items-center gap-2" style="color:#f97316">
+                <i class="fab fa-patreon"></i>
+                Patreon
+            </a>
+            <span style="color:var(--border)">|</span>
+            <a href="https://buymeacoffee.com/sientia" target="_blank"
+                class="hover:text-yellow-400 transition-colors flex items-center gap-2" style="color:#eab308">
+                <i class="fas fa-coffee"></i>
+                Buy me a coffee
+            </a>
+        </div>
         
         <div style="margin-top: 12px; display: flex; justify-content: center; gap: 16px; font-size: 11px; color: var(--muted);">
             <a href="{{ route('privacy') }}" class="hover:text-white transition-colors">

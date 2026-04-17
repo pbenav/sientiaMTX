@@ -77,6 +77,24 @@
                             {{ app()->getLocale() === 'es' ? 'Español' : 'English' }}
                         </p>
                     </div>
+
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm space-y-3">
+                        <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1">
+                            {{ __('Apoya el Proyecto') }}
+                        </p>
+                        <div class="space-y-2">
+                            <a href="https://www.patreon.com/cw/sientia" target="_blank"
+                               class="flex items-center gap-3 px-3 py-2 text-sm font-bold text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/10 rounded-xl transition-all group">
+                                <i class="fab fa-patreon text-lg group-hover:scale-110 transition-transform"></i>
+                                Patreon
+                            </a>
+                            <a href="https://buymeacoffee.com/sientia" target="_blank"
+                               class="flex items-center gap-3 px-3 py-2 text-sm font-bold text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/10 rounded-xl transition-all group">
+                                <i class="fas fa-coffee text-lg group-hover:scale-110 transition-transform"></i>
+                                Buy me a coffee
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </aside>
 

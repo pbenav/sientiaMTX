@@ -861,7 +861,7 @@
         <div
             class="max-w-none lg:{{ $maxWidth }} lg:mx-auto px-2 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
             <div class="mb-2 md:mb-0 flex items-center gap-2">
-                <span class="font-bold">© {{ date('Y') }} Sientia</span>
+                <span class="font-bold">© {{ date('Y') }} <a href="https://www.sientia.com" class="hover:underline hover:text-violet-600 transition-colors">Sientia</a></span>
                 <span class="mx-1">|</span>
                 <span>v{{ config('app.version', '1.0.0') }}</span>
                 <span class="mx-1">|</span>
@@ -879,17 +879,25 @@
                     </a>
                 </div>
                 
-                <a href="{{ route('privacy') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Privacidad') }}</a>
-                <a href="{{ route('terms') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Términos') }}</a>
-                <a href="{{ route('cookies') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Cookies') }}</a>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('privacy') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Privacidad') }}</a>
+                    <a href="{{ route('terms') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Términos') }}</a>
+                    <a href="{{ route('cookies') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Cookies') }}</a>
+                </div>
                 <span class="text-gray-300 dark:text-gray-700">|</span>
-                <a href="https://www.patreon.com/cw/sientia" target="_blank"
-                    class="text-orange-500 hover:text-orange-600 font-bold transition-colors flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
-                    Apoyar en Patreon
-                </a>
+                <div class="flex items-center gap-5">
+                    <a href="https://www.patreon.com/cw/sientia" target="_blank"
+                        class="text-orange-600 hover:text-orange-700 font-bold transition-colors flex items-center gap-1.5 group">
+                        <i class="fab fa-patreon group-hover:scale-110 transition-transform"></i>
+                        Patreon
+                    </a>
+                    <span class="text-gray-300 dark:text-gray-700 mx-1">|</span>
+                    <a href="https://buymeacoffee.com/sientia" target="_blank"
+                        class="text-yellow-600 hover:text-yellow-700 font-bold transition-colors flex items-center gap-1.5 group">
+                        <i class="fas fa-coffee group-hover:scale-110 transition-transform"></i>
+                        Buy me a coffee
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
