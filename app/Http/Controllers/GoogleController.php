@@ -112,7 +112,10 @@ class GoogleController extends Controller
                 return view('google.callback-success');
             }
 
-            return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-connected');
+            return Redirect::route('profile.edit', [
+                'tab' => 'integrations',
+                'team_id' => $teamId
+            ])->with('status', 'google-connected');
         } catch (\Exception $e) {
             Log::error('Google callback exception: ' . $e->getMessage());
             
@@ -319,7 +322,10 @@ class GoogleController extends Controller
                 'google_token' => null,
                 'google_refresh_token' => null,
             ]);
-            return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-team-disconnected');
+            return Redirect::route('profile.edit', [
+                'tab' => 'integrations',
+                'team_id' => $teamId
+            ])->with('status', 'google-team-disconnected');
         }
 
         // Legacy/Global disconnect

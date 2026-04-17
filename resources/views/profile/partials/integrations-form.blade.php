@@ -16,7 +16,7 @@
 @endphp
 
 <section x-data="{ 
-    context: '', 
+    context: '{{ request()->query('team_id', '') }}', 
     teamConns: {{ json_encode($teamConns) }},
     allPrefs: {{ $prefs->toJson() }},
     apiKey: '',
