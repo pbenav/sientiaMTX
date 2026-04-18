@@ -268,12 +268,12 @@
                             {{ __('teams.completed_tasks') }}</h3>
                     </div>
                     <span
-                        class="text-xs font-bold text-gray-400 dark:text-gray-600 q-count mr-2">{{ $tasks->where('status', 'completed')->count() }}</span>
+                        class="text-xs font-bold text-gray-400 dark:text-gray-600 q-count mr-2">{{ $completedTasks->count() }}</span>
                 </div>
 
                 <div class="min-h-[140px] quadrant-list p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
                     data-q="completed">
-                    @forelse($tasks->where('status', 'completed') as $task)
+                    @forelse($completedTasks as $task)
                         <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer task-card"
                             data-id="{{ $task->id }}" data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
                             <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
@@ -292,12 +292,14 @@
         </div>
     @endif
 
-    <!-- Summary row -->
     <div class="mt-6 flex flex-wrap gap-3 text-xs text-gray-500 border-t border-white/5 pt-4">
         <span>{{ __('teams.tasks_count', ['count' => $tasks->count()]) }} {{ __('teams.tasks_total') }}</span>
         <span>·</span>
         <span>{{ $tasks->where('status', 'completed')->count() }}
             {{ strtolower(__('tasks.statuses.completed')) }}</span>
+        @if($tasks->where('status', 'completed')->count() > $completedLimit)
+            <span class="text-[10px] text-amber-500/80 italic">({{ __('navigation.showing_limit', ['limit' => $completedLimit]) ?? "Mostrando solo las últimas $completedLimit" }})</span>
+        @endif
         <span>·</span>
         <span>{{ $tasks->where('status', 'in_progress')->count() }}
             {{ strtolower(__('tasks.statuses.in_progress')) }}</span>
@@ -357,6 +359,10 @@
                             'bg-white/5' : 'bg-black/[0.02]',
                         dragClass: 'opacity-50',
                         preventOnFilter: true,
+                        delay: 200,
+                        delayOnTouchOnly: true,
+                        touchStartThreshold: 5,
+                        filter: 'button, a, .toggle-subtasks-matrix, input, select',
                         onEnd: function(evt) {
                             const taskId = evt.item.getAttribute('data-id');
                             const targetQuadrant = evt.to.getAttribute('data-q');

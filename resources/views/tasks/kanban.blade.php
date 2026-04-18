@@ -332,14 +332,17 @@
             // Task Sorting
             const taskLists = document.querySelectorAll('.task-list');
             taskLists.forEach(el => {
-                new Sortable(el, {
-                    group: 'tasks',
-                    animation: 200,
-                    ghostClass: 'bg-violet-100/50',
-                    chosenClass: 'scale-105',
-                    dragClass: 'shadow-2xl',
-                    filter: '.progress-slider',
-                    preventOnFilter: false,
+                    new Sortable(el, {
+                        group: 'tasks',
+                        animation: 200,
+                        ghostClass: 'bg-violet-100/50',
+                        chosenClass: 'scale-105',
+                        dragClass: 'shadow-2xl',
+                        delay: 200,
+                        delayOnTouchOnly: true,
+                        touchStartThreshold: 5,
+                        filter: 'button, a, input, select, .progress-slider',
+                        preventOnFilter: true,
                     onEnd: function(evt) {
                         const taskId = evt.item.dataset.taskId;
                         const newColumnId = evt.to.dataset.columnId;
@@ -361,6 +364,9 @@
                 animation: 150,
                 handle: '.column-handle',
                 ghostClass: 'opacity-50',
+                delay: 200,
+                delayOnTouchOnly: true,
+                touchStartThreshold: 5,
                 onEnd: function() {
                     updateColumnsOrder();
                 }
@@ -462,6 +468,9 @@
                 new Sortable(completedZone, {
                     group: 'tasks',
                     animation: 200,
+                    delay: 200,
+                    delayOnTouchOnly: true,
+                    touchStartThreshold: 5,
                     onAdd: function(evt) {
                         const taskId = evt.item.dataset.taskId;
                         archiveTask(taskId);

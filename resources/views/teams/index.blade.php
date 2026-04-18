@@ -170,6 +170,9 @@
                     chosenClass: 'scale-[1.02]',
                     dragClass: 'shadow-2xl',
                     handle: '[data-team-handle]',
+                    delay: 200,
+                    delayOnTouchOnly: true,
+                    touchStartThreshold: 5,
                     onEnd: function() {
                         const order = Array.from(grid.querySelectorAll('[data-id]')).map(el => el.dataset.id);
                         

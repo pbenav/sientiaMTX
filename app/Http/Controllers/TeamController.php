@@ -346,14 +346,22 @@ class TeamController extends Controller
         ];
 
         $hideCompleted = session('hide_completed_tasks', true);
+        $completedLimit = (int) env('KANBAN_COMPLETED_LIMIT', 10);
 
         foreach ($allTasks as $task) {
             $isCompleted = in_array($task->status, ['completed', 'cancelled']);
             if (!$hideCompleted || !$isCompleted) {
-                $quadrant = $this->getQuadrant($task);
-                $quadrants[$quadrant][] = $task;
+                if (!$isCompleted) {
+                    $quadrant = $this->getQuadrant($task);
+                    $quadrants[$quadrant][] = $task;
+                }
             }
         }
+
+        // Handle completed tasks separately with limit
+        $completedTasks = $allTasks->where('status', 'completed')
+            ->sortByDesc('updated_at')
+            ->take($completedLimit);
 
         // Sort each quadrant by matrix_order (nulls last, preserving user-defined positions)
         foreach ($quadrants as &$qTasks) {
@@ -366,7 +374,7 @@ class TeamController extends Controller
         }
         unset($qTasks);
 
-        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted', 'skills'));
+        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted', 'skills', 'completedTasks', 'completedLimit'));
     }
 
     /**

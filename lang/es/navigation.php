@@ -25,4 +25,5 @@ return [
     'adjust_view' => 'Visualización',
     'custom' => 'Personalizado',
     'back' => 'Volver',
+    'showing_limit' => 'Mostrando solo las últimas :limit',
 ];

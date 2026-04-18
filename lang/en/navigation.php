@@ -25,4 +25,5 @@ return [
     'adjust_view' => 'Adjust View',
     'custom' => 'Custom',
     'back' => 'Back',
+    'showing_limit' => 'Showing only the last :limit',
 ];
