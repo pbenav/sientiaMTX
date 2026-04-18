@@ -453,10 +453,10 @@
                     html: '<p class="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-1 mb-4 leading-relaxed">Analizando payload... ¿Dónde inyectamos el grano?</p>',
                     input: 'radio',
                     inputOptions: {
-                        'description': '🎯 Descripción (Reemplazar)',
-                        'observations': '📝 Observaciones (Reemplazar)',
-                        'reply': '💬 Publicar en el Foro',
-                        'dom-reply': '✍️ Pegar en caja de respuesta'
+                        'description': '🎯 Descripción de Tarea (Guardar)',
+                        'observations': '📝 Observaciones (Guardar)',
+                        'comment': '💬 Comentario en el Foro (Publicar)',
+                        'dom-reply': '✍️ Pegar en editor actual (Sin guardar)'
                     },
                     inputValidator: (value) => {
                         if (!value) return '¡Selecciona un destino!'
@@ -477,101 +477,100 @@
                 });
 
                 if (target) {
-                    // CASE 1: Persisted Task (Sync via Server)
-                    if (this.taskId) {
-                        try {
-                            const response = await fetch('{{ route('ai.transfer', ['team' => $teamId ?? 0, 'task' => 'TASK_ID']) }}'.replace('TASK_ID', this.taskId), {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    content: content,
-                                    target: target
-                                })
-                            });
+                    // Extract clean content once
+                    let cleanContent = content;
+                    const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
+                    if (match) {
+                        cleanContent = match[1].trim();
+                    } else {
+                        cleanContent = content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                    }
 
-                            const data = await response.json();
-                            if (data.success) {
-                                Swal.fire({
-                                    title: '¡Hecho!',
-                                    text: data.message,
-                                    icon: 'success',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Transfer error:', error);
-                            Swal.fire('Error', 'No se pudo completar la transferencia', 'error');
-                        }
-                    } 
-                    // CASE 1.5: Forum Thread (Sync via Server)
-                    else if (this.threadId && (target === 'reply')) {
-                        try {
-                            const response = await fetch('{{ route('ai.transfer_forum', ['team' => $teamId ?? 0, 'thread' => 'THREAD_ID']) }}'.replace('THREAD_ID', this.threadId), {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    content: content,
-                                    target: target
-                                })
-                            });
+                    // Try to FIND and INJECT in DOM immediately if visible
+                    let domInjected = false;
+                    let possibleIds = {
+                        'description': 'description',
+                        'observations': 'observations',
+                        'comment': 'reply-content',
+                        'reply': 'reply-content',
+                        'dom-reply': 'reply-content'
+                    };
 
-                            const data = await response.json();
-                            if (data.success) {
-                                Swal.fire({
-                                    title: '¡Hecho!',
-                                    text: data.message,
-                                    icon: 'success',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Forum transfer error:', error);
-                            Swal.fire('Error', 'No se pudo publicar en el foro', 'error');
-                        }
-                    } 
-                    // CASE 2: New Task / Draft / Forum Box (Local Inject via DOM)
-                    else {
-                        let cleanContent = content;
-                        const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                        if (match) {
-                            cleanContent = match[1].trim();
-                        } else {
-                            cleanContent = content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
-                        }
-
-                        let elementId = target === 'dom-reply' ? 'reply-content' : target;
-                        const element = document.getElementById(elementId);
-                        if (element) {
-                            element.value = cleanContent;
-                            // Trigger input event for frameworks like Alpine/Vue/Livewire
-                            element.dispatchEvent(new Event('input', { bubbles: true }));
-                            
-                            Swal.fire({
-                                title: target === 'dom-reply' ? '¡Procesado!' : '¡Inyectado!',
-                                text: 'El texto se ha pegado en el formulario.',
-                                icon: 'success',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire('Atención', 'No se encontró el campo correspondiente en esta página.', 'warning');
+                    const elementId = possibleIds[target];
+                    if (elementId) {
+                        const el = document.getElementById(elementId);
+                        if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
+                            el.value = cleanContent;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                            el.focus();
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            domInjected = true;
                         }
                     }
+
+                    // Only skip server if it's explicitly local-only OR if we don't have IDs
+                    if (target === 'dom-reply') {
+                        if (domInjected) {
+                            Swal.fire({ title: '¡Inyectado!', text: 'Texto pegado en el editor.', icon: 'success', timer: 1500, showConfirmButton: false });
+                        } else {
+                            Swal.fire('Atención', 'No se encontró una caja de texto activa en esta página.', 'warning');
+                        }
+                        return;
+                    }
+
+                    // Server Synchronization
+                    let url = '';
+                    if (this.threadId) {
+                        url = '{{ route('ai.transfer_forum', ['team' => $teamId ?? 0, 'thread' => 'THREAD_ID']) }}'.replace('THREAD_ID', this.threadId);
+                    } else if (this.taskId) {
+                        url = '{{ route('ai.transfer', ['team' => $teamId ?? 0, 'task' => 'TASK_ID']) }}'.replace('TASK_ID', this.taskId);
+                    } else {
+                        if (domInjected) {
+                            Swal.fire({ title: '¡Inyectado!', text: 'Se ha pegado en el editor móvil, pero no se ha guardado en el servidor (sin contexto de tarea/hilo).', icon: 'info', timer: 2500 });
+                            return;
+                        }
+                        Swal.fire('Error', 'Debes estar en una tarea o hilo para guardar en el servidor.', 'error');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                content: content,
+                                target: target === 'reply' ? 'comment' : target // Normalize naming
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            Swal.fire({
+                                title: domInjected ? '¡Guardado e Inyectado!' : '¡Hecho!',
+                                text: data.message,
+                                icon: 'success',
+                                timer: domInjected ? 1500 : 2500,
+                                showConfirmButton: false
+                            });
+                            
+                            // If we didn't see it in DOM, or it's a critical update, reload only if NOT injected
+                            if (!domInjected) {
+                                setTimeout(() => window.location.reload(), 1500);
+                            }
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Transfer error:', error);
+                        Swal.fire('Error', 'Problema de conexión con el servidor.', 'error');
+                    }
                 }
+            }
             }
         }));
     });
