@@ -234,16 +234,24 @@ class GoogleDriveService
         try {
             // 1. Get file metadata to check mimeType
             $metaResponse = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
-                'fields' => 'mimeType,size'
+                'fields' => 'mimeType,size,name',
+                'supportsAllDrives' => 'true'
             ]);
             
-            if (!$metaResponse->successful()) return null;
+            if (!$metaResponse->successful()) {
+                Log::error("Google Drive Meta Error for {$fileId}: " . $metaResponse->body());
+                return null;
+            }
             
             $mimeType = $metaResponse->json('mimeType');
             $size = $metaResponse->json('size', 0);
+            $name = $metaResponse->json('name', 'unknown');
 
-            // Don't try to read huge files (max 2MB for raw download)
-            if ($size > 2 * 1024 * 1024 && !str_starts_with($mimeType, 'application/vnd.google-apps.')) {
+            Log::info("Attempting to fetch Google Drive file: {$name} ({$mimeType}, {$size} bytes)");
+
+            // Don't try to read huge files (max 10MB for Vision, but let's be safe at 5MB)
+            if ($size > 5 * 1024 * 1024 && !str_starts_with($mimeType, 'application/vnd.google-apps.')) {
+                Log::warning("File {$name} is too large for AI processing: {$size} bytes");
                 return "[Archivo demasiado grande para procesar directamente]";
             }
             
@@ -254,20 +262,25 @@ class GoogleDriveService
                 if (str_contains($mimeType, 'spreadsheet')) $exportMimeType = 'text/csv';
                 
                 $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}/export", [
-                    'mimeType' => $exportMimeType
+                    'mimeType' => $exportMimeType,
+                    'supportsAllDrives' => 'true'
                 ]);
             } else {
                 // For other files, get the media content
                 $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
-                    'alt' => 'media'
+                    'alt' => 'media',
+                    'supportsAllDrives' => 'true'
                 ]);
             }
 
             if ($response->successful()) {
+                Log::info("Successfully fetched content for {$name}");
                 return $response->body();
             }
+
+            Log::error("Google Drive Content Fetch Error for {$name} ({$fileId}): " . $response->status() . " - " . $response->body());
         } catch (\Exception $e) {
-            Log::error('Error fetching Google Drive file content: ' . $e->getMessage());
+            Log::error('Error fetching Google Drive file content (' . $fileId . '): ' . $e->getMessage());
         }
 
         return null;
