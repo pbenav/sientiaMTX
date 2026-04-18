@@ -280,7 +280,7 @@
                 const cur = new Date(mStart); cur.setDate(mStart.getDate()+(i-1)); cur.setHours(0,0,0,0);
                 const dayT = leafTasks.filter(t => {
                     const s = new Date(t.start+'T00:00:00'), e = new Date(t.end+'T23:59:59');
-                    return cur >= s && cur <= e;
+                    return cur >= s && cur <= e && t.status !== 'completed' && t.status !== 'cancelled';
                 });
                 heat[i] = { 
                     weight: dayT.reduce((a,t)=>a+(parseFloat(t.weight)||0),0), 

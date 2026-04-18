@@ -36,7 +36,10 @@ class GanttController extends Controller
             $currentDay = $startOfMonth->copy()->addDays($i - 1);
             
             // Filter leaf tasks active this specific day from the already filtered set
+            // and EXCLUDE completed/cancelled tasks from resilience calculation
             $dayTasks = $leafTasks->filter(function($t) use ($currentDay) {
+                if (in_array($t->status, ['completed', 'cancelled'])) return false;
+
                 $start = $t->scheduled_date ?? $t->created_at;
                 $end = $t->due_date ?? $start;
                 return $currentDay->between($start->startOfDay(), $end->endOfDay());
