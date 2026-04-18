@@ -507,8 +507,8 @@
                                     {{ __('tasks.disk_quota') }}
                                 </a>
 
-                                <!-- Embedded Utilities for Tablet View -->
-                                <div class="hidden sm:flex lg:hidden flex-wrap items-center justify-center gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 sm:justify-start dark:bg-gray-800/50">
+                                <!-- Embedded Utilities for Mobile/Small tablets (Hidden when visible in header) -->
+                                <div class="hidden sm:flex md:hidden flex-wrap items-center justify-center gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 sm:justify-start dark:bg-gray-800/50">
                                     @auth @include('layouts.partials.workday-timer') @endauth
                                     @include('layouts.partials.theme-toggle')
                                     @include('layouts.partials.layout-toggle')
