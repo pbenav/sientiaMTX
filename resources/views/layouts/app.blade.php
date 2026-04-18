@@ -185,6 +185,11 @@
 
         body {
             font-family: 'Inter', sans-serif;
+            overflow-x: hidden !important;
+        }
+
+        html {
+            overflow-x: hidden !important;
         }
 
         h1,

@@ -106,7 +106,7 @@
                     
                     <!-- Quick Actions (Only for AI messages) -->
                     <template x-if="msg.role === 'ai'">
-                        <div class="absolute -bottom-10 right-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex space-x-1 translate-y-2 group-hover:translate-y-0 text-sans">
+                        <div class="absolute -bottom-10 right-0 flex space-x-1 text-sans">
                             <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                             </button>

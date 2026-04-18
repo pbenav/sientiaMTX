@@ -153,7 +153,9 @@
         <div class="space-y-4">
             @foreach ($messages as $index => $message)
                 @php
-                    $isFirst = $index === 0 && $messages->currentPage() === 1;
+                    $isPaginator = $messages instanceof \Illuminate\Pagination\LengthAwarePaginator;
+                    $currentPage = $isPaginator ? $messages->currentPage() : 1;
+                    $isFirst = $index === 0 && $currentPage === 1;
                     $isCurrentUser = $message->user_id === auth()->id();
                 @endphp
 
@@ -168,31 +170,27 @@
 
                     <!-- Message Bubble -->
                     <div class="flex flex-col {{ $isCurrentUser ? 'items-end' : 'items-start' }} w-full max-w-[85%]">
-                        <div class="flex items-baseline gap-2 mb-1 px-1">
-                            <span
-                                class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $message->user->name }}</span>
-                            @if ($isFirst)
-                                <span
-                                    class="text-[9px] font-bold uppercase tracking-widest bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded-md">OP</span>
-                            @endif
-                            <span class="text-[10px] text-gray-400 font-medium"
-                                title="{{ $message->created_at }}">{{ $message->created_at->diffForHumans() }}</span>
-                            @if ($message->is_edited)
-                                <span class="text-[10px] text-gray-400 italic">(editado)</span>
-                            @endif
-                        </div>
+                        <div class="flex items-center justify-between w-full mb-1 px-1 gap-4">
+                            <div class="flex items-baseline gap-2 min-w-0">
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{{ $message->user->name }}</span>
+                                @if ($isFirst)
+                                    <span class="text-[9px] font-bold uppercase tracking-widest bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded-md shrink-0">OP</span>
+                                @endif
+                                <span class="text-[10px] text-gray-400 font-medium shrink-0" title="{{ $message->created_at }}">{{ $message->created_at->diffForHumans() }}</span>
+                                @if ($message->is_edited)
+                                    <span class="text-[10px] text-gray-400 italic shrink-0">(editado)</span>
+                                @endif
+                            </div>
 
-                        <div class="relative group w-full">
                             <!-- Actions Bar -->
-                            <div id="actions-{{ $message->id }}" 
-                                class="absolute -top-3 {{ $isCurrentUser ? 'right-0' : 'left-0' }} z-10 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <div id="actions-{{ $message->id }}" class="flex items-center gap-1 shrink-0">
                                 @if (!$thread->is_locked)
                                     <!-- Reply -->
                                     <button type="button"
                                         onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
-                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                        class="p-1.5 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                                         title="Responder citando">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
                                         </svg>
                                     </button>
@@ -201,23 +199,23 @@
                                     @if ($isCurrentUser)
                                         <button type="button"
                                             onclick="editMessage({{ $message->id }}, `{{ addslashes($message->content) }}`)"
-                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                                             title="Editar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
                                     @endif
 
-                                     <!-- Ask AI -->
-                                     <button type="button"
-                                         @click="$dispatch('ai:set-context', { messageId: {{ $message->id }}, userName: '{{ addslashes($message->user->name) }}' })"
-                                         class="p-1.5 text-gray-400 hover:text-indigo-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
-                                         title="Preguntar a Ax.ia sobre esto">
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                         </svg>
-                                     </button>
+                                    <!-- Ask AI -->
+                                    <button type="button"
+                                        @click="$dispatch('ai:set-context', { messageId: {{ $message->id }}, userName: '{{ addslashes($message->user->name) }}' })"
+                                        class="p-1.5 text-gray-400 hover:text-indigo-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
+                                        title="Preguntar a Ax.ia sobre esto">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </button>
 
                                     <!-- Delete -->
                                     @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
@@ -227,9 +225,9 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                                                 title="Eliminar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
@@ -237,7 +235,9 @@
                                     @endif
                                 @endif
                             </div>
+                        </div>
 
+                        <div class="relative group w-full">
                             <!-- View Mode -->
                             <div id="message-view-{{ $message->id }}"
                                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }}">
@@ -273,9 +273,11 @@
                 </div>
             @endforeach
 
-            <div class="mt-8">
-                {{ $messages->links() }}
-            </div>
+            @if($messages instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                <div class="mt-8">
+                    {{ $messages->links() }}
+                </div>
+            @endif
 
             <!-- Reply Box -->
             @if (!$thread->is_locked)
