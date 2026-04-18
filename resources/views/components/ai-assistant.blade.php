@@ -100,30 +100,44 @@
         <!-- Messages Area -->
         <div class="flex-1 p-6 overflow-y-auto flex flex-col space-y-6 bg-gray-50/10 dark:bg-gray-950/20" id="ai-chat-messages">
             <template x-for="(msg, index) in messages" :key="index">
-                <div :class="msg.role === 'user' ? 'self-end bg-indigo-600 text-white rounded-3xl rounded-tr-none shadow-indigo-500/20' : 'self-start bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 rounded-3xl rounded-tl-none shadow-black/5 border border-gray-100 dark:border-gray-700/50'" class="px-5 py-3.5 max-w-[90%] text-sm relative group shadow-xl transition-all">
-                    <div x-html="renderMarkdown(msg.content)" 
-                         :class="msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert text-gray-800 dark:text-gray-100'" 
-                         class="leading-relaxed prose prose-sm max-w-none"></div>
-                    
-                    <!-- Quick Actions (Only for AI messages) -->
-                    <template x-if="msg.role === 'ai'">
-                        <div class="absolute -bottom-10 right-0 flex space-x-1 text-sans">
-                            <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                            </button>
-                            @if(auth()->user()->google_token)
-                            <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="Guardar en Google Drive">
-                                <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
-                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
-                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
-                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
-                                </svg>
-                            </button>
-                            @endif
+                <div class="flex flex-col w-full">
+                    <!-- Event / System Message -->
+                    <template x-if="msg.role === 'system'">
+                        <div class="self-center px-4 py-1.5 bg-gray-100 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] my-2 mb-4 flex items-center gap-2 shadow-sm">
+                            <svg class="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span x-html="renderMarkdown(msg.content)"></span>
+                        </div>
+                    </template>
+
+                    <!-- Bubble Message (User/AI) -->
+                    <template x-if="msg.role !== 'system'">
+                        <div :class="msg.role === 'user' ? 'self-end bg-indigo-600 text-white rounded-3xl rounded-tr-none shadow-indigo-500/20' : 'self-start bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 rounded-3xl rounded-tl-none shadow-black/5 border border-gray-100 dark:border-gray-700/50'" 
+                             class="px-5 py-3.5 max-w-[90%] text-sm relative group shadow-xl transition-all">
+                            <div x-html="renderMarkdown(msg.content)" 
+                                 :class="msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert text-gray-800 dark:text-gray-100'" 
+                                 class="leading-relaxed prose prose-sm max-w-none"></div>
                             
-                            <button @click="transferToTask(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-violet-600" title="Inyectar en tarea">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-                            </button>
+                            <!-- Quick Actions (Only for AI messages) -->
+                            <template x-if="msg.role === 'ai'">
+                                <div class="absolute -bottom-10 right-0 flex space-x-1 text-sans">
+                                    <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                    </button>
+                                    @if(auth()->user()->google_token)
+                                    <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="Guardar en Google Drive">
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
+                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                            <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                            <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                        </svg>
+                                    </button>
+                                    @endif
+                                    
+                                    <button @click="transferToTask(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-violet-600" title="Inyectar en tarea">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                                    </button>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -196,17 +210,34 @@
             setContext(detail) {
                 this.messageId = detail.messageId;
                 this.open = true;
+                
+                // Add a system feedback message
+                this.messages.push({ 
+                    role: 'system', 
+                    content: `Inyectando contexto: comentario de **${detail.userName}**`
+                });
+
                 this.input = `Háblame del comentario de ${detail.userName}...`;
                 
-                // Focus the input
+                // Focus and SELECT the input
                 this.$nextTick(() => {
                     const input = this.$el.querySelector('input[type="text"]');
-                    if (input) input.focus();
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
                 });
             },
 
             analyzeFile(detail) {
                 this.open = true;
+                
+                // Add a system feedback message
+                this.messages.push({ 
+                    role: 'system', 
+                    content: `📁 **Archivo inyectado:** ${detail.fileName}`
+                });
+
                 this.input = `Analiza el archivo "${detail.fileName}" y hazme un resumen de su contenido relevante para esta tarea.`;
                 
                 if (detail.taskId) this.taskId = detail.taskId;
@@ -215,9 +246,13 @@
                 if (detail.autoSubmit) {
                     this.$nextTick(() => this.sendMessage());
                 } else {
+                    // Focus and SELECT the input
                     this.$nextTick(() => {
                         const input = this.$el.querySelector('input[type="text"]');
-                        if (input) input.focus();
+                        if (input) {
+                            input.focus();
+                            input.select();
+                        }
                     });
                 }
             },
