@@ -202,6 +202,7 @@
             
             teamId: {{ $teamId ?: 'null' }},
             taskId: {{ $taskId ?: 'null' }},
+            attachmentId: null,
             threadId: {{ $threadId ?: 'null' }},
             messageId: {{ $messageId ?: 'null' }},
             bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
@@ -209,6 +210,7 @@
 
             setContext(detail) {
                 this.messageId = detail.messageId;
+                this.attachmentId = null; // Clear attachment when setting forum context
                 this.open = true;
                 
                 // Add a system feedback message
@@ -231,6 +233,8 @@
 
             analyzeFile(detail) {
                 this.open = true;
+                this.attachmentId = detail.fileId;
+                this.messageId = null; // Clear forum context
                 
                 // Add a system feedback message
                 this.messages.push({ 
@@ -281,7 +285,7 @@
                 if (!confirm('¿Seguro que quieres borrar todo el historial del chat?')) return;
                 
                 try {
-                    await fetch('{{ route('ai.clear-history') }}', {
+                    await fetch('{{ route('ai.history') }}', {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -290,6 +294,7 @@
                     this.messages = [
                         { role: 'ai', content: 'Historial borrado. ¡Empecemos de cero! ¿En qué puedo ayudarte?' }
                     ];
+                    this.attachmentId = null; // Clear attachment context on reset
                 } catch (error) {
                     console.error('Error clearing history:', error);
                 }
@@ -363,6 +368,7 @@
                             prompt: userText,
                             team_id: this.teamId,
                             task_id: this.taskId,
+                            attachment_id: this.attachmentId,
                             forum_thread_id: this.threadId,
                             forum_message_id: this.messageId
                         })

@@ -32,6 +32,7 @@ class AiChatController extends Controller
             'prompt' => 'required|string|max:2000',
             'team_id' => 'nullable|integer|exists:teams,id',
             'task_id' => 'nullable|integer|exists:tasks,id',
+            'attachment_id' => 'nullable|integer|exists:task_attachments,id',
             'forum_thread_id' => 'nullable|integer|exists:forum_threads,id',
             'forum_message_id' => 'nullable|integer|exists:forum_messages,id'
         ]);
@@ -53,6 +54,13 @@ class AiChatController extends Controller
             $task = \App\Models\Task::find($request->task_id);
             if ($task) {
                 $aiAssistant->withTaskContext($task);
+            }
+        }
+
+        if ($request->attachment_id) {
+            $attachment = \App\Models\TaskAttachment::find($request->attachment_id);
+            if ($attachment) {
+                $aiAssistant->withAttachmentContext($attachment);
             }
         }
 

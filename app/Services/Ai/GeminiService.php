@@ -11,6 +11,7 @@ class GeminiService implements AiAssistantInterface
 {
     protected ?User $user = null;
     protected ?\App\Models\Task $taskContext = null;
+    protected ?\App\Models\TaskAttachment $attachmentContext = null;
     protected ?\App\Models\ForumThread $threadContext = null;
     protected ?\App\Models\ForumMessage $messageContext = null;
     protected string $apiKey = '';
@@ -27,6 +28,7 @@ class GeminiService implements AiAssistantInterface
     {
         $this->user = $user;
         $this->taskContext = null; // Clear context on brand new session
+        $this->attachmentContext = null;
         $this->threadContext = null;
         $this->messageContext = null;
         
@@ -52,6 +54,12 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function withAttachmentContext(\App\Models\TaskAttachment $attachment): self
+    {
+        $this->attachmentContext = $attachment;
+        return $this;
+    }
+
     public function withForumContext(\App\Models\ForumThread $thread, ?\App\Models\ForumMessage $message = null): self
     {
         $this->threadContext = $thread;
@@ -62,18 +70,47 @@ class GeminiService implements AiAssistantInterface
     public function generateText(string $prompt): string
     {
         $finalPrompt = $prompt;
+        $contextInfo = "";
 
         if ($this->taskContext) {
-            $contextInfo = "CONTEXTO DE LA TAREA ACTUAL:\n";
+            $contextInfo .= "CONTEXTO DE LA TAREA ACTUAL:\n";
             $contextInfo .= "- Título: {$this->taskContext->title}\n";
             $contextInfo .= "- Descripción: " . ($this->taskContext->description ?: 'N/A') . "\n";
             $contextInfo .= "- Equipo: " . ($this->taskContext->team->name ?? 'N/A') . "\n";
             $contextInfo .= "- Estado: " . ($this->taskContext->status ?? 'pending') . "\n";
             $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
+        }
+
+        if ($this->attachmentContext) {
+            $contextInfo .= "\nCONTEXTO DEL ARCHIVO ADJUNTO:\n";
+            $contextInfo .= "- Nombre: {$this->attachmentContext->file_name}\n";
+            $contextInfo .= "- Tipo: {$this->attachmentContext->mime_type}\n";
+            $contextInfo .= "- Tamaño: " . number_format($this->attachmentContext->file_size / 1024, 2) . " KB\n";
+            
+            if ($this->attachmentContext->storage_provider === 'google') {
+                $contextInfo .= "- Fuente: Google Drive\n";
+                $contextInfo .= "- Enlace de consulta: {$this->attachmentContext->web_view_link}\n";
+                $contextInfo .= "- Instrucción: Analiza el contenido de este enlace si tienes capacidad para ello.\n";
+            } else {
+                $contextInfo .= "- Fuente: Almacenamiento Local (Servidor Sientia)\n";
+                // If it's a text file, try to read the first 2000 chars
+                if (str_contains($this->attachmentContext->mime_type, 'text/') || in_array($this->attachmentContext->mime_type, ['application/json', 'application/xml'])) {
+                    try {
+                        $content = \Illuminate\Support\Facades\Storage::disk('public')->get($this->attachmentContext->file_path);
+                        $contextInfo .= "- Contenido (fragmento): " . mb_substr($content, 0, 3000) . "\n";
+                    } catch (\Exception $e) {
+                        $contextInfo .= "- Contenido: No se pudo leer el archivo local.\n";
+                    }
+                }
+            }
+        }
+
+        if ($contextInfo) {
             $contextInfo .= "\nREGLAS CRÍTICAS DE RESPUESTA:\n";
             $contextInfo .= "1. Puedes saludar y explicar cosas brevemente.\n";
             $contextInfo .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD].\n";
             $contextInfo .= "3. NO incluyas introducciones ni despedidas dentro de las etiquetas [PAYLOAD]. Ese bloque debe estar 'limpio de polvo y paja'.\n";
+            $contextInfo .= "4. Si se te ha proporcionado un archivo, úsalo como fuente principal de verdad para tu respuesta.\n";
             $contextInfo .= "\nINSTRUCCIÓN DEL USUARIO: {$prompt}\n";
             
             $finalPrompt = "Eres Ax.ia, el asistente de Sientia MTX. Usa siempre [PAYLOAD] para el contenido técnico inyectable.\n\n" . $contextInfo;

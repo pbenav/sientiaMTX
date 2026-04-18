@@ -13,6 +13,11 @@ interface AiAssistantInterface
      * Set the task context for the next generation.
      */
     public function withTaskContext(\App\Models\Task $task): self;
+
+    /**
+     * Set an attachment context for the next generation.
+     */
+    public function withAttachmentContext(\App\Models\TaskAttachment $attachment): self;
     
     /**
      * Set the forum context (thread and optional message context).
