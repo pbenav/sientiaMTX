@@ -1,7 +1,7 @@
 @props(['user' => auth()->user(), 'teamId' => null, 'taskId' => null, 'threadId' => null, 'messageId' => null])
 
 <div x-data="sientiaAiAssistant()" 
-     class="fixed z-[100] flex flex-col items-start font-sans bottom-32 sm:bottom-24 left-4 pointer-events-none"
+     class="fixed z-[9999] flex flex-col items-start font-sans bottom-32 sm:bottom-24 left-4 pointer-events-none"
      :style="`transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
      @mousemove.window="drag($event)"
      @touchmove.window="drag($event)"
@@ -570,7 +570,6 @@
                         Swal.fire('Error', 'Problema de conexión con el servidor.', 'error');
                     }
                 }
-            }
             }
         }));
     });
