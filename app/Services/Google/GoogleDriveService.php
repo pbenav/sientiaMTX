@@ -222,4 +222,54 @@ class GoogleDriveService
 
         return $create->json('id');
     }
+
+    /**
+     * Get the content of a file from Google Drive
+     */
+    public function getFileContent(User $user, string $fileId, ?int $teamId = null): ?string
+    {
+        $token = $this->getValidToken($user, $teamId);
+        if (!$token) return null;
+
+        try {
+            // 1. Get file metadata to check mimeType
+            $metaResponse = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
+                'fields' => 'mimeType,size'
+            ]);
+            
+            if (!$metaResponse->successful()) return null;
+            
+            $mimeType = $metaResponse->json('mimeType');
+            $size = $metaResponse->json('size', 0);
+
+            // Don't try to read huge files (max 2MB for raw download)
+            if ($size > 2 * 1024 * 1024 && !str_starts_with($mimeType, 'application/vnd.google-apps.')) {
+                return "[Archivo demasiado grande para procesar directamente]";
+            }
+            
+            // 2. Decide how to fetch the content
+            if (str_starts_with($mimeType, 'application/vnd.google-apps.')) {
+                // For Google Docs/Sheets, we MUST use /export
+                $exportMimeType = 'text/plain';
+                if (str_contains($mimeType, 'spreadsheet')) $exportMimeType = 'text/csv';
+                
+                $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}/export", [
+                    'mimeType' => $exportMimeType
+                ]);
+            } else {
+                // For other files, get the media content
+                $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
+                    'alt' => 'media'
+                ]);
+            }
+
+            if ($response->successful()) {
+                return $response->body();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching Google Drive file content: ' . $e->getMessage());
+        }
+
+        return null;
+    }
 }

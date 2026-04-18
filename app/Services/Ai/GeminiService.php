@@ -89,8 +89,20 @@ class GeminiService implements AiAssistantInterface
             
             if ($this->attachmentContext->storage_provider === 'google') {
                 $contextInfo .= "- Fuente: Google Drive\n";
-                $contextInfo .= "- Enlace de consulta: {$this->attachmentContext->web_view_link}\n";
-                $contextInfo .= "- Instrucción: Analiza el contenido de este enlace si tienes capacidad para ello.\n";
+                $contextInfo .= "- Enlace: {$this->attachmentContext->web_view_link}\n";
+                
+                // Try to fetch real content from Drive
+                try {
+                    $driveService = app(\App\Services\Google\GoogleDriveService::class);
+                    $driveContent = $driveService->getFileContent($this->user, $this->attachmentContext->provider_file_id, $this->attachmentContext->task->team_id ?? null);
+                    if ($driveContent) {
+                        $contextInfo .= "- Contenido (extraído): " . mb_substr($driveContent, 0, 5000) . "\n";
+                    } else {
+                        $contextInfo .= "- Contenido: No se pudo extraer el contenido (posible falta de permisos o archivo no compatible).\n";
+                    }
+                } catch (\Exception $e) {
+                    $contextInfo .= "- Contenido: Error al conectar con Google Drive.\n";
+                }
             } else {
                 $contextInfo .= "- Fuente: Almacenamiento Local (Servidor Sientia)\n";
                 // If it's a text file, try to read the first 2000 chars
@@ -101,6 +113,8 @@ class GeminiService implements AiAssistantInterface
                     } catch (\Exception $e) {
                         $contextInfo .= "- Contenido: No se pudo leer el archivo local.\n";
                     }
+                } else {
+                    $contextInfo .= "- Contenido: Lectura directa no soportada para este tipo de archivo ({$this->attachmentContext->mime_type}).\n";
                 }
             }
         }
