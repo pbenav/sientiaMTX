@@ -15,6 +15,9 @@ class TaskController extends Controller
     use HandlesEisenhowerMatrix, AwardsGamification, ManagesTaskDeletion;
     public function index(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $user = auth()->user();
         $isManager = $team->isManager($user);
         
@@ -113,6 +116,9 @@ class TaskController extends Controller
      */
     public function create(Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $allMembers = $team->members; // All members — for owner selector
         // Exclude the current user from assignee list: creator is implicit owner
         // Allow the current user to be assigned as well so they can generate instances for themselves if they wish
@@ -138,6 +144,9 @@ class TaskController extends Controller
      */
     public function store(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -313,6 +322,9 @@ class TaskController extends Controller
      */
     public function show(Team $team, Task $task)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         \Log::info("Visualizando tarea #{$task->id} en equipo #{$team->id} — User: " . auth()->id());
         if (auth()->user()->cannot('view', $task)) {
             \Log::warning("Acceso denegado a tarea #{$task->id} para usuario #" . auth()->id());
@@ -343,6 +355,9 @@ class TaskController extends Controller
      */
     public function edit(Team $team, Task $task)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         if (auth()->user()->cannot('update', $task)) {
             return redirect()->route('teams.tasks.show', [$team, $task])
                 ->with('warning', __('No tienes permisos para modificar esta tarea privada.'));
@@ -374,6 +389,9 @@ class TaskController extends Controller
      */
     public function update(Request $request, Team $team, Task $task)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json(['success' => false, 'message' => __('teams.unauthorized_access')], 403);
+        }
         $this->authorize('update', $task);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -615,6 +633,9 @@ class TaskController extends Controller
      */
     public function destroy(Team $team, Task $task)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $this->authorize('delete', $task);
 
         // Delete from Google Tasks if synced

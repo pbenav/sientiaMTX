@@ -16,6 +16,9 @@ class KanbanController extends Controller
 
     public function index(Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $this->ensureDefaultColumnsExist($team);
 
         $user = auth()->user();
@@ -71,6 +74,9 @@ class KanbanController extends Controller
 
     public function update(Request $request, Team $team, Task $task)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json(['success' => false, 'message' => __('teams.unauthorized_access')], 403);
+        }
         $this->authorize('update', $task);
         $oldStatus = $task->status;
 

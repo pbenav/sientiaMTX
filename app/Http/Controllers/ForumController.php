@@ -16,6 +16,9 @@ class ForumController extends Controller
      */
     public function index(Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $userId = auth()->id();
         $isCoordinator = $team->isCoordinator(auth()->user());
 
@@ -55,6 +58,9 @@ class ForumController extends Controller
      */
     public function store(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'task_id' => 'nullable|exists:tasks,id',
@@ -145,6 +151,9 @@ class ForumController extends Controller
      */
     public function show(Team $team, ForumThread $thread)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         if ($thread->team_id !== $team->id) {
             abort(404);
         }
@@ -160,6 +169,9 @@ class ForumController extends Controller
      */
     public function update(Request $request, Team $team, ForumThread $thread)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         if ($thread->team_id !== $team->id) {
             abort(404);
         }
@@ -190,6 +202,9 @@ class ForumController extends Controller
      */
     public function destroy(Team $team, ForumThread $thread)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         if ($thread->team_id !== $team->id) {
             abort(404);
         }

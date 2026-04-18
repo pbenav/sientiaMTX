@@ -146,6 +146,11 @@ class TeamController extends Controller
 
         $team->update($validated);
 
+        // Si el usuario es administrador y no es miembro del equipo, volvemos a la gestión global
+        if (auth()->user()->is_admin && !$team->members()->where('user_id', auth()->id())->exists()) {
+            return redirect()->route('settings.teams')->with('success', __('teams.updated'));
+        }
+
         return redirect()->route('teams.show', $team)
             ->with('success', __('teams.updated'));
     }
@@ -159,7 +164,8 @@ class TeamController extends Controller
 
         $team->delete();
 
-        return redirect()->route('teams.index')
+        $redirectRoute = auth()->user()->is_admin ? 'settings.teams' : 'teams.index';
+        return redirect()->route($redirectRoute)
             ->with('success', __('teams.deleted'));
     }
 
@@ -405,6 +411,11 @@ class TeamController extends Controller
         if ($coordinatorRole) {
             $team->members()->updateExistingPivot($newOwner->id, ['role_id' => $coordinatorRole->id]);
             $team->members()->updateExistingPivot($oldOwnerId, ['role_id' => $coordinatorRole->id]);
+        }
+
+        // Si el usuario es administrador y no es miembro del equipo, volvemos a la gestión global
+        if (auth()->user()->is_admin && !$team->members()->where('user_id', auth()->id())->exists()) {
+            return redirect()->route('settings.teams')->with('success', __('teams.ownership_transferred'));
         }
 
         return redirect()->route('teams.show', $team)

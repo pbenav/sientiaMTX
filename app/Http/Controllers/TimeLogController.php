@@ -123,6 +123,9 @@ class TimeLogController extends Controller
      */
     public function index(Request $request, \App\Models\Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $user = auth()->user();
         
         $effortLimit = (int) $request->input('effort_limit', 10);

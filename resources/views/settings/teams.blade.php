@@ -94,7 +94,7 @@
                                                 {{ substr($team->name, 0, 2) }}
                                             </div>
                                             <div>
-                                                <a href="{{ route('teams.show', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors">
+                                                <a href="{{ auth()->user()->can('view', $team) ? route('teams.show', $team) : route('teams.edit', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors">
                                                     {{ $team->name }}
                                                 </a>
                                                 <div class="text-[10px] text-gray-400 uppercase font-black tracking-tight mt-0.5">

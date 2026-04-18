@@ -14,6 +14,9 @@ class GanttController extends Controller
      */
     public function index(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
         $members = $team->members()->get();
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
 
@@ -61,6 +64,9 @@ class GanttController extends Controller
      */
     public function data(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json(['error' => __('teams.unauthorized_access')], 403);
+        }
         $tasks = $this->getTaskSet($request, $team);
 
         // Map to Frappe Gantt format

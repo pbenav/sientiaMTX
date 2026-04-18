@@ -113,7 +113,7 @@ class Team extends Model
      */
     public function isManager(User $user): bool
     {
-        return $user->is_admin || $this->isCoordinator($user) || $this->isModerator($user);
+        return $this->isCoordinator($user) || $this->isModerator($user);
     }
 
     /**
