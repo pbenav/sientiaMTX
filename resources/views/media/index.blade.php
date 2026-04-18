@@ -140,9 +140,24 @@
                                             class="block text-[10px] opacity-70">{{ $file->created_at->format('H:i') }}</span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
+                                        <div class="flex items-center justify-end gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                            {{-- Botón de Inyección IA --}}
+                                            <button type="button" 
+                                                @click="$dispatch('ai:analyze-file', { 
+                                                    fileName: '{{ addslashes($file->file_name) }}', 
+                                                    fileId: {{ $file->id }},
+                                                    taskId: {{ $file->task_id ?: 'null' }},
+                                                    autoSubmit: false 
+                                                })"
+                                                class="p-2 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                                                title="Preguntar a la IA sobre este archivo">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </button>
+
                                             <a href="{{ route('media.download', $file) }}"
-                                                class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                                class="p-2 text-gray-400 hover:text-violet-600 dark:text-gray-500/70 dark:hover:text-violet-400 transition-colors"
                                                 title="{{ __('tasks.download') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">

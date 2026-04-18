@@ -632,7 +632,7 @@
                                     </div>
                                 </div>
                                 <div
-                                    class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                     @if($attachment->storage_provider === 'local' && auth()->user()->google_token)
                                         <form action="{{ route('teams.attachments.to-drive', [$team, $attachment]) }}" method="POST" class="inline">
                                             @csrf
@@ -643,6 +643,22 @@
                                             </button>
                                         </form>
                                     @endif
+                                    
+                                    {{-- Botón de Inyección IA --}}
+                                    <button type="button" 
+                                        @click="$dispatch('ai:analyze-file', { 
+                                            fileName: '{{ addslashes($attachment->file_name) }}', 
+                                            fileId: {{ $attachment->id }},
+                                            taskId: {{ $task->id }},
+                                            autoSubmit: false 
+                                        })"
+                                        class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                                        title="Preguntar a la IA sobre este archivo">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </button>
+
                                     <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
                                         target="_blank" rel="noopener noreferrer"
                                         class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"

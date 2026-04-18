@@ -7,7 +7,8 @@
      @touchmove.window="drag($event)"
      @mouseup.window="stopDrag()"
      @touchend.window="stopDrag()"
-     @ai:set-context.window="setContext($event.detail)">
+     @ai:set-context.window="setContext($event.detail)"
+     @ai:analyze-file.window="analyzeFile($event.detail)">
     
     <!-- Chat Window -->
     <div 
@@ -202,6 +203,23 @@
                     const input = this.$el.querySelector('input[type="text"]');
                     if (input) input.focus();
                 });
+            },
+
+            analyzeFile(detail) {
+                this.open = true;
+                this.input = `Analiza el archivo "${detail.fileName}" y hazme un resumen de su contenido relevante para esta tarea.`;
+                
+                if (detail.taskId) this.taskId = detail.taskId;
+
+                // Auto-trigger the analysis if requested
+                if (detail.autoSubmit) {
+                    this.$nextTick(() => this.sendMessage());
+                } else {
+                    this.$nextTick(() => {
+                        const input = this.$el.querySelector('input[type="text"]');
+                        if (input) input.focus();
+                    });
+                }
             },
 
             init() {
