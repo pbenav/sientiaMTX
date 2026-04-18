@@ -13,6 +13,11 @@ interface AiAssistantInterface
      * Set the task context for the next generation.
      */
     public function withTaskContext(\App\Models\Task $task): self;
+    
+    /**
+     * Set the forum context (thread and optional message context).
+     */
+    public function withForumContext(\App\Models\ForumThread $thread, ?\App\Models\ForumMessage $message = null): self;
 
     /**
      * Generate text based on a prompt.

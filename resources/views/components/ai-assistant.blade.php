@@ -1,30 +1,14 @@
-@props(['user' => auth()->user(), 'teamId' => null, 'taskId' => null])
+@props(['user' => auth()->user(), 'teamId' => null, 'taskId' => null, 'threadId' => null, 'messageId' => null])
 
 <div x-data="sientiaAiAssistant()" 
-     class="fixed z-[50] flex flex-col items-start font-sans"
-     :style="`position: fixed; bottom: 6rem; left: 1.5rem; z-index: 50; transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
+     class="fixed z-[100] flex flex-col items-start font-sans bottom-32 sm:bottom-24 left-4 pointer-events-none"
+     :style="`transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
      @mousemove.window="drag($event)"
      @touchmove.window="drag($event)"
      @mouseup.window="stopDrag()"
-     @touchend.window="stopDrag()">
+     @touchend.window="stopDrag()"
+     @ai:set-context.window="setContext($event.detail)">
     
-    <!-- Floating Button -->
-    <button 
-        @mousedown="startDrag($event)" 
-        @touchstart="startDrag($event)" 
-        @click="toggle($event)"
-        class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-xl transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95"
-        :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'"
-        style="touch-action: none;"
-    >
-        <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-        </svg>
-        <svg x-show="open" style="display:none;" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-    </button>
-
     <!-- Chat Window -->
     <div 
         x-show="open" 
@@ -35,7 +19,7 @@
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-90 translate-y-10"
         style="display:none; resize: both; overflow: hidden; min-width: 320px; min-height: 400px;"
-        class="absolute bottom-20 left-0 w-[420px] h-[580px] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5"
+        class="mb-4 w-[350px] sm:w-[420px] h-[580px] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto"
     >
         <!-- Header -->
         <div class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center cursor-default shrink-0 shadow-lg relative z-30">
@@ -173,6 +157,22 @@
             </form>
         </div>
     </div>
+
+    <button 
+        @mousedown="startDrag($event)" 
+        @touchstart="startDrag($event)" 
+        @click="toggle($event)"
+        class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto"
+        :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'"
+        style="touch-action: none;"
+    >
+        <svg x-show="!open" class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        <svg x-show="open" style="display:none;" class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
 </div>
 
 <script>
@@ -187,7 +187,22 @@
             
             teamId: {{ $teamId ?: 'null' }},
             taskId: {{ $taskId ?: 'null' }},
+            threadId: {{ $threadId ?: 'null' }},
+            messageId: {{ $messageId ?: 'null' }},
+            bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
             showHelp: false,
+
+            setContext(detail) {
+                this.messageId = detail.messageId;
+                this.open = true;
+                this.input = `Háblame del comentario de ${detail.userName}...`;
+                
+                // Focus the input
+                this.$nextTick(() => {
+                    const input = this.$el.querySelector('input[type="text"]');
+                    if (input) input.focus();
+                });
+            },
 
             init() {
                 this.getHistory();
@@ -294,7 +309,9 @@
                         body: JSON.stringify({ 
                             prompt: userText,
                             team_id: this.teamId,
-                            task_id: this.taskId
+                            task_id: this.taskId,
+                            forum_thread_id: this.threadId,
+                            forum_message_id: this.messageId
                         })
                     });
                     
@@ -379,7 +396,8 @@
                     inputOptions: {
                         'description': '🎯 Descripción (Reemplazar)',
                         'observations': '📝 Observaciones (Reemplazar)',
-                        'comment': '💬 Comentario de Foro'
+                        'reply': '💬 Publicar en el Foro',
+                        'dom-reply': '✍️ Pegar en caja de respuesta'
                     },
                     inputValidator: (value) => {
                         if (!value) return '¡Selecciona un destino!'
@@ -433,7 +451,40 @@
                             Swal.fire('Error', 'No se pudo completar la transferencia', 'error');
                         }
                     } 
-                    // CASE 2: New Task / Draft (Local Inject via DOM)
+                    // CASE 1.5: Forum Thread (Sync via Server)
+                    else if (this.threadId && (target === 'reply')) {
+                        try {
+                            const response = await fetch('{{ route('ai.transfer_forum', ['team' => $teamId ?? 0, 'thread' => 'THREAD_ID']) }}'.replace('THREAD_ID', this.threadId), {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    content: content,
+                                    target: target
+                                })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                Swal.fire({
+                                    title: '¡Hecho!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Forum transfer error:', error);
+                            Swal.fire('Error', 'No se pudo publicar en el foro', 'error');
+                        }
+                    } 
+                    // CASE 2: New Task / Draft / Forum Box (Local Inject via DOM)
                     else {
                         let cleanContent = content;
                         const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
@@ -443,21 +494,22 @@
                             cleanContent = content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
                         }
 
-                        const element = document.getElementById(target);
+                        let elementId = target === 'dom-reply' ? 'reply-content' : target;
+                        const element = document.getElementById(elementId);
                         if (element) {
                             element.value = cleanContent;
                             // Trigger input event for frameworks like Alpine/Vue/Livewire
                             element.dispatchEvent(new Event('input', { bubbles: true }));
                             
                             Swal.fire({
-                                title: '¡Inyectado!',
+                                title: target === 'dom-reply' ? '¡Procesado!' : '¡Inyectado!',
                                 text: 'El texto se ha pegado en el formulario.',
                                 icon: 'success',
                                 timer: 1500,
                                 showConfirmButton: false
                             });
                         } else {
-                            Swal.fire('Atención', 'No se encontró el campo ' + target + ' en esta página.', 'warning');
+                            Swal.fire('Atención', 'No se encontró el campo correspondiente en esta página.', 'warning');
                         }
                     }
                 }

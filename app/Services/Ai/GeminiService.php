@@ -11,6 +11,8 @@ class GeminiService implements AiAssistantInterface
 {
     protected ?User $user = null;
     protected ?\App\Models\Task $taskContext = null;
+    protected ?\App\Models\ForumThread $threadContext = null;
+    protected ?\App\Models\ForumMessage $messageContext = null;
     protected string $apiKey = '';
     protected string $targetModel = 'gemini-1.5-flash-latest';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -25,6 +27,8 @@ class GeminiService implements AiAssistantInterface
     {
         $this->user = $user;
         $this->taskContext = null; // Clear context on brand new session
+        $this->threadContext = null;
+        $this->messageContext = null;
         
         // Contexto específico o global
         $pref = $user->aiPreferences()->where('team_id', $teamId)->first() 
@@ -48,6 +52,13 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function withForumContext(\App\Models\ForumThread $thread, ?\App\Models\ForumMessage $message = null): self
+    {
+        $this->threadContext = $thread;
+        $this->messageContext = $message;
+        return $this;
+    }
+
     public function generateText(string $prompt): string
     {
         $finalPrompt = $prompt;
@@ -66,6 +77,30 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "\nINSTRUCCIÓN DEL USUARIO: {$prompt}\n";
             
             $finalPrompt = "Eres Ax.ia, el asistente de Sientia MTX. Usa siempre [PAYLOAD] para el contenido técnico inyectable.\n\n" . $contextInfo;
+        }
+
+        if ($this->threadContext) {
+            $contextInfo = "CONTEXTO DEL HILO DEL FORO:\n";
+            $contextInfo .= "- Título: {$this->threadContext->title}\n";
+            $contextInfo .= "- Últimos mensajes para contexto:\n";
+            
+            $recentMessages = $this->threadContext->messages()->latest()->limit(5)->get()->reverse();
+            foreach($recentMessages as $msg) {
+                $contextInfo .= "  * {$msg->user->name}: {$msg->content}\n";
+            }
+
+            if ($this->messageContext) {
+                $contextInfo .= "\nMENSAJE ESPECÍFICO AL QUE SE REFIERE:\n";
+                $contextInfo .= "De {$this->messageContext->user->name}: {$this->messageContext->content}\n";
+            }
+
+            $contextInfo .= "\nREGLAS CRÍTICAS DE RESPUESTA:\n";
+            $contextInfo .= "1. Responde de forma natural al hilo.\n";
+            $contextInfo .= "2. Si propones una respuesta para publicar, enciérrala entre etiquetas [PAYLOAD] y [/PAYLOAD].\n";
+            $contextInfo .= "3. NO incluyas decoraciones dentro de [PAYLOAD].\n";
+            $contextInfo .= "\nINSTRUCCIÓN DEL USUARIO: {$prompt}\n";
+
+            $finalPrompt = "Eres Ax.ia, asistente del foro de Sientia. Usa [PAYLOAD] para respuestas directas inyectables.\n\n" . $contextInfo;
         }
 
         return $this->callGemini($this->targetModel, $finalPrompt);

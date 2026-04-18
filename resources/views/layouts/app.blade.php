@@ -1074,8 +1074,14 @@
             
             $currTask = request()->route('task');
             $currTaskId = $currTask ? (is_object($currTask) ? $currTask->id : $currTask) : null;
+
+            $currThread = request()->route('thread');
+            $currThreadId = $currThread ? (is_object($currThread) ? $currThread->id : $currThread) : null;
+
+            $currMessage = request()->route('message');
+            $currMessageId = $currMessage ? (is_object($currMessage) ? $currMessage->id : $currMessage) : null;
         @endphp
-        <x-ai-assistant :team-id="$currTeamId" :task-id="$currTaskId" />
+        <x-ai-assistant :team-id="$currTeamId" :task-id="$currTaskId" :thread-id="$currThreadId" :message-id="$currMessageId" />
     @endauth
 
     @stack('modals')

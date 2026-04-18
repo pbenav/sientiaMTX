@@ -209,6 +209,16 @@
                                         </button>
                                     @endif
 
+                                     <!-- Ask AI -->
+                                     <button type="button"
+                                         @click="$dispatch('ai:set-context', { messageId: {{ $message->id }}, userName: '{{ addslashes($message->user->name) }}' })"
+                                         class="p-1.5 text-gray-400 hover:text-indigo-500 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+                                         title="Preguntar a Ax.ia sobre esto">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                         </svg>
+                                     </button>
+
                                     <!-- Delete -->
                                     @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
                                         <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}"

@@ -31,7 +31,9 @@ class AiChatController extends Controller
         $request->validate([
             'prompt' => 'required|string|max:2000',
             'team_id' => 'nullable|integer|exists:teams,id',
-            'task_id' => 'nullable|integer|exists:tasks,id'
+            'task_id' => 'nullable|integer|exists:tasks,id',
+            'forum_thread_id' => 'nullable|integer|exists:forum_threads,id',
+            'forum_message_id' => 'nullable|integer|exists:forum_messages,id'
         ]);
 
         $user = $request->user();
@@ -51,6 +53,14 @@ class AiChatController extends Controller
             $task = \App\Models\Task::find($request->task_id);
             if ($task) {
                 $aiAssistant->withTaskContext($task);
+            }
+        }
+
+        if ($request->forum_thread_id) {
+            $thread = \App\Models\ForumThread::find($request->forum_thread_id);
+            if ($thread) {
+                $message = $request->forum_message_id ? \App\Models\ForumMessage::find($request->forum_message_id) : null;
+                $aiAssistant->withForumContext($thread, $message);
             }
         }
         
@@ -135,6 +145,33 @@ class AiChatController extends Controller
             return response()->json(['success' => true, 'message' => 'Respuesta publicada como comentario.']);
         }
 
+        return response()->json(['success' => false, 'message' => 'Destino no válido.']);
+    }
+
+    public function transferForumContent(Request $request, \App\Models\Team $team, \App\Models\ForumThread $thread)
+    {
+        $request->validate([
+            'content' => 'required|string',
+            'target' => 'required|string|in:reply,description'
+        ]);
+
+        $content = $request->content;
+
+        if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
+            $content = trim($matches[1]);
+        } else {
+            $content = str_replace(['[PAYLOAD]', '[/PAYLOAD]'], '', $content);
+        }
+
+        if ($request->target === 'reply') {
+            $thread->messages()->create([
+                'user_id' => $request->user()->id,
+                'content' => $content
+            ]);
+            return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo.']);
+        }
+
+        // Potential target to update thread title/op if needed, but for now just reply
         return response()->json(['success' => false, 'message' => 'Destino no válido.']);
     }
 }
