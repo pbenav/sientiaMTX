@@ -61,6 +61,18 @@
             </form>
         </div>
 
+        <!-- Legend for badges -->
+        <div class="flex items-center gap-6 mb-6 px-1 text-[10px] font-black uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">
+            <div class="flex items-center gap-2 group cursor-help" title="{{ __('tasks.distributed_hint') }}">
+                <span class="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700/50 shadow-sm transition-transform group-hover:scale-110">M</span>
+                <span>{{ __('tasks.plan_master') }}</span>
+            </div>
+            <div class="flex items-center gap-2 group cursor-help" title="{{ __('tasks.personal_instance_description') }}">
+                <span class="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/50 shadow-sm transition-transform group-hover:scale-110">TE</span>
+                <span>{{ __('tasks.your_execution') }}</span>
+            </div>
+        </div>
+
         <!-- Horizontal Urgency labels -->
         <div
             class="flex justify-between mb-4 sm:mb-8 ml-10 sm:ml-16 mr-2 sm:mr-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-400 dark:text-gray-500">
