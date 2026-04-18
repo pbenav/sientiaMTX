@@ -394,14 +394,6 @@
                                      <span class="font-bold">{{ __('navigation.settings') }}</span>
                                  </a>
                              @endcan
-
-                              {{-- Tablet Utilities Fallback inside menu --}}
-                              <div class="flex flex-wrap items-center justify-center gap-2 px-4 py-3 mt-1 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                                  @auth @include('layouts.partials.workday-timer') @endauth
-                                  @include('layouts.partials.theme-toggle')
-                                  @include('layouts.partials.layout-toggle')
-                                  @include('layouts.partials/language-toggle')
-                              </div>
                              @endauth
                         </div>
                     </div>
