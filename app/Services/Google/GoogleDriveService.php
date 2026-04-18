@@ -232,9 +232,9 @@ class GoogleDriveService
         if (!$token) return null;
 
         try {
-            // 1. Get file metadata to check mimeType
+            // 1. Get file metadata to check mimeType and shortcuts
             $metaResponse = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
-                'fields' => 'mimeType,size,name',
+                'fields' => 'mimeType,size,name,shortcutDetails',
                 'supportsAllDrives' => 'true'
             ]);
             
@@ -246,6 +246,16 @@ class GoogleDriveService
             $mimeType = $metaResponse->json('mimeType');
             $size = $metaResponse->json('size', 0);
             $name = $metaResponse->json('name', 'unknown');
+
+            // Handle Shortcuts
+            if ($mimeType === 'application/vnd.google-apps.shortcut') {
+                $targetId = $metaResponse->json('shortcutDetails.targetId');
+                Log::info("Resolving shortcut '{$name}' -> target: {$targetId}");
+                if ($targetId) {
+                    return $this->getFileContent($user, $targetId, $teamId);
+                }
+                return null;
+            }
 
             Log::info("Attempting to fetch Google Drive file: {$name} ({$mimeType}, {$size} bytes)");
 
