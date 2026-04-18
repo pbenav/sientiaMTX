@@ -87,15 +87,23 @@
         </template>
     </button>
 
-    <!-- Contador Digital y Tarea Activa (Aparece a la derecha) -->
+    <!-- Contador Digital y Tarea Activa (Compacto y responsivo) -->
     <div x-show="working" x-cloak
-         class="flex items-center gap-2 px-2.5 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl transition-all duration-300">
-        <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-        <span class="text-[10px] font-mono font-bold text-violet-700 dark:text-violet-300" x-text="formatTime(elapsed)"></span>
+         class="flex items-center gap-1.5 px-2 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl transition-all duration-300 min-w-0">
+        <div class="flex items-center gap-1.5 shrink-0">
+            <div class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+            <span class="text-[10px] sm:text-xs font-mono font-black text-violet-700 dark:text-violet-300" x-text="formatTime(elapsed)"></span>
+        </div>
+        
         <template x-if="activeTaskTitle">
-            <div class="flex items-center gap-1.5 pl-2 ml-2 border-l border-violet-200 dark:border-violet-700">
-                <span class="text-[9px] uppercase tracking-wider text-violet-400 dark:text-violet-500 font-bold">{{ __('tasks.working_on') }}:</span>
-                <span class="text-[10px] font-bold text-violet-700 dark:text-violet-300 truncate max-w-[120px]" x-text="activeTaskTitle"></span>
+            <div class="flex items-center gap-1.5 pl-1.5 ml-1.5 border-l border-violet-200 dark:border-violet-700 min-w-0 overflow-hidden">
+                <!-- Icono en lugar de texto largo en tablets -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-violet-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                <span class="text-[10px] font-bold text-violet-700 dark:text-violet-300 truncate max-w-[60px] sm:max-w-[100px] lg:max-w-[150px]" 
+                      :title="activeTaskTitle" 
+                      x-text="activeTaskTitle"></span>
             </div>
         </template>
     </div>
