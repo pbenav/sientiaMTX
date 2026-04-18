@@ -96,13 +96,17 @@ class GeminiService implements AiAssistantInterface
                 
                 try {
                     $driveService = app(\App\Services\Google\GoogleDriveService::class);
-                    $driveContent = $driveService->getFileContent($this->user, $this->attachmentContext->provider_file_id, $this->attachmentContext->task->team_id ?? null);
+                    $driveResult = $driveService->getFileContent($this->user, $this->attachmentContext->provider_file_id, $this->attachmentContext->task->team_id ?? null);
                     
-                    if ($driveContent) {
-                        if ($canSendAsMedia) {
+                    if ($driveResult) {
+                        $driveContent = $driveResult['content'];
+                        $realMime = $driveResult['mimeType'];
+                        
+                        // Recalculate if it's multimodal based on the REAL mime type (essential for shortcuts!)
+                        if ($this->isMultimodalMime($realMime)) {
                             $parts[] = [
                                 'inline_data' => [
-                                    'mime_type' => $mime,
+                                    'mime_type' => $realMime,
                                     'data' => base64_encode($driveContent)
                                 ]
                             ];

@@ -224,9 +224,9 @@ class GoogleDriveService
     }
 
     /**
-     * Get the content of a file from Google Drive
+     * Get the content and mimeType of a file from Google Drive
      */
-    public function getFileContent(User $user, string $fileId, ?int $teamId = null): ?string
+    public function getFileContent(User $user, string $fileId, ?int $teamId = null): ?array
     {
         $token = $this->getValidToken($user, $teamId);
         if (!$token) return null;
@@ -262,7 +262,7 @@ class GoogleDriveService
             // Don't try to read huge files (max 10MB for Vision, but let's be safe at 5MB)
             if ($size > 5 * 1024 * 1024 && !str_starts_with($mimeType, 'application/vnd.google-apps.')) {
                 Log::warning("File {$name} is too large for AI processing: {$size} bytes");
-                return "[Archivo demasiado grande para procesar directamente]";
+                return ['content' => "[Archivo demasiado grande para procesar directamente]", 'mimeType' => 'text/plain'];
             }
             
             // 2. Decide how to fetch the content
@@ -275,6 +275,7 @@ class GoogleDriveService
                     'mimeType' => $exportMimeType,
                     'supportsAllDrives' => 'true'
                 ]);
+                $mimeType = $exportMimeType; // The result is now plain text or CSV
             } else {
                 // For other files, get the media content
                 $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
@@ -285,7 +286,10 @@ class GoogleDriveService
 
             if ($response->successful()) {
                 Log::info("Successfully fetched content for {$name}");
-                return $response->body();
+                return [
+                    'content' => $response->body(),
+                    'mimeType' => $mimeType
+                ];
             }
 
             Log::error("Google Drive Content Fetch Error for {$name} ({$fileId}): " . $response->status() . " - " . $response->body());
