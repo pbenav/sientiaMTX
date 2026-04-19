@@ -283,10 +283,10 @@
                     </div>
                         <div class="relative w-full group h-[350px]">
                             <div id="resilience-heatmap" class="h-full w-full rounded-b-3xl"></div>
-                            <div class="absolute top-3 right-3 z-[400] bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm px-2 py-1 rounded-lg border border-gray-100 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="absolute top-3 right-3 z-[5] bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm px-2 py-1 rounded-lg border border-gray-100 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                                 <p class="text-[8px] font-black text-gray-500 uppercase tracking-tighter">Ctrl + 🖱️ Zoom</p>
                             </div>
-                            <div class="absolute bottom-3 left-3 z-[400] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="absolute bottom-3 left-3 z-[5] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
                             <div class="flex items-center gap-2">
                                 <div class="w-16 h-1 rounded-full bg-gradient-to-r from-blue-400 via-emerald-400 to-rose-400"></div>
                                 <span class="text-[7px] font-black text-gray-400 uppercase">Resiliencia</span>
@@ -459,8 +459,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <style>
-        .custom-div-icon { z-index: 1000 !important; }
-        .leaflet-popup { z-index: 2000 !important; }
+        #resilience-heatmap { z-index: 0 !important; }
+        .leaflet-pane { z-index: 1 !important; }
+        .leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+        .custom-div-icon { z-index: 10 !important; }
+        .leaflet-popup { z-index: 20 !important; }
     </style>
     
     <script>
