@@ -19,7 +19,7 @@
     {{-- Root: Team list --}}
     <div class="flex items-center min-w-0 flex-shrink">
         <a href="{{ route('teams.index') }}"
-            class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors truncate max-w-[3rem] sm:max-w-[8rem]"
+            class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors truncate max-w-[5rem] sm:max-w-[8rem]"
             title="{{ __('navigation.my_teams') ?? 'Mis equipos' }}">
             {{ __('navigation.my_teams') ?? 'Mis equipos' }}
         </a>
@@ -34,7 +34,7 @@
     {{-- Current team --}}
     <div class="flex items-center min-w-0 flex-shrink">
         <a href="{{ route('teams.show', $team) }}"
-            class="text-violet-600 dark:text-violet-400 font-bold hover:underline truncate max-w-[5rem] sm:max-w-[12rem]"
+            class="text-violet-600 dark:text-violet-400 font-bold hover:underline truncate max-w-[8rem] sm:max-w-[12rem]"
             title="{{ $team->name }}">
             {{ $team->name }}
         </a>
@@ -49,7 +49,7 @@
 
         {{-- Current page --}}
         <div class="flex items-center min-w-0">
-            <span class="text-gray-500 dark:text-gray-400 truncate max-w-[6rem] sm:max-w-[15rem]" aria-current="page">
+            <span class="text-gray-500 dark:text-gray-400 truncate max-w-[10rem] sm:max-w-[15rem]" aria-current="page">
                 {{ $currentPageLabel }}
             </span>
         </div>

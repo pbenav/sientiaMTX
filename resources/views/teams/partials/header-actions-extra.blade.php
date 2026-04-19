@@ -4,16 +4,39 @@
 
 @if ($layout === 'vertical')
     <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- Compact selectors for vertical layout header -->
+        <!-- System Tools: Grouped on mobile, individual on desktop -->
         <div class="flex items-center gap-1">
-            @include('layouts.partials.theme-toggle')
-            @include('layouts.partials.layout-toggle')
-            @include('layouts.partials.zoom-controls')
-            @include('layouts.partials.language-toggle')
+            <!-- Desktop View: All tools visible -->
+            <div class="hidden lg:flex items-center gap-1">
+                @include('layouts.partials.theme-toggle')
+                @include('layouts.partials.layout-toggle')
+                @include('layouts.partials.zoom-controls')
+                @include('layouts.partials.language-toggle')
+            </div>
 
-            <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1 shrink-0"></div>
+            <!-- Mobile View: Single dropdown for all system tools -->
+            <div class="lg:hidden relative" x-data="{ open: false }">
+                <button @click="open = !open" @click.outside="open = false"
+                    class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg transition-all shadow-sm"
+                    title="{{ __('Ajustes de sistema') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                </button>
+                <div x-show="open" x-transition
+                    class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 p-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.theme-toggle')</div>
+                        <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.layout-toggle')</div>
+                        <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.zoom-controls')</div>
+                        <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.language-toggle')</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden sm:block h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1 shrink-0"></div>
             @auth
-                <div class="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
+                <div class="hidden sm:block h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
             
             <!-- Notifications Bell -->
             <a href="{{ route('notifications.index') }}" class="relative p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-500/10" title="{{ __('Notificaciones') }}">

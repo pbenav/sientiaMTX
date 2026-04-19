@@ -11,19 +11,19 @@
     @endphp
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-            <div class="flex items-start gap-4 min-w-0 flex-1">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
                 <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    class="mt-1 p-2 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
                     title="{{ __('navigation.back') ?? 'Volver' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
+                    <h1 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
                         {{ __('tasks.detail') }}
                     </h1>
                 </div>
@@ -39,7 +39,7 @@
         <div class="flex items-center gap-2 flex-wrap shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
             @can('update', $task)
                 <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
-                    class="shrink-0 flex items-center gap-1.5 text-xs bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -52,7 +52,7 @@
                     @csrf
                     <button type="submit"
                         title="{{ $task->google_task_id ? __('google.sync_tasks') : __('google.export_tasks') }}"
-                        class="shrink-0 flex items-center gap-1.5 text-xs {{ $task->google_task_id ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400' }} px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
+                        class="shrink-0 flex items-center gap-1.5 text-xs {{ $task->google_task_id ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400' }} px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
                         @if ($task->google_task_id)
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2.5">
@@ -75,7 +75,7 @@
                     @csrf
                     <button type="submit"
                         title="{{ $task->google_calendar_event_id ? __('google.calendar_remove') : __('google.calendar_export') }}"
-                        class="shrink-0 flex items-center gap-1.5 text-xs {{ $task->google_calendar_event_id ? 'bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400' : 'bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/10 text-emerald-600/70 dark:text-emerald-400/70' }} px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
+                        class="shrink-0 flex items-center gap-1.5 text-xs {{ $task->google_calendar_event_id ? 'bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400' : 'bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/10 text-emerald-600/70 dark:text-emerald-400/70' }} px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -107,7 +107,7 @@
                     @method('DELETE')
                     <button type="button"
                         onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')"
-                        class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
+                        class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round"

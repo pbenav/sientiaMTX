@@ -784,45 +784,52 @@
         </div>
     @endif
 
-    <!-- Page content -->
-    <main id="mainContent" class="px-2 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8 overflow-x-hidden"
-        :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72 w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto' : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto') : 'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'">
-
-        <!-- Header for Vertical Layout -->
-        <div x-show="layout === 'vertical'" x-cloak
-            class="sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-4 mb-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
-            <div class="mx-auto max-w-none lg:{{ $maxWidth }}">
-                <div class="flex items-start justify-between gap-6">
-                    <div class="flex items-start gap-4 min-w-0">
-                        <!-- Burger Menu Wrapper -->
-                        <div class="flex items-center shrink-0 pt-1">
-                            <!-- Toggle button ONLY when closed -->
-                            <button x-show="!sidebarOpen" @click="sidebarOpen = true"
-                                class="p-2 -mt-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all shadow-sm"
-                                title="{{ __('Open Sidebar') }}" x-cloak>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- Main Header Slot (Breadcrumb, Title, Switchers) -->
-                        <div class="flex-1 min-w-0 prose-headers:m-0">
-                            @if (isset($header))
-                                {{ $header }}
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- System Tools (Top Right - same line) -->
-                    <div class="flex items-center gap-1.5 shrink-0 pt-1">
-                        @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
-                    </div>
+    <!-- Header for Vertical Layout -->
+    <div x-show="layout === 'vertical'" x-cloak
+        class="sticky top-0 z-20 w-full bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300"
+        :class="sidebarOpen ? 'lg:pl-72' : ''">
+        <div class="w-full">
+            <!-- Row 1: Global Navigation & System Tools -->
+            <div class="flex items-center justify-between px-2 sm:px-6 lg:px-8 py-2 border-b border-gray-100 dark:border-gray-800/50">
+                <div class="flex items-center shrink-0">
+                    <!-- Toggle button -->
+                    <button x-show="!sidebarOpen" @click="sidebarOpen = true"
+                        class="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all shadow-sm"
+                        title="{{ __('Open Sidebar') }}" x-cloak>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    @if(isset($team))
+                        <span class="ml-2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest hidden sm:block">{{ $team->name }}</span>
+                    @endif
                 </div>
+
+                <!-- System Tools (Top Right) -->
+                <div class="flex items-center gap-1.5 shrink-0">
+                    @include('teams.partials.header-actions-extra', ['layout' => 'vertical'])
+                </div>
+            </div>
+
+            <!-- Row 2: Page specific content (Slot) - Takes 100% width -->
+            <div class="w-full px-2 sm:px-6 lg:px-8 py-3">
+                <div class="min-w-0 prose-headers:m-0">
+                    @if (isset($header))
+                        {{ $header }}
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Page content -->
+    <main id="mainContent" class="px-3 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8 overflow-x-hidden"
+        :class="[
+            layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : '',
+            'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'
+        ]">
 
         @if (isset($header) && $layout === 'horizontal')
             <div class="mb-6">
