@@ -56,7 +56,7 @@
                 <button @click="showHelp = !showHelp" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Ayuda">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </button>
-                <button @click="open = false" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <button @click="toggle()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -281,11 +281,9 @@
             pendingFile: null,
 
             init() {
-                console.log('Ax.ia: Iniciando componente...', { teamId: this.teamId });
                 this.loadHistory();
-                if (localStorage.getItem('ai_assistant_open') === '1') {
-                    this.open = true;
-                }
+                // Persistencia desactivada por petición del usuario
+                // if (localStorage.getItem('ai_assistant_open') === '1') { this.open = true; }
             },
 
             async loadHistory() {
@@ -425,10 +423,14 @@
                 
                 if (!this.open) {
                     localStorage.setItem('ai_assistant_open', '0');
-                }
-                if(this.open) {
-                    this.scrollToBottom();
+                } else {
                     localStorage.setItem('ai_assistant_open', '1');
+                    this.$nextTick(() => {
+                        this.scrollToBottom();
+                        // Find the text input and focus it
+                        const input = this.$el.querySelector('input[type="text"]');
+                        if (input) input.focus();
+                    });
                 }
             },
 
