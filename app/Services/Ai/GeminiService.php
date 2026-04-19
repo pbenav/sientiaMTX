@@ -204,20 +204,18 @@ class GeminiService implements AiAssistantInterface
         }
 
         $systemInstruction = "Eres Ax.ia, asistente experto de Sientia MTX (Motor: {$this->targetModel}).\n\n";
-        $systemInstruction .= "REGLAS CRÍTICAS DE RESPUESTA:\n";
-        $systemInstruction .= "1. IDIOMA: Responde siempre en el mismo idioma que el usuario.\n";
-        $systemInstruction .= "2. FORMALIDAD: Tono profesional, humano y directo. Sin meta-charla ni borradores.\n";
-        $systemInstruction .= "3. INYECCIÓN TÉCNICA: Si el usuario pide redactar, resumir o crear pasos, coloca el RESULTADO FINAL (y solo el resultado) entre etiquetas [PAYLOAD] y [/PAYLOAD].\n";
-        $systemInstruction .= "4. FORMATO PAYLOAD: El contenido dentro de [PAYLOAD] debe ser siempre Markdown elegante y estructurado. NUNCA incluyas metadatos, estadísticas o datos del dashboard dentro del payload.\n\n";
+        $systemInstruction .= "REGLAS CRÍTICAS:\n";
+        $systemInstruction .= "1. ACCIÓN: Tu tarea es TRANSFORMAR la información. NUNCA te limites a repetir el contexto que se te proporciona. Si el usuario te pide redactar o mejorar algo, aplica tu inteligencia para crear una versión superior.\n";
+        $systemInstruction .= "2. IDIOMA: Responde siempre en el mismo idioma que el usuario.\n";
+        $systemInstruction .= "3. INYECCIÓN TÉCNICA: Si el resultado es para una tarea (redacción, pasos, etc.), usa [PAYLOAD]...[/PAYLOAD].\n";
+        $systemInstruction .= "4. FORMATO: Dentro del payload usa Markdown limpio. NUNCA metas estadísticas o datos del dashboard ahí.\n\n";
         
-        $systemInstruction .= "DATOS DE APOYO (Usa esto solo si el usuario pregunta por su estado o rendimiento):\n";
-        $systemInstruction .= "SNAPSHOT DEL USUARIO: " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n\n";
-
         if ($contextInfo) {
-            $systemInstruction .= "CONTEXTO OPERATIVO (Tarea/Hilo actual):\n" . $contextInfo . "\n\n";
+            $systemInstruction .= "CONTEXTO ACTUAL (Usa esto como base, pero no lo repitas tal cual):\n" . $contextInfo . "\n\n";
         }
 
-        $systemInstruction .= "OBJETIVO: Ayuda al usuario con su petición actual ignorando los datos de apoyo a menos que sean relevantes para la respuesta conversacional.";
+        $systemInstruction .= "DATOS DE BIENESTAR (Opcional): " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n\n";
+        $systemInstruction .= "INSTRUCCIÓN FINAL: Escucha atentamente al usuario y genera una respuesta útil y procesada. Si detectas que el usuario quiere 'limpiar' o 'mejorar' un texto del contexto, hazlo con criterio profesional.";
 
         // Añadimos el prompt del usuario
         $parts[] = ['text' => $prompt];
