@@ -648,6 +648,30 @@ class Task extends Model
         return $attachments->unique('id');
     }
     /**
+     * Notify creator and coordinators about a task event.
+     */
+    public function notifyCreatorAndCoordinators($notification)
+    {
+        $recipients = collect();
+
+        // 1. Add Creator
+        if ($this->creator && $this->creator->id !== auth()->id()) {
+            $recipients->push($this->creator);
+        }
+
+        // 2. Add Coordinators
+        $coordinators = $this->team->coordinators()
+            ->where('users.id', '!=', auth()->id())
+            ->get();
+        
+        $recipients = $recipients->merge($coordinators)->unique('id');
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify($notification);
+        }
+    }
+
+    /**
      * Notify coordinators if the task is completed and meets specific criteria.
      */
     public function notifyCoordinatorsIfCompleted()

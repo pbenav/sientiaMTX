@@ -9,6 +9,7 @@ use App\Traits\HandlesEisenhowerMatrix;
 use App\Traits\AwardsGamification;
 use App\Traits\ManagesTaskDeletion;
 use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskEventNotification;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -518,6 +519,22 @@ class TaskController extends Controller
         if ($task->status === 'completed' && $oldValues['status'] !== 'completed') {
             $this->awardGamificationPoints($task);
             $task->notifyCoordinatorsIfCompleted();
+        }
+
+        // Notification for Blocked status
+        if ($task->status === 'blocked' && $oldValues['status'] !== 'blocked') {
+             $task->notifyCreatorAndCoordinators(new TaskEventNotification($task, 'blocked'));
+        }
+
+        // Notification for Milestones
+        $oldProgress = (int) ($oldValues['progress_percentage'] ?? 0);
+        $newProgress = (int) ($task->progress_percentage ?? 0);
+
+        if ($newProgress >= 50 && $oldProgress < 50) {
+             $task->notifyCreatorAndCoordinators(new TaskEventNotification($task, 'milestone_50'));
+        }
+        if ($newProgress >= 75 && $oldProgress < 75) {
+             $task->notifyCreatorAndCoordinators(new TaskEventNotification($task, 'milestone_75'));
         }
 
         // Parent progress sync
