@@ -155,14 +155,30 @@ class AiChatController extends Controller
 
         $content = $this->extractPayload($request->input('content'));
 
+        $oldValues = $task->getAttributes();
+        
         if ($request->target === 'description') {
             $task->update(['description' => $content]);
-            return response()->json(['success' => true, 'message' => 'Descripción actualizada correctamente.']);
+            $history = $task->histories()->create([
+                'user_id' => auth()->id(),
+                'action' => 'ai_transfer',
+                'old_values' => ['description' => $oldValues['description']],
+                'new_values' => ['description' => $content],
+                'notes' => 'Transferido desde Ax.ia (Descripción)'
+            ]);
+            return response()->json(['success' => true, 'message' => 'Descripción actualizada correctamente.', 'history_id' => $history->id]);
         }
 
         if ($request->target === 'observations') {
             $task->update(['observations' => $content]);
-            return response()->json(['success' => true, 'message' => 'Observaciones actualizadas correctamente.']);
+            $history = $task->histories()->create([
+                'user_id' => auth()->id(),
+                'action' => 'ai_transfer',
+                'old_values' => ['observations' => $oldValues['observations']],
+                'new_values' => ['observations' => $content],
+                'notes' => 'Transferido desde Ax.ia (Observaciones)'
+            ]);
+            return response()->json(['success' => true, 'message' => 'Observaciones actualizadas correctamente.', 'history_id' => $history->id]);
         }
 
         if ($request->target === 'comment') {
@@ -247,6 +263,36 @@ class AiChatController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo general del equipo.']);
+    }
+
+    public function undoLastTransfer(Request $request)
+    {
+        $lastHistory = \App\Models\TaskHistory::where('user_id', auth()->id())
+            ->where('action', 'ai_transfer')
+            ->latest()
+            ->first();
+
+        if (!$lastHistory) {
+            return response()->json(['success' => false, 'message' => 'No hay acciones recientes de la IA para deshacer.']);
+        }
+
+        $task = $lastHistory->task;
+        if (!$task) {
+            return response()->json(['success' => false, 'message' => 'La tarea original ya no existe.']);
+        }
+
+        // Revert values
+        $oldValues = $lastHistory->old_values;
+        $task->update($oldValues);
+
+        // Delete this history record so we don't undo it twice (or we could mark it as undone)
+        $lastHistory->delete();
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Cambio deshecho correctamente.',
+            'target' => array_keys($oldValues)[0] // e.g. 'description'
+        ]);
     }
 
     private function extractPayload($content)

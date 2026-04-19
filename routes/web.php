@@ -223,6 +223,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ai/models', [\App\Http\Controllers\AiChatController::class, 'getAvailableModels'])->name('ai.models');
     Route::get('/ai/history', [\App\Http\Controllers\AiChatController::class, 'getHistory'])->name('ai.history');
     Route::post('/ai/ask', [\App\Http\Controllers\AiChatController::class, 'ask'])->name('ai.ask');
+    Route::post('/ai/undo', [\App\Http\Controllers\AiChatController::class, 'undoLastTransfer'])->name('ai.undo');
     Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
     Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferContent'])->name('ai.transfer');
     Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferForumContent'])->name('ai.transfer_forum');

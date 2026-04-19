@@ -36,8 +36,22 @@
                 </div>
             </div>
             <div class="flex items-center space-x-1">
-                <button @click="clearHistory()" class="p-2 text-indigo-200 hover:text-white hover:bg-white/10 rounded-full transition-colors" title="Borrar historial">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <button @click="clearHistory()" 
+                        class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-indigo-200 hover:text-white rounded-lg transition-colors"
+                        title="Limpiar historial">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+
+                <!-- Undo Button -->
+                <button x-show="canUndo" @click="undoLastAction()" 
+                        class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all text-xs font-medium border border-amber-200/50 dark:border-amber-800/50 animate-pulse"
+                        title="Deshacer último cambio">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                    <span>Deshacer</span>
                 </button>
                 <button @click="showHelp = !showHelp" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Ayuda">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -253,6 +267,11 @@
             showHelp: false,
             currentModel: 'Sincronizando...',
 
+            // Undo State
+            canUndo: false,
+            undoTimeout: null,
+            lastActionData: null,
+
             // Audio Recording State
             isRecording: false,
             mediaRecorder: null,
@@ -343,42 +362,20 @@
                 }
             },
 
-            init() {
-                this.getHistory();
-            },
-
-            async getHistory() {
-                try {
-                    const response = await fetch('{{ route('ai.history') }}?team_id=' + this.teamId);
-                    const data = await response.json();
-                    if (data.messages && data.messages.length > 0) {
-                        this.messages = data.messages.map(m => ({
-                            role: m.role,
-                            content: m.content
-                        }));
-                        this.scrollToBottom();
-                    }
-                } catch (error) {
-                    console.error('Error fetching history:', error);
-                }
-            },
-
             async clearHistory() {
-                if (!confirm('¿Seguro que quieres borrar todo el historial del chat?')) return;
+                if (!confirm('¿Seguro que quieres borrar todo el historial de este chat?')) return;
                 
                 try {
-                    await fetch('{{ route('ai.history') }}', {
+                    await fetch('{{ route('ai.clear-history') }}', {
                         method: 'DELETE',
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
                         }
                     });
-                    this.messages = [
-                        { role: 'ai', content: 'Historial borrado. ¡Empecemos de cero! ¿En qué puedo ayudarte?' }
-                    ];
-                    this.attachmentId = null; // Clear attachment context on reset
-                } catch (error) {
-                    console.error('Error clearing history:', error);
+                    this.messages = [{ role: 'ai', content: 'Historial borrado. ¿En qué puedo ayudarte ahora?' }];
+                } catch (e) {
+                    console.error('Error clearing history:', e);
                 }
             },
 
@@ -432,23 +429,6 @@
                 if(this.open) {
                     this.scrollToBottom();
                     localStorage.setItem('ai_assistant_open', '1');
-                }
-            },
-
-            async clearHistory() {
-                if (!confirm('¿Seguro que quieres borrar todo el historial de este chat?')) return;
-                
-                try {
-                    await fetch('{{ route('ai.clear-history') }}', {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Accept': 'application/json'
-                        }
-                    });
-                    this.messages = [{ role: 'ai', content: 'Historial borrado. ¿En qué puedo ayudarte ahora?' }];
-                } catch (e) {
-                    console.error('Error clearing history:', e);
                 }
             },
 
@@ -643,6 +623,28 @@
                     btn.innerHTML = '<svg class="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>';
                 } finally {
                     setTimeout(() => btn.innerHTML = oldHtml, 3000);
+                }
+            },
+
+            async undoLastAction() {
+                try {
+                    const response = await fetch('{{ route('ai.undo') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        this.canUndo = false;
+                        this.messages.push({ role: 'system', content: '🔄 ' + data.message });
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (e) {
+                    console.error('Error undoing action:', e);
                 }
             },
 
@@ -846,6 +848,10 @@
 
                         const data = await response.json();
                         if (data.success) {
+                            this.canUndo = true;
+                            if (this.undoTimeout) clearTimeout(this.undoTimeout);
+                            this.undoTimeout = setTimeout(() => { this.canUndo = false; }, 60000);
+                            
                             Swal.fire({
                                 title: `<span class="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">${domInjected ? '¡Guardado e Inyectado!' : '¡Hecho!'}</span>`,
                                 html: `<p class="text-lg font-bold text-gray-800 dark:text-white mt-2">${data.message}</p>`,
