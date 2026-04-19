@@ -370,11 +370,11 @@
                         chosenClass: document.documentElement.classList.contains('dark') ?
                             'bg-white/5' : 'bg-black/[0.02]',
                         dragClass: 'opacity-50',
-                        preventOnFilter: false,
-                        delay: 50,
+                        preventOnFilter: true,
+                        delay: 150,
                         delayOnTouchOnly: true,
-                        touchStartThreshold: 3,
-                        filter: 'button, a, .toggle-subtasks-matrix, input, select',
+                        touchStartThreshold: 5,
+                        filter: 'button, .toggle-subtasks-matrix, input, select',
                         onEnd: function(evt) {
                             const taskId = evt.item.getAttribute('data-id');
                             const targetQuadrant = evt.to.getAttribute('data-q');
