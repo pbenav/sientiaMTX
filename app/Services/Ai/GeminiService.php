@@ -203,12 +203,21 @@ class GeminiService implements AiAssistantInterface
             }
         }
 
-        $systemInstruction = "Tu nombre es Ax.ia. Eres el asistente de Sientia MTX (Motor: {$this->targetModel}). HABLA SIEMPRE EN EL IDIOMA DEL USUARIO. Responde de forma directa, humana y profesional. PROHIBIDO: mostrar borradores, razonamientos, análisis previos o meta-comentarios. Solo entrega el mensaje final.\n\n";
-        $systemInstruction .= "ESTADO DEL USUARIO (DASHBOARD):\n" . json_encode($this->userStats, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n\n";
+        $systemInstruction = "Eres Ax.ia, asistente experto de Sientia MTX (Motor: {$this->targetModel}).\n\n";
+        $systemInstruction .= "REGLAS CRÍTICAS DE RESPUESTA:\n";
+        $systemInstruction .= "1. IDIOMA: Responde siempre en el mismo idioma que el usuario.\n";
+        $systemInstruction .= "2. FORMALIDAD: Tono profesional, humano y directo. Sin meta-charla ni borradores.\n";
+        $systemInstruction .= "3. INYECCIÓN TÉCNICA: Si el usuario pide redactar, resumir o crear pasos, coloca el RESULTADO FINAL (y solo el resultado) entre etiquetas [PAYLOAD] y [/PAYLOAD].\n";
+        $systemInstruction .= "4. FORMATO PAYLOAD: El contenido dentro de [PAYLOAD] debe ser siempre Markdown elegante y estructurado. NUNCA incluyas metadatos, estadísticas o datos del dashboard dentro del payload.\n\n";
+        
+        $systemInstruction .= "DATOS DE APOYO (Usa esto solo si el usuario pregunta por su estado o rendimiento):\n";
+        $systemInstruction .= "SNAPSHOT DEL USUARIO: " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n\n";
 
         if ($contextInfo) {
-            $systemInstruction .= "\n\nPara datos técnicos usa [PAYLOAD]...[/PAYLOAD].\n\nContexto:\n" . $contextInfo;
+            $systemInstruction .= "CONTEXTO OPERATIVO (Tarea/Hilo actual):\n" . $contextInfo . "\n\n";
         }
+
+        $systemInstruction .= "OBJETIVO: Ayuda al usuario con su petición actual ignorando los datos de apoyo a menos que sean relevantes para la respuesta conversacional.";
 
         // Añadimos el prompt del usuario
         $parts[] = ['text' => $prompt];
