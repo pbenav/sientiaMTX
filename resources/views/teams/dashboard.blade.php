@@ -364,16 +364,16 @@
                 lists.forEach(list => {
                     new Sortable(list, {
                         group: 'quadrants',
-                        animation: 150,
+                        animation: 180,
                         ghostClass: document.documentElement.classList.contains('dark') ?
                             'bg-white/10' : 'bg-black/5',
                         chosenClass: document.documentElement.classList.contains('dark') ?
                             'bg-white/5' : 'bg-black/[0.02]',
                         dragClass: 'opacity-50',
-                        preventOnFilter: true,
-                        delay: 200,
+                        preventOnFilter: false,
+                        delay: 50,
                         delayOnTouchOnly: true,
-                        touchStartThreshold: 5,
+                        touchStartThreshold: 3,
                         filter: 'button, a, .toggle-subtasks-matrix, input, select',
                         onEnd: function(evt) {
                             const taskId = evt.item.getAttribute('data-id');

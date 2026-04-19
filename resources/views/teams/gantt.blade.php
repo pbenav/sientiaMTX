@@ -110,9 +110,13 @@
 
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
             <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-transparent flex justify-between items-center text-xs text-gray-500">
-                <div class="flex gap-4">
-                    <span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-red-500"></div> Q1: Hacer</span>
-                    <span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Q2: Planificar</span>
+                <div class="flex flex-wrap gap-4">
+                    @foreach([1, 2, 3, 4] as $q)
+                        <span class="flex items-center gap-1.5">
+                            <div class="w-2 h-2 rounded-full" style="background-color: {{ $qConfig[$q]['color'] }}"></div>
+                            Q{{ $q }}: {{ __('tasks.quadrants.' . $q . '.label') }}
+                        </span>
+                    @endforeach
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="changeView('Day')" class="hover:text-violet-600 font-bold uppercase">Día</button>
