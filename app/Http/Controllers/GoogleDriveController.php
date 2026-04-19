@@ -38,7 +38,15 @@ class GoogleDriveController extends Controller
      */
     public function uploadToDrive(Team $team, TaskAttachment $attachment)
     {
+        if ($attachment->task->team_id !== $team->id) {
+            return back()->with('warning', 'Esta adjunto no pertenece a este equipo.');
+        }
+
         $user = auth()->user();
+
+        if ($user->cannot('view', $attachment->task)) {
+            return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+        }
 
         if (!$this->isTeamLinked($user, $team)) {
             return back()->with('error', 'Este equipo no tiene vinculada una cuenta de Google Workspace.');
@@ -155,6 +163,14 @@ class GoogleDriveController extends Controller
      */
     public function attachFromDrive(Team $team, Task $task, Request $request)
     {
+        if ($task->team_id !== $team->id) {
+            return response()->json(['success' => false, 'message' => 'La tarea no pertenece a este equipo.'], 403);
+        }
+
+        if (auth()->user()->cannot('view', $task)) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para ver esta tarea.'], 403);
+        }
+
         $request->validate([
             'file_id' => 'required|string',
             'file_name' => 'required|string',

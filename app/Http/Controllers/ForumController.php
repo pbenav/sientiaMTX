@@ -172,7 +172,7 @@ class ForumController extends Controller
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
         if ($thread->team_id !== $team->id) {
-            abort(404);
+            return redirect()->route('teams.forum.index', $team)->with('warning', __('Hilo no encontrado en este equipo.'));
         }
 
         // Privacy Check: If the thread is linked to a task, follow task visibility rules
@@ -207,16 +207,16 @@ class ForumController extends Controller
     public function update(Request $request, Team $team, ForumThread $thread)
     {
         if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+            return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
         }
         if ($thread->team_id !== $team->id) {
-            abort(404);
+            return redirect()->route('teams.forum.index', $team)->with('warning', __('Hilo no encontrado en este equipo.'));
         }
 
         // Only author or coordinator can update the thread itself (e.g., pin, lock, title)
         // Adjust abilities later with a Policy
         if (auth()->id() !== $thread->user_id && auth()->user()->getRole($team) !== 'coordinator') {
-            abort(403);
+            return back()->with('warning', __('No tienes permisos para modificar este hilo.'));
         }
 
         $validated = $request->validate([
@@ -240,14 +240,14 @@ class ForumController extends Controller
     public function destroy(Team $team, ForumThread $thread)
     {
         if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+            return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
         }
         if ($thread->team_id !== $team->id) {
-            abort(404);
+            return redirect()->route('teams.forum.index', $team)->with('warning', __('Hilo no encontrado en este equipo.'));
         }
 
         if (auth()->id() !== $thread->user_id && auth()->user()->getRole($team) !== 'coordinator') {
-            abort(403);
+            return back()->with('warning', __('No tienes permisos para eliminar este hilo.'));
         }
 
         $thread->delete();

@@ -343,7 +343,14 @@ class GoogleController extends Controller
      */
     public function syncTask(\App\Models\Team $team, \App\Models\Task $task)
     {
+        if ($task->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
+        }
+
         $user = Auth::user();
+        if ($user->cannot('view', $task)) {
+            return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+        }
 
         if (!$this->googleService->setTokenForUser($user, $team->id)) {
             return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
@@ -502,7 +509,14 @@ class GoogleController extends Controller
      */
     public function exportTaskToCalendar(\App\Models\Team $team, \App\Models\Task $task)
     {
+        if ($task->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
+        }
+
         $user = auth()->user();
+        if ($user->cannot('view', $task)) {
+            return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+        }
 
         if (!$this->googleService->setTokenForUser($user, $team->id)) {
             return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));

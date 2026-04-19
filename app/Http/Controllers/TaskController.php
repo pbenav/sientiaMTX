@@ -333,12 +333,15 @@ class TaskController extends Controller
      */
     public function show(Team $team, Task $task)
     {
-        if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        if ($task->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
-        \Log::info("Visualizando tarea #{$task->id} en equipo #{$team->id} — User: " . auth()->id());
+
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
+        }
+
         if (auth()->user()->cannot('view', $task)) {
-            \Log::warning("Acceso denegado a tarea #{$task->id} para usuario #" . auth()->id());
             return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
         }
 
@@ -366,9 +369,14 @@ class TaskController extends Controller
      */
     public function edit(Team $team, Task $task)
     {
-        if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        if ($task->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
+
+        if (auth()->user()->cannot('view', $team)) {
+            return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
+        }
+
         if (auth()->user()->cannot('update', $task)) {
             return redirect()->route('teams.tasks.show', [$team, $task])
                 ->with('warning', __('No tienes permisos para modificar esta tarea privada.'));
@@ -400,6 +408,10 @@ class TaskController extends Controller
      */
     public function update(Request $request, Team $team, Task $task)
     {
+        if ($task->team_id !== $team->id) {
+            abort(404);
+        }
+
         if (auth()->user()->cannot('view', $team)) {
             return response()->json(['success' => false, 'message' => __('teams.unauthorized_access')], 403);
         }
@@ -657,8 +669,12 @@ class TaskController extends Controller
      */
     public function destroy(Team $team, Task $task)
     {
+        if ($task->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
+        }
+
         if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+            return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
         }
         $this->authorize('delete', $task);
 
@@ -684,7 +700,9 @@ class TaskController extends Controller
             'task_ids.*' => 'exists:tasks,id'
         ]);
 
-        $tasks = Task::whereIn('id', $request->task_ids)->where('team_id', $team->id)->get();
+        $tasks = Task::whereIn('id', $request->task_ids)
+            ->where('team_id', $team->id) // Security: Ensure tasks belong to the team
+            ->get();
         $deletedCount = 0;
 
         foreach ($tasks as $task) {
@@ -715,7 +733,7 @@ class TaskController extends Controller
     {
         // Only coordinators or global admins can purge
         if (!$team->isCoordinator(auth()->user()) && !auth()->user()->is_admin) {
-            abort(403, 'No tienes permisos para vaciar la papelera.');
+            return redirect()->back()->with('warning', 'No tienes permisos para vaciar la papelera de este equipo.');
         }
 
         $trashedQuery = Task::onlyTrashed()->where('team_id', $team->id);

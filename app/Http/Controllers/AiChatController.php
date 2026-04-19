@@ -60,6 +60,27 @@ class AiChatController extends Controller
 
         ini_set('memory_limit', '512M'); // Asegurar memoria para Base64
         $user = $request->user();
+
+        if ($request->team_id) {
+            $team = \App\Models\Team::find($request->team_id);
+            if (!$team || $user->cannot('view', $team)) {
+                return response()->json(['message' => 'No tienes acceso a este equipo.'], 403);
+            }
+        }
+
+        if ($request->task_id) {
+            $task = \App\Models\Task::find($request->task_id);
+            if (!$task || $user->cannot('view', $task)) {
+                return response()->json(['message' => 'No tienes acceso a esta tarea.'], 403);
+            }
+        }
+
+        if ($request->forum_thread_id) {
+            $thread = \App\Models\ForumThread::find($request->forum_thread_id);
+            if (!$thread || $user->cannot('view', $thread->team)) { // Simple check for now
+                return response()->json(['message' => 'No tienes acceso a este hilo.'], 403);
+            }
+        }
         $prompt = $request->prompt;
 
         if ($request->hasFile('file')) {
@@ -147,11 +168,13 @@ class AiChatController extends Controller
 
     public function transferContent(Request $request, \App\Models\Team $team, \App\Models\Task $task)
     {
-        $request->validate([
-            'content' => 'required|string',
-            'target' => 'required|string|in:description,observations,comment',
-            'title' => 'nullable|string|max:255'
-        ]);
+        if ($task->team_id !== $team->id) {
+            abort(404);
+        }
+
+        if ($request->user()->cannot('view', $team) || $request->user()->cannot('view', $task)) {
+            abort(403);
+        }
 
         $content = $this->extractPayload($request->input('content'));
 
@@ -213,10 +236,13 @@ class AiChatController extends Controller
 
     public function transferForumContent(Request $request, \App\Models\Team $team, \App\Models\ForumThread $thread)
     {
-        $request->validate([
-            'content' => 'required|string',
-            'target' => 'required|string|in:reply,comment,description'
-        ]);
+        if ($thread->team_id !== $team->id) {
+            abort(404);
+        }
+
+        if ($request->user()->cannot('view', $team)) {
+            abort(403);
+        }
 
         $content = $this->extractPayload($request->input('content'));
 
@@ -233,11 +259,9 @@ class AiChatController extends Controller
 
     public function transferGlobalContent(Request $request, \App\Models\Team $team)
     {
-        $request->validate([
-            'content' => 'required|string',
-            'target' => 'required|string|in:comment,reply',
-            'title' => 'nullable|string|max:255'
-        ]);
+        if ($request->user()->cannot('view', $team)) {
+            abort(403);
+        }
 
         $content = $this->extractPayload($request->input('content'));
 

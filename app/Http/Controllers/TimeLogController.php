@@ -49,6 +49,9 @@ class TimeLogController extends Controller
     public function toggleTask(Request $request, Task $task)
     {
         $user = auth()->user();
+        if ($user->cannot('view', $task)) {
+            return response()->json(['success' => false, 'message' => __('No tienes permiso para interactuar con esta tarea.')], 403);
+        }
         $activeLog = $user->activeTaskLog();
 
         // If clicking on the ALREADY active task -> Stop it
