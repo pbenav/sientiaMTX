@@ -1,28 +1,28 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center gap-3">
+        <div class="flex items-center w-full">
+            <div class="flex items-center gap-3 flex-1">
                 <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('dashboard') }}" class="p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400" title="{{ __('Volver') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight whitespace-nowrap">
                     {{ __('Notificaciones') }}
                 </h2>
             </div>
-            <div class="flex gap-2">
-                <button onclick="window.location.reload()" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150 text-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex items-center gap-4 ml-12">
+                <button onclick="window.location.reload()" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-bold text-[10px] text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    <span class="hidden sm:inline">{{ __('Actualizar') }}</span>
+                    {{ __('Actualizar') }}
                 </button>
                 @if($notifications->where('read_at', null)->count() > 0)
-                    <form action="{{ route('notifications.mark-all-as-read') }}" method="POST">
+                    <form action="{{ route('notifications.mark-all-as-read') }}" method="POST" class="hidden sm:block">
                         @csrf
-                        <x-secondary-button type="submit" class="text-xs">
-                            {{ __('Marcar todas como leídas') }}
+                        <x-secondary-button type="submit" class="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                            {{ __('Marcar todas leídas') }}
                         </x-secondary-button>
                     </form>
                 @endif
