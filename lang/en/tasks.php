@@ -215,4 +215,5 @@ return [
     'unauthorized_view' => 'You do not have permission to view this private task.',
     'plan_master' => 'Master Plan',
     'your_execution' => 'Your Task',
+    'not_found_in_team' => 'The requested task does not belong to this team.',
 ];

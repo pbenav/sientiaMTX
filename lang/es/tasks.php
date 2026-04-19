@@ -259,4 +259,5 @@ return [
     'view_or_download' => 'Ver o descargar',
     'select_from_drive' => 'Seleccionar de Drive',
     'drive_explorer' => 'Explorador de Google Drive',
+    'not_found_in_team' => 'La tarea solicitada no pertenece a este equipo.',
 ];
