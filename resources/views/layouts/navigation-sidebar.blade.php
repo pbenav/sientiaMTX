@@ -214,10 +214,11 @@
                                 </svg>
                                 <span class="text-sm font-medium {{ request()->routeIs('media.index') ? 'text-violet-700 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white' }}">{{ __('ALMACENAMIENTO') }}</span>
                             </div>
-                            <span class="text-[10px] font-bold text-gray-400">75%</span>
+                            @php $usage = auth()->user()->disk_usage_percentage; @endphp
+                            <span class="text-[10px] font-bold text-gray-400">{{ $usage }}%</span>
                         </div>
                         <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner flex">
-                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 rounded-full" style="width: 75%"></div>
+                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 rounded-full" style="width: {{ $usage }}%"></div>
                         </div>
                     </a>
 
