@@ -232,28 +232,33 @@
                                 </div>
                             </div>
 
-                            <!-- Edit Mode (Hidden) -->
-                            @if ($isCurrentUser)
-                                <div id="message-edit-{{ $message->id }}" class="hidden w-full pt-2">
-                                    <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <textarea id="edit-content-{{ $message->id }}" name="content" style="min-height: 400px !important;"
-                                            class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-violet-500 dark:border-violet-600 rounded-2xl focus:ring-0 text-sm p-4 dark:text-gray-200 transition-colors shadow-inner"
-                                            rows="12">{{ $message->content }}</textarea>
-                                        <div class="flex justify-end gap-2 mt-2">
+                        <!-- Edit Mode (Hidden) -->
+                        @if ($isCurrentUser)
+                            <div id="message-edit-{{ $message->id }}" class="hidden w-full pt-2">
+                                <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <div class="space-y-3">
+                                        <x-markdown-editor 
+                                            name="content" 
+                                            id="edit-content-{{ $message->id }}"
+                                            :value="$message->content"
+                                            rows="12"
+                                        />
+                                        <div class="flex justify-end gap-3 mt-2">
                                             <button type="button" onclick="cancelEdit({{ $message->id }})" 
-                                                class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
-                                                Cancelar
+                                                class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors uppercase tracking-widest">
+                                                {{ __('Cancelar') }}
                                             </button>
                                             <button type="submit" 
-                                                class="px-4 py-1.5 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 active:scale-95">
-                                                Guardar Cambios
+                                                class="px-6 py-2 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 active:scale-95 uppercase tracking-widest">
+                                                {{ __('Guardar Cambios') }}
                                             </button>
                                         </div>
-                                    </form>
-                                </div>
-                            @endif
+                                    </div>
+                                </form>
+                            </div>
+                        @endif
                         </div>
                     </div>
                 </div>
