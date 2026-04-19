@@ -10,7 +10,7 @@
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                     {{ __('Notificaciones') }}
                 </h2>
-            </div>
+            </d</div>
             <div class="flex gap-2">
                 <button onclick="window.location.reload()" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150 text-xs">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,8 +26,8 @@
                         </x-secondary-button>
                     </form>
                 @endif
-            </div>
-        </div>
+            </d</div>
+        </d</div>
     </x-slot>
 
     <div class="py-12" x-data="{ 
@@ -53,8 +53,8 @@
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                         </svg>
                         {{ session('warning') }}
-                    </div>
-                </div>
+                    </d</div>
+                </d</div>
             @endif
 
             @if (session('success'))
@@ -64,61 +64,61 @@
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         {{ session('success') }}
-                    </div>
-                </div>
+                    </d</div>
+                </d</div>
             @endif
-
-            <!-- Bulk Actions Toolbar (Floating) -->
-            <div x-show="selected.length > 0" 
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4"
-                 x-transition:enter-end="opacity-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-y-0"
-                 x-transition:leave-end="opacity-0 translate-y-4"
-                 class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-gray-800 shadow-2xl rounded-full px-6 py-3 border border-indigo-100 dark:border-indigo-900 flex items-center gap-6"
-                 style="display: none">
-                <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                    <span x-text="selected.length"></span> seleccionadas
-                </span>
-                
-                <div class="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-                
-                <div class="flex items-center gap-2">
-                    <form action="{{ route('notifications.bulk-action') }}" method="POST" class="inline">
-                        @csrf
-                        <template x-for="id in selected" :key="id">
-                            <input type="hidden" name="notification_ids[]" :value="id">
-                        </template>
-                        <input type="hidden" name="action" value="mark_as_read">
-                        <button type="submit" class="text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 transition-colors uppercase tracking-wider">
-                            Marcar leídas
-                        </button>
-                    </form>
-
-                    <form id="bulk-delete-notifications" action="{{ route('notifications.bulk-action') }}" method="POST" class="inline" onsubmit="window.confirmDelete('bulk-delete-notifications', '¿Estás seguro de que quieres eliminar estas notificaciones?'); return false;">
-                        @csrf
-                        <template x-for="id in selected" :key="id">
-                            <input type="hidden" name="notification_ids[]" :value="id">
-                        </template>
-                        <input type="hidden" name="action" value="delete">
-                        <button type="submit" class="text-xs font-bold text-red-500 hover:text-red-700 transition-colors uppercase tracking-wider ml-4">
-                            Eliminar
-                        </button>
-                    </form>
-                </div>
-
-                <button @click="selected = []; allSelected = false" class="text-gray-400 hover:text-gray-600 ml-2">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-            </div>
-
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl border border-gray-100 dark:border-gray-700">
-                <!-- Header con Select All -->
-                <div class="bg-gray-50/50 dark:bg-gray-900/50 px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-4">
-                    <input type="checkbox" @click="toggleAll()" x-model="allSelected" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none">Seleccionar todo</span>
-                </div>
+                <!-- Header con Select All y Bulk Actions Integradas -->
+                <div class="bg-gray-50/80 dark:bg-gray-900/80 px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
+                    <div class="flex items-center gap-4">
+                        <input type="checkbox" @click="toggleAll()" x-model="allSelected" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                        
+                        <div x-show="selected.length === 0" class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none">Seleccionar todo</span>
+                        </d</div>
+
+                        <div x-show="selected.length > 0" class="flex items-center gap-4 animate-in fade-in slide-in-from-left-2" style="display: none">
+                            <span class="text-sm font-black text-indigo-600 dark:text-indigo-400">
+                                <span x-text="selected.length"></span> seleccionadas
+                            </span>
+                            
+                            <div class="h-4 w-px bg-gray-200 dark:bg-gray-700"></d</div>
+                            
+                            <div class="flex items-center gap-4">
+                                <form action="{{ route('notifications.bulk-action') }}" method="POST" class="inline">
+                                    @csrf
+                                    <template x-for="id in selected" :key="id">
+                                        <input type="hidden" name="notification_ids[]" :value="id">
+                                    </template>
+                                    <input type="hidden" name="action" value="mark_as_read">
+                                    <button type="submit" class="text-[10px] font-black text-gray-600 dark:text-gray-300 hover:text-indigo-600 transition-colors uppercase tracking-widest flex items-center gap-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                                        {{ __('Leídas') }}
+                                    </button>
+                                </form>
+
+                                <form id="bulk-delete-notifications" action="{{ route('notifications.bulk-action') }}" method="POST" class="inline" onsubmit="window.confirmDelete('bulk-delete-notifications', '¿Estás seguro de que quieres eliminar estas notificaciones?'); return false;">
+                                    @csrf
+                                    <template x-for="id in selected" :key="id">
+                                        <input type="hidden" name="notification_ids[]" :value="id">
+                                    </template>
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="text-[10px] font-black text-red-500 hover:text-red-700 transition-colors uppercase tracking-widest flex items-center gap-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        {{ __('Eliminar') }}
+                                    </button>
+                                </form>
+                            </d</div>
+                        </d</div>
+                    </d</div>
+
+                    <div x-show="selected.length > 0" style="display: none">
+                         <button @click="selected = []; allSelected = false" class="p-1 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 transition-colors text-[10px] font-bold uppercase tracking-tighter">
+                            {{ __('Cancelar selección') }}
+                        </button>
+                    </d</div>
+                </d</div>
+</div>
 
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($notifications as $notification)
@@ -130,7 +130,7 @@
                                        value="{{ $notification->id }}" 
                                        x-model="selected"
                                        class="notification-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                            </div>
+                            </d</div>
 
                             <!-- Icon logic -->
                             <div class="mt-1 shrink-0">
@@ -158,8 +158,8 @@
                                 @endphp
                                 <div class="{{ $iconClass }}">
                                     {!! $icon !!}
-                                </div>
-                            </div>
+                                </d</div>
+                            </d</div>
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start">
@@ -169,7 +169,7 @@
                                     <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
                                         {{ $notification->created_at->diffForHumans() }}
                                     </span>
-                                </div>
+                                </d</div>
                                 <div class="mt-2 flex items-center gap-3">
                                     @if($notification->unread())
                                         <a href="{{ route('notifications.mark-as-read', $notification->id) }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors uppercase tracking-wider">
@@ -180,9 +180,9 @@
                                             {{ __('Ver de nuevo') }}
                                         </a>
                                     @endif
-                                </div>
-                            </div>
-                        </div>
+                                </d</div>
+                            </d</div>
+                        </d</div>
                     @empty
                         <div class="p-12 text-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,14 +190,14 @@
                             </svg>
                             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('No hay notificaciones') }}</h3>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('¡Estás al día!') }}</p>
-                        </div>
+                        </d</div>
                     @endforelse
-                </div>
-            </div>
+                </d</div>
+            </d</div>
             
             <div class="mt-6">
                 {{ $notifications->links() }}
-            </div>
-        </div>
-    </div>
+            </d</div>
+        </d</div>
+    </d</div>
 </x-app-layout>
