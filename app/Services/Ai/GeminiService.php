@@ -18,6 +18,7 @@ class GeminiService implements AiAssistantInterface
     protected string $apiKey = '';
     protected string $targetModel = 'gemini-3-flash-preview';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+    protected array $userStats = [];
 
     public function __construct()
     {
@@ -70,6 +71,8 @@ class GeminiService implements AiAssistantInterface
         $maskedKey = $this->apiKey ? (substr($this->apiKey, 0, 4) . '....' . substr($this->apiKey, -4)) : 'VACÍA';
         Log::debug("Ax.ia: Usando clave desde {$keySource} [Key: {$maskedKey}]");
         Log::debug("Ax.ia: Usando modelo {$this->targetModel} para el contexto " . ($teamId ? "Equipo $teamId" : "Global"));
+
+        $this->userStats = $user->getAiContextStats();
 
         return $this;
     }
@@ -200,30 +203,17 @@ class GeminiService implements AiAssistantInterface
             }
         }
 
+        $systemInstruction = "Tu nombre es Ax.ia. Eres el asistente de Sientia MTX (Motor: {$this->targetModel}). HABLA SIEMPRE EN EL IDIOMA DEL USUARIO. Responde de forma directa, humana y profesional. PROHIBIDO: mostrar borradores, razonamientos, análisis previos o meta-comentarios. Solo entrega el mensaje final.\n\n";
+        $systemInstruction .= "ESTADO DEL USUARIO (DASHBOARD):\n" . json_encode($this->userStats, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n\n";
+
         if ($contextInfo) {
-            $systemPrompt = "Eres Ax.ia, el asistente inteligente de Sientia MTX.\n\n";
-            $systemPrompt .= "REGLA DE IDIOMA: Responde SIEMPRE en el mismo idioma en que el usuario te hable, a menos que se te pida explícitamente lo contrario.\n";
-            $systemPrompt .= "REGLA DE IDENTIDAD: Tu modelo técnico actual es '{$this->targetModel}'. Si te preguntan por tu versión o identidad, confírmalo con orgullo pero mantén tu nombre como Ax.ia.\n\n";
-            $systemPrompt .= "REGLAS CRÍTICAS DE RESPUESTA:\n";
-            $systemPrompt .= "1. Puedes saludar y explicar cosas brevemente.\n";
-            $systemPrompt .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD] y ESTAR FORMATEADO EN MARKDOWN para una presentación profesional y estructurada.\n";
-            $systemPrompt .= "3. NO incluyas introducciones ni despedidas dentro de las etiquetas [PAYLOAD].\n";
-            $systemPrompt .= "4. Si se te ha proporcionado un archivo (texto o binario), úsalo como fuente principal.\n\n";
-            $systemPrompt .= $contextInfo;
-            
-            array_unshift($parts, ['text' => $systemPrompt]);
-        } else {
-            $systemPrompt = "Eres Ax.ia, el asistente inteligente de Sientia MTX. Tu modelo técnico actual es '{$this->targetModel}'. Responde siempre en el idioma del usuario.\n\nInstrucción: {$prompt}";
-            $parts = [['text' => $systemPrompt]];
+            $systemInstruction .= "\n\nPara datos técnicos usa [PAYLOAD]...[/PAYLOAD].\n\nContexto:\n" . $contextInfo;
         }
 
-        if ($this->threadContext) {
-            // Forum logic would also need multi-part if supporting attachments there, 
-            // but for now let's keep it simple or unify.
-            // (Forum logic implementation simplified for brevity, similar to above)
-        }
+        // Añadimos el prompt del usuario
+        $parts[] = ['text' => $prompt];
 
-        return $this->callGemini($this->targetModel, $parts);
+        return $this->callGemini($this->targetModel, $parts, false, $systemInstruction);
     }
 
     protected function isMultimodalMime(string $mime): bool
@@ -319,7 +309,7 @@ class GeminiService implements AiAssistantInterface
      * Helper to make the HTTP request to the Gemini API.
      * $parts should be an array of Gemini parts (text, inline_data, etc.)
      */
-    protected function callGemini(string $model, array $parts, bool $isFallback = false): string
+    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null): string
     {
         if (empty($this->apiKey)) {
             Log::error('Gemini API key is missing.');
@@ -328,14 +318,24 @@ class GeminiService implements AiAssistantInterface
 
         $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
-        try {
-            $response = Http::timeout(60)->post($url, [
-                'contents' => [
-                    [
-                        'parts' => $parts
-                    ]
+        $payload = [
+            'contents' => [
+                [
+                    'parts' => $parts
                 ]
-            ]);
+            ]
+        ];
+
+        if ($systemInstruction) {
+            $payload['system_instruction'] = [
+                'parts' => [
+                    ['text' => $systemInstruction]
+                ]
+            ];
+        }
+
+        try {
+            $response = Http::timeout(60)->post($url, $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
