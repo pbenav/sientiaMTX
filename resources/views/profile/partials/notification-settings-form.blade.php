@@ -132,12 +132,13 @@
             </div>
         </div>
 
-        <!-- Lead Time -->
+        <!-- Alertas de Tiempo (Antelación) -->
         <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
-            <x-input-label for="notify_before_hours" :value="__('notifications.notify_before')" />
+            <x-input-label for="notify_before_hours" :value="__('Antelación para Alertas Críticas')" />
+            <p class="text-[10px] text-gray-500 mb-2">{{ __('Para tareas Urgentes e Importantes (Q1), avísame con este tiempo de antelación al vencimiento.') }}</p>
             <div class="flex items-center gap-4 mt-1">
                 <x-text-input id="notify_before_hours" name="notify_before_hours" type="number" class="block w-24" :value="old('notify_before_hours', $settings['notify_before_hours'] ?? 2)" min="0" max="168" />
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('notifications.hours_before') }}</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('horas de antelación') }}</span>
             </div>
             <x-input-error class="mt-2" :messages="$errors->get('notify_before_hours')" />
         </div>
