@@ -16,7 +16,7 @@ class GeminiService implements AiAssistantInterface
     protected ?\App\Models\ForumMessage $messageContext = null;
     protected ?\Illuminate\Http\UploadedFile $directFile = null;
     protected string $apiKey = '';
-    protected string $targetModel = 'gemini-3-flash';
+    protected string $targetModel = 'gemini-3-flash-preview';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
 
     public function __construct()
@@ -59,8 +59,8 @@ class GeminiService implements AiAssistantInterface
                 
                 // Saneado de modelos "ficticios" o con cuota cero detectada
                 if (str_contains($model, 'gemini-1.5') || str_contains($model, 'banana') || str_contains($model, 'gemma-4')) {
-                    Log::info("Saneando modelo antiguo o no válido '{$model}' a 'gemini-3-flash' para usuario {$user->id}");
-                    $model = 'gemini-3-flash';
+                    Log::info("Saneando modelo antiguo o no válido '{$model}' a 'gemini-3-flash-preview' para usuario {$user->id}");
+                    $model = 'gemini-3-flash-preview';
                 }
 
                 $this->targetModel = $model;
@@ -359,8 +359,8 @@ class GeminiService implements AiAssistantInterface
                 }
             }
 
-            if ($status === 404 && !$isFallback && $model !== 'gemini-3-flash') {
-                return $this->callGemini('gemini-3-flash', $parts, true);
+            if ($status === 404 && !$isFallback && $model !== 'gemini-3-flash-preview') {
+                return $this->callGemini('gemini-3-flash-preview', $parts, true);
             }
 
             return "Lo siento, ha ocurrido un error al procesar tu solicitud ({$errorMsg}).";
