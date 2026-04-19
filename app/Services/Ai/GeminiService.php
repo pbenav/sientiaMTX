@@ -57,9 +57,9 @@ class GeminiService implements AiAssistantInterface
             if (!empty($pref->ai_model)) {
                 $model = $pref->ai_model;
                 
-                // Saneado de modelos "ficticios" o con cuota cero detectada
-                if (str_contains($model, 'gemini-1.5') || str_contains($model, 'banana') || str_contains($model, 'gemma-4')) {
-                    Log::info("Saneando modelo antiguo o no válido '{$model}' a 'gemini-3-flash-preview' para usuario {$user->id}");
+                // Saneado de modelos "ficticios" o antiguos (Limpieza mínima)
+                if (str_contains($model, 'gemini-1.5')) {
+                    Log::info("Saneando modelo antiguo '{$model}' a 'gemini-3-flash-preview' para usuario {$user->id}");
                     $model = 'gemini-3-flash-preview';
                 }
 
