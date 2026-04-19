@@ -172,6 +172,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/telegram/register', [\App\Http\Controllers\SettingsController::class, 'registerTelegramWebhook'])->name('settings.telegram.register');
 
         // Global Skills Management (Global scope only)
+        Route::get('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'appearanceSettings'])->name('settings.appearance');
+        Route::post('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'updateAppearanceSettings'])->name('settings.appearance.update');
+
         Route::get('/settings/skills', [\App\Http\Controllers\SkillController::class, 'index'])->name('settings.skills');
         Route::post('/settings/skills', [\App\Http\Controllers\SkillController::class, 'store'])->name('settings.skills.store');
         Route::patch('/settings/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'update'])->name('settings.skills.update');
@@ -222,6 +225,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
     Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferContent'])->name('ai.transfer');
     Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferForumContent'])->name('ai.transfer_forum');
+    Route::post('/teams/{team}/ai/transfer-global', [\App\Http\Controllers\AiChatController::class, 'transferGlobalContent'])->name('ai.transfer_global');
 
     // Time Tracking routes
     Route::prefix('time-logs')->name('time-logs.')->group(function () {

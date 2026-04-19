@@ -44,6 +44,11 @@
                 class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 Habilidades / Especialidades
             </button>
+            <button @click="tab = 'appearance'" 
+                :class="tab === 'appearance' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                Apariencia del Equipo
+            </button>
         </div>
 
         <!-- General Info Tab -->
@@ -200,24 +205,148 @@
             @endcan
         </div>
 
-        <!-- Skills Tab -->
-        <div x-show="tab === 'skills'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
-             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent flex justify-between items-center">
-                    <h2 class="font-black text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 heading flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                        Especialidades Propias del Equipo
-                    </h2>
-                    @can('admin')
-                    <a href="{{ route('settings.skills') }}" class="text-[10px] font-bold text-violet-500 hover:text-violet-600 transition-colors uppercase tracking-widest">
-                        Ver Catálogo Global
-                    </a>
-                    @endcan
+        <!-- Appearance Tab -->
+        <div x-show="tab === 'appearance'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                    <form action="{{ route('teams.update', $team) }}" method="POST" class="space-y-6">
+                        @csrf @method('PATCH')
+                        <input type="hidden" name="name" value="{{ $team->name }}">
+                        
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
+                            <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Personalidad del Equipo: {{ $team->name }}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">Configura estilos exclusivos para este equipo. Sobrescriben los ajustes globales.</p>
+                                </div>
+                            </div>
+                            
+                            @php
+                                $s = $team->settings ?? [];
+                                $defaultGlobal = [
+                                    'markdown_h1_size' => \App\Models\Setting::get('markdown_h1_size', '1.875rem'),
+                                    'markdown_h1_weight' => \App\Models\Setting::get('markdown_h1_weight', '800'),
+                                    'markdown_h2_size' => \App\Models\Setting::get('markdown_h2_size', '1.5rem'),
+                                    'markdown_h2_weight' => \App\Models\Setting::get('markdown_h2_weight', '700'),
+                                    'markdown_h3_size' => \App\Models\Setting::get('markdown_h3_size', '1.25rem'),
+                                    'markdown_h3_weight' => \App\Models\Setting::get('markdown_h3_weight', '600'),
+                                    'markdown_text_size' => \App\Models\Setting::get('markdown_text_size', '1rem'),
+                                    'markdown_accent_color' => \App\Models\Setting::get('markdown_accent_color', '#4f46e5'),
+                                    'markdown_bullet_color' => \App\Models\Setting::get('markdown_bullet_color', '#4f46e5'),
+                                    'markdown_bq_color' => \App\Models\Setting::get('markdown_bq_color', '#4f46e5'),
+                                    'markdown_bq_width' => \App\Models\Setting::get('markdown_bq_width', '4px'),
+                                ];
+@endphp
+                            
+                            <div class="p-8 space-y-10" x-data="{
+                                settings: {
+                                    h1_size: '{{ $s['markdown_h1_size'] ?? $defaultGlobal['markdown_h1_size'] }}',
+                                    h1_weight: '{{ $s['markdown_h1_weight'] ?? $defaultGlobal['markdown_h1_weight'] }}',
+                                    h2_size: '{{ $s['markdown_h2_size'] ?? $defaultGlobal['markdown_h2_size'] }}',
+                                    h2_weight: '{{ $s['markdown_h2_weight'] ?? $defaultGlobal['markdown_h2_weight'] }}',
+                                    h3_size: '{{ $s['markdown_h3_size'] ?? $defaultGlobal['markdown_h3_size'] }}',
+                                    h3_weight: '{{ $s['markdown_h3_weight'] ?? $defaultGlobal['markdown_h3_weight'] }}',
+                                    accent: '{{ $s['markdown_accent_color'] ?? $defaultGlobal['markdown_accent_color'] }}',
+                                    bullet: '{{ $s['markdown_bullet_color'] ?? $defaultGlobal['markdown_bullet_color'] }}',
+                                    bq: '{{ $s['markdown_bq_color'] ?? $defaultGlobal['markdown_bq_color'] }}',
+                                    bq_width: '{{ $s['markdown_bq_width'] ?? $defaultGlobal['markdown_bq_width'] }}',
+                                    text: '{{ $s['markdown_text_size'] ?? $defaultGlobal['markdown_text_size'] }}'
+                                }
+                            }">
+                                <!-- Grid de Headings -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    @foreach(['h1' => '# Principal', 'h2' => '## Secundario', 'h3' => '### Terciario'] as $h => $label)
+                                        <div class="space-y-4 p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $label }}</label>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño</label>
+                                                    <input type="text" name="settings[markdown_{{ $h }}_size]" x-model="settings.{{ $h }}_size" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Peso</label>
+                                                    <input type="text" name="settings[markdown_{{ $h }}_weight]" x-model="settings.{{ $h }}_weight" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                                    <div class="space-y-6 p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Colores de Acento</label>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Color Primario (Enlaces)</span>
+                                                <input type="color" name="settings[markdown_accent_color]" x-model="settings.accent" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Color Viñetas</span>
+                                                <input type="color" name="settings[markdown_bullet_color]" x-model="settings.bullet" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Borde Citas (Quotes)</span>
+                                                <input type="color" name="settings[markdown_bq_color]" x-model="settings.bq" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Ancho Borde Citas</span>
+                                                <input type="text" name="settings[markdown_bq_width]" x-model="settings.bq_width" class="w-16 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-xs text-center focus:ring-violet-500/20 focus:border-violet-500">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Cuerpo de Texto</label>
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
+                                            <input type="text" name="settings[markdown_text_size]" x-model="settings.text" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Previsualización del Equipo -->
+                                <div class="mt-4 p-8 bg-gray-100 dark:bg-gray-950/20 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 overflow-hidden">
+                                     <h1 :style="'font-size: ' + settings.h1_size + '; font-weight: ' + settings.h1_weight + '; color: ' + settings.accent + '; margin-top:0;'" class="mb-4">Título del Equipo</h1>
+                                     <h2 :style="'font-size: ' + settings.h2_size + '; font-weight: ' + settings.h2_weight + ';'" class="mb-3">Subtítulo Secundario</h2>
+                                     <h3 :style="'font-size: ' + settings.h3_size + '; font-weight: ' + settings.h3_weight + ';'" class="mb-2">Sección Detallada</h3>
+                                     <p :style="'font-size: ' + settings.text + ';'" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                         Este es un ejemplo de cómo se verá la información en el foro y las tareas de <strong>{{ $team->name }}</strong>. Incluye <a href="#" :style="'color: ' + settings.accent + '; text-decoration: underline;'">vínculos personalizados</a>.
+                                     </p>
+                                     <ul class="mb-4 space-y-1">
+                                        <li class="flex items-center gap-2">
+                                            <span :style="'color: ' + settings.bullet">•</span>
+                                            <span class="text-xs text-gray-600 dark:text-gray-400">Lista personalizada</span>
+                                        </li>
+                                     </ul>
+                                     <div :style="'border-left: ' + settings.bq_width + ' solid ' + settings.bq" class="pl-4 py-1 bg-gray-50 dark:bg-gray-800/40 rounded-r-lg italic text-[11px] text-gray-500">
+                                         "Cita representativa del espíritu de este equipo."
+                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                                <button type="submit" class="px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-violet-500/20">
+                                    Guardar Identidad del Equipo
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <div class="p-6">
-                    @include('settings.partials.skill-management')
+                
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="p-6 bg-violet-50 dark:bg-violet-500/10 rounded-3xl border border-violet-100 dark:border-violet-800/50">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="p-2 bg-violet-600 text-white rounded-xl shadow-lg shadow-violet-600/20">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.828 2.828a2 2 0 010 2.828l-8.486 8.485"></path></svg>
+                            </span>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">¿Por qué per-equipo?</h3>
+                        </div>
+                        <p class="text-xs text-violet-600/80 dark:text-violet-400/80 leading-relaxed font-medium">
+                            Diferenciar visualmente los equipos ayuda a los usuarios a ubicarse rápidamente al cambiar de contexto. 
+                            <br><br>
+                            Un equipo creativo puede usar fuentes grandes y colores vibrantes, mientras que uno técnico puede preferir algo más condensado y sobrio.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

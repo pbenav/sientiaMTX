@@ -68,19 +68,24 @@
 
                 <!-- Description -->
                 <div>
-                    <label
-                        class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.description') }}</label>
-                    <textarea name="description" rows="3"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none transition-all"
-                        placeholder="{{ __('tasks.description') }}...">{{ old('description') }}</textarea>
+                    <x-markdown-editor 
+                        name="description" 
+                        id="description"
+                        :value="old('description')"
+                        :label="__('tasks.description')"
+                        rows="4"
+                    />
                 </div>
 
                 <!-- Observations (Markdown) -->
                 <div>
-                    <label
-                        class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.observations') }}</label>
-                    <textarea name="observations" id="observations"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">{{ old('observations') }}</textarea>
+                    <x-markdown-editor 
+                        name="observations" 
+                        id="observations"
+                        :value="old('observations')"
+                        :label="__('tasks.observations')"
+                        rows="4"
+                    />
                 </div>
 
                 <!-- Priority + Urgency (the Eisenhower axes) -->
@@ -523,105 +528,23 @@
     </div>
 
     @push('scripts')
-    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
-    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <style>
-        .EasyMDEContainer .CodeMirror {
-            background: #f9fafb;
-            border-bottom-left-radius: 0.75rem;
-            border-bottom-right-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
-            color: #111827;
-        }
-
-        .dark .EasyMDEContainer .CodeMirror {
-            background: #1f2937;
-            border-color: #374151;
-            color: #f3f4f6;
-        }
-
         .ts-control { border-radius: 0.75rem !important; border-color: #e5e7eb !important; background-color: #f9fafb !important; padding: 0.625rem 1rem !important; transition: all 0.2s; }
         .dark .ts-control { background-color: #1f2937 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
         .ts-control:focus { border-color: #7c3aed !important; ring-color: rgba(124, 58, 237, 0.2) !important; }
-        .ts-dropdown { border-radius: 1rem !important; border-color: #e5e7eb !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; margin-top: 5px !important; }
+        .ts-dropdown { border-radius: 1rem !important; border-color: #e5e7eb !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; margin-top: 5px !important; margin-bottom: 20px !important; }
         .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
         .ts-dropdown .active { background-color: #7c3aed !important; color: white !important; }
         .ts-dropdown .option { padding: 0.5rem 1rem !important; }
         
-        .EasyMDEContainer .CodeMirror {
-            resize: vertical;
-        }
-
-        .EasyMDEContainer .editor-toolbar {
-            background: #f3f4f6;
-            border-top-left-radius: 0.75rem;
-            border-top-right-radius: 0.75rem;
-            border-color: #e5e7eb;
-        }
-
-        .dark .EasyMDEContainer .editor-toolbar {
-            background: #111827;
-            border-color: #374151;
-        }
-
-        .dark .EasyMDEContainer .editor-toolbar button {
-            color: #9ca3af;
-        }
-
-        .dark .EasyMDEContainer .editor-toolbar button:hover,
-        .dark .EasyMDEContainer .editor-toolbar button.active {
-            background: #374151;
-            color: white;
-        }
-
         /* Ocultar el select original para evitar duplicidad if TomSelect tarda un instante */
         #parent_id_select { display: none; }
-
-        /* Normalizar tamaños de fuente en el editor EasyMDE (modo edición) */
-        .CodeMirror .cm-header-1 { font-size: 1.35rem !important; font-weight: 800 !important; }
-        .CodeMirror .cm-header-2 { font-size: 1.25rem !important; font-weight: 700 !important; }
-        .CodeMirror .cm-header-3 { font-size: 1.15rem !important; font-weight: 700 !important; }
-        .CodeMirror .cm-header-4, .CodeMirror .cm-header-5, .CodeMirror .cm-header-6 { font-size: 1rem !important; font-weight: 700 !important; }
-        .CodeMirror pre.CodeMirror-line, .CodeMirror-scroll { 
-            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif !important;
-            line-height: 1.6 !important;
-        }
-        .CodeMirror {
-            border-bottom-left-radius: 0.75rem;
-            border-bottom-right-radius: 0.75rem;
-            font-size: 0.9rem !important;
-        }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const observationsEl = document.getElementById('observations');
-            if (observationsEl) {
-                const easyMDE = new EasyMDE({
-                    element: observationsEl,
-                    spellChecker: false,
-                    autosave: {
-                        enabled: false,
-                    },
-                    status: false,
-                    minHeight: '200px',
-                    placeholder: 'Añade observaciones detalladas aquí...',
-                    toolbar: [
-                        "bold", "italic", "strikethrough", "heading", "|", 
-                        "quote", "code", "unordered-list", "ordered-list", "|", 
-                        "link", "image", "table", "horizontal-rule", "|", 
-                        "preview", "side-by-side", "fullscreen", "|", 
-                        "guide"
-                    ],
-                    renderingConfig: {
-                        singleLineBreaks: false,
-                        codeSyntaxHighlighting: true,
-                    },
-                });
-            }
-
             const quadrantData = @json(__('tasks.quadrants'));
             const priorityEl = document.querySelector('[name="priority"]');
             const urgencyEl = document.querySelector('[name="urgency"]');

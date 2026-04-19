@@ -32,8 +32,14 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Marked.js (Markdown Rendering) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Dynamic Markdown Styles -->
+    <x-markdown-styles :team="request()->route('team') && is_object(request()->route('team')) ? request()->route('team') : (request()->route('team') ? \App\Models\Team::find(request()->route('team')) : null)" />
 
     <!-- Global Alpine Store for Timer (Performance optimization N -> 1) -->
     <script>

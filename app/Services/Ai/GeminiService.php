@@ -146,7 +146,7 @@ class GeminiService implements AiAssistantInterface
         if ($contextInfo) {
             $contextInfo .= "\nREGLAS CRÍTICAS DE RESPUESTA:\n";
             $contextInfo .= "1. Puedes saludar y explicar cosas brevemente.\n";
-            $contextInfo .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD].\n";
+            $contextInfo .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD] y ESTAR FORMATEADO EN MARKDOWN para una presentación profesional y estructurada.\n";
             $contextInfo .= "3. NO incluyas introducciones ni despedidas dentro de las etiquetas [PAYLOAD].\n";
             $contextInfo .= "4. Si se te ha proporcionado un archivo (texto o binario), úsalo como fuente principal.\n";
             $contextInfo .= "\nINSTRUCCIÓN DEL USUARIO: {$prompt}\n";

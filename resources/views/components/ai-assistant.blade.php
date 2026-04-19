@@ -394,7 +394,9 @@
             },
             
             renderMarkdown(text) {
-                // Format [PAYLOAD] blocks as distinct cards
+                if (!text) return '';
+                
+                // Format [PAYLOAD] blocks as distinct cards BEFORE standard markdown parsing
                 let formatted = text.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
                     return `<div class="bg-indigo-50/50 dark:bg-indigo-500/5 border-2 border-dashed border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl p-4 my-4 font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 relative group/payload shadow-inner">
                         <span class="absolute -top-3 left-4 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-200 dark:border-indigo-800 shadow-sm">Contenido Inyectable</span>
@@ -402,11 +404,13 @@
                     </div>`;
                 });
 
-                // Simple bold and italic formatter
-                return formatted
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/\n/g, '<br>');
+                // Use Marked for the rest
+                try {
+                    return marked.parse(formatted);
+                } catch (e) {
+                    console.error('Marked error:', e);
+                    return formatted.replace(/\n/g, '<br>');
+                }
             },
 
             copyToClipboard(text) {
@@ -448,43 +452,95 @@
             },
 
             async transferToTask(content) {
-                const { value: target } = await Swal.fire({
-                    title: '<div class="flex items-center justify-center space-x-2"><div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div><span class="text-sm font-black uppercase tracking-[0.2em] text-gray-800 dark:text-white">Acción de Ax.ia</span></div>',
-                    html: '<p class="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-1 mb-4 leading-relaxed">Analizando payload... ¿Dónde inyectamos el grano?</p>',
-                    input: 'radio',
-                    inputOptions: {
-                        'description': '🎯 Descripción de Tarea (Guardar)',
-                        'observations': '📝 Observaciones (Guardar)',
-                        'comment': '💬 Comentario en el Foro (Publicar)',
-                        'dom-reply': '✍️ Pegar en editor actual (Sin guardar)'
-                    },
-                    inputValidator: (value) => {
-                        if (!value) return '¡Selecciona un destino!'
-                    },
-                    padding: '2rem',
-                    confirmButtonText: 'Aplicar Inyección',
-                    confirmButtonColor: '#4f46e5',
-                    showCancelButton: true,
-                    cancelButtonText: 'Cancelar',
-                    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                const isDark = document.documentElement.classList.contains('dark');
+                const target = await Swal.fire({
+                    width: (window.innerWidth < 640) ? '95%' : '500px',
+                    padding: '0',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color: isDark ? '#f1f5f9' : '#1e293b',
+                    showConfirmButton: false,
+                    showCancelButton: false,
+                    html: `
+                        <div class="text-left overflow-hidden rounded-[2rem]">
+                            <!-- Header Section -->
+                            <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-gray-800 flex items-center gap-5">
+                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400 block mb-1">Ax.ia Intelligence</span>
+                                    <h2 class="text-xl font-black text-gray-900 dark:text-white leading-tight">¿Dónde ponemos el grano?</h2>
+                                </div>
+                            </div>
+
+                            <!-- Grid Section -->
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4" id="ai-destination-grid">
+                                    <button data-target="description" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
+                                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        </div>
+                                        <span class="font-bold text-gray-800 dark:text-white text-xs">Cuerpo de tarea</span>
+                                    </button>
+
+                                    <button data-target="observations" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-violet-500 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
+                                        <div class="w-10 h-10 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </div>
+                                        <span class="font-bold text-gray-800 dark:text-white text-xs">Notas internas</span>
+                                    </button>
+
+                                    <button data-target="comment" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-amber-500 hover:bg-amber-50/30 dark:hover:bg-amber-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
+                                        <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                                        </div>
+                                        <span class="font-bold text-gray-800 dark:text-white text-xs">Hilo del Foro</span>
+                                    </button>
+
+                                    <button data-target="dom-reply" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-emerald-500 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
+                                        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        </div>
+                                        <span class="font-bold text-gray-800 dark:text-white text-xs">Pegar en editor</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Footer Section -->
+                            <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+                                <button onclick="Swal.close()" class="px-8 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500 hover:border-red-500 transition-all shadow-sm">
+                                    Cancelar y cerrar
+                                </button>
+                            </div>
+                        </div>
+                    `,
                     customClass: {
-                        popup: 'rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-[0_20px_60px_rgba(0,0,0,0.2)]',
-                        confirmButton: 'rounded-xl px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95',
-                        cancelButton: 'rounded-xl px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-all hover:text-red-500',
-                        input: 'text-sm font-medium text-gray-600 dark:text-gray-300 overflow-hidden'
+                        popup: 'rounded-[2.5rem] border-none shadow-[0_25px_80px_rgba(0,0,0,0.4)]',
+                        htmlContainer: 'p-0 m-0'
+                    },
+                    didOpen: () => {
+                        const grid = document.getElementById('ai-destination-grid');
+                        grid.addEventListener('click', (e) => {
+                            const btn = e.target.closest('button');
+                            if (btn && btn.hasAttribute('data-target')) {
+                                grid.dataset.selected = btn.getAttribute('data-target');
+                                Swal.clickConfirm();
+                            }
+                        });
+                    },
+                    preConfirm: () => {
+                        return document.getElementById('ai-destination-grid').dataset.selected;
                     }
-                });
+                }).then(result => result.isConfirmed ? result.value : null);
 
                 if (target) {
                     // Extract clean content once
-                    let cleanContent = content;
-                    const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                    if (match) {
-                        cleanContent = match[1].trim();
-                    } else {
-                        cleanContent = content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
-                    }
+                    const lastAiMessage = this.messages.filter(m => m.role === 'ai').pop();
+                    const cleanContent = lastAiMessage ? lastAiMessage.content : content;
+                    const match = cleanContent.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
+                    const finalPayload = match ? match[1].trim() : cleanContent.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
 
                     // Try to FIND and INJECT in DOM immediately if visible
                     let domInjected = false;
@@ -500,7 +556,7 @@
                     if (elementId) {
                         const el = document.getElementById(elementId);
                         if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
-                            el.value = cleanContent;
+                            el.value = finalPayload;
                             el.dispatchEvent(new Event('input', { bubbles: true }));
                             el.dispatchEvent(new Event('change', { bubbles: true }));
                             el.focus();
@@ -509,14 +565,56 @@
                         }
                     }
 
-                    // Only skip server if it's explicitly local-only OR if we don't have IDs
+                    // Only skip server if it's explicitly local-only
                     if (target === 'dom-reply') {
                         if (domInjected) {
-                            Swal.fire({ title: '¡Inyectado!', text: 'Texto pegado en el editor.', icon: 'success', timer: 1500, showConfirmButton: false });
+                            Swal.fire({
+                                title: '<span class="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">¡Inyectado!</span>',
+                                html: '<p class="text-lg font-bold text-gray-800 dark:text-white mt-2">Texto pegado en el editor.</p>',
+                                icon: 'success',
+                                iconColor: '#10b981',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                                customClass: { popup: 'rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-2xl' }
+                            });
                         } else {
-                            Swal.fire('Atención', 'No se encontró una caja de texto activa en esta página.', 'warning');
+                            Swal.fire({
+                                title: 'Atención',
+                                text: 'No se encontró una caja de texto activa en esta página.',
+                                icon: 'warning',
+                                confirmButtonColor: '#4f46e5',
+                                background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                                customClass: { popup: 'rounded-[1.5rem]' }
+                            });
                         }
                         return;
+                    }
+
+                    // Decide if we need to prompt for a title (if injecting to forum and no thread exists)
+                    let customTitle = null;
+                    if (target === 'comment' && !this.threadId) {
+                        const { value: threadTitle } = await Swal.fire({
+                            title: 'Nuevo Hilo en el Foro',
+                            input: 'text',
+                            inputLabel: '¿Qué título le ponemos a la conversación?',
+                            inputValue: this.taskId ? 'Discusión sobre tarea' : 'Consulta con Ax.ia',
+                            showCancelButton: true,
+                            confirmButtonColor: '#4f46e5',
+                            background: isDark ? '#0f172a' : '#ffffff',
+                            color: isDark ? '#f1f5f9' : '#1e293b',
+                            customClass: { popup: 'rounded-[1.5rem]' },
+                            inputValidator: (value) => {
+                                if (!value) return '¡Necesitas un título!';
+                            }
+                        });
+                        
+                        if (threadTitle) {
+                            customTitle = threadTitle;
+                        } else {
+                            return; // User cancelled the title prompt
+                        }
                     }
 
                     // Server Synchronization
@@ -525,12 +623,14 @@
                         url = '{{ route('ai.transfer_forum', ['team' => $teamId ?? 0, 'thread' => 'THREAD_ID']) }}'.replace('THREAD_ID', this.threadId);
                     } else if (this.taskId) {
                         url = '{{ route('ai.transfer', ['team' => $teamId ?? 0, 'task' => 'TASK_ID']) }}'.replace('TASK_ID', this.taskId);
+                    } else if (this.teamId) {
+                        url = '{{ route('ai.transfer_global', ['team' => 'TEAM_ID']) }}'.replace('TEAM_ID', this.teamId);
                     } else {
                         if (domInjected) {
-                            Swal.fire({ title: '¡Inyectado!', text: 'Se ha pegado en el editor móvil, pero no se ha guardado en el servidor (sin contexto de tarea/hilo).', icon: 'info', timer: 2500 });
+                            Swal.fire({ title: '¡Inyectado!', text: 'Se ha pegado en el editor móvil, pero no se ha guardado en el servidor (sin contexto de equipo/tarea/hilo).', icon: 'info', timer: 2500 });
                             return;
                         }
-                        Swal.fire('Error', 'Debes estar en una tarea o hilo para guardar en el servidor.', 'error');
+                        Swal.fire('Error', 'No hay contexto de equipo para guardar en el servidor.', 'error');
                         return;
                     }
 
@@ -543,27 +643,38 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
-                                content: content,
-                                target: target === 'reply' ? 'comment' : target // Normalize naming
+                                content: cleanContent,
+                                target: target === 'reply' ? 'comment' : target, // Normalize naming
+                                title: customTitle
                             })
                         });
 
                         const data = await response.json();
                         if (data.success) {
                             Swal.fire({
-                                title: domInjected ? '¡Guardado e Inyectado!' : '¡Hecho!',
-                                text: data.message,
+                                title: `<span class="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">${domInjected ? '¡Guardado e Inyectado!' : '¡Hecho!'}</span>`,
+                                html: `<p class="text-lg font-bold text-gray-800 dark:text-white mt-2">${data.message}</p>`,
                                 icon: 'success',
+                                iconColor: '#4f46e5',
                                 timer: domInjected ? 1500 : 2500,
-                                showConfirmButton: false
+                                showConfirmButton: false,
+                                background: isDark ? '#0f172a' : '#ffffff',
+                                customClass: { popup: 'rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-2xl' }
                             });
                             
-                            // If we didn't see it in DOM, or it's a critical update, reload only if NOT injected
                             if (!domInjected) {
                                 setTimeout(() => window.location.reload(), 1500);
                             }
                         } else {
-                            Swal.fire('Error', data.message, 'error');
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message,
+                                icon: 'error',
+                                confirmButtonColor: '#ef4444',
+                                background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                                customClass: { popup: 'rounded-[1.5rem]' }
+                            });
                         }
                     } catch (error) {
                         console.error('Transfer error:', error);

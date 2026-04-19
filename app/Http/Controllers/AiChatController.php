@@ -103,18 +103,11 @@ class AiChatController extends Controller
     {
         $request->validate([
             'content' => 'required|string',
-            'target' => 'required|string|in:description,observations,comment'
+            'target' => 'required|string|in:description,observations,comment',
+            'title' => 'nullable|string|max:255'
         ]);
 
-        $content = $request->content;
-
-        // Smart Extraction: search for [PAYLOAD] tags
-        if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
-            $content = trim($matches[1]);
-        } else {
-            // Clean up potentially failed tags or just use the whole content
-            $content = str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $content);
-        }
+        $content = $this->extractPayload($request->input('content'));
 
         if ($request->target === 'description') {
             $task->update(['description' => $content]);
@@ -139,7 +132,7 @@ class AiChatController extends Controller
                 $thread = \App\Models\ForumThread::create([
                     'team_id' => $team->id,
                     'task_id' => $rootTask->id,
-                    'title' => 'Discusión: ' . $rootTask->title,
+                    'title' => $request->title ?: 'Discusión: ' . $rootTask->title,
                     'user_id' => $request->user()->id,
                 ]);
             }
@@ -160,18 +153,12 @@ class AiChatController extends Controller
     {
         $request->validate([
             'content' => 'required|string',
-            'target' => 'required|string|in:reply,description'
+            'target' => 'required|string|in:reply,comment,description'
         ]);
 
-        $content = $request->content;
+        $content = $this->extractPayload($request->input('content'));
 
-        if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
-            $content = trim($matches[1]);
-        } else {
-            $content = str_replace(['[PAYLOAD]', '[/PAYLOAD]'], '', $content);
-        }
-
-        if ($request->target === 'reply') {
+        if ($request->target === 'reply' || $request->target === 'comment') {
             $thread->messages()->create([
                 'user_id' => $request->user()->id,
                 'content' => $content
@@ -179,7 +166,49 @@ class AiChatController extends Controller
             return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo.']);
         }
 
-        // Potential target to update thread title/op if needed, but for now just reply
         return response()->json(['success' => false, 'message' => 'Destino no válido.']);
+    }
+
+    public function transferGlobalContent(Request $request, \App\Models\Team $team)
+    {
+        $request->validate([
+            'content' => 'required|string',
+            'target' => 'required|string|in:comment,reply',
+            'title' => 'nullable|string|max:255'
+        ]);
+
+        $content = $this->extractPayload($request->input('content'));
+
+        // Find or create a "General Chat" thread for the team
+        $thread = \App\Models\ForumThread::where('team_id', $team->id)
+            ->whereNull('task_id')
+            ->where('title', 'LIKE', '%Chat General con Ax.ia%')
+            ->first();
+
+        if (!$thread) {
+            $thread = \App\Models\ForumThread::create([
+                'team_id' => $team->id,
+                'task_id' => null,
+                'title' => $request->title ?: '🗨️ Chat General con Ax.ia',
+                'user_id' => $request->user()->id,
+            ]);
+        }
+
+        // Create message
+        $thread->messages()->create([
+            'user_id' => $request->user()->id,
+            'content' => "Ax.ia: " . $content
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo general del equipo.']);
+    }
+
+    private function extractPayload($content)
+    {
+        if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
+            return trim($matches[1]);
+        }
+        
+        return trim(str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $content));
     }
 }

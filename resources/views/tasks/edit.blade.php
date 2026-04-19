@@ -98,18 +98,24 @@
                 </div>
 
                 <div>
-                    <label
-                        class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.description') }}</label>
-                    <textarea name="description" rows="3"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400">{{ old('description', $task->description) }}</textarea>
+                    <x-markdown-editor 
+                        name="description" 
+                        id="description"
+                        :value="old('description', $task->description)"
+                        :label="__('tasks.description')"
+                        rows="4"
+                    />
                 </div>
 
                 <!-- Observations (Markdown) -->
                 <div>
-                    <label
-                        class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.observations') }}</label>
-                    <textarea name="observations" id="observations"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">{{ old('observations', $task->observations) }}</textarea>
+                    <x-markdown-editor 
+                        name="observations" 
+                        id="observations"
+                        :value="old('observations', $task->observations)"
+                        :label="__('tasks.observations')"
+                        rows="4"
+                    />
                 </div>
 
                 <div class="grid grid-cols-3 gap-4">
@@ -812,139 +818,9 @@
     </div>
 
     @push('scripts')
-        <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
-        <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
         <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
         <style>
-            .EasyMDEContainer .CodeMirror {
-                background: #f9fafb;
-                border-bottom-left-radius: 0.75rem;
-                border-bottom-right-radius: 0.75rem;
-                border: 1px solid #e5e7eb;
-                color: #111827;
-            }
-
-            .dark .EasyMDEContainer .CodeMirror {
-                background: #1f2937;
-                border-color: #374151;
-                color: #f3f4f6;
-            }
-
-            .EasyMDEContainer .CodeMirror {
-                resize: vertical;
-            }
-
-            .EasyMDEContainer .editor-toolbar {
-                background: #f3f4f6;
-                border-top-left-radius: 0.75rem;
-                border-top-right-radius: 0.75rem;
-                border-color: #e5e7eb;
-            }
-
-            .dark .EasyMDEContainer .editor-toolbar {
-                background: #111827;
-                border-color: #374151;
-            }
-
-            .dark .EasyMDEContainer .editor-toolbar button {
-                color: #9ca3af;
-            }
-
-            .dark .EasyMDEContainer .editor-toolbar button:hover,
-            .dark .EasyMDEContainer .editor-toolbar button.active {
-                background: #374151;
-                color: white;
-            }
-
-            /* Ajuste de coordenadas del editor para respetar el layout de Sientia */
-            .EasyMDEContainer .CodeMirror-fullscreen {
-                z-index: 40 !important;
-                top: 64px !important;
-                height: calc(100vh - 64px) !important;
-                left: 0 !important;
-                width: 100% !important;
-                position: fixed !important;
-            }
-
-            .editor-toolbar.fullscreen {
-                z-index: 41 !important;
-                top: 64px !important;
-                left: 0 !important;
-                width: 100% !important;
-                border-top: 1px solid #e5e7eb;
-                position: fixed !important;
-            }
-
-            /* Panel de previsualización: respetamos su ancho nativo del 50% */
-            .editor-preview-side {
-                z-index: 42 !important;
-                top: 64px !important;
-                height: calc(100vh - 64px) !important;
-                background: #fff !important;
-            }
-
-            .dark .editor-preview-side {
-                background: #111827 !important;
-                border-color: #374151 !important;
-            }
-
-            /* Si el layout es VERTICAL y el sidebar está abierto */
-            @media (min-width: 1024px) {
-
-                .layout-vertical.sidebar-is-open .EasyMDEContainer .CodeMirror-fullscreen,
-                .layout-vertical.sidebar-is-open .editor-toolbar.fullscreen {
-                    left: 256px !important;
-                    width: calc(100% - 256px) !important;
-                }
-
-                /* La previsualización también debe encogerse para dejar sitio al sidebar si está abierto */
-                .layout-vertical.sidebar-is-open .editor-preview-side {
-                    width: calc(50% - 128px) !important;
-                }
-
-                .layout-vertical.sidebar-is-closed .EasyMDEContainer .CodeMirror-fullscreen,
-                .layout-vertical.sidebar-is-closed .editor-toolbar.fullscreen {
-                    left: 0 !important;
-                    width: 100% !important;
-                }
-            }
-
-            /* Forzamos que en modo side-by-side los paneles internos NO hereden el ancho 100% */
-            .CodeMirror-side-by-side {
-                width: 50% !important;
-            }
-
-            .editor-preview-side {
-                width: 50% !important;
-            }
-
-            /* Responsividad para móviles y tablets en Vista Dual */
-            @media (max-width: 1023px) {
-                .CodeMirror-side-by-side {
-                    flex-direction: column !important;
-                }
-
-                .CodeMirror-side-by-side>.CodeMirror-scroll,
-                .CodeMirror-side-by-side>.editor-preview-side {
-                    width: 100% !important;
-                    height: 50% !important;
-                }
-
-                .CodeMirror-side-by-side>.editor-preview-side {
-                    border-left: none !important;
-                    border-top: 1px solid #e5e7eb;
-                }
-
-                .dark .CodeMirror-side-by-side>.editor-preview-side {
-                    border-top-color: #374151;
-                }
-            }
-
-            .dark .editor-toolbar.fullscreen {
-                border-color: #374151;
-            }
-
             .ts-control {
                 border-radius: 0.75rem !important;
                 border-color: #e5e7eb !important;
@@ -990,62 +866,10 @@
             #parent_id_select {
                 display: none;
             }
-
-            /* Normalizar tamaños de fuente en el editor EasyMDE (modo edición) */
-            .CodeMirror .cm-header-1 { font-size: 1.35rem !important; font-weight: 800 !important; }
-            .CodeMirror .cm-header-2 { font-size: 1.25rem !important; font-weight: 700 !important; }
-            .CodeMirror .cm-header-3 { font-size: 1.15rem !important; font-weight: 700 !important; }
-            .CodeMirror .cm-header-4, .CodeMirror .cm-header-5, .CodeMirror .cm-header-6 { font-size: 1rem !important; font-weight: 700 !important; }
-            .CodeMirror pre.CodeMirror-line, .CodeMirror-scroll { 
-                font-family: ui-sans-serif, system-ui, -apple-system, sans-serif !important;
-                line-height: 1.6 !important;
-            }
-            .CodeMirror {
-                border-bottom-left-radius: 0.75rem;
-                border-bottom-right-radius: 0.75rem;
-                font-size: 0.9rem !important;
-            }
         </style>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const observationsEl = document.getElementById('observations');
-                if (observationsEl) {
-                    const easyMDE = new EasyMDE({
-                        element: observationsEl,
-                        spellChecker: false,
-                        autosave: {
-                            enabled: false,
-                        },
-                        status: false,
-                        minHeight: '200px',
-                        placeholder: 'Añade observaciones detalladas aquí...',
-                        toolbar: [
-                            "bold", "italic", "strikethrough", "heading", "|",
-                            "quote", "code", "unordered-list", "ordered-list", "|",
-                            "link", "image", "table", "horizontal-rule", "|",
-                            "preview",
-                            {
-                                name: "side-by-side",
-                                action: function(editor) {
-                                    EasyMDE.toggleSideBySide(editor);
-                                    // Comunicamos el estado a Alpine
-                                    const container = document.getElementById('task-edit-container');
-                                    if (container && container.__x) {
-                                        container.__x.$data.isDualView = editor.isSideBySideActive();
-                                    }
-                                },
-                                className: "fa fa-columns",
-                                title: "Vista Dual",
-                            },
-                            "fullscreen", "|", "guide"
-                        ],
-                        renderingConfig: {
-                            singleLineBreaks: false,
-                            codeSyntaxHighlighting: true,
-                        },
-                    });
-                }
 
                 const quadrantData = @json(__('tasks.quadrants'));
                 const priorityEl = document.querySelector('[name="priority"]');

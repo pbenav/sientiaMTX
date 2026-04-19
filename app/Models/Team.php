@@ -21,10 +21,12 @@ class Team extends Model
         'telegram_chat_id',
         'created_by_id',
         'quadrant_colors',
+        'settings',
     ];
 
     protected $casts = [
         'quadrant_colors' => 'array',
+        'settings' => 'array',
     ];
 
     protected static function boot(): void

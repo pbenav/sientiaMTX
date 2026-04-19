@@ -242,6 +242,13 @@
 
     @push('scripts')
         <script>
+            // Auto-open modal if validation fails
+            @if ($errors->any())
+                window.addEventListener('load', () => {
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'create-thread-modal' }));
+                });
+            @endif
+
             // Image Paste Handler for Textareas
             document.addEventListener('paste', function(e) {
                 if (e.target.tagName.toLowerCase() === 'textarea') {

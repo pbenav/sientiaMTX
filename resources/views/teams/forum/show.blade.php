@@ -1,21 +1,7 @@
 <x-app-layout>
     @push('styles')
-        <style>
-            /* Markdown Content Styling */
-            .markdown-content ul { list-style-type: disc !important; padding-left: 1.5rem; margin-bottom: 1rem; }
-            .markdown-content ol { list-style-type: decimal !important; padding-left: 1.5rem; margin-bottom: 1rem; }
-            .markdown-content h1 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 1rem; }
-            .markdown-content h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.75rem; }
-            .markdown-content code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
-            .dark .markdown-content code { background: #374151; }
-            .markdown-content pre { background: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem; overflow-x: auto; }
-            .markdown-content blockquote { border-left: 4px solid #8b5cf6; padding-left: 1rem; font-style: italic; color: #6b7280; margin-bottom: 1rem; }
-            .dark .markdown-content blockquote { color: #9ca3af; }
-            .markdown-content a { color: #8b5cf6; text-decoration: underline; }
-            .markdown-content img { max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin: 1rem 0; border: 1px solid #e5e7eb; }
-            .dark .markdown-content img { border-color: #374151; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        </style>
-    @endpush
+    <!-- Global Markdown styles are now handled via x-markdown-styles in app layout -->
+@endpush
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-center gap-4 min-w-0 flex-1">
@@ -187,18 +173,18 @@
                                 @if (!$thread->is_locked)
                                     <!-- Reply -->
                                     <button type="button"
-                                        onclick="quoteMessage(`{{ addslashes($message->user->name) }}`, `{{ addslashes($message->content) }}`)"
+                                        onclick="quoteMessage({{ json_encode($message->user->name) }}, {{ json_encode($message->content) }})"
                                         class="p-1.5 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                                         title="Responder citando">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
                                         </svg>
                                     </button>
-
+ 
                                     <!-- Edit -->
                                     @if ($isCurrentUser)
                                         <button type="button"
-                                            onclick="editMessage({{ $message->id }}, `{{ addslashes($message->content) }}`)"
+                                            onclick="editMessage({{ $message->id }}, {{ json_encode($message->content) }})"
                                             class="p-1.5 text-gray-400 hover:text-blue-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                                             title="Editar">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -206,10 +192,10 @@
                                             </svg>
                                         </button>
                                     @endif
-
+ 
                                     <!-- Ask AI -->
                                     <button type="button"
-                                        @click="$dispatch('ai:set-context', { messageId: {{ $message->id }}, userName: '{{ addslashes($message->user->name) }}' })"
+                                        @click="$dispatch('ai:set-context', { messageId: {{ $message->id }}, userName: {{ json_encode($message->user->name) }} })"
                                         class="p-1.5 text-gray-400 hover:text-indigo-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                                         title="Preguntar a Ax.ia sobre esto">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -295,10 +281,12 @@
                                 </div>
                             </div>
                             <div class="flex-1 space-y-3 pl-2">
-                                <label for="reply-content" class="sr-only">Escribe tu respuesta</label>
-                                <textarea id="reply-content" name="content" rows="10" style="min-height: 300px !important;"
-                                    class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm p-4 placeholder-gray-400 dark:text-gray-200 transition-colors"
-                                    placeholder="Escribe tu respuesta aquí..." required></textarea>
+                                <x-markdown-editor 
+                                    name="content" 
+                                    id="reply-content"
+                                    rows="10"
+                                    placeholder="Escribe tu respuesta aquí..."
+                                />
 
                                 <div class="flex justify-end relative">
                                     <button type="submit"
