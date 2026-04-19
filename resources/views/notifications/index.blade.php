@@ -148,6 +148,10 @@
                                             $iconClass .= "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30";
                                             $icon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" /></svg>';
                                             break;
+                                        case 'morning_summary':
+                                            $iconClass .= "bg-orange-100 text-orange-600 dark:bg-orange-900/30";
+                                            $icon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>';
+                                            break;
                                         case 'forum_message':
                                             $iconClass .= "bg-blue-100 text-blue-600 dark:bg-blue-900/30";
                                             $icon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>';
@@ -165,12 +169,35 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start">
                                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 {{ $notification->unread() ? 'font-bold' : '' }}">
-                                        {{ $notification->data['message'] ?? 'Nueva notificación' }}
+                                        {{ $notification->data['title'] ?? ($notification->data['message'] ?? 'Nueva notificación') }}
                                     </p>
                                     <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
                                         {{ $notification->created_at->diffForHumans() }}
                                     </span>
                                 </div>
+
+                                @if($type === 'morning_summary')
+                                    <div class="mt-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+                                        <p class="text-sm italic text-gray-600 dark:text-gray-400 mb-3 font-medium">
+                                            "{{ $notification->data['phrase'] ?? '' }}"
+                                        </p>
+                                        <div class="space-y-2">
+                                            @foreach($notification->data['tasks'] ?? [] as $task)
+                                                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                                                    <span class="font-bold text-gray-700 dark:text-gray-300">{{ $task['title'] }}</span>
+                                                    <span class="opacity-50">•</span>
+                                                    <span>{{ $task['team'] }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @else
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        {{ $notification->data['message'] ?? '' }}
+                                    </p>
+                                @endif
+
                                 <div class="mt-2 flex items-center gap-3">
                                     @if($notification->unread())
                                         <a href="{{ route('notifications.mark-as-read', $notification->id) }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors uppercase tracking-wider">

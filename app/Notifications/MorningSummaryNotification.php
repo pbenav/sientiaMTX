@@ -43,7 +43,7 @@ class MorningSummaryNotification extends Notification
             ->greeting('¡Buenos días, ' . explode(' ', $notifiable->name)[0] . '!')
             ->line('"' . $this->phrase . '"')
             ->line('Aquí tienes tus tareas prioritarias para hoy:')
-            ->divider();
+            ->line('---');
 
         foreach ($this->tasks->take(5) as $task) {
             $mail->line('• **' . $task->title . '** (' . ($task->team->name ?? 'Personal') . ')');
@@ -70,7 +70,13 @@ class MorningSummaryNotification extends Notification
             'title' => 'Resumen Matutino',
             'phrase' => $this->phrase,
             'task_count' => $this->tasks->count(),
-            'message' => 'Tienes ' . $this->tasks->count() . ' tareas para hoy. ' . mb_substr($this->phrase, 0, 50) . '...',
+            'tasks' => $this->tasks->map(fn($t) => [
+                'title' => $t->title,
+                'team' => $t->team->name ?? 'Personal',
+                'id' => $t->id,
+                'team_id' => $t->team_id
+            ])->toArray(),
+            'message' => 'Tienes ' . $this->tasks->count() . ' tareas para hoy. "' . mb_substr($this->phrase, 0, 40) . '..."',
             'action_url' => route('dashboard'),
         ];
     }
