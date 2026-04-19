@@ -57,6 +57,8 @@ class ProfileController extends Controller
             'quiet_hours_end' => 'string|nullable|regex:/^[0-9]{2}:[0-9]{2}$/',
             'notify_before_hours' => 'integer|min:0|max:168',
             'telegram_chat_id' => 'string|nullable|max:255',
+            'morning_summary' => 'boolean',
+            'morning_summary_time' => 'string|nullable|regex:/^[0-9]{2}:[0-9]{2}$/',
         ]);
 
         $user = $request->user();
@@ -73,6 +75,8 @@ class ProfileController extends Controller
             'quiet_hours_start' => $validated['quiet_hours_start'] ?? '22:00',
             'quiet_hours_end' => $validated['quiet_hours_end'] ?? '08:00',
             'notify_before_hours' => (int) ($validated['notify_before_hours'] ?? 2),
+            'morning_summary' => $request->boolean('morning_summary'),
+            'morning_summary_time' => $validated['morning_summary_time'] ?? '08:00',
         ]);
 
         $user->notification_settings = $newSettings;
