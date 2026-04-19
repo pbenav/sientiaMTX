@@ -8,6 +8,7 @@ use App\Models\TaskAttachment;
 use App\Traits\HandlesEisenhowerMatrix;
 use App\Traits\AwardsGamification;
 use App\Traits\ManagesTaskDeletion;
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -307,6 +308,16 @@ class TaskController extends Controller
                 if (!empty($skillIds)) {
                     $instance->skills()->sync($skillIds);
                 }
+
+                // Notify about Instance
+                if ($userId !== auth()->id()) {
+                    \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($instance, auth()->user()));
+                }
+            } else {
+                // Shared Mode: Notify about the main task
+                if ($userId !== auth()->id()) {
+                    \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($task, auth()->user()));
+                }
             }
         }
 
@@ -546,6 +557,9 @@ class TaskController extends Controller
             $assignedTo = array_filter((array) $request->input('assigned_to', []), fn($v) => !is_null($v) && $v !== '');
             $assignedGroups = array_filter((array) $request->input('assigned_groups', []), fn($v) => !is_null($v) && $v !== '');
 
+            // Track previously assigned users to avoid double notifications in shared mode
+            $previousUserIds = $task->assignedTo()->pluck('users.id')->toArray();
+
             foreach ($assignedTo as $userId) {
                 $task->assignments()->create([
                     'user_id' => $userId,
@@ -560,29 +574,34 @@ class TaskController extends Controller
                 ]);
             }
 
+            // Determine unique assigned users for notification logic
+            $userIds = collect($assignedTo);
+            foreach ($assignedGroups as $groupId) {
+                $group = $team->groups()->find($groupId);
+                if ($group) {
+                    $userIds = $userIds->merge($group->users->pluck('id'));
+                }
+            }
+            $uniqueUserIds = $userIds->unique();
+
             // Determine if it should still be a template
             $hasAssignments = !empty($assignedTo) || !empty($assignedGroups);
             $assignmentMode = $request->input('assignment_mode', 'shared');
             $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
             $task->is_template = $isTemplate;
             $task->save();
-            
-            if ($isTemplate) {
-                // Calculate unique users
-                $userIds = collect($assignedTo);
-                foreach ($assignedGroups as $groupId) {
-                    $group = $team->groups()->find($groupId);
-                    if ($group) {
-                        $userIds = $userIds->merge($group->users->pluck('id'));
+
+            // Notify NEW users in Shared Mode
+            if (!$isTemplate) {
+                $newUserIds = $uniqueUserIds->diff($previousUserIds);
+                foreach ($newUserIds as $userId) {
+                    if ((int)$userId !== (int)auth()->id()) {
+                        \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($task, auth()->user()));
                     }
                 }
-
-                // Optional: Include the creator in the work distribution only if they are in the 'assigned_to' list
-                if (in_array($task->created_by_id, $assignedTo)) {
-                    $userIds->push($task->created_by_id);
-                }
-
-                $uniqueUserIds = $userIds->unique();
+            }
+            
+            if ($isTemplate) {
 
                 // Sync instances
                 // Delete instances not belonging to the new user set (including orphaned null-assigned ones)
@@ -592,7 +611,7 @@ class TaskController extends Controller
 
                 foreach ($uniqueUserIds as $userId) {
                     if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
-                        $team->tasks()->create([
+                        $inst = $team->tasks()->create([
                             'title'              => $task->title,
                             'description'        => $task->description,
                             'priority'           => $task->priority,
@@ -612,6 +631,11 @@ class TaskController extends Controller
                             'skill_id'           => $task->skill_id,
                             'visibility'         => 'private',
                         ]);
+
+                        // Notify during update if new instance
+                        if ($userId !== auth()->id()) {
+                            \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($inst, auth()->user()));
+                        }
                     }
                 }
             } else {

@@ -150,6 +150,8 @@ return [
     ],
     'notifications' => [
         'blocked_alert' => '🚩 Task blocked: A member has reported an issue in ":title". Requires your immediate attention.',
+        'assigned_alert' => '📬 New task assigned: ":title"',
+        'assigned_body' => ':user has assigned you the task ":title".',
     ],
 
     'global_progress' => 'Global Progress',
