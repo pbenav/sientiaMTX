@@ -19,8 +19,8 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-90 translate-y-10"
-        style="display:none; resize: both; overflow: hidden; min-width: 320px; min-height: 400px;"
-        class="mb-4 w-[350px] sm:w-[420px] h-[580px] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto"
+        style="display:none; resize: both; overflow: hidden; min-width: 280px; min-height: 400px;"
+        class="mb-4 w-[calc(100vw-2rem)] sm:w-[420px] h-[580px] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto"
     >
         <!-- Header -->
         <div class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center cursor-default shrink-0 shadow-lg relative z-30">
@@ -100,18 +100,18 @@
         <!-- Messages Area -->
         <div class="flex-1 p-6 overflow-y-auto flex flex-col space-y-6 bg-gray-50/10 dark:bg-gray-950/20" id="ai-chat-messages">
             <!-- Status Badge -->
-            <div class="flex justify-center mb-6">
-                <div class="px-4 py-2 bg-indigo-600/10 dark:bg-indigo-400/10 rounded-2xl border border-indigo-600/20 dark:border-indigo-400/20 flex flex-col items-center gap-1 shadow-sm backdrop-blur-md">
+            <div class="flex justify-center mb-6 px-2">
+                <div class="w-full px-3 py-2 bg-indigo-600/10 dark:bg-indigo-400/10 rounded-2xl border border-indigo-600/20 dark:border-indigo-400/20 flex flex-col items-center gap-1 shadow-sm backdrop-blur-md">
                     <div class="flex items-center gap-2">
                         <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-                        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
                             Sintonizando Ax.ia
                         </span>
                     </div>
-                    <div class="flex flex-wrap justify-center gap-3 text-[9px] font-bold text-gray-500 uppercase tracking-tighter opactiy-80">
-                        <span class="flex items-center gap-1">📍 <span x-text="teamId ? 'Equipo ID: ' + teamId : 'Global'"></span></span>
-                        <span class="flex items-center gap-1">🤖 <span x-text="'Auto-Sincronizado'"></span></span>
-                        <span class="flex items-center gap-1">⚡ <span>V2.0/2.5 Ready</span></span>
+                    <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[8px] font-bold text-gray-500 uppercase tracking-tighter opacity-80 text-center">
+                        <span class="flex items-center gap-1 shrink-0">📍 <span x-text="teamId ? 'Equipo ' + teamId : 'Global'"></span></span>
+                        <span class="flex items-center gap-1 shrink-0">🤖 <span x-text="currentModel" class="max-w-[120px] truncate"></span></span>
+                        <span class="flex items-center gap-1 shrink-0">⚡ <span x-text="currentModel.includes('flash') ? 'Turbo' : 'Ultra'"></span></span>
                     </div>
                 </div>
             </div>
@@ -169,50 +169,49 @@
         </div>
 
         <!-- Input Area -->
-        <div class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-            <form @submit.prevent="sendMessage" class="flex items-center space-x-3">
+        <div class="p-3 sm:p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+            <form @submit.prevent="sendMessage" class="flex items-center space-x-2 sm:space-x-3">
                 <input 
                     x-model="input" 
                     type="text" 
-                    class="flex-1 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-sm py-3 px-5 shadow-inner"
-                    :placeholder="isRecording ? 'Grabando audio...' : 'Pregúntame algo...'" 
+                    class="flex-1 min-w-0 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-5 shadow-inner"
+                    :placeholder="isRecording ? 'Grabando...' : 'Pregunta...'" 
                     :disabled="loading || isRecording"
                 >
                 
                 <!-- Quick Multi-modal Actions -->
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
                     <!-- Audio Record -->
                     <button type="button" 
                             @click="toggleRecording"
-                            class="p-2.5 rounded-xl transition-all relative flex items-center justify-center group"
+                            class="p-2 sm:p-2.5 rounded-xl transition-all relative flex items-center justify-center group"
                             :class="isRecording ? 'bg-red-50 text-red-600 dark:bg-red-950/30' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'"
-                            :title="isRecording ? 'Detener grabación' : 'Grabar audio'">
-                        <svg x-show="!isRecording" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                        <div x-show="isRecording" class="flex items-center gap-2">
-                            <span class="flex h-2 w-2 relative">
+                            :title="isRecording ? 'Detener' : 'Grabar'">
+                        <svg x-show="!isRecording" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                        <div x-show="isRecording" class="flex items-center gap-1 sm:gap-2">
+                            <span class="flex h-1.5 w-1.5 relative">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
                             </span>
-                            <span class="text-[10px] font-black font-mono w-8" x-text="formatTime(recordingTime)"></span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H10a1 1 0 01-1-1v-4z"/></svg>
+                            <span class="text-[9px] font-black font-mono" x-text="formatTime(recordingTime)"></span>
                         </div>
                     </button>
 
                     <!-- File Upload -->
                     <button type="button" 
                             @click="$refs.fileInput.click()"
-                            class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
-                            title="Adjuntar archivo">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
+                            class="p-2 sm:p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                            title="Adjuntar">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
                     </button>
                     <input type="file" x-ref="fileInput" @change="handleFileUpload" class="hidden" accept="audio/*,image/*,application/pdf">
                 </div>
                 <button 
                     type="submit" 
-                    class="bg-indigo-600 text-white rounded-2xl p-3 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg hover:shadow-indigo-500/30 active:scale-95 flex items-center justify-center cursor-pointer"
+                    class="bg-indigo-600 text-white rounded-xl sm:rounded-2xl p-2.5 sm:p-3 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg hover:shadow-indigo-500/30 active:scale-95 flex items-center justify-center cursor-pointer shrink-0"
                     :disabled="loading || input.trim() === ''"
                 >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
             </form>
         </div>
@@ -252,6 +251,7 @@
             messageId: {{ $messageId ?: 'null' }},
             bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
             showHelp: false,
+            currentModel: 'Sincronizando...',
 
             // Audio Recording State
             isRecording: false,
@@ -276,6 +276,7 @@
                     if (data.messages && data.messages.length > 0) {
                         console.log(`Ax.ia: Recuperados ${data.messages.length} mensajes del historial.`);
                         this.messages = data.messages;
+                        if (data.current_model) this.currentModel = data.current_model;
                         this.$nextTick(() => this.scrollToBottom());
                     } else {
                         console.log('Ax.ia: No se encontró historial previo para este contexto.');
@@ -567,6 +568,7 @@
                     
                     const data = await response.json();
                     this.messages.push({ role: 'ai', content: data.message });
+                    if (data.current_model) this.currentModel = data.current_model;
                 } catch (error) {
                     console.error('AI Assistant Error:', error);
                     this.messages.push({ 

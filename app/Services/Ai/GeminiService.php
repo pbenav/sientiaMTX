@@ -74,6 +74,11 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function getTargetModel(): string
+    {
+        return $this->targetModel;
+    }
+
     public function withTaskContext(\App\Models\Task $task): self
     {
         $this->taskContext = $task;
@@ -196,17 +201,20 @@ class GeminiService implements AiAssistantInterface
         }
 
         if ($contextInfo) {
-            $contextInfo .= "\nREGLAS CRÍTICAS DE RESPUESTA:\n";
-            $contextInfo .= "1. Puedes saludar y explicar cosas brevemente.\n";
-            $contextInfo .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD] y ESTAR FORMATEADO EN MARKDOWN para una presentación profesional y estructurada.\n";
-            $contextInfo .= "3. NO incluyas introducciones ni despedidas dentro de las etiquetas [PAYLOAD].\n";
-            $contextInfo .= "4. Si se te ha proporcionado un archivo (texto o binario), úsalo como fuente principal.\n";
-            $contextInfo .= "\nINSTRUCCIÓN DEL USUARIO: {$prompt}\n";
+            $systemPrompt = "Eres Ax.ia, el asistente inteligente de Sientia MTX.\n\n";
+            $systemPrompt .= "REGLA DE IDIOMA: Responde SIEMPRE en el mismo idioma en que el usuario te hable, a menos que se te pida explícitamente lo contrario.\n";
+            $systemPrompt .= "REGLA DE IDENTIDAD: Tu modelo técnico actual es '{$this->targetModel}'. Si te preguntan por tu versión o identidad, confírmalo con orgullo pero mantén tu nombre como Ax.ia.\n\n";
+            $systemPrompt .= "REGLAS CRÍTICAS DE RESPUESTA:\n";
+            $systemPrompt .= "1. Puedes saludar y explicar cosas brevemente.\n";
+            $systemPrompt .= "2. Todo contenido que sea una propuesta de descripción, resumen, pasos o comentario PARA LA TAREA, DEBE ir encerrado entre etiquetas [PAYLOAD] y [/PAYLOAD] y ESTAR FORMATEADO EN MARKDOWN para una presentación profesional y estructurada.\n";
+            $systemPrompt .= "3. NO incluyas introducciones ni despedidas dentro de las etiquetas [PAYLOAD].\n";
+            $systemPrompt .= "4. Si se te ha proporcionado un archivo (texto o binario), úsalo como fuente principal.\n\n";
+            $systemPrompt .= $contextInfo;
             
-            $systemPrompt = "Eres Ax.ia, el asistente de Sientia MTX. Usa siempre [PAYLOAD] para el contenido técnico inyectable.\n\n" . $contextInfo;
             array_unshift($parts, ['text' => $systemPrompt]);
         } else {
-            $parts[] = ['text' => $prompt];
+            $systemPrompt = "Eres Ax.ia, el asistente inteligente de Sientia MTX. Tu modelo técnico actual es '{$this->targetModel}'. Responde siempre en el idioma del usuario.\n\nInstrucción: {$prompt}";
+            $parts = [['text' => $systemPrompt]];
         }
 
         if ($this->threadContext) {

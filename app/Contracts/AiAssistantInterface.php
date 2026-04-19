@@ -48,4 +48,9 @@ interface AiAssistantInterface
      * List all available models from the provider.
      */
     public function listAvailableModels(): array;
+
+    /**
+     * Get the current active model identifier.
+     */
+    public function getTargetModel(): string;
 }

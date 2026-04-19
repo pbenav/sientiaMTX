@@ -34,7 +34,7 @@
     updateContext() {
         const p = this.allPrefs[this.context || 'global'] || {};
         this.apiKey = p.api_key || '';
-        this.aiModel = p.ai_model || 'gemini-2.0-flash';
+        this.aiModel = p.ai_model || 'gemini-3-flash-preview';
         this.fetchModels();
     },
 
@@ -192,6 +192,11 @@
                             </span>
                         </div>
                         <select name="ai_model" x-model="aiModel" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-violet-500">
+                            <!-- Opción actual (para evitar que el navegador resetee el valor mientras carga) -->
+                            <template x-if="aiModel && !availableModels.some(m => m.id === aiModel) && !['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'].includes(aiModel)">
+                                <option :value="aiModel" x-text="'Cargando ' + aiModel + '...'" selected></option>
+                            </template>
+
                             <!-- Lista Dinámica (Si hay modelos detectados) -->
                             <template x-if="availableModels.length > 0">
                                 <optgroup label="Modelos disponibles en tu cuenta">
@@ -203,7 +208,7 @@
 
                             <!-- Lista de Emergencia (Siempre visible como fallback) -->
                             <optgroup label="Era Gemini 3 (2026)">
-                                <option value="gemini-3-flash">Gemini 3 Flash (Recomendado)</option>
+                                <option value="gemini-3-flash-preview">Gemini 3 Flash (Recomendado)</option>
                                 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                                 <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
                             </optgroup>

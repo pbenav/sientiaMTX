@@ -25,7 +25,8 @@ class AiChatController extends Controller
         $models = $aiService->listAvailableModels();
 
         return response()->json([
-            'models' => $models
+            'models' => $models,
+            'current_model' => $aiService->forUser($request->user(), $request->team_id)->getTargetModel()
         ]);
     }
 
@@ -40,7 +41,8 @@ class AiChatController extends Controller
             ->values();
 
         return response()->json([
-            'messages' => $messages
+            'messages' => $messages,
+            'current_model' => app(AiAssistantInterface::class)->forUser($request->user(), $request->team_id)->getTargetModel()
         ]);
     }
 
@@ -127,7 +129,8 @@ class AiChatController extends Controller
         ]);
 
         return response()->json([
-            'message' => $response
+            'message' => $response,
+            'current_model' => $aiAssistant->getTargetModel()
         ]);
     }
 
