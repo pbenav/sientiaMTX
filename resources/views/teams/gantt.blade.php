@@ -446,45 +446,46 @@
                 }
             }
 
-            document.addEventListener('mousedown', e => {
+            // Mouse Events
+            document.addEventListener('mousedown', e => { handleStart(e); }, true);
+            document.addEventListener('mousemove', e => { handleMove(e); }, true);
+            document.addEventListener('mouseup', () => { handleEnd(); }, true);
+
+            // Touch Events (For Tablets)
+            document.addEventListener('touchstart', e => { handleStart(e.touches[0]); }, { passive: false, capture: true });
+            document.addEventListener('touchmove', e => { handleMove(e.touches[0]); }, { passive: false, capture: true });
+            document.addEventListener('touchend', () => { handleEnd(); }, true);
+
+            function handleStart(e) {
                 const wrapper = e.target.closest('.bar-wrapper');
                 const handle = e.target.closest('.handle');
                 if (wrapper) {
                     isDragging = true;
                     dragPart = handle ? (handle.classList.contains('left') ? 'start' : 'end') : 'range';
-                }
-            }, true);
-
-            document.addEventListener('mousedown', e => {
-                const wrapper = e.target.closest('.bar-wrapper');
-                if (wrapper && wrapper.classList.contains('gantt-readonly')) {
-                    // Block Gantt from starting a drag/resize
-                    e.stopImmediatePropagation();
                     
-                    // Since we blocked mousedown, Gantt's on_click won't fire. 
-                    // We handle it manually on 'click' to allow expansion/details.
-                    wrapper.onclick = (event) => {
+                    if (wrapper.classList.contains('gantt-readonly')) {
+                        // For readonly, we don't start a drag but we handle the click/tap manually
                         const id = wrapper.dataset.id;
                         const task = allTasks.find(t => t.id == id);
-                        if (!task) return;
-
-                        if (task.has_children) {
-                            (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
-                            refreshGanttDisplay();
-                        } else {
-                            window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                        if (task && !isDragging) { // Simple tap
+                            if (task.has_children) {
+                                (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
+                                refreshGanttDisplay();
+                            } else {
+                                window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                            }
                         }
-                    };
+                    }
                 }
-            }, true);
+            }
 
-            document.addEventListener('mouseup', () => {
+            function handleEnd() {
                 isDragging = false;
                 richTooltip.style.display = 'none';
                 dragPart = null;
-            }, true);
+            }
 
-            document.addEventListener('mousemove', e => {
+            function handleMove(e) {
                 try {
                     const wrapper = e.target.closest('.bar-wrapper');
                     const isDragState = isDragging || wrapper;
@@ -514,22 +515,19 @@
 
                                 updateRichPanel(task, x, w, type);
                                 
-                                // Temporary show to measure
                                 richTooltip.style.display = 'flex';
                                 richTooltip.style.visibility = 'hidden';
                                 const rect = richTooltip.getBoundingClientRect();
                                 const padding = 20;
                                 
                                 let left = e.clientX + 25;
-                                let top = e.clientY - (rect.height / 2); // Default centered vertically to cursor
+                                let top = e.clientY - (rect.height / 2);
                                 
-                                // Adjust horizontally
                                 if (left + rect.width + padding > window.innerWidth) {
                                     left = e.clientX - rect.width - 25;
                                 }
                                 if (left < padding) left = padding;
 
-                                // Adjust vertically
                                 if (top + rect.height + padding > window.innerHeight) {
                                     top = window.innerHeight - rect.height - padding;
                                 }
@@ -546,7 +544,7 @@
                 } catch (err) {
                     console.error("Gantt Tooltip Error:", err);
                 }
-            }, true);
+            }
         }
 
         function showTooltip(task, e) {

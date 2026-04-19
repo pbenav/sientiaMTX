@@ -370,10 +370,12 @@
                         chosenClass: document.documentElement.classList.contains('dark') ?
                             'bg-white/5' : 'bg-black/[0.02]',
                         dragClass: 'opacity-50',
+                        forceFallback: true,
+                        fallbackClass: 'shadow-2xl',
                         preventOnFilter: true,
                         delay: 150,
                         delayOnTouchOnly: true,
-                        touchStartThreshold: 5,
+                        touchStartThreshold: 3,
                         filter: 'button, .toggle-subtasks-matrix, input, select',
                         onEnd: function(evt) {
                             const taskId = evt.item.getAttribute('data-id');
