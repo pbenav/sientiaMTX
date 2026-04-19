@@ -906,6 +906,11 @@
             $currThread = request()->route('thread') ?? $thread ?? null;
             $currThreadId = $currThread ? (is_object($currThread) ? $currThread->id : $currThread) : null;
             
+            // Si hay tarea pero no hilo, ver si la tarea tiene uno
+            if (!$currThreadId && $currTask && is_object($currTask) && $currTask->forumThread) {
+                $currThreadId = $currTask->forumThread->id;
+            }
+
             $currMessage = request()->route('message') ?? $message ?? null;
             $currMessageId = $currMessage ? (is_object($currMessage) ? $currMessage->id : $currMessage) : null;
         @endphp

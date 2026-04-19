@@ -750,15 +750,33 @@
                     };
 
                     const elementId = possibleIds[target];
-                    if (elementId) {
-                        const el = document.getElementById(elementId);
-                        if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
-                            el.value = finalPayload;
-                            el.dispatchEvent(new Event('input', { bubbles: true }));
-                            el.dispatchEvent(new Event('change', { bubbles: true }));
-                            el.focus();
-                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    let targetEl = elementId ? document.getElementById(elementId) : null;
+                    
+                    // FALLBACK: If not found by ID, look for ANY active editor or visible textarea
+                    if (!targetEl) {
+                        // Look for Quill editors first
+                        targetEl = document.querySelector('.ql-editor');
+                        if (!targetEl) {
+                            // Look for the first visible textarea
+                            targetEl = Array.from(document.querySelectorAll('textarea')).find(t => t.offsetWidth > 0 && t.offsetHeight > 0);
+                        }
+                    }
+
+                    if (targetEl) {
+                        if (targetEl.classList.contains('ql-editor')) {
+                            // Quill injection
+                            targetEl.innerHTML = marked.parse(finalPayload);
                             domInjected = true;
+                        } else if (targetEl.tagName === 'TEXTAREA' || targetEl.tagName === 'INPUT') {
+                            targetEl.value = finalPayload;
+                            targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                            targetEl.dispatchEvent(new Event('change', { bubbles: true }));
+                            domInjected = true;
+                        }
+                        
+                        if (domInjected) {
+                            targetEl.focus();
+                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                     }
 
@@ -799,6 +817,7 @@
                             inputValue: this.taskId ? 'Discusión sobre tarea' : 'Consulta con Ax.ia',
                             showCancelButton: true,
                             confirmButtonColor: '#4f46e5',
+                            cancelButtonColor: '#ef4444',
                             background: isDark ? '#0f172a' : '#ffffff',
                             color: isDark ? '#f1f5f9' : '#1e293b',
                             customClass: { popup: 'rounded-[1.5rem]' },
