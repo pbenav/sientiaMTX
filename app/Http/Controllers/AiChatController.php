@@ -9,12 +9,30 @@ use App\Models\AiChatMessage;
 
 class AiChatController extends Controller
 {
+    public function getAvailableModels(Request $request, AiAssistantInterface $aiService)
+    {
+        $aiService->forUser($request->user(), $request->team_id);
+        
+        // Si viene una clave en la request, la usamos para la consulta temporal
+        if ($request->api_key) {
+            // Necesitamos acceder a la propiedad protegida o añadir un setter
+            // Por ahora, si el servicio lo soporta, la inyectamos.
+            if (method_exists($aiService, 'setTemporaryKey')) {
+                $aiService->setTemporaryKey($request->api_key);
+            }
+        }
+
+        $models = $aiService->listAvailableModels();
+
+        return response()->json([
+            'models' => $models
+        ]);
+    }
+
     public function getHistory(Request $request)
     {
         $messages = AiChatMessage::where('user_id', $request->user()->id)
-            ->when($request->team_id, function($q) use ($request) {
-                return $q->where('team_id', $request->team_id);
-            })
+            ->where('team_id', $request->team_id)
             ->latest()
             ->limit(20)
             ->get()
@@ -29,26 +47,51 @@ class AiChatController extends Controller
     public function ask(Request $request, AiAssistantInterface $aiAssistant)
     {
         $request->validate([
-            'prompt' => 'required|string|max:2000',
+            'prompt' => 'nullable|string|max:2000',
             'team_id' => 'nullable|integer|exists:teams,id',
             'task_id' => 'nullable|integer|exists:tasks,id',
             'attachment_id' => 'nullable|integer|exists:task_attachments,id',
             'forum_thread_id' => 'nullable|integer|exists:forum_threads,id',
-            'forum_message_id' => 'nullable|integer|exists:forum_messages,id'
+            'forum_message_id' => 'nullable|integer|exists:forum_messages,id',
+            'file' => 'nullable|file|max:20480' // 20MB limit
         ]);
 
+        ini_set('memory_limit', '512M'); // Asegurar memoria para Base64
         $user = $request->user();
+        $prompt = $request->prompt;
+
+        if ($request->hasFile('file')) {
+            \Illuminate\Support\Facades\Log::info("Subiendo archivo para IA: " . $request->file('file')->getClientOriginalName());
+        }
+        $prompt = $request->prompt;
+
+        if (!$prompt && !$request->hasFile('file')) {
+            return response()->json(['message' => '¿En qué puedo ayudarte?'], 422);
+        }
+
+        if (!$prompt && $request->hasFile('file')) {
+            $prompt = 'Analiza este archivo. SI CONTIENE UNA PREGUNTA O INSTRUCCIÓN, RESPÓNDELA DIRECTAMENTE CON PRIORIDAD. Si solo es información, transcríbela y resúmela o propón acciones.';
+        }
 
         // 1. Persist User Message
+        $contentToStore = $prompt;
+        if ($request->hasFile('file')) {
+            $contentToStore = "📁 [Archivo: " . $request->file('file')->getClientOriginalName() . "]\n\n" . $prompt;
+        }
+
         AiChatMessage::create([
             'user_id' => $user->id,
             'team_id' => $request->team_id,
             'task_id' => $request->task_id,
             'role' => 'user',
-            'content' => $request->prompt,
+            'content' => $contentToStore,
         ]);
 
         $aiAssistant->forUser($user, $request->team_id);
+
+        if ($request->hasFile('file')) {
+            $aiAssistant->withFile($request->file('file'));
+        }
 
         if ($request->task_id) {
             $task = \App\Models\Task::find($request->task_id);
@@ -72,7 +115,7 @@ class AiChatController extends Controller
             }
         }
         
-        $response = $aiAssistant->generateText($request->prompt);
+        $response = $aiAssistant->generateText($prompt);
 
         // 2. Persist AI Message
         AiChatMessage::create([

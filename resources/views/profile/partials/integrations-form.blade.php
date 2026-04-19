@@ -22,13 +22,38 @@
     apiKey: '',
     aiModel: '',
     openSelector: false,
+    availableModels: [],
+    loadingModels: false,
 
-    init() { this.updateContext(); },
+    init() { 
+        this.updateContext(); 
+        this.$watch('apiKey', () => this.fetchModels());
+        this.$watch('context', () => this.fetchModels());
+    },
     
     updateContext() {
         const p = this.allPrefs[this.context || 'global'] || {};
         this.apiKey = p.api_key || '';
-        this.aiModel = p.ai_model || 'gemini-1.5-flash-latest';
+        this.aiModel = p.ai_model || 'gemini-2.0-flash';
+        this.fetchModels();
+    },
+
+    async fetchModels() {
+        if (!this.apiKey || this.apiKey.length < 10) {
+            this.availableModels = [];
+            return;
+        }
+        
+        this.loadingModels = true;
+        try {
+            const response = await fetch(`{{ route('ai.models') }}?team_id=${this.context}&api_key=${this.apiKey}`);
+            const data = await response.json();
+            this.availableModels = data.models || [];
+        } catch (e) {
+            console.error('Error fetching models:', e);
+        } finally {
+            this.loadingModels = false;
+        }
     },
 
     setContext(val) {
@@ -159,36 +184,28 @@
                         <p class="text-[9px] text-gray-400 italic px-1" x-show="context !== ''">Dejádlo vacío para usar tu clave global</p>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Modelo Seleccionado</label>
+                        <div class="flex items-center justify-between px-1">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Seleccionado</label>
+                            <span x-show="loadingModels" class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                            </span>
+                        </div>
                         <select name="ai_model" x-model="aiModel" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-violet-500">
-                            <optgroup label="Modelos Gemini (Versiones 3 y 3.1)">
-                                <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
-                                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
-                                <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite Preview</option>
-                                <option value="gemini-3.1-flash-tts-preview">Gemini 3.1 Flash TTS Preview (Voz)</option>
-                            </optgroup>
-                            <optgroup label="Modelos Gemini (Versiones 2 y 2.5)">
-                                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                            <!-- Lista Dinámica (Si hay modelos detectados) -->
+                            <template x-if="availableModels.length > 0">
+                                <optgroup label="Modelos disponibles en tu cuenta">
+                                    <template x-for="model in availableModels" :key="model.id">
+                                        <option :value="model.id" x-text="model.display_name"></option>
+                                    </template>
+                                </optgroup>
+                            </template>
+
+                            <!-- Lista de Emergencia (Siempre visible como fallback) -->
+                            <optgroup label="Era Gemini 3 (2026)">
+                                <option value="gemini-3-flash">Gemini 3 Flash (Recomendado)</option>
                                 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
-                                <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro Preview TTS</option>
-                                <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS</option>
                                 <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                                <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite</option>
-                            </optgroup>
-                            <optgroup label="Generación de Imágenes (Nano Banana)">
-                                <option value="nano-banana-2">Nano Banana 2</option>
-                                <option value="nano-banana-pro">Nano Banana Pro</option>
-                                <option value="nano-banana">Nano Banana</option>
-                            </optgroup>
-                            <optgroup label="Modelos Especializados y Otros">
-                                <option value="gemini-robotics-er-1.6-preview">Gemini Robotics-ER 1.6 Preview</option>
-                                <option value="gemini-robotics-er-1.5-preview">Gemini Robotics-ER 1.5 Preview</option>
-                                <option value="gemma-4-26b-a4b-it">Gemma 4 26B A4B IT</option>
-                                <option value="gemma-4-31b-it">Gemma 4 31B IT</option>
-                                <option value="gemini-pro-latest">Gemini Pro Latest</option>
-                                <option value="gemini-flash-latest">Gemini Flash Latest</option>
-                                <option value="gemini-flash-lite-latest">Gemini Flash-Lite Latest</option>
                             </optgroup>
                         </select>
                     </div>
@@ -204,9 +221,17 @@
                             <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="allPrefs[context || 'global']?.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
                             <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
                         </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" name="apply_to_all" value="1" class="w-5 h-5 rounded-lg border-none bg-amber-100 dark:bg-amber-900/50 text-amber-600 focus:ring-amber-500">
+                            <span class="text-[10px] font-black text-amber-600 uppercase group-hover:text-amber-700 transition-colors">💥 Aplicar a TODOS mis equipos</span>
+                        </label>
                     </div>
-                    <button type="submit" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg">
-                        Guardar Preferencias de IA
+                    <button type="submit" 
+                        :disabled="loadingModels"
+                        :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'"
+                        class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-2xl transition-all shadow-lg">
+                        <span x-show="!loadingModels">Guardar Preferencias de IA</span>
+                        <span x-show="loadingModels">Cargando Modelos...</span>
                     </button>
                 </div>
             </form>

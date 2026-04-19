@@ -96,16 +96,41 @@ class ProfileController extends Controller
 
         $user = $request->user();
         $apiKey = $validated['api_key'] ? trim($validated['api_key']) : null;
+        $aiModel = $validated['ai_model'] ?? 'gemini-2.0-flash';
+        $applyToAll = $request->boolean('apply_to_all');
+
+        \Illuminate\Support\Facades\Log::info("Ax.ia: Guardando preferencia de modelo '{$aiModel}' para usuario {$user->id} (Contexto: " . ($validated['team_id'] ?? 'global') . ", Todo: " . ($applyToAll ? 'SI' : 'NO') . ")");
         
-        $user->aiPreferences()->updateOrCreate(
-            ['team_id' => $validated['team_id']],
-            [
+        if ($applyToAll) {
+            // Update all preferences for this user to match this new config
+            $user->aiPreferences()->update([
                 'api_key' => $apiKey,
-                'ai_model' => $validated['ai_model'] ?? 'gemini-1.5-flash-latest',
+                'ai_model' => $aiModel,
                 'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
                 'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
-            ]
-        );
+            ]);
+            
+            // Also ensure the "Global" or "Specific" one exists if not yet created
+            $user->aiPreferences()->updateOrCreate(
+                ['team_id' => $validated['team_id']],
+                [
+                    'api_key' => $apiKey,
+                    'ai_model' => $aiModel,
+                    'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
+                    'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
+                ]
+            );
+        } else {
+            $user->aiPreferences()->updateOrCreate(
+                ['team_id' => $validated['team_id']],
+                [
+                    'api_key' => $apiKey,
+                    'ai_model' => $aiModel,
+                    'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
+                    'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
+                ]
+            );
+        }
 
         return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'ai-updated');
     }

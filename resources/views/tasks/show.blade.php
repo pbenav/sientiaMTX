@@ -650,6 +650,7 @@
                                             fileName: '{{ addslashes($attachment->file_name) }}', 
                                             fileId: {{ $attachment->id }},
                                             taskId: {{ $task->id }},
+                                            teamId: {{ $team->id }},
                                             autoSubmit: false 
                                         })"
                                         class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"

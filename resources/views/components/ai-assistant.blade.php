@@ -99,6 +99,22 @@
 
         <!-- Messages Area -->
         <div class="flex-1 p-6 overflow-y-auto flex flex-col space-y-6 bg-gray-50/10 dark:bg-gray-950/20" id="ai-chat-messages">
+            <!-- Status Badge -->
+            <div class="flex justify-center mb-6">
+                <div class="px-4 py-2 bg-indigo-600/10 dark:bg-indigo-400/10 rounded-2xl border border-indigo-600/20 dark:border-indigo-400/20 flex flex-col items-center gap-1 shadow-sm backdrop-blur-md">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                            Sintonizando Ax.ia
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-3 text-[9px] font-bold text-gray-500 uppercase tracking-tighter opactiy-80">
+                        <span class="flex items-center gap-1">📍 <span x-text="teamId ? 'Equipo ID: ' + teamId : 'Global'"></span></span>
+                        <span class="flex items-center gap-1">🤖 <span x-text="'Auto-Sincronizado'"></span></span>
+                        <span class="flex items-center gap-1">⚡ <span>V2.0/2.5 Ready</span></span>
+                    </div>
+                </div>
+            </div>
             <template x-for="(msg, index) in messages" :key="index">
                 <div class="flex flex-col w-full">
                     <!-- Event / System Message -->
@@ -159,9 +175,38 @@
                     x-model="input" 
                     type="text" 
                     class="flex-1 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-sm py-3 px-5 shadow-inner"
-                    placeholder="Pregúntame algo..." 
-                    :disabled="loading"
+                    :placeholder="isRecording ? 'Grabando audio...' : 'Pregúntame algo...'" 
+                    :disabled="loading || isRecording"
                 >
+                
+                <!-- Quick Multi-modal Actions -->
+                <div class="flex items-center gap-1">
+                    <!-- Audio Record -->
+                    <button type="button" 
+                            @click="toggleRecording"
+                            class="p-2.5 rounded-xl transition-all relative flex items-center justify-center group"
+                            :class="isRecording ? 'bg-red-50 text-red-600 dark:bg-red-950/30' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'"
+                            :title="isRecording ? 'Detener grabación' : 'Grabar audio'">
+                        <svg x-show="!isRecording" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                        <div x-show="isRecording" class="flex items-center gap-2">
+                            <span class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            <span class="text-[10px] font-black font-mono w-8" x-text="formatTime(recordingTime)"></span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H10a1 1 0 01-1-1v-4z"/></svg>
+                        </div>
+                    </button>
+
+                    <!-- File Upload -->
+                    <button type="button" 
+                            @click="$refs.fileInput.click()"
+                            class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                            title="Adjuntar archivo">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    </button>
+                    <input type="file" x-ref="fileInput" @change="handleFileUpload" class="hidden" accept="audio/*,image/*,application/pdf">
+                </div>
                 <button 
                     type="submit" 
                     class="bg-indigo-600 text-white rounded-2xl p-3 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg hover:shadow-indigo-500/30 active:scale-95 flex items-center justify-center cursor-pointer"
@@ -208,9 +253,44 @@
             bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
             showHelp: false,
 
+            // Audio Recording State
+            isRecording: false,
+            mediaRecorder: null,
+            audioChunks: [],
+            recordingTime: 0,
+            recordingInterval: null,
+            pendingFile: null,
+
+            init() {
+                console.log('Ax.ia: Iniciando componente...', { teamId: this.teamId });
+                this.loadHistory();
+                if (localStorage.getItem('ai_assistant_open') === '1') {
+                    this.open = true;
+                }
+            },
+
+            async loadHistory() {
+                try {
+                    const response = await fetch(`{{ route('ai.history') }}?team_id=${this.teamId || ''}`);
+                    const data = await response.json();
+                    if (data.messages && data.messages.length > 0) {
+                        console.log(`Ax.ia: Recuperados ${data.messages.length} mensajes del historial.`);
+                        this.messages = data.messages;
+                        this.$nextTick(() => this.scrollToBottom());
+                    } else {
+                        console.log('Ax.ia: No se encontró historial previo para este contexto.');
+                    }
+                } catch (e) {
+                    console.error('Ax.ia: Error cargando historial:', e);
+                }
+            },
+
             setContext(detail) {
                 this.messageId = detail.messageId;
                 this.attachmentId = null; // Clear attachment when setting forum context
+                this.threadId = detail.threadId || this.threadId;
+                this.taskId = detail.taskId || this.taskId;
+                this.teamId = detail.teamId || this.teamId;
                 this.open = true;
                 
                 // Add a system feedback message
@@ -245,6 +325,7 @@
                 this.input = `Analiza el archivo "${detail.fileName}" y hazme un resumen de su contenido relevante para esta tarea.`;
                 
                 if (detail.taskId) this.taskId = detail.taskId;
+                if (detail.teamId) this.teamId = detail.teamId;
 
                 // Auto-trigger the analysis if requested
                 if (detail.autoSubmit) {
@@ -343,43 +424,155 @@
                     return;
                 }
                 this.open = !this.open;
-                if(this.open) this.scrollToBottom();
+                
+                if (!this.open) {
+                    localStorage.setItem('ai_assistant_open', '0');
+                }
+                if(this.open) {
+                    this.scrollToBottom();
+                    localStorage.setItem('ai_assistant_open', '1');
+                }
+            },
+
+            async clearHistory() {
+                if (!confirm('¿Seguro que quieres borrar todo el historial de este chat?')) return;
+                
+                try {
+                    await fetch('{{ route('ai.clear-history') }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    });
+                    this.messages = [{ role: 'ai', content: 'Historial borrado. ¿En qué puedo ayudarte ahora?' }];
+                } catch (e) {
+                    console.error('Error clearing history:', e);
+                }
+            },
+
+            // Audio Recording Methods
+            async toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    await this.startRecording();
+                }
+            },
+
+            async startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.audioChunks = [];
+                    this.recordingTime = 0;
+
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.audioChunks.push(event.data);
+                    };
+
+                    this.mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                        this.pendingFile = new File([audioBlob], `recording_${new Date().getTime()}.webm`, { type: 'audio/webm' });
+                        
+                        // Stop all tracks to release the microphone
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                        // Trigger message send automatically for recordings
+                        this.sendMessage();
+                    };
+
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    
+                    this.recordingInterval = setInterval(() => {
+                        this.recordingTime++;
+                    }, 1000);
+
+                } catch (err) {
+                    console.error('Error al acceder al micrófono:', err);
+                    alert('No se pudo acceder al micrófono. Por favor, revisa los permisos.');
+                }
+            },
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    clearInterval(this.recordingInterval);
+                }
+            },
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            },
+
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.pendingFile = file;
+                    this.messages.push({ 
+                        role: 'system', 
+                        content: `📎 Archivo listo para enviar: **${file.name}**`
+                    });
+                    this.input = `Analiza este archivo...`;
+                }
             },
 
             async sendMessage() {
-                if (this.input.trim() === '') return;
+                if (this.input.trim() === '' && !this.pendingFile) return;
                 
                 const userText = this.input.trim();
-                this.messages.push({ role: 'user', content: userText });
+                const fileToSend = this.pendingFile;
+
+                if (userText) {
+                    this.messages.push({ role: 'user', content: userText });
+                } else if (fileToSend) {
+                    this.messages.push({ role: 'user', content: '🎤 [Grabación de audio]' });
+                }
+
                 this.input = '';
+                this.pendingFile = null;
                 this.loading = true;
-                
                 this.scrollToBottom();
 
                 try {
+                    const formData = new FormData();
+                    formData.append('prompt', userText);
+                    formData.append('team_id', this.teamId || '');
+                    formData.append('task_id', this.taskId || '');
+                    formData.append('attachment_id', this.attachmentId || '');
+                    formData.append('forum_thread_id', this.threadId || '');
+                    formData.append('forum_message_id', this.messageId || '');
+                    
+                    if (fileToSend) {
+                        formData.append('file', fileToSend);
+                    }
+
                     const response = await fetch('{{ route('ai.ask') }}', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ 
-                            prompt: userText,
-                            team_id: this.teamId,
-                            task_id: this.taskId,
-                            attachment_id: this.attachmentId,
-                            forum_thread_id: this.threadId,
-                            forum_message_id: this.messageId
-                        })
+                        body: formData
                     });
                     
-                    if (!response.ok) throw new Error('Network error');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || `Error del servidor (${response.status})`);
+                    }
                     
                     const data = await response.json();
                     this.messages.push({ role: 'ai', content: data.message });
                 } catch (error) {
-                    this.messages.push({ role: 'ai', content: 'Lo siento, ha habido un problema de conexión.' });
+                    console.error('AI Assistant Error:', error);
+                    this.messages.push({ 
+                        role: 'ai', 
+                        content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message 
+                    });
                 } finally {
                     this.loading = false;
                     this.scrollToBottom();

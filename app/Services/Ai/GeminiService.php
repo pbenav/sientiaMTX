@@ -14,14 +14,21 @@ class GeminiService implements AiAssistantInterface
     protected ?\App\Models\TaskAttachment $attachmentContext = null;
     protected ?\App\Models\ForumThread $threadContext = null;
     protected ?\App\Models\ForumMessage $messageContext = null;
+    protected ?\Illuminate\Http\UploadedFile $directFile = null;
     protected string $apiKey = '';
-    protected string $targetModel = 'gemini-1.5-flash-latest';
+    protected string $targetModel = 'gemini-3-flash';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
 
     public function __construct()
     {
         // By default, use the app config key if available
         $this->apiKey = config('services.gemini.key') ?? env('GEMINI_API_KEY') ?? '';
+    }
+
+    public function setTemporaryKey(string $key): self
+    {
+        $this->apiKey = $key;
+        return $this;
     }
 
     public function forUser(User $user, ?int $teamId = null): self
@@ -31,19 +38,38 @@ class GeminiService implements AiAssistantInterface
         $this->attachmentContext = null;
         $this->threadContext = null;
         $this->messageContext = null;
+        $this->directFile = null;
         
+        // Contexto específico o global
         // Contexto específico o global
         $pref = $user->aiPreferences()->where('team_id', $teamId)->first() 
                 ?? $user->aiPreferences()->whereNull('team_id')->first();
 
+        $keySource = "ARCHIVO .ENV / CONFIG (POR DEFECTO)";
         if ($pref) {
             if (!empty($pref->api_key)) {
                 $this->apiKey = (string) $pref->api_key;
+                $keySource = "BASE DE DATOS (Preferencia ID: {$pref->id}" . ($pref->team_id ? " - Equipo {$pref->team_id}" : " - Global") . ")";
+            } else {
+                Log::warning("La clave de API en Base de Datos para el usuario {$user->id} está vacía o falló la desencriptación.");
             }
+
             if (!empty($pref->ai_model)) {
-                $this->targetModel = $pref->ai_model;
+                $model = $pref->ai_model;
+                
+                // Saneado de modelos "ficticios" o con cuota cero detectada
+                if (str_contains($model, 'gemini-1.5') || str_contains($model, 'banana') || str_contains($model, 'gemma-4')) {
+                    Log::info("Saneando modelo antiguo o no válido '{$model}' a 'gemini-3-flash' para usuario {$user->id}");
+                    $model = 'gemini-3-flash';
+                }
+
+                $this->targetModel = $model;
             }
         }
+        
+        $maskedKey = $this->apiKey ? (substr($this->apiKey, 0, 4) . '....' . substr($this->apiKey, -4)) : 'VACÍA';
+        Log::debug("Ax.ia: Usando clave desde {$keySource} [Key: {$maskedKey}]");
+        Log::debug("Ax.ia: Usando modelo {$this->targetModel} para el contexto " . ($teamId ? "Equipo $teamId" : "Global"));
 
         return $this;
     }
@@ -67,6 +93,12 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function withFile(\Illuminate\Http\UploadedFile $file): self
+    {
+        $this->directFile = $file;
+        return $this;
+    }
+
     public function generateText(string $prompt): string
     {
         $contextInfo = "";
@@ -79,6 +111,26 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Equipo: " . ($this->taskContext->team->name ?? 'N/A') . "\n";
             $contextInfo .= "- Estado: " . ($this->taskContext->status ?? 'pending') . "\n";
             $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
+        }
+
+        if ($this->directFile && file_exists($this->directFile->getPathname())) {
+            $mime = $this->directFile->getMimeType() ?: 'application/octet-stream';
+            if ($this->isMultimodalMime($mime)) {
+                try {
+                    $parts[] = [
+                        'inline_data' => [
+                            'mime_type' => $mime,
+                            'data' => base64_encode(file_get_contents($this->directFile->getPathname()))
+                        ]
+                    ];
+                    $contextInfo .= "\nHE ADJUNTO UN ARCHIVO DIRECTO:\n";
+                    $contextInfo .= "- Nombre: {$this->directFile->getClientOriginalName()}\n";
+                    $contextInfo .= "- Tipo: {$mime}\n";
+                    $contextInfo .= "- Instrucción: Analiza este archivo directamente.\n";
+                } catch (\Exception $e) {
+                    $contextInfo .= "- Error: No se pudo procesar el archivo directo (" . $e->getMessage() . ").\n";
+                }
+            }
         }
 
         if ($this->attachmentContext) {
@@ -175,6 +227,15 @@ class GeminiService implements AiAssistantInterface
             'image/webp',
             'image/heic',
             'image/heif',
+            'audio/wav',
+            'audio/mp3',
+            'audio/mpeg',
+            'audio/ogg',
+            'audio/m4a',
+            'audio/x-m4a',
+            'audio/webm',
+            'audio/flac',
+            'audio/aac',
         ];
 
         foreach ($multimodalTypes as $type) {
@@ -208,6 +269,45 @@ class GeminiService implements AiAssistantInterface
     }
 
     /**
+     * Lists all models available for the current API key.
+     */
+    public function listAvailableModels(): array
+    {
+        if (empty($this->apiKey)) {
+            return [];
+        }
+
+        $url = "{$this->baseUrl}?key={$this->apiKey}";
+
+        try {
+            $response = Http::timeout(10)->get($url);
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = [];
+                $ids = [];
+                foreach ($data['models'] ?? [] as $m) {
+                    // Filter only models that support content generation
+                    if (in_array('generateContent', $m['supportedGenerationMethods'] ?? [])) {
+                        $id = str_replace('models/', '', $m['name']);
+                        $ids[] = $id;
+                        $models[] = [
+                            'id' => $id,
+                            'display_name' => $m['displayName'] ?? $m['name'],
+                            'description' => $m['description'] ?? ''
+                        ];
+                    }
+                }
+                Log::info("Ax.ia: Modelos disponibles detectados: " . implode(', ', $ids));
+                return $models;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error listing Gemini models: " . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
      * Helper to make the HTTP request to the Gemini API.
      * $parts should be an array of Gemini parts (text, inline_data, etc.)
      */
@@ -221,7 +321,7 @@ class GeminiService implements AiAssistantInterface
         $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
         try {
-            $response = Http::post($url, [
+            $response = Http::timeout(60)->post($url, [
                 'contents' => [
                     [
                         'parts' => $parts
@@ -238,10 +338,29 @@ class GeminiService implements AiAssistantInterface
             $errorBody = $response->json('error') ?? [];
             $errorMsg = $errorBody['message'] ?? 'Error desconocido';
 
-            Log::error("Gemini API Error ({$status}) on model {$model}: " . json_encode($errorBody));
+            // Si es un error de Cuota (429) o Prohibido (403) con mención a cuota, intentamos el modelo LITE
+            $isQuotaError = ($status === 429 || (isset($errorBody['status']) && $errorBody['status'] === 'RESOURCE_EXHAUSTED'));
+            
+            if ($isQuotaError && !$isFallback) {
+                if (!str_contains($model, 'lite')) {
+                    Log::info("Cuota agotada para {$model}. Intentando fallback automático a gemini-2.0-flash-lite...");
+                    return $this->callGemini('gemini-2.0-flash-lite', $parts, true);
+                } else {
+                    // Si el Lite también falla, intentamos el 1.5 en v1beta como último recurso desesperado
+                    Log::warning("Cuota agotada incluso en LITE. Intentando v1beta/gemini-1.5-flash...");
+                    $emergencyUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$this->apiKey}";
+                    try {
+                        $fallbackResponse = Http::timeout(30)->post($emergencyUrl, ['contents' => [['parts' => $parts]]]);
+                        if ($fallbackResponse->successful()) {
+                             $data = $fallbackResponse->json();
+                             return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Respuesta obtenida con el último recurso.';
+                        }
+                    } catch (\Exception $e) { /* ignore and fail later */ }
+                }
+            }
 
-            if ($status === 404 && !$isFallback && $model !== 'gemini-pro') {
-                return $this->callGemini('gemini-pro', $parts, true);
+            if ($status === 404 && !$isFallback && $model !== 'gemini-3-flash') {
+                return $this->callGemini('gemini-3-flash', $parts, true);
             }
 
             return "Lo siento, ha ocurrido un error al procesar tu solicitud ({$errorMsg}).";

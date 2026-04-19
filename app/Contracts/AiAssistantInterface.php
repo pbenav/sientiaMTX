@@ -18,6 +18,11 @@ interface AiAssistantInterface
      * Set an attachment context for the next generation.
      */
     public function withAttachmentContext(\App\Models\TaskAttachment $attachment): self;
+
+    /**
+     * Set a direct file context (from request) for the next generation.
+     */
+    public function withFile(\Illuminate\Http\UploadedFile $file): self;
     
     /**
      * Set the forum context (thread and optional message context).
@@ -38,4 +43,9 @@ interface AiAssistantInterface
      * Translate or simplify a complex text (Complexity Translator).
      */
     public function simplifyText(string $complexText): string;
+
+    /**
+     * List all available models from the provider.
+     */
+    public function listAvailableModels(): array;
 }
