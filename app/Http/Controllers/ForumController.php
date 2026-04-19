@@ -72,6 +72,21 @@ class ForumController extends Controller
             if ($validated['task_id']) {
                 $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
                 
+                // Privacy check for the task before linking a thread
+                $isCoordinator = $team->isCoordinator(auth()->user());
+                $userId = auth()->id();
+                if (!$isCoordinator) {
+                    $hasAccess = $task->visibility === 'public' ||
+                                 $task->created_by_id === $userId ||
+                                 $task->assigned_user_id === $userId ||
+                                 $task->assignedTo->contains($userId) ||
+                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
+                    
+                    if (!$hasAccess) {
+                        abort(403, 'No puedes crear hilos para tareas privadas a las que no tienes acceso.');
+                    }
+                }
+                
                 // Force link to the root task
                 while ($task->parent_id && $task->parent) {
                     $task = $task->parent;
@@ -158,6 +173,26 @@ class ForumController extends Controller
         }
         if ($thread->team_id !== $team->id) {
             abort(404);
+        }
+
+        // Privacy Check: If the thread is linked to a task, follow task visibility rules
+        if ($thread->task_id) {
+            $task = $thread->task;
+            $userId = auth()->id();
+            $isCoordinator = $team->isCoordinator(auth()->user());
+
+            if (!$isCoordinator) {
+                $hasAccess = $task->visibility === 'public' ||
+                             $task->created_by_id === $userId ||
+                             $task->assigned_user_id === $userId ||
+                             $task->assignedTo->contains($userId) ||
+                             $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
+
+                if (!$hasAccess) {
+                    return redirect()->route('teams.forum.index', $team)
+                        ->with('warning', __('tasks.unauthorized_access') ?? 'No tienes permiso para ver este hilo privado.');
+                }
+            }
         }
 
         $thread->load(['user', 'task']);
