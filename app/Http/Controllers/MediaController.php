@@ -11,17 +11,25 @@ class MediaController extends Controller
     /**
      * Display a listing of the user's uploaded files.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $teamId = $request->query('team_id');
         
-        // Show all files uploaded by this user, across all tasks and teams
-        $attachments = TaskAttachment::where('user_id', $user->id)
+        $query = TaskAttachment::where('user_id', $user->id)
             ->with(['task.team'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
 
-        return view('media.index', compact('attachments', 'user'));
+        if ($teamId) {
+            $query->whereHas('task', function($q) use ($teamId) {
+                $q->where('team_id', $teamId);
+            });
+        }
+
+        $attachments = $query->get();
+        $teams = $user->teams;
+
+        return view('media.index', compact('attachments', 'user', 'teams', 'teamId'));
     }
 
     /**

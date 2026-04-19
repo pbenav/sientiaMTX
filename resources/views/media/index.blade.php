@@ -65,9 +65,22 @@
         <!-- File List -->
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                     {{ __('tasks.files_management') }}</h3>
+                
+                <form action="{{ route('media.index') }}" method="GET" class="flex items-center gap-2">
+                    <label for="team_filter" class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{{ __('Filtrar por Equipo') }}:</label>
+                    <select name="team_id" id="team_filter" onchange="this.form.submit()" 
+                        class="text-xs font-bold bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 focus:ring-violet-500 transition-all text-gray-700 dark:text-gray-300">
+                        <option value="">{{ __('Todos los equipos') }}</option>
+                        @foreach($teams as $team)
+                            <option value="{{ $team->id }}" {{ $teamId == $team->id ? 'selected' : '' }}>
+                                {{ $team->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
             </div>
 
             @if ($attachments->isEmpty())
