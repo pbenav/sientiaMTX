@@ -143,7 +143,7 @@ class GoogleDriveController extends Controller
 
         $user = $request->user();
         $team = Team::findOrFail($request->team_id);
-        $folderId = $request->query('folderId', 'root');
+        $folderId = $request->query('folderId') ?: 'root';
         
         if (!$this->isTeamLinked($user, $team)) {
             return response()->json(['success' => false, 'message' => 'Equipo no vinculado'], 403);

@@ -43,10 +43,13 @@ class GoogleDriveService
         }
 
         $accessToken = is_array($tokenData) ? ($tokenData['access_token'] ?? null) : $tokenData;
+        $expiresAt = is_array($tokenData) ? (($tokenData['created'] ?? 0) + ($tokenData['expires_in'] ?? 0)) : 0;
 
-        // Check if expired and refresh if possible
-        if (!$accessToken && $refreshToken) {
-            return $this->refreshToken($user, $teamId);
+        // Check if expired (with a 30s buffer) or missing
+        if (!$accessToken || ($expiresAt > 0 && time() > ($expiresAt - 30))) {
+            if ($refreshToken) {
+                return $this->refreshToken($user, $teamId);
+            }
         }
 
         return $accessToken;
@@ -77,17 +80,17 @@ class GoogleDriveService
 
         if ($response->successful()) {
             $data = $response->json();
-            $newToken = $data['access_token'];
+            $data['created'] = time(); // Add timestamp for expiration tracking
 
             if ($teamId) {
                 $user->teams()->updateExistingPivot($teamId, [
-                    'google_token' => $newToken,
+                    'google_token' => $data,
                 ]);
             } else {
-                $user->update(['google_token' => $newToken]);
+                $user->update(['google_token' => $data]);
             }
 
-            return $newToken;
+            return $data['access_token'];
         }
 
         Log::error('Failed to refresh Google token for ' . ($teamId ? "team $teamId" : "global") . ': ' . $response->body());
@@ -159,7 +162,13 @@ class GoogleDriveService
         if (!$token) return null;
 
         $response = Http::withToken($token)
-            ->get($this->baseUrl . '/files?q=' . urlencode($query) . '&pageSize=' . $pageSize . '&fields=files(id,name,mimeType,webViewLink,iconLink,size)');
+            ->get($this->baseUrl . '/files', [
+                'q' => $query,
+                'pageSize' => $pageSize,
+                'fields' => 'files(id,name,mimeType,webViewLink,iconLink,size)',
+                'supportsAllDrives' => 'true',
+                'includeItemsFromAllDrives' => 'true'
+            ]);
 
         if ($response->successful()) {
             return $response->json()['files'];
@@ -207,7 +216,9 @@ class GoogleDriveService
         // Search for folder
         $search = Http::withToken($token)->get($this->baseUrl . '/files', [
             'q' => "name = 'SientiaMTX' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
-            'fields' => 'files(id)'
+            'fields' => 'files(id)',
+            'supportsAllDrives' => 'true',
+            'includeItemsFromAllDrives' => 'true'
         ]);
 
         if ($search->successful() && count($search->json('files')) > 0) {

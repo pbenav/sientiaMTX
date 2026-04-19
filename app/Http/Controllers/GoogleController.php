@@ -95,6 +95,8 @@ class GoogleController extends Controller
                     Log::info("Google Callback: Recovered Refresh Token from Pivot", ['success' => !!$refreshToken]);
                 }
 
+                $token['created'] = time(); // Store initial creation time
+
                 $user->teams()->updateExistingPivot($teamId, [
                     'google_id' => $userInfo->id,
                     'google_email' => $userInfo->email,
