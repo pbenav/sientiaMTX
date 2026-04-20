@@ -261,4 +261,6 @@ return [
     'drive_explorer' => 'Explorador de Google Drive',
     'not_found_in_team' => 'La tarea solicitada no pertenece a este equipo.',
     'member_since' => 'Miembro desde :date',
+    'leading_progress' => 'Miembro con mayor progreso en este plan',
+    'priority_changed' => 'Prioridad ajustada por el usuario',
 ];

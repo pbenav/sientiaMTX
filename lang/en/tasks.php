@@ -217,4 +217,6 @@ return [
     'your_execution' => 'Your Task',
     'not_found_in_team' => 'The requested task does not belong to this team.',
     'member_since' => 'Member since :date',
+    'leading_progress' => 'Member with highest progress in this plan',
+    'priority_changed' => 'Priority adjusted by the user',
 ];
