@@ -27,10 +27,19 @@ class TaskNoteController extends Controller
             'content' => 'nullable|string',
         ]);
 
-        TaskPrivateNote::updateOrCreate(
-            ['task_id' => $task->id, 'user_id' => auth()->id()],
-            ['content' => $validated['content']]
-        );
+        \Log::info("Saving Private Note for task#{$task->id} user#" . auth()->id(), ['content' => $validated['content']]);
+
+        try {
+            $note = TaskPrivateNote::updateOrCreate(
+                ['task_id' => $task->id, 'user_id' => auth()->id()],
+                ['content' => $validated['content'] ?? '']
+            );
+            
+            \Log::info("Note saved successfully ID: " . $note->id);
+        } catch (\Exception $e) {
+            \Log::error("Error saving private note: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error en la base de datos.'], 500);
+        }
 
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => 'Nota guardada correctamente.']);

@@ -489,10 +489,13 @@
 
             <!-- Private Notes -->
             <div x-data="{ 
-                privateNoteBody: @js($task->currentPrivateNote?->content ?? ''),
                 saving: false,
-                save() {
+                doSave() {
                     this.saving = true;
+                    // Fuerza la lectura del DOM justo antes de enviar
+                    const editor = document.getElementById('reply-content-private');
+                    const contentValue = editor ? editor.value : '';
+
                     fetch('{{ route('teams.tasks.private-notes.update', [$team, $task]) }}', {
                         method: 'POST',
                         headers: {
@@ -500,23 +503,34 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ content: this.privateNoteBody })
+                        body: JSON.stringify({ content: contentValue })
                     })
                     .then(res => res.json())
                     .then(data => {
                         this.saving = false;
                         if (data.success) {
-                            Toast.fire({
+                            Swal.fire({
                                 icon: 'success',
-                                title: data.message
+                                title: 'Guardado',
+                                text: data.message,
+                                toast: true,
+                                position: 'top-end',
+                                timer: 3000,
+                                showConfirmButton: false
                             });
                         }
                     })
-                    .catch(() => {
+                    .catch(err => {
                         this.saving = false;
-                        Toast.fire({
+                        console.error(err);
+                        Swal.fire({
                             icon: 'error',
-                            title: 'Error al guardar la nota'
+                            title: 'Error',
+                            text: 'No se pudo guardar la nota.',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3000,
+                            showConfirmButton: false
                         });
                     });
                 }
@@ -545,7 +559,7 @@
                         </div>
                     </div>
 
-                    <button @click="save()" 
+                    <button type="button" @click="doSave()" 
                         :disabled="saving"
                         class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-600/20 flex items-center gap-2">
                         <template x-if="!saving">
@@ -566,7 +580,6 @@
                 <div class="relative z-10" id="private-notes-editor">
                     <x-markdown-editor 
                         name="private_content" 
-                        @input="privateNoteBody = $event.target.value"
                         :value="$task->currentPrivateNote?->content ?? ''"
                         id="reply-content-private"
                         placeholder="Escribe aquí tus reflexiones, avances o notas que nadie más deba ver..."
