@@ -63,7 +63,7 @@
 
                                     <x-slot name="content">
                                         <x-dropdown-link :href="route('teams.forum.index', $currentTeamId)">
-                                            {{ __('forum.title') ?? 'Anuncios' }}
+                                            {{ __('forum.title') ?? 'Foro' }}
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.tasks.index', $currentTeamId)">
                                             {{ __('navigation.task_list') ?? 'Tareas' }}
@@ -216,7 +216,7 @@
                             {{ Str::limit($currentTeamLabel, 20) }}
                         </div>
                         <x-responsive-nav-link :href="route('teams.forum.index', $currentTeamId)" :active="request()->routeIs('teams.forum.*')" class="text-sm">
-                            {{ __('forum.title') ?? 'Anuncios' }}
+                            {{ __('forum.title') ?? 'Foro' }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.tasks.index', $currentTeamId)" :active="request()->routeIs('teams.tasks.*')" class="text-sm">
                             {{ __('navigation.task_list') ?? 'Tareas' }}

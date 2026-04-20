@@ -20,5 +20,6 @@ class TeamUser extends Pivot
      */
     protected $casts = [
         'google_token' => 'array',
+        'joined_at' => 'datetime',
     ];
 }

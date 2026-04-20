@@ -260,4 +260,5 @@ return [
     'select_from_drive' => 'Seleccionar de Drive',
     'drive_explorer' => 'Explorador de Google Drive',
     'not_found_in_team' => 'La tarea solicitada no pertenece a este equipo.',
+    'member_since' => 'Miembro desde :date',
 ];

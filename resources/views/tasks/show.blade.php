@@ -236,8 +236,12 @@
                 @php
                     $isRoadmap = $task->is_template;
                     $instances = $isRoadmap
-                        ? $task->instances()->with('assignedUser')->get()
-                        : $task->children()->with('assignedTo')->get();
+                        ? $task->instances()->with('assignedUser')->get()->sortBy(function($inst) {
+                            return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
+                        })
+                        : $task->children()->with('assignedTo')->get()->sortBy(function($inst) {
+                            return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
+                        });
                     $totalInst = $instances->count();
                     $sumProg = $instances->sum('progress_percentage');
                     $prog = $totalInst > 0 ? $sumProg / $totalInst : 0;
@@ -257,10 +261,27 @@
                                 {{ $doneInst }}/{{ $totalInst }} <span
                                     class="text-sm font-medium text-gray-400">{{ __('tasks.completed') }}</span></p>
                         </div>
-                        <div class="text-right min-w-[4rem]">
-                            <span id="global-progress-val"
-                                class="text-2xl font-black text-violet-600 dark:text-violet-400 heading"
-                                style="transition: none !important;">{{ round($prog) }}%</span>
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1">
+                            <div class="relative flex-1 max-w-sm" x-data="{ rSearch: '' }" x-init="$watch('rSearch', v => $dispatch('roadmap-filter', v))">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" x-model="rSearch" 
+                                    placeholder="{{ __('Filtrar por miembro o tarea...') }}" 
+                                    class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl text-xs outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/5 transition-all font-sans">
+                            </div>
+
+                            <div class="text-right min-w-[6rem]">
+                                <div class="flex items-center justify-end gap-2 mb-1.5">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Progreso') }}</span>
+                                    <span class="text-sm font-black text-violet-600 dark:text-violet-400 tabular-nums">{{ round($prog) }}%</span>
+                                </div>
+                                <div class="w-24 bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden ml-auto">
+                                    <div class="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full transition-all duration-700 ease-out"
+                                        style="width: {{ $prog }}%">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -290,36 +311,102 @@
                             </div>
                         </div>
                     @endif
-
-                    <div class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl">
+                    <div class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl"
+                        x-data="{ 
+                            sortKey: 'name', 
+                            sortDir: 'asc',
+                            sort(key) {
+                                if (this.sortKey === key) {
+                                    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+                                } else {
+                                    this.sortKey = key;
+                                    this.sortDir = 'asc';
+                                }
+                                const tbody = this.$refs.roadmapBody;
+                                const rows = Array.from(tbody.querySelectorAll('tr'));
+                                rows.sort((a, b) => {
+                                    let va = a.dataset[this.sortKey];
+                                    let vb = b.dataset[this.sortKey];
+                                    if (!isNaN(va) && !isNaN(vb)) {
+                                        va = parseFloat(va);
+                                        vb = parseFloat(vb);
+                                    }
+                                    if (va < vb) return this.sortDir === 'asc' ? -1 : 1;
+                                    if (va > vb) return this.sortDir === 'asc' ? 1 : -1;
+                                    return 0;
+                                });
+                                rows.forEach(row => tbody.appendChild(row));
+                            }
+                        }">
                         <table class="w-full text-left text-sm">
                             <thead
                                 class="bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                                 <tr>
-                                    <th class="px-4 py-3">{{ __('teams.members') }}</th>
-                                    <th class="px-4 py-3">{{ __('tasks.status') }}</th>
-                                    <th class="px-4 py-3 text-right">{{ __('tasks.time_spent') ?? 'Tiempo' }}</th>
+                                    <th class="px-4 py-3 cursor-pointer hover:text-violet-500 transition-colors group" @click="sort('name')">
+                                        <div class="flex items-center gap-2">
+                                            {{ __('teams.members') }}
+                                            <svg class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" :class="sortKey === 'name' ? 'opacity-100' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path x-show="sortKey !== 'name' || sortDir === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                                <path x-show="sortKey === 'name' && sortDir === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                        </div>
+                                    </th>
+                                    <th class="px-4 py-3 cursor-pointer hover:text-violet-500 transition-colors group" @click="sort('status')">
+                                        <div class="flex items-center gap-2">
+                                            {{ __('tasks.status') }}
+                                            <svg class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" :class="sortKey === 'status' ? 'opacity-100' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path x-show="sortKey !== 'status' || sortDir === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                                <path x-show="sortKey === 'status' && sortDir === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                        </div>
+                                    </th>
+                                    <th class="px-4 py-3 text-right cursor-pointer hover:text-violet-500 transition-colors group" @click="sort('time')">
+                                        <div class="flex items-center justify-end gap-2">
+                                            {{ __('tasks.time_spent') ?? 'Tiempo' }}
+                                            <svg class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" :class="sortKey === 'time' ? 'opacity-100' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path x-show="sortKey !== 'time' || sortDir === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                                <path x-show="sortKey === 'time' && sortDir === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                        </div>
+                                    </th>
                                     <th class="px-4 py-3 text-right">{{ __('tasks.actions') }}</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
+                            <tbody x-ref="roadmapBody" class="divide-y divide-gray-100 dark:divide-gray-800/60" x-data="{ roadmapQuery: '' }" @roadmap-filter.window="roadmapQuery = $event.detail">
+
                                 @php
                                     // Eager load time logs for instances to avoid N+1
                                     $instances->load('timeLogs');
                                 @endphp
                                 @foreach ($instances as $inst)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
-                                        <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
-                                            @php
-                                                $isInstActive = $inst->timeLogs()->whereNull('end_at')->exists();
-                                                $subtasksCount = $inst->children()->count();
-                                                $subtasksDone = $inst->children()->where('status', 'completed')->count();
-                                            @endphp
-                                            <div class="flex items-center gap-3">
+                                    @php
+                                        $instMember = $inst->assignedUser;
+                                        $instMemberName = $instMember?->name ?? ($inst->assignedTo->first()?->name ?? '');
+                                        $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
+                                        $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
+                                        $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
+                                        
+                                        // Team membership date
+                                        $teamMember = $instMember ? $team->members()->where('users.id', $instMember->id)->first() : null;
+                                        $joinedAt = $teamMember?->pivot?->joined_at;
+                                        $joinedDate = ($joinedAt instanceof \Carbon\Carbon) ? $joinedAt->format('d/m/Y') : null;
+
+                                        $subtasksCount = $inst->children()->count();
+                                        $subtasksDone = $inst->children()->where('status', 'completed')->count();
+                                    @endphp
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" 
+                                        data-name="{{ strtolower($instMemberName) }}"
+                                        data-status="{{ $inst->status }}"
+                                        data-time="{{ $instSeconds }}"
+                                        x-show="roadmapQuery === '' || '{{ strtolower($instMemberName) }}'.includes(roadmapQuery.toLowerCase()) || '{{ strtolower($inst->name) }}'.includes(roadmapQuery.toLowerCase())"
+                                        x-transition
+                                        onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
+                                        <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
+                                            <div class="flex items-center gap-4">
                                                 <div class="relative">
-                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-1 animate-pulse' : '' }}">
-                                                        @if ($inst->assignedUser)
-                                                            {{ strtoupper(substr($inst->assignedUser->name, 0, 2)) }}
+                                                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
+                                                        @if ($instMember)
+                                                            {{ strtoupper(substr($instMember->name, 0, 2)) }}
                                                         @elseif($inst->assignedTo->count() > 0)
                                                             {{ strtoupper(substr($inst->assignedTo->first()->name, 0, 2)) }}
                                                         @else
@@ -327,35 +414,40 @@
                                                         @endif
                                                     </div>
                                                     @if($isInstActive)
-                                                        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                                                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
                                                     @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-2">
-                                                        <span class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $inst->name }}</span>
+                                                        <span class="text-sm font-black text-gray-900 dark:text-white truncate">{{ $inst->name }}</span>
                                                         @if($isInstActive)
                                                             <span class="text-[7px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
                                                         @endif
                                                     </div>
-                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
                                                         @if ($team->isCoordinator(auth()->user()))
-                                                            <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-[10px] bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded focus:ring-0 cursor-pointer font-bold text-gray-500 dark:text-gray-400 px-1 py-0 -ml-1 transition-colors">
-                                                                <option value="unassign">{{ __('tasks.unassigned') ?? 'Pendiente' }}</option>
-                                                                @foreach($team->members as $member)
-                                                                    <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }}>
-                                                                        {{ $member->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
+                                                            <div class="flex items-center gap-1">
+                                                                <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                                <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-[10px] bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded focus:ring-0 cursor-pointer font-bold text-violet-600 dark:text-violet-400 px-1 py-0 -ml-1 transition-colors">
+                                                                    <option value="unassign" class="text-gray-900 dark:text-gray-100">{{ __('tasks.unassigned') ?? 'Pendiente' }}</option>
+                                                                    @foreach($team->members as $member)
+                                                                        <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }} class="text-gray-900 dark:text-gray-100">
+                                                                            {{ $member->name }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
                                                         @else
-                                                            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">
-                                                                @if ($inst->assignedUser)
-                                                                    {{ $inst->assignedUser->name }}
-                                                                @elseif($inst->assignedTo->count() > 0)
-                                                                    {{ $inst->assignedTo->pluck('name')->join(', ') }}
-                                                                @else
-                                                                    {{ __('tasks.unassigned') ?? '?' }}
-                                                                @endif
+                                                            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                                {{ $instMemberName ?: (__('tasks.unassigned') ?? '?') }}
+                                                            </span>
+                                                        @endif
+
+                                                        @if($joinedDate)
+                                                            <span class="text-[9px] text-gray-400 flex items-center gap-1">
+                                                                <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                                {{ __('tasks.member_since', ['date' => $joinedDate]) ?? "Desde $joinedDate" }}
                                                             </span>
                                                         @endif
 
@@ -369,7 +461,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3">
+                                        <td class="px-4 py-4">
                                             @php
                                                 $instStatusColor = match ($inst->status) {
                                                     'completed' => 'text-emerald-500 dark:text-emerald-400',
@@ -394,13 +486,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-right tabular-nums">
-                                            @php
-                                                $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
-                                                $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
-
-                                                $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
-                                            @endphp
+                                        <td class="px-4 py-4 text-right tabular-nums">
                                             <div class="flex flex-col items-end">
                                                 <span class="text-xs font-black text-gray-900 dark:text-white tabular-nums flex items-center gap-1.5">
                                                     @if($isInstActive)
@@ -414,9 +500,12 @@
                                                 @if($isInstActive)
                                                     <span class="text-[7px] font-bold text-red-500 uppercase tracking-widest mt-0.5 animate-pulse">{{ __('En curso') }}</span>
                                                 @endif
+                                                @if($totalSecondsTask > 0 && $instSeconds > 0)
+                                                    <span class="text-[8px] text-gray-400 font-bold mt-0.5">{{ round(($instSeconds / $totalSecondsTask) * 100) }}% del total</span>
+                                                @endif
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-right">
+                                        <td class="px-4 py-4 text-right">
                                             @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
                                                 <button onclick="event.stopPropagation(); nudgeUser({{ $inst->id }})"
                                                     class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
@@ -1248,153 +1337,59 @@
                 </div>
             @endif
 
-            <!-- Assigned To -->
-            @if ($task->assignedTo->isNotEmpty() || $task->assignedGroups->isNotEmpty())
-                <div x-data="{ searchQuery: '' }"
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors text-sans">
-                    @if ($task->assignedTo->isNotEmpty() || (isset($timeStats) && $timeStats->isNotEmpty()))
-                        <div>
-                            <div class="flex flex-col gap-3 mb-3">
-                                <div class="flex items-center justify-between">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                                        {{ __('tasks.assigned_to') }}
-                                    </p>
-                                    @if(isset($totalSecondsTask) && $totalSecondsTask > 0)
-                                        <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider">
-                                            {{ $totalFormattedTask }} {{ mb_strtolower(__('Total')) }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="relative">
-                                    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    <input type="text" x-model="searchQuery" 
-                                        placeholder="{{ __('Filtrar por nombre...') }}" 
-                                        class="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl text-[10px] outline-none focus:border-violet-500 transition-all font-sans">
-                                </div>
-                            </div>
-                            <div class="space-y-3">
-                                @php
-                                    $displayedUserIds = [];
-                                @endphp
-                                @foreach ($task->assignedTo as $u)
-                                    @php
-                                        $displayedUserIds[] = $u->id;
-                                        $instance = $task->is_template
-                                            ? $task->instances()->where('assigned_user_id', $u->id)->first()
-                                            : null;
-                                        $userStat = isset($timeStats) ? $timeStats->firstWhere('user.id', $u->id) : null;
-                                        $userPerc = ($totalSecondsTask > 0 && $userStat) ? ($userStat['seconds'] / $totalSecondsTask) * 100 : 0;
-                                    @endphp
-                                    <div class="space-y-1.5" x-show="searchQuery === '' || '{{ strtolower($u->name) }}'.includes(searchQuery.toLowerCase())" x-transition>
-                                        @if($instance)
-                                            <a href="{{ route('teams.tasks.show', [$team, $instance]) }}" class="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1.5 -ml-1.5 rounded-lg transition-colors group">
-                                                <div class="flex items-center gap-2.5">
-                                                    <div class="relative">
-                                                        <div class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors {{ in_array($u->id, $activeUserIds) ? 'ring-2 ring-red-500 ring-offset-1 dark:ring-offset-gray-900 animate-pulse' : '' }}">
-                                                            {{ strtoupper(substr($u->name, 0, 2)) }}
-                                                        </div>
-                                                        @if(in_array($u->id, $activeUserIds))
-                                                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
-                                                        @endif
-                                                    </div>
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors flex items-center gap-2">
-                                                        {{ $u->name }}
-                                                        @if(in_array($u->id, $activeUserIds))
-                                                            <span class="text-[8px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
-                                                        @endif
-                                                    </span>
-                                                </div>
-                                                @if($userStat)
-                                                    <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums flex items-center gap-1">
-                                                        @if(in_array($u->id, $activeUserIds))
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-red-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3" /></svg>
-                                                        @endif
-                                                        {{ $userStat['formatted'] }}
-                                                    </span>
-                                                @endif
-                                            </a>
-                                        @else
-                                            <div class="flex items-center justify-between p-1.5 -ml-1.5 group">
-                                                <div class="flex items-center gap-2.5">
-                                                    <div class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-500 dark:text-gray-400 shrink-0">
-                                                        {{ strtoupper(substr($u->name, 0, 2)) }}
-                                                    </div>
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
-                                                </div>
-                                                @if($userStat)
-                                                    <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums">{{ $userStat['formatted'] }}</span>
-                                                @endif
-                                            </div>
-                                        @endif
-
-                                        @if($userStat && $totalSecondsTask > 0)
-                                            <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden ml-8" style="width: calc(100% - 2rem);">
-                                                <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>
-                                            </div>
-                                        @endif
+            @if (!$task->is_template && !$task->children()->exists())
+                <!-- Assigned To (Only if no Roadmap table is present to avoid redundancy) -->
+                @if ($task->assignedTo->isNotEmpty() || $task->assignedGroups->isNotEmpty())
+                    <div x-data="{ searchQuery: '' }"
+                        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors text-sans mb-4">
+                        @if ($task->assignedTo->isNotEmpty())
+                            <div>
+                                <div class="flex flex-col gap-3 mb-3">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                                            {{ __('tasks.assigned_to') }}
+                                        </p>
                                     </div>
-                                @endforeach
-
-                                @if(isset($timeStats))
-                                    @foreach($timeStats->filter(fn($s) => !in_array($s['user']->id, $displayedUserIds)) as $stat)
-                                        @php
-                                            $userPerc = $totalSecondsTask > 0 ? ($stat['seconds'] / $totalSecondsTask) * 100 : 0;
-                                        @endphp
-                                        <div class="space-y-1.5" x-show="searchQuery === '' || '{{ strtolower($stat['user']->name) }}'.includes(searchQuery.toLowerCase())" x-transition>
-                                            <div class="flex items-center justify-between p-1.5 -ml-1.5">
-                                                <div class="flex items-center gap-2.5">
-                                                    <div class="relative">
-                                                        <div class="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-[9px] font-bold text-teal-600 dark:text-teal-400 shrink-0 {{ in_array($stat['user']->id, $activeUserIds) ? 'ring-2 ring-red-500 ring-offset-1 dark:ring-offset-gray-900 animate-pulse' : '' }}">
-                                                            {{ strtoupper(substr($stat['user']->name, 0, 2)) }}
-                                                        </div>
-                                                        @if(in_array($stat['user']->id, $activeUserIds))
-                                                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
-                                                        @endif
-                                                    </div>
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex items-center gap-2">
-                                                        {{ $stat['user']->name }} 
-                                                        @if(in_array($stat['user']->id, $activeUserIds))
-                                                            <span class="text-[8px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
-                                                        @endif
-                                                        <span class="text-[9px] text-gray-400 ml-1">({{ __('tasks.unassigned') ?? 'Ocasional' }})</span>
-                                                    </span>
+                                    <div class="relative">
+                                        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        <input type="text" x-model="searchQuery" 
+                                            placeholder="{{ __('Filtrar por nombre...') }}" 
+                                            class="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl text-[10px] outline-none focus:border-violet-500 transition-all font-sans">
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    @foreach ($task->assignedTo->sortBy('name') as $u)
+                                        <div class="flex items-center justify-between p-1.5 -ml-1.5 group" x-show="searchQuery === '' || '{{ strtolower($u->name) }}'.includes(searchQuery.toLowerCase())" x-transition>
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0">
+                                                    {{ strtoupper(substr($u->name, 0, 2)) }}
                                                 </div>
-                                                <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums flex items-center gap-1">
-                                                    @if(in_array($stat['user']->id, $activeUserIds))
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-red-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3" /></svg>
-                                                    @endif
-                                                    {{ $stat['formatted'] }}
-                                                </span>
-                                            </div>
-                                            <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden ml-8" style="width: calc(100% - 2rem);">
-                                                <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>
+                                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
                                             </div>
                                         </div>
                                     @endforeach
-                                @endif
+                                </div>
                             </div>
-                        </div>
-                    @endif
+                        @endif
 
-                    @if ($task->assignedGroups->isNotEmpty())
-                        <div class="pt-3 border-t border-gray-50 dark:border-gray-800">
-                            <p
-                                class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
-                                {{ __('tasks.groups') }}
-                            </p>
-                            <div class="flex flex-wrap gap-1.5">
-                                @foreach ($task->assignedGroups as $g)
-                                    <span
-                                        class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[9px] px-2 py-1 rounded-lg font-bold uppercase tracking-wider">
-                                        {{ $g->name }}
-                                    </span>
-                                @endforeach
+                        @if ($task->assignedGroups->isNotEmpty())
+                            <div class="pt-3 border-t border-gray-50 dark:border-gray-800">
+                                <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
+                                    {{ __('tasks.groups') }}
+                                </p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach ($task->assignedGroups as $g)
+                                        <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[9px] px-2 py-1 rounded-lg font-bold uppercase tracking-wider">
+                                            {{ $g->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                </div>
+                        @endif
+                    </div>
+                @endif
             @endif
 
             <!-- Forum Thread Widget -->

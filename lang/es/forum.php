@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Anuncios',
+    'title' => 'Foro',
     'discussion' => 'Discusión / Foro',
     'view_full' => 'Ver todo',
     'no_thread_yet' => 'Todavía no hay un hilo',

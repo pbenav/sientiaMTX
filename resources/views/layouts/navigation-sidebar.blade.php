@@ -123,7 +123,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                                         </svg>
-                                        <span class="truncate">{{ __('forum.title') ?? 'Anuncios' }}</span>
+                                        <span class="truncate">{{ __('forum.title') ?? 'Foro' }}</span>
                                     </a>
                                     <a href="{{ route('teams.tasks.index', $currentTeamId) }}"
                                         class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
