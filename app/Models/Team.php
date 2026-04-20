@@ -50,7 +50,8 @@ class Team extends Model
     {
         return $this->belongsToMany(User::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token', 'joined_at');
+            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token', 'joined_at')
+            ->orderBy('name');
     }
 
     // Relationship: A team has many groups
@@ -99,7 +100,8 @@ class Team extends Model
         return $this->members()
             ->wherePivotIn('role_id', function ($query) {
                 $query->select('id')->from('team_roles')->where('name', 'coordinator');
-            });
+            })
+            ->orderBy('name');
     }
 
     /**

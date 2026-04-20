@@ -22,7 +22,8 @@ class Group extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'group_user')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->orderBy('name');
     }
 
     public function assignments(): HasMany

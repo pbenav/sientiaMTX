@@ -368,7 +368,7 @@
                                     class="flex-1 bg-transparent border-0 focus:ring-0 text-xs text-gray-600 dark:text-white outline-none cursor-pointer">
                                     <option value="" class="dark:bg-gray-900">
                                         {{ __('tasks.add_member_to_group') }}...</option>
-                                    @foreach ($members as $m)
+                                    @foreach ($allMembers as $m)
                                         @if (!$group->users->contains($m->id))
                                             <option value="{{ $m->id }}" class="dark:bg-gray-900">
                                                 {{ $m->name }}</option>

@@ -196,12 +196,13 @@ class TeamController extends Controller
         }
 
         $members = $query->paginate(20, ['*'], 'members_page')->withQueryString();
+        $allMembers = $team->members; // Complete list for group assignment dropdowns
 
         $groups = $team->groups()->with('users')->get();
         $roles = TeamRole::all();
         $invitations = $team->invitations()->with('role')->get();
 
-        return view('teams.members', compact('team', 'members', 'groups', 'roles', 'invitations'));
+        return view('teams.members', compact('team', 'members', 'allMembers', 'groups', 'roles', 'invitations'));
     }
 
     /**
