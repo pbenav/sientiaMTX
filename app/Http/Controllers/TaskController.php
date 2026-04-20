@@ -96,9 +96,9 @@ class TaskController extends Controller
         }
 
         // --- Pagination ---
-        $perPage = $request->get('per_page', 25);
+        $perPage = $request->get('per_page', 10);
         if (!in_array($perPage, [10, 25, 50, 100, 'all'])) {
-            $perPage = 25;
+            $perPage = 10;
         }
 
         if ($perPage === 'all') {

@@ -129,8 +129,8 @@
                 <div class="w-32">
                     <select name="per_page" onchange="this.form.submit()"
                         class="w-full {{ request('per_page') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
-                        <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
-                        <option value="25" {{ request('per_page', 20) == 25 || request('per_page') == 20 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="all" {{ request('per_page') == 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Todas' }}</option>
