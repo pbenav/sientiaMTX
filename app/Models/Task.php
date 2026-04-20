@@ -143,7 +143,8 @@ class Task extends Model
     {
         return $this->belongsToMany(User::class, 'task_assignments')
             ->withPivot('assigned_at', 'assigned_by_id')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->orderBy('name');
     }
 
     public function assignedGroups(): BelongsToMany
