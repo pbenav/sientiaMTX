@@ -717,6 +717,7 @@
                         id="reply-content-private"
                         placeholder="Escribe aquí tus reflexiones, avances o notas que nadie más deba ver..."
                         rows="8"
+                        :upload-url="route('teams.forum.upload_image', $team)"
                     />
                 </div>
             </div>

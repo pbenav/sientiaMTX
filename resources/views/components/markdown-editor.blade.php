@@ -1,17 +1,85 @@
-@props(['name', 'value' => '', 'id' => null, 'label' => null, 'rows' => 6, 'placeholder' => ''])
+@props(['name', 'value' => '', 'id' => null, 'label' => null, 'rows' => 6, 'placeholder' => '', 'uploadUrl' => null])
 
 <div x-data="{ 
     content: @js($value), 
     tab: 'write',
+    uploading: false,
+    uploadUrl: @js($uploadUrl),
     get preview() {
         return marked.parse(this.content || '');
+    },
+    handlePaste(e) {
+        if (!this.uploadUrl) return;
+        
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                this.uploadFile(blob);
+            }
+        }
+    },
+    uploadFile(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        this.uploading = true;
+        
+        fetch(this.uploadUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            this.uploading = false;
+            if (data.url) {
+                const text = `\n![Image](${data.url})\n`;
+                this.insertAtCursor(text);
+            }
+        })
+        .catch(err => {
+            this.uploading = false;
+            console.error('Upload error:', err);
+        });
+    },
+    insertAtCursor(text) {
+        const textarea = this.$refs.textarea;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const currentContent = this.content || '';
+        
+        this.content = currentContent.substring(0, start) + text + currentContent.substring(end);
+        
+        this.$nextTick(() => {
+            const newPos = start + text.length;
+            textarea.setSelectionRange(newPos, newPos);
+            textarea.focus();
+        });
     }
 }" class="w-full space-y-2">
     @if($label)
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $label }}</label>
     @endif
 
-    <div class="relative flex flex-col w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/50">
+    <div class="relative flex flex-col w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/50"
+         :class="uploading ? 'opacity-70 pointer-events-none' : ''">
+        
+        <!-- Uploading overlay -->
+        <template x-if="uploading">
+            <div class="absolute inset-0 z-50 bg-white/50 dark:bg-gray-900/50 flex items-center justify-center backdrop-blur-[1px]">
+                <div class="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                    <svg class="animate-spin h-4 w-4 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ __('Subiendo imagen...') }}</span>
+                </div>
+            </div>
+        </template>
         
         <!-- Editor Tabs -->
         <div class="flex items-center justify-between px-3 py-2 bg-gray-50/80 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 backdrop-blur-md">
@@ -53,6 +121,7 @@
         <!-- Write Panel -->
         <div x-show="tab === 'write'" class="relative">
             <textarea 
+                x-ref="textarea"
                 name="{{ $name }}" 
                 id="{{ $id ?? $name }}"
                 x-model="content"
@@ -60,6 +129,7 @@
                 placeholder="{{ $placeholder }}"
                 class="w-full bg-transparent border-0 focus:ring-0 text-sm py-4 px-5 text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-600 resize-y min-h-[120px] font-mono leading-relaxed"
                 @input="$el.dispatchEvent(new CustomEvent('change', { bubbles: true }))"
+                @paste="handlePaste($event)"
             ></textarea>
 
             <!-- Markdown Hints Tooltip (Floating) -->

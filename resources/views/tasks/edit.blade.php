@@ -104,6 +104,7 @@
                         :value="old('description', $task->description)"
                         :label="__('tasks.description')"
                         rows="4"
+                        :upload-url="route('teams.forum.upload_image', $team)"
                     />
                 </div>
 
@@ -115,6 +116,7 @@
                         :value="old('observations', $task->observations)"
                         :label="__('tasks.observations')"
                         rows="4"
+                        :upload-url="route('teams.forum.upload_image', $team)"
                     />
                 </div>
 
