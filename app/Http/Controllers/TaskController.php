@@ -233,7 +233,7 @@ class TaskController extends Controller
             $task->skills()->sync($skillIds);
         }
 
-        // Handle Attachments directly from the create form
+        // Handle Local Attachments
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('attachments', 'public');
@@ -259,6 +259,36 @@ class TaskController extends Controller
                     ],
                     'ip_address' => request()->ip()
                 ]);
+            }
+        }
+
+        // Handle Drive Attachments
+        if ($request->has('drive_attachments')) {
+            $driveFiles = json_decode($request->drive_attachments, true);
+            if (is_array($driveFiles)) {
+                foreach ($driveFiles as $file) {
+                    $attachment = $task->attachments()->create([
+                        'user_id' => auth()->id(),
+                        'file_name' => $file['name'],
+                        'file_path' => 'google_drive/' . $file['id'],
+                        'file_size' => $file['size'] ?? 0,
+                        'mime_type' => $file['mimeType'] ?? 'application/octet-stream',
+                        'storage_provider' => 'google',
+                        'provider_file_id' => $file['id'],
+                        'web_view_link' => $file['webViewLink'],
+                    ]);
+
+                    AttachmentLog::create([
+                        'attachment_id' => $attachment->id,
+                        'user_id' => auth()->id(),
+                        'action' => 'drive_migration', // Linked from drive
+                        'metadata' => [
+                            'file_id' => $file['id'],
+                            'source' => 'google_drive'
+                        ],
+                        'ip_address' => request()->ip()
+                    ]);
+                }
             }
         }
 

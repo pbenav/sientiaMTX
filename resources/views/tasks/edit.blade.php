@@ -679,7 +679,19 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col items-end">
+                        <div class="flex items-center gap-2">
+                            @php
+                                $isGoogleLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+                            @endphp
+                            @if($isGoogleLinked)
+                                <button type="button" onclick="openDrivePicker()"
+                                    class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 text-xs font-bold px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
+                                    </svg>
+                                    {{ __('Google Drive') }}
+                                </button>
+                            @endif
                             <button type="button" onclick="document.getElementById('attachment-input').click()"
                                 class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -689,9 +701,6 @@
                                 </svg>
                                 {{ __('tasks.add_attachment') }}
                             </button>
-                            <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-tighter font-medium">
-                                {{ __('Máx. :size por archivo', ['size' => ini_get('upload_max_filesize')]) }}
-                            </span>
                         </div>
                     </div>
 
@@ -711,13 +720,19 @@
                                     class="group flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100/50 dark:border-gray-700/50 rounded-2xl hover:border-violet-200 dark:hover:border-violet-500 transition-all shadow-sm">
                                     <div class="flex items-center gap-4 min-w-0">
                                         <div
-                                            class="w-11 h-11 rounded-xl bg-white dark:bg-gray-950 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100/50 dark:border-gray-800/50 shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="1.5"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                                            class="w-11 h-11 rounded-xl bg-white dark:bg-gray-950 flex items-center justify-center {{ $attachment->storage_provider === 'google' ? 'text-blue-500' : 'text-violet-600 dark:text-violet-400' }} shadow-sm border border-gray-100/50 dark:border-gray-800/50 shrink-0 transition-colors">
+                                            @if($attachment->storage_provider === 'google')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
+                                                </svg>
+                                            @else
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="1.5"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            @endif
                                         </div>
                                         <div class="min-w-0 font-sans">
                                             <p class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate"
@@ -1039,6 +1054,129 @@
                     }
                 }
             });
+        </script>
+        <script>
+            function openDrivePicker(folderId = 'root') {
+                Swal.fire({
+                    title: '{{ __("Google Drive") }}',
+                    html: `
+                        <div class="flex flex-col gap-4">
+                            <div id="drive-contents" class="max-h-64 overflow-y-auto flex flex-col gap-1 text-left">
+                                <div class="flex items-center justify-center py-8">
+                                    <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    width: '32rem',
+                    showConfirmButton: false,
+                    showCancelButton: true,
+                    cancelButtonText: '{{ __("Cerrar") }}',
+                    didOpen: () => {
+                        loadDriveFolder(folderId);
+                    },
+                    background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                });
+            }
+
+            function loadDriveFolder(folderId) {
+                const container = document.getElementById('drive-contents');
+                const teamId = '{{ $team->id }}';
+                
+                fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.files) {
+                            container.innerHTML = '<p class="text-center py-4 text-gray-500">No se pudieron cargar los archivos.</p>';
+                            return;
+                        }
+
+                        container.innerHTML = '';
+                        
+                        // Add "Go Back" if not in root
+                        if (folderId !== 'root') {
+                            const backBtn = document.createElement('button');
+                            backBtn.className = 'flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors text-blue-600 font-bold';
+                            backBtn.innerHTML = `<span>⬅️</span> <span>{{ __("Volver") }}</span>`;
+                            backBtn.onclick = () => loadDriveFolder('root'); // Simple back to root for now
+                            container.appendChild(backBtn);
+                        }
+
+                        if (data.files.length === 0) {
+                            container.innerHTML += '<p class="text-center py-8 text-gray-500 italic">No hay archivos en esta carpeta.</p>';
+                        }
+
+                        data.files.forEach(file => {
+                            const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'flex items-center justify-between p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all group text-left border border-transparent hover:border-blue-100 dark:hover:border-blue-800 w-full';
+                            
+                            const icon = isFolder ? '📁' : '📄';
+                            const driveIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
+                            </svg>`;
+
+                            btn.innerHTML = `
+                                <div class="flex items-center gap-3 overflow-hidden">
+                                    <span class="text-lg grow-0">${icon}</span>
+                                    <div class="flex flex-col overflow-hidden">
+                                        <span class="text-xs font-bold truncate">${file.name}</span>
+                                        <span class="text-[9px] text-gray-400">${file.mimeType.split('.').pop()}</span>
+                                    </div>
+                                </div>
+                                ${isFolder ? '' : driveIcon}
+                            `;
+
+                            if (isFolder) {
+                                btn.onclick = () => loadDriveFolder(file.id);
+                            } else {
+                                btn.onclick = () => attachDriveFile(file);
+                            }
+                            container.appendChild(btn);
+                        });
+                    });
+            }
+
+            function attachDriveFile(file) {
+                const teamId = '{{ $team->id }}';
+                const taskId = '{{ $task->id }}';
+                
+                Swal.showLoading();
+                
+                fetch(`/teams/${teamId}/tasks/${taskId}/attachments/from-drive`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        file_id: file.id,
+                        file_name: file.name,
+                        web_view_link: file.webViewLink,
+                        mime_type: file.mimeType,
+                        file_size: file.size || 0
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __("Vinculado") }}',
+                            text: 'El archivo de Drive se ha vinculado correctamente.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.message || 'No se pudo vincular el archivo.', 'error');
+                    }
+                });
+            }
         </script>
     @endpush
 </x-app-layout>
