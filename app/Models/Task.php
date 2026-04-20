@@ -191,7 +191,9 @@ class Task extends Model
     // Relationship: A task can have many subtasks or dependent tasks
     public function children(): HasMany
     {
-        return $this->hasMany(Task::class, 'parent_id')->orderBy('title');
+        return $this->hasMany(Task::class, 'parent_id')
+            ->orderBy('title')
+            ->orderBy(User::select('name')->whereColumn('users.id', 'tasks.assigned_user_id'));
     }
 
     // Relationship: A template task has many instances

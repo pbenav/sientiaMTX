@@ -410,6 +410,9 @@
                             </tr>
 
                             {{-- Subtasks loop --}}
+                            @php
+                                $maxProgress = $task->children->max('progress_percentage');
+                            @endphp
                             @foreach ($task->children as $subtask)
                                 <tr class="subtask-row hidden bg-gray-50/50 dark:bg-gray-800/20 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-800/40"
                                     data-parent="{{ $task->id }}"
@@ -427,6 +430,14 @@
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
                                                 {{ $subtask->title }}
                                             </span>
+                                            @if($maxProgress > 0 && $subtask->progress_percentage === $maxProgress)
+                                                <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 flex items-center gap-0.5 animate-pulse" title="{{ __('tasks.leading_progress') ?? 'Máximo progreso' }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    TOP
+                                                </span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
@@ -435,8 +446,15 @@
                                             {{ __("tasks.statuses.{$subtask->status}") }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap flex items-center gap-1.5">
                                         {{ __("tasks.priorities.{$subtask->priority}") }}
+                                        @if($subtask->priority !== $task->priority)
+                                            <span class="p-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" title="{{ __('tasks.priority_changed') ?? 'Prioridad modificada por el usuario' }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap hidden lg:table-cell">
                                         {{ $subtask->creator?->name ?? '—' }}
