@@ -995,6 +995,52 @@
                 </div>
             @endif
 
+            <!-- My Tracking -->
+            @php
+                $trackingTask = $task->is_template ? $personalInstance : $task;
+            @endphp
+
+            @if ($trackingTask && !$task->is_template)
+                <div x-data="{ 
+                    taskId: {{ $trackingTask->id }},
+                    get isActive() { return Alpine.store('timer').activeTaskId == this.taskId },
+                    get elapsed() { return this.isActive ? Alpine.store('timer').elapsed : 0 },
+                    formatTime(seconds) {
+                        const h = Math.floor(seconds / 3600);
+                        const m = Math.floor((seconds % 3600) / 60);
+                        const s = seconds % 60;
+                        return [h, m, s].map(v => v < 10 ? '0' + v : v).join(':');
+                    }
+                }"
+                class="bg-white dark:bg-gray-900 border-2 transition-all duration-500 rounded-2xl p-5 shadow-sm overflow-hidden group"
+                :class="isActive ? 'border-violet-500 shadow-violet-500/10' : 'border-gray-100 dark:border-gray-800'">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">
+                            {{ __('Mi Seguimiento') }}
+                        </p>
+                        <div x-show="isActive" class="flex items-center gap-1.5" x-cloak>
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            <span class="text-[9px] font-bold text-red-500 uppercase tracking-tighter animate-pulse">{{ __('En curso') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="min-w-0">
+                            <p class="text-2xl font-black text-gray-900 dark:text-white tabular-nums tracking-tighter" x-text="isActive ? formatTime(elapsed) : '00:00:00'">
+                            </p>
+                            <p class="text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-1">
+                                {{ __('Total hoy') }}: <span class="font-bold text-gray-600 dark:text-gray-300">{{ $trackingTask->trackedTimeTodayHuman() }}</span>
+                            </p>
+                        </div>
+                        
+                        @include('tasks.partials.task-timer-button', ['task' => $trackingTask])
+                    </div>
+                </div>
+            @endif
+
             <!-- Owner -->
             <div
                 class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors">

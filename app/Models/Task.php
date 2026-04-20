@@ -633,6 +633,39 @@ class Task extends Model
         }
         return "{$minutes}m";
     }
+
+    /**
+     * Get time tracked by the CURRENT USER today on this task in seconds.
+     */
+    public function trackedTimeTodaySeconds(): int
+    {
+        return (int) $this->timeLogs()
+            ->where('user_id', auth()->id())
+            ->where('created_at', '>=', now()->startOfDay())
+            ->whereNotNull('end_at')
+            ->get()
+            ->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+    }
+
+    /**
+     * Get human-readable time tracked by CURRENT USER today.
+     */
+    public function trackedTimeTodayHuman(): string
+    {
+        $seconds = $this->trackedTimeTodaySeconds();
+        if ($seconds === 0) return '0m';
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
+        
+        $parts = [];
+        if ($hours > 0) $parts[] = "{$hours}h";
+        if ($minutes > 0) $parts[] = "{$minutes}m";
+        if ($hours == 0 && $minutes == 0) $parts[] = "{$secs}s";
+
+        return implode(' ', $parts);
+    }
     /**
      * Get all attachments associated with this task, its parent, and its children.
      */
