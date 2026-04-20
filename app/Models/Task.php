@@ -339,8 +339,7 @@ class Task extends Model
                 // Evitamos traer instancias que no estén asignadas a él como filas principales,
                 // ya que estas se verán dentro de sus respectivos Planes Maestros.
                 $main->whereNull('parent_id')
-                     ->orWhere('is_template', true)
-                     ->orWhere('assigned_user_id', $user->id);
+                     ->orWhere('is_template', true);
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado
                 $main->where('assigned_user_id', $user->id)
