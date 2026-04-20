@@ -310,37 +310,63 @@
                                 @foreach ($instances as $inst)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
                                         <td class="px-4 py-3 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
+                                            @php
+                                                $isInstActive = $inst->timeLogs()->whereNull('end_at')->exists();
+                                                $subtasksCount = $inst->children()->count();
+                                                $subtasksDone = $inst->children()->where('status', 'completed')->count();
+                                            @endphp
                                             <div class="flex items-center gap-3">
-                                                <div
-                                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner">
-                                                    @if ($inst->assignedUser)
-                                                        {{ strtoupper(substr($inst->assignedUser->name, 0, 2)) }}
-                                                    @elseif($inst->assignedTo->count() > 0)
-                                                        {{ strtoupper(substr($inst->assignedTo->first()->name, 0, 2)) }}
-                                                    @else
-                                                        ?
+                                                <div class="relative">
+                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-inner {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-1 animate-pulse' : '' }}">
+                                                        @if ($inst->assignedUser)
+                                                            {{ strtoupper(substr($inst->assignedUser->name, 0, 2)) }}
+                                                        @elseif($inst->assignedTo->count() > 0)
+                                                            {{ strtoupper(substr($inst->assignedTo->first()->name, 0, 2)) }}
+                                                        @else
+                                                            ?
+                                                        @endif
+                                                    </div>
+                                                    @if($isInstActive)
+                                                        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
                                                     @endif
                                                 </div>
-                                                @if ($team->isCoordinator(auth()->user()))
-                                                    <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-xs bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-lg focus:ring-0 cursor-pointer font-medium text-gray-700 dark:text-gray-300 px-2 py-1 -ml-2 transition-colors">
-                                                        <option value="unassign">{{ __('tasks.unassigned') ?? 'Pendiente de asignación' }}</option>
-                                                        @foreach($team->members as $member)
-                                                            <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }}>
-                                                                {{ $member->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                @else
-                                                    <span class="font-medium text-gray-700 dark:text-gray-300">
-                                                        @if ($inst->assignedUser)
-                                                            {{ $inst->assignedUser->name }}
-                                                        @elseif($inst->assignedTo->count() > 0)
-                                                            {{ $inst->assignedTo->pluck('name')->join(', ') }}
-                                                        @else
-                                                            {{ __('tasks.unassigned') ?? 'Pendiente de asignación' }}
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $inst->name }}</span>
+                                                        @if($isInstActive)
+                                                            <span class="text-[7px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
                                                         @endif
-                                                    </span>
-                                                @endif
+                                                    </div>
+                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                        @if ($team->isCoordinator(auth()->user()))
+                                                            <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-[10px] bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded focus:ring-0 cursor-pointer font-bold text-gray-500 dark:text-gray-400 px-1 py-0 -ml-1 transition-colors">
+                                                                <option value="unassign">{{ __('tasks.unassigned') ?? 'Pendiente' }}</option>
+                                                                @foreach($team->members as $member)
+                                                                    <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }}>
+                                                                        {{ $member->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        @else
+                                                            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                                                                @if ($inst->assignedUser)
+                                                                    {{ $inst->assignedUser->name }}
+                                                                @elseif($inst->assignedTo->count() > 0)
+                                                                    {{ $inst->assignedTo->pluck('name')->join(', ') }}
+                                                                @else
+                                                                    {{ __('tasks.unassigned') ?? '?' }}
+                                                                @endif
+                                                            </span>
+                                                        @endif
+
+                                                        @if($subtasksCount > 0)
+                                                            <span class="text-[9px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                                                                {{ $subtasksDone }}/{{ $subtasksCount }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3">
@@ -368,12 +394,27 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-right">
+                                        <td class="px-4 py-3 text-right tabular-nums">
                                             @php
-                                                $instSeconds = (int) $inst->timeLogs->whereNotNull('end_at')->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at));
+                                                $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
                                                 $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
+
+                                                $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
                                             @endphp
-                                            <span class="text-xs font-black text-gray-900 dark:text-white tabular-nums">{{ $instSeconds > 0 ? $instFormatted : '—' }}</span>
+                                            <div class="flex flex-col items-end">
+                                                <span class="text-xs font-black text-gray-900 dark:text-white tabular-nums flex items-center gap-1.5">
+                                                    @if($isInstActive)
+                                                        <span class="relative flex h-1.5 w-1.5">
+                                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                                                        </span>
+                                                    @endif
+                                                    {{ $instSeconds > 0 ? $instFormatted : '—' }}
+                                                </span>
+                                                @if($isInstActive)
+                                                    <span class="text-[7px] font-bold text-red-500 uppercase tracking-widest mt-0.5 animate-pulse">{{ __('En curso') }}</span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 text-right">
                                             @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))

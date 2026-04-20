@@ -328,12 +328,20 @@ class TaskController extends Controller
 
                 // Notify about Instance
                 if ($userId !== auth()->id()) {
-                    \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($instance, auth()->user()));
+                    try {
+                        \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($instance, auth()->user()));
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to send TaskAssignedNotification (instance): " . $e->getMessage());
+                    }
                 }
             } else {
                 // Shared Mode: Notify about the main task
                 if ($userId !== auth()->id()) {
-                    \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($task, auth()->user()));
+                    try {
+                        \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($task, auth()->user()));
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to send TaskAssignedNotification (shared): " . $e->getMessage());
+                    }
                 }
             }
         }
@@ -641,7 +649,11 @@ class TaskController extends Controller
                 $newUserIds = $uniqueUserIds->diff($previousUserIds);
                 foreach ($newUserIds as $userId) {
                     if ((int)$userId !== (int)auth()->id()) {
-                        \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($task, auth()->user()));
+                        try {
+                            \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($task, auth()->user()));
+                        } catch (\Exception $e) {
+                            \Log::error("Failed to send TaskAssignedNotification (update-shared): " . $e->getMessage());
+                        }
                     }
                 }
             }
@@ -679,7 +691,11 @@ class TaskController extends Controller
 
                         // Notify during update if new instance
                         if ($userId !== auth()->id()) {
-                            \App\Models\User::find($userId)?->notify(new TaskAssignedNotification($inst, auth()->user()));
+                            try {
+                                \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($inst, auth()->user()));
+                            } catch (\Exception $e) {
+                                \Log::error("Failed to send TaskAssignedNotification: " . $e->getMessage());
+                            }
                         }
                     }
                 }
