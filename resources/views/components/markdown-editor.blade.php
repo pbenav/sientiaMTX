@@ -33,9 +33,20 @@
                 </button>
             </div>
 
-            <div class="flex items-center gap-2">
-                <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">Markdown habilitado</span>
-                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse"></div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">{{ __('Markdown habilitado') }}</span>
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse"></div>
+                </div>
+                
+                <a href="{{ app()->getLocale() === 'es' ? 'https://markdown.es/sintaxis-markdown/' : 'https://www.markdownguide.org/cheat-sheet/' }}" 
+                   target="_blank" 
+                   class="flex items-center justify-center w-5 h-5 rounded-full text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all" 
+                   title="{{ __('Ayuda de Markdown') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </a>
             </div>
         </div>
 

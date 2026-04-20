@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\AttachmentLog;
 
 class GoogleDriveController extends Controller
 {
@@ -82,6 +83,16 @@ class GoogleDriveController extends Controller
                 // 5. Delete local file (User asked to "move")
                 Storage::disk('public')->delete($attachment->file_path);
 
+                AttachmentLog::create([
+                    'attachment_id' => $attachment->id,
+                    'user_id' => $user->id,
+                    'action' => 'move_to_drive',
+                    'metadata' => [
+                        'file_id' => $result['id']
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+
                 return back()->with('success', 'Archivo movido a Google Drive correctamente.');
             }
 
@@ -112,7 +123,8 @@ class GoogleDriveController extends Controller
 
         try {
             $folderId = $this->driveService->getOrCreateSientiaFolder($user, $team->id);
-            $filename = 'Respuesta Ax.ia - ' . date('Y-m-d H:i:s') . '.docx';
+            $datePrefix = date('Y-m-d-');
+            $filename = $datePrefix . 'Respuesta Ax.ia - ' . date('H:i:s') . '.docx';
             
             $result = $this->driveService->createFileFromText($user, $filename, $request->content, $folderId, true, $team->id);
 

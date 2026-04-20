@@ -591,7 +591,8 @@
             },
 
             copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
+                const cleanText = text.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                navigator.clipboard.writeText(cleanText).then(() => {
                     const btn = event.currentTarget;
                     const oldHtml = btn.innerHTML;
                     btn.innerHTML = '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
@@ -600,6 +601,7 @@
             },
             
             async saveToDrive(content) {
+                const cleanContent = content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
                 const btn = event.currentTarget;
                 const oldHtml = btn.innerHTML;
                 btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -612,7 +614,7 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ content: content })
+                        body: JSON.stringify({ content: cleanContent })
                     });
                     
                     const data = await response.json();

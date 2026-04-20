@@ -99,7 +99,12 @@ class AiChatController extends Controller
         // 1. Persist User Message
         $contentToStore = $prompt;
         if ($request->hasFile('file')) {
-            $contentToStore = "📁 [Archivo: " . $request->file('file')->getClientOriginalName() . "]\n\n" . $prompt;
+            $file = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            $datePrefix = date('Y-m-d-');
+            $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+            
+            $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
         }
 
         AiChatMessage::create([

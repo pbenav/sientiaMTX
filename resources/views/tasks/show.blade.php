@@ -644,6 +644,16 @@
                                         </form>
                                     @endif
                                     
+                                    {{-- Botón de Historial --}}
+                                    <button type="button" 
+                                        onclick="showAttachmentHistory({{ $attachment->id }})"
+                                        class="p-1.5 text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors"
+                                        title="Ver histórico de movimientos">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </button>
+
                                     {{-- Botón de Inyección IA --}}
                                     <button type="button" 
                                         @click="$dispatch('ai:analyze-file', { 
@@ -1608,5 +1618,119 @@
                 </div>
             </div>
         </div>
+    <!-- Attachment History Modal -->
+    <div id="attachment-history-modal" class="hidden fixed inset-0 z-[110] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-950/80 backdrop-blur-sm transition-opacity" onclick="closeAttachmentHistory()"></div>
+            <div class="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-200 dark:border-gray-800">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+                    <div>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white heading uppercase tracking-tight">Historial del Archivo</h3>
+                        <p id="history-filename" class="text-xs text-gray-500 dark:text-gray-400 font-medium truncate max-w-sm"></p>
+                    </div>
+                    <button onclick="closeAttachmentHistory()" class="text-gray-400 hover:text-gray-500 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+                <div class="px-6 py-6 max-h-[60vh] overflow-y-auto" id="history-content">
+                    <!-- Logs will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAttachmentHistory(id) {
+            const attachments = @json($allAttachments);
+            const attachment = attachments.find(a => a.id == id);
+            
+            if (!attachment) return;
+
+            document.getElementById('history-filename').innerText = attachment.file_name;
+            const content = document.getElementById('history-content');
+            content.innerHTML = '';
+
+            if (attachment.logs && attachment.logs.length > 0) {
+                const logs = attachment.logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                let html = '<div class="space-y-6 relative ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8">';
+                
+                logs.forEach(log => {
+                    const date = new Date(log.created_at).toLocaleString();
+                    const actionColors = {
+                        'upload': 'bg-emerald-500',
+                        'download': 'bg-blue-500',
+                        'view': 'bg-violet-500',
+                        'rename': 'bg-amber-500',
+                        'move_to_drive': 'bg-indigo-500',
+                        'delete': 'bg-red-500'
+                    };
+                    
+                    const actionIcons = {
+                        'upload': '<path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v8" />',
+                        'download': '<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />',
+                        'view': '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />',
+                        'rename': '<path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />',
+                        'move_to_drive': '<path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />'
+                    };
+
+                    const actionLabel = {
+                        'upload': 'Subida de archivo',
+                        'download': 'Descarga realizada',
+                        'view': 'Visualización online',
+                        'rename': 'Cambio de nombre',
+                        'move_to_drive': 'Traspaso a Google Drive',
+                        'delete': 'Eliminación'
+                    };
+
+                    let metaHtml = '';
+                    if (log.metadata) {
+                        if (log.metadata.original_name) metaHtml = `<p class="mt-1 text-gray-400">Origen: <span class="font-bold text-gray-600 dark:text-gray-300 italic">${log.metadata.original_name}</span></p>`;
+                        if (log.metadata.old_name) metaHtml = `<p class="mt-1 text-gray-400">De <span class="line-through">${log.metadata.old_name}</span> a <span class="font-bold text-gray-600 dark:text-gray-300">${log.metadata.new_name}</span></p>`;
+                    }
+
+                    html += `
+                        <div class="relative">
+                            <div class="absolute -left-[45px] top-1 w-8 h-8 rounded-full border-4 border-white dark:border-gray-900 ${actionColors[log.action] || 'bg-gray-400'} flex items-center justify-center text-white shadow-sm ring-4 ring-gray-100 dark:ring-gray-800/30">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    ${actionIcons[log.action] || '<circle cx="12" cy="12" r="10" />'}
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">${actionLabel[log.action]}</span>
+                                    <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-bold tabular-nums">${date}</span>
+                                </div>
+                                <div class="flex items-center gap-2 group">
+                                    <div class="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-black text-gray-500 uppercase">${(log.user?.name || '?').substring(0, 2)}</div>
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tighter">${log.user?.name || 'Sistema'}</span>
+                                    ${log.ip_address ? `<span class="text-[9px] text-gray-400 font-mono bg-gray-50 dark:bg-gray-800/50 px-1.5 py-0.5 rounded">IP: ${log.ip_address}</span>` : ''}
+                                </div>
+                                ${metaHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = '<div class="text-center py-10"><p class="text-gray-500 italic">No hay movimientos registrados para este archivo todavía.</p></div>';
+            }
+
+            document.getElementById('attachment-history-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAttachmentHistory() {
+            document.getElementById('attachment-history-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAttachmentHistory();
+        });
+    </script>
     @endpush
 </x-app-layout>

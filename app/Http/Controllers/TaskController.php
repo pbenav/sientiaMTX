@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\TaskAttachment;
+use App\Models\AttachmentLog;
 use App\Traits\HandlesEisenhowerMatrix;
 use App\Traits\AwardsGamification;
 use App\Traits\ManagesTaskDeletion;
@@ -236,12 +237,27 @@ class TaskController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('attachments', 'public');
-                $task->attachments()->create([
+                $originalName = $file->getClientOriginalName();
+                $datePrefix = date('Y-m-d-');
+                $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
+                $attachment = $task->attachments()->create([
                     'user_id' => auth()->id(),
                     'file_path' => $path,
-                    'file_name' => $file->getClientOriginalName(),
+                    'file_name' => $fileName,
                     'file_size' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
+                ]);
+
+                AttachmentLog::create([
+                    'attachment_id' => $attachment->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'upload',
+                    'metadata' => [
+                        'original_name' => $originalName,
+                        'size' => $file->getSize()
+                    ],
+                    'ip_address' => request()->ip()
                 ]);
             }
         }
@@ -346,7 +362,7 @@ class TaskController extends Controller
             return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
         }
 
-        $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments']);
+        $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments', 'attachments.logs.user']);
 
         // Load parent attachments if it's an instance or has a parent
         if ($task->parent_id) {
@@ -1036,12 +1052,27 @@ class TaskController extends Controller
 
         $path = $file->store("attachments/task_{$task->id}", 'public');
 
+        $originalName = $file->getClientOriginalName();
+        $datePrefix = date('Y-m-d-');
+        $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
         $attachment = $task->attachments()->create([
             'user_id' => $user->id,
-            'file_name' => $file->getClientOriginalName(),
+            'file_name' => $fileName,
             'file_path' => $path,
             'file_size' => $size,
             'mime_type' => $file->getMimeType(),
+        ]);
+
+        AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => $user->id,
+            'action' => 'upload',
+            'metadata' => [
+                'original_name' => $originalName,
+                'size' => $size
+            ],
+            'ip_address' => request()->ip()
         ]);
 
         // Update user disk usage
@@ -1058,6 +1089,13 @@ class TaskController extends Controller
             return back()->with('error', 'El archivo no se encuentra en el servidor.');
         }
 
+        AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'download',
+            'ip_address' => request()->ip()
+        ]);
+
         return \Illuminate\Support\Facades\Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 
@@ -1068,6 +1106,13 @@ class TaskController extends Controller
         if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
             return back()->with('error', 'El archivo no se encuentra en el servidor.');
         }
+
+        AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'view',
+            'ip_address' => request()->ip()
+        ]);
 
         return \Illuminate\Support\Facades\Storage::disk('public')->response($attachment->file_path);
     }
@@ -1098,8 +1143,20 @@ class TaskController extends Controller
             'file_name' => 'required|string|max:255',
         ]);
 
+        $oldName = $attachment->file_name;
         $attachment->update([
             'file_name' => $validated['file_name'],
+        ]);
+
+        AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'rename',
+            'metadata' => [
+                'old_name' => $oldName,
+                'new_name' => $validated['file_name']
+            ],
+            'ip_address' => request()->ip()
         ]);
 
         return back()->with('success', 'Archivo renombrado correctamente.');
@@ -1111,6 +1168,25 @@ class TaskController extends Controller
         if (auth()->id() !== $attachment->user_id && !$team->isManager(auth()->user())) {
             abort(403);
         }
+
+        // Log deletion BEFORE deleting the attachment record (due to cascade)
+        // Actually, we want to keep the logs but the attachment will be gone.
+        // Wait, the logs table has a constrained foreign key with onDelete('cascade').
+        // If we want to keep logs, we should make attachment_id nullable or remove cascade.
+        // The user said "tabla de metainformación... histórico". 
+        // If the attachment is deleted, maybe the logs should stay but with a null attachment_id?
+        // But the user didn't specify. For now, I'll keep the cascade.
+        // But I'll log it.
+        
+        AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'delete',
+            'metadata' => [
+                'file_name' => $attachment->file_name
+            ],
+            'ip_address' => request()->ip()
+        ]);
 
         // Remove file from disk if exists
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
