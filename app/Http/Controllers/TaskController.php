@@ -184,10 +184,11 @@ class TaskController extends Controller
             if ($request->filled('assigned_user_id') && (int)$request->assigned_user_id !== auth()->id()) {
                 $hasOtherAssignee = true;
             }
-            if ($request->filled('assigned_to')) {
-                if (collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
-                    $hasOtherAssignee = true;
-                }
+            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
+                $hasOtherAssignee = true;
+            }
+            if ($request->filled('assigned_groups')) {
+                $hasOtherAssignee = true;
             }
             if ($hasOtherAssignee) {
                 $validated['visibility'] = 'public';
@@ -508,12 +509,12 @@ class TaskController extends Controller
             }
             
             // Check collaborators (assigned_to array)
-            if ($request->has('assigned_to')) {
-                if (collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
-                    $hasOtherAssignee = true;
-                }
-            } elseif ($task->assignedTo()->where('users.id', '!=', auth()->id())->exists()) {
-                // If not providing assigned_to in request, check existing ones
+            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
+                $hasOtherAssignee = true;
+            }
+            
+            // Check groups
+            if ($request->filled('assigned_groups') && count($request->assigned_groups) > 0) {
                 $hasOtherAssignee = true;
             }
 
