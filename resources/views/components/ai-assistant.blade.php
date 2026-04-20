@@ -187,6 +187,7 @@
             <form @submit.prevent="sendMessage" class="flex items-center space-x-2 sm:space-x-3">
                 <input 
                     x-model="input" 
+                    @paste="handlePaste($event)"
                     type="text" 
                     class="flex-1 min-w-0 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-5 shadow-inner"
                     :placeholder="isRecording ? 'Grabando...' : 'Pregunta...'" 
@@ -490,6 +491,31 @@
                 const mins = Math.floor(seconds / 60);
                 const secs = seconds % 60;
                 return `${mins}:${secs.toString().padStart(2, '0')}`;
+            },
+
+            handlePaste(e) {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                let found = false;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file') {
+                        const blob = item.getAsFile();
+                        if (!blob) continue;
+                        
+                        const file = new File([blob], `pasted_file_${new Date().getTime()}.${blob.type.split('/')[1] || 'png'}`, { type: blob.type });
+                        this.pendingFile = file;
+                        this.messages.push({ 
+                            role: 'system', 
+                            content: `📸 Archivo pegado del portapapeles: **${file.name}**`
+                        });
+                        
+                        if (this.input.trim() === '') {
+                            this.input = blob.type.startsWith('image/') ? 'Analiza esta imagen...' : 'Analiza este archivo...';
+                        }
+                        found = true;
+                    }
+                }
+                // Si no es un archivo, dejamos que el evento de pegado de texto normal siga su curso
             },
 
             handleFileUpload(event) {

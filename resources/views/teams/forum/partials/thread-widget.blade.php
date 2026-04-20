@@ -6,7 +6,13 @@
     }
 @endphp
 <div
-    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors">
+    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors"
+    x-data="{
+        startWidgetEdit(id, content) {
+            this.$dispatch('edit-widget-message', { id: id, content: content });
+            document.getElementById('widget-messages-container').scrollTop = document.getElementById('widget-messages-container').scrollHeight;
+        }
+    }">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -74,7 +80,25 @@
                                 {{ $message->created_at->diffForHumans() }}
                             </span>
                         </div>
-                        <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap">{{ $message->content }}</div>
+                        <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap" id="msg-content-{{ $message->id }}">{{ $message->content }}</div>
+                        
+                        @if(!$rootTask->forumThread->is_locked && (auth()->id() === $message->user_id || auth()->user()->getRole($team) === 'coordinator'))
+                            <div class="flex items-center gap-2 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                @if(auth()->id() === $message->user_id)
+                                    <button type="button" @click="startWidgetEdit({{ $message->id }}, {{ json_encode($message->content) }})" 
+                                        class="text-[9px] font-bold text-blue-500 hover:text-blue-600 uppercase tracking-tighter transition-colors">
+                                        {{ __('Editar') }}
+                                    </button>
+                                @endif
+                                <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}" method="POST" onsubmit="return confirm('¿Eliminar mensaje?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-[9px] font-bold text-red-400 hover:text-red-500 uppercase tracking-tighter transition-colors">
+                                        {{ __('Eliminar') }}
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <p class="text-xs text-gray-400 italic text-center py-2">{{ __('forum.no_comments_yet') }}</p>
@@ -82,9 +106,29 @@
             </div>
 
             @if (!$rootTask->forumThread->is_locked)
-                <form action="{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}" method="POST"
-                    class="mt-3 relative" x-data="{ showEmojiPicker: false }">
+                <form 
+                    :action="editingMessageId ? `/teams/{{ $team->id }}/forum/messages/${editingMessageId}` : '{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}'" 
+                    method="POST"
+                    class="mt-3 relative" 
+                    x-data="{ 
+                        showEmojiPicker: false,
+                        editingMessageId: null,
+                        startWidgetEdit(id, content) {
+                            this.editingMessageId = id;
+                            document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').value = content;
+                            document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').focus();
+                        },
+                        cancelWidgetEdit() {
+                            this.editingMessageId = null;
+                            document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').value = '';
+                        }
+                    }"
+                    @edit-widget-message.window="startWidgetEdit($event.detail.id, $event.detail.content)"
+                >
                     @csrf
+                    <template x-if="editingMessageId">
+                        <input type="hidden" name="_method" value="PATCH">
+                    </template>
                     <textarea name="content" rows="3" id="forum-thread-textarea-{{ $rootTask->id }}"
                         class="w-full bg-gray-50 dark:bg-gray-800 border {{ $errors->has('content') ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500' }} rounded-xl text-xs py-2 pl-3 pr-[4.5rem] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors resize-y"
                         placeholder="{{ __('forum.write_message') }}..." required></textarea>
@@ -115,15 +159,31 @@
                         </div>
 
                         <button type="submit"
-                            class="p-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors shadow-sm"
+                            :class="editingMessageId ? 'bg-amber-500 hover:bg-amber-600' : 'bg-violet-600 hover:bg-violet-700'"
+                            class="p-1.5 text-white rounded-lg transition-colors shadow-sm"
                             title="Enviar mensaje">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                            <svg x-show="!editingMessageId" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                            <svg x-show="editingMessageId" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </button>
+                        
+                        <!-- Cancel Button -->
+                        <button x-show="editingMessageId" style="display:none;" type="button" @click="cancelWidgetEdit()"
+                            class="p-1.5 bg-gray-200 text-gray-500 hover:bg-gray-300 rounded-lg transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
                 </form>
+                
+                <template x-if="editingMessageId">
+                    <p class="text-[9px] text-amber-600 font-bold mt-1 uppercase tracking-widest animate-pulse">Editando mensaje...</p>
+                </template>
                 @error('content')
                     <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>
                 @enderror

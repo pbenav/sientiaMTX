@@ -80,12 +80,23 @@
                         <div class="flex items-center justify-between gap-4 mt-1.5 border-t border-black/5 pt-1">
                             <span :class="msg.from_me ? 'text-white/60' : 'text-gray-400'" class="text-[9px] block" x-text="msg.time"></span>
                             
-                            <!-- Botón de borrar -->
-                            <button @click="deleteMsg(msg.id)"
-                                    class="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity font-bold uppercase tracking-tighter"
-                                    :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-red-400 hover:text-red-500'">
-                                {{ __('Eliminar') }}
-                            </button>
+                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <!-- Botón de editar -->
+                                <template x-if="msg.from_me">
+                                    <button @click="startEdit(msg)"
+                                            class="text-[9px] font-bold uppercase tracking-tighter"
+                                            :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-blue-400 hover:text-blue-500'">
+                                        {{ __('Editar') }}
+                                    </button>
+                                </template>
+
+                                <!-- Botón de borrar -->
+                                <button @click="deleteMsg(msg.id)"
+                                        class="text-[9px] font-bold uppercase tracking-tighter"
+                                        :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-red-400 hover:text-red-500'">
+                                    {{ __('Eliminar') }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -123,15 +134,42 @@
                         title="Emojis">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </button>
-                <input x-ref="chatInput" x-model="newMessage" 
-                       type="text" 
-                       placeholder="Escribe un mensaje..."
-                       :disabled="!teamId"
-                       class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                <div class="relative flex-1">
+                    <input x-ref="chatInput" x-model="newMessage" 
+                           @paste="handlePaste($event)"
+                           type="text" 
+                           :placeholder="editingId ? 'Editando mensaje...' : 'Escribe un mensaje...'"
+                           :disabled="!teamId"
+                           :class="editingId ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'bg-gray-100 dark:bg-gray-800 border-none'"
+                           class="w-full rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    
+                    <!-- Preview of pending photo -->
+                    <template x-if="pendingPhoto">
+                        <div class="absolute bottom-full mb-3 left-0 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl border border-blue-100 dark:border-blue-900/50 flex items-center gap-3 animate-bounce-subtle">
+                            <div class="relative">
+                                <img :src="previewUrl" class="w-12 h-12 object-cover rounded-lg border border-gray-100 dark:border-gray-700">
+                                <button type="button" @click="pendingPhoto = null; previewUrl = null" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 shadow-sm">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 max-w-[100px] truncate" x-text="pendingPhoto.name"></span>
+                        </div>
+                    </template>
+
+                    <!-- Cancel Edit Button -->
+                    <template x-if="editingId">
+                        <button type="button" @click="cancelEdit()" 
+                                class="absolute right-2 top-1.5 p-1 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-full transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </template>
+                </div>
                 <button type="submit" 
-                        :disabled="!newMessage.trim() || !teamId"
-                        class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                        :disabled="(!newMessage.trim() && !pendingPhoto) || !teamId"
+                        :class="editingId ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-500/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/30'"
+                        class="p-2.5 text-white rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
+                    <svg x-show="!editingId" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    <svg x-show="editingId" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 </button>
             </div>
             <p class="text-[9px] text-gray-400 mt-2 text-center">Conectado vía @SientiaBot</p>
@@ -145,9 +183,12 @@
             class="group relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-sky-400 to-blue-600 backdrop-blur-sm rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-95 ring-4 ring-white dark:ring-gray-950 pointer-events-auto"
             :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab group-hover:scale-110'"
             style="touch-action: none;">
-        <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-gray-950 shadow-sm" 
-             style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; background: #ef4444; color: white; border-radius: 9999px; display: none;" 
-             x-show="unread > 0" x-text="unread" x-cloak></div>
+        <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-gray-950 shadow-sm" x-show="unread > 0" x-text="unread" x-cloak></div>
+        
+        <!-- Icono de edición (indicador) -->
+        <div x-show="editingId" class="absolute -top-1 -left-1 w-5 h-5 bg-amber-500 text-white rounded-full flex items-center justify-center border-2 border-white dark:border-gray-950 shadow-sm animate-pulse" x-cloak>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         
         <svg x-show="!open" x-transition class="w-6 h-6 sm:w-7 sm:h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.35-.01-1.02-.2-1.53-.37-.6-.2-1.07-.31-1.03-.66.02-.18.27-.36.75-.55 2.94-1.28 4.9-2.13 5.88-2.54 2.8-.1.5.15.5.99c.01.26-.01.52-.06.78z"/>
@@ -177,6 +218,9 @@
             lastMessageId: 0,
             firstMessageId: 0,
             canLoadMore: true,
+            pendingPhoto: null,
+            previewUrl: null,
+            editingId: null,
             
             pos: { x: 0, y: 0 },
             bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
@@ -296,24 +340,55 @@
                     this.loading = false;
                 }
             },
-            async send() {
-                if (!this.newMessage.trim() || !this.teamId) return;
-                
-                const text = this.newMessage;
+            startEdit(msg) {
+                this.editingId = msg.id;
+                this.newMessage = msg.text;
+                this.$refs.chatInput.focus();
+            },
+            cancelEdit() {
+                this.editingId = null;
                 this.newMessage = '';
+            },
+            handlePaste(e) {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file') {
+                        const blob = item.getAsFile();
+                        if (blob && blob.type.startsWith('image/')) {
+                            this.pendingPhoto = new File([blob], `telegram_paste_${new Date().getTime()}.png`, { type: blob.type });
+                            this.previewUrl = URL.createObjectURL(blob);
+                        }
+                    }
+                }
+            },
+            async send() {
+                if ((!this.newMessage.trim() && !this.pendingPhoto) || !this.teamId) return;
+                
+                if (this.editingId) {
+                    await this.updateMsg();
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('message', this.newMessage);
+                formData.append('team_id', this.teamId);
+                if (this.pendingPhoto) {
+                    formData.append('photo', this.pendingPhoto);
+                }
+
+                this.newMessage = '';
+                this.pendingPhoto = null;
+                this.previewUrl = null;
                 
                 try {
                     const response = await fetch('{{ route('telegram.chat.send') }}', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        body: JSON.stringify({ 
-                            message: text,
-                            team_id: this.teamId
-                        })
+                        body: formData
                     });
                     
                     if (response.ok) {
@@ -321,6 +396,37 @@
                     }
                 } catch (e) {
                     console.error('Error enviando:', e);
+                }
+            },
+            async updateMsg() {
+                const id = this.editingId;
+                const text = this.newMessage;
+                
+                this.editingId = null;
+                this.newMessage = '';
+
+                try {
+                    const response = await fetch(`/telegram-chat/messages/${id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.messages = this.messages.map(m => {
+                            if (m.id === id) {
+                                m.text = data.message;
+                            }
+                            return m;
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error editando:', e);
                 }
             },
             async deleteMsg(msgId) {

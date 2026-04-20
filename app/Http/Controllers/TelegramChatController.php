@@ -16,42 +16,63 @@ class TelegramChatController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'message' => 'required|string|max:1000',
+            'message' => 'nullable|string|max:1000',
+            'photo' => 'nullable|image|max:5120', // Max 5MB
             'team_id' => 'required|exists:teams,id',
         ]);
 
         $user = auth()->user();
         $team = Team::findOrFail($request->team_id);
-        $text = $request->input('message');
+        $text = $request->input('message') ?? '';
+        $photo = $request->file('photo');
         
         $chatId = $team->telegram_chat_id;
 
         if (!$chatId) {
             return response()->json([
-                'reply' => '⚠️ Este equipo no tiene un grupo de Telegram vinculado. Ve a la configuración del equipo para hacerlo.'
+                'reply' => '⚠️ Este equipo no tiene un grupo de Telegram vinculado.'
             ]);
         }
 
         $token = config('services.telegram.bot_token');
 
         try {
+            $photoPath = null;
+            if ($photo) {
+                // Si mandamos foto, el texto es opcional (caption)
+                $photoPath = $photo->store('telegram_photos', 'public');
+            } elseif (!$text) {
+                return response()->json(['error' => 'Mensaje vacío'], 422);
+            }
+
             // Guardamos el mensaje en nuestra DB local
             $localMsg = TelegramMessage::create([
                 'team_id' => $team->id,
                 'user_id' => $user->id,
                 'author_name' => $user->name,
                 'text' => $text,
+                'photo_path' => $photoPath,
                 'is_from_web' => true,
             ]);
 
-            // Enviamos a Telegram con el formato [Nombre]: Mensaje
-            $formattedText = "💬 *[{$user->name}]:*\n{$text}";
+            // Formateamos el pie del mensaje
+            $caption = "💬 *[{$user->name}]:*\n{$text}";
             
-            $response = Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id' => $chatId,
-                'text' => $formattedText,
-                'parse_mode' => 'Markdown',
-            ]);
+            if ($photo) {
+                $response = Http::attach(
+                    'photo', file_get_contents($photo->getRealPath()), $photo->getClientOriginalName()
+                )->post("https://api.telegram.org/bot{$token}/sendPhoto", [
+                    'chat_id' => $chatId,
+                    'caption' => $caption,
+                    'parse_mode' => 'Markdown',
+                ]);
+            } else {
+                $response = Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                    'chat_id' => $chatId,
+                    'text' => $caption,
+                    'parse_mode' => 'Markdown',
+                ]);
+            }
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -59,12 +80,19 @@ class TelegramChatController extends Controller
                 
                 return response()->json([
                     'success' => true,
-                    'message' => $localMsg
+                    'message' => [
+                        'id' => $localMsg->id,
+                        'text' => $localMsg->text,
+                        'author' => $localMsg->author_name,
+                        'from_me' => true,
+                        'time' => $localMsg->created_at->format('H:i'),
+                        'photo' => $localMsg->photo_url,
+                    ]
                 ]);
             }
 
             return response()->json([
-                'reply' => '😕 No he podido enviar el mensaje al grupo de Telegram. Revisa si el bot está en el grupo.'
+                'reply' => '😕 No he podido enviar el mensaje a Telegram.'
             ]);
 
         } catch (\Exception $e) {
@@ -112,6 +140,60 @@ class TelegramChatController extends Controller
             });
 
         return response()->json(['messages' => $messages]);
+    }
+
+    /**
+     * Editar un mensaje tanto localmente como en Telegram.
+     */
+    public function update(Request $request, TelegramMessage $message)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $user = auth()->user();
+        $team = $message->team;
+
+        // Solo el autor puede editar
+        if ($message->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $text = $request->input('message');
+        $token = config('services.telegram.bot_token');
+        $chatId = $team->telegram_chat_id;
+
+        try {
+            $message->update(['text' => $text]);
+
+            if ($message->telegram_message_id && $chatId) {
+                $formattedText = "💬 *[{$user->name}]:* (editado)\n{$text}";
+                
+                $method = $message->photo_path ? 'editMessageCaption' : 'editMessageText';
+                $params = [
+                    'chat_id' => $chatId,
+                    'message_id' => $message->telegram_message_id,
+                    'parse_mode' => 'Markdown',
+                ];
+
+                if ($message->photo_path) {
+                    $params['caption'] = $formattedText;
+                } else {
+                    $params['text'] = $formattedText;
+                }
+                
+                Http::post("https://api.telegram.org/bot{$token}/{$method}", $params);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $text
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error en TelegramChatController@update: " . $e->getMessage());
+            return response()->json(['error' => 'Error al editar el mensaje'], 500);
+        }
     }
 
     /**

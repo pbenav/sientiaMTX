@@ -489,8 +489,8 @@
 
             <!-- Private Notes -->
             <div x-data="{ 
+                privateNoteBody: @js($task->currentPrivateNote?->content ?? ''),
                 saving: false,
-                content: @js($task->currentPrivateNote?->content ?? ''),
                 save() {
                     this.saving = true;
                     fetch('{{ route('teams.tasks.private-notes.update', [$team, $task]) }}', {
@@ -500,7 +500,7 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ content: this.content })
+                        body: JSON.stringify({ content: this.privateNoteBody })
                     })
                     .then(res => res.json())
                     .then(data => {
@@ -566,7 +566,7 @@
                 <div class="relative z-10" id="private-notes-editor">
                     <x-markdown-editor 
                         name="private_content" 
-                        x-model="content"
+                        @input="privateNoteBody = $event.target.value"
                         :value="$task->currentPrivateNote?->content ?? ''"
                         id="reply-content-private"
                         placeholder="Escribe aquí tus reflexiones, avances o notas que nadie más deba ver..."

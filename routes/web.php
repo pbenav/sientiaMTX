@@ -219,6 +219,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('telegram-chat')->name('telegram.chat.')->group(function () {
         Route::get('/messages', [\App\Http\Controllers\TelegramChatController::class, 'getMessages'])->name('messages');
         Route::post('/send', [\App\Http\Controllers\TelegramChatController::class, 'sendMessage'])->name('send');
+        Route::patch('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'update'])->name('update');
         Route::delete('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'destroy'])->name('delete');
     });
 
