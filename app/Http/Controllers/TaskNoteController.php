@@ -31,7 +31,7 @@ class TaskNoteController extends Controller
             ['content' => $validated['content'] ?? '']
         );
 
-        if ($request->ajax()) {
+        if ($request->ajax() || $request->wantsJson()) {
             return response()->json(['success' => true, 'message' => 'Nota guardada correctamente.']);
         }
 
