@@ -97,6 +97,13 @@ class SendMorningSummary extends Command
                 $phrase = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', '', $phrase);
                 $phrase = trim(strip_tags($phrase));
 
+                // Reset de energía matutino (Fresh Start)
+                // Si el usuario empieza el día, garantizamos al menos un 80% de energía.
+                if (($user->energy_level ?? 0) < 80) {
+                    $user->update(['energy_level' => 80]);
+                    $this->line("Fresh Start: Energía de {$user->name} restaurada al 80%.");
+                }
+
                 // Send notification
                 $user->notify(new MorningSummaryNotification($tasks, $phrase));
                 

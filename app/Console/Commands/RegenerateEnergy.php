@@ -29,7 +29,22 @@ class RegenerateEnergy extends Command
         $count = 0;
 
         foreach ($users as $user) {
-            $newEnergy = min(100, $user->energy_level + 5);
+            $current = $user->energy_level ?? 100;
+            $gain = 5; // Base hourly gain
+
+            // Bonus 1: Recuperación acelerada si estás muy quemado (Ayuda al equipo)
+            if ($current < 30) {
+                $gain = 15;
+            } elseif ($current < 60) {
+                $gain = 10;
+            }
+
+            // Bonus 2: Modo Descanso (Si es horario nocturno para el usuario)
+            if ($user->isInQuietHours()) {
+                $gain += 5;
+            }
+
+            $newEnergy = min(100, $current + $gain);
             $user->update(['energy_level' => $newEnergy]);
             $count++;
         }

@@ -26,7 +26,13 @@ trait AwardsGamification
         $multiplier = $task->cognitive_load ?? 1;
         $xp = 10 * $multiplier;
         $resilience = 0;
-        $energyDrain = $multiplier * 5; // Drain energy based on cognitive load
+        
+        // --- Rediseño de Energía SientiaMTX ---
+        // Antes: Drain asfixiante de $multiplier * 5.
+        // Ahora: Drain suave de $multiplier * 2 y recompensa fija de +5 por "cerrar el círculo".
+        $energyDrain = $multiplier * 2; 
+        $energyGainCompletion = 5; 
+        $netEnergyChange = $energyGainCompletion - $energyDrain;
 
         if ($task->is_out_of_skill_tree) {
             $resilience = 20 * $multiplier; // Extra resilience scaled by load
@@ -85,8 +91,8 @@ trait AwardsGamification
             }
         }
 
-        // Energy can't go below 0
-        $newEnergy = max(0, ($user->energy_level ?? 100) - $energyDrain);
+        // La energía ahora fluye dinámicamente. Nunca menos de 0, máximo 100.
+        $newEnergy = min(100, max(0, ($user->energy_level ?? 100) + $netEnergyChange));
         $user->update(['energy_level' => $newEnergy]);
 
         // Log the achievement

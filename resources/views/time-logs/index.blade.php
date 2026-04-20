@@ -49,19 +49,47 @@
                         </svg>
                     </div>
                     <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Estado de Energía</p>
+                    @php
+                        $energy = auth()->user()->energy_level ?? 0;
+                        $label = 'Óptimo';
+                        $advice = '¡Energía a tope! Momento ideal para tareas de alta carga cognitiva.';
+                        $colorClass = 'emeral-500';
+                        $bgClass = 'emerald-500';
+                        $pillClass = 'text-emerald-600 bg-emerald-200';
+                        
+                        if ($energy >= 80) {
+                            $label = 'Excelente';
+                            $advice = '¡A tope! Momento ideal para tareas complejas y retos.';
+                        } elseif ($energy >= 50) {
+                            $label = 'Estable';
+                            $advice = 'Mantén el ritmo. Vas por buen camino.';
+                            $pillClass = 'text-blue-600 bg-blue-100';
+                            $bgClass = 'blue-500';
+                        } elseif ($energy >= 30) {
+                            $label = 'Cansancio';
+                            $advice = 'Batería media. Considera una tarea ligera o un café.';
+                            $pillClass = 'text-amber-600 bg-amber-100';
+                            $bgClass = 'amber-500';
+                        } else {
+                            $label = 'Agotado';
+                            $advice = '¡Para un momento! Prioriza tu bienestar ahora mismo.';
+                            $pillClass = 'text-rose-600 bg-rose-100';
+                            $bgClass = 'rose-500';
+                        }
+                    @endphp
                     <div class="relative pt-1">
                         <div class="flex mb-2 items-center justify-between">
                             <div>
-                                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-emerald-600 bg-emerald-200">
-                                    {{ auth()->user()->energy_level }}% - Óptimo
+                                <span class="text-[10px] font-black inline-block py-1 px-3 uppercase rounded-full {{ $pillClass }} transition-colors duration-500">
+                                    {{ $energy }}% - {{ $label }}
                                 </span>
                             </div>
                         </div>
-                        <div class="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-emerald-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                            <div style="width:{{ auth()->user()->energy_level }}%" class="flex flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500 transition-all duration-1000"></div>
+                        <div class="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            <div style="width:{{ $energy }}%" class="flex flex-col text-center whitespace-nowrap text-white justify-center {{ $bgClass }} transition-all duration-1000 shadow-sm shadow-{{ $bgClass }}/20"></div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-gray-500">Recarga completando tareas de baja carga cognitiva.</p>
+                    <p class="text-[10px] font-medium text-gray-500 dark:text-gray-400 leading-tight">{{ $advice }}</p>
                 </div>
 
                 <div x-data="{ open: false }" class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group cursor-pointer hover:shadow-violet-500/5 transition-all" @click="open = true">
