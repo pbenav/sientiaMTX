@@ -600,23 +600,17 @@ class TaskController extends Controller
             }
         }
 
-        // SCENARIO B: Metadata Independence
-        // We no longer automatically sync titles and descriptions across the hierarchy.
-        // This allows members to have their own 'aliases' and notes without affecting the project skeleton.
-        // Aggregate progress and status are still synced (handled above).
-        
-        /* 
-        // Legacy Sync Logic (Scenario A)
+        // SCENARIO B: Metadata Independence (Partial Sync)
+        // We preserve title and description independence, but sync core project skeleton attributes
+        // to ensure team alignment on deadlines and importance.
         if ($task->is_template) {
             $task->instances()->update([
-                'title' => $task->title,
-                'description' => $task->description,
-                'due_date' => $task->due_date,
                 'priority' => $task->priority,
                 'urgency' => $task->urgency,
+                'due_date' => $task->due_date,
+                'original_due_date' => $task->due_date,
             ]);
         }
-        */
 
         // Log changes to history
         $newValues = $task->getAttributes();
