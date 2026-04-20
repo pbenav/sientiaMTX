@@ -240,6 +240,19 @@ class Task extends Model
         return $this->hasOne(ForumThread::class);
     }
 
+    public function privateNotes()
+    {
+        return $this->hasMany(TaskPrivateNote::class);
+    }
+
+    /**
+     * Get the private note for the current user.
+     */
+    public function currentPrivateNote()
+    {
+        return $this->hasOne(TaskPrivateNote::class)->where('user_id', auth()->id());
+    }
+
     /**
      * Get the CSS class for Frappe Gantt based on Eisenhower quadrant
      */

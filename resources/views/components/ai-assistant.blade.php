@@ -750,7 +750,8 @@
                         'observations': 'observations',
                         'comment': 'reply-content',
                         'reply': 'reply-content',
-                        'dom-reply': 'reply-content'
+                        'dom-reply': 'reply-content',
+                        'private-notes': 'reply-content-private'
                     };
 
                     const elementId = possibleIds[target];

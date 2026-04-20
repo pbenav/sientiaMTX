@@ -487,6 +487,94 @@
                 </div>
             @endif
 
+            <!-- Private Notes -->
+            <div x-data="{ 
+                saving: false,
+                content: @js($task->currentPrivateNote?->content ?? ''),
+                save() {
+                    this.saving = true;
+                    fetch('{{ route('teams.tasks.private-notes.update', [$team, $task]) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ content: this.content })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.saving = false;
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        this.saving = false;
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Error al guardar la nota'
+                        });
+                    });
+                }
+            }"
+            class="bg-white dark:bg-gray-900 border border-amber-200/50 dark:border-amber-900/30 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors relative overflow-hidden group">
+                
+                {{-- Decorative background icon --}}
+                <div class="absolute -right-4 -top-4 text-amber-500/5 dark:text-amber-500/10 rotate-12 group-hover:rotate-6 transition-transform duration-500 pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-32 h-32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </div>
+
+                <div class="flex items-center justify-between mb-4 relative z-10">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest">
+                                {{ __('Mis Notas Privadas') }}
+                            </h3>
+                            <p class="text-[9px] text-amber-600/50 dark:text-amber-500/40 font-bold uppercase tracking-tighter">Solo visibles para ti</p>
+                        </div>
+                    </div>
+
+                    <button @click="save()" 
+                        :disabled="saving"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-600/20 flex items-center gap-2">
+                        <template x-if="!saving">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                        </template>
+                        <template x-if="saving">
+                            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </template>
+                        <span x-text="saving ? 'Guardando...' : 'Guardar Notas'"></span>
+                    </button>
+                </div>
+
+                <div class="relative z-10" id="private-notes-editor">
+                    <x-markdown-editor 
+                        name="private_content" 
+                        x-model="content"
+                        :value="$task->currentPrivateNote?->content ?? ''"
+                        id="reply-content-private"
+                        placeholder="Escribe aquí tus reflexiones, avances o notas que nadie más deba ver..."
+                        rows="8"
+                    />
+                </div>
+            </div>
+
 
             <!-- History -->
             @if ($task->histories->isNotEmpty())
