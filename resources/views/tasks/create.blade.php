@@ -810,5 +810,4 @@
         }
     </script>
     @endpush
-@endpush
 </x-app-layout>
