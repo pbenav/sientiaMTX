@@ -620,13 +620,13 @@
             updatePreview();
         });
 
-        function selectAllUsers(status) {
+        window.selectAllUsers = function(status) {
             document.querySelectorAll('.user-checkbox').forEach(cb => {
                 cb.checked = status;
             });
         }
 
-        function syncGroupMembers(groupCheckbox) {
+        window.syncGroupMembers = function(groupCheckbox) {
             const memberIds = JSON.parse(groupCheckbox.getAttribute('data-members'));
             const isChecked = groupCheckbox.checked;
 
