@@ -333,21 +333,11 @@ class Task extends Model
         return $query->where(function ($main) use ($user, $isCoordinator) {
             if ($isCoordinator) {
                 // COORDINADOR (Contexto Gestión): Ve el esqueleto (Plantillas y Raíces)
-                $main->where(function($mgmt) use ($user) {
-                    $mgmt->whereNull('parent_id')
-                         ->orWhere('is_template', true)
-                         ->orWhere('assigned_user_id', $user->id) // Coordinators must see their own assigned work
-                         ->orWhereNull('assigned_user_id'); // ...and unassigned "Backlog" work
-                })
-                // DEDUPLICATION: We only filter out instances that are NOT assigned to current user 
-                // but would otherwise be visible as part of the management view.
-                ->where(function($dedup) use ($user) {
-                    $dedup->where('assigned_user_id', $user->id)
-                          ->orWhere('assigned_user_id', '!=', $user->id)
-                          ->orWhereNull('assigned_user_id')
-                          ->orWhereNull('parent_id')
-                          ->orWhere('is_template', true);
-                });
+                // Evitamos traer instancias que no estén asignadas a él como filas principales,
+                // ya que estas se verán dentro de sus respectivos Planes Maestros.
+                $main->whereNull('parent_id')
+                     ->orWhere('is_template', true)
+                     ->orWhere('assigned_user_id', $user->id);
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado
                 $main->where('assigned_user_id', $user->id)
