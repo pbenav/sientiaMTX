@@ -173,14 +173,29 @@ class TeamController extends Controller
     /**
      * Show team members and their roles
      */
-    public function members(Team $team)
+    public function members(Request $request, Team $team)
     {
         if (auth()->user()->cannot('viewMembers', $team)) {
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
 
-        $members = $team->members()
-            ->paginate(20, ['*'], 'members_page');
+        $query = $team->members();
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%");
+            });
+        }
+
+        // Role Filter
+        if ($request->filled('role_id')) {
+            $query->wherePivot('role_id', $request->role_id);
+        }
+
+        $members = $query->paginate(20, ['*'], 'members_page')->withQueryString();
 
         $groups = $team->groups()->with('users')->get();
         $roles = TeamRole::all();

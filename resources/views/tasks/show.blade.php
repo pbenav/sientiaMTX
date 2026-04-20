@@ -179,6 +179,8 @@
         $taskIds = $task->children()->pluck('id')->push($task->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
         
+        $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
+
         $timeStats = $allLogs->groupBy('user_id')
             ->map(function ($logs) {
                 $totalSeconds = $logs->sum(function($log) {
@@ -1038,6 +1040,27 @@
                         
                         @include('tasks.partials.task-timer-button', ['task' => $trackingTask])
                     </div>
+
+                    @php
+                        $otherWorkersCount = count(array_filter($activeUserIds, fn($id) => $id !== auth()->id()));
+                    @endphp
+                    @if($otherWorkersCount > 0)
+                        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                            <div class="flex -space-x-2 overflow-hidden">
+                                @foreach($activeUserIds as $oid)
+                                    @if($oid !== auth()->id())
+                                        @php $ou = \App\Models\User::find($oid); @endphp
+                                        <div class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-900 bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-[8px] font-bold text-violet-600 dark:text-violet-400" title="{{ $ou->name }} {{ __('está trabajando ahora') }}">
+                                            {{ strtoupper(substr($ou->name, 0, 2)) }}
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                            <span class="text-[9px] font-black text-violet-500 uppercase tracking-widest animate-pulse">
+                                {{ $otherWorkersCount }} {{ $otherWorkersCount == 1 ? __('MIEMBRO TRABAJANDO') : __('MIEMBROS TRABAJANDO') }}
+                            </span>
+                        </div>
+                    @endif
                 </div>
             @endif
 
@@ -1186,19 +1209,29 @@
 
             <!-- Assigned To -->
             @if ($task->assignedTo->isNotEmpty() || $task->assignedGroups->isNotEmpty())
-                <div
+                <div x-data="{ searchQuery: '' }"
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors text-sans">
                     @if ($task->assignedTo->isNotEmpty() || (isset($timeStats) && $timeStats->isNotEmpty()))
                         <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                                    {{ __('tasks.assigned_to') }}
-                                </p>
-                                @if(isset($totalSecondsTask) && $totalSecondsTask > 0)
-                                    <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider">
-                                        {{ $totalFormattedTask }} {{ mb_strtolower(__('Total')) }}
-                                    </span>
-                                @endif
+                            <div class="flex flex-col gap-3 mb-3">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                                        {{ __('tasks.assigned_to') }}
+                                    </p>
+                                    @if(isset($totalSecondsTask) && $totalSecondsTask > 0)
+                                        <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-wider">
+                                            {{ $totalFormattedTask }} {{ mb_strtolower(__('Total')) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="relative">
+                                    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input type="text" x-model="searchQuery" 
+                                        placeholder="{{ __('Filtrar por nombre...') }}" 
+                                        class="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl text-[10px] outline-none focus:border-violet-500 transition-all font-sans">
+                                </div>
                             </div>
                             <div class="space-y-3">
                                 @php
@@ -1213,17 +1246,32 @@
                                         $userStat = isset($timeStats) ? $timeStats->firstWhere('user.id', $u->id) : null;
                                         $userPerc = ($totalSecondsTask > 0 && $userStat) ? ($userStat['seconds'] / $totalSecondsTask) * 100 : 0;
                                     @endphp
-                                    <div class="space-y-1.5">
+                                    <div class="space-y-1.5" x-show="searchQuery === '' || '{{ strtolower($u->name) }}'.includes(searchQuery.toLowerCase())" x-transition>
                                         @if($instance)
                                             <a href="{{ route('teams.tasks.show', [$team, $instance]) }}" class="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1.5 -ml-1.5 rounded-lg transition-colors group">
                                                 <div class="flex items-center gap-2.5">
-                                                    <div class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors">
-                                                        {{ strtoupper(substr($u->name, 0, 2)) }}
+                                                    <div class="relative">
+                                                        <div class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors {{ in_array($u->id, $activeUserIds) ? 'ring-2 ring-red-500 ring-offset-1 dark:ring-offset-gray-900 animate-pulse' : '' }}">
+                                                            {{ strtoupper(substr($u->name, 0, 2)) }}
+                                                        </div>
+                                                        @if(in_array($u->id, $activeUserIds))
+                                                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                                                        @endif
                                                     </div>
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $u->name }}</span>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors flex items-center gap-2">
+                                                        {{ $u->name }}
+                                                        @if(in_array($u->id, $activeUserIds))
+                                                            <span class="text-[8px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
+                                                        @endif
+                                                    </span>
                                                 </div>
                                                 @if($userStat)
-                                                    <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums">{{ $userStat['formatted'] }}</span>
+                                                    <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums flex items-center gap-1">
+                                                        @if(in_array($u->id, $activeUserIds))
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-red-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3" /></svg>
+                                                        @endif
+                                                        {{ $userStat['formatted'] }}
+                                                    </span>
                                                 @endif
                                             </a>
                                         @else
@@ -1253,15 +1301,31 @@
                                         @php
                                             $userPerc = $totalSecondsTask > 0 ? ($stat['seconds'] / $totalSecondsTask) * 100 : 0;
                                         @endphp
-                                        <div class="space-y-1.5">
+                                        <div class="space-y-1.5" x-show="searchQuery === '' || '{{ strtolower($stat['user']->name) }}'.includes(searchQuery.toLowerCase())" x-transition>
                                             <div class="flex items-center justify-between p-1.5 -ml-1.5">
                                                 <div class="flex items-center gap-2.5">
-                                                    <div class="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-[9px] font-bold text-teal-600 dark:text-teal-400 shrink-0">
-                                                        {{ strtoupper(substr($stat['user']->name, 0, 2)) }}
+                                                    <div class="relative">
+                                                        <div class="w-6 h-6 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-[9px] font-bold text-teal-600 dark:text-teal-400 shrink-0 {{ in_array($stat['user']->id, $activeUserIds) ? 'ring-2 ring-red-500 ring-offset-1 dark:ring-offset-gray-900 animate-pulse' : '' }}">
+                                                            {{ strtoupper(substr($stat['user']->name, 0, 2)) }}
+                                                        </div>
+                                                        @if(in_array($stat['user']->id, $activeUserIds))
+                                                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                                                        @endif
                                                     </div>
-                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $stat['user']->name }} <span class="text-[9px] text-gray-400 ml-1">({{ __('tasks.unassigned') ?? 'Ocasional' }})</span></span>
+                                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate flex items-center gap-2">
+                                                        {{ $stat['user']->name }} 
+                                                        @if(in_array($stat['user']->id, $activeUserIds))
+                                                            <span class="text-[8px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
+                                                        @endif
+                                                        <span class="text-[9px] text-gray-400 ml-1">({{ __('tasks.unassigned') ?? 'Ocasional' }})</span>
+                                                    </span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums">{{ $stat['formatted'] }}</span>
+                                                <span class="text-[10px] font-bold text-gray-900 dark:text-white tabular-nums flex items-center gap-1">
+                                                    @if(in_array($stat['user']->id, $activeUserIds))
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-red-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3" /></svg>
+                                                    @endif
+                                                    {{ $stat['formatted'] }}
+                                                </span>
                                             </div>
                                             <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden ml-8" style="width: calc(100% - 2rem);">
                                                 <div class="h-full bg-indigo-500/60 dark:bg-indigo-400/40 rounded-full" style="width: {{ $userPerc }}%"></div>

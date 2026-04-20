@@ -50,7 +50,7 @@ class Team extends Model
     {
         return $this->belongsToMany(User::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token');
+            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token', 'joined_at');
     }
 
     // Relationship: A team has many groups

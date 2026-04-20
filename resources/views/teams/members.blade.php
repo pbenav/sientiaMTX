@@ -55,10 +55,39 @@
             <!-- Members list -->
             <div
                 class="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent flex items-center border-b-0">
                     <h2 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
                         {{ __('teams.members') }}
                         ({{ $members->total() }})</h2>
+                </div>
+
+                <!-- Filters -->
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                    <form action="{{ route('teams.members', $team) }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+                        <input type="hidden" name="tab" value="members">
+                        <div class="relative flex-1">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                placeholder="{{ __('Buscar por nombre o email...') }}"
+                                class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm">
+                        </div>
+                        <select name="role_id" onchange="this.form.submit()" 
+                            class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl focus:border-violet-500 outline-none cursor-pointer transition-all min-w-[150px] shadow-sm">
+                            <option value="">{{ __('Todos los roles') }}</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
+                                    {{ __('teams.' . $role->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if(request()->anyFilled(['search', 'role_id']))
+                            <a href="{{ route('teams.members', $team) }}?tab=members" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center justify-center">
+                                {{ __('Limpiar filtros') }}
+                            </a>
+                        @endif
+                    </form>
                 </div>
                 @forelse($members as $member)
                     <div
@@ -70,7 +99,16 @@
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">{{ $member->name }}
                             </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
+                                <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{ __('Miembro desde') }}: 
+                                    <span class="font-bold">{{ $member->pivot->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('d/m/Y') : $member->created_at->format('d/m/Y') }}</span>
+                                </p>
+                            </div>
                         </div>
                         <div class="flex items-center gap-4 justify-end min-w-[200px]">
                             @can('manageMembers', $team)
