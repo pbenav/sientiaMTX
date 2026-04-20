@@ -311,7 +311,7 @@
                             </div>
                         </div>
                     @endif
-                    <div class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl"
+                    <div class="overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl custom-scrollbar"
                         x-data="{ 
                             sortKey: 'name', 
                             sortDir: 'asc',
@@ -340,7 +340,7 @@
                         }">
                         <table class="w-full text-left text-sm">
                             <thead
-                                class="bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                class="sticky top-0 z-10 bg-gray-50/95 dark:bg-gray-800/95 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-200 dark:border-gray-700">
                                 <tr>
                                     <th class="px-4 py-3 cursor-pointer hover:text-violet-500 transition-colors group" @click="sort('name')">
                                         <div class="flex items-center gap-2">
