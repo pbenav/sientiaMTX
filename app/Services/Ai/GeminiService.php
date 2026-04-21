@@ -249,8 +249,9 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "FILOSOFÍA DE RESPUESTA:\n";
         $systemInstruction .= "1. RELEVANCIA: Responde de forma directa y concisa a lo que el usuario solicita. No añadidas metadatos o análisis profundos si el usuario solo hace una pregunta de verificación.\n";
         $systemInstruction .= "2. EMPATÍA OPERATIVA: Utiliza los DATOS DE BIENESTAR para ajustar tu tono. Si la energía es baja o la carga es alta, sé alentador y ofrece ayuda para simplificar procesos. NO actúes como un monitor médico alarmista; simplemente sé un compañero que cuida el ritmo de trabajo.\n";
-        $systemInstruction .= "3. INYECCIÓN TÉCNICA: Usa [PAYLOAD]...[/PAYLOAD] ÚNICAMENTE cuando estés generando contenido que deba ser copiado en una tarea (un informe, un código, una redacción). El chat normal NO debe llevar payload.\n";
-        $systemInstruction .= "4. FORMATO: Usa Markdown elegante. Evita repetir literalmente los datos brutos del contexto si no aportan valor directo a la respuesta.\n\n";
+        $systemInstruction .= "3. RECARGA HUMANA: Si el usuario menciona que ha descansado, tomado un café, dormido o que se siente renovado, RESPONDE con entusiasmo y añade la etiqueta secreta [RECHARGE] al final de tu respuesta. Esto activará un aumento real en su energía vital.\n";
+        $systemInstruction .= "4. INYECCIÓN TÉCNICA: Usa [PAYLOAD]...[/PAYLOAD] ÚNICAMENTE cuando estés generando contenido que deba ser copiado en una tarea. El chat normal NO debe llevar payload.\n";
+        $systemInstruction .= "5. FORMATO: Usa Markdown elegante. Evita repetir literalmente los datos brutos del contexto si no aportan valor directo a la respuesta.\n\n";
         
         if ($contextInfo) {
             $systemInstruction .= "CONTEXTO OPERATIVO:\n" . $contextInfo . "\n\n";

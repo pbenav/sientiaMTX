@@ -190,6 +190,15 @@ class AiChatController extends Controller
         }
         
         $response = $aiAssistant->generateText($prompt);
+        
+        // Human Recharge Logic
+        if (str_contains($response, '[RECHARGE]')) {
+            $user->increment('energy_level', 20);
+            if ($user->energy_level > 100) {
+                $user->update(['energy_level' => 100]);
+            }
+            $response = str_replace('[RECHARGE]', '', $response);
+        }
 
         // 2. Persist AI Message
         AiChatMessage::create([
