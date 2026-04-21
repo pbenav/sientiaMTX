@@ -14,7 +14,7 @@ class ForumController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Team $team)
+    public function index(Request $request, Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
@@ -22,7 +22,17 @@ class ForumController extends Controller
         $userId = auth()->id();
         $isCoordinator = $team->isCoordinator(auth()->user());
 
+        $search = $request->query('search');
+
         $threads = $team->forumThreads()
+            ->when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhereHas('messages', function($mq) use ($search) {
+                          $mq->where('content', 'like', "%{$search}%");
+                      });
+                });
+            })
             ->with(['user', 'task', 'messages' => function ($query) {
                 // Get the latest message for each thread
                 $query->latest()->limit(1);
@@ -48,7 +58,8 @@ class ForumController extends Controller
             ->withCount('messages')
             ->orderBy('is_pinned', 'desc')
             ->orderBy('updated_at', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('teams.forum.index', compact('team', 'threads'));
     }

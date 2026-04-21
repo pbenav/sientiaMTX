@@ -19,6 +19,8 @@
             .kanban-column {
                 width: 280px !important;
                 flex: 0 0 280px !important;
+                max-height: calc(100vh - 150px) !important;
+                min-height: 300px;
             }
             .kanban-column .column-title {
                 font-size: 11px;
@@ -31,6 +33,8 @@
             .kanban-column {
                 width: 260px !important;
                 flex: 0 0 260px !important;
+                max-height: calc(100vh - 180px) !important;
+                min-height: 400px;
             }
             .kanban-column .column-title {
                 font-size: 10px;
@@ -43,10 +47,33 @@
             .kanban-column {
                 width: 320px !important;
                 flex: 0 0 320px !important;
+                max-height: calc(100vh - 200px) !important;
+                min-height: 500px;
             }
             .kanban-column .column-title {
                 font-size: 13px;
             }
+        }
+
+        /* Shadow indicator for scrolling */
+        .task-list {
+            position: relative;
+            scrollbar-gutter: stable;
+        }
+
+        .kanban-column::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to top, var(--col-bg), transparent);
+            pointer-events: none;
+            opacity: 0.8;
+            border-bottom-left-radius: 2.5rem;
+            border-bottom-right-radius: 2.5rem;
+            z-index: 10;
         }
     </style>
 
@@ -88,11 +115,10 @@
     <div class="flex flex-col min-h-[calc(100vh-180px)] w-full pb-10">
         <!-- Kanban Board Container -->
         <div class="flex-1 overflow-x-auto pb-6 pt-2 no-scrollbar">
-            <div class="flex h-full gap-2 sm:gap-3 md:gap-4 px-2 sm:px-3 md:px-6 w-max min-w-full items-stretch pb-4" id="kanban-board">
+            <div class="flex h-full gap-2 sm:gap-3 md:gap-4 px-2 sm:px-3 md:px-6 w-max min-w-full items-start pb-4" id="kanban-board">
                 @foreach($columns as $column)
-                    <div class="shrink-0 flex flex-col min-h-[600px] sm:min-h-[700px] h-full rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
-                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40; width: 280px; flex: 0 0 280px;"
-                         class="lg:basis-[320px]"
+                    <div class="shrink-0 flex flex-col rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
+                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40;"
                          data-column-id="{{ $column->id }}">
                         <!-- Accent Top Bar -->
                         <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>
@@ -342,17 +368,26 @@
                         delayOnTouchOnly: true,
                         touchStartThreshold: 5,
                         filter: 'button, a, input, select, .progress-slider',
-                        preventOnFilter: true,
+                        preventOnFilter: false, // Allow default behavior for filtered elements (like sliders)
                     onEnd: function(evt) {
                         const taskId = evt.item.dataset.taskId;
                         const newColumnId = evt.to.dataset.columnId;
                         const isCompletedZone = evt.to.id === 'completed-tasks-zone';
                         const newIndex = evt.newIndex;
 
+                        // Check if the target column title contains "complet"
+                        const columnTitle = evt.to.closest('.kanban-column').querySelector('.column-title').innerText.toLowerCase();
+                        const isCompletedColumn = columnTitle.includes('complet') || columnTitle.includes('terminad') || columnTitle.includes('hecho');
+
                         if (isCompletedZone) {
                             archiveTask(taskId);
                         } else {
-                            updateTaskPosition(taskId, newColumnId, newIndex);
+                            // If moved to a completed column, set progress to 100% WITHOUT archiving
+                            if (isCompletedColumn) {
+                                completeTaskWithoutArchiving(taskId, newColumnId, newIndex);
+                            } else {
+                                updateTaskPosition(taskId, newColumnId, newIndex);
+                            }
                         }
                     }
                 });
@@ -415,6 +450,30 @@
                 .then(data => {
                     if (data.success) {
                         console.log('Column order synchronized successfully');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            window.completeTaskWithoutArchiving = function(taskId, columnId, order) {
+                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        status: 'completed',
+                        progress_percentage: 100,
+                        is_archived: false,
+                        column_id: columnId,
+                        kanban_order: order
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); 
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -628,6 +687,12 @@
         .animate-card-appear {
             animation: cardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        .task-list {
+            position: relative;
+            scrollbar-gutter: stable;
+            scroll-behavior: smooth;
+        }
+
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -636,17 +701,26 @@
             background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #1f2937;
+            background: rgba(255, 255, 255, 0.1);
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #374151;
+
+        .kanban-column::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to top, var(--col-bg), transparent);
+            pointer-events: none;
+            opacity: 0.9;
+            border-bottom-left-radius: 2.5rem;
+            border-bottom-right-radius: 2.5rem;
+            z-index: 10;
         }
     </style>
     @endpush

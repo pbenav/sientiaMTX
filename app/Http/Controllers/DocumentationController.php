@@ -40,12 +40,14 @@ class DocumentationController extends Controller
                 'telegram' => 'Configuración Telegram',
                 'user-manual' => 'Manual de Usuario',
                 'admin-manual' => 'Manual de Administrador',
+                'gamification' => 'Sistema de Gamificación',
             ],
             'en' => [
                 'installation' => 'Installation',
                 'telegram' => 'Telegram Setup',
                 'user-manual' => 'User Manual',
                 'admin-manual' => 'Admin Manual',
+                'gamification' => 'Gamification System',
             ]
         ];
 

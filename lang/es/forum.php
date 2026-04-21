@@ -32,4 +32,8 @@ return [
     'message_created' => 'Mensaje enviado.',
     'message_updated' => 'Mensaje actualizado.',
     'message_deleted' => 'Mensaje eliminado.',
+    'search_threads' => 'Buscar en el foro...',
+    'no_results_title' => 'No se encontraron resultados para tu búsqueda',
+    'no_results_desc' => 'Prueba con otros términos o limpia el buscador.',
+    'clear_search' => 'Limpiar búsqueda',
 ];

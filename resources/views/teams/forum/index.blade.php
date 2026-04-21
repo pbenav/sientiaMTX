@@ -20,17 +20,41 @@
         </div>
 
         <!-- Action Buttons Row -->
-        <div class="flex items-center gap-3 shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
-            <button type="button" x-data=""
-                x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
-                class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo Hilo' }}</span>
-            </button>
-            @include('teams.partials.header-actions')
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+            <div class="flex items-center gap-3 shrink-0">
+                <button type="button" x-data=""
+                    x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
+                    class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo Hilo' }}</span>
+                </button>
+                @include('teams.partials.header-actions')
+            </div>
+
+            <!-- Search Bar -->
+            <form action="{{ route('teams.forum.index', $team) }}" method="GET" class="relative flex-1 max-w-md">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                           placeholder="{{ __('forum.search_threads') ?? 'Buscar en el foro...' }}"
+                           class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-gray-400 dark:text-gray-300">
+                    
+                    @if(request('search'))
+                        <a href="{{ route('teams.forum.index', $team) }}" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 transition-colors">
+                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
     </x-slot>
 
@@ -47,19 +71,35 @@
                     </svg>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                    {{ __('forum.empty_title') ?? 'No hay hilos de discusión todavía' }}</h3>
+                    @if(request('search'))
+                        {{ __('forum.no_results_title') ?? 'No se encontraron resultados para tu búsqueda' }}
+                    @else
+                        {{ __('forum.empty_title') ?? 'No hay hilos de discusión todavía' }}
+                    @endif
+                </h3>
                 <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                    {{ __('forum.empty_desc') ?? 'Abre un nuevo hilo para compartir ideas, resolver dudas o documentar decisiones de equipo.' }}
+                    @if(request('search'))
+                        {{ __('forum.no_results_desc') ?? 'Prueba con otros términos o limpia el buscador.' }}
+                    @else
+                        {{ __('forum.empty_desc') ?? 'Abre un nuevo hilo para compartir ideas, resolver dudas o documentar decisiones de equipo.' }}
+                    @endif
                 </p>
 
-                <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
-                    class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-500/25">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    {{ __('forum.create_first_thread') ?? 'Crear el primer hilo' }}
-                </button>
+                @if(request('search'))
+                    <a href="{{ route('teams.forum.index', $team) }}" 
+                        class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-6 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
+                        {{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}
+                    </a>
+                @else
+                    <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
+                        class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-500/25">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        {{ __('forum.create_first_thread') ?? 'Crear el primer hilo' }}
+                    </button>
+                @endif
             </div>
         @else
             <div class="grid grid-cols-1 gap-4">

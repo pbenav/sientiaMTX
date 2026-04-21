@@ -32,4 +32,8 @@ return [
     'message_created' => 'Message sent.',
     'message_updated' => 'Message updated.',
     'message_deleted' => 'Message deleted.',
+    'search_threads' => 'Search the forum...',
+    'no_results_title' => 'No results found for your search',
+    'no_results_desc' => 'Try other terms or clear the search.',
+    'clear_search' => 'Clear search',
 ];

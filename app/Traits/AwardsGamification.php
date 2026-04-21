@@ -27,11 +27,36 @@ trait AwardsGamification
         $xp = 10 * $multiplier;
         $resilience = 0;
         
+        // --- Master Plan Race Bonus ---
+        // Reward members for finishing tasks quickly relative to their peers in the same master plan.
+        $raceBonusXp = 0;
+        if ($task->parent_id && $task->parent && $task->parent->is_template) {
+            $completedCount = $task->parent->children()
+                ->where('status', 'completed')
+                ->where('id', '!=', $task->id)
+                ->count();
+            
+            if ($completedCount === 0) {
+                $raceBonusXp = 15; // 1st place
+            } elseif ($completedCount === 1) {
+                $raceBonusXp = 10; // 2nd place
+            } elseif ($completedCount === 2) {
+                $raceBonusXp = 5;  // 3rd place
+            }
+            
+            $xp += $raceBonusXp;
+        }
+
         // --- Rediseño de Energía SientiaMTX ---
         // Antes: Drain asfixiante de $multiplier * 5.
         // Ahora: Drain suave de $multiplier * 2 y recompensa fija de +5 por "cerrar el círculo".
+        // FIX: Si el usuario olvidó detener el contador, no lo castigamos con drenaje excesivo.
+        // El drenaje está basado en la CARGA COGNITIVA, no en el tiempo real, lo cual ya protege 
+        // contra olvidos de cronómetro. No obstante, aumentamos la recompensa por completitud 
+        // si la carga es alta para balancear el esfuerzo.
+        
         $energyDrain = $multiplier * 2; 
-        $energyGainCompletion = 5; 
+        $energyGainCompletion = 5 + ($multiplier > 3 ? 2 : 0); // Bonus energy for high load tasks
         $netEnergyChange = $energyGainCompletion - $energyDrain;
 
         if ($task->is_out_of_skill_tree) {
@@ -96,6 +121,19 @@ trait AwardsGamification
         $user->update(['energy_level' => $newEnergy]);
 
         // Log the achievement
+        $description = __('gamification.completed_description', ['title' => $task->title]);
+        
+        if ($resilience > 0) {
+            $description .= " (" . __('gamification.resilience_challenge') . ")";
+        }
+        
+        if ($raceBonusXp > 0) {
+            $place = $raceBonusXp === 15 ? __('gamification.first_place') : 
+                    ($raceBonusXp === 10 ? __('gamification.second_place') : __('gamification.third_place'));
+                    
+            $description .= " " . __('gamification.race_bonus_description', ['points' => $raceBonusXp, 'place' => $place]);
+        }
+
         GamificationLog::create([
             'user_id' => $user->id,
             'team_id' => $task->team_id,
@@ -103,7 +141,7 @@ trait AwardsGamification
             'type' => $resilience > 0 ? 'resilience' : 'task',
             'source_type' => 'App\Models\Task',
             'source_id' => $task->id,
-            'description' => "Completada: " . $task->title . ($resilience > 0 ? " (Reto de Resiliencia)" : ""),
+            'description' => $description,
         ]);
 
         Log::info("Gamificación: Otorgados {$xp} XP y {$resilience} Resilience a {$user->name} por tarea #{$task->id}.");
