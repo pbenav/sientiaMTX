@@ -471,9 +471,14 @@
                 if (wrapper && !wasDragging) {
                     const id = wrapper.dataset.id;
                     const task = allTasks.find(t => t.id == id);
-                    if (task && task.has_children) {
-                        (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
-                        refreshGanttDisplay();
+                    if (task) {
+                        if (task.has_children) {
+                            (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
+                            refreshGanttDisplay();
+                        } else {
+                            // On mobile/tablet, a single click on a leaf task should go to details
+                            window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                        }
                     }
                 }
             });
