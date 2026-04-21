@@ -240,28 +240,31 @@ class AiChatController extends Controller
 
         $oldValues = $task->getAttributes();
         
-        if ($request->target === 'description') {
-            $task->update(['description' => $content]);
+        if ($request->target === 'description' || $request->target === 'observations_append') {
+            $column = 'observations'; // User requested that "Cuerpo de Tarea" maps to observations
+            $oldContent = $task->{$column} ?? '';
+            $newContent = trim($oldContent . "\n\n" . $content);
+            
+            $task->update([$column => $newContent]);
+            
             $history = $task->histories()->create([
                 'user_id' => auth()->id(),
                 'action' => 'ai_transfer',
-                'old_values' => ['description' => $oldValues['description']],
-                'new_values' => ['description' => $content],
-                'notes' => 'Transferido desde Ax.ia (Descripción)'
+                'old_values' => [$column => $oldContent],
+                'new_values' => [$column => $newContent],
+                'notes' => 'Transferido desde Ax.ia (Añadido al final)'
             ]);
-            return response()->json(['success' => true, 'message' => 'Descripción actualizada correctamente.', 'history_id' => $history->id]);
+            return response()->json(['success' => true, 'message' => 'Contenido añadido a Observaciones correctamente.', 'history_id' => $history->id]);
         }
 
-        if ($request->target === 'observations') {
-            $task->update(['observations' => $content]);
-            $history = $task->histories()->create([
-                'user_id' => auth()->id(),
-                'action' => 'ai_transfer',
-                'old_values' => ['observations' => $oldValues['observations']],
-                'new_values' => ['observations' => $content],
-                'notes' => 'Transferido desde Ax.ia (Observaciones)'
-            ]);
-            return response()->json(['success' => true, 'message' => 'Observaciones actualizadas correctamente.', 'history_id' => $history->id]);
+        if ($request->target === 'observations' || $request->target === 'private_note') {
+            // Use TaskPrivateNote for "Notas"
+            $note = \App\Models\TaskPrivateNote::updateOrCreate(
+                ['task_id' => $task->id, 'user_id' => auth()->id()],
+                ['content' => $content]
+            );
+            
+            return response()->json(['success' => true, 'message' => 'Nota interna/privada guardada correctamente.']);
         }
 
         if ($request->target === 'comment') {
@@ -324,6 +327,28 @@ class AiChatController extends Controller
         }
 
         $content = $this->extractPayload($request->input('content'));
+        $user = $request->user();
+
+        if ($request->target === 'private_note' || $request->target === 'observations') {
+            // Create a new task for this note
+            $task = \App\Models\Task::create([
+                'team_id' => $team->id,
+                'title' => '📝 Nota de Ax.ia: ' . now()->format('d/m/Y H:i'),
+                'description' => 'Tarea creada automáticamente desde el chat de Ax.ia.',
+                'created_by_id' => $user->id,
+                'assigned_user_id' => $user->id, // Private by default or assigned to self
+                'visibility' => 'private',
+                'status' => 'pending'
+            ]);
+
+            \App\Models\TaskPrivateNote::create([
+                'task_id' => $task->id,
+                'user_id' => $user->id,
+                'content' => $content
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Se ha creado una nueva tarea con tu nota privada.']);
+        }
 
         // Find or create a "General Chat" thread for the team
         $thread = \App\Models\ForumThread::where('team_id', $team->id)

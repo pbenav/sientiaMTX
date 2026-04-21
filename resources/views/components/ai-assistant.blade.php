@@ -769,18 +769,18 @@
                             <!-- Grid Section -->
                             <div class="p-6">
                                 <div class="grid grid-cols-2 gap-4" id="ai-destination-grid">
-                                    <button data-target="description" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
+                                    <button data-target="observations_append" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
                                         <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                         </div>
                                         <span class="font-bold text-gray-800 dark:text-white text-xs">Cuerpo de tarea</span>
                                     </button>
 
-                                    <button data-target="observations" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-violet-500 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
+                                    <button data-target="private_note" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-violet-500 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
                                         <div class="w-10 h-10 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </div>
-                                        <span class="font-bold text-gray-800 dark:text-white text-xs">Notas internas</span>
+                                        <span class="font-bold text-gray-800 dark:text-white text-xs">Notas</span>
                                     </button>
 
                                     <button data-target="comment" class="group p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-amber-500 hover:bg-amber-50/30 dark:hover:bg-amber-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex flex-col gap-3 outline-none ring-1 ring-gray-100 dark:ring-gray-800">
@@ -838,9 +838,11 @@
                     let possibleIds = {
                         'description': 'description',
                         'observations': 'observations',
+                        'observations_append': 'observations',
                         'comment': 'reply-content',
                         'reply': 'reply-content',
                         'dom-reply': 'reply-content',
+                        'private_note': 'reply-content-private',
                         'private-notes': 'reply-content-private'
                     };
 
