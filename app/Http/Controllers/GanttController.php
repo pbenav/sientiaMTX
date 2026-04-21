@@ -59,107 +59,113 @@ class GanttController extends Controller
         return view('teams.gantt', compact('team', 'members', 'skills', 'actionHeat', 'daysInMonth'));
     }
 
-    /**
-     * Get tasks data formatted for Frappe Gantt.
-     */
     public function data(Request $request, Team $team)
     {
-        if (auth()->user()->cannot('view', $team)) {
-            return response()->json(['error' => __('teams.unauthorized_access')], 403);
-        }
-        $tasks = $this->getTaskSet($request, $team);
-
-        // Map to Frappe Gantt format
-        $formattedTasks = $tasks->map(function (Task $task) {
-            $start = $task->scheduled_date ?: ($task->created_at ?: now());
-            $end   = $task->due_date       ?: $start->copy()->addDay();
-            $progress = $task->progress;
-
-            // Distinguish template vs instance vs recurring in the label
-            if ($task->is_template || $task->is_autoprogrammable) {
-                $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
-            } elseif ($task->assignedUser) {
-                $label = '👤 ' . ($task->assignedUser->short_name ?: $task->assignedUser->name) . ': ' . $task->title;
-            } else {
-                $label = $task->title;
+        try {
+            if (auth()->user()->cannot('view', $team)) {
+                return response()->json(['error' => __('teams.unauthorized_access')], 403);
             }
+            $tasks = $this->getTaskSet($request, $team);
 
-            if ($task->parent_id) $label = '   ↳ ' . $label;
+            // Map to Frappe Gantt format
+            $formattedTasks = $tasks->map(function (Task $task) use ($request) {
+                $start = $task->scheduled_date ?: ($task->created_at ?: now());
+                $end   = $task->due_date       ?: $start->copy()->addDay();
+                $progress = $task->progress;
 
-            $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
-            // Only templates should be forced readonly for regular members in this context
-            $isReadonly = $task->is_template && auth()->user()->cannot('update', $task);
-            $readonlyClass = $isReadonly ? 'gantt-readonly' : '';
-            $colorClass = $task->getGanttColorClass();
+                // Distinguish template vs instance vs recurring in the label
+                if ($task->is_template || $task->is_autoprogrammable) {
+                    $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
+                } elseif ($task->assignedUser) {
+                    $label = '👤 ' . ($task->assignedUser->short_name ?: $task->assignedUser->name) . ': ' . $task->title;
+                } else {
+                    $label = $task->title;
+                }
 
-            return [
-                'id'           => (string) $task->id,
-                'name'         => $label,
-                'start'        => $start->format('Y-m-d'),
-                'end'          => $end->format('Y-m-d'),
-                'progress'     => $progress,
-                'dependencies' => $task->metadata['dependency_id'] ?? ($task->parent_id ? (string) $task->parent_id : ''),
-                'custom_class' => "{$typeClass} {$colorClass} {$readonlyClass}",
-                'status'       => $task->status,
-                'status_label' => __("tasks.statuses.{$task->status}"),
-                'priority'     => $task->priority,
-                'priority_label' => __("tasks.priorities.{$task->priority}"),
-                'urgency'      => $task->urgency,
-                'is_template'  => $task->is_template,
-                'has_children' => $task->children->count() > 0,
-                'assigned_to'  => $task->assignedUser?->name ?? $task->creator?->name,
-                'user_name'    => $task->assignedUser?->name ?? ($task->creator?->name ?? 'Sin asignar'),
-                'user_initials' => ($task->assignedUser ?: $task->creator) 
-                                    ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(($task->assignedUser ?: $task->creator)->name, 0, 2)) 
-                                    : '??',
-                'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
-                'weight'       => $task->cognitive_load ?? 1,
-                'parent_id'    => $task->parent_id,
-                'parent_title' => $task->parent?->title,
-                'readonly'     => auth()->user()->cannot('update', $task),
-                'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),
-                'members_progress' => (function() use ($task, $request) {
-                    $showCompleted = !session('hide_completed_tasks', true) || $request->status;
-                    
-                    if ($task->children->count() > 0) {
-                        return $task->children
-                            ->filter(fn($c) => $showCompleted || !in_array($c->status, ['completed', 'cancelled']))
-                            ->map(fn($child) => [
-                                'name' => $child->assignedUser?->short_name ?: ($child->assignedUser?->name ?: 'Desconocido'),
-                                'progress' => $child->progress,
-                                'time_human' => null,
-                                'initials' => $child->assignedUser 
-                                    ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($child->assignedUser->name, 0, 2)) 
-                                    : '??'
-                            ])
-                            ->sortBy(fn($m) => mb_strtolower((string)$m['name']), SORT_NATURAL)
-                            ->values()->toArray();
-                    }
-                    
-                    if ($task->assignedTo->count() > 1 || $task->timeLogs->count() > 0) {
-                        return $task->assignedTo->merge($task->timeLogs->pluck('user')->filter())
-                            ->unique('id')
-                            ->map(function($user) use ($task) {
-                                $seconds = (int) $task->timeLogs->where('user_id', $user->id)->whereNotNull('end_at')->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
-                                $hours = floor($seconds / 3600);
-                                $minutes = floor(($seconds % 3600) / 60);
-                                return [
-                                    'name' => $user->short_name ?: $user->name,
-                                    'progress' => null,
-                                    'time_human' => $seconds > 0 ? "{$hours}h {$minutes}m" : "0h 0m",
-                                    'initials' => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 2))
-                                ];
-                            })
-                            ->sortBy(fn($m) => mb_strtolower((string)$m['name']), SORT_NATURAL)
-                            ->values()->toArray();
-                    }
-                    
-                    return [];
-                })(),
-            ];
-        });
+                if ($task->parent_id) $label = '   ↳ ' . $label;
 
-        return response()->json($formattedTasks);
+                $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
+                // Only templates should be forced readonly for regular members in this context
+                $isReadonly = $task->is_template && auth()->user()->cannot('update', $task);
+                $readonlyClass = $isReadonly ? 'gantt-readonly' : '';
+                $colorClass = $task->getGanttColorClass();
+
+                return [
+                    'id'           => (string) $task->id,
+                    'name'         => $label,
+                    'start'        => $start->format('Y-m-d'),
+                    'end'          => $end->format('Y-m-d'),
+                    'progress'     => $progress,
+                    'dependencies' => $task->metadata['dependency_id'] ?? ($task->parent_id ? (string) $task->parent_id : ''),
+                    'custom_class' => "{$typeClass} {$colorClass} {$readonlyClass}",
+                    'status'       => $task->status,
+                    'status_label' => __("tasks.statuses.{$task->status}"),
+                    'priority'     => $task->priority,
+                    'priority_label' => __("tasks.priorities.{$task->priority}"),
+                    'urgency'      => $task->urgency,
+                    'is_template'  => $task->is_template,
+                    'has_children' => $task->children->count() > 0,
+                    'assigned_to'  => $task->assignedUser?->name ?? $task->creator?->name,
+                    'user_name'    => $task->assignedUser?->name ?? ($task->creator?->name ?? 'Sin asignar'),
+                    'user_initials' => ($task->assignedUser ?: $task->creator) 
+                                        ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(($task->assignedUser ?: $task->creator)->name, 0, 2)) 
+                                        : '??',
+                    'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
+                    'weight'       => $task->cognitive_load ?? 1,
+                    'parent_id'    => $task->parent_id,
+                    'parent_title' => $task->parent?->title,
+                    'readonly'     => auth()->user()->cannot('update', $task),
+                    'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),
+                    'members_progress' => (function() use ($task, $request) {
+                        $showCompleted = !session('hide_completed_tasks', true) || $request->status;
+                        
+                        if ($task->children->count() > 0) {
+                            return $task->children
+                                ->filter(fn($c) => $showCompleted || !in_array($c->status, ['completed', 'cancelled']))
+                                ->map(fn($child) => [
+                                    'name' => $child->assignedUser?->short_name ?: ($child->assignedUser?->name ?: 'Desconocido'),
+                                    'progress' => $child->progress,
+                                    'time_human' => null,
+                                    'initials' => $child->assignedUser 
+                                        ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($child->assignedUser->name, 0, 2)) 
+                                        : '??'
+                                ])
+                                ->sortBy(fn($m) => mb_strtolower((string)$m['name']), SORT_NATURAL)
+                                ->values()->toArray();
+                        }
+                        
+                        if ($task->assignedTo->count() > 1 || $task->timeLogs->count() > 0) {
+                            return $task->assignedTo->merge($task->timeLogs->pluck('user')->filter())
+                                ->unique('id')
+                                ->map(function($user) use ($task) {
+                                    $seconds = (int) $task->timeLogs->where('user_id', $user->id)->whereNotNull('end_at')->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+                                    $hours = floor($seconds / 3600);
+                                    $minutes = floor(($seconds % 3600) / 60);
+                                    return [
+                                        'name' => $user->short_name ?: $user->name,
+                                        'progress' => null,
+                                        'time_human' => $seconds > 0 ? "{$hours}h {$minutes}m" : "0h 0m",
+                                        'initials' => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 2))
+                                    ];
+                                })
+                                ->sortBy(fn($m) => mb_strtolower((string)$m['name']), SORT_NATURAL)
+                                ->values()->toArray();
+                        }
+                        
+                        return [];
+                    })(),
+                ];
+            });
+
+            return response()->json($formattedTasks);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Gantt Data Error: " . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
