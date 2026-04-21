@@ -280,11 +280,17 @@ class GanttController extends Controller
             })
             ->get();
 
-        // Step 4: Sorting (Template/Parent first)
+        // Step 4: Sorting (Grouped by Master/Parent, then by Member Name)
         return $allGanttTasks->sortBy(function ($task) {
             $groupId = $task->parent_id ?? $task->id;
             $isChild = $task->parent_id ? 1 : 0;
-            return sprintf('%010d-%d-%010d', $groupId, $isChild, $task->id);
+            
+            // For sorting by member name within the group
+            $memberName = $task->assignedUser?->short_name ?: ($task->assignedUser?->name ?: 'ZZZ');
+            $normalizedMember = mb_strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', trim($memberName)));
+            
+            // Format: [GroupID] - [MasterFirst] - [MemberName] - [TaskID]
+            return sprintf('%010d-%d-%s-%010d', $groupId, $isChild, $normalizedMember, $task->id);
         })->values();
     }
 }
