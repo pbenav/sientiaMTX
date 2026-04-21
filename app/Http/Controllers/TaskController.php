@@ -58,6 +58,39 @@ class TaskController extends Controller
         ]);
     }
 
+    public function exportJson(Team $team, Task $task)
+    {
+        if ($task->team_id !== $team->id) {
+            abort(404);
+        }
+        $this->authorize('view', $task);
+
+        $data = [
+            'type' => 'sientia_task_v1',
+            'exported_at' => now()->toDateTimeString(),
+            'task' => [
+                'title' => $task->title,
+                'description' => $task->description,
+                'observations' => $task->observations,
+                'priority' => $task->priority,
+                'urgency' => $task->urgency,
+                'visibility' => $task->visibility,
+                'is_template' => $task->is_template,
+                'cognitive_load' => $task->cognitive_load,
+                'is_backstage' => $task->is_backstage,
+                'autoprogram_settings' => $task->autoprogram_settings,
+                'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
+                'skills' => $task->skills->map(fn($s) => ['name' => $s->name, 'category' => $s->category])->toArray(),
+            ]
+        ];
+
+        $filename = 'task-' . \Illuminate\Support\Str::slug($task->title) . '-' . date('YmdHis') . '.json';
+
+        return response()->streamDownload(function () use ($data) {
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        }, $filename, ['Content-Type' => 'application/json']);
+    }
+
     public function index(Request $request, Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {
