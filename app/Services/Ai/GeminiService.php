@@ -22,6 +22,7 @@ class GeminiService implements AiAssistantInterface
     protected string $targetModel = 'gemini-3-flash-preview';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     protected array $userStats = [];
+    protected array $tasksContext = [];
 
     public function __construct()
     {
@@ -43,6 +44,7 @@ class GeminiService implements AiAssistantInterface
         $this->threadContext = null;
         $this->messageContext = null;
         $this->directFile = null;
+        $this->tasksContext = [];
         
         // Contexto específico o global
         // Contexto específico o global
@@ -104,6 +106,12 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function withTasksContext($tasks): self
+    {
+        $this->tasksContext = $tasks;
+        return $this;
+    }
+
     public function withFile(\Illuminate\Http\UploadedFile $file): self
     {
         $this->directFile = $file;
@@ -140,6 +148,14 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Equipo: " . ($this->taskContext->team->name ?? 'N/A') . "\n";
             $contextInfo .= "- Estado: " . ($this->taskContext->status ?? 'pending') . "\n";
             $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
+        }
+
+        if (!empty($this->tasksContext)) {
+            $contextInfo .= "\nLISTADO DE TAREAS ACTIVAS/PENDIENTES:\n";
+            foreach ($this->tasksContext as $t) {
+                $contextInfo .= "- [ID: {$t->id}] \"{$t->title}\" (Carga: {$t->cognitive_load}/5, Estado: {$t->status})\n";
+            }
+            $contextInfo .= "NOTA: El impacto en energía depende de la Carga Cognitiva. A mayor carga, más desgaste al trabajar, pero más recompensa al completar.\n";
         }
 
         if ($this->cachedFileContent) {

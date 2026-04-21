@@ -138,6 +138,19 @@ class AiChatController extends Controller
             if ($task) {
                 $aiAssistant->withTaskContext($task);
             }
+        } else {
+            // If no specific task context, provide a general list of pending tasks for context
+            $pendingTasks = $user->assignedTasks()
+                ->where('status', '!=', 'completed')
+                ->where(function($q) use ($request) {
+                    if ($request->team_id) $q->where('tasks.team_id', $request->team_id);
+                })
+                ->limit(15)
+                ->get();
+            
+            if ($pendingTasks->count() > 0) {
+                $aiAssistant->withTasksContext($pendingTasks);
+            }
         }
 
         if ($request->attachment_id) {
