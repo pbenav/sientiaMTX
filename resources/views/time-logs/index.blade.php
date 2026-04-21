@@ -369,8 +369,21 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="p-4 bg-gray-50/50 dark:bg-transparent border-t border-gray-50 dark:border-gray-800 mt-auto">
-                        <p class="text-[8px] font-black text-gray-400 uppercase text-center tracking-widest">Distribución de Impacto Colectivo</p>
+                    <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
+                        <div class="flex items-center justify-center gap-4">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+                                <span class="text-[7px] font-black text-gray-400 uppercase tracking-widest">{{ __('En labor') }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                <span class="text-[7px] font-black text-gray-400 uppercase tracking-widest">{{ __('En red') }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <span class="text-[7px] font-black text-gray-400 uppercase tracking-widest">{{ __('En reposo') }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
