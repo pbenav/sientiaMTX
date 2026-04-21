@@ -202,12 +202,23 @@
         const tooltip = document.getElementById('gantt-tooltip');
         const dragIndicator = document.getElementById('drag-date-indicator');
 
+        function updateWaveTooltip(el, e) {
+            const d = el.dataset;
+            document.getElementById('w-tooltip-day').innerText = `${d.day} {{ now()->translatedFormat('M') }}`;
+            document.getElementById('w-tooltip-weight').innerText = `${d.weight}u`;
+            document.getElementById('w-tooltip-user-weight').innerText = `${d.userWeight}u`;
+            document.getElementById('w-tooltip-bar').style.width = d.pct+'%';
+            document.getElementById('w-tooltip-bar').style.backgroundColor = d.color;
+            const tt = document.getElementById('wave-tooltip');
+            tt.style.opacity = '1'; tt.style.left = (e.clientX-100)+'px'; tt.style.top = (e.clientY-140)+'px';
+        }
+
+        function hideWaveTooltip() { document.getElementById('wave-tooltip').style.opacity = '0'; }
+
         async function initGantt() {
             const url = `{{ route('teams.gantt.data', $team) }}?${new URLSearchParams(window.location.search).toString()}`;
-            console.log("Fetching Gantt data from:", url);
             const res = await fetch(url);
             allTasks = await res.json();
-            console.log("Gantt data received:", allTasks.length, "tasks");
             
             if (allTasks.length === 0) {
                 document.getElementById('gantt-container').innerHTML = '<div class="p-20 text-center text-gray-500 font-bold">Sin tareas.</div>';
@@ -573,18 +584,6 @@
             // Unificado
         }
 
-        function updateWaveTooltip(el, e) {
-            const d = el.dataset;
-            document.getElementById('w-tooltip-day').innerText = `${d.day} {{ now()->translatedFormat('M') }}`;
-            document.getElementById('w-tooltip-weight').innerText = `${d.weight}u`;
-            document.getElementById('w-tooltip-user-weight').innerText = `${d.userWeight}u`;
-            document.getElementById('w-tooltip-bar').style.width = d.pct+'%';
-            document.getElementById('w-tooltip-bar').style.backgroundColor = d.color;
-            const tt = document.getElementById('wave-tooltip');
-            tt.style.opacity = '1'; tt.style.left = (e.clientX-100)+'px'; tt.style.top = (e.clientY-140)+'px';
-        }
-
-        function hideWaveTooltip() { document.getElementById('wave-tooltip').style.opacity = '0'; }
         function changeView(m) { currentMode = m; refreshGanttDisplay(); }
         function centerToday() { const c = document.getElementById('gantt-container'), h = c.querySelector('.today-highlight'); if(h) c.scrollLeft = parseFloat(h.getAttribute('x')) - (c.offsetWidth/2); }
         function drawTodayLine() {
