@@ -22,7 +22,7 @@ class GeminiService implements AiAssistantInterface
     protected string $targetModel = 'gemini-3-flash-preview';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     protected array $userStats = [];
-    protected array $tasksContext = [];
+    protected $tasksContext = [];
 
     public function __construct()
     {
