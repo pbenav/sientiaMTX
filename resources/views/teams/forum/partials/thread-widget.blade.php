@@ -8,9 +8,23 @@
 <div
     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors"
     x-data="{
+        showEmojiPicker: false,
+        editingMessageId: null,
         startWidgetEdit(id, content) {
-            this.$dispatch('edit-widget-message', { id: id, content: content });
-            document.getElementById('widget-messages-container').scrollTop = document.getElementById('widget-messages-container').scrollHeight;
+            this.editingMessageId = id;
+            const textarea = document.getElementById('forum-thread-textarea-{{ $rootTask->id }}');
+            if (textarea) {
+                textarea.value = content;
+                textarea.focus();
+            }
+            // Ensure container scroll if needed
+            const container = document.getElementById('widget-messages-container');
+            if (container) container.scrollTop = container.scrollHeight;
+        },
+        cancelWidgetEdit() {
+            this.editingMessageId = null;
+            const textarea = document.getElementById('forum-thread-textarea-{{ $rootTask->id }}');
+            if (textarea) textarea.value = '';
         }
     }">
     <div class="flex items-center justify-between mb-4">
@@ -107,23 +121,9 @@
 
             @if (!$rootTask->forumThread->is_locked)
                 <form 
-                    x-data="{ 
-                        showEmojiPicker: false,
-                        editingMessageId: null,
-                        startWidgetEdit(id, content) {
-                            this.editingMessageId = id;
-                            document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').value = content;
-                            document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').focus();
-                        },
-                        cancelWidgetEdit() {
-                            this.editingMessageId = null;
-                            document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').value = '';
-                        }
-                    }"
                     :action="editingMessageId ? `/teams/{{ $team->id }}/forum/messages/${editingMessageId}` : '{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}'" 
                     method="POST"
                     class="mt-3 relative" 
-                    @edit-widget-message.window="startWidgetEdit($event.detail.id, $event.detail.content)"
                 >
                     @csrf
                     <template x-if="editingMessageId">
