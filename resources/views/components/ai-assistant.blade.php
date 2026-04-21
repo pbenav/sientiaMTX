@@ -133,9 +133,26 @@
                 <div class="flex flex-col w-full">
                     <!-- Event / System Message -->
                     <template x-if="msg.role === 'system'">
-                        <div class="self-center px-4 py-1.5 bg-gray-100 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] my-2 mb-4 flex items-center gap-2 shadow-sm">
-                            <svg class="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span x-html="renderMarkdown(msg.content)"></span>
+                        <div class="flex flex-col items-center w-full my-2 mb-4">
+                            <div class="self-center px-4 py-1.5 bg-gray-100 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] flex items-center gap-2 shadow-sm">
+                                <svg class="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span x-html="renderMarkdown(msg.content)"></span>
+                            </div>
+                            
+                            <!-- Attachment in system message -->
+                            <template x-if="msg.file_url">
+                                <div class="w-full max-w-[80%] mt-2 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                    <template x-if="msg.file_type && msg.file_type.startsWith('audio/')">
+                                        <audio controls class="w-full h-8" :src="msg.file_url"></audio>
+                                    </template>
+                                    <template x-if="!msg.file_type || !msg.file_type.startsWith('audio/')">
+                                        <a :href="msg.file_url" target="_blank" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-2">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                            <span x-text="msg.file_name || 'Ver archivo'"></span>
+                                        </a>
+                                    </template>
+                                </div>
+                            </template>
                         </div>
                     </template>
 
@@ -146,6 +163,33 @@
                             <div x-html="renderMarkdown(msg.content)" 
                                  :class="msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert text-gray-800 dark:text-gray-100'" 
                                  class="leading-relaxed prose prose-sm max-w-none"></div>
+
+                            <!-- Attachment Preview -->
+                            <template x-if="msg.file_url">
+                                <div class="mt-4 pt-4 border-t border-white/20 dark:border-gray-700/50">
+                                    <template x-if="msg.file_type && msg.file_type.startsWith('audio/')">
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex items-center gap-2 text-[10px] opacity-70">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                                                <span x-text="msg.file_name || 'Audio grabado'"></span>
+                                            </div>
+                                            <audio controls class="w-full h-8 rounded-lg" :src="msg.file_url"></audio>
+                                        </div>
+                                    </template>
+                                    <template x-if="!msg.file_type || !msg.file_type.startsWith('audio/')">
+                                        <a :href="msg.file_url" target="_blank" 
+                                           class="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all border border-transparent hover:border-indigo-400/30 group/file">
+                                            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-500">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-[11px] font-bold truncate" x-text="msg.file_name || 'Descargar archivo'"></div>
+                                                <div class="text-[9px] opacity-60 uppercase tracking-widest font-black" x-text="msg.file_type || 'Archivo'"></div>
+                                            </div>
+                                        </a>
+                                    </template>
+                                </div>
+                            </template>
                             
                             <!-- Quick Actions (Only for AI messages) -->
                             <template x-if="msg.role === 'ai'">
@@ -338,7 +382,10 @@
                 // Add a system feedback message
                 this.messages.push({ 
                     role: 'system', 
-                    content: `📁 **Archivo inyectado:** ${detail.fileName}`
+                    content: `📁 **Archivo inyectado:** ${detail.fileName}`,
+                    file_url: detail.fileUrl,
+                    file_name: detail.fileName,
+                    file_type: detail.fileType
                 });
 
                 this.input = `Analiza el archivo "${detail.fileName}" y hazme un resumen de su contenido relevante para esta tarea.`;
@@ -504,9 +551,13 @@
                         
                         const file = new File([blob], `pasted_file_${new Date().getTime()}.${blob.type.split('/')[1] || 'png'}`, { type: blob.type });
                         this.pendingFile = file;
+                        const localUrl = URL.createObjectURL(file);
                         this.messages.push({ 
                             role: 'system', 
-                            content: `📸 Archivo pegado del portapapeles: **${file.name}**`
+                            content: `📸 Archivo pegado del portapapeles: **${file.name}**`,
+                            file_url: localUrl,
+                            file_name: file.name,
+                            file_type: file.type
                         });
                         
                         if (this.input.trim() === '') {
@@ -522,9 +573,13 @@
                 const file = event.target.files[0];
                 if (file) {
                     this.pendingFile = file;
+                    const localUrl = URL.createObjectURL(file);
                     this.messages.push({ 
                         role: 'system', 
-                        content: `📎 Archivo listo para enviar: **${file.name}**`
+                        content: `📎 Archivo listo para enviar: **${file.name}**`,
+                        file_url: localUrl,
+                        file_name: file.name,
+                        file_type: file.type
                     });
                     this.input = `Analiza este archivo...`;
                 }
@@ -536,10 +591,19 @@
                 const userText = this.input.trim();
                 const fileToSend = this.pendingFile;
 
-                if (userText) {
+                if (fileToSend) {
+                    const localUrl = URL.createObjectURL(fileToSend);
+                    const isAudio = fileToSend.type.startsWith('audio/');
+                    this.messages.push({ 
+                        role: 'user', 
+                        content: userText || (isAudio ? '🎤 [Grabación de audio]' : `📎 [Archivo: ${fileToSend.name}]`),
+                        file_url: localUrl,
+                        file_name: fileToSend.name,
+                        file_type: fileToSend.type,
+                        is_local: true
+                    });
+                } else if (userText) {
                     this.messages.push({ role: 'user', content: userText });
-                } else if (fileToSend) {
-                    this.messages.push({ role: 'user', content: '🎤 [Grabación de audio]' });
                 }
 
                 this.input = '';

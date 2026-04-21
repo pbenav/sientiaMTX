@@ -98,11 +98,19 @@ class AiChatController extends Controller
 
         // 1. Persist User Message
         $contentToStore = $prompt;
+        $filePath = null;
+        $fileName = null;
+        $fileType = null;
+
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
-            $datePrefix = date('Y-m-d-');
-            $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+            $fileType = $file->getClientMimeType();
+            $fileName = $originalName;
+            
+            // Save file
+            $path = $file->store('ai_attachments', 'public');
+            $filePath = $path;
             
             $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
         }
@@ -113,6 +121,9 @@ class AiChatController extends Controller
             'task_id' => $request->task_id,
             'role' => 'user',
             'content' => $contentToStore,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_type' => $fileType,
         ]);
 
         $aiAssistant->forUser($user, $request->team_id);
@@ -132,6 +143,27 @@ class AiChatController extends Controller
             $attachment = \App\Models\TaskAttachment::find($request->attachment_id);
             if ($attachment) {
                 $aiAssistant->withAttachmentContext($attachment);
+                
+                // If no new file was uploaded, we link the existing attachment to the message
+                if (!$filePath) {
+                    $filePath = $attachment->file_path;
+                    $fileName = $attachment->file_name;
+                    $fileType = $attachment->mime_type;
+                    
+                    // Update the message we just created
+                    $userMessage = AiChatMessage::where('user_id', $user->id)
+                        ->where('role', 'user')
+                        ->latest()
+                        ->first();
+                    
+                    if ($userMessage) {
+                        $userMessage->update([
+                            'file_path' => $filePath,
+                            'file_name' => $fileName,
+                            'file_type' => $fileType,
+                        ]);
+                    }
+                }
             }
         }
 

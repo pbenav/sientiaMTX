@@ -159,6 +159,8 @@
                                                 @click="$dispatch('ai:analyze-file', { 
                                                     fileName: '{{ addslashes($file->file_name) }}', 
                                                     fileId: {{ $file->id }},
+                                                    fileUrl: '{{ $file->storage_provider === 'google' ? $file->web_view_link : route('teams.attachments.view', [$file->task?->team_id ?? 0, $file]) }}',
+                                                    fileType: '{{ $file->mime_type }}',
                                                     taskId: {{ $file->task_id ?: 'null' }},
                                                     autoSubmit: false 
                                                 })"
