@@ -118,6 +118,12 @@
                                 </button>
                             @endforeach
                         </div>
+                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-center">
+                            <a href="https://emojicopy.com/" target="_blank" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors flex items-center justify-center gap-1.5 group/link">
+                                <span>Buscar más emojis</span>
+                                <svg class="w-2.5 h-2.5 group-hover/link:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
