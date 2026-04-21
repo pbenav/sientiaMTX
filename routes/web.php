@@ -79,6 +79,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('teams', TeamController::class);
     Route::post('/teams/{team}/transfer-ownership', [TeamController::class, 'transferOwnership'])->name('teams.transfer-ownership');
     Route::get('/teams/{team}/dashboard', [TeamController::class, 'dashboard'])->name('teams.dashboard');
+    Route::get('/teams/{team}/active-network', [TeamController::class, 'activeNetwork'])->name('teams.active-network');
     Route::patch('/teams/{team}/quadrants/color', [TeamController::class, 'updateQuadrantColor'])->name('teams.quadrants.color');
     Route::get('/teams/{team}/members', [TeamController::class, 'members'])->name('teams.members');
     Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.addMember');

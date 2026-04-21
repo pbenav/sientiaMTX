@@ -488,4 +488,15 @@ class TeamController extends Controller
 
         return response()->json(['success' => true]);
     }
+    /**
+     * Get the active network member list partial for real-time updates.
+     */
+    public function activeNetwork(Team $team)
+    {
+        $this->authorize('view', $team);
+
+        $members = $team->members()->whereNotNull('location_lat')->get();
+
+        return view('teams.partials.active-network-list', compact('members'));
+    }
 }
