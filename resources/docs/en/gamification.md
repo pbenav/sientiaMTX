@@ -62,3 +62,11 @@ Each task grants XP to the associated specialties (Skills). The leveling system 
 | **Level 3** | 100 XP |
 | **Level 4** | 300 XP |
 | **Level 5** | 1000 XP |
+
+---
+
+## 6. Sentinel Bonus (Monitoring)
+To reward the commitment to team availability, points are awarded for service reporting:
+- **Action:** Being the first member to report a service outage that is later verified by other members.
+- **Reward:** +20 XP and +5 Vital Energy points.
+- **Limitation:** Applies once per hour per service to avoid abuse.

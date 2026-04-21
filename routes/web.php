@@ -11,6 +11,7 @@ use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\GDPRController;
 use App\Http\Controllers\GoogleDriveController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 // Telegram Webhook (Public)
@@ -148,6 +149,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/kanban/columns/order', [KanbanController::class, 'updateColumnOrder'])->name('teams.kanban.columns.order');
     Route::post('/teams/{team}/kanban/tasks/order', [KanbanController::class, 'updateTasksOrder'])->name('teams.kanban.tasks.order');
     Route::delete('/teams/{team}/kanban/columns/{column}', [KanbanController::class, 'destroyColumn'])->name('teams.kanban.columns.destroy');
+
+    // Service routes
+    Route::prefix('teams/{team}/services')->group(function() {
+        Route::post('/', [ServiceController::class, 'store'])->name('teams.services.store');
+        Route::post('/{service}/report', [ServiceController::class, 'report'])->name('teams.services.report');
+        Route::delete('/{service}', [ServiceController::class, 'destroy'])->name('teams.services.destroy');
+    });
     
     // Theme route
     Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');

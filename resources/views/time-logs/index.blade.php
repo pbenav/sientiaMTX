@@ -480,6 +480,7 @@
                 </div>
             </div>
 
+            @include('partials.services-panel')
         </div>
     </div>
     

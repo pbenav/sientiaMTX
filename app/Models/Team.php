@@ -86,6 +86,11 @@ class Team extends Model
         return $this->hasMany(Skill::class);
     }
 
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
     // Get creator of the team
     public function creator()
     {

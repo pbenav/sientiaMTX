@@ -162,6 +162,10 @@ class TimeLogController extends Controller
             ];
         })->values();
             
-        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData'));
+        $services = $team->services()->with(['reports' => function($q) {
+            $q->latest()->limit(5);
+        }])->get();
+
+        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData', 'services'));
     }
 }

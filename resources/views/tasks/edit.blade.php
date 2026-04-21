@@ -159,6 +159,24 @@
                     </div>
                 </div>
 
+                <!-- Service Dependency -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                        {{ __('Dependencia de Servicio') }}
+                    </label>
+                    <select name="service_id" 
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                        <option value="">{{ __('Sin dependencia externa') }}</option>
+                        @foreach ($services as $service)
+                            <option value="{{ $service->id }}" 
+                                {{ old('service_id', $task->service_id) == $service->id ? 'selected' : '' }}>
+                                {{ $service->icon }} {{ $service->name }} 
+                                ({{ $service->getStatusLabel() }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <!-- Quadrant preview (calculated in JS) -->
                 <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden mb-6 transition-all">
                     <span class="font-semibold" id="qp-label"></span>

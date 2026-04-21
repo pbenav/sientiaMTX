@@ -102,6 +102,25 @@
             </div>
 
             <div class="flex items-center gap-3">
+                <!-- Emoji Dropdown for Markdown -->
+                <div class="relative" x-data="{ open: false }">
+                    <button type="button" @click="open = !open" 
+                        class="flex items-center justify-center w-8 h-8 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-500 hover:text-violet-600 hover:border-violet-300 transition-all shadow-sm"
+                        title="{{ __('Insertar icono') }}">
+                        😊
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-transition x-cloak
+                        class="absolute right-0 mt-2 z-50 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 overflow-hidden">
+                        <div class="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto no-scrollbar">
+                            @foreach(['🎯','📈','📋','👥','🌍','📜','💡','📞','📧','🚀','✅','❌','⚠️','🔥','⭐','🏢','🏠','🛠️','📅','⏰','💰','🏆','📣','🤝','🔍','🔗','💻','📱','🔒','🔑','💾','📑','📎','📊','📌','📍','🚩','🎨','🎬','🎧','🌈','⚡','✨','🔴','🔵','🟢','🟡','🟠','🟣'] as $icon)
+                                <button type="button" @click="insertAtCursor('{{ $icon }}'); open = false" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-lg transition-colors">
+                                    {{ $icon }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-2">
                     <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">{{ __('Markdown habilitado') }}</span>
                     <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse"></div>

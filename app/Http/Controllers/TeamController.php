@@ -397,7 +397,11 @@ class TeamController extends Controller
         }
         unset($qTasks);
 
-        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted', 'skills', 'completedTasks', 'completedLimit'));
+        $services = $team->services()->with(['reports' => function($q) {
+            $q->latest()->limit(5);
+        }])->get();
+
+        return view('teams.dashboard', compact('team', 'quadrants', 'tasks', 'hideCompleted', 'skills', 'completedTasks', 'completedLimit', 'services'));
     }
 
     /**

@@ -111,7 +111,11 @@ class TaskController extends Controller
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
         $hideCompleted = session('hide_completed_tasks', true);
 
-        return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted', 'skills'));
+        $services = $team->services()->with(['reports' => function($q) {
+            $q->latest()->limit(5);
+        }])->get();
+
+        return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted', 'skills', 'services'));
     }
 
     /**
@@ -130,6 +134,7 @@ class TaskController extends Controller
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->with('assignedUser')->orderBy('title')->get();
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $services = $team->services()->orderBy('name')->get();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -139,7 +144,7 @@ class TaskController extends Controller
         }
         $backUrl = session("back_url_task_create_{$team->id}", route('teams.dashboard', $team));
 
-        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills'));
+        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills', 'services'));
     }
 
     /**
@@ -168,6 +173,7 @@ class TaskController extends Controller
             'skills' => 'nullable|array',
             'skills.*' => 'integer|exists:skills,id',
             'skill_id' => 'nullable|integer|exists:skills,id', // Legacy
+            'service_id' => 'nullable|integer|exists:services,id',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
             'assignment_mode' => 'nullable|string|in:shared,distributed',
@@ -215,6 +221,7 @@ class TaskController extends Controller
             'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
+            'service_id' => $validated['service_id'] ?? null,
         ]);
 
         if ($task->is_autoprogrammable) {
@@ -348,6 +355,7 @@ class TaskController extends Controller
                     'assigned_user_id' => $userId,
                     'visibility' => 'private',
                     'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
+                    'service_id' => $task->service_id,
                     'cognitive_load' => $task->cognitive_load,
                     'is_backstage' => $task->is_backstage,
                     'skill_id' => $task->skill_id,
@@ -447,6 +455,7 @@ class TaskController extends Controller
         $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
         $tasks = $team->tasks()->with('assignedUser')->where('id', '!=', $task->id)->orderBy('title')->get();
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $services = $team->services()->orderBy('name')->get();
 
         $referer = request()->headers->get('referer');
         if ($referer && str_starts_with($referer, url('/'))) {
@@ -456,7 +465,8 @@ class TaskController extends Controller
         }
         $backUrl = session("back_url_task_edit_{$task->id}", route('teams.tasks.show', [$team, $task]));
 
-        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl', 'skills'));
+        $services = $team->services()->orderBy('name')->get();
+        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl', 'skills', 'services'));
     }
 
     /**
@@ -490,6 +500,7 @@ class TaskController extends Controller
             'is_autoprogrammable' => 'nullable|boolean',
             'autoprogram_settings' => 'nullable|array',
             'skill_id' => 'nullable|integer|exists:skills,id',
+            'service_id' => 'nullable|integer|exists:services,id',
             'assignment_mode' => 'nullable|string|in:shared,distributed',
         ]);
 
@@ -543,6 +554,7 @@ class TaskController extends Controller
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
             'skill_id' => $validated['skill_id'] ?? $task->skill_id,
+            'service_id' => $validated['service_id'] ?? $task->service_id,
         ]);
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {

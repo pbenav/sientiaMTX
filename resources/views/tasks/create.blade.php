@@ -132,6 +132,27 @@
                     <span class="text-gray-400 ml-1" id="qp-desc"></span>
                 </div>
 
+                <!-- Service Dependency -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                        {{ __('Dependencia de Servicio') }}
+                    </label>
+                    <select name="service_id" 
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                        <option value="">{{ __('Sin dependencia externa') }}</option>
+                        @foreach ($services as $service)
+                            <option value="{{ $service->id }}" 
+                                {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                {{ $service->icon }} {{ $service->name }} 
+                                ({{ $service->getStatusLabel() }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1.5 text-[10px] text-gray-500 italic">
+                        {{ __('Si el servicio asociado cae, la tarea se marcará automáticamente como bloqueada.') }}
+                    </p>
+                </div>
+
                 <!-- Dates -->
                 <div class="grid grid-cols-2 gap-4 font-mono">
                     <div>

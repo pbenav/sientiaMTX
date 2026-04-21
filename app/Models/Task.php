@@ -103,6 +103,7 @@ class Task extends Model
         'impact_human_metric',
         'skill_id',
         'matrix_order',
+        'service_id',
     ];
  
     protected $casts = [
@@ -118,7 +119,21 @@ class Task extends Model
         'is_backstage' => 'boolean',
         'impact_human_metric' => 'integer',
         'skill_id' => 'integer',
+        'service_id' => 'integer',
     ];
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    /**
+     * Check if task is blocked because its associated service is down
+     */
+    public function isBlockedByService(): bool
+    {
+        return $this->service_id && $this->service && $this->service->status === 'down';
+    }
 
     // Relationship: A task belongs to a team
     public function team(): BelongsTo

@@ -1,4 +1,4 @@
-# 📖 User Manual — SientiaMTX
+# SientiaMTX - User Manual (v0.9.1Beta)
 
 SientiaMTX is an **intelligent productivity manager** built on the Eisenhower Matrix. It helps you distinguish between what's urgent and what's truly important, so you can always focus on what matters most.
 
@@ -110,3 +110,35 @@ From your profile, choose between three visual modes:
 - **Lock Icon** 🔒: Indicates a private task in the team view.
 - **Q1 Indicator** 🔴: Critical tasks are shown with a red border across all views.
 - **Google Sync**: Connect your Google Calendar to see tasks as events and import existing events as tasks.
+- **Roadmap Scroll**: For tasks with many members, the list is scrollable to maintain usability.
+
+---
+
+## 🛠️ 9. Service Monitoring (Sentinel)
+
+## 📡 Sentinel: Collaborative Monitoring
+SientiaMTX includes an early warning system for critical services (Telegram, Google, Official Portals, etc.).
+- **Report Outage**: Any member can alert about a service interruption.
+- **Validation**: The community confirms or denies the outage, avoiding false alarms.
+- **Sentinel Bonus**: Reporting validated outages grants Energy/XP bonuses for taking care of the team.
+
+## 😊 Icon Picker
+In all text fields and descriptions, you now have a quick UTF-8 icon picker to visually categorize your tasks and projects.
+
+### Service Statuses
+- 🟢 **Active**: The service is functioning normally.
+- 🟡 **Unstable**: Someone has reported an issue, but it hasn't been confirmed by other members yet.
+- 🔴 **Down**: The system has verified the outage after multiple matching reports.
+
+### How to Collaborate
+1. If you notice a tool is not working, click **"Report Outage"** on its corresponding card.
+2. If a service is down but you see it's working again, click **"Confirm Recovery"**.
+3. **Sentinel Bonus**: Being the first to report an alert that is later verified by the team awards XP and Energy points (see Gamification section).
+
+### Task Dependencies
+When creating or editing a task, you can select a service it depends on:
+- If the associated service goes down, the task will automatically show a **technical blocker alert** on the Dashboard.
+- This allows the team to quickly identify that a delay is due to an external technical cause.
+
+> [!IMPORTANT]
+> Only team coordinators can add or remove new services from the monitoring list.

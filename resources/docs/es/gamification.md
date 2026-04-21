@@ -62,3 +62,11 @@ Cada tarea otorga XP a las especialidades (Skills) asociadas. El sistema de nive
 | **Nivel 3** | 100 XP |
 | **Nivel 4** | 300 XP |
 | **Nivel 5** | 1000 XP |
+
+---
+
+## 6. Bono Centinela (Monitorización)
+Para premiar el compromiso con la disponibilidad del equipo, se otorgan puntos por el reporte de servicios:
+- **Acción:** Ser el primer miembro en reportar una caída de servicio que posteriormente sea verificada por otros miembros.
+- **Recompensa:** +20 XP y +5 puntos de Energía Vital.
+- **Limitación:** Aplica una vez por hora por servicio para evitar abusos.

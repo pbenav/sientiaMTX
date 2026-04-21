@@ -154,7 +154,14 @@
                                             class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all rounded-xl relative overflow-hidden">
                                             <!-- Status indicator -->
                                             <div class="flex items-center gap-1.5 shrink-0 z-10 relative">
-                                                @if ($task->status === 'blocked')
+                                                @if ($task->isBlockedByService())
+                                                    <div class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></div>
+                                                    <div class="p-1 bg-red-100 dark:bg-red-900/40 rounded-md text-red-600 dark:text-red-400" title="{{ __('Servicio Caído: ') . ($task->service ? $task->service->name : '') }}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M5.636 5.636l3.536 3.536m0 5.656l-3.536 3.536M9.172 9.172L15 15M15 9.172l-5.828 5.828" />
+                                                        </svg>
+                                                    </div>
+                                                @elseif ($task->status === 'blocked')
                                                     <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></div>
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-500"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,6 +173,7 @@
                                                     <div class="w-1.5 h-1.5 rounded-full" style="background-color: {{ $cfg['color'] }}"></div>
                                                 @endif
                                             </div>
+
 
                                             @if ($task->children->count() > 0)
                                                 <button type="button"
@@ -304,7 +312,7 @@
         </div>
     @endif
 
-    <div class="mt-6 flex flex-wrap gap-3 text-xs text-gray-500 border-t border-white/5 pt-4">
+    <div class="mt-6 flex flex-wrap gap-3 text-xs text-gray-500 border-t border-white/5 pt-4 mb-20">
         <span>{{ __('teams.tasks_count', ['count' => $tasks->count()]) }} {{ __('teams.tasks_total') }}</span>
         <span>·</span>
         <span>{{ $tasks->where('status', 'completed')->count() }}

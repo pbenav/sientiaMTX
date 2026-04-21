@@ -146,4 +146,31 @@ trait AwardsGamification
 
         Log::info("Gamificación: Otorgados {$xp} XP y {$resilience} Resilience a {$user->name} por tarea #{$task->id}.");
     }
+
+    /**
+     * Award points for reporting a service status (verified first alert).
+     */
+    protected function awardServiceReportingPoints($user, $teamId, $description)
+    {
+        if (!$user) return;
+
+        $xp = 20; // Proactive reporting is highly valued
+        $energyGain = 5; // A small boost for being alert
+
+        $user->increment('experience_points', $xp);
+        $newEnergy = min(100, max(0, ($user->energy_level ?? 100) + $energyGain));
+        $user->update(['energy_level' => $newEnergy]);
+
+        GamificationLog::create([
+            'user_id' => $user->id,
+            'team_id' => $teamId,
+            'points' => $xp,
+            'type' => 'proactivity',
+            'source_type' => 'App\Models\Service',
+            'source_id' => null,
+            'description' => $description,
+        ]);
+
+        Log::info("Gamificación: Otorgados {$xp} XP a {$user->name} por reporte de servicio verificado.");
+    }
 }
