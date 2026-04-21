@@ -204,8 +204,10 @@
 
         async function initGantt() {
             const url = `{{ route('teams.gantt.data', $team) }}?${new URLSearchParams(window.location.search).toString()}`;
+            console.log("Fetching Gantt data from:", url);
             const res = await fetch(url);
             allTasks = await res.json();
+            console.log("Gantt data received:", allTasks.length, "tasks");
             
             if (allTasks.length === 0) {
                 document.getElementById('gantt-container').innerHTML = '<div class="p-20 text-center text-gray-500 font-bold">Sin tareas.</div>';
