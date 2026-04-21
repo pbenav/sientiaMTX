@@ -239,6 +239,8 @@ class GeminiService implements AiAssistantInterface
         return $this->callGemini($this->targetModel, $parts, false, $systemInstruction);
     }
 
+    protected function isMultimodalMime(string $mime): bool
+    {
         // Permissive check for audio/video/images/pdf
         $mime = strtolower($mime);
         
