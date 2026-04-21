@@ -356,6 +356,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Task Sorting
+            let isDragging = false;
             const taskLists = document.querySelectorAll('.task-list');
             taskLists.forEach(el => {
                     new Sortable(el, {
@@ -364,25 +365,29 @@
                         ghostClass: 'bg-violet-100/50',
                         chosenClass: 'scale-105',
                         dragClass: 'shadow-2xl',
-                        delay: 200,
+                        delay: 150, // Slightly faster for better feel
                         delayOnTouchOnly: true,
-                        touchStartThreshold: 5,
-                        filter: 'button, a, input, select, .progress-slider',
-                        preventOnFilter: false, // Allow default behavior for filtered elements (like sliders)
+                        touchStartThreshold: 10, // More forgiving for scroll
+                        filter: 'button, input, select, .progress-slider', // Removed 'a' so we can drag by title
+                        onStart: function() {
+                            isDragging = true;
+                        },
                     onEnd: function(evt) {
+                        setTimeout(() => { isDragging = false; }, 200);
+
                         const taskId = evt.item.dataset.taskId;
                         const newColumnId = evt.to.dataset.columnId;
                         const isCompletedZone = evt.to.id === 'completed-tasks-zone';
                         const newIndex = evt.newIndex;
 
                         // Check if the target column title contains "complet"
-                        const columnTitle = evt.to.closest('.kanban-column').querySelector('.column-title').innerText.toLowerCase();
+                        const targetCol = evt.to.closest('.kanban-column');
+                        const columnTitle = targetCol ? targetCol.querySelector('.column-title').innerText.toLowerCase() : '';
                         const isCompletedColumn = columnTitle.includes('complet') || columnTitle.includes('terminad') || columnTitle.includes('hecho');
 
                         if (isCompletedZone) {
                             archiveTask(taskId);
                         } else {
-                            // If moved to a completed column, set progress to 100% WITHOUT archiving
                             if (isCompletedColumn) {
                                 completeTaskWithoutArchiving(taskId, newColumnId, newIndex);
                             } else {
@@ -393,16 +398,29 @@
                 });
             });
 
+            // Global click interceptor for Kanban
+            document.addEventListener('click', function(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, true);
+
             // Column Sorting
             const board = document.getElementById('kanban-board');
             new Sortable(board, {
                 animation: 150,
                 handle: '.column-handle',
                 ghostClass: 'opacity-50',
-                delay: 200,
+                delay: 150,
                 delayOnTouchOnly: true,
-                touchStartThreshold: 5,
+                touchStartThreshold: 10,
+                onStart: function() {
+                    isDragging = true;
+                },
                 onEnd: function() {
+                    setTimeout(() => { isDragging = false; }, 200);
                     updateColumnsOrder();
                 }
             });
