@@ -103,6 +103,24 @@ class ServiceController extends Controller
         return back()->with('success', __('Estado reportado.¡Gracias por colaborar!'));
     }
 
+    public function reorder(Request $request, Team $team)
+    {
+        if (!$team->isCoordinator(auth()->user())) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:services,id'
+        ]);
+
+        foreach ($validated['ids'] as $index => $id) {
+            Service::where('id', $id)->where('team_id', $team->id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function destroy(Team $team, Service $service)
     {
         if (!$team->isCoordinator(auth()->user())) {

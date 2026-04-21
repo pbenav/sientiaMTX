@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function () {
     // Service routes
     Route::prefix('teams/{team}/services')->group(function() {
         Route::post('/', [ServiceController::class, 'store'])->name('teams.services.store');
+        Route::post('/reorder', [ServiceController::class, 'reorder'])->name('teams.services.reorder');
         Route::post('/{service}/report', [ServiceController::class, 'report'])->name('teams.services.report');
         Route::delete('/{service}', [ServiceController::class, 'destroy'])->name('teams.services.destroy');
     });

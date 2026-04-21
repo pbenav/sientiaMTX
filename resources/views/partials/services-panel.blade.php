@@ -21,19 +21,18 @@
             <div class="py-12 text-center">
                 <p class="text-[11px] text-gray-500 italic">{{ __('No hay servicios configurados. Los coordinadores pueden añadir herramientas como Telegram, Google, etc.') }}</p>
             </div>
-        @else
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @else            <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-url="{{ route('teams.services.reorder', $team) }}">
                 @foreach($services as $service)
                     @php
                         $color = $service->getStatusColor();
                     @endphp
-                    <div class="bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5 hover:border-violet-500/30 transition-all duration-300">
+                    <div data-id="{{ $service->id }}" class="service-card bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5 hover:border-violet-500/30 transition-all duration-300 transform-gpu {{ $team->isCoordinator(auth()->user()) ? 'cursor-move' : '' }}">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center text-lg border border-gray-100 dark:border-gray-700 shadow-sm">
+                                <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center text-lg border border-gray-100 dark:border-gray-700 shadow-sm pointer-events-none">
                                     {{ $service->icon ?: '🌐' }}
                                 </div>
-                                <div>
+                                <div class="pointer-events-none">
                                     <h5 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $service->name }}</h5>
                                     <div class="flex items-center gap-1.5 mt-0.5">
                                         <div class="w-1.5 h-1.5 rounded-full bg-{{ $color }}-500 {{ $service->status === 'down' ? 'animate-ping' : '' }}"></div>
@@ -42,7 +41,7 @@
                                 </div>
                             </div>
                             @if($service->url)
-                                <a href="{{ $service->url }}" target="_blank" class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                <a href="{{ $service->url }}" target="_blank" class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors z-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                     </svg>
@@ -50,7 +49,7 @@
                             @endif
                         </div>
 
-                        <div class="flex items-center gap-2 mt-auto pt-2 border-t border-gray-100/50 dark:border-gray-800/50">
+                        <div class="flex items-center gap-2 mt-auto pt-2 border-t border-gray-100/50 dark:border-gray-800/50 z-10 relative">
                             <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1">
                                 @csrf
                                 <input type="hidden" name="type" value="{{ $service->status === 'up' ? 'down' : 'up' }}">
@@ -123,3 +122,37 @@
         </div>
     </div>
 </x-modal>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const grid = document.getElementById('services-grid');
+        if (grid && typeof Sortable !== 'undefined' && @json($team->isCoordinator(auth()->user()))) {
+            new Sortable(grid, {
+                animation: 150,
+                ghostClass: 'opacity-30',
+                onEnd: function() {
+                    const ids = Array.from(grid.querySelectorAll('.service-card')).map(el => el.getAttribute('data-id'));
+                    const url = grid.getAttribute('data-url');
+                    
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) {
+                            console.error('Error updating order');
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
+@endpush

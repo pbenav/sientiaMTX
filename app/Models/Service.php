@@ -18,7 +18,8 @@ class Service extends Model
         'icon',
         'status',
         'description',
-        'status_updated_at'
+        'status_updated_at',
+        'sort_order'
     ];
 
     protected $casts = [
