@@ -79,15 +79,26 @@ class ProfileController extends Controller
             'morning_summary_time' => $validated['morning_summary_time'] ?? '08:00',
         ]);
 
-        $user->notification_settings = $newSettings;
-        
         if ($request->has('telegram_chat_id')) {
-            $user->telegram_chat_id = $validated['telegram_chat_id'];
+            if ($request->team_id) {
+                $team = \App\Models\Team::find($request->team_id);
+                if ($team && ($user->is_admin || $team->isManager($user))) {
+                    $team->update(['telegram_chat_id' => $validated['telegram_chat_id']]);
+                }
+            } else {
+                $user->telegram_chat_id = $validated['telegram_chat_id'];
+            }
         }
         
+        $user->notification_settings = $newSettings;
         $user->save();
 
-        return Redirect::route('profile.edit', ['tab' => 'notifications'])->with('status', 'notifications-updated');
+        $redirectUrl = Redirect::route('profile.edit', ['tab' => 'integrations']);
+        if ($request->team_id) {
+            $redirectUrl = $redirectUrl->withQueryString(['team_id' => $request->team_id]);
+        }
+
+        return $redirectUrl->with('status', 'notifications-updated');
     }
 
     /**
