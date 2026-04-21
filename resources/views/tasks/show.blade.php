@@ -321,21 +321,38 @@
 
 
 
-            @if ($task->is_template || $task->children()->exists())
+            @if ($task->is_template || $task->children()->exists() || $task->assignedTo->isNotEmpty())
                 @php
-                    $isRoadmap = $task->is_template;
-                    $instances = $isRoadmap
-                        ? $task->instances()->with('assignedUser')->get()->sortBy(function($inst) {
-                            return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
-                        })
-                        : $task->children()->with('assignedTo')->get()->sortBy(function($inst) {
-                            return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
+                    $isRoadmap = $task->is_template || $task->children()->exists();
+                    if ($isRoadmap) {
+                        $instances = $task->is_template
+                            ? $task->instances()->with('assignedUser')->get()->sortBy(function($inst) {
+                                return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
+                            })
+                            : $task->children()->with('assignedTo')->get()->sortBy(function($inst) {
+                                return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
+                            });
+                    } else {
+                        // For regular tasks, we "simulate" instances using the assigned users
+                        $instances = $task->assignedTo->map(function($user) use ($task) {
+                            return (object)[
+                                'id' => $task->id, // Reference to same task
+                                'name' => $task->title,
+                                'status' => $task->status,
+                                'progress' => $task->progress_percentage,
+                                'assignedUser' => $user,
+                                'timeLogs' => $task->timeLogs()->where('user_id', $user->id)->get(),
+                                'is_simulated' => true,
+                                'user_id' => $user->id
+                            ];
                         });
+                    }
+
                     $totalInst = $instances->count();
-                    $sumProg = $instances->sum('progress_percentage');
+                    $sumProg = $isRoadmap ? $instances->sum('progress_percentage') : ($totalInst > 0 ? $task->progress_percentage * $totalInst : 0);
                     $prog = $totalInst > 0 ? $sumProg / $totalInst : 0;
-                    $doneInst = $instances->where('status', 'completed')->count();
-                    $hasBlocker = $instances->where('status', 'blocked')->isNotEmpty();
+                    $doneInst = $isRoadmap ? $instances->where('status', 'completed')->count() : ($task->status === 'completed' ? $totalInst : 0);
+                    $hasBlocker = $isRoadmap ? $instances->where('status', 'blocked')->isNotEmpty() : ($task->status === 'blocked');
                 @endphp
 
                 <!-- Progress Dashboard -->
@@ -345,10 +362,13 @@
                         <div>
                             <h3
                                 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
-                                {{ $isRoadmap ? __('tasks.roadmap_progress') : __('tasks.status') }}</h3>
+                                {{ $isRoadmap ? __('tasks.roadmap_progress') : __('teams.members') }}</h3>
                             <p class="text-2xl font-bold text-gray-900 dark:text-white heading">
-                                {{ $doneInst }}/{{ $totalInst }} <span
-                                    class="text-sm font-medium text-gray-400">{{ __('tasks.completed') }}</span></p>
+                                {{ $isRoadmap ? $doneInst . '/' . $totalInst : $totalInst }} 
+                                <span class="text-sm font-medium text-gray-400">
+                                    {{ $isRoadmap ? __('tasks.completed') : ($totalInst == 1 ? __('tasks.assigned_to_one') : __('tasks.assigned_to_many')) }}
+                                </span>
+                            </p>
                         </div>
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1">
                             <div class="relative flex-1 max-w-sm" x-data="{ rSearch: '' }" x-init="$watch('rSearch', v => $dispatch('roadmap-filter', v))">
@@ -356,7 +376,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 <input type="text" x-model="rSearch" 
-                                    placeholder="{{ __('Filtrar por miembro o tarea...') }}" 
+                                    placeholder="{{ __('Filtrar por miembro...') }}" 
                                     class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl text-xs outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/5 transition-all font-sans">
                             </div>
 
@@ -463,14 +483,10 @@
                             </thead>
                             <tbody x-ref="roadmapBody" class="divide-y divide-gray-100 dark:divide-gray-800/60" x-data="{ roadmapQuery: '' }" @roadmap-filter.window="roadmapQuery = $event.detail">
 
-                                @php
-                                    // Eager load time logs for instances to avoid N+1
-                                    $instances->load('timeLogs');
-                                @endphp
                                 @foreach ($instances as $inst)
                                     @php
                                         $instMember = $inst->assignedUser;
-                                        $instMemberName = $instMember?->name ?? ($inst->assignedTo->first()?->name ?? '');
+                                        $instMemberName = $instMember?->name ?? '—';
                                         $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
                                         $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
                                         $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
@@ -480,8 +496,9 @@
                                         $joinedAt = $teamMember?->pivot?->joined_at;
                                         $joinedDate = ($joinedAt instanceof \Carbon\Carbon) ? $joinedAt->format('d/m/Y') : null;
 
-                                        $subtasksCount = $inst->children()->count();
-                                        $subtasksDone = $inst->children()->where('status', 'completed')->count();
+                                        $isSimulated = isset($inst->is_simulated) && $inst->is_simulated;
+                                        $subtasksCount = $isSimulated ? 0 : $inst->children()->count();
+                                        $subtasksDone = $isSimulated ? 0 : $inst->children()->where('status', 'completed')->count();
                                     @endphp
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" 
                                         data-name="{{ strtolower($instMemberName) }}"
@@ -489,15 +506,13 @@
                                         data-time="{{ $instSeconds }}"
                                         x-show="roadmapQuery === '' || '{{ strtolower($instMemberName) }}'.includes(roadmapQuery.toLowerCase()) || '{{ strtolower($inst->name) }}'.includes(roadmapQuery.toLowerCase())"
                                         x-transition
-                                        onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'">
+                                        @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
                                         <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-4">
                                                 <div class="relative">
                                                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
                                                         @if ($instMember)
                                                             {{ strtoupper(substr($instMember->name, 0, 2)) }}
-                                                        @elseif($inst->assignedTo->count() > 0)
-                                                            {{ strtoupper(substr($inst->assignedTo->first()->name, 0, 2)) }}
                                                         @else
                                                             ?
                                                         @endif
@@ -508,30 +523,16 @@
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-2">
-                                                        <span class="text-sm font-black text-gray-900 dark:text-white truncate">{{ $inst->name }}</span>
+                                                        <span class="text-sm font-black text-gray-900 dark:text-white truncate">{{ $isSimulated ? $instMemberName : $inst->name }}</span>
                                                         @if($isInstActive)
                                                             <span class="text-[7px] font-black bg-red-500 text-white px-1 rounded animate-pulse">LIVE</span>
                                                         @endif
                                                     </div>
                                                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
-                                                        @if ($team->isCoordinator(auth()->user()))
-                                                            <div class="flex items-center gap-1">
-                                                                <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                                <select onchange="reassignTask({{ $inst->id }}, this.value)" class="text-[10px] bg-transparent border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded focus:ring-0 cursor-pointer font-bold text-violet-600 dark:text-violet-400 px-1 py-0 -ml-1 transition-colors">
-                                                                    <option value="unassign" class="text-gray-900 dark:text-gray-100">{{ __('tasks.unassigned') ?? 'Pendiente' }}</option>
-                                                                    @foreach($team->members as $member)
-                                                                        <option value="{{ $member->id }}" {{ $inst->assigned_user_id === $member->id ? 'selected' : '' }} class="text-gray-900 dark:text-gray-100">
-                                                                            {{ $member->name }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                        @else
-                                                            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                                {{ $instMemberName ?: (__('tasks.unassigned') ?? '?') }}
-                                                            </span>
-                                                        @endif
+                                                        <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                            {{ $isSimulated ? __('tasks.assigned') : ($instMemberName ?: (__('tasks.unassigned') ?? '?')) }}
+                                                        </span>
 
                                                         @if($joinedDate)
                                                             <span class="text-[9px] text-gray-400 flex items-center gap-1">
@@ -569,9 +570,9 @@
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                        <div id="inst-progress-bar-{{ $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300" style="width: {{ $inst->progress }}%"></div>
+                                                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300" style="width: {{ $inst->progress }}%"></div>
                                                     </div>
-                                                    <span id="inst-progress-val-{{ $inst->id }}" class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
+                                                    <span class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -589,14 +590,11 @@
                                                 @if($isInstActive)
                                                     <span class="text-[7px] font-bold text-red-500 uppercase tracking-widest mt-0.5 animate-pulse">{{ __('En curso') }}</span>
                                                 @endif
-                                                @if($totalSecondsTask > 0 && $instSeconds > 0)
-                                                    <span class="text-[8px] text-gray-400 font-bold mt-0.5">{{ round(($instSeconds / $totalSecondsTask) * 100) }}% del total</span>
-                                                @endif
                                             </div>
                                         </td>
                                         <td class="px-4 py-4 text-right">
                                             @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
-                                                <button onclick="event.stopPropagation(); nudgeUser({{ $inst->id }})"
+                                                <button onclick="event.stopPropagation(); nudgeUser({{ $isSimulated ? $task->id : $inst->id }})"
                                                     class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
                                                     title="{{ __('tasks.nudge_user') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block"
@@ -605,9 +603,6 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                                     </svg>
-                                                    @if ($inst->nudge_count > 0)
-                                                        <span class="ml-1 text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 dark:bg-violet-900/50 rounded-full">{{ $inst->nudge_count }}</span>
-                                                    @endif
                                                 </button>
                                             @endif
                                         </td>
@@ -616,6 +611,20 @@
                             </tbody>
                         </table>
                     </div>
+                    @if (!$isRoadmap && $task->assignedGroups->isNotEmpty())
+                        <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800/60">
+                            <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
+                                {{ __('tasks.groups') }}
+                            </p>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach ($task->assignedGroups as $g)
+                                    <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[9px] px-2 py-1 rounded-lg font-bold uppercase tracking-wider border border-indigo-100 dark:border-indigo-800/50 shadow-sm">
+                                        {{ $g->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
 
@@ -1434,60 +1443,7 @@
                 </div>
             @endif
 
-            @if (!$task->is_template && !$task->children()->exists())
-                <!-- Assigned To (Only if no Roadmap table is present to avoid redundancy) -->
-                @if ($task->assignedTo->isNotEmpty() || $task->assignedGroups->isNotEmpty())
-                    <div x-data="{ searchQuery: '' }"
-                        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors text-sans mb-4">
-                        @if ($task->assignedTo->isNotEmpty())
-                            <div>
-                                <div class="flex flex-col gap-3 mb-3">
-                                    <div class="flex items-center justify-between">
-                                        <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                                            {{ __('tasks.assigned_to') }}
-                                        </p>
-                                    </div>
-                                    <div class="relative">
-                                        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                        <input type="text" x-model="searchQuery" 
-                                            placeholder="{{ __('Filtrar por nombre...') }}" 
-                                            class="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl text-[10px] outline-none focus:border-violet-500 transition-all font-sans">
-                                    </div>
-                                </div>
-                                <div class="space-y-3">
-                                    @foreach ($task->assignedTo->sortBy('name') as $u)
-                                        <div class="flex items-center justify-between p-1.5 -ml-1.5 group" x-show="searchQuery === '' || '{{ strtolower($u->name) }}'.includes(searchQuery.toLowerCase())" x-transition>
-                                            <div class="flex items-center gap-2.5">
-                                                <div class="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[9px] font-bold text-violet-600 dark:text-violet-400 shrink-0">
-                                                    {{ strtoupper(substr($u->name, 0, 2)) }}
-                                                </div>
-                                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ $u->name }}</span>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
 
-                        @if ($task->assignedGroups->isNotEmpty())
-                            <div class="pt-3 border-t border-gray-50 dark:border-gray-800">
-                                <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
-                                    {{ __('tasks.groups') }}
-                                </p>
-                                <div class="flex flex-wrap gap-1.5">
-                                    @foreach ($task->assignedGroups as $g)
-                                        <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[9px] px-2 py-1 rounded-lg font-bold uppercase tracking-wider">
-                                            {{ $g->name }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-            @endif
 
             <!-- Forum Thread Widget -->
             @include('teams.forum.partials.thread-widget')

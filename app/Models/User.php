@@ -267,6 +267,28 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->timeLogs()->where('type', 'task')->whereNull('end_at')->first();
     }
 
+    /**
+     * Determine if the user is currently online based on session activity.
+     */
+    public function isOnline(): bool
+    {
+        return DB::table('sessions')
+            ->where('user_id', $this->id)
+            ->where('last_activity', '>', now()->subMinutes(15)->getTimestamp())
+            ->exists();
+    }
+
+    /**
+     * Determine if the user has any active work or task counter.
+     */
+    public function isWorking(): bool
+    {
+        return $this->timeLogs()
+            ->whereIn('type', ['workday', 'task'])
+            ->whereNull('end_at')
+            ->exists();
+    }
+
     // Gamification Relationships
     public function skills(): BelongsToMany
     {
