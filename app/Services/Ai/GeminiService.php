@@ -109,8 +109,18 @@ class GeminiService implements AiAssistantInterface
         $this->directFile = $file;
         try {
             $this->cachedFileContent = file_get_contents($file->getPathname());
-            $this->cachedFileMime = $file->getMimeType() ?: $file->getClientMimeType() ?: 'application/octet-stream';
+            $mime = $file->getMimeType() ?: $file->getClientMimeType() ?: 'application/octet-stream';
             $this->cachedFileName = $file->getClientOriginalName();
+            
+            // FIX: Some browsers (especially on tablets/mobile) record audio as video/webm.
+            // Gemini fails with "0 frames found" if we send video/webm without video tracks.
+            // We coerce it to audio/webm if the extension or common patterns suggest it's a voice note.
+            if (str_contains($mime, 'video/webm') || (empty($mime) && str_ends_with(strtolower($this->cachedFileName), '.webm'))) {
+                Log::info("Ax.ia: Coerciendo MIME de video/webm a audio/webm para compatibilidad con Gemini (Voz)");
+                $mime = 'audio/webm';
+            }
+
+            $this->cachedFileMime = $mime;
             Log::debug("Ax.ia: Archivo cacheado con éxito ({$this->cachedFileName}, {$this->cachedFileMime})");
         } catch (\Exception $e) {
             Log::error("Ax.ia: No se pudo cachear el archivo: " . $e->getMessage());
