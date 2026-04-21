@@ -130,7 +130,11 @@ class GanttController extends Controller
                                         ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($child->assignedUser->name, 0, 2)) 
                                         : '??'
                                 ])
-                                ->sortBy(fn($m) => mb_strtolower((string)$m['name']), SORT_NATURAL)
+                                ->sortBy(function($m) {
+                                    // Normalize for sorting: remove emojis, accents and lowercase
+                                    $name = preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $m['name']);
+                                    return mb_strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', trim($name)));
+                                }, SORT_NATURAL)
                                 ->values()->toArray();
                         }
                         
@@ -148,7 +152,10 @@ class GanttController extends Controller
                                         'initials' => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 2))
                                     ];
                                 })
-                                ->sortBy(fn($m) => mb_strtolower((string)$m['name']), SORT_NATURAL)
+                                ->sortBy(function($m) {
+                                    $name = preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $m['name']);
+                                    return mb_strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', trim($name)));
+                                }, SORT_NATURAL)
                                 ->values()->toArray();
                         }
                         
