@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
         $schedule->command('tasks:check-urgent')->hourly();
         $schedule->command('app:tasks-autoprogram-wakeup')->hourly();
+        $schedule->command('morning:summary')->hourly();
+        $schedule->command('gamification:regenerate-energy')->hourly();
+        $schedule->command('gamification:fresh-start')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // TokenMismatchException is handled by HandleSessionExpiration middleware
