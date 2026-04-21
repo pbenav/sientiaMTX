@@ -367,7 +367,7 @@ class GeminiService implements AiAssistantInterface
         }
 
         try {
-            $response = Http::timeout(60)->post($url, $payload);
+            $response = Http::timeout(120)->post($url, $payload);
 
             if ($response->successful()) {
                 $data = $response->json();

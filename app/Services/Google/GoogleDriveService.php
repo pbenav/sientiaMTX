@@ -244,7 +244,7 @@ class GoogleDriveService
 
         try {
             // 1. Get file metadata to check mimeType and shortcuts
-            $metaResponse = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
+            $metaResponse = Http::withToken($token)->timeout(30)->get($this->baseUrl . "/files/{$fileId}", [
                 'fields' => 'mimeType,size,name,shortcutDetails',
                 'supportsAllDrives' => 'true'
             ]);
@@ -282,14 +282,14 @@ class GoogleDriveService
                 $exportMimeType = 'text/plain';
                 if (str_contains($mimeType, 'spreadsheet')) $exportMimeType = 'text/csv';
                 
-                $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}/export", [
+                $response = Http::withToken($token)->timeout(120)->get($this->baseUrl . "/files/{$fileId}/export", [
                     'mimeType' => $exportMimeType,
                     'supportsAllDrives' => 'true'
                 ]);
                 $mimeType = $exportMimeType; // The result is now plain text or CSV
             } else {
                 // For other files, get the media content
-                $response = Http::withToken($token)->get($this->baseUrl . "/files/{$fileId}", [
+                $response = Http::withToken($token)->timeout(120)->get($this->baseUrl . "/files/{$fileId}", [
                     'alt' => 'media',
                     'supportsAllDrives' => 'true'
                 ]);
