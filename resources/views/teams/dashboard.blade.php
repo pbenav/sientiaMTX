@@ -369,6 +369,7 @@
                 const qDotClasses = @json(collect($quadrantConfig)->map->dot);
                 const completedDotClass = 'bg-emerald-500/40';
 
+                let isDragging = false;
                 lists.forEach(list => {
                     new Sortable(list, {
                         group: 'quadrants',
@@ -385,7 +386,13 @@
                         delayOnTouchOnly: true,
                         touchStartThreshold: 3,
                         filter: 'button, .toggle-subtasks-matrix, input, select',
+                        onStart: function() {
+                            isDragging = true;
+                        },
                         onEnd: function(evt) {
+                            // Small delay to prevent the 'click' event from firing navigation
+                            setTimeout(() => { isDragging = false; }, 100);
+
                             const taskId = evt.item.getAttribute('data-id');
                             const targetQuadrant = evt.to.getAttribute('data-q');
                             const sourceQuadrant = evt.from.getAttribute('data-q');
@@ -524,9 +531,11 @@
             });
 
             // Card navigation functionality
-            // Card navigation functionality
             document.querySelectorAll('.task-card').forEach(card => {
                 card.addEventListener('click', function(e) {
+                    // Don't navigate if dragging
+                    if (isDragging) return;
+
                     // Don't navigate if clicking on a button, link or form element
                     if (e.target.closest('button, a, form, input, select')) {
                         return;
