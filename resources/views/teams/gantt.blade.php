@@ -471,13 +471,20 @@
                 if (wrapper && !wasDragging) {
                     const id = wrapper.dataset.id;
                     const task = allTasks.find(t => t.id == id);
+                    if (task && task.has_children) {
+                        (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
+                        refreshGanttDisplay();
+                    }
+                }
+            });
+
+            document.addEventListener('dblclick', e => {
+                const wrapper = e.target.closest('.bar-wrapper');
+                if (wrapper) {
+                    const id = wrapper.dataset.id;
+                    const task = allTasks.find(t => t.id == id);
                     if (task) {
-                        if (task.has_children) {
-                            (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
-                            refreshGanttDisplay();
-                        } else {
-                            window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
-                        }
+                        window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
                     }
                 }
             });
