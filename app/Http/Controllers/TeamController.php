@@ -495,7 +495,7 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
 
-        $members = $team->members()->orderBy('name')->get();
+        $members = $team->members()->whereNotNull('location_lat')->orderBy('name')->get();
 
         return view('teams.partials.active-network-list', compact('members'));
     }
