@@ -1,4 +1,4 @@
-# SientiaMTX - Manual de Usuario (v0.9.1Beta)
+# SientiaMTX - Manual de Usuario (v0.9.2Beta)
 
 SientiaMTX no es solo una lista de tareas. Es un **gestor de productividad inteligente** basado en la Matriz de Eisenhower que te ayuda a diferenciar lo urgente de lo importante para que nunca pierdas el foco en lo que realmente importa.
 

@@ -1,4 +1,4 @@
-# SientiaMTX - User Manual (v0.9.1Beta)
+# SientiaMTX - User Manual (v0.9.2Beta)
 
 SientiaMTX is an **intelligent productivity manager** built on the Eisenhower Matrix. It helps you distinguish between what's urgent and what's truly important, so you can always focus on what matters most.
 
