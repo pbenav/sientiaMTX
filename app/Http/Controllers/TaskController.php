@@ -1041,7 +1041,11 @@ class TaskController extends Controller
             ];
             $task->priority = $mapping[$validated['quadrant']]['priority'];
             $task->urgency = $mapping[$validated['quadrant']]['urgency'];
-            if (!$request->has('status')) $task->status = 'in_progress';
+            
+            // If it was a template, keep it as is, but if it was a child/instance, it's always in_progress when moved
+            if (!$task->is_template && !in_array($task->status, ['completed', 'cancelled'])) {
+                $task->status = 'in_progress';
+            }
         }
 
         if ($request->has('matrix_order')) {
@@ -1053,13 +1057,15 @@ class TaskController extends Controller
 
         // Handle bulk reordering if full_order is provided
         if ($request->has('full_order') && is_array($request->full_order)) {
-            foreach ($request->full_order as $index => $id) {
-                // Bulk update to minimize DB queries or keep it simple?
-                // For safety and triggers, individual update is okay for matrix size
-                \App\Models\Task::where('id', $id)
-                    ->where('team_id', $team->id)
-                    ->update(['matrix_order' => $index]);
-            }
+            $fullOrder = $request->full_order;
+            // Use a transaction for bulk updates to ensure atomicity and speed
+            \Illuminate\Support\Facades\DB::transaction(function() use ($fullOrder, $team) {
+                foreach ($fullOrder as $index => $id) {
+                    \App\Models\Task::where('id', $id)
+                        ->where('team_id', $team->id)
+                        ->update(['matrix_order' => $index]);
+                }
+            });
         }
 
         // Secondary Effects (Notifications & Syncs)

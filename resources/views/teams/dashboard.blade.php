@@ -413,16 +413,25 @@
                                         full_order: Array.from(evt.to.querySelectorAll('.task-card')).map(el => el.getAttribute('data-id')),
                                     })
                                 })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (!data.success) {
-                                        alert('{{ __('tasks.move_error') }}');
+                                .then(response => {
+                                    if (response.status === 419) {
+                                        // CSRF Timeout: Try to notify and reload once
+                                        console.warn('Sesión caducada. Recargando...');
                                         location.reload();
+                                        return;
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data && !data.success) {
+                                        console.error('Move error:', data.message);
+                                        // Only reload if user explicitly needs to see correct state
+                                        // location.reload();
                                     }
                                 })
                                 .catch(error => {
-                                    console.error('Error:', error);
-                                    location.reload();
+                                    console.error('Fetch Error:', error);
+                                    // Silent fail is better than aggressive jumping for minor errors
                                 });
                         }
                     });
