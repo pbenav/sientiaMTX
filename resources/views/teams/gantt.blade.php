@@ -42,9 +42,7 @@
 
         /* Hover Effect for bars */
         .gantt .bar-wrapper:hover rect.bar { stroke-width: 3px !important; filter: brightness(1.1); }
-
-        .gantt .handle { fill: #9ca3af; }
-        .gantt .today-highlight { fill: rgba(16, 185, 129, 0.05) !important; }
+        .gantt .bar-wrapper { cursor: pointer; }
         #today-line { stroke: #10b981; stroke-width: 2; }
 
         .gantt-readonly {
@@ -233,10 +231,6 @@
                 header_height: 50, column_width: 30, step: 24, view_modes: ['Day', 'Week', 'Month'],
                 bar_height: 30, bar_corner_radius: 6, view_mode: currentMode, language: 'es',
                 custom_popup_html: () => '',
-                on_click: t => {
-                    if(t.has_children) { (collapsedTasks.has(t.id)?collapsedTasks.delete(t.id):collapsedTasks.add(t.id)); refreshGanttDisplay(); }
-                    else window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}`;
-                },
                 on_date_change: (t, start, end) => {
                     if (t.readonly) {
                         refreshGanttDisplay();
@@ -456,31 +450,44 @@
             document.addEventListener('touchmove', e => { handleMove(e.touches[0]); }, { passive: false, capture: true });
             document.addEventListener('touchend', () => { handleEnd(); }, true);
 
+            let wasDragging = false;
             function handleStart(e) {
                 const wrapper = e.target.closest('.bar-wrapper');
                 const handle = e.target.closest('.handle');
                 if (wrapper) {
                     isDragging = true;
+                    wasDragging = false;
                     dragPart = handle ? (handle.classList.contains('left') ? 'start' : 'end') : 'range';
                     
                     if (wrapper.classList.contains('gantt-readonly')) {
-                        // For readonly, we don't start a drag but we handle the click/tap manually
-                        const id = wrapper.dataset.id;
-                        const task = allTasks.find(t => t.id == id);
-                        if (task && !isDragging) { // Simple tap
-                            if (task.has_children) {
-                                (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
-                                refreshGanttDisplay();
-                            } else {
-                                window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
-                            }
-                        }
+                        // For readonly, we don't start a drag
+                        isDragging = false;
                     }
                 }
             }
 
+            document.addEventListener('click', e => {
+                const wrapper = e.target.closest('.bar-wrapper');
+                if (wrapper && !wasDragging) {
+                    const id = wrapper.dataset.id;
+                    const task = allTasks.find(t => t.id == id);
+                    if (task) {
+                        if (task.has_children) {
+                            (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
+                            refreshGanttDisplay();
+                        } else {
+                            window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                        }
+                    }
+                }
+            });
+
             function handleEnd() {
-                isDragging = false;
+                // Reset dragging state after a small delay to let click events pass
+                setTimeout(() => {
+                    isDragging = false;
+                    wasDragging = false;
+                }, 50);
                 richTooltip.style.display = 'none';
                 dragPart = null;
             }
@@ -491,6 +498,7 @@
                     const isDragState = isDragging || wrapper;
 
                     if (isDragState) {
+                        if (isDragging) wasDragging = true;
                         const activeWrapper = isDragging 
                                     ? (document.querySelector('.bar-wrapper.active, .bar-wrapper.dragging, .bar-wrapper.resizing') || wrapper)
                                     : wrapper;

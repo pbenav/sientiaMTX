@@ -569,7 +569,21 @@ class Task extends Model
         $nextDate = $currentDate->copy();
         switch ($frequency) {
             case 'daily': $nextDate->addDays($interval); break;
-            case 'weekly': $nextDate->addWeeks($interval); break;
+            case 'weekly': 
+                if (!empty($settings['days'])) {
+                    $days = collect($settings['days'])->map(fn($d) => (int)$d)->sort();
+                    $carbonDay = $nextDate->dayOfWeekIso;
+                    $nextDay = $days->first(fn($d) => $d > $carbonDay);
+                    if ($nextDay) {
+                        $nextDate->addDays($nextDay - $carbonDay);
+                    } else {
+                        $nextDate->addWeeks($interval);
+                        $nextDate->setISODate($nextDate->year, $nextDate->weekOfYear, $days->first());
+                    }
+                } else {
+                    $nextDate->addWeeks($interval);
+                }
+                break;
             case 'monthly': $nextDate->addMonths($interval); break;
             case 'yearly': $nextDate->addYears($interval); break;
         }

@@ -15,7 +15,7 @@ Schedule::command('tasks:check-urgent')->everyThirtyMinutes();
 Schedule::command('morning:summary')->hourly();
 
 // Despierta tareas autoprogramadas que toca generar — cada día a medianoche
-Schedule::command('wakeup:autoprogrammed-tasks')->dailyAt('00:00');
+Schedule::command('app:tasks-autoprogram-wakeup')->dailyAt('00:00');
 
 // Regeneración de energía progresiva — cada hora
 Schedule::command('gamification:regenerate-energy')->hourly();
