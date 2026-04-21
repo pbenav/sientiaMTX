@@ -530,6 +530,16 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ... existing heatmap logic ...
+
+            // Escuchar eventos de cambio de estado de trabajo para refrescar el dashboard
+            window.addEventListener('task-started', () => {
+                setTimeout(() => window.location.reload(), 500);
+            });
+            window.addEventListener('workday-toggled', () => {
+                setTimeout(() => window.location.reload(), 500);
+            });
+            
             const heatmapPoints = @json($heatmapData ?? []);
             
             // Validamos que los puntos tengan coordenadas válidas y sean números para evitar errores de renderizado
