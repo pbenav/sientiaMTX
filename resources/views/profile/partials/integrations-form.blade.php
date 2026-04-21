@@ -229,7 +229,7 @@
                             <ul class="space-y-2">
                                 <li class="flex items-start gap-3">
                                     <span class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">1</span>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">Busca a <strong class="text-sky-600">@SientiaMTXBot</strong> en Telegram.</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">Busca a <strong class="text-sky-600">@SientiaBot</strong> en Telegram.</p>
                                 </li>
                                 <li class="flex items-start gap-3">
                                     <span class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">2</span>
