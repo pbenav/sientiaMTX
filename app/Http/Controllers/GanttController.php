@@ -117,11 +117,21 @@ class GanttController extends Controller
                     'readonly'     => auth()->user()->cannot('update', $task),
                     'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),
                     'members_progress' => (function() use ($task, $request) {
+                        $user = auth()->user();
                         $showCompleted = !session('hide_completed_tasks', true) || $request->status;
                         
                         if ($task->children->count() > 0) {
                             return $task->children
-                                ->filter(fn($c) => $showCompleted || !in_array($c->status, ['completed', 'cancelled']))
+                                ->filter(function($c) use ($showCompleted, $user, $task) {
+                                    // Must match the exclusion logic in getTaskSet (Step 2)
+                                    if (!$showCompleted && in_array($c->status, ['completed', 'cancelled'])) return false;
+                                    
+                                    // Redundancy rule: if we are viewing the master and this child is ours, 
+                                    // it's already represented by the master row, so we skip it in the sub-breakdown
+                                    if ($task->is_template && $c->assigned_user_id === $user->id) return false;
+                                    
+                                    return true;
+                                })
                                 ->map(fn($child) => [
                                     'name' => $child->assignedUser?->short_name ?: ($child->assignedUser?->name ?: 'Desconocido'),
                                     'progress' => $child->progress,
