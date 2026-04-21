@@ -237,7 +237,7 @@
                                 </li>
                                 <li class="flex items-start gap-3">
                                     <span class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">3</span>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">Pega el número arriba y guarda los cambios.</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">Pega el número recibido en el campo de la izquierda y guarda.</p>
                                 </li>
                             </ul>
                         </div>
