@@ -119,8 +119,7 @@ class GanttController extends Controller
                 'readonly'     => auth()->user()->cannot('update', $task),
                 'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),
                 'members_progress' => $task->children->count() > 0 ? $task->children
-                    ->filter(function($child) use ($tasks, $request) {
-                        // Match the visibility logic of getTaskSet
+                    ->filter(function($child) use ($request) {
                         $showCompleted = !session('hide_completed_tasks', true) || $request->status;
                         if (!$showCompleted && in_array($child->status, ['completed', 'cancelled'])) {
                             return false;
@@ -137,7 +136,7 @@ class GanttController extends Controller
                                 : '??'
                         ];
                     })
-                    ->sortBy(fn($m) => \Illuminate\Support\Str::lower($m['name']), SORT_NATURAL)
+                    ->sortBy(fn($m) => \Illuminate\Support\Str::lower($m['name']))
                     ->values()
                     ->toArray() : ($task->assignedTo->count() > 1 || $task->timeLogs->count() > 0 ? 
                     $task->assignedTo->merge($task->timeLogs->pluck('user')->filter())->unique('id')->map(function($user) use ($task) {
@@ -150,7 +149,7 @@ class GanttController extends Controller
                         'time_human' => $seconds > 0 ? "{$hours}h {$minutes}m" : "0h 0m",
                         'initials' => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 2))
                     ];
-                })->sortBy(fn($m) => \Illuminate\Support\Str::lower($m['name']), SORT_NATURAL)->values()->toArray() : []),
+                })->sortBy(fn($m) => \Illuminate\Support\Str::lower($m['name']))->values()->toArray() : []),
             ];
         });
 
