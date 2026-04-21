@@ -16,6 +16,48 @@ use Illuminate\Http\Request;
 class TaskController extends Controller
 {
     use HandlesEisenhowerMatrix, AwardsGamification, ManagesTaskDeletion;
+    public function copyToTeam(Request $request, Team $team, Task $task)
+    {
+        $request->validate([
+            'target_team_id' => 'required|exists:teams,id'
+        ]);
+
+        $user = auth()->user();
+        if ($user->cannot('view', $team) || $task->team_id !== $team->id) {
+            return response()->json(['success' => false, 'message' => 'Acceso no autorizado.'], 403);
+        }
+
+        $targetTeam = Team::find($request->target_team_id);
+        if ($user->cannot('view', $targetTeam)) {
+            return response()->json(['success' => false, 'message' => 'No tienes acceso al equipo de destino.'], 403);
+        }
+
+        // Clone the task
+        $newTask = $task->replicate();
+        $newTask->team_id = $targetTeam->id;
+        $newTask->created_by_id = $user->id;
+        $newTask->assigned_user_id = $user->id; // Assign to self by default in new team
+        $newTask->status = 'pending';
+        $newTask->progress_percentage = 0;
+        $newTask->parent_id = null; // No parent context in new team
+        $newTask->google_task_id = null;
+        $newTask->google_calendar_event_id = null;
+        $newTask->save();
+
+        // Copy history record
+        $newTask->histories()->create([
+            'user_id' => $user->id,
+            'action' => 'cloned',
+            'notes' => 'Clonada desde el equipo: ' . $team->name
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Tarea reproducida correctamente en el equipo :team', ['team' => $targetTeam->name]),
+            'url' => route('teams.tasks.show', [$targetTeam, $newTask])
+        ]);
+    }
+
     public function index(Request $request, Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {

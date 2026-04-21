@@ -118,6 +118,86 @@
                 </form>
             @endcan
 
+            @php
+                $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
+            @endphp
+            @if($otherTeams->count() > 0)
+                <button type="button" 
+                    onclick="reproduceInTeam()"
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-50 hover:bg-violet-100 dark:bg-violet-500/10 dark:hover:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 text-violet-600 dark:text-violet-400 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    {{ __('Reproducir en Equipo') }}
+                </button>
+
+                <script>
+                    function reproduceInTeam() {
+                        const teams = @json($otherTeams->pluck('name', 'id'));
+                        let options = '';
+                        for (const [id, name] of Object.entries(teams)) {
+                            options += `<option value="${id}">${name}</option>`;
+                        }
+
+                        Swal.fire({
+                            title: '¿A qué equipo lo enviamos?',
+                            html: `
+                                <div class="text-left mt-4">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Selecciona el equipo de destino</label>
+                                    <select id="target-team-select" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
+                                        ${options}
+                                    </select>
+                                    <p class="mt-4 text-[10px] text-gray-400 font-medium italic">* Se creará una copia de esta tarea asignada a ti en el equipo seleccionado.</p>
+                                </div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Reproducir 🚀',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#7c3aed',
+                            background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                            color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                            customClass: {
+                                popup: 'rounded-[2rem]',
+                                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
+                                cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
+                            },
+                            preConfirm: () => {
+                                return document.getElementById('target-team-select').value;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                fetch("{{ route('teams.tasks.copy-to-team', [$team, $task]) }}", {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ target_team_id: result.value })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: '¡Listo!',
+                                            text: data.message,
+                                            showConfirmButton: true,
+                                            confirmButtonText: 'Ir a la nueva tarea',
+                                            confirmButtonColor: '#7c3aed'
+                                        }).then(() => {
+                                            window.location.href = data.url;
+                                        });
+                                    } else {
+                                        Swal.fire('Error', data.message, 'error');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                </script>
+            @endif
+
             @if (!$task->is_template)
                 @include('tasks.partials.task-timer-button', ['task' => $task])
             @elseif ($personalInstance)
