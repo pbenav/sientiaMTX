@@ -49,6 +49,31 @@
                             @endif
                         </div>
 
+                        <!-- Mini History Chart -->
+                        @php
+                            $history = $service->getIncidentHistory();
+                        @endphp
+                        <div class="mt-3 mb-3 px-1">
+                            <div class="flex items-end gap-[2px] h-4 w-full relative">
+                                @foreach($history as $index => $count)
+                                    @php
+                                        $barColor = $count > 0 ? ($count > 1 ? 'bg-red-500' : 'bg-amber-500') : 'bg-emerald-500';
+                                        $barOpacity = $count > 0 ? 'opacity-100' : 'opacity-20';
+                                        $barHeight = $count > 0 ? min(100, 30 + ($count * 20)) : 20;
+                                    @endphp
+                                    <div class="flex-1 {{ $barColor }} {{ $barOpacity }} rounded-[1px] transition-all duration-700 hover:opacity-100 cursor-help group/bar" 
+                                         style="height: {{ $barHeight }}%;"
+                                         title="{{ $count }} incidencias">
+                                         <!-- Tooltip on hover could go here, but keep it light -->
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="flex justify-between mt-1 text-[6px] font-black uppercase tracking-tighter text-gray-300 dark:text-gray-600 border-t border-gray-50 dark:border-gray-800/30 pt-0.5">
+                                <span>-10d</span>
+                                <span>Hoy</span>
+                            </div>
+                        </div>
+
                         <div class="flex items-center gap-2 mt-auto pt-2 border-t border-gray-100/50 dark:border-gray-800/50 z-10 relative">
                             <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1">
                                 @csrf

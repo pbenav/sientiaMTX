@@ -55,4 +55,24 @@ class Service extends Model
             default => __('Desconocido'),
         };
     }
+
+    public function getIncidentHistory(): array
+    {
+        $tenDaysAgo = now()->subDays(10)->startOfDay();
+        $reports = $this->reports()
+            ->where('type', 'down')
+            ->where('created_at', '>=', $tenDaysAgo)
+            ->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->pluck('count', 'date');
+
+        $history = [];
+        for ($i = 9; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $history[] = $reports->get($date, 0);
+        }
+        return $history;
+    }
 }
