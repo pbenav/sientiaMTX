@@ -149,6 +149,9 @@ class TimeLogController extends Controller
             ->orderBy('start_at', 'desc')
             ->limit($presenceLimit)
             ->get();
+        $team->load(['members.timeLogs' => function($q) {
+            $q->whereNull('end_at');
+        }]);
         $teamMembers = $team->members->reject(fn($u) => $u->id === $user->id);
         
         $heatmapData = $team->members->whereNotNull('location_lat')->map(function($u) {

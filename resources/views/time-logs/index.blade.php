@@ -334,18 +334,21 @@
                     <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar">
                         @foreach($team->members->whereNotNull('location_lat') as $member)
                             <div class="flex items-center justify-between group">
+                                @php
+                                    $isActive = $member->activeWorkdayLog();
+                                @endphp
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-sm transition-transform group-hover:scale-105">
-                                        <div class="w-full h-full rounded-[10px] bg-white dark:bg-gray-800 flex items-center justify-center text-[10px] font-black text-emerald-600 uppercase">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ $isActive ? 'from-emerald-400 to-teal-600 animate-pulse-subtle' : 'from-gray-200 to-gray-400 opacity-50' }} p-0.5 shadow-sm transition-transform group-hover:scale-105">
+                                        <div class="w-full h-full rounded-[10px] bg-white dark:bg-gray-800 flex items-center justify-center text-[10px] font-black {{ $isActive ? 'text-emerald-600' : 'text-gray-400' }} uppercase">
                                             {{ substr($member->name, 0, 2) }}
                                         </div>
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="text-[11px] font-black text-gray-900 dark:text-white uppercase truncate">{{ $member->name }}</p>
-                                        <p class="text-[9px] text-emerald-500 font-bold truncate tracking-tight">{{ $member->working_area_name ?? 'Zona Sin Nombre' }}</p>
+                                        <p class="text-[11px] font-black {{ $isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate">{{ $member->name }}</p>
+                                        <p class="text-[9px] {{ $isActive ? 'text-emerald-500 font-bold' : 'text-gray-400' }} truncate tracking-tight">{{ $member->working_area_name ?? 'Zona Sin Nombre' }}</p>
                                     </div>
                                 </div>
-                                <div class="h-1.5 w-1.5 rounded-full bg-emerald-500/20 group-hover:bg-emerald-500 transition-colors"></div>
+                                <div class="h-1.5 w-1.5 rounded-full {{ $isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse' : 'bg-gray-200 dark:bg-gray-800' }} group-hover:bg-emerald-500 transition-all duration-500"></div>
                             </div>
                         @endforeach
                     </div>

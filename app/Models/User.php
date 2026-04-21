@@ -253,11 +253,17 @@ class User extends Authenticatable implements HasLocalePreference
 
     public function activeWorkdayLog(): ?TimeLog
     {
+        if ($this->relationLoaded('timeLogs')) {
+            return $this->timeLogs->where('type', 'workday')->whereNull('end_at')->first();
+        }
         return $this->timeLogs()->where('type', 'workday')->whereNull('end_at')->first();
     }
 
     public function activeTaskLog(): ?TimeLog
     {
+        if ($this->relationLoaded('timeLogs')) {
+            return $this->timeLogs->where('type', 'task')->whereNull('end_at')->first();
+        }
         return $this->timeLogs()->where('type', 'task')->whereNull('end_at')->first();
     }
 
