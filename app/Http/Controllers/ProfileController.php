@@ -80,6 +80,11 @@ class ProfileController extends Controller
         ]);
 
         $user->notification_settings = $newSettings;
+        
+        if ($request->has('telegram_chat_id')) {
+            $user->telegram_chat_id = $validated['telegram_chat_id'];
+        }
+        
         $user->save();
 
         return Redirect::route('profile.edit', ['tab' => 'notifications'])->with('status', 'notifications-updated');

@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 
 class MorningSummaryNotification extends Notification
 {
-    use Queueable;
+    use Queueable, \App\Traits\DeterminesNotificationChannels;
 
     protected $tasks;
     protected $phrase;
@@ -24,13 +24,27 @@ class MorningSummaryNotification extends Notification
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the telegram representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toTelegram(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $text = "🌅 *¡Buenos días, " . explode(' ', $notifiable->name)[0] . "!*\n\n";
+        $text .= "_" . $this->phrase . "_\n\n";
+        $text .= "Tus tareas para hoy:\n";
+
+        foreach ($this->tasks->take(5) as $task) {
+            $text .= "• *" . $task->title . "* (" . ($task->team->name ?? 'Personal') . ")\n";
+        }
+
+        if ($this->tasks->count() > 5) {
+            $text .= "... y " . ($this->tasks->count() - 5) . " tareas más.\n";
+        }
+
+        $text .= "\n🚀 ¡Que tengas un día productivo!";
+
+        return [
+            'text' => $text
+        ];
     }
 
     /**

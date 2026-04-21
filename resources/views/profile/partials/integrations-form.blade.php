@@ -79,6 +79,38 @@
     getGoogleEmail() {
         if (!this.context) return '';
         return this.teamConns[this.context]?.email || '';
+    },
+
+    async testTelegram() {
+        const chatId = '{{ $user->telegram_chat_id }}';
+        if (!chatId) return;
+
+        Swal.fire({
+            title: 'Enviando prueba...',
+            text: 'Ax.ia está enviando un mensaje a tu Telegram',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const response = await fetch('{{ route('profile.telegram.test') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ chat_id: chatId })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                Swal.fire('¡Éxito!', data.message, 'success');
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+        }
     }
 }">
     
@@ -152,6 +184,57 @@
                         </template>
                     </div>
                 </div>
+            </div>
+
+            <!-- 📱 TELEGRAM NOTIFICATIONS (Global) -->
+            <div x-show="context === ''" x-transition class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-6">
+                <form method="POST" action="{{ route('profile.notifications.update') }}" class="space-y-4">
+                    @csrf
+                    @method('PATCH')
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="p-2 bg-sky-50 dark:bg-sky-900/20 rounded-xl text-sky-500">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-900 dark:text-white">Telegram Alerts</h4>
+                                <p class="text-[10px] text-gray-400 font-medium">Recibe alertas críticas y resúmenes en tu móvil</p>
+                            </div>
+                        </div>
+                        @if($user->telegram_chat_id)
+                            <span class="px-3 py-1 bg-sky-50 dark:bg-sky-900/20 text-sky-600 text-[10px] font-black uppercase rounded-lg border border-sky-100 dark:border-sky-800">Vinculado</span>
+                        @endif
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Tu Telegram Chat ID</label>
+                            <div class="flex gap-2">
+                                <input name="telegram_chat_id" type="text" value="{{ $user->telegram_chat_id }}" 
+                                    class="flex-1 text-xs bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-sky-500" placeholder="Ej: 123456789">
+                                <button type="submit" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-xl hover:scale-105 transition-all">
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="pb-1 px-1">
+                            <p class="text-[9px] text-gray-400 leading-tight">
+                                1. Busca a <strong>@SientiaMTXBot</strong> en Telegram.<br>
+                                2. Envíale /start para obtener tu ID.<br>
+                                3. Pega el número aquí y guarda.
+                            </p>
+                        </div>
+                    </div>
+
+                    @if($user->telegram_chat_id)
+                    <div class="pt-2 border-t border-gray-50 dark:border-gray-800 flex justify-end">
+                        <button type="button" @click="testTelegram()" class="text-[10px] font-black text-sky-600 uppercase hover:text-sky-700 transition-colors flex items-center gap-1.5">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            Probar Conexión
+                        </button>
+                    </div>
+                    @endif
+                </form>
             </div>
 
             <!-- Aviso cuando está en global -->
