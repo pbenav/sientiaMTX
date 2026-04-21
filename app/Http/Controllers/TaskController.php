@@ -33,7 +33,7 @@ class TaskController extends Controller
         }
 
         // Clone the task
-        $newTask = $task->replicate();
+        $newTask = $task->replicate(['uuid', 'google_task_id', 'google_calendar_event_id', 'google_synced_at']);
         $newTask->team_id = $targetTeam->id;
         $newTask->created_by_id = $user->id;
         $newTask->assigned_user_id = $user->id; // Assign to self by default in new team
