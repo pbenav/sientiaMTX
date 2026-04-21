@@ -93,7 +93,7 @@ class AiChatController extends Controller
         }
 
         if (!$prompt && $request->hasFile('file')) {
-            $prompt = 'Analiza este archivo. SI CONTIENE UNA PREGUNTA O INSTRUCCIÓN, RESPÓNDELA DIRECTAMENTE CON PRIORIDAD. Si solo es información, transcríbela y resúmela o propón acciones.';
+            $prompt = 'Hola Ax.ia, he adjuntado un archivo. Por favor, analízalo y dime lo más relevante o responde a lo que contenga si es una instrucción.';
         }
 
         // 1. Persist User Message
