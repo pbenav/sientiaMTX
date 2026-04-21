@@ -354,7 +354,7 @@
                                     @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
                                         <label class="cursor-pointer">
                                             <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
-                                                {{ in_array($val, $apSettings['days'] ?? []) ? 'checked' : '' }}
+                                                {{ in_array($val, old('autoprogram_settings.days', $apSettings['days'] ?? [])) ? 'checked' : '' }}
                                                 class="peer sr-only">
                                             <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
                                                 {{ $label }}

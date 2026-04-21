@@ -168,6 +168,7 @@ return [
     'autoprogrammable' => 'Autoprogrammable Task (Recurring)',
     'autoprogrammable_hint' => 'Create multiple occurrences of this task automatically.',
     'frequency' => 'Frequency',
+    'days_of_week' => 'Days of the week',
     'interval' => 'Repeat every',
     'daily' => 'Daily',
     'weekly' => 'Weekly',

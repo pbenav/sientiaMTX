@@ -190,6 +190,7 @@ return [
     'autoprogrammable' => 'Tarea Autoprogramable (Recurrente)',
     'autoprogrammable_hint' => 'Crea múltiples ocurrencias de esta tarea automáticamente.',
     'frequency' => 'Frecuencia',
+    'days_of_week' => 'Días de la semana',
     'interval' => 'Repetir cada',
     'daily' => 'Diaria',
     'weekly' => 'Semanal',
