@@ -107,9 +107,6 @@
 
             @if (!$rootTask->forumThread->is_locked)
                 <form 
-                    :action="editingMessageId ? `/teams/{{ $team->id }}/forum/messages/${editingMessageId}` : '{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}'" 
-                    method="POST"
-                    class="mt-3 relative" 
                     x-data="{ 
                         showEmojiPicker: false,
                         editingMessageId: null,
@@ -123,6 +120,9 @@
                             document.getElementById('forum-thread-textarea-{{ $rootTask->id }}').value = '';
                         }
                     }"
+                    :action="editingMessageId ? `/teams/{{ $team->id }}/forum/messages/${editingMessageId}` : '{{ route('teams.forum.messages.store', [$team, $rootTask->forumThread]) }}'" 
+                    method="POST"
+                    class="mt-3 relative" 
                     @edit-widget-message.window="startWidgetEdit($event.detail.id, $event.detail.content)"
                 >
                     @csrf
