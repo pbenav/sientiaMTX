@@ -206,23 +206,34 @@
                         @endif
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Tu Telegram Chat ID</label>
-                            <div class="flex gap-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start bg-gray-50/50 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
+                        <div class="space-y-4">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Tu Telegram Chat ID (Global)</label>
+                            <div class="flex flex-col sm:flex-row gap-2">
                                 <input name="telegram_chat_id" type="text" value="{{ $user->telegram_chat_id }}" 
-                                    class="flex-1 text-xs bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-sky-500" placeholder="Ej: 123456789">
-                                <button type="submit" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-xl hover:scale-105 transition-all">
-                                    Actualizar
+                                    class="flex-1 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sky-500 py-2.5 px-4 shadow-sm" placeholder="Ej: 123456789">
+                                <button type="submit" class="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-xl hover:scale-105 transition-all shadow-md active:scale-95 whitespace-nowrap">
+                                    Actualizar ID
                                 </button>
                             </div>
+                            <p class="text-[10px] text-gray-500 italic px-1">Esta configuración es única para tu cuenta y afectará a todos tus equipos.</p>
                         </div>
-                        <div class="pb-1 px-1">
-                            <p class="text-[9px] text-gray-400 leading-tight">
-                                1. Busca a <strong>@SientiaMTXBot</strong> en Telegram.<br>
-                                2. Envíale /start para obtener tu ID.<br>
-                                3. Pega el número aquí y guarda.
-                            </p>
+                        <div class="space-y-3">
+                            <h5 class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Instrucciones de Vinculación</h5>
+                            <ul class="space-y-2">
+                                <li class="flex items-start gap-3">
+                                    <span class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">1</span>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">Busca a <strong class="text-sky-600">@SientiaMTXBot</strong> en tu app de Telegram.</p>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">2</span>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">Envíale el comando <code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sky-600 font-bold">/start</code> para obtener tu ID único.</p>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">3</span>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">Pega el número recibido en el campo de la izquierda y guarda los cambios.</p>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
