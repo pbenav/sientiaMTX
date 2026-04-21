@@ -53,7 +53,7 @@ class ServiceController extends Controller
                 'service_id' => $service->id,
                 'user_id' => auth()->id(),
                 'type' => $validated['type'],
-                'details' => $validated['details'],
+                'details' => $validated['details'] ?? null,
             ]);
 
             // Simple status update logic
