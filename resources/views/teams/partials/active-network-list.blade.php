@@ -3,13 +3,21 @@
         @php
             $isWorking = $member->isWorking();
             $isOnline = $member->isOnline();
+            $hasLocation = !empty($member->location_lat);
             
             $statusColorClass = 'bg-gray-200 dark:bg-gray-800';
             $gradientClass = 'from-gray-200 to-gray-400 opacity-50';
             $textClass = 'text-gray-400';
             $animateClass = '';
+            $statusLabel = $member->working_area_name ?? 'Zona Sin Nombre';
             
-            if ($isWorking) {
+            if (!$hasLocation) {
+                $statusColorClass = 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]';
+                $gradientClass = 'from-amber-400 to-orange-600';
+                $textClass = 'text-amber-600';
+                $statusLabel = __('Sin ubicación GPS');
+                $animateClass = 'animate-pulse';
+            } elseif ($isWorking) {
                 $statusColorClass = 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]';
                 $gradientClass = 'from-rose-400 to-red-600 animate-pulse-subtle';
                 $textClass = 'text-rose-600';
@@ -27,8 +35,8 @@
                 </div>
             </div>
             <div class="min-w-0">
-                <p class="text-[11px] font-black {{ ($isWorking || $isOnline) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate">{{ $member->name }}</p>
-                <p class="text-[9px] {{ $isWorking ? 'text-rose-500 font-bold' : ($isOnline ? 'text-emerald-500 font-bold' : 'text-gray-400') }} truncate tracking-tight">{{ $member->working_area_name ?? 'Zona Sin Nombre' }}</p>
+                <p class="text-[11px] font-black {{ ($isWorking || $isOnline || !$hasLocation) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate">{{ $member->name }}</p>
+                <p class="text-[9px] {{ !$hasLocation ? 'text-amber-500 font-bold' : ($isWorking ? 'text-rose-500 font-bold' : ($isOnline ? 'text-emerald-500 font-bold' : 'text-gray-400')) }} truncate tracking-tight">{{ $statusLabel }}</p>
             </div>
         </div>
         <div class="h-1.5 w-1.5 rounded-full {{ $statusColorClass }} {{ $animateClass }} transition-all duration-500"></div>

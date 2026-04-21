@@ -346,10 +346,29 @@
                             window.addEventListener('task-started', () => refresh());
                             window.addEventListener('workday-toggled', () => refresh());
                          ">
-                        @include('teams.partials.active-network-list', ['members' => $team->members()->whereNotNull('location_lat')->orderBy('name')->get()])
+                        @include('teams.partials.active-network-list', ['members' => $team->members()->where(function($query) {
+                            $query->whereNotNull('location_lat')
+                                  ->orWhereExists(function ($q) {
+                                      $q->select(DB::raw(1))
+                                        ->from('sessions')
+                                        ->whereColumn('sessions.user_id', 'users.id')
+                                        ->where('last_activity', '>', now()->subMinutes(15)->getTimestamp());
+                                  })
+                                  ->orWhereExists(function ($q) {
+                                      $q->select(DB::raw(1))
+                                        ->from('time_logs')
+                                        ->whereColumn('time_logs.user_id', 'users.id')
+                                        ->whereIn('type', ['workday', 'task'])
+                                        ->whereNull('end_at');
+                                  });
+                        })->orderBy('name')->get()])
                     </div>
                     <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
                         <div class="flex items-center justify-center gap-4">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                                <span class="text-[7px] font-black text-gray-400 uppercase tracking-widest">{{ __('Sin GPS') }}</span>
+                            </div>
                             <div class="flex items-center gap-1.5">
                                 <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
                                 <span class="text-[7px] font-black text-gray-400 uppercase tracking-widest">{{ __('En labor') }}</span>

@@ -495,7 +495,27 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
 
-        $members = $team->members()->whereNotNull('location_lat')->orderBy('name')->get();
+        // Obtenemos miembros que tienen ubicación 
+        // O que han tenido actividad reciente (sesión o logs)
+        $members = $team->members()
+            ->where(function($query) {
+                $query->whereNotNull('location_lat')
+                      ->orWhereExists(function ($q) {
+                          $q->select(\DB::raw(1))
+                            ->from('sessions')
+                            ->whereColumn('sessions.user_id', 'users.id')
+                            ->where('last_activity', '>', now()->subMinutes(15)->getTimestamp());
+                      })
+                      ->orWhereExists(function ($q) {
+                          $q->select(\DB::raw(1))
+                            ->from('time_logs')
+                            ->whereColumn('time_logs.user_id', 'users.id')
+                            ->whereIn('type', ['workday', 'task'])
+                            ->whereNull('end_at');
+                      });
+            })
+            ->orderBy('name')
+            ->get();
 
         return view('teams.partials.active-network-list', compact('members'));
     }
