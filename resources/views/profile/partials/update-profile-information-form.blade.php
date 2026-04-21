@@ -16,6 +16,7 @@
     <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('patch')
+        <input type="hidden" name="tab" value="general">
 
         <div>
             <x-input-label for="name" :value="__('profile.name')" />

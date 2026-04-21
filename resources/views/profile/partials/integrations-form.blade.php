@@ -195,6 +195,7 @@
                 <form method="POST" action="{{ route('profile.notifications.update') }}" class="space-y-4">
                     @csrf
                     @method('PATCH')
+                    <input type="hidden" name="tab" value="integrations">
                     <input type="hidden" name="team_id" :value="context">
 
                     <div class="flex items-center justify-between">

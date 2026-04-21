@@ -18,6 +18,7 @@
     }">
         @csrf
         @method('patch')
+        <input type="hidden" name="tab" value="notifications">
 
         <!-- Channels -->
         <div class="space-y-4">

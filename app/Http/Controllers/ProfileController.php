@@ -39,7 +39,7 @@ class ProfileController extends Controller
             app()->setLocale($request->input('locale'));
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit', ['tab' => $request->input('tab', 'general')])->with('status', 'profile-updated');
     }
 
     /**
@@ -93,7 +93,9 @@ class ProfileController extends Controller
         $user->notification_settings = $newSettings;
         $user->save();
 
-        $redirectUrl = Redirect::route('profile.edit', ['tab' => 'integrations']);
+        $tab = $request->input('tab', 'notifications');
+        $redirectUrl = Redirect::route('profile.edit', ['tab' => $tab]);
+        
         if ($request->team_id) {
             $redirectUrl = $redirectUrl->withQueryString(['team_id' => $request->team_id]);
         }
@@ -152,7 +154,7 @@ class ProfileController extends Controller
             );
         }
 
-        return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'ai-updated');
+        return Redirect::route('profile.edit', ['tab' => 'integrations', 'team_id' => $validated['team_id']])->with('status', 'ai-updated');
     }
 
     public function testTelegram(Request $request): \Illuminate\Http\JsonResponse
