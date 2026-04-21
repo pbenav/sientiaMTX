@@ -346,7 +346,7 @@
                             window.addEventListener('task-started', () => refresh());
                             window.addEventListener('workday-toggled', () => refresh());
                          ">
-                        @include('teams.partials.active-network-list', ['members' => $team->members->whereNotNull('location_lat')])
+                        @include('teams.partials.active-network-list', ['members' => $team->members()->orderBy('name')->get()])
                     </div>
                     <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
                         <div class="flex items-center justify-center gap-4">
