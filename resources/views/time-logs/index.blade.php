@@ -331,8 +331,8 @@
                             Red Activa
                         </h4>
                     </div>
-                    <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 no-scrollbar">
-                        @foreach($team->members->whereNotNull('location_lat')->take(12) as $member)
+                    <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar">
+                        @foreach($team->members->whereNotNull('location_lat') as $member)
                             <div class="flex items-center justify-between group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-sm transition-transform group-hover:scale-105">
