@@ -15,6 +15,9 @@ class GeminiService implements AiAssistantInterface
     protected ?\App\Models\ForumThread $threadContext = null;
     protected ?\App\Models\ForumMessage $messageContext = null;
     protected ?\Illuminate\Http\UploadedFile $directFile = null;
+    protected ?string $cachedFileContent = null;
+    protected ?string $cachedFileMime = null;
+    protected ?string $cachedFileName = null;
     protected string $apiKey = '';
     protected string $targetModel = 'gemini-3-flash-preview';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -104,6 +107,14 @@ class GeminiService implements AiAssistantInterface
     public function withFile(\Illuminate\Http\UploadedFile $file): self
     {
         $this->directFile = $file;
+        try {
+            $this->cachedFileContent = file_get_contents($file->getPathname());
+            $this->cachedFileMime = $file->getMimeType() ?: $file->getClientMimeType() ?: 'application/octet-stream';
+            $this->cachedFileName = $file->getClientOriginalName();
+            Log::debug("Ax.ia: Archivo cacheado con éxito ({$this->cachedFileName}, {$this->cachedFileMime})");
+        } catch (\Exception $e) {
+            Log::error("Ax.ia: No se pudo cachear el archivo: " . $e->getMessage());
+        }
         return $this;
     }
 
@@ -121,23 +132,28 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
         }
 
-        if ($this->directFile && file_exists($this->directFile->getPathname())) {
-            $mime = $this->directFile->getMimeType() ?: 'application/octet-stream';
+        if ($this->cachedFileContent) {
+            $mime = $this->cachedFileMime;
+            
             if ($this->isMultimodalMime($mime)) {
                 try {
                     $parts[] = [
                         'inline_data' => [
                             'mime_type' => $mime,
-                            'data' => base64_encode(file_get_contents($this->directFile->getPathname()))
+                            'data' => base64_encode($this->cachedFileContent)
                         ]
                     ];
                     $contextInfo .= "\nHE ADJUNTO UN ARCHIVO DIRECTO:\n";
-                    $contextInfo .= "- Nombre: {$this->directFile->getClientOriginalName()}\n";
+                    $contextInfo .= "- Nombre: {$this->cachedFileName}\n";
                     $contextInfo .= "- Tipo: {$mime}\n";
                     $contextInfo .= "- Instrucción: Analiza este archivo directamente.\n";
                 } catch (\Exception $e) {
-                    $contextInfo .= "- Error: No se pudo procesar el archivo directo (" . $e->getMessage() . ").\n";
+                    Log::error("Ax.ia: Error procesando contenido cacheado: " . $e->getMessage());
+                    $contextInfo .= "- Error: No se pudo procesar el archivo directo.\n";
                 }
+            } else {
+                Log::warning("Ax.ia: El tipo MIME {$mime} no es reconocido como multimodal. Intentando tratar como texto.");
+                $contextInfo .= "\nARCHIVO ADJUNTO (Texto): " . mb_substr($this->cachedFileContent, 0, 5000) . "\n";
             }
         }
 
@@ -223,33 +239,13 @@ class GeminiService implements AiAssistantInterface
         return $this->callGemini($this->targetModel, $parts, false, $systemInstruction);
     }
 
-    protected function isMultimodalMime(string $mime): bool
-    {
-        $multimodalTypes = [
-            'application/pdf',
-            'image/jpeg',
-            'image/png',
-            'image/webp',
-            'image/heic',
-            'image/heif',
-            'audio/wav',
-            'audio/mp3',
-            'audio/mpeg',
-            'audio/ogg',
-            'audio/m4a',
-            'audio/x-m4a',
-            'audio/webm',
-            'audio/flac',
-            'audio/aac',
-        ];
-
-        foreach ($multimodalTypes as $type) {
-            if (str_starts_with($mime, str_replace('*', '', $type))) {
-                return true;
-            }
-        }
-
-        return false;
+        // Permissive check for audio/video/images/pdf
+        $mime = strtolower($mime);
+        
+        return str_starts_with($mime, 'image/') || 
+               str_starts_with($mime, 'audio/') || 
+               str_starts_with($mime, 'video/') || 
+               $mime === 'application/pdf';
     }
 
     public function analyzeEnergyLevel(array $recentData): int

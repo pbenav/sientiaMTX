@@ -108,6 +108,9 @@ class AiChatController extends Controller
             $fileType = $file->getClientMimeType();
             $fileName = $originalName;
             
+            // Pass to assistant IMMEDIATELY to capture content before store() moves it
+            $aiAssistant->withFile($file);
+            
             // Save file
             $path = $file->store('ai_attachments', 'public');
             $filePath = $path;
@@ -128,9 +131,7 @@ class AiChatController extends Controller
 
         $aiAssistant->forUser($user, $request->team_id);
 
-        if ($request->hasFile('file')) {
-            $aiAssistant->withFile($request->file('file'));
-        }
+        // (withFile already called above if present)
 
         if ($request->task_id) {
             $task = \App\Models\Task::find($request->task_id);
