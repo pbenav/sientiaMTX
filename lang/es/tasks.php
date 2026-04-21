@@ -42,6 +42,8 @@ return [
     'delete_confirm' => '¿Seguro que quieres eliminar esta tarea?',
     'back' => 'Volver',
     'save' => 'Guardar',
+    'all' => 'Todo',
+    'none' => 'Nada',
     'history' => 'Historial de cambios',
     'no_history' => 'Sin cambios registrados.',
     'tags' => 'Etiquetas',

@@ -33,6 +33,8 @@ return [
     'delete_confirm' => 'Are you sure you want to delete this task?',
     'back' => 'Back',
     'save' => 'Save',
+    'all' => 'All',
+    'none' => 'None',
     'history' => 'Change History',
     'no_history' => 'No changes recorded.',
     'tags' => 'Tags',

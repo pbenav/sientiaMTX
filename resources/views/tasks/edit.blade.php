@@ -598,13 +598,25 @@
 
                 <!-- Assigned To -->
                 <!-- Assigned To & Groups -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100 dark:border-gray-800">
                     @if ($users->count() > 0)
-                        <div>
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
-                                <label
-                                    class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{{ __('tasks.assigned_to') }}</label>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    {{ __('tasks.assigned_to') }}
+                                </label>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="window.selectAllUsers(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
+                                        {{ __('tasks.all') }}
+                                    </button>
+                                    <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
+                                    <button type="button" onclick="window.selectAllUsers(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                        {{ __('tasks.none') }}
+                                    </button>
+                                </div>
                             </div>
                             @php
                                 $assignedIds = $task->assignedTo->pluck('id')->toArray();
@@ -612,18 +624,16 @@
                                     $assignedIds[] = $task->assigned_user_id;
                                 }
                             @endphp
-                            <div
-                                class="bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-3 max-h-48 overflow-y-auto shadow-inner">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                                 @foreach ($users as $user)
-                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                    <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
                                         <input type="checkbox" name="assigned_to[]" value="{{ $user->id }}"
+                                            id="user_checkbox_{{ $user->id }}"
                                             {{ in_array($user->id, old('assigned_to', $assignedIds)) ? 'checked' : '' }}
-                                            class="accent-violet-500 w-4 h-4 rounded border-gray-300 dark:border-gray-600">
-                                        <div class="flex flex-col">
-                                            <span
-                                                class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ $user->name }}</span>
-                                            <span
-                                                class="text-[10px] text-gray-400 group-hover:text-gray-500">{{ $user->email }}</span>
+                                            class="user-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $user->name }}</span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 truncate">{{ $user->email }}</span>
                                         </div>
                                     </label>
                                 @endforeach
@@ -632,24 +642,27 @@
                     @endif
 
                     @if ($groups->count() > 0)
-                        <div>
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
-                                <label
-                                    class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{{ __('tasks.assign_groups') }}</label>
-                            </div>
+                        <div class="space-y-3">
+                            <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                {{ __('tasks.assign_groups') }}
+                            </label>
                             @php $assignedGroupIds = $task->assignedGroups->pluck('id')->toArray(); @endphp
-                            <div
-                                class="bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-3 max-h-48 overflow-y-auto shadow-inner">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                                 @foreach ($groups as $group)
-                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                    <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
                                         <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
+                                            data-members="{{ json_encode($group->users->pluck('id')) }}"
+                                            onchange="window.syncGroupMembers(this)"
                                             {{ in_array($group->id, old('assigned_groups', $assignedGroupIds)) ? 'checked' : '' }}
-                                            class="accent-indigo-500 w-4 h-4 rounded border-gray-300 dark:border-gray-600">
-                                        <div class="flex flex-col text-sm">
-                                            <span
-                                                class="font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ $group->name }}</span>
-                                            <span class="text-[10px] text-gray-400 italic">Grupo de trabajo</span>
+                                            class="group-checkbox accent-indigo-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-indigo-500/20 transition-all">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $group->name }}</span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                                                {{ $group->users->count() }} {{ __('teams.members') }}
+                                            </span>
                                         </div>
                                     </label>
                                 @endforeach
@@ -886,6 +899,30 @@
         </style>
 
         <script>
+            // --- Global Helpers for Assignments ---
+            window.selectAllUsers = function(status) {
+                document.querySelectorAll('.user-checkbox').forEach(cb => {
+                    cb.checked = status;
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            };
+
+            window.syncGroupMembers = function(groupCb) {
+                try {
+                    const memberIds = JSON.parse(groupCb.getAttribute('data-members'));
+                    const isChecked = groupCb.checked;
+                    memberIds.forEach(id => {
+                        const userCb = document.getElementById('user_checkbox_' + id);
+                        if (userCb) {
+                            userCb.checked = isChecked;
+                            userCb.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                } catch (err) {
+                    console.error('Group sync error:', err);
+                }
+            };
+
             document.addEventListener('DOMContentLoaded', function() {
 
                 const quadrantData = @json(__('tasks.quadrants'));

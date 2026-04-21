@@ -448,11 +448,11 @@
                                     {{ __('tasks.assigned_to') }}
                                 </label>
                                 <div class="flex gap-2">
-                                    <button type="button" onclick="selectAllUsers(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
+                                    <button type="button" onclick="window.selectAllUsers(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
                                         {{ __('tasks.all') ?? 'Todo' }}
                                     </button>
                                     <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
-                                    <button type="button" onclick="selectAllUsers(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                    <button type="button" onclick="window.selectAllUsers(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
                                         {{ __('tasks.none') ?? 'Nada' }}
                                     </button>
                                 </div>
@@ -487,7 +487,7 @@
                                     <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
                                         <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
                                             data-members="{{ json_encode($group->users->pluck('id')) }}"
-                                            onchange="syncGroupMembers(this)"
+                                            onchange="window.syncGroupMembers(this)"
                                             {{ in_array($group->id, old('assigned_groups', [])) ? 'checked' : '' }}
                                             class="group-checkbox accent-indigo-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-indigo-500/20 transition-all">
                                         <div class="flex flex-col min-w-0">
@@ -575,7 +575,32 @@
     </style>
 
     <script>
+        // --- Global Helpers for Assignments (Direct Scope for Compatibility) ---
+        window.selectAllUsers = function(status) {
+            document.querySelectorAll('.user-checkbox').forEach(cb => {
+                cb.checked = status;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        };
+
+        window.syncGroupMembers = function(groupCb) {
+            try {
+                const memberIds = JSON.parse(groupCb.getAttribute('data-members'));
+                const isChecked = groupCb.checked;
+                memberIds.forEach(id => {
+                    const userCb = document.getElementById('user_checkbox_' + id);
+                    if (userCb) {
+                        userCb.checked = isChecked;
+                        userCb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            } catch (err) {
+                console.error('Group sync error:', err);
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Eisenhower Matrix Preview ---
             const quadrantData = @json(__('tasks.quadrants'));
             const priorityEl = document.querySelector('[name="priority"]');
             const urgencyEl = document.querySelector('[name="urgency"]');
@@ -583,18 +608,10 @@
             const highLevels = ['high', 'critical'];
 
             const qColors = {
-                1: {
-                    border: 'border-red-200 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600 dark:text-red-300'
-                },
-                2: {
-                    border: 'border-blue-200 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-300'
-                },
-                3: {
-                    border: 'border-amber-200 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-300'
-                },
-                4: {
-                    border: 'border-gray-200 dark:border-gray-700', bg: 'bg-gray-50 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-300'
-                },
+                1: { border: 'border-red-200 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600 dark:text-red-300' },
+                2: { border: 'border-blue-200 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-300' },
+                3: { border: 'border-amber-200 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-300' },
+                4: { border: 'border-gray-200 dark:border-gray-700', bg: 'bg-gray-50 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-300' },
             };
 
             function updatePreview() {
@@ -618,36 +635,13 @@
             priorityEl?.addEventListener('change', updatePreview);
             urgencyEl?.addEventListener('change', updatePreview);
             updatePreview();
-        });
 
-        window.selectAllUsers = function(status) {
-            document.querySelectorAll('.user-checkbox').forEach(cb => {
-                cb.checked = status;
-            });
-        }
-
-        window.syncGroupMembers = function(groupCheckbox) {
-            const memberIds = JSON.parse(groupCheckbox.getAttribute('data-members'));
-            const isChecked = groupCheckbox.checked;
-
-            memberIds.forEach(id => {
-                const userCb = document.getElementById('user_checkbox_' + id);
-                if (userCb) {
-                    userCb.checked = isChecked;
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // TomSelect for Searchable Dependencies
+            // --- TomSelect for Searchable Dependencies ---
             const parenSelectEl = document.getElementById('parent_id_select');
             if (parenSelectEl) {
                 new TomSelect("#parent_id_select", {
                     create: false,
-                    sortField: {
-                        field: "text",
-                        direction: "asc"
-                    },
+                    sortField: { field: "text", direction: "asc" },
                     placeholder: '{{ __("tasks.search_task") ?? "Buscar tarea..." }}',
                     render: {
                         option: function(data, escape) {
