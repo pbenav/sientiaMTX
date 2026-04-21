@@ -99,21 +99,21 @@
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">{{ __('Nombre del Servicio') }}</label>
-                    <input type="text" name="name" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
+                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Nombre del Servicio') }}</x-input-label>
+                    <x-text-input name="name" required class="py-4" :emoji="false" />
                 </div>
                 <div>
-                    <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">{{ __('Emoji/Icono') }}</label>
-                    <input type="text" name="icon" placeholder="💡, 📞, 📧..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
+                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Emoji/Icono') }}</x-input-label>
+                    <x-text-input name="icon" placeholder="💡, 📞, 📧..." class="py-4" />
                 </div>
             </div>
             <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">{{ __('URL del Portal') }}</label>
-                <input type="url" name="url" placeholder="https://..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
+                <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('URL del Portal') }}</x-input-label>
+                <x-text-input type="url" name="url" placeholder="https://..." class="py-4" :emoji="false" />
             </div>
             <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">{{ __('Descripción') }}</label>
-                <textarea name="description" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none"></textarea>
+                <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Descripción') }}</x-input-label>
+                <textarea name="description" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500 rounded-xl shadow-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all font-bold text-sm px-5 py-4"></textarea>
             </div>
             
             <div class="mt-6 flex justify-end">
