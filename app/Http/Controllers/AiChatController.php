@@ -257,7 +257,7 @@ class AiChatController extends Controller
             return response()->json(['success' => true, 'message' => 'Contenido añadido a Observaciones correctamente.', 'history_id' => $history->id]);
         }
 
-        if ($request->target === 'observations' || $request->target === 'private_note') {
+        if ($request->target === 'observations' || $request->target === 'private_note' || $request->target === 'private-notes') {
             // Use TaskPrivateNote for "Notas"
             $note = \App\Models\TaskPrivateNote::updateOrCreate(
                 ['task_id' => $task->id, 'user_id' => auth()->id()],
@@ -317,7 +317,14 @@ class AiChatController extends Controller
             return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo.']);
         }
 
-        return response()->json(['success' => false, 'message' => 'Destino no válido.']);
+        // If thread has a task and target is task-related, redirect to task transfer
+        if ($thread->task_id) {
+            $request->merge(['task_id' => $thread->task_id]);
+            return $this->transferContent($request, $team, $thread->task);
+        }
+
+        // If no task associated, treat as global transfer (create task)
+        return $this->transferGlobalContent($request, $team);
     }
 
     public function transferGlobalContent(Request $request, \App\Models\Team $team)
@@ -329,17 +336,22 @@ class AiChatController extends Controller
         $content = $this->extractPayload($request->input('content'));
         $user = $request->user();
 
-        if ($request->target === 'private_note' || $request->target === 'observations') {
-            // Create a new task for this note
+        if (in_array($request->target, ['private_note', 'private-notes', 'observations', 'observations_append', 'description'])) {
+            // Create a new task for this content
             $task = \App\Models\Task::create([
                 'team_id' => $team->id,
-                'title' => '📝 Nota de Ax.ia: ' . now()->format('d/m/Y H:i'),
+                'title' => $request->title ?: '📝 Nota de Ax.ia: ' . now()->format('d/m/Y H:i'),
                 'description' => 'Tarea creada automáticamente desde el chat de Ax.ia.',
                 'created_by_id' => $user->id,
-                'assigned_user_id' => $user->id, // Private by default or assigned to self
+                'assigned_user_id' => $user->id,
                 'visibility' => 'private',
                 'status' => 'pending'
             ]);
+
+            if ($request->target === 'observations_append' || $request->target === 'description') {
+                $task->update(['observations' => $content]);
+                return response()->json(['success' => true, 'message' => 'Se ha creado la tarea y guardado en observaciones.']);
+            }
 
             \App\Models\TaskPrivateNote::create([
                 'task_id' => $task->id,

@@ -904,14 +904,18 @@
                         return;
                     }
 
-                    // Decide if we need to prompt for a title (if injecting to forum and no thread exists)
+                    // Decide if we need to prompt for a title
                     let customTitle = null;
-                    if (target === 'comment' && !this.threadId) {
-                        const { value: threadTitle } = await Swal.fire({
-                            title: 'Nuevo Hilo en el Foro',
+                    const needsTitle = (target === 'comment' && !this.threadId) || (!this.taskId && !this.threadId && ['private_note', 'observations_append', 'observations', 'description'].includes(target));
+
+                    if (needsTitle) {
+                        const { value: title } = await Swal.fire({
+                            title: target === 'comment' ? 'Nuevo Hilo en el Foro' : 'Título para la nueva tarea',
                             input: 'text',
-                            inputLabel: '¿Qué título le ponemos a la conversación?',
-                            inputValue: this.taskId ? 'Discusión sobre tarea' : 'Consulta con Ax.ia',
+                            inputLabel: target === 'comment' ? '¿Qué título le ponemos a la conversación?' : '¿Cómo se llamará la tarea para esta nota?',
+                            inputValue: target === 'comment' 
+                                ? (this.taskId ? 'Discusión sobre tarea' : 'Consulta con Ax.ia') 
+                                : '📝 Nota de Ax.ia: ' + new Date().toLocaleDateString(),
                             showCancelButton: true,
                             confirmButtonColor: '#4f46e5',
                             cancelButtonColor: '#ef4444',
@@ -923,8 +927,8 @@
                             }
                         });
                         
-                        if (threadTitle) {
-                            customTitle = threadTitle;
+                        if (title) {
+                            customTitle = title;
                         } else {
                             return; // User cancelled the title prompt
                         }
