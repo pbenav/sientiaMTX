@@ -386,16 +386,21 @@
                         delayOnTouchOnly: true,
                         touchStartThreshold: 3,
                         filter: 'button, .toggle-subtasks-matrix, input, select',
-                        onStart: function() {
+                        onStart: function(evt) {
                             isDragging = true;
+                            // Add a class to the item to help prevent clicks
+                            evt.item.classList.add('is-dragging');
                         },
                         onEnd: function(evt) {
-                            // Small delay to prevent the 'click' event from firing navigation
-                            setTimeout(() => { isDragging = false; }, 100);
-
                             const taskId = evt.item.getAttribute('data-id');
                             const targetQuadrant = evt.to.getAttribute('data-q');
                             const sourceQuadrant = evt.from.getAttribute('data-q');
+
+                            // Important: Delay setting isDragging to false to catch the click event
+                            setTimeout(() => { 
+                                isDragging = false; 
+                                evt.item.classList.remove('is-dragging');
+                            }, 200);
 
                             if (targetQuadrant === sourceQuadrant && evt.oldIndex === evt.newIndex)
                                 return;
@@ -422,27 +427,27 @@
                                 })
                                 .then(response => {
                                     if (response.status === 419) {
-                                        // CSRF Timeout: Try to notify and reload once
                                         console.warn('Sesión caducada. Recargando...');
                                         location.reload();
                                         return;
                                     }
                                     return response.json();
                                 })
-                                .then(data => {
-                                    if (data && !data.success) {
-                                        console.error('Move error:', data.message);
-                                        // Only reload if user explicitly needs to see correct state
-                                        // location.reload();
-                                    }
-                                })
                                 .catch(error => {
                                     console.error('Fetch Error:', error);
-                                    // Silent fail is better than aggressive jumping for minor errors
                                 });
                         }
                     });
                 });
+
+                // Global click interceptor for anything inside the matrix
+                document.addEventListener('click', function(e) {
+                    if (isDragging) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }, true); // Use capture phase to catch it before it reaches the card/link
 
                 function updateUI(item, from, to, targetQ) {
                     // Update task appearance
@@ -533,7 +538,6 @@
             // Card navigation functionality
             document.querySelectorAll('.task-card').forEach(card => {
                 card.addEventListener('click', function(e) {
-                    // Don't navigate if dragging
                     if (isDragging) return;
 
                     // Don't navigate if clicking on a button, link or form element
