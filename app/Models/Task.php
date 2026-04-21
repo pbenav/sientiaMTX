@@ -104,6 +104,7 @@ class Task extends Model
         'skill_id',
         'matrix_order',
         'service_id',
+        'is_autoprogrammable',
     ];
  
     protected $casts = [
@@ -120,6 +121,7 @@ class Task extends Model
         'impact_human_metric' => 'integer',
         'skill_id' => 'integer',
         'service_id' => 'integer',
+        'is_autoprogrammable' => 'boolean',
     ];
 
     public function service(): BelongsTo
@@ -496,8 +498,31 @@ class Task extends Model
         } else {
             $currentDate = $lastOccurrence->scheduled_date->copy();
             switch ($frequency) {
-                case 'daily': $currentDate->addDays($interval); break;
-                case 'weekly': $currentDate->addWeeks($interval); break;
+                case 'daily': 
+                    $currentDate->addDays($interval); 
+                    break;
+                case 'weekly': 
+                    if (!empty($settings['days'])) {
+                        // Find the next day in the selected days
+                        $days = collect($settings['days'])->map(fn($d) => (int)$d)->sort();
+                        $currentDayOfWeek = $currentDate->dayOfWeek; // 0 (Sun) - 6 (Sat) or Carbon::MONDAY etc.
+                        // Carbon 1-7 (Mon-Sun)
+                        $carbonDay = $currentDate->dayOfWeekIso; // 1 (Mon) - 7 (Sun)
+                        
+                        $nextDay = $days->first(fn($d) => $d > $carbonDay);
+                        
+                        if ($nextDay) {
+                            $currentDate->addDays($nextDay - $carbonDay);
+                        } else {
+                            // Go to next week and pick the first day
+                            $currentDate->addWeeks($interval);
+                            $firstDay = $days->first();
+                            $currentDate->setISODate($currentDate->year, $currentDate->weekOfYear, $firstDay);
+                        }
+                    } else {
+                        $currentDate->addWeeks($interval);
+                    }
+                    break;
                 case 'monthly': $currentDate->addMonths($interval); break;
                 case 'yearly': $currentDate->addYears($interval); break;
             }

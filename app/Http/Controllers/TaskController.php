@@ -632,6 +632,12 @@ class TaskController extends Controller
             'service_id' => $validated['service_id'] ?? $task->service_id,
         ]);
 
+        if ($task->is_autoprogrammable && (!isset($task->autoprogram_settings['next_occurrence_at']) || $request->has('scheduled_date'))) {
+            $settings = $task->autoprogram_settings;
+            $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
+            $task->update(['autoprogram_settings' => $settings]);
+        }
+
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
             $task->created_by_id = $validated['created_by_id'];
             $task->save();

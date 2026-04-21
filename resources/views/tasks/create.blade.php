@@ -299,6 +299,27 @@
                                     <option value="yearly">{{ __('tasks.yearly') ?? 'Anual' }}</option>
                                 </select>
                             </div>
+                            <div x-show="frequency === 'weekly'" class="col-span-2 space-y-3 pb-2" x-transition>
+                                <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{ __('tasks.days_of_week') ?? 'Días de la semana' }}
+                                </label>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
+                                        <label class="cursor-pointer">
+                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
+                                                {{ in_array($val, old('autoprogram_settings.days', [])) ? 'checked' : '' }}
+                                                class="peer sr-only">
+                                            <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
+                                                {{ $label }}
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <p class="text-[9px] text-gray-400 italic">La tarea se generará en cada uno de los días seleccionados.</p>
+                            </div>
                             <div class="space-y-2">
                                 <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
