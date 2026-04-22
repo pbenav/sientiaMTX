@@ -356,7 +356,7 @@
 
         // Calculate Time Tracking Statistics
         $userObj = auth()->user();
-        $isUserObjMgr = clone($team)->isManager($userObj);
+        $isUserObjMgr = $team->isManager($userObj);
         $taskIds = $task->children()->visibleTo($userObj, $isUserObjMgr)->pluck('id')->push($task->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
         
