@@ -73,83 +73,104 @@
                     @endif
 
                     @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                        <button type="button" @click="importTaskJson()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                        <button type="button" onclick="openImportTaskModal()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                             <div class="shrink-0 p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-600 group-hover:scale-110 transition-transform">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Importar Tarea (.json)</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Desde archivo externo de Sientia MTX</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Importar Tarea</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Vía Archivo o Clipboard (JSON)</span>
                             </div>
                         </button>
-                        <input type="file" id="jsonTaskInput" class="hidden" accept=".json" @change="handleTaskJsonUpload($event)">
                     @endif
                 </x-slot>
             </x-dropdown>
         @endif
 
-        @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-            <script>
-                function importTaskJson() {
-                    document.getElementById('jsonTaskInput').click();
-                }
+    <script>
+        function openImportTaskModal() {
+            Swal.fire({
+                title: 'Importar Tarea',
+                html: `
+                    <div class="text-left mt-4 border-t border-gray-100 dark:border-gray-800 pt-5">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Opción 1: Pegar JSON desde Portapapeles</label>
+                        <textarea id="import-json-content" class="w-full h-32 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-xs font-mono text-gray-600 dark:text-gray-400 focus:ring-2 focus:ring-violet-500/20 outline-none resize-none" placeholder='{ "type": "sientia_task_v1", ... }'></textarea>
+                        
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100 dark:border-gray-800"></div></div>
+                            <div class="relative flex justify-center text-[10px] uppercase font-bold text-gray-400 bg-white dark:bg-slate-900 px-4">O bien</div>
+                        </div>
 
-                function handleTaskJsonUpload(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('_token', '{{ csrf_token() }}');
-
-                    const url = "{{ route('teams.tasks.import-json', $team) }}";
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Opción 2: Seleccionar Archivo .json</label>
+                        <input type="file" id="import-json-file" accept=".json" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-900/40 dark:file:text-violet-400 transition-all"/>
+                        
+                        <p class="mt-5 text-[10px] text-gray-500 font-medium leading-relaxed italic border-l-2 border-amber-200 pl-3">
+                            * Se creará una nueva tarea con todos los metadatos exportados en este equipo. Los archivos adjuntos binarios no se incluyen en el JSON.
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Importar Ahora 🚀',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#7c3aed',
+                background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                customClass: {
+                    popup: 'rounded-[2rem]',
+                    confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest px-8 py-3',
+                    cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest px-8 py-3'
+                },
+                preConfirm: () => {
+                    const content = document.getElementById('import-json-content').value;
+                    const fileInput = document.getElementById('import-json-file');
+                    const file = fileInput.files[0];
                     
-                    Swal.fire({
-                        title: 'Importando tarea...',
-                        text: 'Por favor, espera un momento.',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    fetch(url, {
+                    if (!content && !file) {
+                        Swal.showValidationMessage('Debes pegar el JSON o seleccionar un archivo');
+                        return false;
+                    }
+                    
+                    const formData = new FormData();
+                    if (file) {
+                        formData.append('file', file);
+                    } else {
+                        formData.append('json_content', content);
+                    }
+                    formData.append('_token', '{{ csrf_token() }}');
+                    
+                    return fetch("{{ route('teams.tasks.import-json', $team) }}", {
                         method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
                         body: formData
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Éxito!',
-                                text: data.message,
-                                confirmButtonText: 'Ver tarea'
-                            }).then(() => {
-                                window.location.href = data.url;
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message
-                            });
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(json => { throw new Error(json.message || 'Error en la importación'); });
                         }
+                        return response.json();
                     })
                     .catch(error => {
-                        console.error(error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error de servidor',
-                            text: 'Hubo un fallo al procesar la subida.'
-                        });
-                    })
-                    .finally(() => {
-                        event.target.value = ''; // Reset input
+                        Swal.showValidationMessage(`Error: ${error.message}`);
                     });
                 }
+            }).then((result) => {
+                if (result.isConfirmed && result.value.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Tarea Importada!',
+                        text: result.value.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = result.value.url;
+                    });
+                }
+            });
+        }
             </script>
         @endif
 </div>

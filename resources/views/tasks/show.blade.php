@@ -142,17 +142,31 @@
                     @endif
 
                     <!-- Exportar JSON -->
-                    <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-4 py-4 px-5 group">
-                        <div class="shrink-0 p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">Exportar Tarea (.json)</span>
-                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Descargar backup portátil en formato JSON</span>
-                        </div>
-                    </x-dropdown-link>
+                    <div class="flex flex-col">
+                        <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-4 py-4 px-5 group">
+                            <div class="shrink-0 p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Exportar Tarea (.json)</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Descargar backup portátil</span>
+                            </div>
+                        </x-dropdown-link>
+
+                        <button type="button" onclick="copyTaskJson()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                            <div class="shrink-0 p-2 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Copiar JSON</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Copia al portapapeles para pegar rápido</span>
+                            </div>
+                        </button>
+                    </div>
                 </x-slot>
             </x-dropdown>
 
@@ -2061,6 +2075,47 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeAttachmentHistory();
         });
+
+        function copyTaskJson() {
+            const btn = event.currentTarget;
+            
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+
+            fetch("{{ route('teams.tasks.export-json', [$team, $task]) }}", {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const jsonStr = JSON.stringify(data, null, 4);
+                navigator.clipboard.writeText(jsonStr).then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Copiado!',
+                        text: 'El JSON de la tarea está en tu portapapeles.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                    });
+                });
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo obtener el JSON de la tarea.'
+                });
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }
     </script>
     @endpush
 </x-app-layout>

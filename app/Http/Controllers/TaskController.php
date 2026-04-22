@@ -61,11 +61,20 @@ class TaskController extends Controller
     public function importJson(Request $request, Team $team)
     {
         $this->authorize('create', [Task::class, $team]);
-        $request->validate(['file' => 'required|file|mimes:json']);
+        $request->validate([
+            'file' => 'required_without:json_content|file|mimes:json',
+            'json_content' => 'required_without:file|string|nullable'
+        ]);
 
-        $data = json_decode(file_get_contents($request->file('file')->getRealPath()), true);
+        if ($request->hasFile('file')) {
+            $json = file_get_contents($request->file('file')->getRealPath());
+        } else {
+            $json = $request->json_content;
+        }
+
+        $data = json_decode($json, true);
         if (!$data || ($data['type'] ?? '') !== 'sientia_task_v1') {
-            return response()->json(['success' => false, 'message' => 'Formato de archivo inválido.'], 422);
+            return response()->json(['success' => false, 'message' => 'Formato de datos JSON inválido.'], 422);
         }
 
         $taskData = $data['task'];
@@ -117,6 +126,10 @@ class TaskController extends Controller
                 'skills' => $task->skills->map(fn($s) => ['name' => $s->name, 'category' => $s->category])->toArray(),
             ]
         ];
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json($data);
+        }
 
         $filename = 'task-' . \Illuminate\Support\Str::slug($task->title) . '-' . date('YmdHis') . '.json';
 
