@@ -44,7 +44,8 @@ class TaskPolicy
             return false;
         }
 
-        // 2. PRIVACY RULE: If private, only creator or assigned (user/collaborator/group) can view.
+        // 2. PRIVACY RULE: If not explicitly public, only creator or assigned can view.
+        // This handles 'private' and also 'null' or unexpected values as private by default.
         // Even coordinators are blocked if they are not part of it.
         $isCreator        = $user->id === $task->created_by_id;
         $isDirectAssigned = $user->id === $task->assigned_user_id;
@@ -54,12 +55,12 @@ class TaskPolicy
         })->exists();
         $isAssigned = $isDirectAssigned || $isCollaborator || $isGroupMember;
 
-        if ($task->visibility === 'private') {
+        if ($task->visibility !== 'public') {
             if ($isCreator || $isAssigned) {
-                \Log::info("TaskPolicy@view GRANTED [private_participant] task#{$task->id} user#{$user->id} isCreator={$isCreator} isDirectAssigned={$isDirectAssigned} isCollaborator={$isCollaborator} isGroupMember={$isGroupMember}");
+                \Log::info("TaskPolicy@view GRANTED [secure_participant] task#{$task->id} user#{$user->id} visibility={$task->visibility}");
                 return true;
             }
-            \Log::warning("TaskPolicy@view DENIED [strict_private] task#{$task->id} (created_by={$task->created_by_id} assigned_user_id={$task->assigned_user_id}) user#{$user->id} isCreator={$isCreator} isDirectAssigned={$isDirectAssigned}");
+            \Log::warning("TaskPolicy@view DENIED [strict_secure] task#{$task->id} user#{$user->id} visibility={$task->visibility}");
             return false;
         }
 
