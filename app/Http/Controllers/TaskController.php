@@ -150,7 +150,15 @@ class TaskController extends Controller
         $query = $team->tasks()
             ->visibleTo($user, $isManager)
             ->operationalFor($user, $team)
-            ->with(['assignedUser', 'tags', 'creator', 'parent', 'children']);
+            ->with([
+                'assignedUser', 
+                'tags', 
+                'creator', 
+                'parent', 
+                'children' => function($q) use ($user, $isManager) {
+                    $q->visibleTo($user, $isManager);
+                }
+            ]);
 
         // --- Filters ---
         if ($request->filled('status')) {
@@ -194,8 +202,9 @@ class TaskController extends Controller
             });
 
             // Also filter the children relationship so only matched subtasks are shown in the nested view
-            $query->with(['children' => function($q) use ($searchTerm) {
-                $q->where('title', 'like', '%' . $searchTerm . '%');
+            $query->with(['children' => function($q) use ($searchTerm, $user, $isManager) {
+                $q->where('title', 'like', '%' . $searchTerm . '%')
+                  ->visibleTo($user, $isManager);
             }]);
         }
 

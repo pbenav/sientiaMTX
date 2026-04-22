@@ -195,7 +195,12 @@ class GanttController extends Controller
 
         // Step 1: Base operational set (visibility)
         $baseTasks = $team->tasks()
-            ->with(['parent', 'children', 'assignedUser', 'creator', 'skills'])
+            ->with([
+                'parent', 'assignedUser', 'creator', 'skills',
+                'children' => function($q) use ($user, $isManager) {
+                    $q->visibleTo($user, $isManager);
+                }
+            ])
             ->visibleTo($user, $isManager)
             ->operationalFor($user, $team)
             ->get();

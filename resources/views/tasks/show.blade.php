@@ -355,7 +355,9 @@
 
 
         // Calculate Time Tracking Statistics
-        $taskIds = $task->children()->pluck('id')->push($task->id);
+        $userObj = auth()->user();
+        $isUserObjMgr = clone($team)->isManager($userObj);
+        $taskIds = $task->children()->visibleTo($userObj, $isUserObjMgr)->pluck('id')->push($task->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
         
         $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
@@ -414,12 +416,15 @@
             @if ($task->is_template || $task->children()->exists() || $task->assignedTo->isNotEmpty())
                 @php
                     $isRoadmap = $task->is_template || $task->children()->exists();
+                    $currentUser = auth()->user();
+                    $isUserMgr = $team->isManager($currentUser);
+
                     if ($isRoadmap) {
                         $instances = $task->is_template
-                            ? $task->instances()->with('assignedUser')->get()->sortBy(function($inst) {
+                            ? $task->instances()->visibleTo($currentUser, $isUserMgr)->with('assignedUser')->get()->sortBy(function($inst) {
                                 return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
                             })
-                            : $task->children()->with('assignedTo')->get()->sortBy(function($inst) {
+                            : $task->children()->visibleTo($currentUser, $isUserMgr)->with('assignedTo')->get()->sortBy(function($inst) {
                                 return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
                             });
                     } else {
