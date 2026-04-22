@@ -248,7 +248,6 @@
                     });
                 }
             </script>
-        @endif
 
         @if (!$task->is_template)
             @include('tasks.partials.task-timer-button', ['task' => $task])
