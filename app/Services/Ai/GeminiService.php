@@ -247,9 +247,10 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "1. RELEVANCIA Y VELOCIDAD: Responde de forma directa. Evita preámbulos largos. Sé extremadamente conciso.\n";
         $systemInstruction .= "2. EMPATÍA OPERATIVA: Utiliza los DATOS DE BIENESTAR para ajustar tu tono. Si la energía es baja, sé breve y alentador.\n";
         $systemInstruction .= "3. RECARGA HUMANA: Si el usuario menciona descanso, añade [RECHARGE] al final.\n";
-        $systemInstruction .= "4. ESTRUCTURA DE INYECCIÓN [PAYLOAD]:\n";
-        $systemInstruction .= "   - Si generas una tarea o borrador, usa JSON: [PAYLOAD]{\"title\":\"...\",\"description\":\"...\",\"observations\":\"...\"}[/PAYLOAD]\n";
-        $systemInstruction .= "   - Si es texto libre o respuesta corta, usa texto plano: [PAYLOAD]...[/PAYLOAD]\n";
+        $systemInstruction .= "4. ESTRUCTURA DE INYECCIÓN [PAYLOAD] DE TAREAS:\n";
+        $systemInstruction .= "   - Si generas una estructura de tarea, usa [PAYLOAD] con este JSON:\n";
+        $systemInstruction .= "     {\"title\": \"Título breve\", \"description\": \"Resumen CORTÍSIMO (1 o 2 frases) del objetivo general\", \"observations\": \"DESARROLLO COMPLETO Y EXTENSO de la tarea (el meollo, listas, exámenes, detalles)\"}\n";
+        $systemInstruction .= "   - Si NO es una tarea sino solo responder o generar un texto bloque, no uses JSON, pon el texto directo: [PAYLOAD]...todo el texto aquí...[/PAYLOAD]\n";
         $systemInstruction .= "5. FORMATO: Usa Markdown elegante.\n\n";
         
         if ($contextInfo) {

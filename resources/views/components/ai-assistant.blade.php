@@ -810,10 +810,10 @@
                 try {
                     payloadData = JSON.parse(rawPayload);
                     if (typeof payloadData === 'object' && payloadData !== null) {
-                        textToInject = payloadData.description || payloadData.content || payloadData.text || rawPayload;
+                        textToInject = payloadData.observations || payloadData.description || payloadData.content || payloadData.text || rawPayload;
                     }
                 } catch (e) {
-                    payloadData = { description: rawPayload };
+                    payloadData = { description: rawPayload, observations: rawPayload };
                 }
 
                 // 2. FAST PATH: DIRECT INJECTION
@@ -925,8 +925,8 @@
                         color: isDark ? '#f1f5f9' : '#1e293b',
                         input: 'radio',
                         inputOptions: {
-                            'observations': 'Añadir a Observaciones',
-                            'description': 'Sobrescribir Descripción',
+                            'observations': 'Añadir a Desarrollo (Observaciones)',
+                            'description': 'Sobrescribir Resumen (Descripción)',
                             'private_note': 'Guardar como Nota Privada'
                         },
                         confirmButtonText: 'Procesar',
