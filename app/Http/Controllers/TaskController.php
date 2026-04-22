@@ -60,7 +60,9 @@ class TaskController extends Controller
 
     public function importJson(Request $request, Team $team)
     {
-        $this->authorize('create', [Task::class, $team]);
+        if (auth()->user()->cannot('create', [Task::class, $team])) {
+            return response()->json(['success' => false, 'message' => __('No tienes permisos para crear tareas en este equipo.')], 403);
+        }
         $request->validate([
             'file' => 'required_without:json_content|file|mimes:json',
             'json_content' => 'required_without:file|string|nullable'
@@ -538,7 +540,7 @@ class TaskController extends Controller
         }
 
         if (auth()->user()->cannot('view', $task)) {
-            return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+            return redirect()->route('teams.dashboard', $team)->with('warning', 'La tarea no está accesible o es privada.');
         }
 
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments', 'attachments.logs.user']);
@@ -610,10 +612,9 @@ class TaskController extends Controller
             abort(404);
         }
 
-        if (auth()->user()->cannot('view', $team)) {
-            return response()->json(['success' => false, 'message' => __('teams.unauthorized_access')], 403);
+        if (auth()->user()->cannot('view', $team) || auth()->user()->cannot('update', $task)) {
+            return response()->json(['success' => false, 'message' => __('No tienes permisos para modificar esta tarea.')], 403);
         }
-        $this->authorize('update', $task);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -900,7 +901,9 @@ class TaskController extends Controller
         if (auth()->user()->cannot('view', $team)) {
             return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
         }
-        $this->authorize('delete', $task);
+        if (auth()->user()->cannot('delete', $task)) {
+            return redirect()->route('teams.tasks.show', [$team, $task])->with('warning', 'No tienes permisos para eliminar esta tarea.');
+        }
 
         // Delete from Google Tasks if synced
         if ($task->google_task_id && auth()->user()->google_token) {

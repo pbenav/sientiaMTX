@@ -12,10 +12,8 @@ class TaskPolicy
      */
     public function before(User $user, string $ability): ?bool
     {
-        if ($user->is_admin) {
-            return true;
-        }
-
+        // En MTX, la privacidad es sagrada. Ni los administradores pueden ver 
+        // tareas privadas ajenas por defecto. Forzamos a evaluar cada método.
         return null;
     }
 
