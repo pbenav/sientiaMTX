@@ -238,19 +238,25 @@ class AiChatController extends Controller
         }
 
         $payload = $this->extractPayload($request->input('content'));
-        $content = is_array($payload) ? ($payload['description'] ?? $payload['observations'] ?? json_encode($payload)) : $payload;
-
-        $oldValues = $task->getAttributes();
         
-        if ($request->target === 'description' || $request->target === 'observations_append' || $request->target === 'observations') {
-            $column = 'observations'; // Standard in Sientia MTX: AI content goes to observations
+        if ($request->target === 'description' || $request->target === 'observations' || $request->target === 'observations_append') {
+            $column = ($request->target === 'description') ? 'description' : 'observations';
             
-            // If it's JSON, combine fields or pick the best one
-            $textToInject = is_array($payload) ? ($payload['observations'] ?? $payload['description'] ?? '') : $payload;
+            // Si es un payload estructurado, intentamos sacar el campo específico, si no el genérico
+            $textToInject = is_array($payload) 
+                ? ($payload[$column] ?? $payload['description'] ?? $payload['observations'] ?? '') 
+                : $payload;
             
-            $oldContent = $task->{$column} ?? '';
-            $newContent = trim($oldContent . "\n\n" . $textToInject);
+            $oldContent = $task->{$column} ?: '';
             
+            // Si es descripción, ¿sobrescribimos o añadimos? 
+            // El usuario dijo "sobrescribir" en el Swal del componente.
+            if ($request->target === 'description') {
+                $newContent = trim($textToInject);
+            } else {
+                $newContent = trim($oldContent . "\n\n" . $textToInject);
+            }
+
             $task->update([$column => $newContent]);
             
             $history = $task->histories()->create([
@@ -258,19 +264,20 @@ class AiChatController extends Controller
                 'action' => 'ai_transfer',
                 'old_values' => [$column => $oldContent],
                 'new_values' => [$column => $newContent],
-                'notes' => 'Transferido desde Ax.ia'
+                'notes' => 'Transferido desde Ax.ia (' . $request->target . ')'
             ]);
-            return response()->json(['success' => true, 'message' => 'Contenido inyectado en la tarea correctamente.', 'history_id' => $history->id]);
+            return response()->json(['success' => true, 'message' => "Contenido inyectado en {$column} correctamente.", 'history_id' => $history->id]);
         }
 
         if ($request->target === 'private_note' || $request->target === 'private-notes') {
             $textToInject = is_array($payload) ? ($payload['description'] ?? $payload['observations'] ?? json_encode($payload)) : $payload;
-            $note = \App\Models\TaskPrivateNote::updateOrCreate(
-                ['task_id' => $task->id, 'user_id' => auth()->id()],
-                ['content' => $textToInject]
-            );
+            $note = \App\Models\TaskPrivateNote::create([
+                'task_id' => $task->id,
+                'user_id' => auth()->id(),
+                'content' => $textToInject
+            ]);
             
-            return response()->json(['success' => true, 'message' => 'Nota interna/privada guardada correctamente.']);
+            return response()->json(['success' => true, 'message' => 'Nota interna/privada creada correctamente.']);
         }
 
         if ($request->target === 'comment') {

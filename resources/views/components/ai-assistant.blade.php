@@ -946,7 +946,7 @@
                             background: isDark ? '#0f172a' : '#ffffff',
                             customClass: { popup: 'rounded-[2rem]' }
                         }).then(() => {
-                            if (target === 'task' || target === 'description' || target === 'observations') window.location.reload();
+                            if (['task', 'description', 'observations', 'private_note', 'observations_append'].includes(target)) window.location.reload();
                         });
                     } else {
                         Swal.fire('Error', data.message, 'error');
