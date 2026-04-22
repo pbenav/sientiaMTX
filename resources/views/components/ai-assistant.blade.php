@@ -210,6 +210,13 @@
                                     <button @click="transferToTask(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-violet-600" title="Inyectar en tarea">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
                                     </button>
+
+                                    <template x-if="msg.is_error">
+                                        <button @click="retryLastRequest()" class="bg-red-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Reintentar">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                            <span>Reintentar</span>
+                                        </button>
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -322,6 +329,8 @@
             canUndo: false,
             undoTimeout: null,
             lastActionData: null,
+            lastPrompt: '',
+            lastFile: null,
 
             // Audio Recording State
             isRecording: false,
@@ -596,6 +605,10 @@
                 
                 const userText = this.input.trim();
                 const fileToSend = this.pendingFile;
+
+                // SAVE FOR RETRY
+                this.lastPrompt = userText;
+                this.lastFile = fileToSend;
 
                 if (fileToSend) {
                     const localUrl = URL.createObjectURL(fileToSend);
@@ -943,9 +956,12 @@
                     Swal.fire('Error', 'Problema de conexión.', 'error');
                 }
             },
-xión con el servidor.', 'error');
-                    }
-                }
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    const el = document.getElementById('ai-chat-messages');
+                    if (el) el.scrollTop = el.scrollHeight;
+                }, 100);
             }
         }));
     });
