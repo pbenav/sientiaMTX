@@ -45,15 +45,29 @@
                 </x-dropdown-link>
 
                 @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                    <button type="button" onclick="openImportTaskModal()" class="w-full flex items-center gap-3 py-3 px-4 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                    <!-- Importar Archivo -->
+                    <button type="button" onclick="openImportTaskModal('file')" class="w-full flex items-center gap-3 py-3 px-4 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                         <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-xs">Importar (JSON/Clipboard)</span>
-                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">Desde el portapapeles o archivo</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-xs">Cargar Archivo (.json)</span>
+                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">Importar desde almacenamiento local</span>
+                        </div>
+                    </button>
+
+                    <!-- Pegar JSON -->
+                    <button type="button" onclick="openImportTaskModal('paste')" class="w-full flex items-center gap-3 py-3 px-4 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                        <div class="p-1.5 bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 rounded-lg shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900 dark:text-white text-xs">Pegar JSON</span>
+                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">Importar desde el portapapeles</span>
                         </div>
                     </button>
                 @endif
@@ -112,4 +126,3 @@
     </div>
 
     @include('tasks.partials.import-modal-script')
-</div>

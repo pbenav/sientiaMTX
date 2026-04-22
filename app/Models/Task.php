@@ -313,32 +313,22 @@ class Task extends Model
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
         return $query->where(function ($q) use ($user, $isManager) {
-            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
+            // 1. GESTIÓN (Managers): Ven todo en el equipo
             if ($isManager) {
-                $q->where('visibility', 'public')
-                  ->orWhere('is_template', true)
-                  ->orWhere('created_by_id', $user->id)
-                  ->orWhere('assigned_user_id', $user->id);
-            } else {
-                // 2. EJECUCIÓN (Miembros): Solo ven lo público donde participan y sus privadas
-                $q->where(function ($public) use ($user) {
-                    $public->where('visibility', 'public')
-                        ->where(function ($access) use ($user) {
-                            $access->where('created_by_id', $user->id)
-                                ->orWhere('assigned_user_id', $user->id)
-                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
-                                ->orWhereHas('assignedGroups.users', fn($sub) => $sub->where('users.id', $user->id));
-                        });
-                })
-                ->orWhere(function ($private) use ($user) {
-                    $private->where('visibility', 'private')
-                        ->where(function ($owner) use ($user) {
-                            $owner->where('created_by_id', $user->id)
-                                ->orWhere('assigned_user_id', $user->id)
-                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id));
-                        });
-                });
+                return $q;
             }
+
+            // 2. EJECUCIÓN (Miembros): Ven todo lo público del equipo + lo privado donde participan
+            $q->where('visibility', 'public')
+              ->orWhere(function ($private) use ($user) {
+                  $private->where('visibility', 'private')
+                      ->where(function ($access) use ($user) {
+                          $access->where('created_by_id', $user->id)
+                              ->orWhere('assigned_user_id', $user->id)
+                              ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
+                              ->orWhereHas('assignedGroups.users', fn($sub) => $sub->where('users.id', $user->id));
+                      });
+              });
         });
     }
 

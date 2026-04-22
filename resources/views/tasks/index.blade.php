@@ -806,9 +806,9 @@
                         }
                     });
                 }
-
             </script>
-        @endpush
+        </div>
+    @endpush
         <form id="individualDeleteForm" method="POST" class="hidden">
             @csrf
             @method('DELETE')

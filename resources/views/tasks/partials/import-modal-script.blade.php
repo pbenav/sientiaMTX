@@ -1,5 +1,5 @@
     <script>
-        function openImportTaskModal() {
+        function openImportTaskModal(initialMode = 'all') {
             Swal.fire({
                 title: 'Importar Tarea',
                 html: `
@@ -49,6 +49,14 @@
                             Swal.showValidationMessage('No se pudo acceder al portapapeles. Pégalo manualmente.');
                         }
                     };
+
+                    // Auto-pegar y auto-enfocar si el modo es 'paste'
+                    if (initialMode === 'paste') {
+                        window.pasteFromClipboard();
+                        document.getElementById('import-json-content').focus();
+                    } else if (initialMode === 'file') {
+                        document.getElementById('import-json-file').focus();
+                    }
                 },
                 preConfirm: () => {
                     const content = document.getElementById('import-json-content').value;

@@ -138,15 +138,29 @@
                         </button>
 
                         <div class="px-5 py-2 text-[9px] font-black uppercase tracking-widest text-gray-400 mt-2 border-t border-gray-50 dark:border-gray-800 pt-3">Portabilidad (Inbound)</div>
-                        <button type="button" onclick="openImportTaskModal()" class="w-full flex items-center gap-4 py-3 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                        <!-- Cargar Archivo -->
+                        <button type="button" onclick="openImportTaskModal('file')" class="w-full flex items-center gap-4 py-3 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                             <div class="shrink-0 p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Importar / Pegar JSON</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear nueva tarea vía archivo o portapapeles</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Cargar Archivo (.json)</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear tarea desde un archivo local</span>
+                            </div>
+                        </button>
+
+                        <!-- Pegar JSON -->
+                        <button type="button" onclick="openImportTaskModal('paste')" class="w-full flex items-center gap-4 py-3 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                            <div class="shrink-0 p-2 bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 rounded-xl group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m.5 4l3 3m0 0l3-3m-3 3V10" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Pegar JSON</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear tarea desde el portapapeles</span>
                             </div>
                         </button>
                     </div>
