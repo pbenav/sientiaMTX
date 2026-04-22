@@ -9,6 +9,7 @@
      @touchend.window="stopDrag()"
      @ai:set-context.window="setContext($event.detail)"
      @ai:analyze-file.window="analyzeFile($event.detail)"
+     @ai:analyze-task.window="analyzeTask($event.detail)"
      @ai:transfer-direct.window="transferToTask($event.detail)">
     
     <!-- Chat Window -->
@@ -423,6 +424,36 @@
                         }
                     });
                 }
+            },
+
+            analyzeTask(detail) {
+                this.open = true;
+                if (detail.taskId) this.taskId = detail.taskId;
+                if (detail.teamId) this.teamId = detail.teamId;
+                this.attachmentId = null;
+                this.messageId = null;
+                
+                this.messages.push({ 
+                    role: 'system', 
+                    content: `🎯 **Inyectando contexto de Tarea:** ${detail.taskTitle}`
+                });
+
+                if (detail.section === 'description') {
+                    this.input = `Ayúdame a mejorar el breve resumen (descripción) de esta tarea. Hazlo más claro y directo.`;
+                } else if (detail.section === 'observaciones') {
+                    this.input = `Voy a desarrollar el meollo de esta tarea (las observaciones). Propón un esquema, lista de pasos o mejora lo que ya hay escrito.`;
+                } else {
+                    this.input = `Evalúa esta tarea en general. ¿Qué puedo mejorar en su definición o alcance?`;
+                }
+                
+                // Focus and SELECT the input
+                this.$nextTick(() => {
+                    const input = this.$el.querySelector('input[type="text"]');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
+                });
             },
 
             async clearHistory() {
