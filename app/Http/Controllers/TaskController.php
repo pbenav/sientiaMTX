@@ -58,6 +58,40 @@ class TaskController extends Controller
         ]);
     }
 
+    public function importJson(Request $request, Team $team)
+    {
+        $this->authorize('create', [Task::class, $team]);
+        $request->validate(['file' => 'required|file|mimes:json']);
+
+        $data = json_decode(file_get_contents($request->file('file')->getRealPath()), true);
+        if (!$data || ($data['type'] ?? '') !== 'sientia_task_v1') {
+            return response()->json(['success' => false, 'message' => 'Formato de archivo inválido.'], 422);
+        }
+
+        $taskData = $data['task'];
+        $task = $team->tasks()->create([
+            'title' => $taskData['title'],
+            'description' => $taskData['description'],
+            'observations' => $taskData['observations'],
+            'priority' => $taskData['priority'],
+            'urgency' => $taskData['urgency'],
+            'visibility' => $taskData['visibility'],
+            'is_template' => $taskData['is_template'],
+            'cognitive_load' => $taskData['cognitive_load'],
+            'is_backstage' => $taskData['is_backstage'],
+            'autoprogram_settings' => $taskData['autoprogram_settings'],
+            'is_out_of_skill_tree' => $taskData['is_out_of_skill_tree'],
+            'created_by_id' => auth()->id(),
+        ]);
+
+        if (!empty($taskData['skills'])) {
+            $skillIds = \App\Models\Skill::whereIn('name', array_column($taskData['skills'], 'name'))->pluck('id');
+            $task->skills()->sync($skillIds);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Tarea importada correctamente.', 'url' => route('teams.tasks.show', [$team, $task])]);
+    }
+
     public function exportJson(Team $team, Task $task)
     {
         if ($task->team_id !== $team->id) {

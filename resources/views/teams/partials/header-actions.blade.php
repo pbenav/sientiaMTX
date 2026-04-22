@@ -50,5 +50,77 @@
                 <span class="hidden xl:inline">Sincronizar Google</span>
             </a>
         @endif
+
+        @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
+            <button type="button" @click="importTaskJson()" 
+                class="flex items-center gap-1.5 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/40 dark:text-indigo-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-indigo-100 dark:border-indigo-800/50"
+                title="Importar tarea desde archivo JSON">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                <span class="hidden xl:inline">Importar JSON</span>
+            </button>
+            <input type="file" id="jsonTaskInput" class="hidden" accept=".json" @change="handleTaskJsonUpload($event)">
+
+            <script>
+                function importTaskJson() {
+                    document.getElementById('jsonTaskInput').click();
+                }
+
+                function handleTaskJsonUpload(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    const url = "{{ route('teams.tasks.import-json', $team) }}";
+                    
+                    Swal.fire({
+                        title: 'Importando tarea...',
+                        text: 'Por favor, espera un momento.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: data.message,
+                                confirmButtonText: 'Ver tarea'
+                            }).then(() => {
+                                window.location.href = data.url;
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de servidor',
+                            text: 'Hubo un fallo al procesar la subida.'
+                        });
+                    })
+                    .finally(() => {
+                        event.target.value = ''; // Reset input
+                    });
+                }
+            </script>
+        @endif
     </div>
 </div>

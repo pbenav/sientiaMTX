@@ -68,7 +68,7 @@ El Dashboard no es una simple pantalla de inicio; es el centro de mando donde co
 *   **Google Drive**: Selector de archivos integrado para adjuntar documentación sin consumir espacio local.
 
 ### 📤 Portabilidad JSON
-*   **Exportar/Importar JSON**: Descarga toda la configuración de una tarea en un archivo portátil para backups o plantillas.
+*   **Exportar/Importar JSON**: Descarga toda la configuración de una tarea en un archivo portátil e impórtala en cualquier otro equipo o instancia de Sientia. Ideal para crear plantillas maestras externas o backups rápidos.
 
 ---
 
