@@ -14,17 +14,17 @@
 
 <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
     <!-- Management Actions -->
-    <div class="flex items-center gap-2 flex-wrap">
-        @if($shouldShowCreateTask)
-            <a href="{{ route('teams.tasks.create', $team) }}"
-                class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    stroke-width="3">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <span class="hidden lg:inline">{{ __('tasks.create') }}</span>
-            </a>
-        @endif
+    <!-- PRIMARY ACTION: CREATE TASK -->
+    @if($shouldShowCreateTask)
+        <a href="{{ route('teams.tasks.create', $team) }}"
+            class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span class="hidden lg:inline">{{ __('tasks.create') }}</span>
+        </a>
+    @endif
 
         @if(request()->routeIs('teams.tasks.index') && ($team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
             <button type="button" onclick="confirmPurgeTrash()"
@@ -42,7 +42,7 @@
 
         <!-- Hub de Integraciones -->
         @if($isGoogleConnected || $team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-            <x-dropdown align="right" width="64">
+            <x-dropdown align="right" width="85">
                 <x-slot name="trigger">
                     <button type="button" class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -59,29 +59,29 @@
                     </div>
                     
                     @if($isGoogleConnected)
-                        <x-dropdown-link :href="route('google.sync', ['team_id' => $team->id])" class="flex items-center gap-3 py-3">
-                            <div class="p-1.5 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg text-emerald-600">
-                                <svg class="h-4 w-4" viewBox="0 0 48 48">
+                        <x-dropdown-link :href="route('google.sync', ['team_id' => $team->id])" class="flex items-center gap-4 py-4 px-5">
+                            <div class="shrink-0 p-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl text-emerald-600 group-hover:scale-110 transition-transform">
+                                <svg class="h-5 w-5" viewBox="0 0 48 48">
                                     <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/><path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/><path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white">Sincronizar Google</span>
-                                <span class="text-[9px] text-gray-500 font-medium tracking-normal">Tareas y Calendario</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Sincronizar Google</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Sincronización total de tareas y calendario</span>
                             </div>
                         </x-dropdown-link>
                     @endif
 
                     @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                        <button type="button" @click="importTaskJson()" class="w-full flex items-center gap-3 px-4 py-3 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 transition duration-150 ease-in-out">
-                            <div class="p-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <button type="button" @click="importTaskJson()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                            <div class="shrink-0 p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-600 group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white">Importar Tarea (.json)</span>
-                                <span class="text-[9px] text-gray-500 font-medium tracking-normal">Desde archivo externo</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Importar Tarea (.json)</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Desde archivo externo de Sientia MTX</span>
                             </div>
                         </button>
                         <input type="file" id="jsonTaskInput" class="hidden" accept=".json" @change="handleTaskJsonUpload($event)">
@@ -152,5 +152,4 @@
                 }
             </script>
         @endif
-    </div>
 </div>

@@ -37,10 +37,20 @@
 
         <!-- Task Actions Footer Row -->
         <div class="flex items-center gap-2 flex-wrap shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+            @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
+                <a href="{{ route('teams.tasks.create', $team) }}"
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20 font-bold active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="hidden lg:inline">{{ __('tasks.create') }}</span>
+                </a>
+            @endif
+
             @can('update', $task)
                 <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
-                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20 font-bold active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     {{ __('tasks.edit') }}
@@ -60,7 +70,7 @@
             @endif
 
             <!-- Hub de Acciones Secundarias -->
-            <x-dropdown align="right" width="64">
+            <x-dropdown align="right" width="85">
                 <x-slot name="trigger">
                     <button type="button" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -79,15 +89,15 @@
                         <!-- Sincronización Google Tasks -->
                         <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                                <div class="p-1.5 {{ $task->google_task_id ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }} rounded-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                                <div class="shrink-0 p-2 {{ $task->google_task_id ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }} rounded-xl group-hover:scale-110 transition-transform">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-gray-900 dark:text-white">{{ $task->google_task_id ? __('google.sync_tasks') : __('google.export_tasks') }}</span>
-                                    <span class="text-[9px] text-gray-500 tracking-tight">Sincronización Cloud</span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm">Sincronizar Google Tasks</span>
+                                    <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Vínculo bidireccional con Google</span>
                                 </div>
                             </button>
                         </form>
@@ -95,15 +105,15 @@
                         <!-- Google Calendar -->
                         <form action="{{ route('google.export_calendar', [$team, $task]) }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                                <div class="p-1.5 {{ $task->google_calendar_event_id ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600' }} rounded-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                                <div class="shrink-0 p-2 {{ $task->google_calendar_event_id ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600' }} rounded-xl group-hover:scale-110 transition-transform">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-gray-900 dark:text-white">{{ $task->google_calendar_event_id ? __('google.calendar_remove') : __('google.calendar_export') }}</span>
-                                    <span class="text-[9px] text-gray-500 tracking-tight">Calendario compartido</span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm">Calendario de Google</span>
+                                    <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Gestionar evento en calendario</span>
                                 </div>
                             </button>
                         </form>
@@ -118,28 +128,29 @@
                         $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
                     @endphp
                     @if($otherTeams->count() > 0)
-                        <button type="button" onclick="reproduceInTeam()" class="w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                            <div class="p-1.5 bg-violet-50 text-violet-600 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <button type="button" onclick="reproduceInTeam()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                            <div class="shrink-0 p-2 bg-violet-50 text-violet-600 rounded-xl group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white">Reproducir en Equipo</span>
-                                <span class="text-[9px] text-gray-500 tracking-tight">Clonar tarea en otro espacio</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Reproducir en Equipo</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Clonar tarea en otro espacio de trabajo</span>
                             </div>
                         </button>
+                    @endif
 
                     <!-- Exportar JSON -->
-                    <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-3 py-3">
-                        <div class="p-1.5 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-4 py-4 px-5 group">
+                        <div class="shrink-0 p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white">Exportar Tarea (.json)</span>
-                            <span class="text-[9px] text-gray-500 tracking-tight">Descargar backup portátil</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">Exportar Tarea (.json)</span>
+                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Descargar backup portátil en formato JSON</span>
                         </div>
                     </x-dropdown-link>
                 </x-slot>
