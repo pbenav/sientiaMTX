@@ -14,16 +14,51 @@
 
 <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
     <!-- Management Actions -->
-    <!-- PRIMARY ACTION: CREATE TASK -->
+    <!-- PRIMARY ACTION: NEW TASK HUB -->
     @if($shouldShowCreateTask)
-        <a href="{{ route('teams.tasks.create', $team) }}"
-            class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            <span class="hidden lg:inline">{{ __('tasks.create') }}</span>
-        </a>
+        <x-dropdown align="left" width="60">
+            <x-slot name="trigger">
+                <button type="button" 
+                    class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-violet-500/20 active:scale-95 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>NUEVA</span>
+                    <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </x-slot>
+
+            <x-slot name="content">
+                <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
+                    Acciones de Creación
+                </div>
+                <x-dropdown-link :href="route('teams.tasks.create', $team)" class="flex items-center gap-3 py-3 px-4">
+                    <div class="p-1.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-lg shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-bold text-gray-900 dark:text-white text-xs">Crear Manualmente</span>
+                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">Formulario paso a paso</span>
+                    </div>
+                </x-dropdown-link>
+
+                @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
+                    <button type="button" @click="openImportTaskModal()" class="w-full flex items-center gap-3 py-3 px-4 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                        <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900 dark:text-white text-xs">Importar (JSON/Clipboard)</span>
+                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">Desde el portapapeles o archivo</span>
+                        </div>
+                    </button>
+                @endif
+            </x-slot>
+        </x-dropdown>
     @endif
 
         @if(request()->routeIs('teams.tasks.index') && ($team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
@@ -41,7 +76,7 @@
         @endphp
 
         <!-- Hub de Integraciones -->
-        @if(!$isForum && ($isGoogleConnected || $team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
+        @if(!$isForum && $isGoogleConnected)
             <x-dropdown align="right" width="80">
                 <x-slot name="trigger">
                     <button type="button" class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
@@ -70,20 +105,6 @@
                                 <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Sincronización total de tareas y calendario</span>
                             </div>
                         </x-dropdown-link>
-                    @endif
-
-                    @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                        <button type="button" onclick="openImportTaskModal()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
-                            <div class="shrink-0 p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-600 group-hover:scale-110 transition-transform">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                </svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Importar Tarea</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Vía Archivo o Clipboard (JSON)</span>
-                            </div>
-                        </button>
                     @endif
                 </x-slot>
             </x-dropdown>
