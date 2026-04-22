@@ -899,36 +899,46 @@
                     </div>
                     <div class="divide-y divide-gray-50 dark:divide-gray-800 max-h-[250px] overflow-y-auto">
                         @foreach ($task->histories->sortByDesc('created_at')->take(20) as $h)
-                            <div class="px-5 py-3 text-xs flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-2 min-w-0">
-                                    <div
-                                        class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shrink-0">
-                                        {{ strtoupper(substr($h->user?->name ?? '?', 0, 2)) }}
-                                    </div>
-                                    <div class="truncate flex flex-col">
-                                        <div>
-                                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ $h->user?->name ?? '—' }}</span>
-                                            <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded ml-1 font-black uppercase tracking-tighter">{{ $h->action }}</span>
+                            <div class="px-5 py-2 text-xs transition-colors hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-50 dark:border-gray-800/50 last:border-none" x-data="{ open: false }">
+                                <div class="flex items-center justify-between gap-4 cursor-pointer" @click="open = !open">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shrink-0 shadow-sm border border-white dark:border-gray-800">
+                                            {{ strtoupper(substr($h->user?->name ?? '?', 0, 2)) }}
                                         </div>
-                                        @if($h->old_values || $h->new_values)
-                                            <div class="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 opacity-60">
-                                                @foreach(($h->new_values ?? []) as $key => $val)
-                                                    <span class="text-[9px] font-medium text-gray-500 whitespace-nowrap">
-                                                        <span class="font-black uppercase tracking-widest text-[8px]">{{ $key }}:</span> 
-                                                        <span class="line-through">{{ is_array($h->old_values[$key] ?? null) ? 'JSON' : ($h->old_values[$key] ?? '—') }}</span> 
-                                                        → 
-                                                        <span class="font-bold text-gray-700 dark:text-gray-300">{{ is_array($val) ? 'JSON' : $val }}</span>
-                                                    </span>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                        @if($h->notes)
-                                            <p class="text-[9px] text-gray-400 italic mt-0.5">{{ $h->notes }}</p>
-                                        @endif
+                                        <div class="truncate">
+                                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ $h->user?->name ?? '—' }}</span>
+                                            <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/40 text-indigo-500 dark:text-indigo-400 px-1.5 py-0.5 rounded ml-1 font-black uppercase tracking-tighter">{{ $h->action }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 shrink-0">
+                                        <span class="text-[10px] text-gray-400 font-medium tabular-nums">{{ $h->created_at->format('d/m H:i') }}</span>
+                                        <svg class="h-3 w-3 text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
                                     </div>
                                 </div>
-                                <span
-                                    class="text-[10px] text-gray-400 shrink-0 font-medium whitespace-nowrap">{{ $h->created_at->diffForHumans() }}</span>
+                                
+                                <div x-show="open" style="display: none;" class="mt-3 ml-9 pb-2 border-l-2 border-indigo-100 dark:border-indigo-900/50 pl-4 space-y-2 animate-fade-in-down" x-transition>
+                                    @if($h->old_values || $h->new_values)
+                                        <div class="flex flex-col gap-2">
+                                            @foreach(($h->new_values ?? []) as $key => $val)
+                                                <div class="flex flex-col gap-0.5">
+                                                    <span class="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">{{ $key }}</span>
+                                                    <div class="flex items-center gap-2 text-[10px]">
+                                                        <span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded line-through opacity-70">
+                                                            {{ is_array($h->old_values[$key] ?? null) ? 'JSON' : ($h->old_values[$key] ?? '—') }}
+                                                        </span>
+                                                        <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                        <span class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">
+                                                            {{ is_array($val) ? 'JSON' : $val }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    @if($h->notes)
+                                        <p class="text-[10px] text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl">{{ $h->notes }}</p>
+                                    @endif
+                                </div>
                             </div>
                         @endforeach
                     </div>
