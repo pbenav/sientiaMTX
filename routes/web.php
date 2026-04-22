@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
     // Tasks routes
+    Route::patch('/teams/{team}/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('teams.tasks.bulk-update');
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
     Route::post('/teams/{team}/tasks/purge-trash', [TaskController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
     Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit']);

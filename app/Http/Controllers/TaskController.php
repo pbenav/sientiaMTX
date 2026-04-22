@@ -905,6 +905,64 @@ class TaskController extends Controller
     }
 
     /**
+     * Update multiple tasks at once
+     */
+    public function bulkUpdate(Request $request, Team $team)
+    {
+        $request->validate([
+            'task_ids' => 'required|array',
+            'task_ids.*' => 'exists:tasks,id',
+            'field' => 'required|string|in:status,priority,assigned_user_id',
+            'value' => 'required'
+        ]);
+
+        $tasks = Task::whereIn('id', $request->task_ids)
+            ->where('team_id', $team->id)
+            ->get();
+
+        $updatedCount = 0;
+        $field = $request->field;
+        $value = $request->value;
+
+        foreach ($tasks as $task) {
+            if (auth()->user()->can('update', $task)) {
+                $oldValue = $task->{$field};
+                
+                // Special check for assignment: update visibility if needed
+                if ($field === 'assigned_user_id' && (int)$value !== auth()->id() && $task->visibility === 'private') {
+                    $task->visibility = 'public';
+                }
+
+                $task->update([$field => $value]);
+                
+                // If status changed to completed, award points
+                if ($field === 'status' && $value === 'completed' && $oldValue !== 'completed') {
+                    $this->awardGamificationPoints($task);
+                    $task->notifyCoordinatorsIfCompleted();
+                }
+
+                // If collaborator assigned, notify
+                if ($field === 'assigned_user_id' && (int)$value !== auth()->id() && $oldValue != $value) {
+                    try {
+                        \App\Models\User::find($value)?->notify(new \App\Notifications\TaskAssignedNotification($task, auth()->user()));
+                    } catch (\Exception $e) { /* Ignore notification errors */ }
+                }
+
+                // Log history
+                $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'bulk_updated',
+                    'notes' => "Actualización masiva de {$field}: de '{$oldValue}' a '{$value}'"
+                ]);
+
+                $updatedCount++;
+            }
+        }
+
+        return back()->with('success', "Se han actualizado {$updatedCount} tareas correctamente.");
+    }
+
+    /**
      * Remove multiple tasks from storage
      */
     public function bulkDelete(\Illuminate\Http\Request $request, Team $team)
