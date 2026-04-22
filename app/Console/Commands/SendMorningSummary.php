@@ -48,7 +48,13 @@ class SendMorningSummary extends Command
             $currentHour = now($userTz)->format('H');
             $preferredHour = \Illuminate\Support\Carbon::parse($preferredTime)->format('H');
             
-            return $currentHour === $preferredHour;
+            $match = $currentHour === $preferredHour;
+            
+            if (!$match) {
+                Log::debug("MorningSummary: User {$user->name} skipped. Hour mismatch (User hour: {$currentHour}, Prefered hour: {$preferredHour} in {$userTz})");
+            }
+
+            return $match;
         });
 
         if ($users->isEmpty()) {
@@ -77,25 +83,51 @@ class SendMorningSummary extends Command
                 ->get();
 
             if ($tasks->isEmpty()) {
-                $this->line("Skipping user {$user->name}: No pending tasks for today.");
-                continue;
+                $this->line("User {$user->name}: No pending tasks for today. Sending a focus-on-rest phrase.");
             }
 
             $this->line("Processing summary for {$user->name}...");
 
             try {
-                // Generate motivational phrase using AI
-                $prompt = "Genera una frase motivacional corta (máximo 15 palabras) para empezar el día. ";
-                $prompt .= "El usuario tiene " . $tasks->count() . " tareas pendientes hoy. ";
-                $prompt .= "Nombre del usuario: " . explode(' ', $user->name)[0] . ". ";
-                $prompt .= "Idioma: " . ($user->locale ?? 'es') . ". ";
-                $prompt .= "No uses hashtags ni emojis excesivos. Que sea inspiradora pero profesional.";
-
-                $phrase = $ai->forUser($user)->generateText($prompt);
+                // Determine if we should attempt AI phrase generation
+                $phrase = '';
                 
-                // Remove any [PAYLOAD] tags if present by mistake
-                $phrase = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', '', $phrase);
-                $phrase = trim(strip_tags($phrase));
+                try {
+                    // Generate motivational phrase using AI
+                    $prompt = "Genera una frase motivacional corta (máximo 15 palabras) para empezar el día. ";
+                    $prompt .= "El usuario tiene " . $tasks->count() . " tareas pendientes hoy. ";
+                    $prompt .= "Nombre del usuario: " . explode(' ', $user->name)[0] . ". ";
+                    $prompt .= "Idioma: " . ($user->locale ?? 'es') . ". ";
+                    $prompt .= "No uses hashtags ni emojis excesivos. Que sea inspiradora pero profesional.";
+
+                    $phrase = $ai->forUser($user)->generateText($prompt);
+                    
+                    // Check if the AI returned an error message (common if key is missing)
+                    if (str_starts_with($phrase, 'Error:') || str_starts_with($phrase, 'Lo siento,')) {
+                        throw new \Exception("AI unavailable: " . $phrase);
+                    }
+
+                    // Remove any [PAYLOAD] tags if present by mistake
+                    $phrase = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', '', $phrase);
+                    $phrase = trim(strip_tags($phrase));
+                } catch (\Exception $aiEx) {
+                    $this->warn("AI phrase generation failed for {$user->name}: " . $aiEx->getMessage());
+                    
+                    // Fallback phrases
+                    $fallbacks = [
+                        'Haz de hoy tu obra maestra.',
+                        'El éxito es la suma de pequeños esfuerzos repetidos día tras día.',
+                        'Hoy es una oportunidad para ser mejor que ayer.',
+                        'Céntrate en el progreso, no en la perfección.',
+                        'La disciplina es el puente entre las metas y el logro.',
+                        'Tu esfuerzo de hoy es el éxito de mañana.',
+                        'Grandes cosas nunca vinieron de zonas de confort.',
+                        'Un paso a la vez, pero siempre hacia adelante.',
+                        'La organización es la clave de la calma y el rendimiento.',
+                        'Cree en ti mismo y en todo lo que eres capaz de lograr.'
+                    ];
+                    $phrase = $fallbacks[array_rand($fallbacks)];
+                }
 
                 // Reset de energía matutino (Fresh Start)
                 // Si el usuario empieza el día, garantizamos al menos un 80% de energía.
@@ -109,8 +141,8 @@ class SendMorningSummary extends Command
                 
                 $this->info("Successfully notified {$user->name}.");
             } catch (\Exception $e) {
-                Log::error("Error sending morning summary to {$user->name}: " . $e->getMessage());
-                $this->error("Failed to notify {$user->name}. Check logs.");
+                Log::error("Error sending morning summary to {$notifiable->name ?? $user->name}: " . $e->getMessage());
+                $this->error("Failed to notify {$user->name}: " . $e->getMessage());
             }
         }
 
