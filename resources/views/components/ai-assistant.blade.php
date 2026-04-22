@@ -214,10 +214,16 @@
                                     </button>
 
                                     <template x-if="msg.is_error">
-                                        <button @click="retryLastRequest()" class="bg-red-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Reintentar">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                            <span>Reintentar</span>
-                                        </button>
+                                        <div class="flex space-x-1">
+                                            <button @click="retryLastRequest()" class="bg-red-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Reintentar y enviar directamente">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                <span>Reintentar</span>
+                                            </button>
+                                            <button @click="recoverPrompt()" class="bg-orange-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Recuperar texto en la caja de edición">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                                <span>Recuperar Prompt</span>
+                                            </button>
+                                        </div>
                                     </template>
                                 </div>
                             </template>
@@ -643,6 +649,23 @@
                 this.sendMessage();
             },
 
+            recoverPrompt() {
+                if (!this.lastPrompt && !this.lastFile) {
+                    return;
+                }
+                this.input = this.lastPrompt;
+                this.pendingFile = this.lastFile;
+                // Auto-resize el textarea para acomodar el texto rescatado
+                setTimeout(() => {
+                    const textarea = this.$refs.aiInput;
+                    if (textarea) {
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                        textarea.focus();
+                    }
+                }, 50);
+            },
+
             async sendMessage() {
                 if (this.input.trim() === '' && !this.pendingFile) return;
                 
@@ -709,13 +732,9 @@
                     console.error('AI Assistant Error:', error);
                     this.messages.push({ 
                         role: 'ai', 
-                        content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message,
+                        content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message + '. Puedes usar el botón naranja abajo para recuperar tu texto.',
                         is_error: true
                     });
-                    
-                    // Mecanismo de rescate: devolver el prompt a la caja de texto
-                    this.input = this.lastPrompt;
-                    this.pendingFile = this.lastFile;
                 } finally {
                     this.loading = false;
                     this.isSendingFile = false;
