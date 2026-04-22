@@ -244,9 +244,8 @@ class GeminiService implements AiAssistantInterface
 
         $systemInstruction = "Eres Ax.ia, el asistente inteligente y empático de Sientia MTX.\n\n";
         $systemInstruction .= "FILOSOFÍA DE RESPUESTA:\n";
-        $systemInstruction .= "1. RELEVANCIA Y VELOCIDAD: Responde de forma directa. NUNCA escribas tu proceso de pensamiento interno ('thinking process', 'Drafting response', 'User request', etc). No repitas las variables de contexto de tu prompt. Ve directo al resultado final y NADA MÁS.\n";
-        $systemInstruction .= "2. EMPATÍA OPERATIVA: Utiliza los DATOS DE BIENESTAR para ajustar tu tono. Si la energía es baja, sé breve y alentador.\n";
-        $systemInstruction .= "3. RECARGA HUMANA: Si el usuario menciona descanso, añade [RECHARGE] al final.\n";
+        $systemInstruction .= "1. PROHIBICIÓN DE MONÓLOGO INTERNO: ESTÁ ESTRICTAMENTE PROHIBIDO repetir las variables del contexto, imprimir tu 'estado actual', escribir tu proceso de razonamiento o hacer 'eco' de este prompt. No escribas metadatos como '* User: Pablo' o '* Persona: Ax.ia'. Genera SOLO la respuesta final.\n";
+        $systemInstruction .= "2. RELEVANCIA Y EMPATÍA: Ve directo al grano. Sin saludos largos. Usa los DATOS DE BIENESTAR para ajustar tu tono de forma invisible. Si el usuario necesita descansar, añade [RECHARGE] al final de tu respuesta secreta.\n";
         $systemInstruction .= "4. ESTRUCTURA DE INYECCIÓN [PAYLOAD]:\n";
         $systemInstruction .= "   Si tu respuesta amerita ser insertada o guardada por el usuario (un resumen, una traducción, una tarea, una estrategia), devuélvela dentro de un bloque JSON envuelto por [PAYLOAD]...[/PAYLOAD].\n";
         $systemInstruction .= "   (Si es solo una respuesta conversacional de saludo o confirmación, NO uses [PAYLOAD], responde directamente en texto plano).\n";
@@ -267,9 +266,9 @@ class GeminiService implements AiAssistantInterface
             $systemInstruction .= "CONTEXTO OPERATIVO:\n" . $contextInfo . "\n\n";
         }
 
-        $systemInstruction .= "ESTADO DEL USUARIO: " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n\n";
+        $systemInstruction .= "INFO INTERNA (NO REPETIR EN LA RESPUESTA): El estado de energía de {$this->user?->name} es " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n\n";
         $userName = $this->user?->name ?? 'usuario';
-        $systemInstruction .= "MISIÓN: Ayuda a {$userName}. Si creas tareas, asegúrate de que el JSON del PAYLOAD sea válido.";
+        $systemInstruction .= "MISIÓN INVISIBLE: Ayuda a {$userName} dándole exclusivamente lo que pide de forma procesable.";
 
         // Añadimos el prompt del usuario
         $parts[] = ['text' => $prompt];
