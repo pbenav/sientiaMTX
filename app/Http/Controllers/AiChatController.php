@@ -480,6 +480,10 @@ class AiChatController extends Controller
             $raw = trim(str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $content));
         }
 
+        // Limpieza de Markdown (ej. ```json ... ```) si está presente
+        $raw = preg_replace('/^```\w*\n/', '', $raw);
+        $raw = preg_replace('/```$/', '', trim($raw));
+
         // Try to decode JSON
         $decoded = json_decode($raw, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {

@@ -799,7 +799,10 @@
                 const isDark = document.documentElement.classList.contains('dark');
                 
                 const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                const rawPayload = (isDirect && !match) ? content : (match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim());
+                let rawPayload = (isDirect && !match) ? content : (match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim());
+
+                // Limpiar posibles bloques de código Markdown de la respuesta
+                rawPayload = rawPayload.replace(/^```[\w]*\n/, '').replace(/\n```$/, '').trim();
 
                 let payloadData = {};
                 let textToInject = rawPayload; 
