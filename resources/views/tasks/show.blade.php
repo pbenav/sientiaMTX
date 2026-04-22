@@ -111,8 +111,9 @@
                     @endif
 
                     <!-- Exportar JSON -->
-                    <div class="flex flex-col">
-                        <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-4 py-4 px-5 group">
+                    <div class="flex flex-col border-t border-gray-50 dark:border-gray-800 pt-1 mt-1">
+                        <div class="px-5 py-2 text-[9px] font-black uppercase tracking-widest text-gray-400">Portabilidad (Outbound)</div>
+                        <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-4 py-3 px-5 group">
                             <div class="shrink-0 p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -124,15 +125,28 @@
                             </div>
                         </x-dropdown-link>
 
-                        <button type="button" onclick="copyTaskJson()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
-                            <div class="shrink-0 p-2 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
+                        <button type="button" onclick="copyTaskJson()" class="w-full flex items-center gap-4 py-3 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                            <div class="shrink-0 p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                             </div>
                             <div class="flex flex-col">
                                 <span class="font-bold text-gray-900 dark:text-white text-sm">Copiar JSON</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Copia al portapapeles para pegar rápido</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Copia para transferir a otro equipo</span>
+                            </div>
+                        </button>
+
+                        <div class="px-5 py-2 text-[9px] font-black uppercase tracking-widest text-gray-400 mt-2 border-t border-gray-50 dark:border-gray-800 pt-3">Portabilidad (Inbound)</div>
+                        <button type="button" onclick="openImportTaskModal()" class="w-full flex items-center gap-4 py-3 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                            <div class="shrink-0 p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Importar / Pegar JSON</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear nueva tarea vía archivo o portapapeles</span>
                             </div>
                         </button>
                     </div>
@@ -2273,5 +2287,6 @@
             });
         }
     </script>
+        @include('tasks.partials.import-modal-script')
     @endpush
 </x-app-layout>
