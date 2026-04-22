@@ -14,12 +14,20 @@
                 @include('teams.partials.breadcrumb')
                 <div class="flex items-center gap-4">
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ __('tasks.create') }}</h1>
-                    <button type="button" onclick="importTask()" class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors flex items-center gap-1 px-3 py-1 bg-violet-50 dark:bg-violet-900/30 rounded-lg border border-violet-100 dark:border-violet-500/20 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
-                        </svg>
-                        {{ __('Importar Tarea (JSON)') }}
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="importFromClipboard()" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            {{ __('Pegar del Portapapeles') }}
+                        </button>
+                        <button type="button" onclick="importTask()" class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/30 rounded-xl border border-violet-100 dark:border-violet-500/20 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
+                            </svg>
+                            {{ __('Cargar Archivo') }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -649,6 +657,85 @@
             }
         };
 
+        window.applyImportData = function(data) {
+            try {
+                if (!data.type || !data.type.startsWith('sientia_task')) {
+                    throw new Error('El formato no es un JSON de Sientia MTX válido.');
+                }
+                const task = data.task;
+                
+                // Title
+                document.querySelector('[name="title"]').value = task.title || '';
+                
+                // Description (Rich Editor)
+                const descEl = document.getElementById('description');
+                if (descEl) {
+                    if (window.EasyMDEInstances && window.EasyMDEInstances['description']) {
+                        window.EasyMDEInstances['description'].value(task.description || '');
+                    } else {
+                        descEl.value = task.description || '';
+                    }
+                }
+
+                // Observations (Rich Editor)
+                const obsEl = document.getElementById('observations');
+                if (obsEl) {
+                    if (window.EasyMDEInstances && window.EasyMDEInstances['observations']) {
+                        window.EasyMDEInstances['observations'].value(task.observations || '');
+                    } else {
+                        obsEl.value = task.observations || '';
+                    }
+                }
+                
+                if (task.priority) document.querySelector('[name="priority"]').value = task.priority;
+                if (task.urgency) document.querySelector('[name="urgency"]').value = task.urgency;
+                
+                // Visibility
+                const visRadio = document.querySelector(`input[name="visibility"][value="${task.visibility}"]`);
+                if (visRadio) visRadio.checked = true;
+
+                // Cog Load
+                const cogLoad = document.querySelector('[name="cognitive_load"]');
+                if (cogLoad) {
+                    cogLoad.value = task.cognitive_load || 1;
+                    cogLoad.dispatchEvent(new Event('input'));
+                }
+
+                // Checkboxes
+                if (document.querySelector('[name="is_out_of_skill_tree"]'))
+                    document.querySelector('[name="is_out_of_skill_tree"]').checked = !!task.is_out_of_skill_tree;
+                
+                if (document.querySelector('[name="is_backstage"]'))
+                    document.querySelector('[name="is_backstage"]').checked = !!task.is_backstage;
+
+                // Trigger any change listeners
+                document.querySelector('[name="priority"]').dispatchEvent(new Event('change'));
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Datos inyectados!',
+                    text: 'El formulario se ha rellenado con éxito.',
+                    toast: true,
+                    position: 'top-end',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                Swal.fire('Error de Importación', err.message, 'error');
+            }
+        };
+
+        window.importFromClipboard = async function() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (!text) throw new Error('El portapapeles está vacío.');
+                const data = JSON.parse(text);
+                window.applyImportData(data);
+            } catch (err) {
+                Swal.fire('Error al pegar', 'Asegúrate de haber copiado el JSON correcto. ' + err.message, 'error');
+            }
+        };
+
         window.importTask = function() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -659,69 +746,9 @@
                 reader.onload = event => {
                     try {
                         const data = JSON.parse(event.target.result);
-                        if (!data.type || !data.type.startsWith('sientia_task')) {
-                            throw new Error('El formato del archivo no es un JSON de Sientia MTX válido.');
-                        }
-                        const task = data.task;
-                        
-                        // Title
-                        document.querySelector('[name="title"]').value = task.title || '';
-                        
-                        // Description (Rich Editor)
-                        const descEl = document.getElementById('description');
-                        if (descEl) {
-                            if (window.EasyMDEInstances && window.EasyMDEInstances['description']) {
-                                window.EasyMDEInstances['description'].value(task.description || '');
-                            } else {
-                                descEl.value = task.description || '';
-                            }
-                        }
-
-                        // Observations (Rich Editor)
-                        const obsEl = document.getElementById('observations');
-                        if (obsEl) {
-                            if (window.EasyMDEInstances && window.EasyMDEInstances['observations']) {
-                                window.EasyMDEInstances['observations'].value(task.observations || '');
-                            } else {
-                                obsEl.value = task.observations || '';
-                            }
-                        }
-                        
-                        document.querySelector('[name="priority"]').value = task.priority || 'medium';
-                        document.querySelector('[name="urgency"]').value = task.urgency || 'medium';
-                        
-                        // Visibility
-                        const visRadio = document.querySelector(`input[name="visibility"][value="${task.visibility}"]`);
-                        if (visRadio) visRadio.checked = true;
-
-                        // Cog Load
-                        const cogLoad = document.querySelector('[name="cognitive_load"]');
-                        if (cogLoad) {
-                            cogLoad.value = task.cognitive_load || 1;
-                            cogLoad.dispatchEvent(new Event('input'));
-                        }
-
-                        // Checkboxes
-                        const skTree = document.querySelector('[name="is_out_of_skill_tree"]');
-                        if (skTree) skTree.checked = !!task.is_out_of_skill_tree;
-                        
-                        const bStage = document.querySelector('[name="is_backstage"]');
-                        if (bStage) bStage.checked = !!task.is_backstage;
-
-                        // Trigger any change listeners
-                        document.querySelector('[name="priority"]').dispatchEvent(new Event('change'));
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Datos Importados',
-                            text: 'El formulario se ha completado con éxito.',
-                            toast: true,
-                            position: 'top-end',
-                            timer: 4000,
-                            showConfirmButton: false
-                        });
+                        window.applyImportData(data);
                     } catch (err) {
-                        Swal.fire('Error de Importación', err.message, 'error');
+                        Swal.fire('Error', 'Archivo JSON corrupto.', 'error');
                     }
                 };
                 reader.readAsText(file);
