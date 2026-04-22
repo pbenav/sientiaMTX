@@ -121,6 +121,24 @@ class ServiceController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function update(Request $request, Team $team, Service $service)
+    {
+        if (!$team->isCoordinator(auth()->user()) || $service->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'url' => 'nullable|url',
+            'icon' => 'nullable|string',
+            'description' => 'nullable|string',
+        ]);
+
+        $service->update($validated);
+
+        return back()->with('success', __('Servicio actualizado correctamente.'));
+    }
+
     public function destroy(Team $team, Service $service)
     {
         if (!$team->isCoordinator(auth()->user())) {

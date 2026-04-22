@@ -95,56 +95,117 @@
     <div class="p-6">
         <h2 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest mb-6 border-b border-gray-50 dark:border-gray-800 pb-4">{{ __('Configuración de Sentinel') }}</h2>
         
-        <form action="{{ route('teams.services.store', $team) }}" method="POST" class="space-y-4 mb-8">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Nombre del Servicio') }}</x-input-label>
-                    <x-text-input name="name" required class="py-4" :emoji="false" />
-                </div>
-                <div>
-                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Emoji/Icono') }}</x-input-label>
-                    <x-text-input name="icon" placeholder="💡, 📞, 📧..." class="py-4" />
-                </div>
-            </div>
-            <div>
-                <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('URL del Portal') }}</x-input-label>
-                <x-text-input type="url" name="url" placeholder="https://..." class="py-4" :emoji="false" />
-            </div>
-            <div>
-                <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Descripción') }}</x-input-label>
-                <textarea name="description" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500 rounded-xl shadow-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all font-bold text-sm px-5 py-4"></textarea>
-            </div>
-            
-            <div class="mt-6 flex justify-end">
-                <button type="submit" class="px-6 py-4 bg-violet-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all shadow-xl shadow-violet-500/25">
-                    {{ __('Añadir Herramienta') }}
-                </button>
-            </div>
-        </form>
-
-        <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
-            <h3 class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-1">{{ __('Herramientas Monitorizadas') }}</h3>
-            <div class="space-y-2">
-                @foreach($services as $s)
-                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800">
-                        <div class="flex items-center gap-3">
-                            <span class="text-lg">{{ $s->icon ?: '🌐' }}</span>
-                            <span class="text-xs font-black text-gray-900 dark:text-white uppercase">{{ $s->name }}</span>
-                        </div>
-                        <form action="{{ route('teams.services.destroy', [$team, $s]) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-all" onclick="return confirm('¿Eliminar este servicio?')">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </form>
+        <div x-data="{ 
+            editingId: null, 
+            editName: '', 
+            editIcon: '', 
+            editUrl: '', 
+            editDescription: '', 
+            editAction: '',
+            startEdit(s) {
+                this.editingId = s.id;
+                this.editName = s.name;
+                this.editIcon = s.icon || '🌐';
+                this.editUrl = s.url || '';
+                this.editDescription = s.description || '';
+                this.editAction = `{{ url('/teams/' . $team->id . '/services') }}/${s.id}`;
+            }
+        }">
+            <form action="{{ route('teams.services.store', $team) }}" method="POST" class="space-y-4 mb-8" x-show="!editingId">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Nombre del Servicio') }}</x-input-label>
+                        <x-text-input name="name" required class="py-4" :emoji="false" />
                     </div>
-                @endforeach
+                    <div>
+                        <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Emoji/Icono') }}</x-input-label>
+                        <x-text-input name="icon" placeholder="💡, 📞, 📧..." class="py-4" />
+                    </div>
+                </div>
+                <div>
+                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('URL del Portal') }}</x-input-label>
+                    <x-text-input type="url" name="url" placeholder="https://..." class="py-4" :emoji="false" />
+                </div>
+                <div>
+                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Descripción') }}</x-input-label>
+                    <textarea name="description" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500 rounded-xl shadow-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all font-bold text-sm px-5 py-4"></textarea>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="px-6 py-4 bg-violet-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all shadow-xl shadow-violet-500/25">
+                        {{ __('Añadir Herramienta') }}
+                    </button>
+                </div>
+            </form>
+
+            <!-- Edit Form (Visible only when editing) -->
+            <form :action="editAction" method="POST" class="space-y-4 mb-8 bg-violet-50/50 dark:bg-violet-900/10 p-6 rounded-3xl border border-violet-100 dark:border-violet-800/50" x-show="editingId" x-cloak>
+                @csrf
+                @method('PATCH')
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Editando Recurso</h3>
+                    <button type="button" @click="editingId = null" class="text-[10px] font-black uppercase text-gray-400 hover:text-gray-600 transition-colors tracking-widest">Cancelar</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Nombre') }}</x-input-label>
+                        <x-text-input name="name" x-model="editName" required class="py-4" :emoji="false" />
+                    </div>
+                    <div>
+                        <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Icono') }}</x-input-label>
+                        <x-text-input name="icon" x-model="editIcon" class="py-4" />
+                    </div>
+                </div>
+                <div>
+                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('URL') }}</x-input-label>
+                    <x-text-input type="url" name="url" x-model="editUrl" class="py-4" :emoji="false" />
+                </div>
+                <div>
+                    <x-input-label class="tracking-widest mb-1.5 ml-1">{{ __('Descripción') }}</x-input-label>
+                    <textarea name="description" x-model="editDescription" rows="2" class="w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500 rounded-xl shadow-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all font-bold text-sm px-5 py-4"></textarea>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="px-6 py-4 bg-violet-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all shadow-xl shadow-violet-500/25">
+                        {{ __('Guardar Cambios') }}
+                    </button>
+                </div>
+            </form>
+
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
+                <h3 class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-1">{{ __('Herramientas Monitorizadas') }}</h3>
+                <div class="space-y-2">
+                    @foreach($services as $s)
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800">
+                            <div class="flex items-center gap-3">
+                                <span class="text-lg">{{ $s->icon ?: '🌐' }}</span>
+                                <span class="text-xs font-black text-gray-900 dark:text-white uppercase">{{ $s->name }}</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click="startEdit({{ json_encode($s) }})" class="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464l2.828-2.828" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </button>
+                                <form action="{{ route('teams.services.destroy', [$team, $s]) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-all" onclick="return confirm('¿Eliminar este servicio?')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
+    </div>
+</x-modal>
     </div>
 </x-modal>
 
