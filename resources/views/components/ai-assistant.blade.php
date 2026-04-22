@@ -712,6 +712,10 @@
                         content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message,
                         is_error: true
                     });
+                    
+                    // Mecanismo de rescate: devolver el prompt a la caja de texto
+                    this.input = this.lastPrompt;
+                    this.pendingFile = this.lastFile;
                 } finally {
                     this.loading = false;
                     this.isSendingFile = false;

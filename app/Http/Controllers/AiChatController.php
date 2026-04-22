@@ -49,7 +49,7 @@ class AiChatController extends Controller
     public function ask(Request $request, AiAssistantInterface $aiAssistant)
     {
         $request->validate([
-            'prompt' => 'nullable|string|max:2000',
+            'prompt' => 'nullable|string|max:100000',
             'team_id' => 'nullable|integer|exists:teams,id',
             'task_id' => 'nullable|integer|exists:tasks,id',
             'attachment_id' => 'nullable|integer|exists:task_attachments,id',
