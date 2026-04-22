@@ -61,15 +61,7 @@ class GeminiService implements AiAssistantInterface
             }
 
             if (!empty($pref->ai_model)) {
-                $model = $pref->ai_model;
-                
-                // Normalizado de modelos para máxima compatibilidad y velocidad
-                if (str_contains($model, 'gemini-3') || str_contains($model, 'preview')) {
-                    Log::info("Normalizando modelo '{$model}' a 'gemini-1.5-flash' para mayor estabilidad.");
-                    $model = 'gemini-1.5-flash';
-                }
-
-                $this->targetModel = $model;
+                $this->targetModel = $pref->ai_model;
             }
         }
         
@@ -404,8 +396,8 @@ class GeminiService implements AiAssistantInterface
             return "Error: No se ha configurado la clave API de Gemini. Configúrala en tu perfil.";
         }
 
-        // AUTO-CORRECCIÓN DE MODELO SI EL DESTINO ES INVÁLIDO O LENTO
-        if (str_contains($model, 'gemini-3')) $model = 'gemini-1.5-flash';
+        // CLEANUP: Ensure model name is just the ID
+        $model = str_replace('models/', '', $model);
 
         $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
