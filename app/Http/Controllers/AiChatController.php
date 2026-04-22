@@ -242,10 +242,19 @@ class AiChatController extends Controller
         if ($request->target === 'description' || $request->target === 'observations' || $request->target === 'observations_append') {
             $column = ($request->target === 'description') ? 'description' : 'observations';
             
-            // Si es un payload estructurado, intentamos sacar el campo específico, si no el genérico
-            $textToInject = is_array($payload) 
-                ? ($payload[$column] ?? $payload['description'] ?? $payload['observations'] ?? '') 
-                : $payload;
+            $textToInject = '';
+            if (is_array($payload)) {
+                if (($payload['intent'] ?? '') === 'simple_text') {
+                    $textToInject = $payload['content'] ?? '';
+                } elseif (($payload['intent'] ?? '') === 'full_task') {
+                    $taskData = $payload['task_data'] ?? [];
+                    $textToInject = $taskData[$column] ?? $taskData['description'] ?? $taskData['observations'] ?? '';
+                } else {
+                    $textToInject = $payload[$column] ?? $payload['description'] ?? $payload['observations'] ?? '';
+                }
+            } else {
+                $textToInject = $payload;
+            }
             
             $oldContent = $task->{$column} ?: '';
             
@@ -270,7 +279,18 @@ class AiChatController extends Controller
         }
 
         if ($request->target === 'private_note' || $request->target === 'private-notes') {
-            $textToInject = is_array($payload) ? ($payload['description'] ?? $payload['observations'] ?? json_encode($payload)) : $payload;
+            $textToInject = '';
+            if (is_array($payload)) {
+                if (($payload['intent'] ?? '') === 'simple_text') {
+                    $textToInject = $payload['content'] ?? '';
+                } elseif (($payload['intent'] ?? '') === 'full_task') {
+                    $textToInject = $payload['task_data']['observations'] ?? json_encode($payload['task_data']);
+                } else {
+                    $textToInject = $payload['description'] ?? $payload['observations'] ?? json_encode($payload);
+                }
+            } else {
+                $textToInject = $payload;
+            }
             $note = \App\Models\TaskPrivateNote::create([
                 'task_id' => $task->id,
                 'user_id' => auth()->id(),
@@ -376,9 +396,19 @@ class AiChatController extends Controller
             $obs = '';
             
             if (is_array($payload)) {
-                $title = $title ?: ($payload['title'] ?? null);
-                $desc = $payload['description'] ?? $desc;
-                $obs = $payload['observations'] ?? '';
+                if (($payload['intent'] ?? '') === 'simple_text') {
+                    $title = $title ?: 'Nota: ' . now()->format('d/m H:i');
+                    $obs = $payload['content'] ?? '';
+                } elseif (($payload['intent'] ?? '') === 'full_task') {
+                    $taskData = $payload['task_data'] ?? [];
+                    $title = $title ?: ($taskData['title'] ?? null);
+                    $desc = $taskData['description'] ?? $desc;
+                    $obs = $taskData['observations'] ?? '';
+                } else {
+                    $title = $title ?: ($payload['title'] ?? null);
+                    $desc = $payload['description'] ?? $desc;
+                    $obs = $payload['observations'] ?? '';
+                }
             } else {
                 $obs = $payload;
             }
@@ -402,10 +432,23 @@ class AiChatController extends Controller
             }
 
             if ($request->target === 'private_note' || $request->target === 'private-notes') {
+                $noteContent = '';
+                if (is_array($payload)) {
+                     if (($payload['intent'] ?? '') === 'simple_text') {
+                         $noteContent = $payload['content'] ?? '';
+                     } elseif (($payload['intent'] ?? '') === 'full_task') {
+                         $noteContent = $payload['task_data']['observations'] ?? 'Nota de tarea';
+                     } else {
+                         $noteContent = $payload['observations'] ?? 'Nota de tarea';
+                     }
+                } else {
+                     $noteContent = $payload;
+                }
+
                 \App\Models\TaskPrivateNote::create([
                     'task_id' => $task->id,
                     'user_id' => $user->id,
-                    'content' => is_array($payload) ? ($payload['observations'] ?? 'Nota de tarea') : $payload
+                    'content' => $noteContent
                 ]);
             }
 

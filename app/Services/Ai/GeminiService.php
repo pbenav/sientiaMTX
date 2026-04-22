@@ -247,11 +247,21 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "1. RELEVANCIA Y VELOCIDAD: Responde de forma directa. Evita preámbulos largos. Sé extremadamente conciso.\n";
         $systemInstruction .= "2. EMPATÍA OPERATIVA: Utiliza los DATOS DE BIENESTAR para ajustar tu tono. Si la energía es baja, sé breve y alentador.\n";
         $systemInstruction .= "3. RECARGA HUMANA: Si el usuario menciona descanso, añade [RECHARGE] al final.\n";
-        $systemInstruction .= "4. ESTRUCTURA DE INYECCIÓN [PAYLOAD] DE TAREAS:\n";
-        $systemInstruction .= "   - Si generas una estructura de tarea, usa [PAYLOAD] con este JSON:\n";
-        $systemInstruction .= "     {\"title\": \"Título breve\", \"description\": \"Resumen CORTÍSIMO (1 o 2 frases) del objetivo general\", \"observations\": \"DESARROLLO COMPLETO Y EXTENSO de la tarea (el meollo, listas, exámenes, detalles)\"}\n";
-        $systemInstruction .= "   - Si NO es una tarea sino solo responder o generar un texto bloque, no uses JSON, pon el texto directo: [PAYLOAD]...todo el texto aquí...[/PAYLOAD]\n";
-        $systemInstruction .= "5. FORMATO: Usa Markdown elegante.\n\n";
+        $systemInstruction .= "4. ESTRUCTURA DE INYECCIÓN [PAYLOAD]:\n";
+        $systemInstruction .= "   Si tu respuesta amerita ser insertada o guardada por el usuario (un resumen, una traducción, una tarea, una estrategia), devuélvela dentro de un bloque JSON envuelto por [PAYLOAD]...[/PAYLOAD].\n";
+        $systemInstruction .= "   (Si es solo una respuesta conversacional de saludo o confirmación, NO uses [PAYLOAD], responde directamente en texto plano).\n";
+        $systemInstruction .= "   Si necesitas usar el bloque [PAYLOAD], analiza la intención del usuario y ajusta el JSON a uno de estos formatos:\n";
+        $systemInstruction .= "   FORMATO A (Texto Plano / Respuesta Corta): Úsalo por defecto para resúmenes, dudas, correcciones de texto o traducciones. NO generes una tarea a menos que el usuario lo pida.\n";
+        $systemInstruction .= "     {\"intent\": \"simple_text\", \"content\": \"El resultado de tu respuesta o resumen formateado en Markdown...\"}\n";
+        $systemInstruction .= "   FORMATO B (Tarea Completa): Úsalo SOLO si el usuario está pidiendo crear, organizar, desglosar o delegar trabajo como si fuera una nueva tarea o proceso.\n";
+        $systemInstruction .= "     {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título super breve\", \"description\": \"Resumen conciso del objetivo\", \"observations\": \"Desarrollo extenso aquí...\"}}\n";
+        
+        if ($this->taskContext) {
+            $systemInstruction .= "   ¡ATENCIÓN! El usuario ya se encuentra dentro de la tarea existente ('{$this->taskContext->title}'). Usa FORMATO A (simple_text) para ayudarle a rellenar esta tarea, a menos que pida explícitamente crear otra tarea NUEVA.\n";
+        } else {
+            $systemInstruction .= "   El usuario se encuentra en la vista general. Usa FORMATO B (full_task) si pide organizar trabajo complejo, pero FORMATO A (simple_text) si solo resume o procesa texto.\n";
+        }
+        $systemInstruction .= "5. FORMATO: Usa Markdown elegante dentro de los campos de texto.\n\n";
         
         if ($contextInfo) {
             $systemInstruction .= "CONTEXTO OPERATIVO:\n" . $contextInfo . "\n\n";

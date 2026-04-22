@@ -841,6 +841,13 @@
                 try {
                     payloadData = JSON.parse(rawPayload);
                     if (typeof payloadData === 'object' && payloadData !== null) {
+                        // Normalize the new intent format into the flat format expected by the frontend UI
+                        if (payloadData.intent === 'full_task' && payloadData.task_data) {
+                            payloadData = payloadData.task_data;
+                        } else if (payloadData.intent === 'simple_text') {
+                            payloadData = { description: payloadData.content, observations: payloadData.content, title: '' };
+                        }
+                        
                         textToInject = payloadData.observations || payloadData.description || payloadData.content || payloadData.text || rawPayload;
                     }
                 } catch (e) {
