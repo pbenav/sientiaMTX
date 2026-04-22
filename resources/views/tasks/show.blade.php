@@ -357,7 +357,7 @@
         // Calculate Time Tracking Statistics
         $userObj = auth()->user();
         $isUserObjMgr = $team->isManager($userObj);
-        $taskIds = $task->children()->visibleTo($userObj, $isUserObjMgr)->pluck('id')->push($task->id);
+        $taskIds = $task->children()->getQuery()->visibleTo($userObj, $isUserObjMgr)->pluck('tasks.id')->push($task->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
         
         $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
@@ -420,11 +420,17 @@
                     $isUserMgr = $team->isManager($currentUser);
 
                     if ($isRoadmap) {
-                        $instances = $task->is_template
-                            ? $task->instances()->visibleTo($currentUser, $isUserMgr)->with('assignedUser')->get()->sortBy(function($inst) {
-                                return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
-                            })
-                            : $task->children()->visibleTo($currentUser, $isUserMgr)->with('assignedTo')->get()->sortBy(function($inst) {
+                        $instancesQuery = $task->is_template ? $task->instances() : $task->children();
+                        $withRelation = $task->is_template ? 'assignedUser' : 'assignedTo';
+                        
+                        $instances = $instancesQuery->getQuery()
+                            ->visibleTo($currentUser, $isUserMgr)
+                            ->with($withRelation)
+                            ->get()
+                            ->sortBy(function($inst) use ($task) {
+                                if ($task->is_template) {
+                                    return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
+                                }
                                 return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
                             });
                     } else {

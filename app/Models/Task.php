@@ -312,8 +312,12 @@ class Task extends Model
 
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        // Ensure we are working with a builder, not the relation object directly, 
-        // to avoid cloning issues in some PHP 8.4/Laravel 12 contexts.
+        // Safety check: If no user is provided, the task is invisible by default.
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // Ensure we are working with a builder to avoid cloning issues on Relation objects.
         $builder = $query instanceof \Illuminate\Database\Eloquent\Relations\Relation ? $query->getQuery() : $query;
 
         return $builder->where(function ($q) use ($user, $isManager) {
