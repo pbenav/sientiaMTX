@@ -16,13 +16,22 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-90 translate-y-10"
-         class="mb-4 w-[350px] sm:w-[400px] h-[620px] max-h-[85vh] sm:h-[550px] bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto"
+         class="mb-4 bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto relative"
          style="background: white; border: 1px solid #eee; overflow: hidden; display: none;"
-         :style="open ? 'display: flex !important;' : 'display: none !important;'"
+         :style="`display: ${open ? 'flex' : 'none'} !important; width: ${dimensions.width}px; height: ${dimensions.height}px; max-width: 90vw; max-height: 85vh;`"
          x-cloak>
         
+        <!-- Tirador de redimensionamiento (Parte inferior izquierda) -->
+        <div class="absolute bottom-2 left-2 w-8 h-8 cursor-sw-resize z-[60] flex items-center justify-center group/resize"
+             @mousedown.stop.prevent="startResize($event)"
+             @touchstart.stop.prevent="startResize($event)">
+            <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover/resize:text-sky-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 19L5 5m0 0v14m0-14h14" />
+            </svg>
+        </div>
+
         <!-- Cabecera -->
-        <div class="px-6 py-4 bg-gradient-to-r from-sky-500 to-blue-600 flex items-center justify-between shadow-lg"
+        <div class="px-6 py-4 bg-gradient-to-r from-sky-500 to-blue-600 flex items-center justify-between shadow-lg shrink-0"
              style="background: linear-gradient(135deg, #0ea5e9, #2563eb);">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
@@ -228,6 +237,49 @@
             wasDragged: false,
             startX: 0,
             startY: 0,
+
+            dimensions: { 
+                width: (window.innerWidth < 640) ? 350 : 400, 
+                height: (window.innerWidth < 640) ? 620 : 550 
+            },
+            isResizing: false,
+            
+            startResize(e) {
+                this.isResizing = true;
+                const event = e.type.includes('touch') ? e.touches[0] : e;
+                const initialX = event.clientX;
+                const initialY = event.clientY;
+                const initialWidth = this.dimensions.width;
+                const initialHeight = this.dimensions.height;
+                
+                const onMouseMove = (moveEvent) => {
+                    if (!this.isResizing) return;
+                    const mevent = moveEvent.type.includes('touch') ? moveEvent.touches[0] : moveEvent;
+                    
+                    // Al estar anclado a la derecha, para crecer a la izquierda sumamos el delta invertido del ratón
+                    this.dimensions.width = initialWidth + (initialX - mevent.clientX);
+                    this.dimensions.height = initialHeight + (mevent.clientY - initialY);
+                    
+                    // Límites
+                    if (this.dimensions.width < 320) this.dimensions.width = 320;
+                    if (this.dimensions.width > window.innerWidth * 0.9) this.dimensions.width = window.innerWidth * 0.9;
+                    if (this.dimensions.height < 400) this.dimensions.height = 400;
+                    if (this.dimensions.height > window.innerHeight * 0.85) this.dimensions.height = window.innerHeight * 0.85;
+                };
+                
+                const onMouseUp = () => {
+                    this.isResizing = false;
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                    window.removeEventListener('touchmove', onMouseMove);
+                    window.removeEventListener('touchend', onMouseUp);
+                };
+                
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', onMouseUp);
+                window.addEventListener('touchmove', onMouseMove, { passive: false });
+                window.addEventListener('touchend', onMouseUp);
+            },
             
             startDrag(e) {
                 if (this.open) return;
