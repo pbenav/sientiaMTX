@@ -237,14 +237,19 @@ class AiChatController extends Controller
             abort(403);
         }
 
-        $content = $this->extractPayload($request->input('content'));
+        $payload = $this->extractPayload($request->input('content'));
+        $content = is_array($payload) ? ($payload['description'] ?? $payload['observations'] ?? json_encode($payload)) : $payload;
 
         $oldValues = $task->getAttributes();
         
-        if ($request->target === 'description' || $request->target === 'observations_append') {
-            $column = 'observations'; // User requested that "Cuerpo de Tarea" maps to observations
+        if ($request->target === 'description' || $request->target === 'observations_append' || $request->target === 'observations') {
+            $column = 'observations'; // Standard in Sientia MTX: AI content goes to observations
+            
+            // If it's JSON, combine fields or pick the best one
+            $textToInject = is_array($payload) ? ($payload['observations'] ?? $payload['description'] ?? '') : $payload;
+            
             $oldContent = $task->{$column} ?? '';
-            $newContent = trim($oldContent . "\n\n" . $content);
+            $newContent = trim($oldContent . "\n\n" . $textToInject);
             
             $task->update([$column => $newContent]);
             
@@ -253,16 +258,16 @@ class AiChatController extends Controller
                 'action' => 'ai_transfer',
                 'old_values' => [$column => $oldContent],
                 'new_values' => [$column => $newContent],
-                'notes' => 'Transferido desde Ax.ia (Añadido al final)'
+                'notes' => 'Transferido desde Ax.ia'
             ]);
-            return response()->json(['success' => true, 'message' => 'Contenido añadido a Observaciones correctamente.', 'history_id' => $history->id]);
+            return response()->json(['success' => true, 'message' => 'Contenido inyectado en la tarea correctamente.', 'history_id' => $history->id]);
         }
 
-        if ($request->target === 'observations' || $request->target === 'private_note' || $request->target === 'private-notes') {
-            // Use TaskPrivateNote for "Notas"
+        if ($request->target === 'private_note' || $request->target === 'private-notes') {
+            $textToInject = is_array($payload) ? ($payload['description'] ?? $payload['observations'] ?? json_encode($payload)) : $payload;
             $note = \App\Models\TaskPrivateNote::updateOrCreate(
                 ['task_id' => $task->id, 'user_id' => auth()->id()],
-                ['content' => $content]
+                ['content' => $textToInject]
             );
             
             return response()->json(['success' => true, 'message' => 'Nota interna/privada guardada correctamente.']);
@@ -334,33 +339,43 @@ class AiChatController extends Controller
             abort(403);
         }
 
-        $content = $this->extractPayload($request->input('content'));
+        $payload = $this->extractPayload($request->input('content'));
         $user = $request->user();
 
-        if (in_array($request->target, ['private_note', 'private-notes', 'observations', 'observations_append', 'description'])) {
+        if (in_array($request->target, ['task', 'private_note', 'private-notes', 'observations', 'observations_append', 'description'])) {
             // Create a new task for this content
+            $title = $request->title;
+            $desc = 'Tarea creada desde Ax.ia.';
+            $obs = '';
+            
+            if (is_array($payload)) {
+                $title = $title ?: ($payload['title'] ?? null);
+                $desc = $payload['description'] ?? $desc;
+                $obs = $payload['observations'] ?? '';
+            } else {
+                $obs = $payload;
+            }
+
             $task = \App\Models\Task::create([
                 'team_id' => $team->id,
-                'title' => $request->title ?: '📝 Nota de Ax.ia: ' . now()->format('d/m/Y H:i'),
-                'description' => 'Tarea creada automáticamente desde el chat de Ax.ia.',
+                'title' => $title ?: '📝 Tarea de Ax.ia: ' . now()->format('d/m H:i'),
+                'description' => $desc,
+                'observations' => $obs,
                 'created_by_id' => $user->id,
                 'assigned_user_id' => $user->id,
                 'visibility' => 'private',
                 'status' => 'pending'
             ]);
 
-            if ($request->target === 'observations_append' || $request->target === 'description') {
-                $task->update(['observations' => $content]);
-                return response()->json(['success' => true, 'message' => 'Se ha creado la tarea y guardado en observaciones.']);
+            if ($request->target === 'private_note' || $request->target === 'private-notes') {
+                \App\Models\TaskPrivateNote::create([
+                    'task_id' => $task->id,
+                    'user_id' => $user->id,
+                    'content' => is_array($payload) ? ($payload['observations'] ?? 'Nota de tarea') : $payload
+                ]);
             }
 
-            \App\Models\TaskPrivateNote::create([
-                'task_id' => $task->id,
-                'user_id' => $user->id,
-                'content' => $content
-            ]);
-
-            return response()->json(['success' => true, 'message' => 'Se ha creado una nueva tarea con tu nota privada.']);
+            return response()->json(['success' => true, 'message' => "Tarea \"{$task->title}\" creada con éxito."]);
         }
 
         // Find or create a "General Chat" thread for the team
@@ -419,10 +434,19 @@ class AiChatController extends Controller
 
     private function extractPayload($content)
     {
+        $raw = '';
         if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
-            return trim($matches[1]);
+            $raw = trim($matches[1]);
+        } else {
+            $raw = trim(str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $content));
+        }
+
+        // Try to decode JSON
+        $decoded = json_decode($raw, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
         }
         
-        return trim(str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $content));
+        return $raw;
     }
 }
