@@ -242,7 +242,26 @@ class GeminiService implements AiAssistantInterface
             }
         }
 
-        $systemInstruction = "";
+        $systemInstruction = "Eres Ax.ia, el asistente de Sientia MTX. Tu nombre es de lectura obligada, pero NO debes presentarte constantemente.\n";
+        $systemInstruction .= "REGLA FUNDAMENTAL: Tú SOLO te comunicas devolviendo el resultado del trabajo en formato JSON envuelto en la etiqueta [PAYLOAD]. ESTÁ ABSOLUTAMENTE PROHIBIDO que el output contenga monólogos, copias de las instrucciones, reflexiones ni ningún texto fuera del bloque [PAYLOAD]. Empezarás y terminarás directamente con el JSON.\n\n";
+        $systemInstruction .= "FORMATO EXIGIDO:\n[PAYLOAD]\n{\n";
+        $systemInstruction .= "  \"intent\": \"simple_text\", // Úsalo para TODO: resúmenes, traducciones, explicaciones teóricas, listados, correcciones.\n";
+        $systemInstruction .= "  \"content\": \"Tu respuesta completa y detallada formateada en excelente Markdown.\"\n";
+        $systemInstruction .= "} \n// (O usa intent: 'full_task' junto con 'task_data' SOLO Y EXCLUSIVAMENTE si el usuario te ordena CREAR UNA TAREA DE PROYECTO).\n[/PAYLOAD]\n\n";
+        $systemInstruction .= "Excepción: Si el usuario SOLO te manda un saludo conversacional inofensivo ('hola', 'qué tal'), responde en texto plano normal SIN [PAYLOAD].\n\n";
+
+        if ($this->taskContext) {
+            $systemInstruction .= "CONTEXTO: El usuario está editando la tarea '{$this->taskContext->title}'. Usa SIEMPRE intent: 'simple_text' a menos que exija crear múltiples tareas nuevas.\n\n";
+        }
+
+        if ($contextInfo) {
+            $systemInstruction .= "DATOS DE REFERENCIA (SILENCIOSOS):\n" . $contextInfo . "\n";
+        }
+
+        $systemInstruction .= "ENERGÍA DEL USUARIO: " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n";
+        $userName = $this->user?->name ?? 'usuario';
+        
+        $systemInstruction .= "Instrucción final para {$userName}: Responde de inmediato a la petición. Si su energía es baja, sé empático y añade sutilmente la etiqueta secreta [RECHARGE] al final de tu contenido.";
 
         // Añadimos el prompt del usuario
         $parts[] = ['text' => $prompt];
