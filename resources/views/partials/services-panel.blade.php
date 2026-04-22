@@ -201,11 +201,8 @@
                             </div>
                         </div>
                     @endforeach
-                </div>
             </div>
         </div>
-    </div>
-</x-modal>
     </div>
 </x-modal>
 
