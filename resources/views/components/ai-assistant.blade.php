@@ -8,7 +8,8 @@
      @mouseup.window="stopDrag()"
      @touchend.window="stopDrag()"
      @ai:set-context.window="setContext($event.detail)"
-     @ai:analyze-file.window="analyzeFile($event.detail)">
+     @ai:analyze-file.window="analyzeFile($event.detail)"
+     @ai:transfer-direct.window="transferToTask($event.detail)">
     
     <!-- Chat Window -->
     <div 
@@ -331,6 +332,7 @@
             lastActionData: null,
             lastPrompt: '',
             lastFile: null,
+            retryCount: 0,
 
             // Audio Recording State
             isRecording: false,
@@ -600,6 +602,16 @@
                 }
             },
 
+            retryLastRequest() {
+                if (!this.lastPrompt && !this.lastFile) {
+                    this.messages.push({ role: 'system', content: '❌ No hay nada que reintentar.' });
+                    return;
+                }
+                this.input = this.lastPrompt;
+                this.pendingFile = this.lastFile;
+                this.sendMessage();
+            },
+
             async sendMessage() {
                 if (this.input.trim() === '' && !this.pendingFile) return;
                 
@@ -661,11 +673,13 @@
                     const data = await response.json();
                     this.messages.push({ role: 'ai', content: data.message });
                     if (data.current_model) this.currentModel = data.current_model;
+                    this.retryCount = 0; // Reset count on success
                 } catch (error) {
                     console.error('AI Assistant Error:', error);
                     this.messages.push({ 
                         role: 'ai', 
-                        content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message 
+                        content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message,
+                        is_error: true
                     });
                 } finally {
                     this.loading = false;
@@ -684,11 +698,22 @@
             renderMarkdown(text) {
                 if (!text) return '';
                 
-                // Format [PAYLOAD] blocks as distinct cards BEFORE standard markdown parsing
+                // Format [PAYLOAD] blocks as distinct cards
+                // We encode the content to pass it safely to the onclick handler
                 let formatted = text.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
+                    const cleanContent = content.trim();
+                    const escapedContent = cleanContent.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                    
                     return `<div class="bg-indigo-50/50 dark:bg-indigo-500/5 border-2 border-dashed border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl p-4 my-4 font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 relative group/payload shadow-inner">
                         <span class="absolute -top-3 left-4 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-200 dark:border-indigo-800 shadow-sm">Contenido Inyectable</span>
-                        ${content.trim().replace(/\n/g, '<br>')}
+                        ${cleanContent.replace(/\n/g, '<br>')}
+                        <div class="mt-4 flex justify-end">
+                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: '${escapedContent}' }))" 
+                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                                Inyectar ahora
+                            </button>
+                        </div>
                     </div>`;
                 });
 
