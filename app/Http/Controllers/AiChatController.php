@@ -58,7 +58,8 @@ class AiChatController extends Controller
             'file' => 'nullable|file|max:20480' // 20MB limit
         ]);
 
-        ini_set('memory_limit', '512M'); // Asegurar memoria para Base64
+        set_time_limit(300); // 5 minutos para procesar archivos grandes
+        ini_set('memory_limit', '1024M'); // Doble de memoria para Base64 de PDF/Audio
         $user = $request->user();
 
         if ($request->team_id) {

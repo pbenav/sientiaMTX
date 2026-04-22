@@ -19,7 +19,7 @@ class GeminiService implements AiAssistantInterface
     protected ?string $cachedFileMime = null;
     protected ?string $cachedFileName = null;
     protected string $apiKey = '';
-    protected string $targetModel = 'gemini-3-flash-preview';
+    protected string $targetModel = 'gemini-1.5-flash';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     protected array $userStats = [];
     protected $tasksContext = [];
@@ -63,10 +63,10 @@ class GeminiService implements AiAssistantInterface
             if (!empty($pref->ai_model)) {
                 $model = $pref->ai_model;
                 
-                // Saneado de modelos "ficticios" o antiguos (Limpieza mínima)
-                if (str_contains($model, 'gemini-1.5')) {
-                    Log::info("Saneando modelo antiguo '{$model}' a 'gemini-3-flash-preview' para usuario {$user->id}");
-                    $model = 'gemini-3-flash-preview';
+                // Normalizado de modelos para máxima compatibilidad y velocidad
+                if (str_contains($model, 'gemini-3') || str_contains($model, 'preview')) {
+                    Log::info("Normalizando modelo '{$model}' a 'gemini-1.5-flash' para mayor estabilidad.");
+                    $model = 'gemini-1.5-flash';
                 }
 
                 $this->targetModel = $model;
@@ -120,6 +120,11 @@ class GeminiService implements AiAssistantInterface
             $mime = $file->getMimeType() ?: $file->getClientMimeType() ?: 'application/octet-stream';
             $this->cachedFileName = $file->getClientOriginalName();
             
+            // OPTIMIZACIÓN: Si es imagen y pesa mucho, la redimensionamos para ahorrar ancho de banda y tiempo de proceso
+            if (str_starts_with($mime, 'image/') && $file->getSize() > 1024 * 1024) {
+               $this->cachedFileContent = $this->resizeImageIfNeeded($file->getPathname(), $mime);
+            }
+
             // FIX: Some browsers (especially on tablets/mobile) record audio as video/webm.
             // Gemini fails with "0 frames found" if we send video/webm without video tracks.
             // We coerce it to audio/webm if the extension or common patterns suggest it's a voice note.
@@ -339,6 +344,56 @@ class GeminiService implements AiAssistantInterface
     }
 
     /**
+     * Resizes an image if it's too large to improve AI processing speed.
+     */
+    protected function resizeImageIfNeeded(string $path, string $mime): string
+    {
+        try {
+            if (!extension_loaded('gd')) return file_get_contents($path);
+
+            $img = null;
+            if ($mime === 'image/jpeg' || $mime === 'image/jpg') $img = imagecreatefromjpeg($path);
+            elseif ($mime === 'image/png') $img = imagecreatefrompng($path);
+            elseif ($mime === 'image/webp') $img = imagecreatefromwebp($path);
+
+            if (!$img) return file_get_contents($path);
+
+            $width = imagesx($img);
+            $height = imagesy($img);
+            $maxDim = 1600;
+
+            if ($width > $maxDim || $height > $maxDim) {
+                $ratio = $maxDim / max($width, $height);
+                $newWidth = (int)($width * $ratio);
+                $newHeight = (int)($height * $ratio);
+                $newImg = imagecreatetruecolor($newWidth, $newHeight);
+                
+                if ($mime === 'image/png') {
+                    imagealphablending($newImg, false);
+                    imagesavealpha($newImg, true);
+                }
+                
+                imagecopyresampled($newImg, $img, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                
+                ob_start();
+                if ($mime === 'image/png') imagepng($newImg, null, 7);
+                elseif ($mime === 'image/webp') imagewebp($newImg, null, 75);
+                else imagejpeg($newImg, null, 80);
+                
+                $data = ob_get_clean();
+                imagedestroy($img);
+                imagedestroy($newImg);
+                
+                Log::info("Ax.ia: Imagen redimensionada de {$width}x{$height} a {$newWidth}x{$newHeight} para eficiencia.");
+                return $data;
+            }
+        } catch (\Exception $e) {
+            Log::warning("Ax.ia: Falló redimensión de imagen: " . $e->getMessage());
+        }
+        return file_get_contents($path);
+    }
+
+    /**
      * Helper to make the HTTP request to the Gemini API.
      * $parts should be an array of Gemini parts (text, inline_data, etc.)
      */
@@ -348,6 +403,9 @@ class GeminiService implements AiAssistantInterface
             Log::error('Gemini API key is missing.');
             return "Error: No se ha configurado la clave API de Gemini. Configúrala en tu perfil.";
         }
+
+        // AUTO-CORRECCIÓN DE MODELO SI EL DESTINO ES INVÁLIDO O LENTO
+        if (str_contains($model, 'gemini-3')) $model = 'gemini-1.5-flash';
 
         $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
 
@@ -368,7 +426,8 @@ class GeminiService implements AiAssistantInterface
         }
 
         try {
-            $response = Http::timeout(120)->post($url, $payload);
+            // Aumentamos el timeout para archivos pesados pero mantenemos el stream razonable
+            $response = Http::timeout(180)->post($url, $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -400,8 +459,8 @@ class GeminiService implements AiAssistantInterface
                 }
             }
 
-            if ($status === 404 && !$isFallback && $model !== 'gemini-3-flash-preview') {
-                return $this->callGemini('gemini-3-flash-preview', $parts, true);
+            if ($status === 404 && !$isFallback && $model !== 'gemini-1.5-flash') {
+                return $this->callGemini('gemini-1.5-flash', $parts, true);
             }
 
             return "Lo siento, ha ocurrido un error al procesar tu solicitud ({$errorMsg}).";

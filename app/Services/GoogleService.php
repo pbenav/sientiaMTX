@@ -34,7 +34,7 @@ class GoogleService
         $this->client->addScope('email');
         
         $this->client->setAccessType('offline');
-        // $this->client->setPrompt('select_account consent');
+        $this->client->setPrompt('consent');
     }
 
     /**
@@ -98,7 +98,7 @@ class GoogleService
                     return false;
                 }
 
-                $source->google_token = json_encode($newToken);
+                $source->google_token = $newToken;
                 $source->save();
                 
                 $this->client->setAccessToken($newToken);

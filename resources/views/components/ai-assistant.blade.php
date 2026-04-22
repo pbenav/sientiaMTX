@@ -217,11 +217,16 @@
                 </div>
             </template>
 
-            <div x-show="loading" class="self-start bg-white dark:bg-gray-800 text-gray-800 rounded-3xl rounded-tl-none shadow-xl border border-gray-100 dark:border-gray-700/50 px-5 py-3.5">
-                <div class="flex space-x-1.5 items-center h-5">
-                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div x-show="loading" class="self-start bg-white dark:bg-gray-800 text-gray-800 rounded-3xl rounded-tl-none shadow-xl border border-gray-100 dark:border-gray-700/50 px-5 py-3.5 animate-in fade-in slide-in-from-left-4 duration-300">
+                <div class="flex flex-col gap-2">
+                    <div class="flex space-x-1.5 items-center h-5">
+                        <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                    <div x-show="isSendingFile" class="text-[10px] font-bold text-gray-400 animate-pulse tracking-wide uppercase">
+                        Procesando contenido multimedia...
+                    </div>
                 </div>
             </div>
         </div>
@@ -298,6 +303,7 @@
         Alpine.data('sientiaAiAssistant', () => ({
             open: false,
             loading: false,
+            isSendingFile: false,
             input: '',
             messages: [
                 { role: 'ai', content: '¡Hola! Soy **Ax.ia**, tu asistente inteligente en Sientia. ¿En qué puedo ayudarte con tus tareas hoy?' }
@@ -609,6 +615,7 @@
                 this.input = '';
                 this.pendingFile = null;
                 this.loading = true;
+                this.isSendingFile = !!fileToSend;
                 this.scrollToBottom();
 
                 try {
@@ -649,6 +656,7 @@
                     });
                 } finally {
                     this.loading = false;
+                    this.isSendingFile = false;
                     this.scrollToBottom();
                 }
             },
