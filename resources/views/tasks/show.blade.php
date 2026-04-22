@@ -77,7 +77,7 @@
             @endif
 
             <!-- Hub de Acciones Secundarias (Acciones) -->
-            <x-dropdown align="right" width="85">
+            <x-dropdown align="right" width="80">
                 <x-slot name="trigger">
                     <button type="button" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -144,7 +144,7 @@
                 $isGoogleConnected = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
             @endphp
             @if($isGoogleConnected || $team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                <x-dropdown align="right" width="85">
+                <x-dropdown align="right" width="80">
                     <x-slot name="trigger">
                         <button type="button" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
