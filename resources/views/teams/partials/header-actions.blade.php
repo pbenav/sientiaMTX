@@ -41,7 +41,7 @@
         @endphp
 
         <!-- Hub de Integraciones -->
-        @if($isGoogleConnected || $team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
+        @if(!$isForum && ($isGoogleConnected || $team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
             <x-dropdown align="right" width="80">
                 <x-slot name="trigger">
                     <button type="button" class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
