@@ -48,37 +48,41 @@ class TaskPolicy
 
         // 2. PRIVACY RULE: If private, only creator or assigned (user/collaborator/group) can view.
         // Even coordinators are blocked if they are not part of it.
-        $isCreator = $user->id === $task->created_by_id;
-        $isAssigned = $user->id === $task->assigned_user_id ||
-                   $task->assignedTo()->where('users.id', $user->id)->exists() ||
-                   $task->assignedGroups()->whereHas('users', function($q) use ($user) {
-                       $q->where('users.id', $user->id);
-                   })->exists();
+        $isCreator        = $user->id === $task->created_by_id;
+        $isDirectAssigned = $user->id === $task->assigned_user_id;
+        $isCollaborator   = $task->assignedTo()->where('users.id', $user->id)->exists();
+        $isGroupMember    = $task->assignedGroups()->whereHas('users', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->exists();
+        $isAssigned = $isDirectAssigned || $isCollaborator || $isGroupMember;
 
         if ($task->visibility === 'private') {
             if ($isCreator || $isAssigned) {
+                \Log::info("TaskPolicy@view GRANTED [private_participant] task#{$task->id} user#{$user->id} isCreator={$isCreator} isDirectAssigned={$isDirectAssigned} isCollaborator={$isCollaborator} isGroupMember={$isGroupMember}");
                 return true;
             }
-            \Log::warning("TaskPolicy@view DENIED [strict_private] task#{$task->id} user#{$user->id}");
+            \Log::warning("TaskPolicy@view DENIED [strict_private] task#{$task->id} (created_by={$task->created_by_id} assigned_user_id={$task->assigned_user_id}) user#{$user->id} isCreator={$isCreator} isDirectAssigned={$isDirectAssigned}");
             return false;
         }
 
         // 3. PUBLIC Tasks:
         // Coordinators, team owner or task creator can always view
-        $isTeamOwner   = $task->team->created_by_id === $user->id;
-        $isManager     = $task->team->isManager($user);
+        $isTeamOwner = $task->team->created_by_id === $user->id;
+        $isManager   = $task->team->isManager($user);
         
         if ($isCreator || $isTeamOwner || $isManager || $isAssigned) {
             return true;
         }
 
-        // 4. Context access: If user has a personal instance of this parent task, they can view the parent for context
-        if ($task->instances()->where('assigned_user_id', $user->id)->exists()) {
+        // 4. Context access: If user has a personal instance of this task, they can view it.
+        // GUARD: Only applies to PUBLIC tasks — private instances protect their own visibility.
+        if ($task->visibility !== 'private' && $task->instances()->where('assigned_user_id', $user->id)->exists()) {
             return true;
         }
 
-        // 5. Project Visibility: Owners/Creators of the parent task can always see their subtasks
-        if ($task->parent_id && $task->parent->created_by_id === $user->id) {
+        // 5. Project Visibility: Creators of the parent task can see their PUBLIC subtasks.
+        // GUARD: NEVER applies to private tasks — private subtasks are strictly personal.
+        if ($task->visibility !== 'private' && $task->parent_id && $task->parent->created_by_id === $user->id) {
             return true;
         }
 
