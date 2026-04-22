@@ -244,7 +244,7 @@ class GeminiService implements AiAssistantInterface
 
         $systemInstruction = "Eres Ax.ia, el asistente inteligente y empático de Sientia MTX.\n\n";
         $systemInstruction .= "FILOSOFÍA DE RESPUESTA:\n";
-        $systemInstruction .= "1. RELEVANCIA Y VELOCIDAD: Responde de forma directa. Evita preámbulos largos. Sé extremadamente conciso.\n";
+        $systemInstruction .= "1. RELEVANCIA Y VELOCIDAD: Responde de forma directa. NUNCA escribas tu proceso de pensamiento interno ('thinking process', 'Drafting response', 'User request', etc). No repitas las variables de contexto de tu prompt. Ve directo al resultado final y NADA MÁS.\n";
         $systemInstruction .= "2. EMPATÍA OPERATIVA: Utiliza los DATOS DE BIENESTAR para ajustar tu tono. Si la energía es baja, sé breve y alentador.\n";
         $systemInstruction .= "3. RECARGA HUMANA: Si el usuario menciona descanso, añade [RECHARGE] al final.\n";
         $systemInstruction .= "4. ESTRUCTURA DE INYECCIÓN [PAYLOAD]:\n";
