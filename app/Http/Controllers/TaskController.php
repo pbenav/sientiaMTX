@@ -74,6 +74,7 @@ class TaskController extends Controller
 
         $data = json_decode($json, true);
         if (!$data || ($data['type'] ?? '') !== 'sientia_task_v1') {
+            \Log::warning('JSON Import Error: ' . json_last_error_msg() . ' / JSON String: ' . $json);
             return response()->json(['success' => false, 'message' => 'Formato de datos JSON inválido.'], 422);
         }
 
@@ -101,7 +102,7 @@ class TaskController extends Controller
         return response()->json(['success' => true, 'message' => 'Tarea importada correctamente.', 'url' => route('teams.tasks.show', [$team, $task])]);
     }
 
-    public function exportJson(Team $team, Task $task)
+    public function exportJson(Request $request, Team $team, Task $task)
     {
         if ($task->team_id !== $team->id) {
             abort(404);
