@@ -149,61 +149,88 @@
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-2xl overflow-hidden transition-all">
             <div id="bulkActionBar"
-                class="hidden bg-violet-600 dark:bg-violet-900/90 border-b border-violet-500 p-3 items-center gap-4 transition-all animate-fade-in flex-wrap">
+                class="hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b-2 border-violet-500 p-4 sticky top-0 z-[40] items-center justify-between gap-6 transition-all animate-in slide-in-from-top duration-500 shadow-2xl shadow-indigo-500/10">
                 
-                <div class="flex items-center gap-2 shrink-0">
-                    <span class="p-1.5 bg-white/20 rounded-lg text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </span>
-                    <span class="text-xs font-black uppercase tracking-widest text-white">
-                        <span id="selectedCount">0</span> SELECCIONADAS
-                    </span>
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <div class="w-10 h-10 bg-violet-600 rounded-2xl shadow-lg shadow-violet-500/30 flex items-center justify-center text-white rotate-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-4 w-4 bg-violet-500 text-[8px] font-black text-white items-center justify-center" id="selectedCount">0</span>
+                            </span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-400">Acción Masiva</span>
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Tareas seleccionadas</span>
+                        </div>
+                    </div>
+
+                    <div class="h-10 w-px bg-gray-100 dark:bg-gray-800 hidden sm:block"></div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Bulk Status -->
+                        <div class="relative group">
+                            <select onchange="applyBulkUpdate('status', this.value)" 
+                                class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 py-2 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/20 cursor-pointer transition-all min-w-[140px]">
+                                <option value="">🎯 Estado</option>
+                                @foreach (['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'blocked' => 'Bloqueada'] as $val => $label)
+                                    <option value="{{ $val }}" class="text-gray-900 dark:text-white">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Priority -->
+                        <div class="relative group">
+                            <select onchange="applyBulkUpdate('priority', this.value)" 
+                                class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 py-2 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/20 cursor-pointer transition-all min-w-[140px]">
+                                <option value="">⚡ Prioridad</option>
+                                @foreach (['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'] as $val => $label)
+                                    <option value="{{ $val }}" class="text-gray-900 dark:text-white">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Assignee -->
+                        <div class="relative group">
+                            <select onchange="applyBulkUpdate('assigned_user_id', this.value)" 
+                                class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 py-2 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/20 cursor-pointer transition-all min-w-[140px]">
+                                <option value="">👤 Responsable</option>
+                                @foreach ($members as $member)
+                                    <option value="{{ $member->id }}" class="text-gray-900 dark:text-white">{{ $member->name }}</option>
+                                @endforeach
+                            </select>
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="h-6 w-px bg-white/20 hidden sm:block"></div>
-
-                <div class="flex flex-wrap items-center gap-3 flex-1">
-                    <!-- Bulk Status -->
-                    <select onchange="applyBulkUpdate('status', this.value)" 
-                        class="bg-white/10 hover:bg-white/20 border-none rounded-xl text-[10px] font-black uppercase tracking-widest text-white py-1.5 pr-8 focus:ring-0 cursor-pointer transition-all placeholder-white/50 min-w-[120px]">
-                        <option value="" class="text-gray-900">Estado</option>
-                        @foreach (['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'blocked' => 'Bloqueada'] as $val => $label)
-                            <option value="{{ $val }}" class="text-gray-900">{{ $label }}</option>
-                        @endforeach
-                    </select>
-
-                    <!-- Bulk Priority -->
-                    <select onchange="applyBulkUpdate('priority', this.value)" 
-                        class="bg-white/10 hover:bg-white/20 border-none rounded-xl text-[10px] font-black uppercase tracking-widest text-white py-1.5 pr-8 focus:ring-0 cursor-pointer transition-all placeholder-white/50 min-w-[120px]">
-                        <option value="" class="text-gray-900">Prioridad</option>
-                        @foreach (['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'] as $val => $label)
-                            <option value="{{ $val }}" class="text-gray-900">{{ $label }}</option>
-                        @endforeach
-                    </select>
-
-                    <!-- Bulk Assignee -->
-                    <select onchange="applyBulkUpdate('assigned_user_id', this.value)" 
-                        class="bg-white/10 hover:bg-white/20 border-none rounded-xl text-[10px] font-black uppercase tracking-widest text-white py-1.5 pr-8 focus:ring-0 cursor-pointer transition-all placeholder-white/50 min-w-[120px]">
-                        <option value="" class="text-gray-900">Responsable</option>
-                        @foreach ($members as $member)
-                            <option value="{{ $member->id }}" class="text-gray-900">{{ $member->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <button type="button" onclick="confirmBulkDelete()"
-                        class="px-4 py-1.5 bg-white/10 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
+                        class="px-5 py-2.5 bg-red-50 hover:bg-red-500 dark:bg-red-900/10 dark:hover:bg-red-600 text-red-600 dark:text-red-400 hover:text-white dark:hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center gap-2 border border-red-100 dark:border-red-900/50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Borrar
+                        Eliminar selección
                     </button>
+                    
+                    <div class="h-6 w-px bg-gray-100 dark:bg-gray-800"></div>
+
                     <button type="button" onclick="deselectAll()"
-                        class="p-1.5 bg-black/20 hover:bg-black/40 text-white rounded-xl transition-all" title="Deseleccionar todo">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        class="group p-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-xl transition-all shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center" title="Deseleccionar todo">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
