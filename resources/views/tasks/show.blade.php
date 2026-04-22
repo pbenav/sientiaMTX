@@ -775,13 +775,124 @@
             @if ($displayObservations)
                 <div
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
-                    <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-                        {{ __('tasks.observations') }}</h3>
-                    <div
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            {{ __('tasks.observations') }}
+                        </h3>
+                        <button onclick="printObservations()" 
+                                class="p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                title="Imprimir observaciones">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Imprimir
+                        </button>
+                    </div>
+                    <div id="observations-content"
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
                         {!! str($displayObservations)->markdown() !!}
                     </div>
                 </div>
+
+                <script>
+                    function printObservations() {
+                        const content = document.getElementById('observations-content').innerHTML;
+                        const taskTitle = @json($task->title);
+                        const isDark = document.documentElement.classList.contains('dark');
+                        
+                        const printWin = window.open('', '_blank', 'width=800,height=900');
+                        printWin.document.write(`
+                            <html>
+                                <head>
+                                    <title>Imprimir - ${taskTitle}</title>
+                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                                    <style>
+                                        body { 
+                                            font-family: 'Inter', -apple-system, sans-serif; 
+                                            padding: 50px; 
+                                            color: #1e293b; 
+                                            line-height: 1.6;
+                                            background-color: #fff;
+                                        }
+                                        .header { 
+                                            border-bottom: 4px solid #4f46e5; 
+                                            margin-bottom: 40px; 
+                                            padding-bottom: 20px; 
+                                            display: flex;
+                                            justify-content: space-between;
+                                            align-items: flex-end;
+                                        }
+                                        .title-container { flex: 1; }
+                                        .brand { 
+                                            font-weight: 900; 
+                                            font-size: 10px; 
+                                            text-transform: uppercase; 
+                                            letter-spacing: 0.3em; 
+                                            color: #6366f1; 
+                                            margin-bottom: 8px;
+                                            display: block;
+                                        }
+                                        .title { 
+                                            font-size: 28px; 
+                                            font-weight: 900; 
+                                            color: #0f172a; 
+                                            margin: 0; 
+                                            line-height: 1.1;
+                                            letter-spacing: -0.02em;
+                                        }
+                                        .meta { 
+                                            font-size: 10px; 
+                                            color: #94a3b8; 
+                                            font-weight: 700; 
+                                            text-transform: uppercase;
+                                            margin-top: 10px;
+                                        }
+                                        .content { 
+                                            font-size: 15px; 
+                                            color: #334155;
+                                        }
+                                        .content h1 { font-size: 20px; margin-top: 30px; }
+                                        .content h2 { font-size: 18px; margin-top: 25px; }
+                                        .content p { margin-bottom: 15px; }
+                                        .content ul, .content ol { padding-left: 20px; margin-bottom: 15px; }
+                                        .logo-watermark {
+                                            position: fixed;
+                                            bottom: 40px;
+                                            right: 40px;
+                                            opacity: 0.1;
+                                            font-weight: 900;
+                                            font-size: 24px;
+                                            letter-spacing: -0.05em;
+                                            color: #4f46e5;
+                                        }
+                                        @media print {
+                                            body { padding: 0; }
+                                            .header { border-color: #000; }
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="header">
+                                        <div class="title-container">
+                                            <span class="brand">Sientia MTX &bull; Observaciones</span>
+                                            <h1 class="title">${taskTitle}</h1>
+                                            <div class="meta">Documento generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}</div>
+                                        </div>
+                                    </div>
+                                    <div class="content">${content}</div>
+                                    <div class="logo-watermark">Sientia.</div>
+                                    <script>
+                                        window.onload = function() {
+                                            window.print();
+                                            setTimeout(() => window.close(), 500);
+                                        };
+                                    <\/script>
+                                </body>
+                            </html>
+                        `);
+                        printWin.document.close();
+                    }
+                </script>
             @endif
 
             <!-- Private Notes -->
