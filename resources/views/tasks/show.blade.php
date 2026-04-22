@@ -39,182 +39,200 @@
         <div class="flex items-center gap-2 flex-wrap shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
             @can('update', $task)
                 <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
-                    class="shrink-0 flex items-center gap-1.5 text-xs bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20 font-bold active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     {{ __('tasks.edit') }}
                 </a>
-
-                <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit"
-                        title="{{ $task->google_task_id ? __('google.sync_tasks') : __('google.export_tasks') }}"
-                        class="shrink-0 flex items-center gap-1.5 text-xs {{ $task->google_task_id ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400' }} px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
-                        @if ($task->google_task_id)
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            {{ __('google.sync_tasks') }}
-                        @else
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                            </svg>
-                            {{ __('google.export_tasks') }}
-                        @endif
-                    </button>
-                </form>
-
-                <form action="{{ route('google.export_calendar', [$team, $task]) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit"
-                        title="{{ $task->google_calendar_event_id ? __('google.calendar_remove') : __('google.calendar_export') }}"
-                        class="shrink-0 flex items-center gap-1.5 text-xs {{ $task->google_calendar_event_id ? 'bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400' : 'bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/10 text-emerald-600/70 dark:text-emerald-400/70' }} px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {{ $task->google_calendar_event_id ? __('google.calendar_remove') : __('google.calendar_export') }}
-                    </button>
-                </form>
             @endcan
-            
+
             @if ($task->is_template && ($team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id))
                 <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
                     @csrf
-                    <button type="submit"
-                        title="{{ __('Sobreescribir títulos y descripciones de todos los miembros con los datos de esta plantilla') }}"
-                        class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-600/20 font-bold border border-transparent">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        {{ __('tasks.sync_members') }}
+                        <span class="hidden sm:inline">{{ __('tasks.sync_members') }}</span>
                     </button>
                 </form>
             @endif
 
+            <!-- Hub de Acciones Secundarias -->
+            <x-dropdown align="right" width="64">
+                <x-slot name="trigger">
+                    <button type="button" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                        <span>{{ __('Acciones') }}</span>
+                    </button>
+                </x-slot>
+
+                <x-slot name="content">
+                    <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
+                        Google Workspace
+                    </div>
+                    
+                    @can('update', $task)
+                        <!-- Sincronización Google Tasks -->
+                        <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                <div class="p-1.5 {{ $task->google_task_id ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }} rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-900 dark:text-white">{{ $task->google_task_id ? __('google.sync_tasks') : __('google.export_tasks') }}</span>
+                                    <span class="text-[9px] text-gray-500 tracking-tight">Sincronización Cloud</span>
+                                </div>
+                            </button>
+                        </form>
+
+                        <!-- Google Calendar -->
+                        <form action="{{ route('google.export_calendar', [$team, $task]) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                <div class="p-1.5 {{ $task->google_calendar_event_id ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600' }} rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-900 dark:text-white">{{ $task->google_calendar_event_id ? __('google.calendar_remove') : __('google.calendar_export') }}</span>
+                                    <span class="text-[9px] text-gray-500 tracking-tight">Calendario compartido</span>
+                                </div>
+                            </button>
+                        </form>
+                    @endcan
+
+                    <div class="px-3 py-2 mt-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
+                        Portabilidad
+                    </div>
+
+                    <!-- Reproducir en Equipo -->
+                    @php
+                        $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
+                    @endphp
+                    @if($otherTeams->count() > 0)
+                        <button type="button" onclick="reproduceInTeam()" class="w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                            <div class="p-1.5 bg-violet-50 text-violet-600 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white">Reproducir en Equipo</span>
+                                <span class="text-[9px] text-gray-500 tracking-tight">Clonar tarea en otro espacio</span>
+                            </div>
+                        </button>
+
+                    <!-- Exportar JSON -->
+                    <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-3 py-3">
+                        <div class="p-1.5 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900 dark:text-white">Exportar Tarea (.json)</span>
+                            <span class="text-[9px] text-gray-500 tracking-tight">Descargar backup portátil</span>
+                        </div>
+                    </x-dropdown-link>
+                </x-slot>
+            </x-dropdown>
+
             @can('delete', $task)
-                <form id="delete-task-form-{{ $task->id }}"
-                    action="{{ route('teams.tasks.destroy', [$team, $task]) }}" method="POST" class="inline">
+                <form id="delete-task-form-{{ $task->id }}" action="{{ route('teams.tasks.destroy', [$team, $task]) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="button"
-                        onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')"
-                        class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <button type="button" onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-red-100 dark:border-red-900/50 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        {{ __('tasks.delete') }}
+                        <span class="hidden sm:inline">{{ __('tasks.delete') }}</span>
                     </button>
                 </form>
             @endcan
 
-            @php
-                $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
-            @endphp
-            @if($otherTeams->count() > 0)
-                <button type="button" 
-                    onclick="reproduceInTeam()"
-                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-50 hover:bg-violet-100 dark:bg-violet-500/10 dark:hover:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 text-violet-600 dark:text-violet-400 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                    {{ __('Reproducir en Equipo') }}
-                </button>
-
-                <a href="{{ route('teams.tasks.export-json', [$team, $task]) }}" 
-                    class="shrink-0 flex items-center gap-1.5 text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2.5 rounded-xl transition-all shadow-sm font-bold"
-                    title="{{ __('Descargar todos los datos de esta tarea en formato JSON') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    {{ __('Exportar JSON') }}
-                </a>
-
-                <script>
-                    function reproduceInTeam() {
-                        const teams = @json($otherTeams->pluck('name', 'id'));
-                        let options = '';
-                        for (const [id, name] of Object.entries(teams)) {
-                            options += `<option value="${id}">${name}</option>`;
-                        }
-
-                        Swal.fire({
-                            title: '¿A qué equipo lo enviamos?',
-                            html: `
-                                <div class="text-left mt-4">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Selecciona el equipo de destino</label>
-                                    <select id="target-team-select" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
-                                        ${options}
-                                    </select>
-                                    <p class="mt-4 text-[10px] text-gray-400 font-medium italic">* Se creará una copia de esta tarea asignada a ti en el equipo seleccionado.</p>
-                                </div>
-                            `,
-                            showCancelButton: true,
-                            confirmButtonText: 'Reproducir 🚀',
-                            cancelButtonText: 'Cancelar',
-                            confirmButtonColor: '#7c3aed',
-                            background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
-                            color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
-                            customClass: {
-                                popup: 'rounded-[2rem]',
-                                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
-                                cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
-                            },
-                            preConfirm: () => {
-                                return document.getElementById('target-team-select').value;
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                fetch("{{ route('teams.tasks.copy-to-team', [$team, $task]) }}", {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify({ target_team_id: result.value })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: '¡Listo!',
-                                            text: data.message,
-                                            showConfirmButton: true,
-                                            confirmButtonText: 'Ir a la nueva tarea',
-                                            confirmButtonColor: '#7c3aed'
-                                        }).then(() => {
-                                            window.location.href = data.url;
-                                        });
-                                    } else {
-                                        Swal.fire('Error', data.message, 'error');
-                                    }
-                                });
-                            }
-                        });
+            <script>
+                function reproduceInTeam() {
+                    const teams = @json($otherTeams->pluck('name', 'id'));
+                    let options = '';
+                    for (const [id, name] of Object.entries(teams)) {
+                        options += `<option value="${id}">${name}</option>`;
                     }
-                </script>
-            @endif
 
-            @if (!$task->is_template)
-                @include('tasks.partials.task-timer-button', ['task' => $task])
-            @elseif ($personalInstance)
-                @include('tasks.partials.task-timer-button', ['task' => $personalInstance])
-            @endif
+                    Swal.fire({
+                        title: '¿A qué equipo lo enviamos?',
+                        html: `
+                            <div class="text-left mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Selecciona el equipo de destino</label>
+                                <select id="target-team-select" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
+                                    ${options}
+                                </select>
+                                <p class="mt-4 text-[10px] text-gray-500 font-medium italic">* Se creará una copia de esta tarea asignada a ti en el equipo seleccionado, manteniendo la descripción y preferencias básicas.</p>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Reproducir 🚀',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#7c3aed',
+                        background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
+                            cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
+                        },
+                        preConfirm: () => {
+                            return document.getElementById('target-team-select').value;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch("{{ route('teams.tasks.copy-to-team', [$team, $task]) }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ target_team_id: result.value })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '¡Listo!',
+                                        text: data.message,
+                                        showConfirmButton: true,
+                                        confirmButtonText: 'Ir a la nueva tarea',
+                                        confirmButtonColor: '#7c3aed'
+                                    }).then(() => {
+                                        window.location.href = data.url;
+                                    });
+                                } else {
+                                    Swal.fire('Error', data.message, 'error');
+                                }
+                            });
+                        }
+                    });
+                }
+            </script>
+        @endif
 
-            @include('teams.partials.header-actions')
-        </div>
+        @if (!$task->is_template)
+            @include('tasks.partials.task-timer-button', ['task' => $task])
+        @elseif ($personalInstance)
+            @include('tasks.partials.task-timer-button', ['task' => $personalInstance])
+        @endif
+
+        @include('teams.partials.header-actions')
+    </div>
     </x-slot>
 
     @php

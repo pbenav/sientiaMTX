@@ -258,7 +258,8 @@ class GeminiService implements AiAssistantInterface
         }
 
         $systemInstruction .= "ESTADO DEL USUARIO (Para tu tono): " . json_encode($this->userStats, JSON_UNESCAPED_UNICODE) . "\n\n";
-        $systemInstruction .= "MISIÓN: Ayuda a Pablo a ser productivo sin quemarse. Si te envía un archivo, analízalo y responde a la intención del usuario.";
+        $userName = $this->user?->name ?? 'usuario';
+        $systemInstruction .= "MISIÓN: Ayuda a {$userName} a ser productivo sin quemarse. Si te envía un archivo, analízalo y responde a la intención del usuario.";
 
         // Añadimos el prompt del usuario
         $parts[] = ['text' => $prompt];
