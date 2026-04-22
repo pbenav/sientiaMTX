@@ -69,7 +69,14 @@
                 </form>
             @endif
 
-            <!-- Hub de Acciones Secundarias -->
+            <!-- TIMER BUTTON (Start/Stop) -->
+            @if (!$task->is_template)
+                @include('tasks.partials.task-timer-button', ['task' => $task])
+            @elseif ($personalInstance)
+                @include('tasks.partials.task-timer-button', ['task' => $personalInstance])
+            @endif
+
+            <!-- Hub de Acciones Secundarias (Acciones) -->
             <x-dropdown align="right" width="85">
                 <x-slot name="trigger">
                     <button type="button" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
@@ -82,45 +89,7 @@
 
                 <x-slot name="content">
                     <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
-                        Google Workspace
-                    </div>
-                    
-                    @can('update', $task)
-                        <!-- Sincronización Google Tasks -->
-                        <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
-                                <div class="shrink-0 p-2 {{ $task->google_task_id ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }} rounded-xl group-hover:scale-110 transition-transform">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm">Sincronizar Google Tasks</span>
-                                    <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Vínculo bidireccional con Google</span>
-                                </div>
-                            </button>
-                        </form>
-
-                        <!-- Google Calendar -->
-                        <form action="{{ route('google.export_calendar', [$team, $task]) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
-                                <div class="shrink-0 p-2 {{ $task->google_calendar_event_id ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600' }} rounded-xl group-hover:scale-110 transition-transform">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm">Calendario de Google</span>
-                                    <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Gestionar evento en calendario</span>
-                                </div>
-                            </button>
-                        </form>
-                    @endcan
-
-                    <div class="px-3 py-2 mt-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
-                        Portabilidad
+                        Workspace & Portabilidad
                     </div>
 
                     <!-- Reproducir en Equipo -->
@@ -170,11 +139,69 @@
                 </x-slot>
             </x-dropdown>
 
+            <!-- Hub de Integraciones (Integraciones) -->
+            @php
+                $isGoogleConnected = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+            @endphp
+            @if($isGoogleConnected || $team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
+                <x-dropdown align="right" width="85">
+                    <x-slot name="trigger">
+                        <button type="button" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2V4zm-5 6a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1zM6 20a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1z" />
+                            </svg>
+                            <span class="hidden sm:inline">Integraciones</span>
+                            <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
+                            Google Workspace
+                        </div>
+                        
+                        @can('update', $task)
+                            <!-- Sincronización Google Tasks -->
+                            <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                                    <div class="shrink-0 p-2 {{ $task->google_task_id ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }} rounded-xl group-hover:scale-110 transition-transform">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">Sincronizar Google Tasks</span>
+                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Vínculo bidireccional con Google</span>
+                                    </div>
+                                </button>
+                            </form>
+
+                            <!-- Google Calendar -->
+                            <form action="{{ route('google.export_calendar', [$team, $task]) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                                    <div class="shrink-0 p-2 {{ $task->google_calendar_event_id ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600' }} rounded-xl group-hover:scale-110 transition-transform">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">Calendario de Google</span>
+                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Gestionar evento en calendario</span>
+                                    </div>
+                                </button>
+                            </form>
+                        @endcan
+                    </x-slot>
+                </x-dropdown>
+            @endif
+
             @can('delete', $task)
                 <form id="delete-task-form-{{ $task->id }}" action="{{ route('teams.tasks.destroy', [$team, $task]) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="button" onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-red-100 dark:border-red-900/50 shadow-sm">
+                    <button type="button" onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-red-100 dark:border-red-900/50 shadow-sm ml-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -249,13 +276,6 @@
                 }
             </script>
 
-        @if (!$task->is_template)
-            @include('tasks.partials.task-timer-button', ['task' => $task])
-        @elseif ($personalInstance)
-            @include('tasks.partials.task-timer-button', ['task' => $personalInstance])
-        @endif
-
-        @include('teams.partials.header-actions')
     </div>
     </x-slot>
 
