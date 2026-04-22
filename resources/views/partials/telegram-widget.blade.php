@@ -21,12 +21,13 @@
          :style="`display: ${open ? 'flex' : 'none'} !important; width: ${dimensions.width}px; height: ${dimensions.height}px; max-width: 90vw; max-height: 85vh;`"
          x-cloak>
         
-        <!-- Tirador de redimensionamiento (Parte inferior izquierda) -->
-        <div class="absolute bottom-2 left-2 w-8 h-8 cursor-sw-resize z-[60] flex items-center justify-center group/resize"
+        <!-- Tirador de redimensionamiento (Coherencia visual con Ax.ia) -->
+        <div class="absolute bottom-0 left-0 w-6 h-6 cursor-sw-resize z-[60] p-1 flex items-end justify-start opacity-30 hover:opacity-100 transition-opacity translate-x-1 -translate-y-1"
              @mousedown.stop.prevent="startResize($event)"
              @touchstart.stop.prevent="startResize($event)">
-            <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover/resize:text-sky-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 19L5 5m0 0v14m0-14h14" />
+            <svg class="w-3 h-3 text-gray-600 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="18" y1="13" x2="13" y2="18" />
             </svg>
         </div>
 
