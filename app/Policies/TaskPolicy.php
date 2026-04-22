@@ -80,8 +80,8 @@ class TaskPolicy
         }
 
         // 5. Project Visibility: Creators of the parent task can see their PUBLIC subtasks.
-        // GUARD: NEVER applies to private tasks — private subtasks are strictly personal.
-        if ($task->visibility !== 'private' && $task->parent_id && $task->parent->created_by_id === $user->id) {
+        // GUARD: ONLY applies to public tasks — private subtasks are strictly personal.
+        if ($task->visibility === 'public' && $task->parent_id && $task->parent->created_by_id === $user->id) {
             return true;
         }
 
