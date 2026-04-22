@@ -222,4 +222,6 @@ return [
     'member_since' => 'Member since :date',
     'leading_progress' => 'Member with highest progress in this plan',
     'priority_changed' => 'Priority adjusted by the user',
+    'assigned_to_one' => 'assigned member',
+    'assigned_to_many' => 'assigned members',
 ];

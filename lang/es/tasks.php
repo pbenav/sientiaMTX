@@ -266,4 +266,6 @@ return [
     'member_since' => 'Miembro desde :date',
     'leading_progress' => 'Miembro con mayor progreso en este plan',
     'priority_changed' => 'Prioridad ajustada por el usuario',
+    'assigned_to_one' => 'miembro asignado',
+    'assigned_to_many' => 'miembros asignados',
 ];
