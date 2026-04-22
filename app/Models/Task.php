@@ -210,7 +210,7 @@ class Task extends Model
     {
         return $this->hasMany(Task::class, 'parent_id')
             ->orderBy('title')
-            ->orderBy(User::select('name')->whereColumn('users.id', 'tasks.assigned_user_id'));
+            ->orderByRaw('(SELECT name FROM users WHERE users.id = tasks.assigned_user_id)');
     }
 
     // Relationship: A template task has many instances
@@ -312,7 +312,11 @@ class Task extends Model
 
     public function scopeVisibleTo($query, $user, $isManager = false)
     {
-        return $query->where(function ($q) use ($user, $isManager) {
+        // Ensure we are working with a builder, not the relation object directly, 
+        // to avoid cloning issues in some PHP 8.4/Laravel 12 contexts.
+        $builder = $query instanceof \Illuminate\Database\Eloquent\Relations\Relation ? $query->getQuery() : $query;
+
+        return $builder->where(function ($q) use ($user, $isManager) {
             // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
             if ($isManager) {
                 $q->where('visibility', 'public')
@@ -327,7 +331,7 @@ class Task extends Model
                             $access->where('created_by_id', $user->id)
                                 ->orWhere('assigned_user_id', $user->id)
                                 ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
-                                ->orWhereHas('assignedGroups.users', fn($sub) => $sub->where('users.id', $user->id));
+                                ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
                         });
                 })
                 ->orWhere(function ($private) use ($user) {
@@ -411,7 +415,7 @@ class Task extends Model
                   ->where('is_template', false);
             })
             ->where(function($q) use ($user, $team) {
-                $this->scopeFocusedFor($q, $user, $team);
+                 $q->focusedFor($user, $team);
             });
     }
 
