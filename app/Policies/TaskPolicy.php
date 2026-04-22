@@ -19,6 +19,16 @@ class TaskPolicy
         return null;
     }
 
+    public function create(User $user, \App\Models\Team $team): bool
+    {
+        if ($team->created_by_id === $user->id) {
+            return true;
+        }
+        
+        // Cualquier miembro del equipo puede crear tareas
+        return $team->members()->where('user_id', $user->id)->exists();
+    }
+
     /**
      * Determine whether the user can view the task.
      */

@@ -340,14 +340,34 @@ class AiChatController extends Controller
         return $this->transferGlobalContent($request, $team);
     }
 
-    public function transferGlobalContent(Request $request, \App\Models\Team $team)
+    public function transferGlobalContent(Request $request, $teamId = null)
     {
+        \Illuminate\Support\Facades\Log::info("transferGlobalContent INICIO", [
+            'request_data' => $request->all(),
+            'team_id_param' => $teamId
+        ]);
+
+        // Prioridad: 1. ID en ruta, 2. ID en el cuerpo de la request, 3. Primer equipo del usuario
+        $team = \App\Models\Team::find($teamId ?: $request->team_id);
+        
+        if (!$team) {
+            $team = $request->user()->teams()->first();
+        }
+
+        if (!$team) {
+            \Illuminate\Support\Facades\Log::warning("transferGlobalContent ERROR: No hay equipo válido.");
+            return response()->json(['success' => false, 'message' => 'No tienes ningún equipo activo para recibir esta tarea.'], 422);
+        }
+
         if ($request->user()->cannot('view', $team)) {
+            \Illuminate\Support\Facades\Log::warning("transferGlobalContent ERROR: Permiso denegado para equipo " . $team->id);
             abort(403);
         }
 
         $payload = $this->extractPayload($request->input('content'));
         $user = $request->user();
+
+        \Illuminate\Support\Facades\Log::info("transferGlobalContent PAYLOAD EXTRAIDO", ['payload' => $payload, 'target' => $request->target]);
 
         if (in_array($request->target, ['task', 'private_note', 'private-notes', 'observations', 'observations_append', 'description'])) {
             // Create a new task for this content
@@ -363,16 +383,23 @@ class AiChatController extends Controller
                 $obs = $payload;
             }
 
-            $task = \App\Models\Task::create([
-                'team_id' => $team->id,
-                'title' => $title ?: '📝 Tarea de Ax.ia: ' . now()->format('d/m H:i'),
-                'description' => $desc,
-                'observations' => $obs,
-                'created_by_id' => $user->id,
-                'assigned_user_id' => $user->id,
-                'visibility' => 'private',
-                'status' => 'pending'
-            ]);
+            try {
+                $task = \App\Models\Task::create([
+                    'team_id' => $team->id,
+                    'title' => $title ?: '📝 Tarea de Ax.ia: ' . now()->format('d/m H:i'),
+                    'description' => $desc,
+                    'observations' => $obs,
+                    'created_by_id' => $user->id,
+                    'assigned_user_id' => $user->id,
+                    'visibility' => 'private',
+                    'status' => 'pending'
+                ]);
+                $task->refresh(); // ensure all fields are set
+                \Illuminate\Support\Facades\Log::info("transferGlobalContent TAREA CREADA", ['task_id' => $task->id]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("transferGlobalContent ERROR CREADO TAREA", ['e' => $e->getMessage()]);
+                return response()->json(['success' => false, 'message' => 'Error BD: ' . $e->getMessage()], 500);
+            }
 
             if ($request->target === 'private_note' || $request->target === 'private-notes') {
                 \App\Models\TaskPrivateNote::create([
@@ -382,7 +409,12 @@ class AiChatController extends Controller
                 ]);
             }
 
-            return response()->json(['success' => true, 'message' => "Tarea \"{$task->title}\" creada con éxito."]);
+            return response()->json([
+                'success' => true, 
+                'message' => "Tarea \"{$task->title}\" creada con éxito.",
+                'task_id' => $task->id,
+                'team_id' => $task->team_id
+            ]);
         }
 
         // Find or create a "General Chat" thread for the team

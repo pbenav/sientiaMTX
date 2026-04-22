@@ -702,16 +702,15 @@
                 // We encode the content to pass it safely to the onclick handler
                 let formatted = text.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
                     const cleanContent = content.trim();
-                    const escapedContent = cleanContent.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
                     
                     return `<div class="bg-indigo-50/50 dark:bg-indigo-500/5 border-2 border-dashed border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl p-4 my-4 font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 relative group/payload shadow-inner">
                         <span class="absolute -top-3 left-4 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-200 dark:border-indigo-800 shadow-sm">Contenido Inyectable</span>
                         ${cleanContent.replace(/\n/g, '<br>')}
                         <div class="mt-4 flex justify-end">
-                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: '${escapedContent}' }))" 
-                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-                                Inyectar ahora
+                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(cleanContent).replace(/"/g, '&quot;')}, direct: true } }))" 
+                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2 group/btn">
+                                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:-translate-y-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                                <span>Inyectar ahora</span>
                             </button>
                         </div>
                     </div>`;
@@ -791,161 +790,168 @@
                 }
             },
 
-            async transferToTask(content) {
+            async transferToTask(detail) {
+                // 1. DATA PREPARATION
+                let content = (typeof detail === 'string') ? detail : (detail.content || '');
+                const isDirect = (typeof detail === 'object' && detail.direct);
+                
                 this.open = false;
                 const isDark = document.documentElement.classList.contains('dark');
                 
-                // 1. DATA PARSING
                 const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                const rawPayload = match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
-                
-                let payloadData = null;
+                const rawPayload = (isDirect && !match) ? content : (match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim());
+
+                let payloadData = {};
+                let textToInject = rawPayload; 
+
                 try {
                     payloadData = JSON.parse(rawPayload);
-                    // Standardize keys
-                    if (payloadData.nombre && !payloadData.title) payloadData.title = payloadData.nombre;
-                    if (payloadData.desc && !payloadData.description) payloadData.description = payloadData.desc;
-                } catch(e) {
+                    if (typeof payloadData === 'object' && payloadData !== null) {
+                        textToInject = payloadData.description || payloadData.content || payloadData.text || rawPayload;
+                    }
+                } catch (e) {
                     payloadData = { description: rawPayload };
                 }
 
-                // 2. MAIN CHOICE MODAL
-                const { value: mainAction } = await Swal.fire({
-                    width: (window.innerWidth < 640) ? '95%' : '500px',
-                    padding: '0',
-                    background: isDark ? '#0f172a' : '#ffffff',
-                    color: isDark ? '#f1f5f9' : '#1e293b',
-                    showConfirmButton: false,
-                    showCancelButton: false,
+                // 2. FAST PATH: DIRECT INJECTION
+                if (isDirect) {
+                    let targetEl = document.activeElement;
+                    if (!targetEl || (!['TEXTAREA', 'INPUT'].includes(targetEl.tagName) && !targetEl.closest('.ql-editor') && !targetEl.classList.contains('ql-editor'))) {
+                        targetEl = document.querySelector('.ql-editor') || document.querySelector('textarea:not([style*="display: none"])');
+                    }
+
+                    if (targetEl) {
+                        const isQuill = targetEl.classList.contains('ql-editor') || targetEl.closest('.ql-editor');
+                        const actualEditor = targetEl.classList.contains('ql-editor') ? targetEl : targetEl.closest('.ql-editor');
+
+                        if (isQuill && actualEditor) {
+                            actualEditor.innerHTML += marked.parse(textToInject);
+                            actualEditor.dispatchEvent(new Event('input', { bubbles: true }));
+                        } else {
+                            const start = targetEl.selectionStart || 0;
+                            const end = targetEl.selectionEnd || 0;
+                            const val = targetEl.value;
+                            targetEl.value = val.substring(0, start) + textToInject + val.substring(end);
+                            targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        targetEl.focus();
+                        Swal.fire({ icon: 'success', title: '¡Inyectado!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                    } else {
+                        Swal.fire('Atención', 'No se encontró un campo de texto activo.', 'warning');
+                    }
+                    return;
+                }
+
+                // 3. NORMAL PATH: ACTION SELECTOR
+                let selectedAction = null;
+                await Swal.fire({
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¿Qué quieres hacer con este contenido?</span>',
                     html: `
-                        <div class="text-left overflow-hidden rounded-[2.5rem]">
-                            <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-gray-800 flex items-center gap-5">
-                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center shrink-0">
-                                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400 block mb-1">Ax.ia Intelligence</span>
-                                    <h2 class="text-xl font-black text-gray-900 dark:text-white leading-tight">Acción Sugerida</h2>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <div class="grid grid-cols-1 gap-3" id="ai-main-actions">
-                                    <button data-action="new" class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left outline-none ring-1 ring-gray-100 dark:ring-gray-800">
-                                        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center text-2xl shrink-0">🚀</div>
-                                        <div class="flex-1">
-                                            <div class="font-black text-gray-900 dark:text-white text-xs uppercase tracking-tight">Crear Nueva Tarea</div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Genera una tarea independiente con este contenido</div>
-                                        </div>
-                                    </button>
-
-                                    ${this.taskId ? `
-                                    <button data-action="update" class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-violet-500 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left outline-none ring-1 ring-gray-100 dark:ring-gray-800">
-                                        <div class="w-12 h-12 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center text-2xl shrink-0">📝</div>
-                                        <div class="flex-1">
-                                            <div class="font-black text-gray-900 dark:text-white text-xs uppercase tracking-tight">Actualizar Tarea Actual</div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Añadir o sobrescribir en la tarea que estás visualizando</div>
-                                        </div>
-                                    </button>
-                                    ` : ''}
-
-                                    <button data-action="cursor" class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800/40 border-2 border-transparent hover:border-emerald-500 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/5 rounded-2xl shadow-sm hover:shadow-md transition-all text-left outline-none ring-1 ring-gray-100 dark:ring-gray-800">
-                                        <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-2xl shrink-0">🖱️</div>
-                                        <div class="flex-1">
-                                            <div class="font-black text-gray-900 dark:text-white text-xs uppercase tracking-tight">Pegar en el Cursor</div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Inyectar directamente en el editor activo</div>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-gray-800 flex justify-center">
-                                <button onclick="Swal.close()" class="px-8 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500 hover:border-red-500 transition-all">Cancelar</button>
+                        <div class="p-2 space-y-4 text-left">
+                            <div id="ai-main-actions" class="grid grid-cols-1 gap-3">
+                                <button data-action="new" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all text-left group">
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Nueva Tarea</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Crear una tarea completa en este equipo con este contenido.</div>
+                                    </div>
+                                </button>
+                                <button data-action="update" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-left group">
+                                    <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Añadir a Tarea Actual</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Integrar el texto en la descripción u observaciones de esta tarea.</div>
+                                    </div>
+                                </button>
+                                <button data-action="cursor" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-slate-900 hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-left group">
+                                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Pegar en Cursor</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Inyectar en el campo de texto donde estabas escribiendo.</div>
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     `,
-                    customClass: { popup: 'rounded-[2.5rem] border-none shadow-2xl', htmlContainer: 'p-0 m-0' },
+                    showConfirmButton: false,
+                    showCancelButton: false,
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color: isDark ? '#f1f5f9' : '#1e293b',
+                    customClass: { popup: 'rounded-[3rem] border-none shadow-2xl overflow-hidden', htmlContainer: 'p-0 m-0' },
                     didOpen: () => {
                         const grid = document.getElementById('ai-main-actions');
                         grid.onclick = (e) => {
                             const btn = e.target.closest('button');
-                            if (btn && btn.dataset.action) Swal.clickConfirm(btn.dataset.action);
+                            if (btn && btn.dataset.action) {
+                                selectedAction = btn.dataset.action;
+                                Swal.clickConfirm();
+                            }
                         };
                     }
                 });
 
-                if (!mainAction) return;
+                if (!selectedAction) return;
 
-                // 3. ACTION LOGIC
-                if (mainAction === 'new') {
+                // 4. ACTION IMPLEMENTATION
+                if (selectedAction === 'new') {
                      const defaultTitle = payloadData.title || '';
                      const { value: title } = await Swal.fire({
-                         title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Nueva Tarea</span>',
-                         html: '<p class="text-sm font-bold text-gray-600 dark:text-gray-400 mb-4">¿Qué título le ponemos?</p>',
+                         title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Título de la Tarea</span>',
                          input: 'text',
                          inputValue: defaultTitle,
                          background: isDark ? '#0f172a' : '#ffffff',
                          color: isDark ? '#f1f5f9' : '#1e293b',
+                         confirmButtonText: 'Crear y Ver',
                          confirmButtonColor: '#4f46e5',
-                         customClass: { popup: 'rounded-[2rem]', input: 'rounded-xl border-gray-200' },
+                         customClass: { popup: 'rounded-[2.5rem]', input: 'rounded-xl border-gray-200' },
                          inputValidator: (v) => !v && '¡Necesitas un título!'
                      });
                      if (!title) return;
-                     
                      this.submitServerTransfer('task', rawPayload, title);
                 } 
-                else if (mainAction === 'update') {
+                else if (selectedAction === 'update') {
                     const { value: targetField } = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-violet-600">Inyectar en tarea</span>',
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-violet-600">Integración en Tarea</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color: isDark ? '#f1f5f9' : '#1e293b',
                         input: 'radio',
                         inputOptions: {
-                            'observations': 'Añadir a Observaciones (Recomendado)',
-                            'private_note': 'Guardar como Nota Privada',
-                            'description': 'Sobrescribir Descripción actual'
+                            'observations': 'Añadir a Observaciones',
+                            'description': 'Sobrescribir Descripción',
+                            'private_note': 'Guardar como Nota Privada'
                         },
+                        confirmButtonText: 'Procesar',
                         confirmButtonColor: '#7c3aed',
-                        customClass: { popup: 'rounded-[2rem]' },
-                        inputValidator: (v) => !v && 'Debes seleccionar un destino'
+                        customClass: { popup: 'rounded-[2.5rem]' },
+                        inputValidator: (v) => !v && 'Selecciona un destino'
                     });
                     if (!targetField) return;
-
                     this.submitServerTransfer(targetField, rawPayload);
                 } 
-                else if (mainAction === 'cursor') {
-                    const activeEl = document.activeElement;
-                    const textToInject = payloadData.observations || payloadData.description || rawPayload;
-                    let targetEl = activeEl;
-                    
-                    if (!targetEl || !['TEXTAREA', 'INPUT'].includes(targetEl.tagName) && !targetEl.classList.contains('ql-editor')) {
-                        targetEl = document.querySelector('.ql-editor') || document.querySelector('textarea:focus') || document.querySelector('textarea');
-                    }
-
-                    if (targetEl) {
-                        if (targetEl.classList.contains('ql-editor')) {
-                            targetEl.innerHTML += marked.parse(textToInject);
-                        } else {
-                            const start = targetEl.selectionStart || 0;
-                            const end = targetEl.selectionEnd || 0;
-                            const currentVal = targetEl.value;
-                            targetEl.value = currentVal.substring(0, start) + textToInject + currentVal.substring(end);
-                        }
-                        targetEl.focus();
-                        Swal.fire({ icon: 'success', title: '¡Inyectado!', timer: 1000, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff' });
-                    } else {
-                        Swal.fire('Error', 'No se encontró ningún campo de texto activo.', 'error');
-                    }
+                else if (selectedAction === 'cursor') {
+                    this.transferToTask({ content: rawPayload, direct: true });
                 }
             },
 
             async submitServerTransfer(target, rawContent, title = null) {
                 const isDark = document.documentElement.classList.contains('dark');
                 let url = '';
-                if (this.taskId) {
-                    url = '{{ route('ai.transfer', ['team' => $teamId ?? 0, 'task' => 'TASK_ID']) }}'.replace('TASK_ID', this.taskId);
+                
+                // Si el objetivo es crear una tarea nueva ('task'), usamos siempre la ruta global independientemente de si estamos en una tarea o no
+                if (target === 'task' || !this.taskId) {
+                    url = '{{ route('ai.transfer_global', ['team' => 'TEAM_ID']) }}'
+                        .replace('TEAM_ID', this.teamId || '');
+                    url = url.replace(/\/$/, ""); 
                 } else {
-                    url = '{{ route('ai.transfer_global', ['team' => $teamId ?? 0]) }}';
+                    url = '{{ route('ai.transfer', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'
+                        .replace('TEAM_ID', this.teamId || 0)
+                        .replace('TASK_ID', this.taskId);
                 }
 
                 try {
@@ -962,17 +968,40 @@
                     const data = await response.json();
                     if (data.success) {
                         this.canUndo = true;
-                        Swal.fire({
-                            title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¡Hecho!</span>',
-                            text: data.message,
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            background: isDark ? '#0f172a' : '#ffffff',
-                            customClass: { popup: 'rounded-[2rem]' }
-                        }).then(() => {
-                            if (['task', 'description', 'observations', 'private_note', 'observations_append'].includes(target)) window.location.reload();
-                        });
+                        
+                        // Si es una tarea nueva, redirigimos directamente a la edición
+                        if (target === 'task' && data.task_id) {
+                             let teamId = data.team_id || this.teamId || 0;
+                             let editUrl = '{{ route('teams.tasks.edit', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'
+                                .replace('TEAM_ID', teamId)
+                                .replace('TASK_ID', data.task_id);
+                             
+                             Swal.fire({
+                                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¡Tarea Creada!</span>',
+                                text: 'Redirigiendo a edición...',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                background: isDark ? '#0f172a' : '#ffffff',
+                                customClass: { popup: 'rounded-[2rem]' }
+                             }).then(() => {
+                                window.location.href = editUrl;
+                             });
+                        } else {
+                            Swal.fire({
+                                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¡Hecho!</span>',
+                                text: data.message,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                background: isDark ? '#0f172a' : '#ffffff',
+                                customClass: { popup: 'rounded-[2rem]' }
+                            }).then(() => {
+                                if (['description', 'observations', 'private_note', 'observations_append'].includes(target)) {
+                                    window.location.reload();
+                                }
+                            });
+                        }
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }

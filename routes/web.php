@@ -246,7 +246,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
     Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferContent'])->name('ai.transfer');
     Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferForumContent'])->name('ai.transfer_forum');
-    Route::post('/teams/{team}/ai/transfer-global', [\App\Http\Controllers\AiChatController::class, 'transferGlobalContent'])->name('ai.transfer_global');
+    Route::post('/ai/transfer-global/{team?}', [\App\Http\Controllers\AiChatController::class, 'transferGlobalContent'])->name('ai.transfer_global');
 
     // Time Tracking routes
     Route::prefix('time-logs')->name('time-logs.')->group(function () {
