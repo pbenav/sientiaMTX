@@ -659,24 +659,24 @@ class TaskController extends Controller
         }
 
         $task->update([
-            'title' => $validated['title'] ?? $task->title,
-            'description' => $validated['description'] ?? $task->description,
-            'priority' => $validated['priority'] ?? $task->priority,
-            'urgency' => $validated['urgency'] ?? $task->urgency,
-            'status' => $validated['status'] ?? $task->status,
-            'scheduled_date' => $validated['scheduled_date'] ?? $task->scheduled_date,
-            'due_date' => $validated['due_date'] ?? $task->due_date,
-            'observations' => $validated['observations'] ?? $task->observations,
-            'parent_id' => $validated['parent_id'] ?? $task->parent_id,
-            'progress_percentage' => $validated['progress_percentage'] ?? $task->progress_percentage,
-            'visibility' => $validated['visibility'] ?? $task->visibility,
+            'title' => array_key_exists('title', $validated) ? $validated['title'] : $task->title,
+            'description' => array_key_exists('description', $validated) ? $validated['description'] : $task->description,
+            'priority' => array_key_exists('priority', $validated) ? $validated['priority'] : $task->priority,
+            'urgency' => array_key_exists('urgency', $validated) ? $validated['urgency'] : $task->urgency,
+            'status' => array_key_exists('status', $validated) ? $validated['status'] : $task->status,
+            'scheduled_date' => array_key_exists('scheduled_date', $validated) ? $validated['scheduled_date'] : $task->scheduled_date,
+            'due_date' => array_key_exists('due_date', $validated) ? $validated['due_date'] : $task->due_date,
+            'observations' => array_key_exists('observations', $validated) ? $validated['observations'] : $task->observations,
+            'parent_id' => array_key_exists('parent_id', $validated) ? $validated['parent_id'] : $task->parent_id,
+            'progress_percentage' => array_key_exists('progress_percentage', $validated) ? $validated['progress_percentage'] : $task->progress_percentage,
+            'visibility' => array_key_exists('visibility', $validated) ? $validated['visibility'] : $task->visibility,
             'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
             'autoprogram_settings' => $request->input('autoprogram_settings'),
             'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
-            'skill_id' => $validated['skill_id'] ?? $task->skill_id,
-            'service_id' => $validated['service_id'] ?? $task->service_id,
+            'skill_id' => array_key_exists('skill_id', $validated) ? $validated['skill_id'] : $task->skill_id,
+            'service_id' => array_key_exists('service_id', $validated) ? $validated['service_id'] : $task->service_id,
         ]);
 
         if ($task->is_autoprogrammable && (!isset($task->autoprogram_settings['next_occurrence_at']) || $request->has('scheduled_date'))) {
