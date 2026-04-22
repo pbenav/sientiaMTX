@@ -173,8 +173,12 @@
 
                     <div>
                         <template x-if="isGoogleConnected()">
-                            <div class="flex items-center gap-4">
-                                <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 dark:border-emerald-800">Conectado</span>
+                            <div class="flex items-center gap-3">
+                                <a :href="'{{ route('google.sync') }}?team_id=' + context" class="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    Sincronizar / Importar
+                                </a>
+                                <div class="h-4 w-px bg-gray-100 dark:bg-gray-800 mx-1"></div>
                                 <form method="POST" :action="'{{ route('google.disconnect') }}?team_id=' + context">
                                     @csrf
                                     <button type="submit" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase transition-colors">Desvincular</button>

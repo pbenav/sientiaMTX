@@ -125,10 +125,10 @@ class User extends Authenticatable implements HasLocalePreference
         $now = now($this->timezone ?? $siteTimezone)->format('H:i');
 
         if ($start <= $end) {
-            return $now >= $start && $now <= $end;
+            return $now >= $start && $now < $end;
         } else {
             // Overlapping midnight (e.g. 22:00 to 08:00)
-            return $now >= $start || $now <= $end;
+            return $now >= $start || $now < $end;
         }
     }
 

@@ -35,5 +35,20 @@
                 <span class="hidden sm:inline">Vaciar Papelera</span>
             </button>
         @endif
+
+        @php
+            $isGoogleConnected = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+        @endphp
+
+        @if($isGoogleConnected)
+            <a href="{{ route('google.sync', ['team_id' => $team->id]) }}"
+                class="flex items-center gap-1.5 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/40 dark:text-emerald-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-emerald-100 dark:border-emerald-800/50"
+                title="Sincronizar con Google Tasks/Calendar">
+                <svg class="h-4 w-4" viewBox="0 0 48 48">
+                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/><path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/><path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                </svg>
+                <span class="hidden xl:inline">Sincronizar Google</span>
+            </a>
+        @endif
     </div>
 </div>
