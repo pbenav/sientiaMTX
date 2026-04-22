@@ -952,7 +952,9 @@ class TaskController extends Controller
                 $task->histories()->create([
                     'user_id' => auth()->id(),
                     'action' => 'bulk_updated',
-                    'notes' => "Actualización masiva de {$field}: de '{$oldValue}' a '{$value}'"
+                    'old_values' => [$field => $oldValue],
+                    'new_values' => [$field => $value],
+                    'notes' => "Actualización masiva de {$field}"
                 ]);
 
                 $updatedCount++;

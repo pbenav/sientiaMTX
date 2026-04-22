@@ -905,14 +905,30 @@
                                         class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shrink-0">
                                         {{ strtoupper(substr($h->user?->name ?? '?', 0, 2)) }}
                                     </div>
-                                    <div class="truncate">
-                                        <span
-                                            class="font-bold text-gray-700 dark:text-gray-300">{{ $h->user?->name ?? '—' }}</span>
-                                        <span class="text-gray-500 ml-1 capitalize">{{ $h->action }}</span>
+                                    <div class="truncate flex flex-col">
+                                        <div>
+                                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ $h->user?->name ?? '—' }}</span>
+                                            <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded ml-1 font-black uppercase tracking-tighter">{{ $h->action }}</span>
+                                        </div>
+                                        @if($h->old_values || $h->new_values)
+                                            <div class="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 opacity-60">
+                                                @foreach(($h->new_values ?? []) as $key => $val)
+                                                    <span class="text-[9px] font-medium text-gray-500 whitespace-nowrap">
+                                                        <span class="font-black uppercase tracking-widest text-[8px]">{{ $key }}:</span> 
+                                                        <span class="line-through">{{ is_array($h->old_values[$key] ?? null) ? 'JSON' : ($h->old_values[$key] ?? '—') }}</span> 
+                                                        → 
+                                                        <span class="font-bold text-gray-700 dark:text-gray-300">{{ is_array($val) ? 'JSON' : $val }}</span>
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                        @if($h->notes)
+                                            <p class="text-[9px] text-gray-400 italic mt-0.5">{{ $h->notes }}</p>
+                                        @endif
                                     </div>
                                 </div>
                                 <span
-                                    class="text-[10px] text-gray-400 shrink-0">{{ $h->created_at->diffForHumans() }}</span>
+                                    class="text-[10px] text-gray-400 shrink-0 font-medium whitespace-nowrap">{{ $h->created_at->diffForHumans() }}</span>
                             </div>
                         @endforeach
                     </div>
