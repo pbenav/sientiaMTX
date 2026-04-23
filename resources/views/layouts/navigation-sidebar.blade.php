@@ -51,11 +51,6 @@
             <!-- Navigation Links -->
             <nav class="flex-1 space-y-2">
                 @auth
-                    <!-- Workday Compact Timer -->
-                    <div class="px-3 mb-4">
-                        @include('layouts.partials.workday-timer', ['compact' => true])
-                    </div>
-
                     <div class="pt-4 pb-2 px-3">
                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('navigation.my_teams') }}</span>
                     </div>

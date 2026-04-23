@@ -412,11 +412,7 @@
 
                     <!-- Utility controls: hidden on mobile, shown on md+ (tablets and desktop) -->
                     <div class="hidden md:flex items-center gap-1 pl-2 ml-1 border-l border-gray-200 dark:border-gray-800">
-                        @auth @include('layouts.partials.workday-timer') @endauth
-                        @include('layouts.partials.theme-toggle')
-                        @include('layouts.partials.layout-toggle')
-                        @include('layouts.partials.zoom-controls')
-                        @include('layouts.partials/language-toggle')
+                        @include('layouts.partials.system-tools')
                     </div>
 
                     <!-- Mobile: just notifications bell + hamburger -->

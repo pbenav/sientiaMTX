@@ -8,10 +8,7 @@
         <div class="flex items-center gap-1">
             <!-- Desktop View: All tools visible -->
             <div class="hidden lg:flex items-center gap-1">
-                @include('layouts.partials.theme-toggle')
-                @include('layouts.partials.layout-toggle')
-                @include('layouts.partials.zoom-controls')
-                @include('layouts.partials.language-toggle')
+                @include('layouts.partials.system-tools')
             </div>
 
             <!-- Mobile View: Single dropdown for all system tools -->
@@ -26,6 +23,11 @@
                 <div x-show="open" x-transition
                     class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 p-2">
                     <div class="grid grid-cols-2 gap-2">
+                        @auth
+                            <div class="col-span-2 flex justify-center p-2 bg-violet-50 dark:bg-violet-900/20 rounded-lg border border-violet-100 dark:border-violet-800">
+                                @include('layouts.partials.workday-timer')
+                            </div>
+                        @endauth
                         <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.theme-toggle')</div>
                         <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.layout-toggle')</div>
                         <div class="flex justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">@include('layouts.partials.zoom-controls')</div>
