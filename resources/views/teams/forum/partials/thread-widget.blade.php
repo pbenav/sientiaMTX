@@ -17,9 +17,7 @@
                 textarea.value = content;
                 textarea.focus();
             }
-            // Ensure container scroll if needed
-            const container = document.getElementById('widget-messages-container');
-            if (container) container.scrollTop = container.scrollHeight;
+            }
         },
         cancelWidgetEdit() {
             this.editingMessageId = null;
@@ -213,13 +211,8 @@
                         }
                     }
 
-                    // Auto-scroll to bottom of widget messages
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const container = document.getElementById('widget-messages-container');
-                        if (container) {
-                            container.scrollTop = container.scrollHeight;
-                        }
-                    });
+                    // Removed auto-scroll to bottom as per user request to see thread from the start
+
                 </script>
             @else
                 <div
