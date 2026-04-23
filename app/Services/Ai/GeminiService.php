@@ -43,26 +43,26 @@ class GeminiService implements AiAssistantInterface
         $this->attachmentContext = null;
         $this->threadContext = null;
         $this->messageContext = null;
-        $this->directFile = null;
-        $this->tasksContext = [];
-        
-        // Intentar obtener preferencia en este orden: contexto específico -> global -> cualquier otra con clave
-        $pref = $user->aiPreferences()->where('team_id', $teamId)->first() 
-                ?? $user->aiPreferences()->whereNull('team_id')->first()
-                ?? $user->aiPreferences()->whereNotNull('api_key')->first();
+        // Intentar obtener la mejor clave disponible
+        $preferences = $user->aiPreferences()
+            ->orderByRaw("CASE 
+                WHEN team_id = ? THEN 0 
+                WHEN team_id IS NULL THEN 1 
+                ELSE 2 END", [$teamId])
+            ->get();
 
         $keySource = "ARCHIVO .ENV / CONFIG (POR DEFECTO)";
-        if ($pref) {
-            if (!empty($pref->api_key)) {
-                $this->apiKey = (string) $pref->api_key;
+        foreach ($preferences as $pref) {
+            $key = $pref->api_key; // Esto dispara el accesor con decrypt()
+            
+            if (!empty($key)) {
+                $this->apiKey = (string) $key;
+                $this->targetModel = $pref->ai_model ?? $this->targetModel;
                 $keySource = "BASE DE DATOS (Preferencia ID: {$pref->id}" . ($pref->team_id ? " - Equipo {$pref->team_id}" : " - Global") . ")";
-            }
-
-            if (!empty($pref->ai_model)) {
-                $this->targetModel = $pref->ai_model;
+                break;
             }
         }
-        
+
         $maskedKey = $this->apiKey ? (substr($this->apiKey, 0, 4) . '....' . substr($this->apiKey, -4)) : 'VACÍA';
         Log::debug("Ax.ia: Usando clave desde {$keySource} [Key: {$maskedKey}]");
         Log::debug("Ax.ia: Usando modelo {$this->targetModel} para el contexto " . ($teamId ? "Equipo $teamId" : "Global"));
