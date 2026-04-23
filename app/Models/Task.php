@@ -379,15 +379,16 @@ class Task extends Model
                       ->orWhereNull('parent_id'); // SIEMPRE ver tareas raíz, aunque estén asignadas a mí
                 });
             } else {
-                // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado
-                $main->where(function ($q) use ($user) {
-                    $q->where('assigned_user_id', $user->id)
-                      ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                      ->orWhere(function ($own) use ($user) {
-                          $own->where('created_by_id', $user->id)
-                              ->whereNull('parent_id');
-                      });
-                });
+                // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado (No ve plantillas)
+                $main->where('is_template', false)
+                    ->where(function ($q) use ($user) {
+                        $q->where('assigned_user_id', $user->id)
+                          ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
+                          ->orWhere(function ($own) use ($user) {
+                              $own->where('created_by_id', $user->id)
+                                  ->whereNull('parent_id');
+                          });
+                    });
 
                 // DEDUPLICACIÓN EN EJECUCIÓN (Miembro): Si ve la hija, ocultamos el padre
                 // Reforzamos para que compruebe tanto asignación directa como pivot en los hijos
