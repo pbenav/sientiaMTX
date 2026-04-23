@@ -16,7 +16,7 @@ class SendMorningSummary extends Command
      *
      * @var string
      */
-    protected $signature = 'morning:summary';
+    protected $signature = 'morning:summary {--user= : ID of a specific user to notify (for testing)}';
 
     /**
      * The console command description.
@@ -30,9 +30,14 @@ class SendMorningSummary extends Command
      */
     public function handle(GeminiService $ai)
     {
-        $this->info('Starting Hourly Check for Morning Summaries...');
-        
-        $users = User::all()->filter(function($user) {
+        $targetUserId = $this->option('user');
+
+        $users = User::all()->filter(function($user) use ($targetUserId) {
+            // If a specific user is requested, only match that user and ignore time/enabled checks
+            if ($targetUserId) {
+                return $user->id == $targetUserId;
+            }
+
             $settings = $user->notification_settings ?? $user->defaultNotificationSettings();
             
             // Check if enabled
@@ -58,7 +63,11 @@ class SendMorningSummary extends Command
         });
 
         if ($users->isEmpty()) {
-            $this->info('No users scheduled for this hour. Skipping.');
+            if ($targetUserId) {
+                $this->error("User with ID {$targetUserId} not found.");
+            } else {
+                $this->info('No users scheduled for this hour. Skipping.');
+            }
             return;
         }
 
@@ -141,7 +150,7 @@ class SendMorningSummary extends Command
                 
                 $this->info("Successfully notified {$user->name}.");
             } catch (\Exception $e) {
-                Log::error("Error sending morning summary to {$notifiable->name ?? $user->name}: " . $e->getMessage());
+                Log::error("Error sending morning summary to " . ($user->name ?? 'Unknown') . ": " . $e->getMessage());
                 $this->error("Failed to notify {$user->name}: " . $e->getMessage());
             }
         }

@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class MorningSummaryNotification extends Notification
 {
@@ -21,6 +22,19 @@ class MorningSummaryNotification extends Notification
     {
         $this->tasks = $tasks;
         $this->phrase = $phrase;
+    }
+
+    /**
+     * Get the Web Push representation of the notification.
+     */
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title('🌅 ¡Buenos días, ' . explode(' ', $notifiable->name)[0] . '!')
+            ->icon('/images/logo-icon.png')
+            ->body($this->phrase . "\n" . 'Tienes ' . $this->tasks->count() . ' tareas pendientes para hoy.')
+            ->action('Ver Dashboard', 'view_dashboard')
+            ->options(['TTL' => 3600]);
     }
 
     /**
