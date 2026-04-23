@@ -81,7 +81,8 @@ class User extends Authenticatable implements HasLocalePreference
             'resilience_points' => 'integer',
             'experience_points' => 'integer',
             'energy_level' => 'integer',
-            'google_token' => 'array',
+            'google_token' => 'encrypted:array',
+            'google_refresh_token' => 'encrypted',
         ];
     }
 

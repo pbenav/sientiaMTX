@@ -198,6 +198,17 @@ class ProfileController extends Controller
             'chat_id' => 'required|string',
         ]);
 
+        $user = auth()->user();
+        $targetChatId = $request->chat_id;
+
+        // Security Audit Fix: Only allow testing your own Chat ID to prevent spamming others
+        if (!$user->is_admin && $user->telegram_chat_id !== $targetChatId) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No tienes permiso para enviar mensajes de prueba a este ID.'
+            ], 403);
+        }
+
         $token = config('services.telegram.bot_token');
 
         if (!$token) {
