@@ -38,10 +38,11 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div x-data="{ teamModalOpen: false }" class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Estado de Energía -->
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group">
                     <div class="absolute top-4 right-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-500 opacity-20 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,45 +54,45 @@
                         $energy = auth()->user()->energy_level ?? 0;
                         $label = 'Óptimo';
                         $advice = '¡Energía a tope! Momento ideal para tareas de alta carga cognitiva.';
-                        $colorClass = 'emeral-500';
-                        $bgClass = 'emerald-500';
-                        $pillClass = 'text-emerald-600 bg-emerald-200';
                         
                         if ($energy >= 80) {
                             $label = 'Excelente';
                             $advice = '¡A tope! Momento ideal para tareas complejas y retos.';
+                            $pillClass = 'text-emerald-600 bg-emerald-200';
+                            $bgClass = 'bg-emerald-500';
                         } elseif ($energy >= 50) {
                             $label = 'Estable';
                             $advice = 'Mantén el ritmo. Vas por buen camino.';
                             $pillClass = 'text-blue-600 bg-blue-100';
-                            $bgClass = 'blue-500';
+                            $bgClass = 'bg-blue-500';
                         } elseif ($energy >= 30) {
                             $label = 'Cansancio';
                             $advice = 'Batería media. Considera una tarea ligera o un café.';
                             $pillClass = 'text-amber-600 bg-amber-100';
-                            $bgClass = 'amber-500';
+                            $bgClass = 'bg-amber-500';
                         } else {
                             $label = 'Agotado';
                             $advice = '¡Para un momento! Prioriza tu bienestar ahora mismo.';
                             $pillClass = 'text-rose-600 bg-rose-100';
-                            $bgClass = 'rose-500';
+                            $bgClass = 'bg-rose-500';
                         }
                     @endphp
                     <div class="relative pt-1">
                         <div class="flex mb-2 items-center justify-between">
                             <div>
-                                <span class="text-[10px] font-black inline-block py-1 px-3 uppercase rounded-full {{ $pillClass }} transition-colors duration-500">
+                                <span class="text-[10px] font-black inline-block py-1 px-3 uppercase rounded-full {{ $pillClass ?? 'text-emerald-600 bg-emerald-200' }} transition-colors duration-500">
                                     {{ $energy }}% - {{ $label }}
                                 </span>
                             </div>
                         </div>
                         <div class="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                            <div style="width:{{ $energy }}%" class="flex flex-col text-center whitespace-nowrap text-white justify-center {{ $bgClass }} transition-all duration-1000 shadow-sm shadow-{{ $bgClass }}/20"></div>
+                            <div style="width:{{ $energy }}%" class="flex flex-col text-center whitespace-nowrap text-white justify-center {{ $bgClass ?? 'bg-emerald-500' }} transition-all duration-1000"></div>
                         </div>
                     </div>
                     <p class="text-[10px] font-medium text-gray-500 dark:text-gray-400 leading-tight">{{ $advice }}</p>
                 </div>
 
+                <!-- Kudos Recibidos -->
                 <div x-data="{ open: false }" class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group cursor-pointer hover:shadow-violet-500/5 transition-all" @click="open = true">
                     <div class="absolute top-4 right-4 animate-bounce">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500 opacity-20 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,6 +110,7 @@
                         </button>
                     </div>
 
+                    <!-- Kudo Form Modal -->
                     <div x-show="open" 
                          x-transition:enter="transition ease-out duration-300"
                          x-transition:enter-start="opacity-0 scale-95"
@@ -159,7 +161,8 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group flex items-center justify-between">
+                <!-- Impacto Colectivo -->
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group flex items-center justify-between cursor-pointer" @click="teamModalOpen = true">
                     <div>
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Impacto Colectivo (Red)</p>
                         <h3 class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
@@ -167,10 +170,94 @@
                         </h3>
                         <p class="text-[10px] text-gray-500 mt-1">Suma global de labor de todo el equipo.</p>
                     </div>
-                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
+                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 transition-all hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:scale-110 shadow-sm group-hover:shadow-emerald-500/10" title="Ver equipo">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Members Modal (Glassmorphism) -->
+            <div x-show="teamModalOpen" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md"
+                 style="display: none;"
+                 @keydown.escape.window="teamModalOpen = false">
+                
+                <div x-show="teamModalOpen"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+                     class="w-full max-w-4xl bg-white/90 dark:bg-gray-900/90 rounded-[3rem] shadow-2xl border border-white/20 dark:border-gray-800/50 overflow-hidden flex flex-col max-h-[85vh]"
+                     @click.away="teamModalOpen = false">
+                    
+                    <!-- Modal Header -->
+                    <div class="px-10 py-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-emerald-50/30 dark:bg-emerald-950/20">
+                        <div>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight flex items-center gap-3">
+                                <div class="p-2.5 bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-500/20 text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </div>
+                                Escuadra: {{ $team->name }}
+                            </h3>
+                            <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">{{ $team->members->count() }} Miembros activos en red</p>
+                        </div>
+                        <button @click="teamModalOpen = false" class="p-3 bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white rounded-2xl transition-all hover:rotate-90">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Content -->
+                    <div class="p-10 overflow-y-auto custom-scrollbar bg-white/50 dark:bg-transparent">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            @foreach($teamMembers as $member)
+                                <div class="group/member bg-white dark:bg-gray-800/40 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700/50 hover:border-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/5 relative overflow-hidden">
+                                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover/member:bg-emerald-500/10 transition-colors"></div>
+                                    <div class="flex items-center gap-4 relative z-10">
+                                        <div class="relative">
+                                            <img src="{{ $member->profile_photo_url }}" alt="{{ $member->name }}" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-lg border-2 border-white dark:border-gray-700 transition-transform group-hover/member:scale-110">
+                                            <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-white dark:border-gray-800 {{ $member->energy_level >= 50 ? 'bg-emerald-500' : ($member->energy_level >= 20 ? 'bg-amber-500' : 'bg-rose-500') }}" title="Energía: {{ $member->energy_level }}%"></div>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-base font-black text-gray-900 dark:text-white truncate leading-tight">{{ $member->name }}</h4>
+                                            <span class="inline-block px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mt-1 tracking-tighter">{{ $member->getRole($team) ?? 'Miembro' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 grid grid-cols-2 gap-3 relative z-10">
+                                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-3 border border-gray-100/50 dark:border-gray-800">
+                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Experiencia</p>
+                                            <p class="text-xs font-black text-emerald-600 dark:text-emerald-400">{{ number_format($member->experience_points) }} XP</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-3 border border-gray-100/50 dark:border-gray-800">
+                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resiliencia</p>
+                                            <p class="text-xs font-black text-violet-600 dark:text-violet-400">{{ number_format($member->resilience_points) }} RP</p>
+                                        </div>
+                                    </div>
+                                    @if($member->working_area_name)
+                                        <div class="mt-4 flex items-center gap-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-800 relative z-10">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-emerald-500/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            {{ $member->working_area_name }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="px-10 py-6 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-800 text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic">"La resiliencia no es individual, es el tejido que nos une."</p>
                     </div>
                 </div>
             </div>
