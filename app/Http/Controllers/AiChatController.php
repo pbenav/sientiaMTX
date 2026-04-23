@@ -199,8 +199,12 @@ class AiChatController extends Controller
                 }
                 
                 if ($thread->task_id) {
-                    if ($user->cannot('view', $thread->task)) {
-                        return response()->json(['message' => 'No tienes permiso para acceder al contenido privado de esta tarea.'], 403);
+                    // Si la tarea es privada y el usuario no tiene acceso, el controlador del foro 
+                    // permite a los coordinadores ver el hilo pero no la tarea. 
+                    // Permitimos que la IA procese el hilo si el usuario es manager o puede ver la tarea.
+                    $isManager = $thread->team->isManager($user);
+                    if (!$isManager && $user->cannot('view', $thread->task)) {
+                        return response()->json(['message' => 'No tienes permiso para acceder al contenido de esta tarea.'], 403);
                     }
                 }
 

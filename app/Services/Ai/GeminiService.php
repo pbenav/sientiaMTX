@@ -137,12 +137,43 @@ class GeminiService implements AiAssistantInterface
         $parts = [];
 
         if ($this->taskContext) {
+            $canViewPrivate = $this->user ? $this->user->can('view', $this->taskContext) : false;
+            
             $contextInfo .= "CONTEXTO DE LA TAREA ACTUAL:\n";
             $contextInfo .= "- Título: {$this->taskContext->title}\n";
-            $contextInfo .= "- Descripción: " . ($this->taskContext->description ?: 'N/A') . "\n";
+            
+            if ($this->taskContext->visibility === 'public' || $canViewPrivate) {
+                $contextInfo .= "- Descripción: " . ($this->taskContext->description ?: 'N/A') . "\n";
+                $contextInfo .= "- Observaciones: " . ($this->taskContext->observations ?: 'N/A') . "\n";
+            } else {
+                $contextInfo .= "- Descripción: [CONTENIDO PRIVADO - NO DISPONIBLE]\n";
+                $contextInfo .= "- Nota: Tienes acceso a la discusión pero el contenido de la tarea es privado para su creador/asignados.\n";
+            }
+            
             $contextInfo .= "- Equipo: " . ($this->taskContext->team->name ?? 'N/A') . "\n";
             $contextInfo .= "- Estado: " . ($this->taskContext->status ?? 'pending') . "\n";
             $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
+        }
+
+        if ($this->threadContext) {
+            $contextInfo .= "\nCONTEXTO DEL HILO DEL FORO:\n";
+            $contextInfo .= "- Título del Hilo: {$this->threadContext->title}\n";
+            
+            $messages = $this->threadContext->messages()
+                ->with('user')
+                ->oldest()
+                ->limit(20) // Últimos 20 mensajes para no saturar el contexto
+                ->get();
+
+            $contextInfo .= "- Mensajes recientes:\n";
+            foreach ($messages as $msg) {
+                $contextInfo .= "  [{$msg->user->name}]: {$msg->content}\n";
+            }
+
+            if ($this->messageContext) {
+                $contextInfo .= "\nMENSAJE ESPECÍFICO SELECCIONADO:\n";
+                $contextInfo .= "De {$this->messageContext->user->name}: {$this->messageContext->content}\n";
+            }
         }
 
         if (!empty($this->tasksContext)) {
