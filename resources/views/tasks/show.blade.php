@@ -815,7 +815,7 @@
                     </div>
                     <div
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
-                        {!! str($displayDescription)->markdown() !!}
+                        {!! str($displayDescription)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     </div>
                 </div>
             @endif
@@ -850,7 +850,7 @@
                     </div>
                     <div id="observations-content"
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
-                        {!! str($displayObservations)->markdown() !!}
+                        {!! str($displayObservations)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     </div>
                 </div>
 

@@ -238,7 +238,7 @@
                             <div id="message-view-{{ $message->id }}"
                                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }}">
                                 <div class="text-sm markdown-content leading-relaxed">
-                                    {!! Str::markdown($message->content) !!}
+                                    {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                                 </div>
 
                                 @if($message->attachments->isNotEmpty())
