@@ -16,7 +16,7 @@
     <!-- Management Actions -->
     <!-- PRIMARY ACTION: NEW TASK HUB -->
     @if($shouldShowCreateTask)
-        <x-dropdown align="center" width="80">
+        <x-dropdown align="left" width="80">
             <x-slot name="trigger">
                 <button type="button" 
                     class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-violet-500/20 active:scale-95 group">
@@ -91,7 +91,7 @@
 
         <!-- Hub de Integraciones -->
         @if(!$isForum && $isGoogleConnected)
-            <x-dropdown align="center" width="80">
+            <x-dropdown align="left" width="80">
                 <x-slot name="trigger">
                     <button type="button" class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
