@@ -31,11 +31,13 @@ class ForumMessageController extends Controller
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
             'drive_attachments' => 'nullable|string',
+            'is_private' => 'nullable|boolean',
         ]);
 
         $message = $thread->messages()->create([
             'user_id' => auth()->id(),
             'content' => $validated['content'],
+            'is_private' => $request->boolean('is_private'),
         ]);
 
         // Handle Local Attachments
@@ -152,6 +154,18 @@ class ForumMessageController extends Controller
         $recipients = $recipients->merge($previousCommenters);
         
         // --- Final Filter and Dispatch ---
+        // If private, only stakeholders receive it. If public, everyone in previous list.
+        if ($message->is_private && $thread->task) {
+            // Re-filter recipients: only those who have access to the task
+            $task = $thread->task;
+            $recipients = $recipients->filter(function($u) use ($task) {
+                return $u->id === $task->created_by_id ||
+                       $u->id === $task->assigned_user_id ||
+                       $task->assignedTo->contains($u->id) ||
+                       $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $u->id))->exists();
+            });
+        }
+
         // Clean up: Unique users, exclude current sender, filter empty values
         $recipients = $recipients->filter(function($u) {
             return $u && $u->id !== auth()->id() && !empty($u->email);

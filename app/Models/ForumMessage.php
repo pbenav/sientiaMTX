@@ -12,10 +12,12 @@ class ForumMessage extends Model
         'user_id',
         'content',
         'is_edited',
+        'is_private',
     ];
 
     protected $casts = [
         'is_edited' => 'boolean',
+        'is_private' => 'boolean',
     ];
 
     public function thread()

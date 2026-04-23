@@ -270,7 +270,37 @@ class ForumController extends Controller
         }
 
         $thread->load(['user', 'task']);
-        $messages = $thread->messages()->with('user')->oldest()->paginate(20);
+        
+        $messages = $thread->messages()
+            ->with('user')
+            ->where(function($query) use ($thread, $team) {
+                // Public messages are visible to anyone who can see the thread
+                $query->where('is_private', false)
+                // Private messages are only visible to the author, coordinators, and task stakeholders
+                ->orWhere(function($q) use ($thread, $team) {
+                    $userId = auth()->id();
+                    $q->where('user_id', $userId)
+                      ->orWhere(function($q2) use ($team) {
+                          if ($team->isCoordinator(auth()->user())) {
+                              return $q2; // Coordinators see everything
+                          }
+                          $q2->whereRaw('1=0'); // Force fail if not coordinator and not author (handled by outer orWhere)
+                      });
+                    
+                    if ($thread->task_id) {
+                        $task = $thread->task;
+                        $q->orWhere(function($q3) use ($task, $userId) {
+                            $q3->where('forum_messages.user_id', $userId) // Redundant but safe
+                               ->orWhereRaw('? IN (SELECT user_id FROM task_assignments WHERE task_id = ? AND user_id IS NOT NULL)', [$userId, $task->id])
+                               ->orWhereRaw('? = (SELECT created_by_id FROM tasks WHERE id = ?)', [$userId, $task->id])
+                               ->orWhereRaw('? = (SELECT assigned_user_id FROM tasks WHERE id = ?)', [$userId, $task->id])
+                               ->orWhereRaw('EXISTS (SELECT 1 FROM group_user gu JOIN task_assignments ta ON gu.group_id = ta.group_id WHERE gu.user_id = ? AND ta.task_id = ?)', [$userId, $task->id]);
+                        });
+                    }
+                });
+            })
+            ->oldest()
+            ->paginate(20);
 
         return view('teams.forum.show', compact('team', 'thread', 'messages'));
     }

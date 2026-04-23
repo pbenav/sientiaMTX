@@ -162,6 +162,14 @@
                                 @if ($isFirst)
                                     <span class="text-[9px] font-bold uppercase tracking-widest bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded-md shrink-0">OP</span>
                                 @endif
+                                @if ($message->is_private)
+                                    <span class="text-[9px] font-bold uppercase tracking-widest bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
+                                        </svg>
+                                        {{ __('Privado') }}
+                                    </span>
+                                @endif
                                 <span class="text-[10px] text-gray-400 font-medium shrink-0" title="{{ $message->created_at }}">{{ $message->created_at->diffForHumans() }}</span>
                                 @if ($message->is_edited)
                                     <span class="text-[10px] text-gray-400 italic shrink-0">(editado)</span>
@@ -400,6 +408,26 @@
                                     placeholder="Escribe tu respuesta aquí..."
                                     :upload-url="route('teams.forum.upload_image', $team)"
                                 />
+
+                                @if($thread->task_id)
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+                                        <div class="flex items-center gap-3">
+                                            <label class="relative inline-flex items-center cursor-pointer group">
+                                                <input type="checkbox" name="is_private" value="1" class="sr-only peer">
+                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
+                                                <span class="ml-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 group-hover:text-red-600 transition-colors">
+                                                    {{ __('Respuesta Privada') }}
+                                                </span>
+                                            </label>
+                                            <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium italic">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836c-.149.598.013 1.224.421 1.633a.75.75 0 001.06-1.06 1.124 1.124 0 01-.316-.925l.71-2.837c.474-1.895-1.48-3.483-3.2-2.62a.75.75 0 00.708 1.322zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                                                </svg>
+                                                {{ __('Solo visible para intervinientes de la tarea') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <!-- File Attachments -->
                                 <div class="flex flex-col gap-3">
