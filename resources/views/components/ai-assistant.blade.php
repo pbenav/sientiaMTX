@@ -881,8 +881,23 @@
                 // 2. FAST PATH: DIRECT INJECTION
                 if (isDirect) {
                     let targetEl = document.activeElement;
+                    const preferredIds = ['reply-content', 'observations', 'description'];
+                    
+                    // Priority 1: Check if active element is a valid input
                     if (!targetEl || (!['TEXTAREA', 'INPUT'].includes(targetEl.tagName) && !targetEl.closest('.ql-editor') && !targetEl.classList.contains('ql-editor'))) {
-                        targetEl = document.querySelector('.ql-editor') || document.querySelector('textarea:not([style*="display: none"])');
+                        // Priority 2: Look for our preferred IDs
+                        for (const id of preferredIds) {
+                            const el = document.getElementById(id);
+                            if (el && el.offsetParent !== null) { // Visible
+                                targetEl = el;
+                                break;
+                            }
+                        }
+                        
+                        // Priority 3: Fallback to any visible editor
+                        if (!targetEl || targetEl === document.activeElement) {
+                            targetEl = document.querySelector('.ql-editor') || document.querySelector('textarea:not([style*="display: none"])');
+                        }
                     }
 
                     if (targetEl) {
@@ -910,7 +925,13 @@
                                 targetEl._x_model.set(newVal);
                             }
                         }
+                        
+                        // Focus and Scroll to maintain context
                         targetEl.focus();
+                        if (targetEl.scrollIntoView) {
+                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        
                         Swal.fire({ icon: 'success', title: '¡Inyectado!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
                     } else {
                         Swal.fire('Atención', 'No se encontró un campo de texto activo.', 'warning');
@@ -952,17 +973,16 @@
                                         <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Inyectar en el campo de texto donde estabas escribiendo.</div>
                                     </div>
                                 </button>
-                                <template x-if="threadId">
-                                    <button data-action="forum" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left group">
-                                        <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Contestar al Foro</div>
-                                            <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Publicar esta respuesta en el hilo de discusión actual.</div>
-                                        </div>
-                                    </button>
-                                </template>
+                                ${this.threadId ? `
+                                <button data-action="forum" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left group">
+                                    <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Contestar al Foro</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Publicar esta respuesta en el hilo de discusión actual.</div>
+                                    </div>
+                                </button>` : ''}
                             </div>
                         </div>
                     `,
