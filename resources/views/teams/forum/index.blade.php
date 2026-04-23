@@ -219,7 +219,7 @@
 
     <!-- Modal to create thread -->
     <x-modal name="create-thread-modal" focusable>
-        <form method="post" action="{{ route('teams.forum.store', $team) }}" class="p-6 dark:bg-gray-900">
+        <form method="post" action="{{ route('teams.forum.store', $team) }}" class="p-6 dark:bg-gray-900" enctype="multipart/form-data">
             @csrf
 
             <div class="flex items-center gap-3 mb-6">
@@ -261,10 +261,30 @@
 
                 <div>
                     <x-input-label for="content" :value="__('forum.initial_message') ?? 'Mensaje inicial'" />
-                    <textarea id="content" name="content" rows="15" style="min-height: 400px !important;"
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-xl shadow-sm sm:text-sm p-4"
-                        placeholder="Escribe aquí el contexto de la conversación... (Soporta Markdown)" required></textarea>
+                    <x-markdown-editor 
+                        name="content" 
+                        id="content"
+                        rows="12"
+                        placeholder="Escribe aquí el contexto de la conversación... (Soporta Markdown)"
+                        required
+                        :upload-url="route('teams.forum.upload_image', $team)"
+                    />
                     <x-input-error class="mt-2" :messages="$errors->get('content')" />
+                </div>
+
+                <!-- File Attachments -->
+                <div class="flex flex-col gap-2">
+                    <x-input-label value="{{ __('Adjuntar archivos') }}" />
+                    <input type="file" name="attachments[]" multiple
+                        class="block w-full text-xs text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-xl file:border-0
+                        file:text-[10px] file:font-black file:uppercase file:tracking-widest
+                        file:bg-violet-50 file:text-violet-700
+                        hover:file:bg-violet-100
+                        dark:file:bg-violet-900/30 dark:file:text-violet-400
+                        bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl cursor-pointer">
+                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos para documentar el inicio de la discusión.') }}</p>
                 </div>
             </div>
 

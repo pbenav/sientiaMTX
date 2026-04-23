@@ -7,6 +7,7 @@ use App\Models\ForumThread;
 use App\Models\Team;
 use App\Models\User;
 use App\Notifications\NewForumMessageNotification;
+use App\Models\AttachmentLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
@@ -27,12 +28,74 @@ class ForumMessageController extends Controller
 
         $validated = $request->validate([
             'content' => 'required|string|max:10000',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
+            'drive_attachments' => 'nullable|string',
         ]);
 
         $message = $thread->messages()->create([
             'user_id' => auth()->id(),
             'content' => $validated['content'],
         ]);
+
+        // Handle Local Attachments
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments', 'public');
+                $originalName = $file->getClientOriginalName();
+                $datePrefix = date('Y-m-d-');
+                $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
+                $attachment = $message->attachments()->create([
+                    'user_id' => auth()->id(),
+                    'file_path' => $path,
+                    'file_name' => $fileName,
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                ]);
+
+                AttachmentLog::create([
+                    'attachment_id' => $attachment->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'upload',
+                    'metadata' => [
+                        'original_name' => $originalName,
+                        'size' => $file->getSize()
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            }
+        }
+
+        // Handle Drive Attachments
+        if ($request->has('drive_attachments') && !empty($request->drive_attachments)) {
+            $driveFiles = json_decode($request->drive_attachments, true);
+            if (is_array($driveFiles)) {
+                foreach ($driveFiles as $file) {
+                    $attachment = $message->attachments()->create([
+                        'user_id' => auth()->id(),
+                        'file_name' => $file['name'],
+                        'file_path' => 'google_drive/' . $file['id'],
+                        'file_size' => $file['size'] ?? 0,
+                        'mime_type' => $file['mimeType'] ?? 'application/octet-stream',
+                        'storage_provider' => 'google',
+                        'provider_file_id' => $file['id'],
+                        'web_view_link' => $file['webViewLink'],
+                    ]);
+
+                    AttachmentLog::create([
+                        'attachment_id' => $attachment->id,
+                        'user_id' => auth()->id(),
+                        'action' => 'drive_migration',
+                        'metadata' => [
+                            'file_id' => $file['id'],
+                            'source' => 'google_drive'
+                        ],
+                        'ip_address' => request()->ip()
+                    ]);
+                }
+            }
+        }
 
         // Touch the thread to push it to the top
         $thread->touch();

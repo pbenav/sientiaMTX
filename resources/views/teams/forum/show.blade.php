@@ -235,6 +235,36 @@
                                 <div class="text-sm markdown-content leading-relaxed">
                                     {!! Str::markdown($message->content) !!}
                                 </div>
+
+                                @if($message->attachments->isNotEmpty())
+                                    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800/60 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        @foreach($message->attachments as $attachment)
+                                            <div class="flex items-center gap-3 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50 group/file">
+                                                <div class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 shadow-sm">
+                                                    @if(str_contains($attachment->mime_type, 'image'))
+                                                        <img src="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}" class="w-full h-full object-cover rounded-lg">
+                                                    @else
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" />
+                                                        </svg>
+                                                    @endif
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-[10px] font-bold text-gray-900 dark:text-gray-100 truncate">{{ $attachment->file_name }}</p>
+                                                    <p class="text-[9px] text-gray-500">{{ number_format($attachment->file_size / 1024, 1) }} KB</p>
+                                                </div>
+                                                <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
+                                                   target="_blank"
+                                                   class="p-2 text-gray-400 hover:text-violet-600 transition-colors"
+                                                   title="Descargar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
 
                         <!-- Edit Mode (Hidden) -->
@@ -282,7 +312,7 @@
                     class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-indigo-600">
                     </div>
-                    <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST">
+                    <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="flex gap-4">
                             <div class="flex-shrink-0 hidden sm:block">
@@ -299,6 +329,21 @@
                                     placeholder="Escribe tu respuesta aquí..."
                                     :upload-url="route('teams.forum.upload_image', $team)"
                                 />
+
+                                <!-- File Attachments -->
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{{ __('Adjuntar archivos') }}</label>
+                                    <input type="file" name="attachments[]" multiple
+                                        class="block w-full text-xs text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-xl file:border-0
+                                        file:text-[10px] file:font-black file:uppercase file:tracking-widest
+                                        file:bg-violet-50 file:text-violet-700
+                                        hover:file:bg-violet-100
+                                        dark:file:bg-violet-900/30 dark:file:text-violet-400
+                                        bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl cursor-pointer">
+                                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos.') }}</p>
+                                </div>
 
                                 <div class="flex justify-end relative">
                                     <button type="submit"

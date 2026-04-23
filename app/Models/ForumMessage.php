@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class ForumMessage extends Model
 {
@@ -25,5 +26,10 @@ class ForumMessage extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(TaskAttachment::class, 'attachable');
     }
 }

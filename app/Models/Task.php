@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -446,9 +447,9 @@ class Task extends Model
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->where('status', '!=', 'completed');
     }
-    public function attachments(): HasMany
+    public function attachments(): MorphMany
     {
-        return $this->hasMany(TaskAttachment::class);
+        return $this->morphMany(TaskAttachment::class, 'attachable');
     }
 
     public function kanbanColumn(): BelongsTo

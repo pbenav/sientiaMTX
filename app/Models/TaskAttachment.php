@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TaskAttachment extends Model
 {
     protected $fillable = [
-        'task_id',
+        'attachable_id',
+        'attachable_type',
         'user_id',
         'file_name',
         'file_path',
@@ -19,9 +20,9 @@ class TaskAttachment extends Model
         'web_view_link',
     ];
 
-    public function task(): BelongsTo
+    public function attachable()
     {
-        return $this->belongsTo(Task::class);
+        return $this->morphTo();
     }
 
     public function user(): BelongsTo
