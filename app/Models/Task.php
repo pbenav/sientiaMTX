@@ -354,11 +354,11 @@ class Task extends Model
      * Scope for "What I should be working on or managing right now".
      * This handles the hierarchy to avoid showing both master and instance.
      */
-    public function scopeOperationalFor($query, $user, Team $team)
+    public function scopeOperationalFor($query, $user, Team $team, $includeFuture = false)
     {
         $isCoordinator = $team->isCoordinator($user);
 
-        return $query->where(function ($main) use ($user, $isCoordinator) {
+        $query->where(function ($main) use ($user, $isCoordinator) {
             if ($isCoordinator) {
                 // COORDINADOR (Contexto Gestión): Ve el esqueleto (Plantillas y Raíces)
                 // Evitamos traer instancias que no estén asignadas a él como filas principales,
@@ -383,17 +383,26 @@ class Task extends Model
                 });
             }
         });
+
+        if (!$includeFuture) {
+            $query->where(function ($q) {
+                $q->whereNull('scheduled_date')
+                  ->orWhere('scheduled_date', '<=', now());
+            });
+        }
+
+        return $query;
     }
 
     /**
      * Specialized scope for focused views (Kanban/Matrix).
      * Filters for actionable items and applies deduplication for managers.
      */
-    public function scopeFocusedFor($query, $user, Team $team)
+    public function scopeFocusedFor($query, $user, Team $team, $includeFuture = false)
     {
         $userId = $user->id;
 
-        return $query->where('is_template', false) // NUNCA mostrar planes maestros en Vistas Enfocadas (Matrix/Kanban)
+        $query->where('is_template', false) // NUNCA mostrar planes maestros en Vistas Enfocadas (Matrix/Kanban)
             ->where(function ($q) use ($userId) {
                 // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces sin hijos
                 $q->where('assigned_user_id', $userId)
@@ -404,13 +413,22 @@ class Task extends Model
                             ->whereDoesntHave('children'); // No children
                   });
             });
+
+        if (!$includeFuture) {
+            $query->where(function ($q) {
+                $q->whereNull('scheduled_date')
+                  ->orWhere('scheduled_date', '<=', now());
+            });
+        }
+
+        return $query;
     }
 
     /**
      * Specialized scope for the Kanban board.
      * Legacy wrapper for scopeFocusedFor.
      */
-    public function scopeOperationalForKanban($query, $user, $team)
+    public function scopeOperationalForKanban($query, $user, $team, $includeFuture = false)
     {
         // EL KANBAN ES SAGRADO: Solo tareas finales (sin hijos) y que no sean plantillas maestras.
         // Aplicamos un filtro de "túnel" para ignorar cualquier otro orWhere de scopes anteriores.
@@ -418,8 +436,8 @@ class Task extends Model
                 $q->whereDoesntHave('children')
                   ->where('is_template', false);
             })
-            ->where(function($q) use ($user, $team) {
-                 $q->focusedFor($user, $team);
+            ->where(function($q) use ($user, $team, $includeFuture) {
+                 $q->focusedFor($user, $team, $includeFuture);
             });
     }
 

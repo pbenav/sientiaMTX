@@ -151,7 +151,7 @@ class TaskController extends Controller
         
         $query = $team->tasks()
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team)
+            ->operationalFor($user, $team, true)
             ->with([
                 'assignedUser', 
                 'tags', 

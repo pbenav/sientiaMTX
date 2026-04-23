@@ -110,7 +110,7 @@ class TeamController extends Controller
 
         $team->load(['members', 'tasks' => function($query) use ($user, $isManager, $team) {
             $query->visibleTo($user, $isManager)
-                  ->operationalFor($user, $team);
+                  ->operationalFor($user, $team, true);
         }]);
 
         return view('teams.show', compact('team'));

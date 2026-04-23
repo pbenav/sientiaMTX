@@ -202,7 +202,7 @@ class GanttController extends Controller
                 }
             ])
             ->visibleTo($user, $isManager)
-            ->operationalFor($user, $team)
+            ->operationalFor($user, $team, true)
             ->get();
 
         // Step 2: Expansion rules
