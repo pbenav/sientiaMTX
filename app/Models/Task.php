@@ -745,12 +745,12 @@ class Task extends Model
     public function getAllAttachmentsAttribute()
     {
         $attachments = $this->attachments()
-            ->with('task') // eager load to access team/context if needed
+            ->with('attachable') // eager load polymorphic relationship
             ->get();
 
         // Add parent attachments if any
         if ($this->parent_id) {
-            $parent = $this->parent()->with('attachments')->first();
+            $parent = $this->parent()->with('attachments.attachable')->first();
             if ($parent) {
                 $attachments = $attachments->merge($parent->attachments);
             }
@@ -760,7 +760,9 @@ class Task extends Model
         // to avoid performance issues in huge projects.
         if ($this->children()->exists()) {
             $childrenIds = $this->children()->pluck('id');
-            $childAttachments = \App\Models\TaskAttachment::whereIn('task_id', $childrenIds)->get();
+            $childAttachments = \App\Models\TaskAttachment::where('attachable_type', \App\Models\Task::class)
+                ->whereIn('attachable_id', $childrenIds)
+                ->get();
             $attachments = $attachments->merge($childAttachments);
         }
 

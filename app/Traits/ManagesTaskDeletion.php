@@ -36,9 +36,11 @@ trait ManagesTaskDeletion
             ForumThread::where('task_id', $task->id)->delete();
 
             // 6. Attachments (DB and Files)
-            $attachments = TaskAttachment::where('task_id', $task->id)->get();
+            $attachments = TaskAttachment::where('attachable_type', Task::class)
+                ->where('attachable_id', $task->id)
+                ->get();
             foreach ($attachments as $attachment) {
-                if ($attachment->file_path && Storage::disk('public')->exists($attachment->file_path)) {
+                if ($attachment->storage_provider === 'local' && $attachment->file_path && Storage::disk('public')->exists($attachment->file_path)) {
                     Storage::disk('public')->delete($attachment->file_path);
                 }
                 $attachment->delete();
