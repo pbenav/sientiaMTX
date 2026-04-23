@@ -209,10 +209,6 @@
                                     </button>
                                     @endif
                                     
-                                    <button @click="transferToTask(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-violet-600" title="Inyectar en tarea">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-                                    </button>
-
                                     <template x-if="msg.is_error">
                                         <div class="flex space-x-1">
                                             <button @click="retryLastRequest()" class="bg-red-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Reintentar y enviar directamente">
@@ -766,10 +762,10 @@
                         <span class="absolute -top-3 left-4 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-200 dark:border-indigo-800 shadow-sm">Contenido Inyectable</span>
                         ${cleanContent.replace(/\n/g, '<br>')}
                         <div class="mt-4 flex justify-end">
-                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(cleanContent).replace(/"/g, '&quot;')}, direct: true } }))" 
-                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2 group/btn">
-                                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:-translate-y-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-                                <span>Inyectar ahora</span>
+                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(cleanContent).replace(/"/g, '&quot;')}, direct: false } }))" 
+                                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2 group/btn">
+                                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                <span>Usar este contenido</span>
                             </button>
                         </div>
                     </div>`;
