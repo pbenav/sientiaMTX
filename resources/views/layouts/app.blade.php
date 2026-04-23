@@ -1121,6 +1121,16 @@
 
 
 
+    <script>
+        // Global handler for Markdown links to open in new tab
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('.markdown-content a');
+            if (link && !link.hasAttribute('target')) {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            }
+        }, true);
+    </script>
     @stack('modals')
     @stack('scripts')
 </body>
