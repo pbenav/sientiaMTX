@@ -39,13 +39,21 @@ class GoogleDriveController extends Controller
      */
     public function uploadToDrive(Team $team, TaskAttachment $attachment)
     {
-        if ($attachment->task->team_id !== $team->id) {
-            return back()->with('warning', 'Esta adjunto no pertenece a este equipo.');
+        if ($attachment->attachable_type === Task::class && $attachment->attachable->team_id !== $team->id) {
+            return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
+        }
+
+        if ($attachment->attachable_type === \App\Models\ForumMessage::class && $attachment->attachable->thread->team_id !== $team->id) {
+            return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
         }
 
         $user = auth()->user();
 
-        if ($user->cannot('view', $attachment->task)) {
+        if ($attachment->attachable_type === Task::class && $user->cannot('view', $attachment->attachable)) {
+            return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+        }
+
+        if ($attachment->attachable_type === \App\Models\ForumMessage::class && $user->cannot('view', $attachment->attachable->thread->team)) {
             return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
         }
 
@@ -171,28 +179,38 @@ class GoogleDriveController extends Controller
     }
 
     /**
-     * Link an existing Drive file to a Task
+     * Link an existing Drive file to an attachable (Task, ForumMessage, etc.)
      */
-    public function attachFromDrive(Team $team, Task $task, Request $request)
+    public function attachFromDrive(Team $team, Request $request)
     {
-        if ($task->team_id !== $team->id) {
-            return response()->json(['success' => false, 'message' => 'La tarea no pertenece a este equipo.'], 403);
-        }
-
-        if (auth()->user()->cannot('view', $task)) {
-            return response()->json(['success' => false, 'message' => 'No tienes permiso para ver esta tarea.'], 403);
-        }
-
         $request->validate([
+            'attachable_id' => 'required|integer',
+            'attachable_type' => 'required|string',
             'file_id' => 'required|string',
             'file_name' => 'required|string',
             'web_view_link' => 'required|url',
             'mime_type' => 'nullable|string',
+            'file_size' => 'nullable|integer',
         ]);
+
+        // Basic Authorization check based on type
+        $user = auth()->user();
+        if ($request->attachable_type === Task::class) {
+            $task = Task::where('team_id', $team->id)->findOrFail($request->attachable_id);
+            if ($user->cannot('view', $task)) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para ver esta tarea.'], 403);
+            }
+        } elseif ($request->attachable_type === \App\Models\ForumMessage::class) {
+            $message = \App\Models\ForumMessage::findOrFail($request->attachable_id);
+            if ($message->thread->team_id !== $team->id || $user->cannot('view', $team)) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para este equipo.'], 403);
+            }
+        }
 
         try {
             $attachment = TaskAttachment::create([
-                'task_id' => $task->id,
+                'attachable_id' => $request->attachable_id,
+                'attachable_type' => $request->attachable_type,
                 'user_id' => auth()->id(),
                 'file_name' => $request->file_name,
                 'file_path' => 'google_drive/' . $request->file_id, // Virtual path
@@ -201,6 +219,17 @@ class GoogleDriveController extends Controller
                 'storage_provider' => 'google',
                 'provider_file_id' => $request->file_id,
                 'web_view_link' => $request->web_view_link,
+            ]);
+
+            AttachmentLog::create([
+                'attachment_id' => $attachment->id,
+                'user_id' => auth()->id(),
+                'action' => 'drive_link',
+                'metadata' => [
+                    'file_id' => $request->file_id,
+                    'file_name' => $request->file_name
+                ],
+                'ip_address' => request()->ip()
             ]);
 
             return response()->json([

@@ -130,6 +130,7 @@ Route::middleware('auth')->group(function () {
         Route::get('attachments/{attachment}/view', [TaskController::class, 'viewAttachment'])->name('teams.attachments.view');
         Route::patch('attachments/{attachment}', [TaskController::class, 'updateAttachment'])->name('teams.attachments.update');
         Route::delete('attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
+        Route::get('attachments/history/{attachment}', [TaskController::class, 'attachmentHistory'])->name('teams.attachments.history');
         Route::post('tasks/{task}/sync', [TaskController::class, 'syncToChildren'])->name('teams.tasks.sync-to-children')->withoutScopedBindings();
         
         // Private Notes
@@ -260,7 +261,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/attachments/{attachment}/to-drive', [GoogleDriveController::class, 'uploadToDrive'])->name('teams.attachments.to-drive');
     Route::post('/google/drive/save-response', [GoogleDriveController::class, 'saveAiResponse'])->name('google.drive.save-response');
     Route::get('/google/drive/list', [GoogleDriveController::class, 'listContents'])->name('google.drive.list');
-    Route::post('/teams/{team}/tasks/{task}/attachments/from-drive', [GoogleDriveController::class, 'attachFromDrive'])->name('teams.tasks.attachments.from-drive');
+    Route::post('/teams/{team}/attachments/from-drive', [GoogleDriveController::class, 'attachFromDrive'])->name('teams.attachments.from-drive');
 
 });
 

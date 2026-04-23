@@ -1430,14 +1430,6 @@ class TaskController extends Controller
         }
 
         // Log deletion BEFORE deleting the attachment record (due to cascade)
-        // Actually, we want to keep the logs but the attachment will be gone.
-        // Wait, the logs table has a constrained foreign key with onDelete('cascade').
-        // If we want to keep logs, we should make attachment_id nullable or remove cascade.
-        // The user said "tabla de metainformación... histórico". 
-        // If the attachment is deleted, maybe the logs should stay but with a null attachment_id?
-        // But the user didn't specify. For now, I'll keep the cascade.
-        // But I'll log it.
-        
         AttachmentLog::create([
             'attachment_id' => $attachment->id,
             'user_id' => auth()->id(),
@@ -1459,5 +1451,24 @@ class TaskController extends Controller
         $attachment->delete();
 
         return back()->with('success', 'Archivo eliminado correctamente.');
+    }
+
+    /**
+     * Get attachment history logs
+     */
+    public function attachmentHistory(Team $team, TaskAttachment $attachment)
+    {
+        $this->authorizeAttachmentAccess($team, $attachment);
+
+        $attachment->load('user');
+        $logs = AttachmentLog::where('attachment_id', $attachment->id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'attachment' => $attachment,
+            'logs' => $logs
+        ]);
     }
 }

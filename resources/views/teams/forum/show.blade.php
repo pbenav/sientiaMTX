@@ -239,28 +239,80 @@
                                 @if($message->attachments->isNotEmpty())
                                     <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800/60 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         @foreach($message->attachments as $attachment)
-                                            <div class="flex items-center gap-3 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50 group/file">
-                                                <div class="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 shadow-sm">
-                                                    @if(str_contains($attachment->mime_type, 'image'))
-                                                        <img src="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}" class="w-full h-full object-cover rounded-lg">
-                                                    @else
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" />
-                                                        </svg>
+                                            <div class="flex flex-col gap-2 p-3 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50 group/file transition-all hover:bg-white dark:hover:bg-gray-800 shadow-sm hover:shadow-md">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center text-gray-400 shrink-0 shadow-sm border border-gray-100 dark:border-gray-700">
+                                                        @if(str_contains($attachment->mime_type, 'image'))
+                                                            <img src="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}" class="w-full h-full object-cover rounded-xl">
+                                                        @else
+                                                            <div class="p-2">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" />
+                                                                </svg>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-[10px] font-black text-gray-900 dark:text-gray-100 truncate leading-tight">{{ $attachment->file_name }}</p>
+                                                        <p class="text-[9px] text-gray-400 mt-0.5 flex items-center gap-1">
+                                                            @if($attachment->storage_provider === 'google')
+                                                                <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1 rounded-[4px] font-black uppercase text-[7px]">Google Drive</span>
+                                                            @else
+                                                                {{ number_format($attachment->file_size / 1024, 1) }} KB
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Attachment Actions -->
+                                                <div class="flex items-center justify-end gap-1 pt-2 border-t border-gray-100 dark:border-gray-700/30 opacity-60 group-hover/file:opacity-100 transition-opacity">
+                                                    @if($attachment->storage_provider === 'local' && auth()->user()->google_token)
+                                                        <form action="{{ route('teams.attachments.to-drive', [$team, $attachment]) }}" method="POST" class="inline">
+                                                            @csrf
+                                                            <button type="submit" 
+                                                                class="p-1.5 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                                title="Mover a Google Drive">
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                            </button>
+                                                        </form>
                                                     @endif
+
+                                                    <button type="button" 
+                                                        onclick="showAttachmentHistory({{ $attachment->id }})"
+                                                        class="p-1.5 text-amber-500 hover:text-amber-700 dark:text-amber-400 transition-colors"
+                                                        title="Ver historial">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <button type="button" 
+                                                        @click="$dispatch('ai:analyze-file', { 
+                                                            fileName: '{{ addslashes($attachment->file_name) }}', 
+                                                            fileId: {{ $attachment->id }},
+                                                            fileUrl: '{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}',
+                                                            fileType: '{{ $attachment->mime_type }}',
+                                                            threadId: {{ $thread->id }},
+                                                            messageId: {{ $message->id }},
+                                                            teamId: {{ $team->id }},
+                                                            autoSubmit: false 
+                                                        })"
+                                                        class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
+                                                        title="Analizar con Ax.ia">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
+                                                       target="_blank"
+                                                       class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                                       title="Descargar">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                        </svg>
+                                                    </a>
                                                 </div>
-                                                <div class="min-w-0 flex-1">
-                                                    <p class="text-[10px] font-bold text-gray-900 dark:text-gray-100 truncate">{{ $attachment->file_name }}</p>
-                                                    <p class="text-[9px] text-gray-500">{{ number_format($attachment->file_size / 1024, 1) }} KB</p>
-                                                </div>
-                                                <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
-                                                   target="_blank"
-                                                   class="p-2 text-gray-400 hover:text-violet-600 transition-colors"
-                                                   title="Descargar">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                    </svg>
-                                                </a>
                                             </div>
                                         @endforeach
                                     </div>
@@ -312,8 +364,27 @@
                     class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-indigo-600">
                     </div>
-                    <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST" enctype="multipart/form-data"
+                          x-data="{ 
+                            driveFiles: [], 
+                            addFile(file) { 
+                                if (!this.driveFiles.find(f => f.id === file.id)) {
+                                    this.driveFiles.push({
+                                        id: file.id,
+                                        name: file.name,
+                                        webViewLink: file.webViewLink,
+                                        size: file.size || 0,
+                                        mimeType: file.mimeType
+                                    });
+                                }
+                            },
+                            removeFile(id) {
+                                this.driveFiles = this.driveFiles.filter(f => f.id !== id);
+                            }
+                          }"
+                          @drive-file-selected.window="addFile($event.detail)">
                         @csrf
+                        <input type="hidden" name="drive_attachments" :value="JSON.stringify(driveFiles)">
                         <div class="flex gap-4">
                             <div class="flex-shrink-0 hidden sm:block">
                                 <div
@@ -331,8 +402,40 @@
                                 />
 
                                 <!-- File Attachments -->
-                                <div class="flex flex-col gap-2">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{{ __('Adjuntar archivos') }}</label>
+                                <div class="flex flex-col gap-3">
+                                    <div class="flex items-center justify-between px-1">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('Adjuntar archivos') }}</label>
+                                        
+                                        @if(auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists())
+                                            <button type="button" @click="$dispatch('open-drive-picker', { mode: 'collect' })"
+                                                class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                                                <svg class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" viewBox="0 0 24 24"></svg>
+                                                {{ __('Google Drive') }}
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <!-- Drive Files List -->
+                                    <template x-if="driveFiles.length > 0">
+                                        <div class="grid grid-cols-1 gap-2 mb-2">
+                                            <template x-for="file in driveFiles" :key="file.id">
+                                                <div class="flex items-center justify-between p-2 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30">
+                                                    <div class="flex items-center gap-2 min-w-0">
+                                                        <svg class="w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 48 48">
+                                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                            <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                            <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                        </svg>
+                                                        <span class="text-[11px] font-bold text-blue-800 dark:text-blue-300 truncate" x-text="file.name"></span>
+                                                    </div>
+                                                    <button type="button" @click="removeFile(file.id)" class="text-blue-400 hover:text-red-500 transition-colors p-1">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+
                                     <input type="file" name="attachments[]" multiple
                                         class="block w-full text-xs text-gray-500
                                         file:mr-4 file:py-2 file:px-4
@@ -342,7 +445,7 @@
                                         hover:file:bg-violet-100
                                         dark:file:bg-violet-900/30 dark:file:text-violet-400
                                         bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl cursor-pointer">
-                                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos.') }}</p>
+                                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos locales o vincularlos desde Drive.') }}</p>
                                 </div>
 
                                 <div class="flex justify-end relative">
@@ -365,6 +468,31 @@
         </div>
     </div>
 
+    @push('modals')
+        <x-google-drive-picker :team="$team" />
+
+        <!-- Attachment History Modal -->
+        <div id="attachment-history-modal" class="hidden fixed inset-0 z-[110] overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-950/80 backdrop-blur-sm transition-opacity" onclick="closeAttachmentHistory()"></div>
+                <div class="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-200 dark:border-gray-800">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+                        <div>
+                            <h3 class="text-lg font-black text-gray-900 dark:text-white heading uppercase tracking-tight">Historial del Archivo</h3>
+                            <p id="history-filename" class="text-xs text-gray-500 dark:text-gray-400 font-medium truncate max-w-sm"></p>
+                        </div>
+                        <button onclick="closeAttachmentHistory()" class="text-gray-400 hover:text-gray-500 p-2">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                    <div class="px-6 py-6 max-h-[60vh] overflow-y-auto" id="history-content">
+                        <!-- Logs will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endpush
+
     @push('scripts')
         <script>
             function quoteMessage(name, content) {
@@ -378,7 +506,6 @@
             }
 
             function editMessage(messageId, content) {
-                // Show edit form, hide message and actions
                 document.getElementById(`message-view-${messageId}`).classList.add('hidden');
                 document.getElementById(`actions-${messageId}`).classList.add('hidden');
                 document.getElementById(`message-edit-${messageId}`).classList.remove('hidden');
@@ -391,7 +518,48 @@
                 document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
             }
 
-            // Image Paste Handler for Textareas is now handled natively by the x-markdown-editor component via Alpine.js
+            function showAttachmentHistory(id) {
+                fetch(`/teams/{{ $team->id }}/attachments/history/${id}`) // Using a helper route or direct fetch if available
+                    .then(r => r.json())
+                    .then(data => {
+                        document.getElementById('history-filename').innerText = data.attachment.file_name;
+                        const content = document.getElementById('history-content');
+                        content.innerHTML = '';
+
+                        if (data.logs && data.logs.length > 0) {
+                            let html = '<div class="space-y-6 relative ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8">';
+                            data.logs.forEach(log => {
+                                const date = new Date(log.created_at).toLocaleString();
+                                html += `
+                                    <div class="relative">
+                                        <div class="absolute -left-[45px] top-1 w-8 h-8 rounded-full border-4 border-white dark:border-gray-900 bg-gray-400 flex items-center justify-center text-white shadow-sm ring-4 ring-gray-100 dark:ring-gray-800/30">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" /></svg>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">${log.action}</span>
+                                                <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-bold tabular-nums">${date}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 group">
+                                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tighter">${log.user?.name || 'Sistema'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            html += '</div>';
+                            content.innerHTML = html;
+                        } else {
+                            content.innerHTML = '<div class="text-center py-10"><p class="text-gray-500 italic">Sin movimientos registrados.</p></div>';
+                        }
+                        document.getElementById('attachment-history-modal').classList.remove('hidden');
+                    });
+            }
+
+            function closeAttachmentHistory() {
+                document.getElementById('attachment-history-modal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
         </script>
     @endpush
 </x-app-layout>

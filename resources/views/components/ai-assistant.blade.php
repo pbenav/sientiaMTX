@@ -401,7 +401,12 @@
             analyzeFile(detail) {
                 this.open = true;
                 this.attachmentId = detail.fileId;
-                this.messageId = null; // Clear forum context
+                
+                // Set context if provided
+                if (detail.messageId) this.messageId = detail.messageId;
+                if (detail.threadId) this.threadId = detail.threadId;
+                if (detail.taskId) this.taskId = detail.taskId;
+                if (detail.teamId) this.teamId = detail.teamId;
                 
                 // Add a system feedback message
                 this.messages.push({ 

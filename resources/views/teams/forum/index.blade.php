@@ -219,8 +219,28 @@
 
     <!-- Modal to create thread -->
     <x-modal name="create-thread-modal" focusable>
-        <form method="post" action="{{ route('teams.forum.store', $team) }}" class="p-6 dark:bg-gray-900" enctype="multipart/form-data">
+        <form method="post" action="{{ route('teams.forum.store', $team) }}" 
+              x-data="{ 
+                driveFiles: [], 
+                addFile(file) { 
+                    if (!this.driveFiles.find(f => f.id === file.id)) {
+                        this.driveFiles.push({
+                            id: file.id,
+                            name: file.name,
+                            webViewLink: file.webViewLink,
+                            size: file.size || 0,
+                            mimeType: file.mimeType
+                        });
+                    }
+                },
+                removeFile(id) {
+                    this.driveFiles = this.driveFiles.filter(f => f.id !== id);
+                }
+              }"
+              @drive-file-selected.window="addFile($event.detail)"
+              class="p-6 dark:bg-gray-900" enctype="multipart/form-data">
             @csrf
+            <input type="hidden" name="drive_attachments" :value="JSON.stringify(driveFiles)">
 
             <div class="flex items-center gap-3 mb-6">
                 <div class="p-2.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
@@ -273,8 +293,44 @@
                 </div>
 
                 <!-- File Attachments -->
-                <div class="flex flex-col gap-2">
-                    <x-input-label value="{{ __('Adjuntar archivos') }}" />
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between px-1">
+                        <x-input-label value="{{ __('Adjuntar archivos') }}" />
+                        
+                        @php 
+                            $isTeamLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+                        @endphp
+
+                        @if($isTeamLinked)
+                            <button type="button" @click="$dispatch('open-drive-picker', { mode: 'collect' })"
+                                class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                                <svg class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" viewBox="0 0 24 24"></svg>
+                                {{ __('Google Drive') }}
+                            </button>
+                        @endif
+                    </div>
+
+                    <!-- Drive Files List -->
+                    <template x-if="driveFiles.length > 0">
+                        <div class="grid grid-cols-1 gap-2 mb-2">
+                            <template x-for="file in driveFiles" :key="file.id">
+                                <div class="flex items-center justify-between p-2 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <svg class="w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 48 48">
+                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                            <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                            <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                        </svg>
+                                        <span class="text-[11px] font-bold text-blue-800 dark:text-blue-300 truncate" x-text="file.name"></span>
+                                    </div>
+                                    <button type="button" @click="removeFile(file.id)" class="text-blue-400 hover:text-red-500 transition-colors p-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
                     <input type="file" name="attachments[]" multiple
                         class="block w-full text-xs text-gray-500
                         file:mr-4 file:py-2 file:px-4
@@ -284,7 +340,7 @@
                         hover:file:bg-violet-100
                         dark:file:bg-violet-900/30 dark:file:text-violet-400
                         bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl cursor-pointer">
-                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos para documentar el inicio de la discusión.') }}</p>
+                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos locales o vincularlos desde Google Drive.') }}</p>
                 </div>
             </div>
 
@@ -299,6 +355,10 @@
             </div>
         </form>
     </x-modal>
+
+    @push('modals')
+        <x-google-drive-picker :team="$team" />
+    @endpush
 
     @push('scripts')
         <script>
