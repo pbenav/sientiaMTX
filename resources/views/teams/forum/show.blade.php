@@ -238,7 +238,18 @@
                             <div id="message-view-{{ $message->id }}"
                                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }}">
                                 <div class="text-sm markdown-content leading-relaxed">
-                                    {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                    @php
+                                        $decoded = json_decode($message->content, true);
+                                        $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
+                                    @endphp
+
+                                    @if($isJson)
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 my-2 border border-gray-100 dark:border-gray-700 font-mono text-xs overflow-x-auto">
+                                            <pre><code>{{ json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                        </div>
+                                    @else
+                                        {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                    @endif
                                 </div>
 
                                 @if($message->attachments->isNotEmpty())

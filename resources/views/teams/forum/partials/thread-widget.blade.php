@@ -92,7 +92,20 @@
                                 {{ $message->created_at->diffForHumans() }}
                             </span>
                         </div>
-                        <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap" id="msg-content-{{ $message->id }}">{{ $message->content }}</div>
+                        <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap markdown-content" id="msg-content-{{ $message->id }}">
+                            @php
+                                $decoded = json_decode($message->content, true);
+                                $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
+                            @endphp
+
+                            @if($isJson)
+                                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 my-1 border border-gray-100 dark:border-gray-700 font-mono text-[10px] overflow-x-auto">
+                                    <pre><code>{{ json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                </div>
+                            @else
+                                {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                            @endif
+                        </div>
                         
                         @if(!$rootTask->forumThread->is_locked && (auth()->id() === $message->user_id || auth()->user()->getRole($team) === 'coordinator'))
                             <div class="flex items-center gap-2 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity">
