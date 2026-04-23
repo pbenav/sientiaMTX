@@ -81,8 +81,7 @@ class User extends Authenticatable implements HasLocalePreference
             'resilience_points' => 'integer',
             'experience_points' => 'integer',
             'energy_level' => 'integer',
-            'google_token' => 'encrypted:array',
-            'google_refresh_token' => 'encrypted',
+            'energy_level' => 'integer',
         ];
     }
 
@@ -414,6 +413,42 @@ class User extends Authenticatable implements HasLocalePreference
     public function profilePhotoDisk()
     {
         return isset($_ENV['VAPOR_ARTIFACT_NAME']) ? 's3' : 'public';
+    }
+
+    /**
+     * Acceso seguro al token de Google para evitar errores de descifrado en la transición.
+     */
+    protected function googleToken(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value) {
+                if (!$value) return null;
+                try {
+                    return decrypt($value, true); // Intenta descifrar
+                } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    return null; // Si falla (viejo/corrupto), ignorar
+                }
+            },
+            set: fn ($value) => $value ? encrypt($value, true) : null,
+        );
+    }
+
+    /**
+     * Acceso seguro al refresh token de Google.
+     */
+    protected function googleRefreshToken(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value) {
+                if (!$value) return null;
+                try {
+                    return decrypt($value);
+                } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    return null;
+                }
+            },
+            set: fn ($value) => $value ? encrypt($value) : null,
+        );
     }
 }
 
