@@ -17,8 +17,8 @@
         /* Responsive Kanban column widths */
         @media (max-width: 640px) {
             .kanban-column {
-                width: 280px !important;
-                flex: 0 0 280px !important;
+                width: 320px !important;
+                flex: 0 0 320px !important;
                 max-height: calc(100vh - 150px) !important;
                 min-height: 300px;
             }
@@ -31,8 +31,8 @@
         @media (min-width: 641px) and (max-width: 1024px) {
             /* iPad/Tablet: smaller columns to fit 2-3 without horizontal scroll */
             .kanban-column {
-                width: 260px !important;
-                flex: 0 0 260px !important;
+                width: 300px !important;
+                flex: 0 0 300px !important;
                 max-height: calc(100vh - 180px) !important;
                 min-height: 400px;
             }
@@ -43,10 +43,10 @@
         }
 
         @media (min-width: 1025px) {
-            /* Desktop: standard 320px columns */
+            /* Desktop: standard 380px columns */
             .kanban-column {
-                width: 320px !important;
-                flex: 0 0 320px !important;
+                width: 380px !important;
+                flex: 0 0 380px !important;
                 max-height: calc(100vh - 200px) !important;
                 min-height: 500px;
             }
