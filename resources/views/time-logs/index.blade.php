@@ -135,7 +135,9 @@
                                     <select name="receiver_id" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-500 transition-all text-gray-900 dark:text-white">
                                         <option value="">Selecciona compañero...</option>
                                         @foreach($teamMembers as $member)
-                                            <option value="{{ $member->id }}">{{ $member->name }}</option>
+                                            @if($member->id !== auth()->id())
+                                                <option value="{{ $member->id }}">{{ $member->name }}</option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
