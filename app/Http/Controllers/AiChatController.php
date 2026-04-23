@@ -373,6 +373,10 @@ class AiChatController extends Controller
             return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo.']);
         }
 
+        if ($request->target === 'draft') {
+            return response()->json(['success' => true, 'message' => 'Contenido listo para el editor.', 'content' => $content]);
+        }
+
         // If thread has a task and target is task-related, redirect to task transfer
         if ($thread->task_id) {
             $request->merge(['task_id' => $thread->task_id]);

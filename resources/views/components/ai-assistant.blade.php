@@ -896,8 +896,19 @@
                             const start = targetEl.selectionStart || 0;
                             const end = targetEl.selectionEnd || 0;
                             const val = targetEl.value;
-                            targetEl.value = val.substring(0, start) + textToInject + val.substring(end);
+                            const newVal = val.substring(0, start) + textToInject + val.substring(end);
+                            
+                            // 1. Update physical value
+                            targetEl.value = newVal;
+                            
+                            // 2. Trigger events for AlpineJS / x-model
                             targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                            targetEl.dispatchEvent(new Event('change', { bubbles: true }));
+                            
+                            // 3. Force Alpine sync if it's an x-model element
+                            if (window.Alpine && targetEl._x_model) {
+                                targetEl._x_model.set(newVal);
+                            }
                         }
                         targetEl.focus();
                         Swal.fire({ icon: 'success', title: '¡Inyectado!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
@@ -941,6 +952,17 @@
                                         <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Inyectar en el campo de texto donde estabas escribiendo.</div>
                                     </div>
                                 </button>
+                                <template x-if="threadId">
+                                    <button data-action="forum" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left group">
+                                        <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Contestar al Foro</div>
+                                            <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Publicar esta respuesta en el hilo de discusión actual.</div>
+                                        </div>
+                                    </button>
+                                </template>
                             </div>
                         </div>
                     `,
@@ -1001,6 +1023,29 @@
                 } 
                 else if (selectedAction === 'cursor') {
                     this.transferToTask({ content: rawPayload, direct: true });
+                }
+                else if (selectedAction === 'forum') {
+                    const { value: forumAction } = await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-amber-600">Opciones de Foro</span>',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: isDark ? '#f1f5f9' : '#1e293b',
+                        input: 'radio',
+                        inputOptions: {
+                            'reply': 'Publicar mensaje ahora mismo',
+                            'draft': 'Cargar en el editor para revisar'
+                        },
+                        confirmButtonText: 'Continuar',
+                        confirmButtonColor: '#d97706',
+                        customClass: { popup: 'rounded-[2.5rem]' },
+                        inputValidator: (v) => !v && 'Selecciona una acción'
+                    });
+                    if (!forumAction) return;
+                    
+                    if (forumAction === 'draft') {
+                        this.transferToTask({ content: rawPayload, direct: true });
+                    } else {
+                        this.submitServerTransfer('reply', rawPayload);
+                    }
                 }
             },
 
