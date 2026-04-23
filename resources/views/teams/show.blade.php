@@ -36,10 +36,9 @@
                 @foreach ($team->members as $member)
                     <div class="px-5 py-4 flex items-center justify-between group hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-700/50 flex items-center justify-center text-xs font-bold text-violet-700 dark:text-violet-300">
-                                {{ strtoupper(substr($member->name, 0, 2)) }}
-                            </div>
+                            <img src="{{ $member->profile_photo_url }}" 
+                                alt="{{ $member->name }}"
+                                class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                             <div>
                                 <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $member->name }}</p>
                                 <p class="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">

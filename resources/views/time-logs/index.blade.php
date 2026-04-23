@@ -395,7 +395,9 @@
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->receivedKudos()->with('sender')->orderBy('created_at', 'desc')->limit(5)->get() as $kudo)
                             <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                                <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 text-xs font-black">{{ substr($kudo->sender->name ?? '?', 0, 2) }}</div>
+                                <img src="{{ $kudo->sender ? $kudo->sender->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                    alt="{{ $kudo->sender->name ?? '?' }}"
+                                    class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
                                     <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->sender->name ?? 'Anónimo' }}</span>
                                     <p class="text-xs text-gray-500 italic mt-1 break-words">"{{ $kudo->message }}"</p>
@@ -415,7 +417,9 @@
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->givenKudos()->with('receiver')->orderBy('created_at', 'desc')->limit(5)->get() as $kudo)
                             <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                                <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-xs font-black">{{ substr($kudo->receiver->name ?? '?', 0, 2) }}</div>
+                                <img src="{{ $kudo->receiver ? $kudo->receiver->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                    alt="{{ $kudo->receiver->name ?? '?' }}"
+                                    class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
                                     <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->receiver->name ?? 'Anónimo' }}</span>
                                     <p class="text-xs text-gray-500 italic mt-1 break-words">"{{ $kudo->message }}"</p>

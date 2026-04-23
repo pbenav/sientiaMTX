@@ -44,9 +44,8 @@
                     </div>
                     <div class="text-xs text-gray-500 flex items-center gap-3 mt-1.5 font-medium">
                         <span class="flex items-center gap-1.5 shrink-0">
-                            <div
-                                class="w-4 h-4 rounded-full bg-violet-100 text-[8px] font-bold text-violet-600 flex items-center justify-center">
-                                {{ strtoupper(substr($thread->user->name, 0, 2)) }}</div> Creado por
+                        <img src="{{ $thread->user->profile_photo_url }}" alt="{{ $thread->user->name }}" 
+                            class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-900"> Creado por
                             {{ $thread->user->name }}
                         </span>
                         <span class="shrink-0">•</span>
@@ -148,10 +147,8 @@
                 <div class="flex gap-4 {{ $isCurrentUser ? 'flex-row-reverse' : '' }}">
                     <!-- Avatar -->
                     <div class="flex-shrink-0 mt-1">
-                        <div
-                            class="w-10 h-10 rounded-full {{ $isCurrentUser ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400' : ($isFirst ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400') }} flex items-center justify-center text-sm font-bold shadow-sm border border-white dark:border-gray-900">
-                            {{ strtoupper(substr($message->user->name, 0, 2)) }}
-                        </div>
+                        <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
+                            class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-900">
                     </div>
 
                     <!-- Message Bubble -->
@@ -395,10 +392,8 @@
                         <input type="hidden" name="drive_attachments" :value="JSON.stringify(driveFiles)">
                         <div class="flex gap-4">
                             <div class="flex-shrink-0 hidden sm:block">
-                                <div
-                                    class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 flex items-center justify-center text-sm font-bold shadow-sm">
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                                </div>
+                                <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" 
+                                    class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
                             </div>
                             <div class="flex-1 space-y-3 pl-2">
                                 <x-markdown-editor 

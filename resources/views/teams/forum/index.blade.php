@@ -150,10 +150,9 @@
 
                             <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="flex items-center gap-1.5 font-medium">
-                                    <div
-                                        class="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-[8px] font-bold text-violet-600 dark:text-violet-400">
-                                        {{ strtoupper(substr($thread->user->name, 0, 2)) }}
-                                    </div>
+                                    <img src="{{ $thread->user->profile_photo_url }}" 
+                                        alt="{{ $thread->user->name }}"
+                                        class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                     {{ $thread->user->name }}
                                 </span>
 
@@ -184,10 +183,9 @@
                                         class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">
                                         {{ __('forum.latest') ?? 'Último' }}</p>
                                     <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-[8px] font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
-                                            {{ strtoupper(substr($thread->messages->first()->user->name, 0, 2)) }}
-                                        </div>
+                                        <img src="{{ $thread->messages->first()->user->profile_photo_url }}" 
+                                            alt="{{ $thread->messages->first()->user->name }}"
+                                            class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                         <div>
                                             <p
                                                 class="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate w-24">

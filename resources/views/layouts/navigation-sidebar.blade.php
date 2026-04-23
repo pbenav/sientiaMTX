@@ -271,10 +271,8 @@
             @auth
                 <div class="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800">
                     <div class="flex items-center gap-3 px-2 mb-4">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shrink-0">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                        </div>
+                        <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" 
+                            class="w-10 h-10 rounded-xl object-cover shadow-lg shrink-0 border border-white/20">
                         <div class="min-w-0">
                             <p class="text-sm font-black text-gray-900 dark:text-white truncate uppercase tracking-tight">
                                 {{ explode(' ', auth()->user()->name)[0] }}</p>

@@ -69,7 +69,7 @@
     getCurrentContextName() {
         if (this.context === '') return '🌍 Mi Configuración Global';
         @foreach($teams as $team)
-            if (this.context == '{{ $team->id }}') return '👥 Equipo: {{ $team->name }}';
+            if (this.context == '{{ $team->id }}') return '👥 Equipo: {{ addslashes($team->name) }}';
         @endforeach
         return 'Seleccionar contexto';
     },

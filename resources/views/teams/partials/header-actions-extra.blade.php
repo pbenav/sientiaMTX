@@ -59,10 +59,9 @@
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" @click.outside="open = false"
                         class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
-                        <div
-                            class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-lg">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                        </div>
+                        <img src="{{ auth()->user()->profile_photo_url }}" 
+                            alt="{{ auth()->user()->name }}"
+                            class="w-8 h-8 rounded-lg object-cover shadow-lg border border-white dark:border-gray-800">
                     </button>
                     <div x-show="open" x-transition
                         class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">

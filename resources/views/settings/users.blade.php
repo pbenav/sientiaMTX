@@ -93,9 +93,9 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
-                                                {{ strtoupper(substr($user->name, 0, 2)) }}
-                                            </div>
+                                            <img src="{{ $user->profile_photo_url }}" 
+                                                alt="{{ $user->name }}"
+                                                class="w-8 h-8 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
                                             <div class="flex flex-col">
                                                 <a href="{{ route('settings.users.edit', $user) }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                                     {{ $user->name }}

@@ -610,18 +610,14 @@
                                         @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
                                         <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-4">
-                                                <div class="relative">
-                                                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
-                                                        @if ($instMember)
-                                                            {{ strtoupper(substr($instMember->name, 0, 2)) }}
-                                                        @else
-                                                            ?
+                                                    <div class="relative">
+                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                                            alt="{{ $instMemberName }}"
+                                                            class="w-10 h-10 rounded-2xl object-cover shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
+                                                        @if($isInstActive)
+                                                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
                                                         @endif
                                                     </div>
-                                                    @if($isInstActive)
-                                                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
-                                                    @endif
-                                                </div>
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-2">
                                                         <span class="text-sm font-black text-gray-900 dark:text-white truncate">{{ $isSimulated ? $instMemberName : $inst->name }}</span>
@@ -1077,9 +1073,9 @@
                             <div class="px-5 py-2 text-xs transition-colors hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-50 dark:border-gray-800/50 last:border-none" x-data="{ open: false }">
                                 <div class="flex items-center justify-between gap-4 cursor-pointer" @click="open = !open">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shrink-0 shadow-sm border border-white dark:border-gray-800">
-                                            {{ strtoupper(substr($h->user?->name ?? '?', 0, 2)) }}
-                                        </div>
+                                        <img src="{{ $h->user ? $h->user->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                            alt="{{ $h->user?->name ?? '?' }}"
+                                            class="w-6 h-6 rounded-lg object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                         <div class="truncate">
                                             <span class="font-bold text-gray-700 dark:text-gray-300">{{ $h->user?->name ?? '—' }}</span>
                                             <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/40 text-indigo-500 dark:text-indigo-400 px-1.5 py-0.5 rounded ml-1 font-black uppercase tracking-tighter">{{ $h->action }}</span>
@@ -1549,9 +1545,8 @@
                                 @foreach($activeUserIds as $oid)
                                     @if($oid !== auth()->id())
                                         @php $ou = \App\Models\User::find($oid); @endphp
-                                        <div class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-900 bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-[8px] font-bold text-violet-600 dark:text-violet-400" title="{{ $ou->name }} {{ __('está trabajando ahora') }}">
-                                            {{ strtoupper(substr($ou->name, 0, 2)) }}
-                                        </div>
+                                        <img src="{{ $ou->profile_photo_url }}" alt="{{ $ou->name }}" 
+                                            class="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white dark:ring-gray-900 shadow-sm" title="{{ $ou->name }} {{ __('está trabajando ahora') }}">
                                     @endif
                                 @endforeach
                             </div>
@@ -1570,10 +1565,9 @@
                     {{ __('tasks.owner') }}
                 </p>
                 <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                        {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
-                    </div>
+                    <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                        alt="{{ $task->creator?->name ?? '?' }}"
+                        class="w-10 h-10 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800">
                     <div class="min-w-0">
                         <p class="text-sm font-bold text-gray-700 dark:text-gray-300 truncate">
                             {{ $task->creator?->name ?? '—' }}</p>
@@ -2100,7 +2094,8 @@
                                     <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-bold tabular-nums">${date}</span>
                                 </div>
                                 <div class="flex items-center gap-2 group">
-                                    <div class="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] font-black text-gray-500 uppercase">${(log.user?.name || '?').substring(0, 2)}</div>
+                                    <img src="${log.user ? (log.user.profile_photo_path ? '/storage/' + log.user.profile_photo_path : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(log.user.name) + '&color=7F9CF5&background=EBF4FF') : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF'}" 
+                                        class="w-5 h-5 rounded-full object-cover shadow-sm" alt="${log.user?.name || '?'}">
                                     <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tighter">${log.user?.name || 'Sistema'}</span>
                                     ${log.ip_address ? `<span class="text-[9px] text-gray-400 font-mono bg-gray-50 dark:bg-gray-800/50 px-1.5 py-0.5 rounded">IP: ${log.ip_address}</span>` : ''}
                                 </div>

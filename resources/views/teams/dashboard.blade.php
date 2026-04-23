@@ -211,10 +211,11 @@
                                             <div class="flex items-center gap-2 shrink-0">
                                                 @include('tasks.partials.task-timer-button', ['task' => $task])
                                                 <!-- Owner initials -->
-                                                <div class="shrink-0 w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+                                                <!-- Owner photo -->
+                                                <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                                    alt="{{ $task->creator?->name ?? '?' }}"
+                                                    class="shrink-0 w-4 h-4 rounded-full object-cover shadow-sm border border-white dark:border-gray-800"
                                                     title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">
-                                                    {{ strtoupper(substr($task->creator?->name ?? '?', 0, 2)) }}
-                                                </div>
                                             </div>
                                             @if ($task->due_date)
                                                 <span
@@ -245,10 +246,10 @@
                                                             {{ $child->title }}
                                                         </a>
                                                         @if ($child->assignedUser)
-                                                            <div class="shrink-0 w-3 h-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-[6px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200/50"
+                                                            <img src="{{ $child->assignedUser->profile_photo_url }}" 
+                                                                alt="{{ $child->assignedUser->name }}"
+                                                                class="shrink-0 w-3 h-3 rounded-full object-cover shadow-sm border border-white dark:border-gray-800"
                                                                 title="{{ $child->assignedUser->name }}">
-                                                                {{ strtoupper(substr($child->assignedUser->name, 0, 2)) }}
-                                                            </div>
                                                         @endif
                                                     </div>
                                                 @endforeach

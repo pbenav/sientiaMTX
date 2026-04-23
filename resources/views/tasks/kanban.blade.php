@@ -262,14 +262,12 @@
                                         <div class="flex items-center gap-2">
                                             <div class="flex -space-x-2">
                                                 @if($task->assignedUser)
-                                                    <div class="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
-                                                        {{ strtoupper(substr($task->assignedUser->name, 0, 1)) }}
-                                                    </div>
+                                                    <img src="{{ $task->assignedUser->profile_photo_url }}" alt="{{ $task->assignedUser->name }}" 
+                                                        class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
                                                 @elseif($task->assignedTo->count() > 0)
                                                     @foreach($task->assignedTo->take(3) as $user)
-                                                        <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
-                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                                        </div>
+                                                        <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" 
+                                                            class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
                                                     @endforeach
                                                 @endif
                                             </div>

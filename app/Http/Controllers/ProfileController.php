@@ -43,6 +43,41 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update the user's profile photo.
+     */
+    public function updatePhoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'photo' => ['nullable', 'image', 'max:1024'], // Max 1MB
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('photo')) {
+            // Delete old photo
+            if ($user->profile_photo_path) {
+                \Illuminate\Support\Facades\Storage::disk($user->profilePhotoDisk())->delete($user->profile_photo_path);
+            }
+
+            // Store new photo
+            $path = $request->file('photo')->storePublicly(
+                'profile-photos', 
+                ['disk' => $user->profilePhotoDisk()]
+            );
+
+            $user->update(['profile_photo_path' => $path]);
+        } elseif ($request->has('delete_photo')) {
+            // Delete current photo
+            if ($user->profile_photo_path) {
+                \Illuminate\Support\Facades\Storage::disk($user->profilePhotoDisk())->delete($user->profile_photo_path);
+                $user->update(['profile_photo_path' => null]);
+            }
+        }
+
+        return Redirect::route('profile.edit', ['tab' => 'general'])->with('status', 'photo-updated');
+    }
+
+    /**
      * Update the user's notification settings.
      */
     public function updateNotifications(Request $request): RedirectResponse

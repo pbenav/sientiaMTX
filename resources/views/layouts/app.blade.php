@@ -464,10 +464,9 @@
                         <div class="hidden sm:block relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.outside="open = false"
                                 class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                                </div>
+                                <img src="{{ auth()->user()->profile_photo_url }}" 
+                                    alt="{{ auth()->user()->name }}"
+                                    class="w-8 h-8 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform"
                                     :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" stroke-width="2">
@@ -610,9 +609,9 @@
 
             {{-- User info --}}
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white shadow">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                </div>
+                <img src="{{ auth()->user()->profile_photo_url }}" 
+                    alt="{{ auth()->user()->name }}"
+                    class="w-10 h-10 rounded-full object-cover shadow border border-white dark:border-gray-700 shrink-0">
                 <div class="min-w-0">
                     <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-gray-400 truncate">{{ auth()->user()->email }}</p>
@@ -1002,9 +1001,9 @@
             <a href="{{ route('profile.edit') }}"
                class="flex flex-col items-center justify-center flex-1 gap-1 text-gray-400 dark:text-gray-500 transition-colors
                       {{ request()->routeIs('profile.*') ? 'text-violet-600 dark:text-violet-400' : 'hover:text-gray-700 dark:hover:text-gray-300' }}">
-                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                </div>
+                <img src="{{ auth()->user()->profile_photo_url }}" 
+                    alt="{{ auth()->user()->name }}"
+                    class="w-6 h-6 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                 <span class="text-[9px] font-bold uppercase tracking-tight leading-none">Perfil</span>
             </a>
 

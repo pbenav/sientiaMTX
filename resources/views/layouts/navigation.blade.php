@@ -105,7 +105,8 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
-                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                            class="inline-flex items-center px-2 py-2 border border-transparent text-sm leading-4 font-medium rounded-xl text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                            <img src="{{ Auth::user()->profile_photo_url }}" class="h-8 w-8 rounded-lg object-cover me-2 border border-gray-100 shadow-sm">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
@@ -241,10 +242,13 @@
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4 flex justify-between items-center">
-                <div>
-                    <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+            <div class="px-4 flex justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="{{ Auth::user()->profile_photo_url }}" class="h-10 w-10 rounded-xl object-cover border border-gray-200 shadow-sm">
+                    <div>
+                        <div class="font-bold text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
+                        <div class="font-medium text-xs text-gray-500">{{ Auth::user()->email }}</div>
+                    </div>
                 </div>
                 <!-- Mobile Notification Badge -->
                 <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-400">

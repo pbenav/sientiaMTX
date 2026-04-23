@@ -83,10 +83,8 @@
                     <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 {{ $loop->last ? 'mb-1' : '' }}">
                         <div class="flex items-center justify-between mb-1.5">
                             <div class="flex items-center gap-1.5">
-                                <div
-                                    class="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/50 flex flex-shrink-0 items-center justify-center text-[8px] font-bold text-violet-600 dark:text-violet-400">
-                                    {{ strtoupper(substr($message->user->name, 0, 2)) }}
-                                </div>
+                                <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
+                                    class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 flex-shrink-0">
                                 <span
                                     class="text-[10px] font-bold text-gray-700 dark:text-gray-200 line-clamp-1">{{ $message->user->name }}</span>
                             </div>

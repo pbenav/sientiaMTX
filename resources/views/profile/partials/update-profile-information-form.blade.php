@@ -13,6 +13,74 @@
         @csrf
     </form>
 
+    <!-- Profile Photo Section -->
+    <div class="mt-6 p-4 bg-violet-50/30 dark:bg-violet-900/5 rounded-2xl border border-violet-100 dark:border-violet-800/50" x-data="{ photoName: null, photoPreview: null }">
+        <form method="post" action="{{ route('profile.photo.update') }}" enctype="multipart/form-data">
+            @csrf
+            @method('patch')
+
+            <div class="flex flex-col sm:flex-row items-center gap-6">
+                <!-- Photo Preview -->
+                <div class="relative group">
+                    <input type="file" class="hidden" x-ref="photo"
+                        x-on:change="
+                            if ($refs.photo.files.length > 0) {
+                                photoName = $refs.photo.files[0].name;
+                                let reader = new FileReader();
+                                reader.onload = (e) => {
+                                    photoPreview = e.target.result;
+                                };
+                                reader.readAsDataURL($refs.photo.files[0]);
+                            }
+                        "
+                        name="photo">
+                    
+                    <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl ring-2 ring-violet-500/20 transition-transform group-hover:scale-105 duration-300">
+                        <!-- Current Photo -->
+                        <img x-show="!photoPreview" src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                        <!-- New Photo Preview -->
+                        <img x-show="photoPreview" :src="photoPreview" class="w-full h-full object-cover" style="display: none;">
+                    </div>
+
+                    <button type="button" @click="$refs.photo.click()" class="absolute -bottom-1 -right-1 bg-violet-600 hover:bg-violet-700 text-white p-2 rounded-full shadow-lg transition-all transform hover:scale-110 active:scale-95 group-hover:rotate-12">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 text-center sm:text-left space-y-2">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ __('Foto de Perfil') }}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Personaliza tu cuenta con una foto. Formatos: JPG, PNG. Máx: 1MB.') }}
+                    </p>
+                    
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-3">
+                        <button type="submit" x-show="photoPreview" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] uppercase tracking-wider font-bold py-2 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/20">
+                            {{ __('Guardar Foto') }}
+                        </button>
+                        
+                        @if($user->profile_photo_path)
+                            <button type="button" onclick="event.preventDefault(); document.getElementById('delete-photo-form').submit();" class="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[10px] uppercase tracking-wider font-bold py-2 px-4 rounded-xl border border-rose-100 dark:border-rose-900/30 hover:bg-rose-100 transition-all">
+                                {{ __('Eliminar') }}
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <form id="delete-photo-form" method="POST" action="{{ route('profile.photo.update') }}" class="hidden">
+            @csrf
+            @method('patch')
+            <input type="hidden" name="delete_photo" value="1">
+        </form>
+        
+        <x-input-error class="mt-2" :messages="$errors->get('photo')" />
+        @if (session('status') === 'photo-updated')
+            <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"
+                class="mt-2 text-xs font-bold text-emerald-600">{{ __('¡Foto actualizada!') }}</p>
+        @endif
+    </div>
+
     <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('patch')

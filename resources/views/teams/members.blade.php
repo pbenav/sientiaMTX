@@ -92,10 +92,8 @@
                 @forelse($members as $member)
                     <div
                         class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                        <div
-                            class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm">
-                            {{ strtoupper(substr($member->name, 0, 2)) }}
-                        </div>
+                        <img src="{{ $member->profile_photo_url }}" alt="{{ $member->name }}" 
+                            class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm border border-gray-100 dark:border-gray-800">
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">{{ $member->name }}
                             </p>

@@ -16,7 +16,7 @@
     <!-- Management Actions -->
     <!-- PRIMARY ACTION: NEW TASK HUB -->
     @if($shouldShowCreateTask)
-        <x-dropdown align="left" width="60">
+        <x-dropdown align="left" width="80">
             <x-slot name="trigger">
                 <button type="button" 
                     class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-violet-500/20 active:scale-95 group">

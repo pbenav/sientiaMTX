@@ -30,9 +30,9 @@
         @endphp
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ $gradientClass }} p-0.5 shadow-sm transition-transform group-hover:scale-105">
-                <div class="w-full h-full rounded-[10px] bg-white dark:bg-gray-800 flex items-center justify-center text-[10px] font-black {{ $textClass }} uppercase">
-                    {{ substr($member->name, 0, 2) }}
-                </div>
+                <img src="{{ $member->profile_photo_url }}" 
+                    alt="{{ $member->name }}"
+                    class="w-full h-full rounded-[10px] object-cover border border-white dark:border-gray-800 shadow-inner">
             </div>
             <div class="min-w-0">
                 <p class="text-[11px] font-black {{ ($isWorking || $isOnline || !$hasLocation) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate">{{ $member->name }}</p>
