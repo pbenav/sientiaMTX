@@ -264,31 +264,4 @@ Route::middleware('auth')->group(function () {
 
 });
 
-Route::get('/test-ai-key', function() {
-    $user = \App\Models\User::find(3);
-    $prefs = $user?->aiPreferences()->get()->map(function($p) {
-        try {
-            $key = $p->api_key;
-            return [
-                'id' => $p->id,
-                'team_id' => $p->team_id,
-                'key_found' => !empty($key),
-                'key_mask' => $key ? (substr($key, 0, 4) . '....' . substr($key, -4)) : 'EMPTY',
-                'updated_at' => $p->updated_at->toDateTimeString(),
-            ];
-        } catch (\Exception $e) {
-            return [
-                'id' => $p->id,
-                'error' => $e->getMessage(),
-            ];
-        }
-    });
-    return response()->json([
-        'user' => $user?->name,
-        'app_key' => config('app.key'),
-        'database' => config('database.connections.mysql.database'),
-        'preferences' => $prefs
-    ]);
-});
-
 require __DIR__.'/auth.php';
