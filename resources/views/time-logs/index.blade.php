@@ -233,7 +233,7 @@
                                         </div>
                                         <div class="min-w-0">
                                             <h4 class="text-base font-black text-gray-900 dark:text-white truncate leading-tight">{{ $member->name }}</h4>
-                                            <span class="inline-block px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mt-1 tracking-tighter">{{ $member->getRole($team) ?? 'Miembro' }}</span>
+                                            <span class="inline-block px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mt-1 tracking-tighter">{{ __('teams.' . ($member->getRole($team) ?? 'user')) }}</span>
                                         </div>
                                     </div>
                                     <div class="mt-5 grid grid-cols-2 gap-3 relative z-10">
