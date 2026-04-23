@@ -19,8 +19,8 @@
             .kanban-column {
                 width: 320px !important;
                 flex: 0 0 320px !important;
-                max-height: calc(100vh - 150px) !important;
-                min-height: 300px;
+                max-height: calc(100vh - 120px) !important;
+                min-height: 500px;
             }
             .kanban-column .column-title {
                 font-size: 11px;
@@ -33,8 +33,8 @@
             .kanban-column {
                 width: 300px !important;
                 flex: 0 0 300px !important;
-                max-height: calc(100vh - 180px) !important;
-                min-height: 400px;
+                max-height: calc(100vh - 140px) !important;
+                min-height: 650px;
             }
             .kanban-column .column-title {
                 font-size: 10px;
@@ -47,8 +47,8 @@
             .kanban-column {
                 width: 380px !important;
                 flex: 0 0 380px !important;
-                max-height: calc(100vh - 200px) !important;
-                min-height: 500px;
+                max-height: calc(100vh - 160px) !important;
+                min-height: 800px;
             }
             .kanban-column .column-title {
                 font-size: 13px;
