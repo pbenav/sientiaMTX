@@ -546,7 +546,7 @@
                                 Árbol de Capacidades (Selección Múltiple)
                             </label>
                             <select name="skills[]" multiple
-                                class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white h-32">
+                                class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y">
                                 @foreach ($skills as $skill)
                                     <option value="{{ $skill->id }}"
                                         :selected="selectedSkills.includes({{ $skill->id }})">
