@@ -379,14 +379,17 @@ class Task extends Model
                 });
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado
-                $main->where('assigned_user_id', $user->id)
-                     ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                     ->orWhere(function ($own) use ($user) {
-                         $own->where('created_by_id', $user->id)
-                             ->whereNull('parent_id');
-                     });
-                
+                $main->where(function ($q) use ($user) {
+                    $q->where('assigned_user_id', $user->id)
+                      ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
+                      ->orWhere(function ($own) use ($user) {
+                          $own->where('created_by_id', $user->id)
+                              ->whereNull('parent_id');
+                      });
+                });
+
                 // DEDUPLICACIÓN EN EJECUCIÓN (Miembro): Si ve la hija, ocultamos el padre
+                // Reforzamos para que compruebe tanto asignación directa como pivot en los hijos
                 $main->whereDoesntHave('children', function ($q) use ($user) {
                     $q->where(function($sub) use ($user) {
                         $sub->where('assigned_user_id', $user->id)
