@@ -117,6 +117,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/teams/{team}/forum/{thread}', [ForumController::class, 'show'])->name('teams.forum.show');
     Route::patch('/teams/{team}/forum/{thread}', [ForumController::class, 'update'])->name('teams.forum.update');
     Route::delete('/teams/{team}/forum/{thread}', [ForumController::class, 'destroy'])->name('teams.forum.destroy');
+    Route::post('/teams/{team}/forum/cleanup', [ForumController::class, 'cleanupOrphans'])->name('teams.forum.cleanup');
     
     // Forum messages
     Route::post('/teams/{team}/forum/{thread}/messages', [ForumMessageController::class, 'store'])->name('teams.forum.messages.store');

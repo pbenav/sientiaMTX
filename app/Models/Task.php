@@ -375,7 +375,8 @@ class Task extends Model
                 $main->where(function($q) use ($user) {
                     $q->where('is_template', true)
                       ->orWhereNull('assigned_user_id')
-                      ->orWhere('assigned_user_id', '!=', $user->id);
+                      ->orWhere('assigned_user_id', '!=', $user->id)
+                      ->orWhereNull('parent_id'); // SIEMPRE ver tareas raíz, aunque estén asignadas a mí
                 });
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado

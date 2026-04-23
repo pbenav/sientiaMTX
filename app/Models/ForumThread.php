@@ -39,4 +39,20 @@ class ForumThread extends Model
     {
         return $this->hasMany(ForumMessage::class);
     }
+
+    /**
+     * Scope for threads that have no linked task (Knowledge Library).
+     */
+    public function scopeOrphaned($query)
+    {
+        return $query->whereNull('task_id');
+    }
+
+    /**
+     * Determine if this thread is part of the "Knowledge Library" (orphaned).
+     */
+    public function isKnowledgeLibrary(): bool
+    {
+        return is_null($this->task_id);
+    }
 }

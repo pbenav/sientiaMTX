@@ -24,6 +24,7 @@ class ForumController extends Controller
         $isCoordinator = $team->isCoordinator(auth()->user());
 
         $search = $request->query('search');
+        $showOrphaned = $request->query('orphaned');
 
         $threads = $team->forumThreads()
             ->when($search, function($query) use ($search) {
@@ -34,25 +35,36 @@ class ForumController extends Controller
                       });
                 });
             })
+            ->when($showOrphaned, function($query) {
+                $query->orphaned();
+            })
             ->with(['user', 'task', 'messages' => function ($query) {
                 // Get the latest message for each thread
                 $query->latest()->limit(1);
             }])
-            ->where(function($query) use ($userId, $isCoordinator) {
+            ->where(function($query) use ($userId, $isCoordinator, $showOrphaned) {
                 if ($isCoordinator) {
                     return $query; // Coordinators see everything in the team
                 }
                 
+                // If filtering by orphans, non-coordinators can see them (Knowledge Library)
+                if ($showOrphaned) {
+                    return $query->whereNull('task_id');
+                }
+
                 $query->whereNull('task_id')
                       ->orWhereHas('task', function($q) use ($userId) {
-                          $q->where('visibility', 'public')
-                            ->orWhere('created_by_id', $userId)
-                            ->orWhere('assigned_user_id', $userId)
-                            ->orWhereHas('assignedTo', function($q2) use ($userId) {
-                                $q2->where('users.id', $userId);
-                            })
-                            ->orWhereHas('assignedGroups.users', function($q3) use ($userId) {
-                                $q3->where('users.id', $userId);
+                          $q->withTrashed() // Include soft-deleted tasks to enforce original privacy
+                            ->where(function($sq) use ($userId) {
+                                $sq->where('visibility', 'public')
+                                  ->orWhere('created_by_id', $userId)
+                                  ->orWhere('assigned_user_id', $userId)
+                                  ->orWhereHas('assignedTo', function($q2) use ($userId) {
+                                      $q2->where('users.id', $userId);
+                                  })
+                                  ->orWhereHas('assignedGroups.users', function($q3) use ($userId) {
+                                      $q3->where('users.id', $userId);
+                                  });
                             });
                       });
             })
@@ -250,26 +262,30 @@ class ForumController extends Controller
         }
 
         // Privacy Check: If the thread is linked to a task, follow task visibility rules
+        // We use withTrashed() to ensure that even if the task is deleted, the thread remains private to the stakeholders
         if ($thread->task_id) {
-            $task = $thread->task;
-            $userId = auth()->id();
-            $isCoordinator = $team->isCoordinator(auth()->user());
+            $task = $thread->task()->withTrashed()->first();
+            
+            if ($task) {
+                $userId = auth()->id();
+                $isCoordinator = $team->isCoordinator(auth()->user());
 
-            if (!$isCoordinator) {
-                $hasAccess = $task->visibility === 'public' ||
-                             $task->created_by_id === $userId ||
-                             $task->assigned_user_id === $userId ||
-                             $task->assignedTo->contains($userId) ||
-                             $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
+                if (!$isCoordinator) {
+                    $hasAccess = $task->visibility === 'public' ||
+                                 $task->created_by_id === $userId ||
+                                 $task->assigned_user_id === $userId ||
+                                 $task->assignedTo()->withTrashed()->where('users.id', $userId)->exists() ||
+                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
 
-                if (!$hasAccess) {
-                    return redirect()->route('teams.forum.index', $team)
-                        ->with('warning', __('tasks.unauthorized_access') ?? 'No tienes permiso para ver este hilo privado.');
+                    if (!$hasAccess) {
+                        return redirect()->route('teams.forum.index', $team)
+                            ->with('warning', __('tasks.unauthorized_access') ?? 'No tienes permiso para ver este hilo privado.');
+                    }
                 }
             }
         }
 
-        $thread->load(['user', 'task']);
+        $thread->load(['user']);
         
         $messages = $thread->messages()
             ->with('user')
@@ -288,14 +304,16 @@ class ForumController extends Controller
                       });
                     
                     if ($thread->task_id) {
-                        $task = $thread->task;
-                        $q->orWhere(function($q3) use ($task, $userId) {
-                            $q3->where('forum_messages.user_id', $userId) // Redundant but safe
-                               ->orWhereRaw('? IN (SELECT user_id FROM task_assignments WHERE task_id = ? AND user_id IS NOT NULL)', [$userId, $task->id])
-                               ->orWhereRaw('? = (SELECT created_by_id FROM tasks WHERE id = ?)', [$userId, $task->id])
-                               ->orWhereRaw('? = (SELECT assigned_user_id FROM tasks WHERE id = ?)', [$userId, $task->id])
-                               ->orWhereRaw('EXISTS (SELECT 1 FROM group_user gu JOIN task_assignments ta ON gu.group_id = ta.group_id WHERE gu.user_id = ? AND ta.task_id = ?)', [$userId, $task->id]);
-                        });
+                        $task = $thread->task()->withTrashed()->first();
+                        if ($task) {
+                            $q->orWhere(function($q3) use ($task, $userId) {
+                                $q3->where('forum_messages.user_id', $userId) // Redundant but safe
+                                   ->orWhereRaw('? IN (SELECT user_id FROM task_assignments WHERE task_id = ? AND user_id IS NOT NULL)', [$userId, $task->id])
+                                   ->orWhereRaw('? = (SELECT created_by_id FROM tasks WHERE id = ?)', [$userId, $task->id])
+                                   ->orWhereRaw('? = (SELECT assigned_user_id FROM tasks WHERE id = ?)', [$userId, $task->id])
+                                   ->orWhereRaw('EXISTS (SELECT 1 FROM group_user gu JOIN task_assignments ta ON gu.group_id = ta.group_id WHERE gu.user_id = ? AND ta.task_id = ?)', [$userId, $task->id]);
+                            });
+                        }
                     }
                 });
             })
@@ -358,5 +376,28 @@ class ForumController extends Controller
 
         return redirect()->route('teams.forum.index', $team)
             ->with('success', __('forum.thread_deleted'));
+    }
+
+    /**
+     * Delete orphaned threads that are considered "stale" (no messages or very old).
+     */
+    public function cleanupOrphans(Request $request, Team $team)
+    {
+        if (auth()->user()->cannot('view', $team) || !$team->isCoordinator(auth()->user())) {
+            return redirect()->back()->with('warning', __('No tienes permisos para realizar esta acción.'));
+        }
+
+        $orphanedThreads = $team->forumThreads()->orphaned()->withCount('messages')->get();
+        $deletedCount = 0;
+
+        foreach ($orphanedThreads as $thread) {
+            // Cleanup logic: If it has 0 or 1 message (the initial one) and is older than 30 days
+            if ($thread->messages_count <= 1 && $thread->created_at->diffInDays() > 30) {
+                $thread->delete();
+                $deletedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', "Se han limpiado {$deletedCount} hilos huérfanos sin actividad.");
     }
 }

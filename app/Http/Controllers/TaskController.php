@@ -32,28 +32,45 @@ class TaskController extends Controller
             return response()->json(['success' => false, 'message' => 'No tienes acceso al equipo de destino.'], 403);
         }
 
-        // Clone the task
-        $newTask = $task->replicate(['uuid', 'google_task_id', 'google_calendar_event_id', 'google_synced_at']);
-        $newTask->team_id = $targetTeam->id;
-        $newTask->created_by_id = $user->id;
-        $newTask->assigned_user_id = $user->id; // Assign to self by default in new team
-        $newTask->status = 'pending';
-        $newTask->progress_percentage = 0;
-        $newTask->parent_id = null; // No parent context in new team
-        $newTask->google_task_id = null;
-        $newTask->google_calendar_event_id = null;
-        $newTask->save();
+        // Use the unified creation logic (simulating an export/import flow)
+        $newTask = \DB::transaction(function () use ($task, $targetTeam, $user) {
+            // 1. "Export" the current task to an array
+            $taskData = [
+                'title' => $task->title,
+                'description' => $task->description,
+                'observations' => $task->observations,
+                'priority' => $task->priority,
+                'urgency' => $task->urgency,
+                'visibility' => $task->visibility,
+                'is_template' => false, // Force false on reproduction for better UX as discussed
+                'cognitive_load' => $task->cognitive_load,
+                'is_backstage' => $task->is_backstage,
+                'autoprogram_settings' => $task->autoprogram_settings,
+                'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
+                'skills' => $task->skills->map(fn($s) => ['name' => $s->name, 'category' => $s->category])->toArray(),
+                'tags' => $task->tags->map(fn($t) => ['tag' => $t->tag, 'color_hex' => $t->color_hex])->toArray(),
+            ];
 
-        // Copy history record
-        $newTask->histories()->create([
-            'user_id' => $user->id,
-            'action' => 'cloned',
-            'notes' => 'Clonada desde el equipo: ' . $team->name
-        ]);
+            // 2. "Import" it into the target team
+            $cloned = $this->createTaskFromData($targetTeam, $taskData);
+            
+            // 3. Additional reproduction-specific adjustments
+            $cloned->assigned_user_id = $user->id; 
+            $cloned->saveQuietly();
+
+            // 4. Create History Record
+            $cloned->histories()->create([
+                'user_id' => $user->id,
+                'action' => 'cloned',
+                'notes' => 'Reproducida desde el equipo: ' . $task->team->name
+            ]);
+
+            return $cloned;
+        });
 
         return response()->json([
             'success' => true,
-            'message' => __('Tarea reproducida correctamente en el equipo :team', ['team' => $targetTeam->name]),
+            'message' => __('tasks.cloned_success', ['team' => $targetTeam->name]),
             'url' => route('teams.tasks.show', [$targetTeam, $newTask])
         ]);
     }
@@ -80,26 +97,7 @@ class TaskController extends Controller
             return response()->json(['success' => false, 'message' => 'Formato de datos JSON inválido.'], 422);
         }
 
-        $taskData = $data['task'];
-        $task = $team->tasks()->create([
-            'title' => $taskData['title'],
-            'description' => $taskData['description'],
-            'observations' => $taskData['observations'],
-            'priority' => $taskData['priority'],
-            'urgency' => $taskData['urgency'],
-            'visibility' => $taskData['visibility'],
-            'is_template' => $taskData['is_template'],
-            'cognitive_load' => $taskData['cognitive_load'],
-            'is_backstage' => $taskData['is_backstage'],
-            'autoprogram_settings' => $taskData['autoprogram_settings'],
-            'is_out_of_skill_tree' => $taskData['is_out_of_skill_tree'],
-            'created_by_id' => auth()->id(),
-        ]);
-
-        if (!empty($taskData['skills'])) {
-            $skillIds = \App\Models\Skill::whereIn('name', array_column($taskData['skills'], 'name'))->pluck('id');
-            $task->skills()->sync($skillIds);
-        }
+        $task = $this->createTaskFromData($team, $data['task']);
 
         return response()->json(['success' => true, 'message' => 'Tarea importada correctamente.', 'url' => route('teams.tasks.show', [$team, $task])]);
     }
@@ -127,6 +125,7 @@ class TaskController extends Controller
                 'autoprogram_settings' => $task->autoprogram_settings,
                 'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
                 'skills' => $task->skills->map(fn($s) => ['name' => $s->name, 'category' => $s->category])->toArray(),
+                'tags' => $task->tags->map(fn($t) => ['tag' => $t->tag, 'color_hex' => $t->color_hex])->toArray(),
             ]
         ];
 
@@ -911,6 +910,7 @@ class TaskController extends Controller
             $googleService->deleteTask($task->google_task_list_id, $task->google_task_id);
         }
 
+
         $task->delete();
 
         return redirect()->route('teams.tasks.index', $team)
@@ -1470,5 +1470,54 @@ class TaskController extends Controller
             'attachment' => $attachment,
             'logs' => $logs
         ]);
+    }
+
+    /**
+     * Unified task creation from structured data (used by reproduction and JSON import).
+     */
+    private function createTaskFromData(Team $team, array $taskData): Task
+    {
+        $task = $team->tasks()->create([
+            'title' => $taskData['title'],
+            'description' => $taskData['description'] ?? null,
+            'observations' => $taskData['observations'] ?? null,
+            'priority' => $taskData['priority'] ?? 'medium',
+            'urgency' => $taskData['urgency'] ?? 'medium',
+            'visibility' => $taskData['visibility'] ?? 'private',
+            'is_template' => $taskData['is_template'] ?? false,
+            'cognitive_load' => $taskData['cognitive_load'] ?? 1,
+            'is_backstage' => $taskData['is_backstage'] ?? false,
+            'autoprogram_settings' => $taskData['autoprogram_settings'] ?? null,
+            'is_out_of_skill_tree' => $taskData['is_out_of_skill_tree'] ?? false,
+            'created_by_id' => auth()->id(),
+            'status' => 'pending',
+            'progress_percentage' => 0,
+            'kanban_order' => 0,
+            'nudge_count' => 0,
+        ]);
+
+        // 1. Sync Skills by Name
+        if (!empty($taskData['skills'])) {
+            $skillNames = array_column($taskData['skills'], 'name');
+            $skillIds = \App\Models\Skill::forTeamOrGlobal($team->id)
+                ->whereIn('name', $skillNames)
+                ->pluck('id');
+            $task->skills()->sync($skillIds);
+        }
+
+        // 2. Sync Tags
+        if (!empty($taskData['tags'])) {
+            foreach ($taskData['tags'] as $tagData) {
+                $task->tags()->create([
+                    'tag' => $tagData['tag'],
+                    'color_hex' => $tagData['color_hex'] ?? '#6366f1',
+                ]);
+            }
+        }
+
+        // 3. Initial Kanban Sync
+        $task->syncKanbanColumn();
+
+        return $task;
     }
 }

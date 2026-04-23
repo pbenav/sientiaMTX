@@ -59,6 +59,39 @@
     </x-slot>
 
     <div class="space-y-6">
+        @if($team->isCoordinator(auth()->user()))
+            @php
+                $orphanCount = $team->forumThreads()->orphaned()->count();
+            @endphp
+            @if($orphanCount > 0)
+                <div class="mb-8 p-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-amber-900 dark:text-amber-200">{{ __('forum.orphaned_maintenance') }}</h4>
+                            <p class="text-xs text-amber-700 dark:text-amber-400">{{ __('forum.orphaned_desc', ['count' => $orphanCount]) }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        @if(request('orphaned'))
+                            <a href="{{ route('teams.forum.index', $team) }}" class="text-xs font-bold text-gray-500 hover:text-gray-700 px-4 py-2 transition-colors">{{ __('forum.back_to_forum') }}</a>
+                        @else
+                            <a href="{{ route('teams.forum.index', [$team, 'orphaned' => 1]) }}" class="text-xs font-black uppercase tracking-tighter text-amber-700 hover:text-amber-800 px-4 py-2 transition-colors">{{ __('forum.view_orphans') }}</a>
+                        @endif
+                        
+                        <form action="{{ route('teams.forum.cleanup', $team) }}" method="POST" onsubmit="return confirm('{{ __('forum.cleanup_confirm') }}')">
+                            @csrf
+                            <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md shadow-amber-600/20 active:scale-95">{{ __('forum.cleanup_stale') }}</button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        @endif
+
         @if ($threads->isEmpty())
             <div
                 class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-12 text-center shadow-sm">

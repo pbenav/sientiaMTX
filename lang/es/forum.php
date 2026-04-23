@@ -36,4 +36,11 @@ return [
     'no_results_title' => 'No se encontraron resultados para tu búsqueda',
     'no_results_desc' => 'Prueba con otros términos o limpia el buscador.',
     'clear_search' => 'Limpiar búsqueda',
+    'orphaned_maintenance' => 'Mantenimiento de Conocimiento',
+    'orphaned_desc' => 'Hay :count hilos desvinculados de tareas. Mantén la biblioteca limpia eliminando discusiones vacías u obsoletas.',
+    'view_orphans' => 'Ver huérfanos',
+    'cleanup_stale' => 'Limpiar Obsoletos',
+    'back_to_forum' => 'Volver al foro',
+    'cleanup_confirm' => '¿Eliminar hilos huérfanos con más de 30 días de antigüedad y poca actividad?',
+    'cleanup_success' => 'Se han limpiado :count hilos huérfanos sin actividad.',
 ];

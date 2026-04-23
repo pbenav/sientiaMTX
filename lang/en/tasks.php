@@ -224,4 +224,5 @@ return [
     'priority_changed' => 'Priority adjusted by the user',
     'assigned_to_one' => 'assigned member',
     'assigned_to_many' => 'assigned members',
+    'cloned_success' => 'Task successfully reproduced in the team :team',
 ];

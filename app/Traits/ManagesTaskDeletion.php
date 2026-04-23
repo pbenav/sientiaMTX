@@ -32,8 +32,8 @@ trait ManagesTaskDeletion
             // 4. Time Logs
             TimeLog::where('task_id', $task->id)->delete();
 
-            // 5. Forum
-            ForumThread::where('task_id', $task->id)->delete();
+            // 5. Forum (Detach instead of delete to keep discussion as knowledge)
+            ForumThread::where('task_id', $task->id)->update(['task_id' => null]);
 
             // 6. Attachments (DB and Files)
             $attachments = TaskAttachment::where('attachable_type', Task::class)

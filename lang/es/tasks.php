@@ -268,4 +268,5 @@ return [
     'priority_changed' => 'Prioridad ajustada por el usuario',
     'assigned_to_one' => 'miembro asignado',
     'assigned_to_many' => 'miembros asignados',
+    'cloned_success' => 'Tarea reproducida correctamente en el equipo :team',
 ];
