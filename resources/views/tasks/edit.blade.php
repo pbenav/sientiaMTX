@@ -352,7 +352,7 @@
                                 </label>
                                 <div class="flex flex-wrap gap-2">
                                     @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
-                                        <label class="cursor-pointer">
+                                        <label class="relative cursor-pointer">
                                             <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
                                                 {{ in_array($val, old('autoprogram_settings.days', $apSettings['days'] ?? [])) ? 'checked' : '' }}
                                                 class="peer sr-only">
@@ -429,7 +429,7 @@
                                 {{ __('tasks.limit') ?? 'Terminar' }}
                             </label>
                             <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                                <label class="flex items-center gap-3 cursor-pointer group">
+                                <label class="relative flex items-center gap-3 cursor-pointer group">
                                     <div class="relative flex items-center justify-center">
                                         <input type="radio" name="autoprogram_settings[limit_type]" value="count"
                                             {{ $limitType === 'count' ? 'checked' : '' }} class="peer sr-only">
@@ -447,7 +447,7 @@
                                         class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all">
                                     <span class="text-xs text-gray-500">{{ __('tasks.times') ?? 'veces' }}</span>
                                 </label>
-                                <label class="flex items-center gap-3 cursor-pointer group">
+                                <label class="relative flex items-center gap-3 cursor-pointer group">
                                     <div class="relative flex items-center justify-center">
                                         <input type="radio" name="autoprogram_settings[limit_type]" value="date"
                                             {{ $limitType === 'date' ? 'checked' : '' }} class="peer sr-only">
@@ -587,7 +587,7 @@
                         <!-- Skill Tree & Backstage -->
                         <div class="space-y-4">
                             <label
-                                class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group">
+                                class="relative flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group">
                                 <input type="checkbox" name="is_out_of_skill_tree" value="1"
                                     class="peer sr-only" {{ $task->is_out_of_skill_tree ? 'checked' : '' }}>
                                 <div
@@ -609,7 +609,7 @@
                             </label>
 
                             <label
-                                class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group">
+                                class="relative flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group">
                                 <input type="checkbox" name="is_backstage" value="1" class="peer sr-only"
                                     {{ $task->is_backstage ? 'checked' : '' }}>
                                 <div

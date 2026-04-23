@@ -316,7 +316,7 @@
                                 </label>
                                 <div class="flex flex-wrap gap-2">
                                     @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
-                                        <label class="cursor-pointer">
+                                        <label class="relative cursor-pointer">
                                             <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
                                                 {{ in_array($val, old('autoprogram_settings.days', [])) ? 'checked' : '' }}
                                                 class="peer sr-only">
@@ -369,7 +369,7 @@
                                 {{ __('tasks.limit') ?? 'Terminar' }}
                             </label>
                             <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                                <label class="flex items-center gap-3 cursor-pointer group">
+                                <label class="relative flex items-center gap-3 cursor-pointer group">
                                     <div class="relative flex items-center justify-center">
                                         <input type="radio" name="autoprogram_settings[limit_type]" value="count" checked class="peer sr-only">
                                         <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
@@ -379,7 +379,7 @@
                                     <input type="number" name="autoprogram_settings[limit_value_count]" value="5" min="1" class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all">
                                     <span class="text-xs text-gray-500">{{ __('tasks.times') ?? 'veces' }}</span>
                                 </label>
-                                <label class="flex items-center gap-3 cursor-pointer group">
+                                <label class="relative flex items-center gap-3 cursor-pointer group">
                                     <div class="relative flex items-center justify-center">
                                         <input type="radio" name="autoprogram_settings[limit_type]" value="date" class="peer sr-only">
                                         <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
@@ -392,7 +392,7 @@
                         </div>
 
                         <div class="flex flex-wrap gap-4 pt-2">
-                            <label class="flex items-center gap-2 cursor-pointer group">
+                            <label class="relative flex items-center gap-2 cursor-pointer group">
                                 <div class="relative flex items-center justify-center">
                                     <input type="checkbox" name="autoprogram_settings[skip_weekends]" value="1" checked class="peer sr-only">
                                     <div class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all flex items-center justify-center text-white">
@@ -403,7 +403,7 @@
                                 </div>
                                 <span class="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.skip_weekends') ?? 'Saltar fines de semana' }}</span>
                             </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
+                            <label class="relative flex items-center gap-2 cursor-pointer group">
                                 <div class="relative flex items-center justify-center">
                                     <input type="checkbox" name="autoprogram_settings[sequential]" value="1" checked class="peer sr-only">
                                     <div class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all flex items-center justify-center text-white">
@@ -468,7 +468,7 @@
 
                         <!-- Skill Tree & Backstage -->
                         <div class="space-y-4">
-                            <label class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group">
+                            <label class="relative flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group">
                                 <input type="checkbox" name="is_out_of_skill_tree" value="1" class="peer sr-only">
                                 <div class="w-5 h-5 rounded border-2 border-gray-200 dark:border-gray-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all flex items-center justify-center text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
@@ -479,7 +479,7 @@
                                 </div>
                             </label>
 
-                            <label class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group">
+                            <label class="relative flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group">
                                 <input type="checkbox" name="is_backstage" value="1" class="peer sr-only">
                                 <div class="w-5 h-5 rounded border-2 border-gray-200 dark:border-gray-600 peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-all flex items-center justify-center text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
