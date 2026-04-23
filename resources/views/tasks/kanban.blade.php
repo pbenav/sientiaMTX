@@ -19,8 +19,8 @@
             .kanban-column {
                 width: 320px !important;
                 flex: 0 0 320px !important;
-                max-height: calc(100vh - 120px) !important;
-                min-height: 500px;
+                max-height: calc(100vh - 80px) !important;
+                min-height: 800px;
             }
             .kanban-column .column-title {
                 font-size: 11px;
@@ -33,8 +33,8 @@
             .kanban-column {
                 width: 300px !important;
                 flex: 0 0 300px !important;
-                max-height: calc(100vh - 140px) !important;
-                min-height: 650px;
+                max-height: calc(100vh - 100px) !important;
+                min-height: 950px;
             }
             .kanban-column .column-title {
                 font-size: 10px;
@@ -47,8 +47,8 @@
             .kanban-column {
                 width: 380px !important;
                 flex: 0 0 380px !important;
-                max-height: calc(100vh - 160px) !important;
-                min-height: 800px;
+                max-height: calc(100vh - 120px) !important;
+                min-height: 1200px;
             }
             .kanban-column .column-title {
                 font-size: 13px;
@@ -252,9 +252,8 @@
                                             <span class="text-violet-600 dark:text-violet-400 progress-label">{{ $task->progress_percentage }}%</span>
                                         </div>
                                         <input type="range" min="0" max="100" value="{{ $task->progress_percentage }}" 
-                                               class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 progress-slider"
-                                               data-task-id="{{ $task->id }}"
-                                               onmousedown="event.stopPropagation()">
+                                               class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 progress-slider z-30 relative"
+                                               data-task-id="{{ $task->id }}">
                                     </div>
 
                                     <!-- Card Footer -->
