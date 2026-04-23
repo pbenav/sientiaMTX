@@ -46,18 +46,16 @@ class GeminiService implements AiAssistantInterface
         $this->directFile = null;
         $this->tasksContext = [];
         
-        // Contexto específico o global
-        // Contexto específico o global
+        // Intentar obtener preferencia en este orden: contexto específico -> global -> cualquier otra con clave
         $pref = $user->aiPreferences()->where('team_id', $teamId)->first() 
-                ?? $user->aiPreferences()->whereNull('team_id')->first();
+                ?? $user->aiPreferences()->whereNull('team_id')->first()
+                ?? $user->aiPreferences()->whereNotNull('api_key')->first();
 
         $keySource = "ARCHIVO .ENV / CONFIG (POR DEFECTO)";
         if ($pref) {
             if (!empty($pref->api_key)) {
                 $this->apiKey = (string) $pref->api_key;
                 $keySource = "BASE DE DATOS (Preferencia ID: {$pref->id}" . ($pref->team_id ? " - Equipo {$pref->team_id}" : " - Global") . ")";
-            } else {
-                Log::warning("La clave de API en Base de Datos para el usuario {$user->id} está vacía o falló la desencriptación.");
             }
 
             if (!empty($pref->ai_model)) {
