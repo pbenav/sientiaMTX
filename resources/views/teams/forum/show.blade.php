@@ -28,13 +28,34 @@
                                 {{ $thread->title }}
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </h2>
-                            <form x-cloak x-show="editingTitle" class="w-full max-w-2xl flex items-center gap-2" method="POST" action="{{ route('teams.forum.update', [$team, $thread]) }}">
+                            <form x-cloak x-show="editingTitle" class="w-full max-w-2xl flex flex-col gap-3" method="POST" action="{{ route('teams.forum.update', [$team, $thread]) }}">
                                 @csrf
                                 @method('PATCH')
-                                <input type="text" name="title" x-ref="titleInput" value="{{ $thread->title }}"
-                                    class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded px-2 py-0.5 w-full focus:ring-0 focus:outline-none -ml-2">
-                                <button type="submit" class="px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-bold shadow transition-colors">Guardar</button>
-                                <button type="button" @click="editingTitle = false" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" name="title" x-ref="titleInput" value="{{ $thread->title }}"
+                                        class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded-xl px-4 py-2 w-full focus:ring-0 focus:outline-none -ml-2 transition-all">
+                                    <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-600/20 transition-all active:scale-95">Guardar</button>
+                                    <button type="button" @click="editingTitle = false" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-bold transition-all">Cancelar</button>
+                                </div>
+                                <!-- Quick Emoji Picker -->
+                                <div class="flex items-center gap-1.5 flex-wrap -ml-1">
+                                    @foreach(['🚀', '💡', '🐞', '🚨', '📅', '📂', '💬', '✅', '❌', '🤔', '📈', '🔒'] as $emoji)
+                                        <button type="button" 
+                                            @click="
+                                                const el = $refs.titleInput;
+                                                const start = el.selectionStart;
+                                                const end = el.selectionEnd;
+                                                const text = el.value;
+                                                el.value = text.slice(0, start) + '{{ $emoji }} ' + text.slice(end);
+                                                el.focus();
+                                                el.setSelectionRange(start + 3, start + 3);
+                                            "
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 border border-gray-100 dark:border-gray-700 text-sm transition-all hover:scale-110 active:scale-90">
+                                            {{ $emoji }}
+                                        </button>
+                                    @endforeach
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest ml-2">Iconos Rápidos</span>
+                                </div>
                             </form>
                         @else
                             <h2 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate">
