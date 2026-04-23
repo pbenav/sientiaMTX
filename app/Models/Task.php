@@ -357,15 +357,26 @@ class Task extends Model
      */
     public function scopeOperationalFor($query, $user, Team $team, $includeFuture = false)
     {
-        $isCoordinator = $team->isCoordinator($user);
+        $isManager = $team->isManager($user);
 
-        $query->where(function ($main) use ($user, $isCoordinator) {
-            if ($isCoordinator) {
-                // COORDINADOR (Contexto Gestión): Ve el esqueleto (Plantillas y Raíces)
+        $query->where(function ($main) use ($user, $isManager) {
+            if ($isManager) {
+                // GESTIÓN (Managers/Coordinators): Ve el esqueleto (Plantillas y Raíces)
                 // Evitamos traer instancias que no estén asignadas a él como filas principales,
                 // ya que estas se verán dentro de sus respectivos Planes Maestros.
-                $main->whereNull('parent_id')
-                     ->orWhere('is_template', true);
+                $main->where(function($q) {
+                    $q->whereNull('parent_id')
+                      ->orWhere('is_template', true);
+                });
+
+                // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia, 
+                // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos 
+                // ver la instancia suelta arriba para no triplicar.
+                $main->where(function($q) use ($user) {
+                    $q->where('is_template', true)
+                      ->orWhereNull('assigned_user_id')
+                      ->orWhere('assigned_user_id', '!=', $user->id);
+                });
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado
                 $main->where('assigned_user_id', $user->id)
