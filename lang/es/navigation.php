@@ -15,7 +15,7 @@ return [
     'hello' => 'Hola, :name',
     'gantt' => 'Gantt',
     'kanban' => 'Kanban',
-    'users' => 'Usuarios',
+    'users' => 'Miembros',
     'task_detail' => 'Detalle de la tarea',
     'zoom' => 'Zoom',
     'zoom_controls' => 'Control de Zoom',

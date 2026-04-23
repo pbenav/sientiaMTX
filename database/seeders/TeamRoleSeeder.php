@@ -19,7 +19,7 @@ class TeamRoleSeeder extends Seeder
             ],
             [
                 'name' => 'user',
-                'description' => 'Usuario: Puede ver tareas asignadas, actualizar status propio, comentar'
+                'description' => 'Miembro: Puede ver tareas asignadas, actualizar status propio, comentar'
             ]
         ];
 

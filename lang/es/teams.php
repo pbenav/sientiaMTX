@@ -20,8 +20,8 @@ return [
     'pending_invitations' => 'Invitaciones pendientes',
     'invited' => 'Invitado',
     'not_found' => 'Equipo no encontrado.',
-    'user_not_found' => 'Usuario no encontrado.',
-    'already_member' => 'El usuario ya es miembro del equipo.',
+    'user_not_found' => 'Miembro no encontrado.',
+    'already_member' => 'El miembro ya pertenece al equipo.',
     'tasks_count' => ':count tareas',
     'tasks_total' => 'total',
     'overdue' => 'fuera de plazo',
@@ -75,4 +75,5 @@ return [
     'telegram_integration' => 'Integración con Telegram',
     'members_of' => 'Miembros de :name',
     'unauthorized_access' => 'No tienes permiso para acceder a la operativa de este equipo.',
+    'invite_user' => 'Invitar Miembro',
 ];
