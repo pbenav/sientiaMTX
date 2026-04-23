@@ -29,7 +29,7 @@
                         stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo Hilo' }}</span>
+                    <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo hilo' }}</span>
                 </button>
                 @include('teams.partials.header-actions')
             </div>
@@ -281,7 +281,7 @@
                     </svg>
                 </div>
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                    {{ __('forum.new_thread') ?? 'Nuevo Hilo de Discusión' }}
+                    {{ __('forum.new_thread') ?? 'Nuevo hilo de discusión' }}
                 </h2>
             </div>
 
@@ -381,7 +381,7 @@
                 </x-secondary-button>
 
                 <x-primary-button>
-                    {{ __('forum.create') ?? 'Crear Hilo' }}
+                    {{ __('forum.create') ?? 'Crear hilo' }}
                 </x-primary-button>
             </div>
         </form>
