@@ -157,6 +157,14 @@ class AiChatController extends Controller
         if ($request->attachment_id) {
             $attachment = \App\Models\TaskAttachment::find($request->attachment_id);
             if ($attachment) {
+                // Security Audit Fix: Check access to the attachment context
+                $isManager = $request->team_id ? $request->user()->isManager(\App\Models\Team::find($request->team_id)) : false;
+                $canAccess = \App\Models\Task::where('id', $attachment->task_id)->visibleTo($user, $isManager)->exists();
+                
+                if (!$canAccess) {
+                    return response()->json(['message' => 'No tienes permiso para analizar este archivo.'], 403);
+                }
+
                 $aiAssistant->withAttachmentContext($attachment);
                 
                 // If no new file was uploaded, we link the existing attachment to the message
@@ -185,6 +193,17 @@ class AiChatController extends Controller
         if ($request->forum_thread_id) {
             $thread = \App\Models\ForumThread::find($request->forum_thread_id);
             if ($thread) {
+                // Security Audit Fix: Check access to the forum context (especially if linked to a private task)
+                if ($user->cannot('view', $thread->team)) {
+                    return response()->json(['message' => 'No tienes acceso a este equipo.'], 403);
+                }
+                
+                if ($thread->task_id) {
+                    if ($user->cannot('view', $thread->task)) {
+                        return response()->json(['message' => 'No tienes permiso para acceder al contenido privado de esta tarea.'], 403);
+                    }
+                }
+
                 $message = $request->forum_message_id ? \App\Models\ForumMessage::find($request->forum_message_id) : null;
                 $aiAssistant->withForumContext($thread, $message);
             }
