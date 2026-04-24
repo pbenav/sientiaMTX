@@ -258,9 +258,16 @@ class KanbanController extends Controller
                 $this->awardGamificationPoints($task);
                 $task->notifyCoordinatorsIfCompleted();
             }
+
+            if ($validated['moved_task_id'] == $task->id) {
+                $movedTaskProgress = $task->progress_percentage;
+            }
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'progress' => $movedTaskProgress ?? null
+        ]);
     }
 
     public function updateColumnOrder(Request $request, Team $team)

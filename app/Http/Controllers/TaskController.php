@@ -1226,6 +1226,7 @@ class TaskController extends Controller
             'success' => true,
             'task_status' => $task->status,
             'task_progress' => $task->progress_percentage,
+            'kanban_column_id' => $task->kanban_column_id,
             'parent_progress' => $task->parent_id ? $task->parent->progress_percentage : null
         ]);
     }

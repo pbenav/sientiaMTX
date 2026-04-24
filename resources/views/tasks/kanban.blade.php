@@ -240,9 +240,9 @@
                                     </div>
 
                                     @if($task->description)
-                                        <p class="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
-                                            {{ $task->description }}
-                                        </p>
+                                        <div class="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 opacity-80 leading-relaxed">
+                                            {{ \Illuminate\Support\Str::limit(html_entity_decode(strip_tags(\Illuminate\Support\Str::markdown($task->description))), 120) }}
+                                        </div>
                                     @endif
 
                                     <!-- Progress Slider -->
@@ -366,6 +366,7 @@
                         delayOnTouchOnly: true,
                         touchStartThreshold: 10, // More forgiving for scroll
                         filter: 'button, input, select, .progress-slider', // Removed 'a' so we can drag by title
+                        preventOnFilter: false, // CRITICAL: This allows the slider to be dragged normally
                         onStart: function() {
                             isDragging = true;
                         },
@@ -377,19 +378,10 @@
                         const isCompletedZone = evt.to.id === 'completed-tasks-zone';
                         const newIndex = evt.newIndex;
 
-                        // Check if the target column title contains "complet"
-                        const targetCol = evt.to.closest('.kanban-column');
-                        const columnTitle = targetCol ? targetCol.querySelector('.column-title').innerText.toLowerCase() : '';
-                        const isCompletedColumn = columnTitle.includes('complet') || columnTitle.includes('terminad') || columnTitle.includes('hecho');
-
                         if (isCompletedZone) {
                             archiveTask(taskId);
                         } else {
-                            if (isCompletedColumn) {
-                                completeTaskWithoutArchiving(taskId, newColumnId, newIndex);
-                            } else {
-                                updateTaskPosition(taskId, newColumnId, newIndex);
-                            }
+                            updateTaskPosition(taskId, newColumnId, newIndex);
                         }
                     }
                 });
@@ -463,36 +455,20 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        console.log('Column order synchronized successfully');
+                    if (data.success && data.progress !== null) {
+                        const card = document.querySelector(`[data-task-id="${taskId}"]`);
+                        if (card) {
+                            const slider = card.querySelector('input[type="range"]');
+                            if (slider) slider.value = data.progress;
+                            const label = card.querySelector('.progress-text') || card.querySelector('.progress-label');
+                            if (label) label.innerText = `${data.progress}%`;
+                        }
                     }
                 })
                 .catch(error => console.error('Error:', error));
             }
 
-            window.completeTaskWithoutArchiving = function(taskId, columnId, order) {
-                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        status: 'completed',
-                        progress_percentage: 100,
-                        is_archived: false,
-                        column_id: columnId,
-                        kanban_order: order
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload(); 
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            }
+
 
             window.archiveTask = function(taskId) {
                 fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
@@ -565,11 +541,21 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        // Refresh page if progress move triggered a column change
-                        // Alternatively, we could move the DOM element to the new column
-                        // To keep it simple and reactive as requested:
-                        location.reload(); 
+                    if (data.success && data.kanban_column_id) {
+                        const card = document.querySelector(`[data-task-id="${taskId}"]`);
+                        if (card) {
+                            const currentList = card.closest('.task-list');
+                            if (currentList && currentList.dataset.columnId != data.kanban_column_id) {
+                                const targetList = document.querySelector(`.task-list[data-column-id="${data.kanban_column_id}"]`);
+                                if (targetList) {
+                                    card.style.opacity = '0';
+                                    setTimeout(() => {
+                                        targetList.appendChild(card);
+                                        card.style.opacity = '1';
+                                    }, 150);
+                                }
+                            }
+                        }
                     }
                 })
                 .catch(error => console.error('Error:', error));

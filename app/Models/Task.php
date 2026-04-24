@@ -489,15 +489,14 @@ class Task extends Model
             return;
         }
 
-        $type = 'in_progress';
-        $currentProgress = $this->progress;
+        $currentProgress = (int)$this->progress_percentage;
 
-        if ($currentProgress == 100 || $this->status === 'completed') {
+        if ($currentProgress === 100) {
             $type = 'done';
-        } elseif ($this->status === 'in_progress') {
-            $type = 'in_progress';
-        } elseif ($currentProgress == 0 && ($this->status === 'pending' || $this->status === 'todo')) {
+        } elseif ($currentProgress === 0) {
             $type = 'todo';
+        } else {
+            $type = 'in_progress';
         }
 
         $column = $team->kanbanColumns()
