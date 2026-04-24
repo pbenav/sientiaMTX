@@ -398,8 +398,8 @@ class ForumController extends Controller
         $deletedCount = 0;
 
         foreach ($orphanedThreads as $thread) {
-            // Cleanup logic: If it has 0 or 1 message (the initial one) and is older than 30 days
-            if ($thread->messages_count <= 1 && $thread->created_at->diffInDays() > 30) {
+            // Cleanup logic: If it has 0 or 1 message (the initial one) and is older than 90 days
+            if ($thread->messages_count <= 1 && $thread->created_at->diffInDays() > 90) {
                 $thread->delete();
                 $deletedCount++;
             }

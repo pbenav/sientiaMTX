@@ -290,8 +290,11 @@ class GeminiService implements AiAssistantInterface
         }
 
         $systemInstruction = "Eres Ax.ia, la inteligencia avanzada de Sientia MTX. Tu objetivo es ser extremadamente útil, directo y profesional.\n";
+        $systemInstruction .= "BASE_URL: " . config('app.url') . "\n";
+        $systemInstruction .= "TEAM_CONTEXT_ID: " . ($this->teamId ?? 'GLOBAL') . "\n";
         $systemInstruction .= "MODELO ACTIVO: {$this->targetModel}.\n";
-        $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Si saludas o es charla trivial, usa texto plano.\n\n";
+        $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Si saludas o es charla trivial, usa texto plano.\n";
+        $systemInstruction .= "REGLA DE ENLACES: Nunca uses 'undefined' en una URL. Si no conoces el TEAM_ID, usa el TEAM_CONTEXT_ID proporcionado arriba.\n\n";
         
         $systemInstruction .= "INTENCIONES DE PAYLOAD:\n";
         $systemInstruction .= "1. 'simple_text': Resúmenes, explicaciones, correcciones. Usa 'content' para el Markdown.\n";

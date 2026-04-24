@@ -464,7 +464,26 @@
             },
 
             async clearHistory() {
-                if (!confirm('¿Seguro que quieres borrar todo el historial de este chat?')) return;
+                const result = await Swal.fire({
+                    title: '¿Borrar historial?',
+                    text: 'Esta acción eliminará todos los mensajes de este chat para el contexto actual.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Sí, borrar todo',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                        htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    buttonsStyling: true
+                });
+
+                if (!result.isConfirmed) return;
                 
                 try {
                     await fetch('{{ route('ai.clear-history') }}', {
@@ -835,7 +854,7 @@
                                     <div class="grid grid-cols-1 gap-2">`;
                                 data.results.tasks.forEach(t => {
                                     html += `
-                                    <a href="/teams/${t.team_id}/tasks/${t.id}" class="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-700/50 group/item">
+                                    <a href="/teams/${t.team_id || this.teamId || 'null'}/tasks/${t.id}" class="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-700/50 group/item">
                                         <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 font-bold text-[10px]">#${t.id}</div>
                                         <div class="flex-1 min-w-0">
                                             <div class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">${t.title}</div>
@@ -855,7 +874,7 @@
                                     <div class="grid grid-cols-1 gap-2">`;
                                 (data.results.threads || []).forEach(th => {
                                     html += `
-                                    <a href="/teams/${th.team_id}/forum/${th.id}" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 transition-all border border-amber-100/50 dark:border-amber-900/20 group/item">
+                                    <a href="/teams/${th.team_id || this.teamId || 'null'}/forum/${th.id}" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 transition-all border border-amber-100/50 dark:border-amber-900/20 group/item">
                                         <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 font-bold text-[10px]">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
                                         </div>
@@ -869,7 +888,7 @@
 
                                 (data.results.message_matches || []).forEach(m => {
                                     html += `
-                                    <a href="/teams/${m.team_id}/forum/${m.thread_id}" class="flex items-start gap-3 p-3 rounded-2xl bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all border border-slate-100/30 dark:border-slate-700/30 group/item">
+                                    <a href="/teams/${m.team_id || this.teamId || 'null'}/forum/${m.thread_id}" class="flex items-start gap-3 p-3 rounded-2xl bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all border border-slate-100/30 dark:border-slate-700/30 group/item">
                                         <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mt-0.5">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 002 2v8a2 2 0 00-2 2h-3l-4 4z"/></svg>
                                         </div>

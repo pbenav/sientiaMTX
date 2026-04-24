@@ -114,7 +114,7 @@
                         </form>
 
                         <form action="{{ route('teams.forum.destroy', [$team, $thread]) }}" method="POST"
-                            onsubmit="return confirm('¿Seguro que deseas eliminar todo este hilo? No se puede deshacer.')">
+                            onsubmit="return confirmDeleteThread(this)">
                             @csrf
                             @method('DELETE')
                             <button type="submit"
@@ -237,7 +237,7 @@
                                     <!-- Delete -->
                                     @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
                                         <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}"
-                                            method="POST" onsubmit="return confirm('{{ $isFirst ? 'Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?' : '¿Eliminar este mensaje?' }}');"
+                                            method="POST" onsubmit="return confirmDeleteMessage(this, {{ $isFirst ? 'true' : 'false' }})"
                                             class="inline">
                                             @csrf
                                             @method('DELETE')
@@ -632,6 +632,59 @@
             function closeAttachmentHistory() {
                 document.getElementById('attachment-history-modal').classList.add('hidden');
                 document.body.style.overflow = 'auto';
+            }
+
+            window.confirmDeleteThread = function(form) {
+                Swal.fire({
+                    title: '{{ __('¿Eliminar todo el hilo?') }}',
+                    text: '{{ __('Esta acción no se puede deshacer y eliminará todos los mensajes.') }}',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: '{{ __('Sí, eliminar todo') }}',
+                    cancelButtonText: '{{ __('Cancelar') }}',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                        htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    buttonsStyling: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
+            }
+
+            window.confirmDeleteMessage = function(form, isFirst) {
+                const text = isFirst ? '{{ __('Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?') }}' : '{{ __('¿Eliminar este mensaje?') }}';
+                Swal.fire({
+                    title: '{{ __('Eliminar mensaje') }}',
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: '{{ __('Sí, eliminar') }}',
+                    cancelButtonText: '{{ __('Cancelar') }}',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                        htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    buttonsStyling: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
             }
         </script>
     @endpush

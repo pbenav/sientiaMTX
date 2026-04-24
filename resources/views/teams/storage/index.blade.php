@@ -129,7 +129,7 @@
                             Herramienta de Purga
                         </h3>
 
-                        <form action="{{ route('teams.storage.purge', $team) }}" method="POST" onsubmit="return confirm('¿Estás seguro? Esta acción eliminará permanentemente los archivos seleccionados del servidor.')">
+                        <form action="{{ route('teams.storage.purge', $team) }}" method="POST" onsubmit="return confirmPurge(this)">
                             @csrf
                             <div class="space-y-6">
                                 <!-- Antigüedad -->
@@ -202,4 +202,33 @@
         .animate-bounce-subtle { animation: bounceSubtle 2s infinite ease-in-out; }
         @keyframes bounceSubtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
     </style>
+    @push('scripts')
+        <script>
+            window.confirmPurge = function(form) {
+                Swal.fire({
+                    title: '{{ __('¿Confirmar Purga?') }}',
+                    text: '{{ __('Esta acción eliminará permanentemente los archivos seleccionados del servidor. No se puede deshacer.') }}',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f43f5e',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: '{{ __('Sí, iniciar purga') }}',
+                    cancelButtonText: '{{ __('Cancelar') }}',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        title: 'text-rose-600 dark:text-rose-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                        htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-rose-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    buttonsStyling: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
+            }
+        </script>
+    @endpush
 </x-app-layout>
