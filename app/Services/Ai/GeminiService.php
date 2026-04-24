@@ -23,11 +23,15 @@ class GeminiService implements AiAssistantInterface
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1';
     protected array $userStats = [];
     protected $tasksContext = [];
+    protected ?int $teamId = null;
+    protected ?AiSearchService $searchService = null;
+    protected array $messagesHistory = [];
 
     public function __construct()
     {
         // By default, use the app config key if available
         $this->apiKey = config('services.gemini.key') ?? env('GEMINI_API_KEY') ?? '';
+        $this->searchService = new AiSearchService();
     }
 
     public function setTemporaryKey(string $key): self
@@ -39,6 +43,7 @@ class GeminiService implements AiAssistantInterface
     public function forUser(User $user, ?int $teamId = null): self
     {
         $this->user = $user;
+        $this->teamId = $teamId;
         $this->taskContext = null; // Clear context on brand new session
         $this->attachmentContext = null;
         $this->threadContext = null;
@@ -284,14 +289,20 @@ class GeminiService implements AiAssistantInterface
             }
         }
 
-        $systemInstruction = "Eres Ax.ia, el asistente de Sientia MTX. Tu nombre es de lectura obligada, pero NO debes presentarte constantemente.\n";
-        $systemInstruction .= "MODELO ACTIVO: {$this->targetModel}. Si el usuario te pregunta por los detalles técnicos de tu cerebro, dile que estás operando bajo este modelo.\n";
-        $systemInstruction .= "REGLA FUNDAMENTAL: Tú SOLO te comunicas devolviendo el resultado del trabajo en formato JSON envuelto en la etiqueta [PAYLOAD]. ESTÁ ABSOLUTAMENTE PROHIBIDO que el output contenga monólogos, copias de las instrucciones, reflexiones ni ningún texto fuera del bloque [PAYLOAD]. Empezarás y terminarás directamente con el JSON.\n\n";
-        $systemInstruction .= "FORMATO EXIGIDO:\n[PAYLOAD]\n{\n";
-        $systemInstruction .= "  \"intent\": \"simple_text\", // Úsalo para TODO: resúmenes, traducciones, explicaciones teóricas, listados, correcciones.\n";
-        $systemInstruction .= "  \"content\": \"Tu respuesta completa y detallada formateada en excelente Markdown.\"\n";
-        $systemInstruction .= "} \n// (O usa intent: 'full_task' junto con 'task_data' SOLO Y EXCLUSIVAMENTE si el usuario te ordena CREAR UNA TAREA DE PROYECTO).\n[/PAYLOAD]\n\n";
-        $systemInstruction .= "Excepción: Si el usuario SOLO te manda un saludo conversacional inofensivo ('hola', 'qué tal'), responde en texto plano normal SIN [PAYLOAD].\n\n";
+        $systemInstruction = "Eres Ax.ia, la inteligencia avanzada de Sientia MTX. Tu objetivo es ser extremadamente útil, directo y profesional.\n";
+        $systemInstruction .= "MODELO ACTIVO: {$this->targetModel}.\n";
+        $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Si saludas o es charla trivial, usa texto plano.\n\n";
+        
+        $systemInstruction .= "INTENCIONES DE PAYLOAD:\n";
+        $systemInstruction .= "1. 'simple_text': Resúmenes, explicaciones, correcciones. Usa 'content' para el Markdown.\n";
+        $systemInstruction .= "2. 'search_results': ¡IMPORTANTE! Úsalo siempre que uses las herramientas de búsqueda (search_tasks, search_forum). Estructura:\n";
+        $systemInstruction .= "   { \"intent\": \"search_results\", \"query\": \"término usado\", \"results\": { ...resultados de la herramienta... } }\n";
+        $systemInstruction .= "3. 'full_task': Solo para crear tareas nuevas. Requiere objecto 'task_data'.\n\n";
+        
+        $systemInstruction .= "SOBRE BÚSQUEDAS: Si realizas una búsqueda y no hay resultados, no envíes un payload vacío. Usa 'simple_text' para explicar amablemente que no has encontrado nada y sugiere alternativas.\n";
+        $systemInstruction .= "IMPORTANTE: Cierra siempre tus bloques con [/PAYLOAD].\n";
+        
+        $fullPrompt = $contextInfo . "\nINSTRUCCIÓN DEL USUARIO: " . $prompt;
 
         if ($this->taskContext) {
             $systemInstruction .= "CONTEXTO: El usuario está editando la tarea '{$this->taskContext->title}'. Usa SIEMPRE intent: 'simple_text' a menos que exija crear múltiples tareas nuevas.\n\n";
@@ -458,9 +469,48 @@ class GeminiService implements AiAssistantInterface
 
 
     /**
-     * Helper to make the HTTP request to the Gemini API.
+     * Define las herramientas (functions) que la IA puede llamar.
      */
-    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null): string
+    protected function getToolsDefinition(): array
+    {
+        return [[
+            'function_declarations' => [
+                [
+                    'name' => 'search_tasks',
+                    'description' => 'Busca tareas en el equipo actual por título, descripción o notas.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'query' => [
+                                'type' => 'string',
+                                'description' => 'Término o palabra clave a buscar'
+                            ]
+                        ],
+                        'required' => ['query']
+                    ]
+                ],
+                [
+                    'name' => 'search_forum',
+                    'description' => 'Busca hilos de conversación o mensajes específicos en el foro del equipo.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'query' => [
+                                'type' => 'string',
+                                'description' => 'Término a buscar en las discusiones'
+                            ]
+                        ],
+                        'required' => ['query']
+                    ]
+                ]
+            ]
+        ]];
+    }
+
+    /**
+     * Helper to make the HTTP request to the Gemini API with Tool Support.
+     */
+    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null, bool $isToolCall = false): string
     {
         if (empty($this->apiKey)) {
             Log::error('Gemini API key is missing.');
@@ -475,27 +525,23 @@ class GeminiService implements AiAssistantInterface
         $cleanId = str_replace('models/', '', $model);
         $finalModelPath = "models/{$cleanId}";
         
-        $v = (str_contains($cleanId, 'preview') || str_contains($cleanId, 'deep-research')) ? 'v1beta' : 'v1';
+        $v = (str_contains($cleanId, 'preview') || str_contains($cleanId, 'deep-research') || $isToolCall) ? 'v1beta' : 'v1';
         $url = "https://generativelanguage.googleapis.com/{$v}/{$finalModelPath}:generateContent?key={$this->apiKey}";
 
-        $contents = [];
-        if ($systemInstruction) {
-            $contents[] = [
-                'role' => 'user',
-                'parts' => [['text' => "NUEVA SESIÓN: " . $systemInstruction]]
-            ];
-            $contents[] = [
-                'role' => 'model',
-                'parts' => [['text' => "Entendido. Aplicaré estas directrices a partir de ahora."]]
-            ];
+        if (!$isToolCall) {
+            $this->messagesHistory = []; // Reset context for new top-level call if needed
+            
+            if ($systemInstruction) {
+                $this->messagesHistory[] = ['role' => 'user', 'parts' => [['text' => "NUEVA SESIÓN: " . $systemInstruction]]];
+                $this->messagesHistory[] = ['role' => 'model', 'parts' => [['text' => "Entendido. Aplicaré estas directrices a partir de ahora."]]];
+            }
+            $this->messagesHistory[] = ['role' => 'user', 'parts' => $parts];
         }
 
-        $contents[] = [
-            'role' => 'user',
-            'parts' => $parts
+        $payload = [
+            'contents' => $this->messagesHistory,
+            'tools' => $this->getToolsDefinition()
         ];
-
-        $payload = ['contents' => $contents];
 
         try {
             $response = Http::timeout(60)->post($url, $payload);
@@ -504,7 +550,42 @@ class GeminiService implements AiAssistantInterface
             $errorMsg = $errorBody['message'] ?? 'Error desconocido';
 
             if ($response->successful()) {
-                return $response->json('candidates.0.content.parts.0.text') ?? 'No se recibió contenido de la IA.';
+                $candidate = $response->json('candidates.0');
+                $part = $candidate['content']['parts'][0] ?? null;
+
+                // 1. Manejar LLAMADA A FUNCIÓN (Tool Call)
+                if (isset($part['functionCall'])) {
+                    $fnName = $part['functionCall']['name'];
+                    $args = $part['functionCall']['args'] ?? [];
+                    Log::info("Ax.ia: Herramienta solicitada: {$fnName}", $args);
+
+                    $result = null;
+                    if ($fnName === 'search_tasks') {
+                        $result = $this->searchService->searchTasks($this->teamId, $args['query'] ?? '');
+                    } elseif ($fnName === 'search_forum') {
+                        $result = $this->searchService->searchForum($this->teamId, $args['query'] ?? '');
+                    }
+
+                    // Meter la llamada del modelo en el historial
+                    $this->messagesHistory[] = ['role' => 'model', 'parts' => [$part]];
+                    
+                    // Meter el resultado de la función en el historial
+                    $this->messagesHistory[] = [
+                        'role' => 'function', 
+                        'parts' => [[
+                            'functionResponse' => [
+                                'name' => $fnName,
+                                'response' => ['name' => $fnName, 'content' => $result]
+                            ]
+                        ]]
+                    ];
+
+                    // Hacer llamada recursiva con el contexto actualizado
+                    return $this->callGemini($model, $parts, $isFallback, null, true);
+                }
+
+                // 2. Respuesta de Texto normal
+                return $part['text'] ?? 'No se recibió contenido de la IA.';
             }
 
             // --- Lógica de Resiliencia Total y Auto-Curación ---

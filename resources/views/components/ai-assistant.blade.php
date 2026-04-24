@@ -210,14 +210,14 @@
                                     @endif
                                     
                                     <template x-if="msg.is_error">
-                                        <div class="flex space-x-1">
-                                            <button @click="retryLastRequest()" class="bg-red-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Reintentar y enviar directamente">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                        <div class="flex space-x-2 mt-2">
+                                            <button @click="retryLastRequest()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 transition-all text-[9px] font-bold uppercase tracking-tight" title="Reintentar">
+                                                <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                 <span>Reintentar</span>
                                             </button>
-                                            <button @click="recoverPrompt()" class="bg-orange-500 text-white rounded-xl px-3 py-1.5 shadow-lg hover:scale-110 active:scale-95 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2" title="Recuperar texto en la caja de edición">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                                                <span>Recuperar Prompt</span>
+                                            <button @click="recoverPrompt()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 transition-all text-[9px] font-bold uppercase tracking-tight" title="Recuperar texto">
+                                                <svg class="w-3 h-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                                <span>Recuperar</span>
                                             </button>
                                         </div>
                                     </template>
@@ -685,69 +685,74 @@
                         content: userText || (isAudio ? '🎤 [Grabación de audio]' : `📎 [Archivo: ${fileToSend.name}]`),
                         file_url: localUrl,
                         file_name: fileToSend.name,
-                        file_type: fileToSend.type,
-                        is_local: true
-                    });
-                } else if (userText) {
-                    this.messages.push({ role: 'user', content: userText });
+                    file_type: fileToSend.type,
+                    is_local: true
+                });
+            } else if (userText) {
+                this.messages.push({ role: 'user', content: userText });
+            }
+
+            this.loading = true;
+            this.isSendingFile = !!fileToSend;
+            this.scrollToBottom();
+
+            try {
+                const formData = new FormData();
+                formData.append('prompt', userText);
+                formData.append('team_id', this.teamId || '');
+                formData.append('task_id', this.taskId || '');
+                formData.append('attachment_id', this.attachmentId || '');
+                formData.append('forum_thread_id', this.threadId || '');
+                formData.append('forum_message_id', this.messageId || '');
+                
+                if (fileToSend) {
+                    formData.append('file', fileToSend);
                 }
 
+                const response = await fetch('{{ route('ai.ask') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Error del servidor (${response.status})`);
+                }
+                
+                const data = await response.json();
+                
+                // CLEAR INPUT ONLY ON SUCCESS
                 this.input = '';
                 this.pendingFile = null;
-                this.loading = true;
-                this.isSendingFile = !!fileToSend;
+
+                const isError = data.message.includes('Lo siento, ha ocurrido un error') || data.message.includes('⚠️');
+                
+                this.messages.push({ 
+                    role: 'ai', 
+                    content: data.message,
+                    is_error: isError
+                });
+                if (data.current_model) this.currentModel = data.current_model;
+                this.retryCount = 0; // Reset count on success
+            } catch (error) {
+                console.error('AI Assistant Error:', error);
+                
+                // KEEP PROMPT ON ERROR but give feedback
+                this.messages.push({ 
+                    role: 'ai', 
+                    content: '⚠️ No se pudo procesar tu solicitud. El texto se ha mantenido en la caja de abajo. Detalle: ' + error.message,
+                    is_error: true
+                });
+            } finally {
+                this.loading = false;
+                this.isSendingFile = false;
                 this.scrollToBottom();
-
-                try {
-                    const formData = new FormData();
-                    formData.append('prompt', userText);
-                    formData.append('team_id', this.teamId || '');
-                    formData.append('task_id', this.taskId || '');
-                    formData.append('attachment_id', this.attachmentId || '');
-                    formData.append('forum_thread_id', this.threadId || '');
-                    formData.append('forum_message_id', this.messageId || '');
-                    
-                    if (fileToSend) {
-                        formData.append('file', fileToSend);
-                    }
-
-                    const response = await fetch('{{ route('ai.ask') }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Accept': 'application/json'
-                        },
-                        body: formData
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.message || `Error del servidor (${response.status})`);
-                    }
-                    
-                    const data = await response.json();
-                    const isError = data.message.includes('Lo siento, ha ocurrido un error') || data.message.includes('⚠️');
-                    
-                    this.messages.push({ 
-                        role: 'ai', 
-                        content: data.message,
-                        is_error: isError
-                    });
-                    if (data.current_model) this.currentModel = data.current_model;
-                    this.retryCount = 0; // Reset count on success
-                } catch (error) {
-                    console.error('AI Assistant Error:', error);
-                    this.messages.push({ 
-                        role: 'ai', 
-                        content: '⚠️ No se pudo procesar tu solicitud. Detalle: ' + error.message + '. Puedes usar el botón naranja abajo para recuperar tu texto.',
-                        is_error: true
-                    });
-                } finally {
-                    this.loading = false;
-                    this.isSendingFile = false;
-                    this.scrollToBottom();
-                }
-            },
+            }
+        },
 
             scrollToBottom() {
                 setTimeout(() => {
@@ -797,42 +802,127 @@
             },
 
             generatePayloadCard(content) {
-                return `<div class="group/payload my-6 relative transition-all duration-500">
-                    <!-- Efecto de brillo/aura de fondo -->
-                    <div class="absolute -inset-1 bg-gradient-to-r from-violet-500/20 to-indigo-500/20 rounded-[2rem] blur opacity-25 group-hover/payload:opacity-50 transition duration-1000"></div>
+                try {
+                    const data = JSON.parse(content);
                     
-                    <div class="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white dark:border-gray-800 rounded-[1.8rem] shadow-2xl shadow-indigo-500/10 overflow-hidden transition-all duration-300 group-hover/payload:translate-y-[-2px]">
-                        <!-- Cabecera de la tarjeta -->
-                        <div class="px-6 py-3 bg-gradient-to-r from-indigo-50/50 to-transparent dark:from-indigo-500/5 flex items-center justify-between border-b border-indigo-100/50 dark:border-indigo-500/10">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Smart Payload</span>
-                            </div>
-                            <div class="flex gap-1">
-                                <div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                                <div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                            </div>
-                        </div>
+                    // 3. SPECIAL: SEARCH RESULTS CARD
+                    if (data.intent === 'search_results') {
+                        let html = `
+                        <div class="group/payload my-6 relative transition-all duration-500">
+                            <!-- Efecto de brillo/aura de fondo -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-[2.5rem] blur opacity-10 group-hover/payload:opacity-30 transition duration-1000"></div>
+                            
+                            <div class="relative p-6 rounded-[2.5rem] bg-gradient-to-br from-indigo-50/90 to-white/90 dark:from-slate-800/90 dark:to-slate-900/90 border border-white/50 dark:border-slate-700/50 shadow-2xl backdrop-blur-xl overflow-hidden group">
+                                <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors"></div>
+                                
+                                <div class="flex items-center gap-4 mb-5">
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Resultados de Búsqueda</h4>
+                                        <p class="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">${data.query ? `Búsqueda: "${data.query}"` : 'Consulta finalizada'}</p>
+                                    </div>
+                                </div>
 
-                        <!-- Contenido principal -->
-                        <div class="p-6">
-                            <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-200 leading-relaxed">
-                                ${this.renderPayloadPreview(content)}
+                                <div class="space-y-4">
+                        `;
+
+                        if (data.results && (data.results.tasks?.length || data.results.threads?.length || data.results.message_matches?.length)) {
+                            if (data.results.tasks?.length) {
+                                html += `<div class="space-y-2">
+                                    <div class="text-[9px] font-black uppercase tracking-tighter text-slate-400 mb-1">Tareas Encontradas</div>
+                                    <div class="grid grid-cols-1 gap-2">`;
+                                data.results.tasks.forEach(t => {
+                                    html += `
+                                    <a href="/teams/${t.team_id}/tasks/${t.id}" class="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-700/50 group/item">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 font-bold text-[10px]">#${t.id}</div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">${t.title}</div>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="px-1.5 py-0.5 rounded-md bg-slate-200/50 dark:bg-slate-700 text-[8px] font-black uppercase tracking-tighter text-slate-500">${t.status}</span>
+                                            </div>
+                                        </div>
+                                        <svg class="w-4 h-4 text-slate-300 group-hover/item:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </a>`;
+                                });
+                                html += `</div></div>`;
+                            }
+
+                            if (data.results.threads?.length || data.results.message_matches?.length) {
+                                html += `<div class="space-y-2">
+                                    <div class="text-[9px] font-black uppercase tracking-tighter text-slate-400 mb-1">Foro y Mensajes</div>
+                                    <div class="grid grid-cols-1 gap-2">`;
+                                (data.results.threads || []).forEach(th => {
+                                    html += `
+                                    <a href="/teams/${th.team_id}/forum/${th.id}" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 transition-all border border-amber-100/50 dark:border-amber-900/20 group/item">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 font-bold text-[10px]">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">${th.title}</div>
+                                            <div class="text-[8px] text-amber-600/70 font-black uppercase mt-0.5">Hilo de conversación</div>
+                                        </div>
+                                        <svg class="w-4 h-4 text-slate-300 group-hover/item:text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </a>`;
+                                });
+
+                                (data.results.message_matches || []).forEach(m => {
+                                    html += `
+                                    <a href="/teams/${m.team_id}/forum/${m.thread_id}" class="flex items-start gap-3 p-3 rounded-2xl bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all border border-slate-100/30 dark:border-slate-700/30 group/item">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mt-0.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 002 2v8a2 2 0 00-2 2h-3l-4 4z"/></svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate mb-1">En el hilo: "${m.thread_title}"</div>
+                                            <div class="text-[9px] text-slate-500 dark:text-slate-400 italic line-clamp-2 leading-relaxed">"...${m.snippet}..."</div>
+                                        </div>
+                                    </a>`;
+                                });
+                                html += `</div></div>`;
+                            }
+                        } else {
+                            html += `<div class="p-8 text-center bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-500 italic">No se han encontrado resultados.</div>`;
+                        }
+
+                        html += `</div></div></div>`;
+                        return html;
+                    }
+
+                    // NORMAL SMART PAYLOAD
+                    const highlights = [
+                        { regex: /#(\d+)/g, class: 'bg-indigo-600 text-white px-1.5 py-0.5 rounded-md font-black shadow-sm' },
+                        { regex: /\[(URGENTE|ALTA|MEDIA|BAJA)\]/g, class: 'bg-red-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black shadow-md' },
+                        { regex: /\[(PENDIENTE|EN PROCESO|COMPLETADA)\]/g, class: 'bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black shadow-md' }
+                    ];
+                    let payloadContent = data.content || '';
+                    highlights.forEach(h => { payloadContent = payloadContent.replace(h.regex, `<span class="${h.class}">$1</span>`); });
+
+                    return `
+                    <div class="group/payload my-6 relative transition-all duration-500">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] blur opacity-20 group-hover/payload:opacity-40 transition duration-1000"></div>
+                        <div class="relative p-6 rounded-[2.5rem] bg-indigo-50/90 dark:bg-slate-900 border border-white/50 dark:border-slate-800 shadow-2xl backdrop-blur-xl">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Smart Payload</span>
+                                </div>
+                            </div>
+                            <div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-[13px] leading-relaxed font-medium">${marked.parse(payloadContent)}</div>
+                            <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-indigo-100/50 dark:border-slate-800">
+                                <span class="text-[9px] font-bold text-indigo-400/80 mr-auto uppercase tracking-tighter italic">Listo para inyectar</span>
+                                <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(data.content || '').replace(/"/g, '&quot;')}, direct: false } }))" 
+                                        class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    <span>Inyectar</span>
+                                </button>
                             </div>
                         </div>
-
-                        <!-- Footer con acción -->
-                        <div class="px-6 py-4 bg-gray-50/30 dark:bg-black/20 flex justify-end items-center gap-4">
-                            <span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 italic hidden sm:block">Listo para inyectar en tu flujo de trabajo</span>
-                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(content).replace(/"/g, '&quot;')}, direct: false } }))" 
-                                    class="relative overflow-hidden px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3 group/btn">
-                                <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000"></div>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                <span>Inyectar</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
+                    </div>`;
+                } catch (e) {
+                    console.error("Error parsing AI Payload:", e);
+                    return `<div class="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl text-xs border border-red-100">Error en Payload Inteligente: ${e.message}</div>`;
+                }
             },
 
             renderPayloadPreview(content) {
