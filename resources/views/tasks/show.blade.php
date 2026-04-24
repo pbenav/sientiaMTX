@@ -1170,8 +1170,9 @@
                         @foreach ($allAttachments as $attachment)
                             @php 
                                 $isFromMe = $attachment->user_id === auth()->id();
-                                $isFromParent = $attachment->task_id === $task->parent_id;
-                                $isFromChild = $attachment->task_id !== $task->id && $attachment->task_id !== $task->parent_id;
+                                $isTaskType = $attachment->attachable_type === 'App\Models\Task';
+                                $isFromParent = $isTaskType && $attachment->attachable_id === $task->parent_id;
+                                $isFromChild = $isTaskType && $attachment->attachable_id !== $task->id && $attachment->attachable_id !== $task->parent_id;
                             @endphp
                             <div
                                 class="group flex items-center justify-between p-3 {{ $isFromParent ? 'bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-100/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50' }} border rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
@@ -1204,7 +1205,7 @@
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                                 </a>
                                             @else
-                                                <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}" 
+                                                <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}" 
                                                    target="_blank" 
                                                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                                     {{ $attachment->file_name }}
@@ -1221,7 +1222,7 @@
                                             @if($isFromParent) 
                                                 <span class="text-indigo-500 font-bold uppercase tracking-tighter">{{ __('tasks.shared') ?? 'Plan' }}</span>
                                             @elseif($isFromChild)
-                                                <span class="text-amber-500 font-bold uppercase tracking-tighter">{{ $attachment->task?->assignedUser?->name ?? 'Equipo' }}</span>
+                                                <span class="text-amber-500 font-bold uppercase tracking-tighter">{{ $attachment->attachable->assignedUser?->name ?? 'Equipo' }}</span>
                                             @else
                                                 {{ $attachment->created_at->diffForHumans() }}
                                             @endif
@@ -1280,7 +1281,7 @@
                                                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                         </svg>
                                     </a>
-                                    @if($attachment->task_id === $task->id)
+                                    @if($isTaskType && $attachment->attachable_id === $task->id)
                                         @can('update', $task)
                                             <button type="button"
                                                 onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"

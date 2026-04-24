@@ -290,7 +290,13 @@
                                                         @endif
                                                     </div>
                                                     <div class="min-w-0 flex-1">
-                                                        <p class="text-[10px] font-black text-gray-900 dark:text-gray-100 truncate leading-tight">{{ $attachment->file_name }}</p>
+                                                        <p class="text-[10px] font-black text-gray-900 dark:text-gray-100 truncate leading-tight">
+                                                            <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
+                                                               target="_blank"
+                                                               class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                                {{ $attachment->file_name }}
+                                                            </a>
+                                                        </p>
                                                         <p class="text-[9px] text-gray-400 mt-0.5 flex items-center gap-1">
                                                             @if($attachment->storage_provider === 'google')
                                                                 <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1 rounded-[4px] font-black uppercase text-[7px]">Google Drive</span>

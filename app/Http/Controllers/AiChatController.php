@@ -157,11 +157,8 @@ class AiChatController extends Controller
         if ($request->attachment_id) {
             $attachment = \App\Models\TaskAttachment::find($request->attachment_id);
             if ($attachment) {
-                // Security Audit Fix: Check access to the attachment context
-                $isManager = $request->team_id ? $request->user()->isManager(\App\Models\Team::find($request->team_id)) : false;
-                $canAccess = \App\Models\Task::where('id', $attachment->task_id)->visibleTo($user, $isManager)->exists();
-                
-                if (!$canAccess) {
+                $team = \App\Models\Team::find($request->team_id);
+                if (!$team || !$attachment->canBeAccessedBy($user, $team)) {
                     return response()->json(['message' => 'No tienes permiso para analizar este archivo.'], 403);
                 }
 
