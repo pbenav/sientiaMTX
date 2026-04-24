@@ -2278,7 +2278,7 @@
         let visible = false;
 
         function updateBar(scrollY) {
-            const shouldShow = scrollY > 180;
+            const shouldShow = scrollY > 150;
             if (shouldShow === visible) return;
             visible = shouldShow;
             if (visible) {
@@ -2292,12 +2292,14 @@
             }
         }
 
-        // The app uses #mainContent as the scroll container
-        const scroller = document.getElementById('mainContent') || window;
-        scroller.addEventListener('scroll', () => {
-            const scrollY = scroller === window ? window.scrollY : scroller.scrollTop;
+        // Catch scroll on any container
+        const checkScroll = (e) => {
+            const target = e.target === document ? document.documentElement : e.target;
+            const scrollY = target.scrollTop || window.scrollY || 0;
             updateBar(scrollY);
-        }, { passive: true });
+        };
+
+        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
     })();
 </script>
 </x-app-layout>
