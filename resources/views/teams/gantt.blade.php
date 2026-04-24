@@ -216,7 +216,13 @@
 
         // Sync view mode with the selected time_range
         const timeRange = '{{ request("time_range", "3") }}';
-        let currentMode = timeRange === '1' ? 'Day' : (timeRange === 'all' || timeRange === '6' || timeRange === '12' ? 'Month' : 'Week');
+        let currentMode = (timeRange === '1' || timeRange === 'all') ? 'Day' : (timeRange === '6' || timeRange === '12' ? 'Month' : 'Week');
+        
+        // Manual override from button clicks is possible
+        function changeView(m) { 
+            currentMode = m; 
+            refreshGanttDisplay(); 
+        }
 
         const tooltip = document.getElementById('gantt-tooltip');
         const dragIndicator = document.getElementById('drag-date-indicator');
@@ -239,6 +245,8 @@
             const res = await fetch(url);
             allTasks = await res.json();
             
+            console.log("Gantt Data Loaded:", allTasks);
+            
             if (allTasks.length === 0) {
                 document.getElementById('gantt-container').innerHTML = '<div class="p-20 text-center text-gray-500 font-bold">Sin tareas.</div>';
                 return;
@@ -259,8 +267,12 @@
                 });
             
             document.getElementById('gantt-container').innerHTML = '';
+            
+            // Adjust column width based on mode
+            const cWidth = currentMode === 'Day' ? 60 : (currentMode === 'Month' ? 120 : 30);
+            
             gantt = new Gantt("#gantt-container", display, {
-                header_height: 50, column_width: 30, step: 24, view_modes: ['Day', 'Week', 'Month'],
+                header_height: 50, column_width: cWidth, step: 24, view_modes: ['Day', 'Week', 'Month'],
                 bar_height: 30, bar_corner_radius: 6, view_mode: currentMode, language: 'es',
                 custom_popup_html: () => '',
                 on_date_change: (t, start, end) => {
@@ -603,7 +615,7 @@
             // Unificado
         }
 
-        function changeView(m) { currentMode = m; refreshGanttDisplay(); }
+
         function centerToday() { const c = document.getElementById('gantt-container'), h = c.querySelector('.today-highlight'); if(h) c.scrollLeft = parseFloat(h.getAttribute('x')) - (c.offsetWidth/2); }
         function drawTodayLine() {
             const c = document.getElementById('gantt-container'), s = c.querySelector('svg'), h = c.querySelector('.today-highlight');

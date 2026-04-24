@@ -248,7 +248,7 @@ class GanttController extends Controller
         $uniqueIds = $ganttTaskIds->filter()->unique()->values();
 
         // Step 3: Filters
-        $allGanttTasks = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
+        $query = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
             ->whereIn('id', $uniqueIds)
             ->when(session('hide_completed_tasks', true) && !$request->status, fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
             ->when($request->search, function ($q, $search) {
@@ -274,22 +274,33 @@ class GanttController extends Controller
                 } elseif ($type === 'plain') {
                     $q->where('is_template', false)->whereNull('parent_id');
                 }
-            })
-            ->when(true, function ($q) use ($request) {
-                $range = $request->get('time_range', '3');
-                if ($range === 'all') return $q;
-                
-                $months = (int) $range;
-                $q->where(function($sq) use ($months) {
-                    $sq->whereBetween('scheduled_date', [
-                        now()->subMonths(1)->startOfMonth(),
-                        now()->addMonths($months - 1)->endOfMonth()
-                    ])->orWhereBetween('due_date', [
-                        now()->subMonths(1)->startOfMonth(),
-                        now()->addMonths($months - 1)->endOfMonth()
-                    ]);
+            });
+
+        // Apply Time Range Filter and ensure we keep parents of matching tasks to avoid dependency crashes
+        $range = $request->get('time_range', '3');
+        if ($range !== 'all') {
+            $months = (int) $range;
+            $startRange = now()->subMonths(1)->startOfMonth();
+            $endRange = now()->addMonths($months - 1)->endOfMonth();
+
+            $matchingIds = (clone $query)->where(function($sq) use ($startRange, $endRange) {
+                $sq->where(function($dateQ) use ($startRange, $endRange) {
+                    $dateQ->whereBetween('scheduled_date', [$startRange, $endRange])
+                          ->orWhereBetween('due_date', [$startRange, $endRange]);
+                })->orWhere(function($fallbackQ) use ($startRange, $endRange) {
+                    $fallbackQ->whereNull('scheduled_date')
+                              ->whereBetween('created_at', [$startRange, $endRange]);
                 });
-            })
+            })->pluck('id');
+
+            // Include parents of matching tasks even if they are out of range
+            $parentIds = Task::whereIn('id', $matchingIds)->whereNotNull('parent_id')->pluck('parent_id')->unique();
+            $finalSetIds = $matchingIds->merge($parentIds)->unique();
+            
+            $query->whereIn('id', $finalSetIds);
+        }
+
+        $allGanttTasks = $query
             ->when($request->limit && $request->limit !== 'all', function ($q) use ($request) {
                 $q->limit((int) $request->limit);
             })
