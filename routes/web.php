@@ -93,6 +93,7 @@ Route::middleware('auth')->group(function () {
     // Storage Management
     Route::get('/teams/{team}/storage', [\App\Http\Controllers\StorageController::class, 'index'])->name('teams.storage.index');
     Route::post('/teams/{team}/storage/purge', [\App\Http\Controllers\StorageController::class, 'purge'])->name('teams.storage.purge');
+    Route::get('/teams/{team}/quota-status', [\App\Http\Controllers\StorageController::class, 'quotaStatus'])->name('teams.quota-status');
 
     // Groups routes
     Route::post('/teams/{team}/groups', [GroupController::class, 'store'])->name('teams.groups.store');

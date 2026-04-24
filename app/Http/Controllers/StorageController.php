@@ -83,6 +83,22 @@ class StorageController extends Controller
     }
 
     /**
+     * Return team quota status as JSON for client-side pre-validation.
+     */
+    public function quotaStatus(Team $team)
+    {
+        $team->syncDiskUsed();
+        $team->refresh();
+
+        return response()->json([
+            'disk_used'       => $team->disk_used,
+            'disk_quota'      => $team->disk_quota,
+            'available_bytes' => max(0, $team->disk_quota - $team->disk_used),
+            'percentage'      => $team->disk_usage_percentage,
+        ]);
+    }
+
+    /**
      * Purgar archivos antiguos.
      */
     public function purge(Request $request, Team $team)

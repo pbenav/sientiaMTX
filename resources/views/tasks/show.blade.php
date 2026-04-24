@@ -1987,13 +1987,14 @@
                 });
             }
 
-            function handleAttachmentUpload(input) {
+            async function handleAttachmentUpload(input) {
                 const file = input.files[0];
                 if (!file) return;
 
                 const limit = "{{ ini_get('upload_max_filesize') }}";
                 const limitBytes = parsePHPSize(limit);
 
+                // 1. Check PHP upload limit
                 if (file.size > limitBytes) {
                     Swal.fire({
                         title: '{{ __('Archivo demasiado grande') }}',
@@ -2004,6 +2005,33 @@
                     });
                     input.value = '';
                     return;
+                }
+
+                // 2. Check team quota BEFORE uploading
+                try {
+                    const res = await fetch('{{ route("teams.quota-status", $team) }}', {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (res.ok) {
+                        const quota = await res.json();
+                        if (file.size > quota.available_bytes) {
+                            const usedMB = (quota.disk_used / 1024 / 1024).toFixed(1);
+                            const totalMB = (quota.disk_quota / 1024 / 1024).toFixed(1);
+                            Swal.fire({
+                                title: '⚠️ Almacenamiento lleno',
+                                html: `El equipo ha alcanzado su límite de almacenamiento.<br><small style="opacity:.7">${usedMB} MB / ${totalMB} MB usados</small><br><br>Un coordinador debe liberar espacio antes de poder subir más archivos.`,
+                                icon: 'warning',
+                                background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827',
+                                confirmButtonColor: '#7c3aed'
+                            });
+                            input.value = '';
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // If quota check fails, let the server handle it
+                    console.warn('Quota pre-check failed, proceeding with upload.', e);
                 }
 
                 document.getElementById('attachment-form').submit();
