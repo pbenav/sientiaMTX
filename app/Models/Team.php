@@ -200,6 +200,10 @@ class Team extends Model
      */
     public function hasAvailableQuota(int $bytes): bool
     {
+        // Always sync from real files to avoid stale DB counters
+        $this->syncDiskUsed();
+        $this->refresh();
+
         return ($this->disk_used + $bytes) <= $this->disk_quota;
     }
 

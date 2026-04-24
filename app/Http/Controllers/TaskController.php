@@ -1317,6 +1317,11 @@ class TaskController extends Controller
             return back()->with('error', 'Has excedido tu cuota de espacio en disco.');
         }
 
+        // Check TEAM quota
+        if (!$team->hasAvailableQuota($size)) {
+            return back()->with('error', '⚠️ El equipo ha alcanzado su límite de almacenamiento. Un coordinador debe liberar espacio antes de poder subir más archivos.');
+        }
+
         $path = $file->store("attachments/task_{$task->id}", 'public');
 
         $originalName = $file->getClientOriginalName();
