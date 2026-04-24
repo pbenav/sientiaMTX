@@ -24,8 +24,9 @@ trait HandlesPersistentFilters
         if ($request->has('reset_filters')) {
             foreach ($keys as $key) {
                 session()->forget($sessionKeyBase . $key);
+                $filters[$key] = $defaults[$key] ?? null;
             }
-            return $defaults;
+            return $filters;
         }
 
         // 2. Process each key
