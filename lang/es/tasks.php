@@ -270,4 +270,5 @@ return [
     'assigned_to_one' => 'miembro asignado',
     'assigned_to_many' => 'miembros asignados',
     'cloned_success' => 'Tarea reproducida correctamente en el equipo :team',
+    'collaborative_hint' => 'En tareas colaborativas, el progreso es compartido por todos los miembros.',
 ];
