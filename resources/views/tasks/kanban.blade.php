@@ -145,14 +145,14 @@
                 </select>
 
                 <!-- Type Filter -->
-                <select name="type" onchange="this.form.submit()" class="w-40 {{ $filters['type'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="type" onchange="this.form.submit()" class="w-40 {{ ($filters['type'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
                     <option value="">{{ __('tasks.type') }}</option>
-                    <option value="template" {{ $filters['type'] === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
-                    <option value="instance" {{ $filters['type'] === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
-                    <option value="plain" {{ $filters['type'] === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
+                    <option value="template" {{ ($filters['type'] ?? null) === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
+                    <option value="instance" {{ ($filters['type'] ?? null) === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
+                    <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
                 </select>
 
-                @if(collect($filters)->filter()->isNotEmpty())
+                @if(collect($filters ?? [])->filter()->isNotEmpty())
                     <a href="{{ route('teams.kanban', [$team, 'reset_filters' => 1]) }}" class="text-xs font-bold text-red-500 uppercase tracking-widest">{{ __('tasks.clear_filters') }}</a>
                 @endif
             </form>

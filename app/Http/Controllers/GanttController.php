@@ -261,23 +261,23 @@ class GanttController extends Controller
 
         $query = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
             ->whereIn('id', $uniqueIds)
-            ->when(session('hide_completed_tasks', true) && !$filters['status'], fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
-            ->when($filters['search'], function ($q, $search) {
+            ->when(session('hide_completed_tasks', true) && !($filters['status'] ?? null), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+            ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($filters['status'], fn($q, $status) => $q->where('status', $status))
-            ->when($filters['skill_id'], function ($q, $skillId) {
+            ->when($filters['status'] ?? null, fn($q, $status) => $q->where('status', $status))
+            ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
                 $q->where(function ($sq) use ($skillId) {
                     $sq->where('skill_id', $skillId)
                         ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
                 });
             })
-            ->when($filters['priority'], fn($q, $priority) => $q->where('priority', $priority))
-            ->when($filters['assigned_to'], fn($q, $assignedTo) => $q->where('assigned_user_id', $assignedTo))
-            ->when($filters['type'], function ($q, $type) {
+            ->when($filters['priority'] ?? null, fn($q, $priority) => $q->where('priority', $priority))
+            ->when($filters['assigned_to'] ?? null, fn($q, $assignedTo) => $q->where('assigned_user_id', $assignedTo))
+            ->when($filters['type'] ?? null, function ($q, $type) {
                 if ($type === 'template') {
                     $q->where('is_template', true);
                 } elseif ($type === 'instance') {

@@ -30,8 +30,8 @@ class ForumController extends Controller
             'search', 'orphaned'
         ]);
         
-        $search = $filters['search'];
-        $showOrphaned = $filters['orphaned'];
+        $search = $filters['search'] ?? null;
+        $showOrphaned = $filters['orphaned'] ?? null;
 
         $threads = $team->forumThreads()
             ->when($search, function($query) use ($search) {

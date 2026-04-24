@@ -45,14 +45,14 @@ class KanbanController extends Controller
                 $query->visibleTo($user, $isManager)
                       ->operationalForKanban($user, $team)
                       ->where('is_archived', false)
-                      ->when($filters['status'], fn($q, $s) => $q->where('status', $s))
-                      ->when($filters['priority'], fn($q, $p) => $q->where('priority', $p))
-                      ->when($filters['assigned_to'], fn($q, $a) => $q->where('assigned_user_id', $a))
-                      ->when($filters['search'], function($q, $s) {
+                      ->when($filters['status'] ?? null, fn($q, $s) => $q->where('status', $s))
+                      ->when($filters['priority'] ?? null, fn($q, $p) => $q->where('priority', $p))
+                      ->when($filters['assigned_to'] ?? null, fn($q, $a) => $q->where('assigned_user_id', $a))
+                      ->when($filters['search'] ?? null, function($q, $s) {
                           $q->where('title', 'like', "%{$s}%")
                             ->orWhere('description', 'like', "%{$s}%");
                       })
-                      ->when($filters['skill_id'], function ($q, $skillId) {
+                      ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
                           $q->where(function ($sq) use ($skillId) {
                               $sq->where('skill_id', $skillId)
                                 ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));

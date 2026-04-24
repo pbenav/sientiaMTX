@@ -168,19 +168,19 @@ class TaskController extends Controller
             'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'per_page'
         ]);
 
-        if ($filters['status']) {
+        if ($filters['status'] ?? null) {
             $query->where('status', $filters['status']);
         }
 
-        if ($filters['priority']) {
+        if ($filters['priority'] ?? null) {
             $query->where('priority', $filters['priority']);
         }
 
-        if ($filters['assigned_to']) {
+        if ($filters['assigned_to'] ?? null) {
             $query->where('assigned_user_id', $filters['assigned_to']);
         }
 
-        if ($filters['skill_id']) {
+        if ($filters['skill_id'] ?? null) {
             $skillId = $filters['skill_id'];
             $query->where(function ($q) use ($skillId) {
                 $q->where('skill_id', $skillId)
@@ -188,7 +188,7 @@ class TaskController extends Controller
             });
         }
 
-        if ($filters['type']) {
+        if ($filters['type'] ?? null) {
             if ($filters['type'] === 'template') {
                 $query->where('is_template', true);
             } elseif ($filters['type'] === 'instance') {
@@ -198,7 +198,7 @@ class TaskController extends Controller
             }
         }
 
-        if ($filters['search']) {
+        if ($filters['search'] ?? null) {
             $searchTerm = $filters['search'];
             $query->where(function($q) use ($searchTerm) {
                 $q->where('title', 'like', '%' . $searchTerm . '%')
