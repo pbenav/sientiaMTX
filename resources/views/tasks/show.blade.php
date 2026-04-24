@@ -2212,4 +2212,70 @@
     </script>
         @include('tasks.partials.import-modal-script')
     @endpush
+
+{{-- ============================================================
+     BARRA FLOTANTE DE ACCIONES RÁPIDAS
+     Aparece al hacer scroll para evitar subir al header
+     ============================================================ --}}
+<div id="task-floating-bar"
+     class="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[800]
+            flex items-center gap-2 px-4 py-2.5
+            bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl
+            border border-gray-200 dark:border-gray-700
+            rounded-2xl shadow-2xl shadow-black/10
+            transition-all duration-300 opacity-0 translate-y-4 pointer-events-none"
+     style="will-change: transform, opacity;">
+
+    {{-- Volver --}}
+    <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
+       class="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-gray-400
+              hover:text-violet-600 dark:hover:text-violet-400
+              px-3 py-1.5 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span class="hidden sm:inline">{{ __('navigation.back') ?? 'Volver' }}</span>
+    </a>
+
+    <div class="w-px h-5 bg-gray-200 dark:bg-gray-700"></div>
+
+    {{-- Título truncado --}}
+    <span class="text-xs font-black text-gray-700 dark:text-gray-300 max-w-[120px] sm:max-w-[200px] truncate">
+        {{ $task->title }}
+    </span>
+
+    @can('update', $task)
+        <div class="w-px h-5 bg-gray-200 dark:bg-gray-700"></div>
+        {{-- Editar --}}
+        <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
+           class="flex items-center gap-1.5 text-xs font-bold text-white
+                  bg-violet-600 hover:bg-violet-500
+                  px-3 py-1.5 rounded-xl transition-all shadow-sm shadow-violet-500/20 active:scale-95">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            <span class="hidden sm:inline">{{ __('tasks.edit') }}</span>
+        </a>
+    @endcan
+</div>
+
+<script>
+    (function() {
+        const bar = document.getElementById('task-floating-bar');
+        let visible = false;
+        window.addEventListener('scroll', () => {
+            const shouldShow = window.scrollY > 200;
+            if (shouldShow !== visible) {
+                visible = shouldShow;
+                if (visible) {
+                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.add('opacity-100', 'translate-y-0');
+                } else {
+                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.remove('opacity-100', 'translate-y-0');
+                }
+            }
+        }, { passive: true });
+    })();
+</script>
 </x-app-layout>
