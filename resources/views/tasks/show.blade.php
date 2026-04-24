@@ -483,13 +483,13 @@
 
                             <div class="text-right min-w-[6rem]">
                                 <div class="flex items-center justify-end gap-2 mb-1.5">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Progreso') }}</span>
+                                    <span class="text-sm font-black text-violet-600 dark:text-violet-400 tabular-nums">{{ round($prog) }}%</span>
                                     @if(!$isRoadmap && $totalInst > 1)
-                                        <span class="text-[9px] font-bold text-violet-500/70 border border-violet-200 dark:border-violet-800 rounded-lg px-2 py-0.5 bg-violet-50/50 dark:bg-violet-900/10 mr-1 animate-fade-in uppercase tracking-wider">
+                                        <span class="text-[9px] font-bold text-violet-500/70 border border-violet-200 dark:border-violet-800 rounded-lg px-2 py-0.5 bg-violet-50/50 dark:bg-violet-900/10 ml-1 animate-fade-in uppercase tracking-wider">
                                             {{ __('tasks.collaborative_hint') }}
                                         </span>
                                     @endif
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Progreso') }}</span>
-                                    <span class="text-sm font-black text-violet-600 dark:text-violet-400 tabular-nums">{{ round($prog) }}%</span>
                                 </div>
                                 <div class="w-24 bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden ml-auto">
                                     <div class="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full transition-all duration-700 ease-out"
