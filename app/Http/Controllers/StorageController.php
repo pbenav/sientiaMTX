@@ -21,16 +21,62 @@ class StorageController extends Controller
             abort(403);
         }
 
-        $stats = [
-            'telegram' => $this->getFolderStats('telegram'),
-            'attachments' => $this->getFolderStats('attachments'),
-            'total_size' => 0
-        ];
+        // Sync real disk usage for this team before displaying
+        $team->syncDiskUsed();
+        $team->refresh();
 
-        $totalBytes = $stats['telegram']['size'] + $stats['attachments']['size'];
-        $stats['total_size'] = [
-            'size' => $totalBytes,
-            'readable_size' => $this->formatBytes($totalBytes)
+        // Telegram media scoped to this team
+        $telegramMessages = TelegramMessage::where('team_id', $team->id)
+            ->whereNotNull('photo_path')
+            ->orWhere(function($q) use ($team) {
+                $q->where('team_id', $team->id)->whereNotNull('voice_path');
+            })
+            ->orWhere(function($q) use ($team) {
+                $q->where('team_id', $team->id)->whereNotNull('sticker_path');
+            })
+            ->get();
+
+        $telegramBytes = 0;
+        $telegramCount = 0;
+        foreach ($telegramMessages as $msg) {
+            $path = $msg->photo_path ?? $msg->voice_path ?? $msg->sticker_path;
+            if ($path && Storage::disk('public')->exists($path)) {
+                $telegramBytes += Storage::disk('public')->size($path);
+                $telegramCount++;
+            }
+        }
+
+        // Task attachments scoped to this team
+        $teamTaskIds = $team->tasks()->pluck('id');
+        $attachments = TaskAttachment::whereIn('attachable_id', $teamTaskIds)
+            ->where('attachable_type', \App\Models\Task::class)
+            ->where('storage_provider', '!=', 'google')
+            ->get();
+
+        $attachmentBytes = 0;
+        foreach ($attachments as $att) {
+            if ($att->file_path && Storage::disk('public')->exists($att->file_path)) {
+                $attachmentBytes += Storage::disk('public')->size($att->file_path);
+            }
+        }
+
+        $totalBytes = $telegramBytes + $attachmentBytes;
+
+        $stats = [
+            'telegram' => [
+                'count' => $telegramCount,
+                'size'  => $telegramBytes,
+                'readable_size' => $this->formatBytes($telegramBytes),
+            ],
+            'attachments' => [
+                'count' => $attachments->count(),
+                'size'  => $attachmentBytes,
+                'readable_size' => $this->formatBytes($attachmentBytes),
+            ],
+            'total_size' => [
+                'size' => $totalBytes,
+                'readable_size' => $this->formatBytes($totalBytes),
+            ],
         ];
 
         return view('teams.storage.index', compact('team', 'stats'));
