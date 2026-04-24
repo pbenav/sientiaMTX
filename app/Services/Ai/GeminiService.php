@@ -19,8 +19,8 @@ class GeminiService implements AiAssistantInterface
     protected ?string $cachedFileMime = null;
     protected ?string $cachedFileName = null;
     protected string $apiKey = '';
-    protected string $targetModel = 'gemini-1.5-flash';
-    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+    protected string $targetModel = ''; 
+    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1';
     protected array $userStats = [];
     protected $tasksContext = [];
 
@@ -52,12 +52,25 @@ class GeminiService implements AiAssistantInterface
             ->get();
 
         $keySource = "ARCHIVO .ENV / CONFIG (POR DEFECTO)";
+        $modelSource = "ESTÁTICO (POR DEFECTO)";
+
+        // 1. Obtener primero el modelo global si no hay otro
+        $globalPref = $preferences->where('team_id', null)->first();
+        if ($globalPref && $globalPref->ai_model) {
+            $this->targetModel = $globalPref->ai_model;
+            $modelSource = "BASE DE DATOS (Global)";
+        }
+
+        // 2. Buscar clave (empezando por la más específica)
         foreach ($preferences as $pref) {
-            $key = $pref->api_key; // Esto dispara el accesor con decrypt()
+            $key = $pref->api_key; 
             
             if (!empty($key)) {
                 $this->apiKey = (string) $key;
-                $this->targetModel = $pref->ai_model ?? $this->targetModel;
+                if ($pref->ai_model) {
+                    $this->targetModel = $pref->ai_model;
+                    $modelSource = "BASE DE DATOS (" . ($pref->team_id ? "Equipo {$pref->team_id}" : "Global") . ")";
+                }
                 $keySource = "BASE DE DATOS (Preferencia ID: {$pref->id}" . ($pref->team_id ? " - Equipo {$pref->team_id}" : " - Global") . ")";
                 break;
             }
@@ -65,7 +78,7 @@ class GeminiService implements AiAssistantInterface
 
         $maskedKey = $this->apiKey ? (substr($this->apiKey, 0, 4) . '....' . substr($this->apiKey, -4)) : 'VACÍA';
         Log::debug("Ax.ia: Usando clave desde {$keySource} [Key: {$maskedKey}]");
-        Log::debug("Ax.ia: Usando modelo {$this->targetModel} para el contexto " . ($teamId ? "Equipo $teamId" : "Global"));
+        Log::debug("Ax.ia: Usando modelo {$this->targetModel} [Fuente: {$modelSource}] para el contexto " . ($teamId ? "Equipo $teamId" : "Global"));
 
         $this->userStats = $user->getAiContextStats();
 
@@ -272,6 +285,7 @@ class GeminiService implements AiAssistantInterface
         }
 
         $systemInstruction = "Eres Ax.ia, el asistente de Sientia MTX. Tu nombre es de lectura obligada, pero NO debes presentarte constantemente.\n";
+        $systemInstruction .= "MODELO ACTIVO: {$this->targetModel}. Si el usuario te pregunta por los detalles técnicos de tu cerebro, dile que estás operando bajo este modelo.\n";
         $systemInstruction .= "REGLA FUNDAMENTAL: Tú SOLO te comunicas devolviendo el resultado del trabajo en formato JSON envuelto en la etiqueta [PAYLOAD]. ESTÁ ABSOLUTAMENTE PROHIBIDO que el output contenga monólogos, copias de las instrucciones, reflexiones ni ningún texto fuera del bloque [PAYLOAD]. Empezarás y terminarás directamente con el JSON.\n\n";
         $systemInstruction .= "FORMATO EXIGIDO:\n[PAYLOAD]\n{\n";
         $systemInstruction .= "  \"intent\": \"simple_text\", // Úsalo para TODO: resúmenes, traducciones, explicaciones teóricas, listados, correcciones.\n";
@@ -339,34 +353,56 @@ class GeminiService implements AiAssistantInterface
             return [];
         }
 
-        $url = "{$this->baseUrl}?key={$this->apiKey}";
+        // El listado de modelos suele ser más robusto en v1beta todavía
+        $url = "https://generativelanguage.googleapis.com/v1beta/models?key={$this->apiKey}";
+        Log::info("Ax.ia: Solicitando lista de modelos a Google desde v1beta...");
 
         try {
             $response = Http::timeout(10)->get($url);
-            if ($response->successful()) {
-                $data = $response->json();
-                $models = [];
-                $ids = [];
-                foreach ($data['models'] ?? [] as $m) {
-                    // Filter only models that support content generation
-                    if (in_array('generateContent', $m['supportedGenerationMethods'] ?? [])) {
-                        $id = str_replace('models/', '', $m['name']);
-                        $ids[] = $id;
-                        $models[] = [
-                            'id' => $id,
-                            'display_name' => $m['displayName'] ?? $m['name'],
-                            'description' => $m['description'] ?? ''
-                        ];
-                    }
-                }
-                Log::info("Ax.ia: Modelos disponibles detectados: " . implode(', ', $ids));
-                return $models;
+            
+            if (!$response->successful()) {
+                Log::error("Ax.ia: Error al listar modelos (Status: {$response->status()}): " . $response->body());
+                return [];
             }
-        } catch (\Exception $e) {
-            Log::error("Error listing Gemini models: " . $e->getMessage());
-        }
 
-        return [];
+            $data = $response->json();
+            $models = [];
+            $ids = [];
+
+            if (isset($data['models'])) {
+                foreach ($data['models'] as $m) {
+                    // Solo modelos que soporten generación de texto
+                    if (isset($m['supportedGenerationMethods']) && !in_array('generateContent', $m['supportedGenerationMethods'])) {
+                        continue;
+                    }
+
+                    // Filtramos modelos que sabemos que NO funcionan con la API estándar de generación
+                    // o que requieren arquitecturas especiales (Deep Research, Robotics, etc.)
+                    $isSpecialModel = str_contains($m['name'], 'deep-research') 
+                                   || str_contains($m['name'], 'robotics')
+                                   || str_contains($m['name'], 'computer-use')
+                                   || str_contains($m['name'], 'lyria');
+                    
+                    if ($isSpecialModel) {
+                        continue;
+                    }
+
+                    $id = str_replace('models/', '', $m['name']);
+                    $ids[] = $id;
+                    $models[] = [
+                        'id' => $id,
+                        'display_name' => $m['displayName'] ?? $id,
+                        'description' => $m['description'] ?? ''
+                    ];
+                }
+            }
+            
+            Log::info("Ax.ia: Detectados " . count($models) . " modelos: " . implode(', ', $ids));
+            return $models;
+        } catch (\Exception $e) {
+            Log::error("Ax.ia: Excepción listando modelos: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -419,81 +455,104 @@ class GeminiService implements AiAssistantInterface
         return file_get_contents($path);
     }
 
+
+
     /**
      * Helper to make the HTTP request to the Gemini API.
-     * $parts should be an array of Gemini parts (text, inline_data, etc.)
      */
     protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null): string
     {
         if (empty($this->apiKey)) {
             Log::error('Gemini API key is missing.');
-            return "Error: No se ha configurado la clave API de Gemini. Configúrala en tu perfil.";
+            return "Error: No se ha configurado la clave de Ax.ia. Por favor, ve a tu Perfil -> Integraciones y configura tu Clave API de Gemini.";
         }
 
-        // CLEANUP: Ensure model name is just the ID
-        $model = str_replace('models/', '', $model);
+        if (empty($model)) {
+            $model = 'gemini-1.5-flash';
+        }
 
-        $url = "{$this->baseUrl}/{$model}:generateContent?key={$this->apiKey}";
+        // Determinar la URL. v1 para estables, v1beta para experimentales/preview.
+        $cleanId = str_replace('models/', '', $model);
+        $finalModelPath = "models/{$cleanId}";
+        
+        $v = (str_contains($cleanId, 'preview') || str_contains($cleanId, 'deep-research')) ? 'v1beta' : 'v1';
+        $url = "https://generativelanguage.googleapis.com/{$v}/{$finalModelPath}:generateContent?key={$this->apiKey}";
 
-        $payload = [
-            'contents' => [
-                [
-                    'parts' => $parts
-                ]
-            ]
-        ];
-
+        $contents = [];
         if ($systemInstruction) {
-            $payload['system_instruction'] = [
-                'parts' => [
-                    ['text' => $systemInstruction]
-                ]
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [['text' => "NUEVA SESIÓN: " . $systemInstruction]]
+            ];
+            $contents[] = [
+                'role' => 'model',
+                'parts' => [['text' => "Entendido. Aplicaré estas directrices a partir de ahora."]]
             ];
         }
 
+        $contents[] = [
+            'role' => 'user',
+            'parts' => $parts
+        ];
+
+        $payload = ['contents' => $contents];
+
         try {
-            // Aumentamos el timeout para archivos pesados pero mantenemos el stream razonable
-            $response = Http::timeout(180)->post($url, $payload);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'La IA no devolvió ninguna respuesta.';
-            }
-
+            $response = Http::timeout(60)->post($url, $payload);
             $status = $response->status();
             $errorBody = $response->json('error') ?? [];
             $errorMsg = $errorBody['message'] ?? 'Error desconocido';
 
-            // Si es un error de Cuota (429) o Prohibido (403) con mención a cuota, intentamos el modelo LITE
-            $isQuotaError = ($status === 429 || (isset($errorBody['status']) && $errorBody['status'] === 'RESOURCE_EXHAUSTED'));
+            if ($response->successful()) {
+                return $response->json('candidates.0.content.parts.0.text') ?? 'No se recibió contenido de la IA.';
+            }
+
+            // --- Lógica de Resiliencia Total y Auto-Curación ---
             
-            if ($isQuotaError && !$isFallback) {
-                if (!str_contains($model, 'lite')) {
-                    Log::info("Cuota agotada para {$model}. Intentando fallback automático a gemini-2.0-flash-lite...");
-                    return $this->callGemini('gemini-2.0-flash-lite', $parts, true);
-                } else {
-                    // Si el Lite también falla, intentamos el 1.5 en v1beta como último recurso desesperado
-                    Log::warning("Cuota agotada incluso en LITE. Intentando v1beta/gemini-1.5-flash...");
-                    $emergencyUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$this->apiKey}";
-                    try {
-                        $fallbackResponse = Http::timeout(30)->post($emergencyUrl, ['contents' => [['parts' => $parts]]]);
-                        if ($fallbackResponse->successful()) {
-                             $data = $fallbackResponse->json();
-                             return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Respuesta obtenida con el último recurso.';
+            // Si el error indica que este modelo no sirve (por cuota, carga o esquema), buscamos otro.
+            $shouldRetryWithAlternative = ($status === 429 || $status === 503 || $status === 400 || $status === 404);
+            
+            if ($shouldRetryWithAlternative && !$isFallback) {
+                $available = $this->listAvailableModels();
+                
+                // 1. Primero probamos los candidatos "VIPS" por ser los más estables
+                $vips = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro-latest'];
+                
+                // 2. Si fallan, añadiremos el resto de modelos disponibles como "reserva"
+                $allOtherModels = array_map(fn($m) => $m['id'], $available);
+                $fullCandidateList = array_unique(array_merge($vips, $allOtherModels));
+
+                foreach ($fullCandidateList as $candidate) {
+                    if ($candidate === $cleanId) continue; // No repetir el que acaba de fallar
+                    
+                    // Verificar si el candidato está en su lista real (si no era VIP)
+                    $isAvailable = false;
+                    foreach ($available as $avail) {
+                        if ($avail['id'] === $candidate) {
+                            $isAvailable = true;
+                            break;
                         }
-                    } catch (\Exception $e) { /* ignore and fail later */ }
+                    }
+                    
+                    if ($isAvailable) {
+                        Log::warning("Ax.ia: Resiliencia activada. Probando modelo alternativo: {$candidate}...");
+                        $res = $this->callGemini($candidate, $parts, true, $systemInstruction);
+                        
+                        // Si el rescate funciona, devolvemos la respuesta inmediatamente y SIN notas
+                        if (!str_contains($res, 'Lo siento, ha ocurrido un error')) {
+                            return $res;
+                        }
+                    }
                 }
             }
 
-            if ($status === 404 && !$isFallback && $model !== 'gemini-1.5-flash') {
-                return $this->callGemini('gemini-1.5-flash', $parts, true);
-            }
-
-            return "Lo siento, ha ocurrido un error al procesar tu solicitud ({$errorMsg}).";
+            // Si llegamos aquí tras el barrido, realmente nada funciona
+            Log::error("Ax.ia: Fallo crítico absoluto tras intentar con todos los modelos. Último error: {$errorMsg}");
+            return "Lo siento, ha ocurrido un error crítico. He intentado usar todos tus modelos disponibles pero ninguno ha respondido correctamente en este momento.\n\nDetalle: `{$errorMsg}`";
 
         } catch (\Exception $e) {
             Log::error('Gemini API Exception: ' . $e->getMessage());
-            return "Lo siento, el servicio de inteligencia artificial no está disponible en este momento.";
+            return "Lo siento, el servicio de inteligencia artificial no está disponible en este momento por un error de conexión.";
         }
     }
 }

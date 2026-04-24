@@ -38,7 +38,7 @@
     updateContext() {
         const p = this.allPrefs[this.context || 'global'] || {};
         this.apiKey = p.api_key || '';
-        this.aiModel = p.ai_model || 'gemini-3-flash-preview';
+        this.aiModel = p.ai_model || '';
         this.fetchModels();
     },
 
@@ -124,12 +124,22 @@
             <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block px-1">Integraciones actuales del contexto:</label>
             
             <div class="relative">
-                <button @click="openSelector = !openSelector" type="button" class="w-full flex items-center justify-between text-left group">
-                    <span x-text="getCurrentContextName()" class="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors group-hover:text-violet-600" style="font-family: 'Space Grotesk', sans-serif"></span>
-                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-300" :class="openSelector ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
+                <div class="flex items-center gap-4 w-full">
+                    <button @click="openSelector = !openSelector" type="button" class="flex-1 flex items-center justify-between text-left group">
+                        <span x-text="getCurrentContextName()" class="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors group-hover:text-violet-600" style="font-family: 'Space Grotesk', sans-serif"></span>
+                        <svg class="w-5 h-5 text-gray-400 transition-transform duration-300" :class="openSelector ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Botón de salto directo al equipo -->
+                    <template x-if="context !== ''">
+                        <a :href="'/teams/' + context + '/time-reports'" class="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-[10px] font-black uppercase text-gray-600 dark:text-gray-400 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 transition-all flex items-center gap-2 shadow-sm shrink-0">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                            Ir al equipo
+                        </a>
+                    </template>
+                </div>
 
                 <!-- Dropdown List -->
                 <div x-show="openSelector" 
@@ -234,26 +244,29 @@
                             </span>
                         </div>
                         <select name="ai_model" x-model="aiModel" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-violet-500">
-                            <!-- Opción actual (para evitar que el navegador resetee el valor mientras carga) -->
-                            <template x-if="aiModel && !availableModels.some(m => m.id === aiModel) && !['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'].includes(aiModel)">
-                                <option :value="aiModel" x-text="'Cargando ' + aiModel + '...'" selected></option>
+                            <!-- Estado Sin Clave -->
+                            <template x-if="!apiKey">
+                                <option value="">⚠️ Primero introduce tu Clave API</option>
+                            </template>
+
+                            <!-- Estado Cargando -->
+                            <template x-if="apiKey && loadingModels">
+                                <option value="">⏳ Conectando con Google Gemini...</option>
                             </template>
 
                             <!-- Lista Dinámica (Si hay modelos detectados) -->
-                            <template x-if="availableModels.length > 0">
+                            <template x-if="apiKey && !loadingModels && availableModels.length > 0">
                                 <optgroup label="Modelos disponibles en tu cuenta">
                                     <template x-for="model in availableModels" :key="model.id">
-                                        <option :value="model.id" x-text="model.display_name"></option>
+                                        <option :value="model.id" x-text="model.display_name" :selected="aiModel === model.id"></option>
                                     </template>
                                 </optgroup>
                             </template>
 
-                            <!-- Lista de Emergencia (Siempre visible como fallback) -->
-                            <optgroup label="Era Gemini 3 (2026)">
-                                <option value="gemini-3-flash-preview">Gemini 3 Flash (Recomendado)</option>
-                                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                            </optgroup>
+                            <!-- Error o Lista Vacía -->
+                            <template x-if="apiKey && !loadingModels && availableModels.length === 0">
+                                <option value="">❌ No se encontraron modelos (Revisa tu clave)</option>
+                            </template>
                         </select>
                     </div>
                 </div>

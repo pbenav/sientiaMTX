@@ -726,7 +726,13 @@
                     }
                     
                     const data = await response.json();
-                    this.messages.push({ role: 'ai', content: data.message });
+                    const isError = data.message.includes('Lo siento, ha ocurrido un error') || data.message.includes('⚠️');
+                    
+                    this.messages.push({ 
+                        role: 'ai', 
+                        content: data.message,
+                        is_error: isError
+                    });
                     if (data.current_model) this.currentModel = data.current_model;
                     this.retryCount = 0; // Reset count on success
                 } catch (error) {
@@ -753,30 +759,117 @@
             renderMarkdown(text) {
                 if (!text) return '';
                 
-                // Format [PAYLOAD] blocks as distinct cards
-                // We encode the content to pass it safely to the onclick handler
-                let formatted = text.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
-                    const cleanContent = content.trim();
-                    
-                    return `<div class="bg-indigo-50/50 dark:bg-indigo-500/5 border-2 border-dashed border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl p-4 my-4 font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 relative group/payload shadow-inner">
-                        <span class="absolute -top-3 left-4 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest rounded-full border border-indigo-200 dark:border-indigo-800 shadow-sm">Contenido Inyectable</span>
-                        ${cleanContent.replace(/\n/g, '<br>')}
-                        <div class="mt-4 flex justify-end">
-                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(cleanContent).replace(/"/g, '&quot;')}, direct: false } }))" 
-                                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2 group/btn">
-                                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                <span>Usar este contenido</span>
-                            </button>
-                        </div>
-                    </div>`;
+                // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
+                // Si la respuesta es un JSON con "content", extraemos solo el contenido
+                let cleanText = text.trim();
+                if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
+                    try {
+                        const parsed = JSON.parse(cleanText);
+                        if (parsed.content) cleanText = parsed.content;
+                    } catch (e) {}
+                }
+
+                // 2. Extracción de [PAYLOAD] para evitar que marked los rompa
+                const payloads = [];
+                let textWithPlaceholders = cleanText.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
+                    const id = `[[[PAYLOAD_${payloads.length}]]]`;
+                    payloads.push({
+                        id: id,
+                        html: this.generatePayloadCard(content.trim())
+                    });
+                    return id;
                 });
 
-                // Use Marked for the rest
+                // 3. Renderizado de Markdown del texto restante
+                let rendered;
                 try {
-                    return marked.parse(formatted);
+                    rendered = marked.parse(textWithPlaceholders);
                 } catch (e) {
-                    console.error('Marked error:', e);
-                    return formatted.replace(/\n/g, '<br>');
+                    rendered = textWithPlaceholders.replace(/\n/g, '<br>');
+                }
+
+                // 4. Re-inyección de las tarjetas de Payload protegidas
+                payloads.forEach(p => {
+                    rendered = rendered.replace(p.id, p.html);
+                });
+
+                return rendered;
+            },
+
+            generatePayloadCard(content) {
+                return `<div class="group/payload my-6 relative transition-all duration-500">
+                    <!-- Efecto de brillo/aura de fondo -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-violet-500/20 to-indigo-500/20 rounded-[2rem] blur opacity-25 group-hover/payload:opacity-50 transition duration-1000"></div>
+                    
+                    <div class="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white dark:border-gray-800 rounded-[1.8rem] shadow-2xl shadow-indigo-500/10 overflow-hidden transition-all duration-300 group-hover/payload:translate-y-[-2px]">
+                        <!-- Cabecera de la tarjeta -->
+                        <div class="px-6 py-3 bg-gradient-to-r from-indigo-50/50 to-transparent dark:from-indigo-500/5 flex items-center justify-between border-b border-indigo-100/50 dark:border-indigo-500/10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Smart Payload</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+
+                        <!-- Contenido principal -->
+                        <div class="p-6">
+                            <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-200 leading-relaxed">
+                                ${this.renderPayloadPreview(content)}
+                            </div>
+                        </div>
+
+                        <!-- Footer con acción -->
+                        <div class="px-6 py-4 bg-gray-50/30 dark:bg-black/20 flex justify-end items-center gap-4">
+                            <span class="text-[9px] font-medium text-gray-400 dark:text-gray-500 italic hidden sm:block">Listo para inyectar en tu flujo de trabajo</span>
+                            <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(content).replace(/"/g, '&quot;')}, direct: false } }))" 
+                                    class="relative overflow-hidden px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3 group/btn">
+                                <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000"></div>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                <span>Inyectar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            },
+
+            renderPayloadPreview(content) {
+                if (!content) return '';
+                
+                // Limpiador de texto para resaltar IDs de tareas y otros patrones
+                const highlightPatterns = (text) => {
+                    if (typeof text !== 'string') return text;
+                    return text
+                        .replace(/ID\s*(\d+)/gi, '<span class="px-2 py-0.5 bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-black rounded-lg border border-violet-200 dark:border-violet-700/50 text-[10px]">#$1</span>')
+                        .replace(/Estado:\s*([^\n,)]+)/gi, 'Estado: <span class="font-bold text-indigo-600 dark:text-indigo-400">$1</span>')
+                        .replace(/Carga:\s*(\d\/\d)/gi, 'Carga: <span class="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md font-mono text-[9px] border border-amber-200 dark:border-amber-700/30">$1</span>');
+                };
+
+                // Si parece JSON, lo ponemos bonito
+                if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
+                    try {
+                        const obj = JSON.parse(content);
+                        if (obj.content && obj.intent) {
+                            return highlightPatterns(marked.parse(obj.content));
+                        }
+                        if (obj.title || obj.name) {
+                            const desc = (obj.description || obj.content || '').substring(0, 150);
+                            return `<div class="flex flex-col gap-1">
+                                <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">Entidad Detectada</span>
+                                <h4 class="text-base font-bold m-0 p-0 text-gray-900 dark:text-white leading-tight">${obj.title || obj.name}</h4>
+                                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">${highlightPatterns(marked.parse(desc))}...</div>
+                            </div>`;
+                        }
+                        return `<pre class="bg-gray-900/95 text-violet-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono">${JSON.stringify(obj, null, 4)}</pre>`;
+                    } catch (e) { /* Fallback */ }
+                }
+
+                try {
+                    return highlightPatterns(marked.parse(content));
+                } catch (e) {
+                    return highlightPatterns(content.substring(0, 250)) + '...';
                 }
             },
 
@@ -912,29 +1005,61 @@
                             const end = targetEl.selectionEnd || 0;
                             const val = targetEl.value;
                             const newVal = val.substring(0, start) + textToInject + val.substring(end);
-                            
-                            // 1. Update physical value
                             targetEl.value = newVal;
-                            
-                            // 2. Trigger events for AlpineJS / x-model
                             targetEl.dispatchEvent(new Event('input', { bubbles: true }));
                             targetEl.dispatchEvent(new Event('change', { bubbles: true }));
-                            
-                            // 3. Force Alpine sync if it's an x-model element
-                            if (window.Alpine && targetEl._x_model) {
-                                targetEl._x_model.set(newVal);
-                            }
+                            if (window.Alpine && targetEl._x_model) { targetEl._x_model.set(newVal); }
                         }
                         
-                        // Focus and Scroll to maintain context
                         targetEl.focus();
-                        if (targetEl.scrollIntoView) {
-                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
+                        if (targetEl.scrollIntoView) { targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                         
                         Swal.fire({ icon: 'success', title: '¡Inyectado!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
                     } else {
-                        Swal.fire('Atención', 'No se encontró un campo de texto activo.', 'warning');
+                        // FALLBACK AL PORTAPAPELES (Robusto con Retardo)
+                        setTimeout(() => {
+                            console.log('Ax.ia: Intentando copia al portapapeles...', textToInject);
+                            
+                            const copyFallback = (text) => {
+                                try {
+                                    if (navigator.clipboard && window.isSecureContext) {
+                                        return navigator.clipboard.writeText(text);
+                                    } else {
+                                        throw new Error('Clipboard API unavailable');
+                                    }
+                                } catch (e) {
+                                    const textArea = document.createElement("textarea");
+                                    textArea.value = text;
+                                    // Súper oculto pero funcional
+                                    textArea.style.position = "fixed";
+                                    textArea.style.left = "-200vw";
+                                    textArea.style.top = "-200vh";
+                                    document.body.prepend(textArea);
+                                    textArea.focus();
+                                    textArea.select();
+                                    try {
+                                        const successful = document.execCommand('copy');
+                                        console.log('Ax.ia: Copia tradicional exitosa?', successful);
+                                    } catch (err) {
+                                        console.error('Ax.ia: Error crítico en copia tradicional:', err);
+                                    }
+                                    document.body.removeChild(textArea);
+                                    return Promise.resolve();
+                                }
+                            };
+
+                            copyFallback(textToInject).then(() => {
+                                Swal.fire({ 
+                                    icon: 'info', 
+                                    title: 'Copiado al portapapeles', 
+                                    text: 'No había un campo activo, así que lo tienes listo para pegar (Ctrl+V).',
+                                    toast: true, 
+                                    position: 'top-end', 
+                                    timer: 5000, 
+                                    showConfirmButton: false 
+                                });
+                            });
+                        }, 150); // Pequeño retardo para dejar que SweetAlert cierre
                     }
                     return;
                 }
@@ -1023,20 +1148,49 @@
                      this.submitServerTransfer('task', rawPayload, title);
                 } 
                 else if (selectedAction === 'update') {
-                    const { value: targetField } = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-violet-600">Integración en Tarea</span>',
+                    let targetField = null;
+                    await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-violet-600">¿Dónde inyectamos en la tarea?</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color: isDark ? '#f1f5f9' : '#1e293b',
-                        input: 'radio',
-                        inputOptions: {
-                            'observations': 'Añadir a Desarrollo (Observaciones)',
-                            'description': 'Sobrescribir Resumen (Descripción)',
-                            'private_note': 'Guardar como Nota Privada'
-                        },
-                        confirmButtonText: 'Procesar',
-                        confirmButtonColor: '#7c3aed',
+                        showConfirmButton: false,
                         customClass: { popup: 'rounded-[2.5rem]' },
-                        inputValidator: (v) => !v && 'Selecciona un destino'
+                        html: `
+                            <div class="grid grid-cols-1 gap-3 p-2">
+                                <button onclick="Swal.clickConfirm()" data-val="observations" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-left">
+                                    <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Desarrollo (Observaciones)</div>
+                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Añadir al final del campo de observaciones.</div>
+                                    </div>
+                                </button>
+                                <button onclick="Swal.clickConfirm()" data-val="description" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all text-left">
+                                    <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Resumen (Descripción)</div>
+                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Sobrescribir el resumen de la tarea actual.</div>
+                                    </div>
+                                </button>
+                                <button onclick="Swal.clickConfirm()" data-val="private_note" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-all text-left">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Nota Privada</div>
+                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Solo visible para ti y coordinadores.</div>
+                                    </div>
+                                </button>
+                            </div>
+                        `,
+                        didOpen: () => {
+                            document.querySelectorAll('.ai-sub-action').forEach(btn => {
+                                btn.addEventListener('click', () => { targetField = btn.dataset.val; });
+                            });
+                        }
                     });
                     if (!targetField) return;
                     this.submitServerTransfer(targetField, rawPayload);
@@ -1045,19 +1199,40 @@
                     this.transferToTask({ content: rawPayload, direct: true });
                 }
                 else if (selectedAction === 'forum') {
-                    const { value: forumAction } = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-amber-600">Opciones de Foro</span>',
+                    let forumAction = null;
+                    await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-amber-600">Opciones para el Foro</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color: isDark ? '#f1f5f9' : '#1e293b',
-                        input: 'radio',
-                        inputOptions: {
-                            'reply': 'Publicar mensaje ahora mismo',
-                            'draft': 'Cargar en el editor para revisar'
-                        },
-                        confirmButtonText: 'Continuar',
-                        confirmButtonColor: '#d97706',
+                        showConfirmButton: false,
                         customClass: { popup: 'rounded-[2.5rem]' },
-                        inputValidator: (v) => !v && 'Selecciona una acción'
+                        html: `
+                            <div class="grid grid-cols-1 gap-3 p-2">
+                                <button onclick="Swal.clickConfirm()" data-val="reply" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Publicar Ahora</div>
+                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Enviar la respuesta al hilo directamente.</div>
+                                    </div>
+                                </button>
+                                <button onclick="Swal.clickConfirm()" data-val="draft" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-900 hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Revisar Borrador</div>
+                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Cargar en el editor para que puedas retocarlo.</div>
+                                    </div>
+                                </button>
+                            </div>
+                        `,
+                        didOpen: () => {
+                            document.querySelectorAll('.ai-sub-action').forEach(btn => {
+                                btn.addEventListener('click', () => { forumAction = btn.dataset.val; });
+                            });
+                        }
                     });
                     if (!forumAction) return;
                     

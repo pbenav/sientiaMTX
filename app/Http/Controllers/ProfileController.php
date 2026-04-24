@@ -153,7 +153,7 @@ class ProfileController extends Controller
 
         $user = $request->user();
         $apiKey = $validated['api_key'] ? trim($validated['api_key']) : null;
-        $aiModel = $validated['ai_model'] ?? 'gemini-3-flash-preview';
+        $aiModel = $validated['ai_model'] ?: 'gemini-1.5-flash';
         $applyToAll = $request->boolean('apply_to_all');
 
         \Illuminate\Support\Facades\Log::info("Ax.ia: Guardando preferencia de modelo '{$aiModel}' para usuario {$user->id} (Contexto: " . ($validated['team_id'] ?? 'global') . ", Todo: " . ($applyToAll ? 'SI' : 'NO') . ")");
