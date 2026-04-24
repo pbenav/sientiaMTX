@@ -308,8 +308,8 @@
                     return cur >= s && cur <= e && t.status !== 'completed' && t.status !== 'cancelled';
                 });
                 heat[i] = { 
-                    weight: dayT.reduce((a,t)=>a+(parseFloat(t.weight)||0),0), 
-                    uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+(parseFloat(t.weight)||0),0),
+                    weight: dayT.reduce((a,t)=>a+Math.max(1, parseFloat(t.weight)||0),0), 
+                    uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+Math.max(1, parseFloat(t.weight)||0),0),
                     count: dayT.length,
                     user_count: dayT.filter(t=>t.user_id==userId).length
                 };
