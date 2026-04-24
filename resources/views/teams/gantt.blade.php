@@ -92,12 +92,12 @@
                         <option value="{{$p}}" {{request('priority')==$p?'selected':''}}>{{__("tasks.priorities.{$p}")}}</option>
                     @endforeach
                 </select>
-                <select name="time_range" onchange="this.form.submit()" class="w-40 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
-                    <option value="all">{{ __('tasks.all_time') }}</option>
-                    <option value="1" {{ request('time_range') == '1' ? 'selected' : '' }}>1 Mes (Enfoque)</option>
-                    <option value="3" {{ request('time_range') == '3' ? 'selected' : (!request()->has('time_range') ? 'selected' : '') }}>3 Meses (Trimestre)</option>
-                    <option value="6" {{ request('time_range') == '6' ? 'selected' : '' }}>6 Meses (Semestre)</option>
-                    <option value="12" {{ request('time_range') == '12' ? 'selected' : '' }}>1 Año</option>
+                <select name="time_range" onchange="this.form.submit()" class="w-44 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer text-violet-600 dark:text-violet-400">
+                    <option value="all"   {{ request('time_range') === 'all'                                              ? 'selected' : '' }}>📅 Todo</option>
+                    <option value="1"     {{ request('time_range') === '1'                                                ? 'selected' : '' }}>🔍 1 Mes</option>
+                    <option value="3"     {{ request('time_range') === '3' || (!request()->has('time_range'))             ? 'selected' : '' }}>📆 3 Meses</option>
+                    <option value="6"     {{ request('time_range') === '6'                                                ? 'selected' : '' }}>🗓 6 Meses</option>
+                    <option value="12"    {{ request('time_range') === '12'                                               ? 'selected' : '' }}>📅 1 Año</option>
                 </select>
 
                 @if(request()->anyFilled(['search','status','priority','time_range']))
@@ -212,7 +212,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
 
     <script>
-        let gantt, allTasks = [], collapsedTasks = new Set(), currentMode = 'Week';
+        let gantt, allTasks = [], collapsedTasks = new Set();
+
+        // Sync view mode with the selected time_range
+        const timeRange = '{{ request("time_range", "3") }}';
+        let currentMode = timeRange === '1' ? 'Day' : (timeRange === 'all' || timeRange === '6' || timeRange === '12' ? 'Month' : 'Week');
+
         const tooltip = document.getElementById('gantt-tooltip');
         const dragIndicator = document.getElementById('drag-date-indicator');
 
