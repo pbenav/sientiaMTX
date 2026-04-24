@@ -11,8 +11,8 @@ Artisan::command('inspire', function () {
 // Comprueba tareas urgentes y envía notificaciones — cada 30 minutos
 Schedule::command('tasks:check-urgent')->everyThirtyMinutes();
 
-// Resumen Matutino con frase IA — comprobación horaria para respetar preferencias del usuario
-Schedule::command('morning:summary')->hourly();
+// Resumen Matutino con frase IA — comprobación horaria para respetar preferencias del usuario (solo días laborables)
+Schedule::command('morning:summary')->hourly()->weekdays();
 
 // Despierta tareas autoprogramadas que toca generar — cada día a medianoche
 Schedule::command('app:tasks-autoprogram-wakeup')->dailyAt('00:00');
