@@ -119,11 +119,33 @@
                             </div>
                         </template>
 
-                        <!-- Sticker animado (.tgs / Lottie - no reproducible nativamente) -->
+                        <!-- Sticker animado (.tgs → .json con Lottie) -->
                         <template x-if="msg.file_type === 'sticker_animated'">
-                            <div class="mb-2 flex flex-col items-center gap-1">
-                                <span class="text-5xl" title="Sticker animado (no reproducible en web)">🌀</span>
-                                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Sticker animado</span>
+                            <div class="mb-2 flex justify-center">
+                                <template x-if="msg.sticker">
+                                    <div 
+                                        class="w-32 h-32"
+                                        x-init="
+                                            $nextTick(() => {
+                                                if (typeof lottie !== 'undefined') {
+                                                    lottie.loadAnimation({
+                                                        container: $el,
+                                                        renderer: 'svg',
+                                                        loop: true,
+                                                        autoplay: true,
+                                                        path: msg.sticker
+                                                    });
+                                                }
+                                            })
+                                        "
+                                    ></div>
+                                </template>
+                                <template x-if="!msg.sticker">
+                                    <div class="py-4 text-gray-400 flex flex-col items-center">
+                                        <span class="text-4xl">🌀</span>
+                                        <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Sticker animado</span>
+                                    </div>
+                                </template>
                             </div>
                         </template>
 

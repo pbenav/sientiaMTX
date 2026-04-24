@@ -156,6 +156,16 @@ class TelegramWebhookController extends Controller
                 if ($subfolder === 'stickers') $ext = 'webp';
             }
 
+            // .tgs files are gzip-compressed Lottie JSON — decompress them so lottie-web can render them
+            if ($ext === 'tgs') {
+                $decompressed = @gzdecode($fileContent->body());
+                if ($decompressed !== false) {
+                    $localName = "telegram/{$subfolder}/" . uniqid() . '.json';
+                    \Illuminate\Support\Facades\Storage::disk('public')->put($localName, $decompressed);
+                    return $localName;
+                }
+            }
+
             $localName = "telegram/{$subfolder}/" . uniqid() . '.' . $ext;
             
             \Illuminate\Support\Facades\Storage::disk('public')->put($localName, $fileContent->body());
