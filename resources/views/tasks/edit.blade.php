@@ -33,7 +33,7 @@
         x-data="{ isDualView: false }">
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
-            <form method="POST" action="{{ route('teams.tasks.update', [$team, $task]) }}" class="space-y-6">
+            <form id="edit-task-form" method="POST" action="{{ route('teams.tasks.update', [$team, $task]) }}" class="space-y-6">
                 @csrf @method('PATCH')
 
 
@@ -1257,4 +1257,97 @@
             }
         </script>
     @endpush
+
+{{-- ============================================================
+     BARRA FLOTANTE DE ACCIONES RÁPIDAS (EDICIÓN)
+     ============================================================ --}}
+<div id="task-edit-floating-bar"
+     style="
+        position: fixed;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(1rem);
+        z-index: 800;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1rem;
+        background: rgba(255,255,255,0.93);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.15);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        white-space: nowrap;
+     "
+     class="dark:[background:rgba(17,24,39,0.93)] dark:[border-color:#374151]">
+
+    {{-- Volver --}}
+    <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
+       style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
+       onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
+       onmouseout="this.style.color='#6b7280';this.style.background='transparent'">
+        <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span>{{ __('tasks.back') ?? 'Volver' }}</span>
+    </a>
+
+    <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
+
+    {{-- Título truncado --}}
+    <span style="font-size:0.75rem;font-weight:900;color:#1f2937;max-width:200px;overflow:hidden;text-overflow:ellipsis;" class="dark:text-gray-300">
+        {{ $task->title }}
+    </span>
+
+    <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
+
+    {{-- Guardar --}}
+    <button type="button"
+            onclick="document.getElementById('edit-task-form').submit()"
+       style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#7c3aed;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
+       onmouseover="this.style.background='#6d28d9'"
+       onmouseout="this.style.background='#7c3aed'">
+        <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span>{{ __('tasks.save') ?? 'Guardar' }}</span>
+    </button>
+</div>
+
+<script>
+    (function() {
+        const bar = document.getElementById('task-edit-floating-bar');
+        let visible = false;
+
+        function updateBar(scrollY) {
+            const shouldShow = scrollY > 150;
+            if (shouldShow === visible) return;
+            visible = shouldShow;
+            if (visible) {
+                bar.style.opacity = '1';
+                bar.style.transform = 'translateX(-50%) translateY(0)';
+                bar.style.pointerEvents = 'auto';
+            } else {
+                bar.style.opacity = '0';
+                bar.style.transform = 'translateX(-50%) translateY(1rem)';
+                bar.style.pointerEvents = 'none';
+            }
+        }
+
+        // Catch scroll on any container (Universal listener with capture phase)
+        const checkScroll = (e) => {
+            const target = e.target === document ? document.documentElement : e.target;
+            const scrollY = target.scrollTop || 0;
+            // Also consider window.scrollY in case document itself is scrolling
+            const finalScroll = scrollY || window.scrollY || 0;
+            updateBar(finalScroll);
+        };
+
+        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+    })();
+</script>
 </x-app-layout>
