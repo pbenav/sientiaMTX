@@ -170,6 +170,20 @@
                         @endfor
                     </div>
                 </div>
+
+                {{-- Eje de fechas de la onda --}}
+                <div class="relative flex mt-1 mb-2 select-none" style="height:14px">
+                    @for($i=1; $i<=$daysInMonth; $i++)
+                        @php $showLabel = in_array($i, [1, 5, 10, 15, 20, 25, $daysInMonth]); @endphp
+                        <div class="flex-1 relative flex justify-center">
+                            @if($showLabel)
+                                <span class="absolute text-[8px] font-black text-gray-400 dark:text-gray-600 tabular-nums leading-none top-0 -translate-x-1/2 left-1/2">
+                                    {{ $i }}
+                                </span>
+                            @endif
+                        </div>
+                    @endfor
+                </div>
             </div>
 
             <!-- Wave Tooltip -->
