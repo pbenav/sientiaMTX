@@ -56,7 +56,7 @@ class Skill extends Model
 
     public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->belongsToMany(Task::class, 'skill_task');
     }
 
     public function scopeForTeamOrGlobal($query, $teamId)

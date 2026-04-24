@@ -7,8 +7,11 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
+use App\Traits\HandlesPersistentFilters;
+
 class GanttController extends Controller
 {
+    use HandlesPersistentFilters;
     /**
      * Show the Gantt chart view for a team
      */
@@ -35,6 +38,10 @@ class GanttController extends Controller
         $parentIds = $tasks->pluck('parent_id')->filter()->unique();
         $leafTasks = $tasks->filter(fn($t) => !$parentIds->contains($t->id));
 
+        $filters = $this->getPersistentFilters($request, 'tasks', [
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search'
+        ]);
+
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $currentDay = $startOfMonth->copy()->addDays($i - 1);
             
@@ -56,7 +63,7 @@ class GanttController extends Controller
             ];
         }
 
-        return view('teams.gantt', compact('team', 'members', 'skills', 'actionHeat', 'daysInMonth'));
+        return view('teams.gantt', compact('team', 'members', 'skills', 'actionHeat', 'daysInMonth', 'filters'));
     }
 
     public function data(Request $request, Team $team)
@@ -248,25 +255,29 @@ class GanttController extends Controller
         $uniqueIds = $ganttTaskIds->filter()->unique()->values();
 
         // Step 3: Filters
+        $filters = $this->getPersistentFilters($request, 'tasks', [
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search'
+        ]);
+
         $query = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
             ->whereIn('id', $uniqueIds)
-            ->when(session('hide_completed_tasks', true) && !$request->status, fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
-            ->when($request->search, function ($q, $search) {
+            ->when(session('hide_completed_tasks', true) && !$filters['status'], fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+            ->when($filters['search'], function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($request->status, fn($q, $status) => $q->where('status', $status))
-            ->when($request->skill_id, function ($q, $skillId) {
+            ->when($filters['status'], fn($q, $status) => $q->where('status', $status))
+            ->when($filters['skill_id'], function ($q, $skillId) {
                 $q->where(function ($sq) use ($skillId) {
                     $sq->where('skill_id', $skillId)
                         ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
                 });
             })
-            ->when($request->priority, fn($q, $priority) => $q->where('priority', $priority))
-            ->when($request->assigned_to, fn($q, $assignedTo) => $q->where('assigned_user_id', $assignedTo))
-            ->when($request->type, function ($q, $type) {
+            ->when($filters['priority'], fn($q, $priority) => $q->where('priority', $priority))
+            ->when($filters['assigned_to'], fn($q, $assignedTo) => $q->where('assigned_user_id', $assignedTo))
+            ->when($filters['type'], function ($q, $type) {
                 if ($type === 'template') {
                     $q->where('is_template', true);
                 } elseif ($type === 'instance') {

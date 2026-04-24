@@ -10,8 +10,11 @@ use App\Models\AttachmentLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
+use App\Traits\HandlesPersistentFilters;
+
 class ForumController extends Controller
 {
+    use HandlesPersistentFilters;
     /**
      * Display a listing of the resource.
      */
@@ -23,8 +26,12 @@ class ForumController extends Controller
         $userId = auth()->id();
         $isCoordinator = $team->isCoordinator(auth()->user());
 
-        $search = $request->query('search');
-        $showOrphaned = $request->query('orphaned');
+        $filters = $this->getPersistentFilters($request, 'forum', [
+            'search', 'orphaned'
+        ]);
+        
+        $search = $filters['search'];
+        $showOrphaned = $filters['orphaned'];
 
         $threads = $team->forumThreads()
             ->when($search, function($query) use ($search) {
@@ -74,7 +81,7 @@ class ForumController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('teams.forum.index', compact('team', 'threads'));
+        return view('teams.forum.index', compact('team', 'threads', 'filters'));
     }
 
     /**

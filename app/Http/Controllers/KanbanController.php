@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\DB;
 use App\Traits\AwardsGamification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
+use App\Traits\HandlesPersistentFilters;
+
 class KanbanController extends Controller
 {
-    use AuthorizesRequests, AwardsGamification;
+    use AuthorizesRequests, AwardsGamification, HandlesPersistentFilters;
 
-    public function index(Team $team)
+    public function index(Request $request, Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
@@ -33,12 +35,38 @@ class KanbanController extends Controller
                 $task->syncKanbanColumn();
             });
 
+        // --- Filters ---
+        $filters = $this->getPersistentFilters($request, 'tasks', [
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search'
+        ]);
+
         $columns = $team->kanbanColumns()
-            ->with(['tasks' => function ($query) use ($team, $user, $isManager) {
+            ->with(['tasks' => function ($query) use ($team, $user, $isManager, $filters) {
                 $query->visibleTo($user, $isManager)
                       ->operationalForKanban($user, $team)
                       ->where('is_archived', false)
-                      ->where('is_archived', false)
+                      ->when($filters['status'], fn($q, $s) => $q->where('status', $s))
+                      ->when($filters['priority'], fn($q, $p) => $q->where('priority', $p))
+                      ->when($filters['assigned_to'], fn($q, $a) => $q->where('assigned_user_id', $a))
+                      ->when($filters['search'], function($q, $s) {
+                          $q->where('title', 'like', "%{$s}%")
+                            ->orWhere('description', 'like', "%{$s}%");
+                      })
+                      ->when($filters['skill_id'], function ($q, $skillId) {
+                          $q->where(function ($sq) use ($skillId) {
+                              $sq->where('skill_id', $skillId)
+                                ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
+                          });
+                      })
+                      ->when($filters['type'], function ($q, $type) {
+                          if ($type === 'template') {
+                              $q->where('is_template', true);
+                          } elseif ($type === 'instance') {
+                              $q->where('is_template', false)->whereNotNull('parent_id');
+                          } elseif ($type === 'plain') {
+                              $q->where('is_template', false)->whereNull('parent_id');
+                          }
+                      })
                       ->orderBy('kanban_order', 'asc')
                       ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
                       ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
@@ -68,8 +96,10 @@ class KanbanController extends Controller
             ->get();
 
         $hideCompleted = session('hide_completed_tasks', true);
+        $members = $team->members;
+        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
 
-        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted'));
+        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted', 'filters', 'members', 'skills'));
     }
 
     public function update(Request $request, Team $team, Task $task)

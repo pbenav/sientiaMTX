@@ -13,9 +13,11 @@ use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskEventNotification;
 use Illuminate\Http\Request;
 
+use App\Traits\HandlesPersistentFilters;
+
 class TaskController extends Controller
 {
-    use HandlesEisenhowerMatrix, AwardsGamification, ManagesTaskDeletion;
+    use HandlesEisenhowerMatrix, AwardsGamification, ManagesTaskDeletion, HandlesPersistentFilters;
     public function copyToTeam(Request $request, Team $team, Task $task)
     {
         $request->validate([
@@ -162,39 +164,42 @@ class TaskController extends Controller
             ]);
 
         // --- Filters ---
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        $filters = $this->getPersistentFilters($request, 'tasks', [
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'per_page'
+        ]);
+
+        if ($filters['status']) {
+            $query->where('status', $filters['status']);
         }
 
-        if ($request->filled('priority')) {
-            $query->where('priority', $request->priority);
+        if ($filters['priority']) {
+            $query->where('priority', $filters['priority']);
         }
 
-        if ($request->filled('assigned_to')) {
-            $query->where('assigned_user_id', $request->assigned_to);
+        if ($filters['assigned_to']) {
+            $query->where('assigned_user_id', $filters['assigned_to']);
         }
 
-        if ($request->filled('skill_id')) {
-            $skillId = $request->skill_id;
+        if ($filters['skill_id']) {
+            $skillId = $filters['skill_id'];
             $query->where(function ($q) use ($skillId) {
                 $q->where('skill_id', $skillId)
                   ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
             });
         }
 
-        if ($request->filled('type')) {
-            if ($request->type === 'template') {
+        if ($filters['type']) {
+            if ($filters['type'] === 'template') {
                 $query->where('is_template', true);
-            } elseif ($request->type === 'instance') {
+            } elseif ($filters['type'] === 'instance') {
                 $query->where('is_template', false)->whereNotNull('parent_id');
-            } elseif ($request->type === 'plain') {
+            } elseif ($filters['type'] === 'plain') {
                 $query->where('is_template', false)->whereNull('parent_id');
             }
         }
 
-        // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
+        if ($filters['search']) {
+            $searchTerm = $filters['search'];
             $query->where(function($q) use ($searchTerm) {
                 $q->where('title', 'like', '%' . $searchTerm . '%')
                   ->orWhereHas('parent', function($pq) use ($searchTerm) {
@@ -224,12 +229,12 @@ class TaskController extends Controller
         }
 
         // --- Hide completed filter (session-based preference) ---
-        if (session('hide_completed_tasks', true) && !$request->status) {
+        if (session('hide_completed_tasks', true) && !$filters['status']) {
             $query->whereNotIn('status', ['completed', 'cancelled']);
         }
 
         // --- Pagination ---
-        $perPage = $request->get('per_page', 10);
+        $perPage = $filters['per_page'] ?? 10;
         if (!in_array($perPage, [10, 25, 50, 100, 'all'])) {
             $perPage = 10;
         }
@@ -248,7 +253,7 @@ class TaskController extends Controller
             $q->latest()->limit(5);
         }])->get();
 
-        return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted', 'skills', 'services'));
+        return view('tasks.index', compact('team', 'tasks', 'members', 'hideCompleted', 'skills', 'services', 'filters'));
     }
 
     /**

@@ -46,9 +46,9 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
-                        <input type="text" name="search" value="{{ request('search') }}"
+                        <input type="text" name="search" value="{{ $filters['search'] }}"
                             placeholder="{{ __('tasks.search') }}..."
-                            class="w-full pl-10 pr-4 py-2 {{ request('search') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                            class="w-full pl-10 pr-4 py-2 {{ $filters['search'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
                     </div>
                     <button type="submit" 
                         class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-sm transition-all flex items-center justify-center lg:hidden"
@@ -62,10 +62,10 @@
                 <!-- Status Filter -->
                 <div class="w-40">
                     <select name="status" onchange="this.form.submit()"
-                        class="w-full {{ request('status') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['status'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.status') }}</option>
                         @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
-                            <option value="{{ $status }}" {{ request('status') === $status ? 'selected' : '' }}>
+                            <option value="{{ $status }}" {{ $filters['status'] === $status ? 'selected' : '' }}>
                                 {{ __("tasks.statuses.{$status}") }}
                             </option>
                         @endforeach
@@ -75,11 +75,11 @@
                 <!-- Priority Filter -->
                 <div class="w-40">
                     <select name="priority" onchange="this.form.submit()"
-                        class="w-full {{ request('priority') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['priority'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.priority') }}</option>
                         @foreach (['low', 'medium', 'high', 'critical'] as $priority)
                             <option value="{{ $priority }}"
-                                {{ request('priority') === $priority ? 'selected' : '' }}>
+                                {{ $filters['priority'] === $priority ? 'selected' : '' }}>
                                 {{ __("tasks.priorities.{$priority}") }}
                             </option>
                         @endforeach
@@ -89,11 +89,11 @@
                 <!-- Assigned To Filter -->
                 <div class="w-48">
                     <select name="assigned_to" onchange="this.form.submit()"
-                        class="w-full {{ request('assigned_to') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['assigned_to'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.assigned_to') }}</option>
                         @foreach ($members as $member)
                             <option value="{{ $member->id }}"
-                                {{ request('assigned_to') == $member->id ? 'selected' : '' }}>
+                                {{ $filters['assigned_to'] == $member->id ? 'selected' : '' }}>
                                 {{ $member->name }}
                             </option>
                         @endforeach
@@ -103,10 +103,10 @@
                 <!-- Skill Filter -->
                 <div class="w-48">
                     <select name="skill_id" onchange="this.form.submit()"
-                        class="w-full {{ request('skill_id') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['skill_id'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
                         @foreach($skills as $skill)
-                            <option value="{{ $skill->id }}" {{ request('skill_id') == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
+                            <option value="{{ $skill->id }}" {{ $filters['skill_id'] == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -114,13 +114,13 @@
                 <!-- Type Filter -->
                 <div class="w-40">
                     <select name="type" onchange="this.form.submit()"
-                        class="w-full {{ request('type') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['type'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
                         <option value="">{{ __('tasks.type') }}</option>
-                        <option value="template" {{ request('type') === 'template' ? 'selected' : '' }}>
+                        <option value="template" {{ $filters['type'] === 'template' ? 'selected' : '' }}>
                             {{ __('tasks.template') }}</option>
-                        <option value="instance" {{ request('type') === 'instance' ? 'selected' : '' }}>
+                        <option value="instance" {{ $filters['type'] === 'instance' ? 'selected' : '' }}>
                             {{ __('tasks.subtask') }}</option>
-                        <option value="plain" {{ request('type') === 'plain' ? 'selected' : '' }}>
+                        <option value="plain" {{ $filters['type'] === 'plain' ? 'selected' : '' }}>
                             {{ __('tasks.task') }}</option>
                     </select>
                 </div>
@@ -128,17 +128,17 @@
                 <!-- Per Page -->
                 <div class="w-32">
                     <select name="per_page" onchange="this.form.submit()"
-                        class="w-full {{ request('per_page') ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
-                        <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
-                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
-                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
-                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
-                        <option value="all" {{ request('per_page') == 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Todas' }}</option>
+                        class="w-full {{ $filters['per_page'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        <option value="10" {{ ($filters['per_page'] ?? 10) == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="25" {{ $filters['per_page'] == 25 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="50" {{ $filters['per_page'] == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="100" {{ $filters['per_page'] == 100 ? 'selected' : '' }}>100 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
+                        <option value="all" {{ $filters['per_page'] == 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Todas' }}</option>
                     </select>
                 </div>
 
-                @if (request()->anyFilled(['search', 'status', 'priority', 'assigned_to', 'type', 'per_page']))
-                    <a href="{{ route('teams.tasks.index', $team) }}"
+                @if (collect($filters)->filter()->isNotEmpty())
+                    <a href="{{ route('teams.tasks.index', [$team, 'reset_filters' => 1]) }}"
                         class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
                         {{ __('tasks.clear_filters') }}
                     </a>

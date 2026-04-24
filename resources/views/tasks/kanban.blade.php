@@ -108,6 +108,56 @@
         </div>
     </x-slot>
 
+    <div class="py-4 space-y-4">
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm mx-4 xl:mx-8">
+            <form action="{{ route('teams.kanban', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
+                <div class="flex-1 min-w-[200px] relative">
+                    <input type="text" name="search" value="{{ $filters['search'] }}" placeholder="{{ __('tasks.search') }}..." class="w-full pl-4 pr-4 py-2 {{ $filters['search'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                </div>
+                <select name="status" onchange="this.form.submit()" class="w-40 {{ $filters['status'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.status') }}</option>
+                    @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
+                        <option value="{{ $status }}" {{ $filters['status'] === $status ? 'selected' : '' }}>{{ __("tasks.statuses.{$status}") }}</option>
+                    @endforeach
+                </select>
+                <select name="priority" onchange="this.form.submit()" class="w-40 {{ $filters['priority'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.priority') }}</option>
+                    @foreach(['low','medium','high','critical'] as $p)
+                        <option value="{{$p}}" {{$filters['priority']==$p?'selected':''}}>{{__("tasks.priorities.{$p}")}}</option>
+                    @endforeach
+                </select>
+
+                <!-- Assigned To -->
+                <select name="assigned_to" onchange="this.form.submit()" class="w-40 {{ $filters['assigned_to'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.assigned_to') }}</option>
+                    @foreach ($members as $member)
+                        <option value="{{ $member->id }}" {{ $filters['assigned_to'] == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
+                    @endforeach
+                </select>
+
+                <!-- Skill Filter -->
+                <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ $filters['skill_id'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
+                    @foreach($skills as $skill)
+                        <option value="{{ $skill->id }}" {{ $filters['skill_id'] == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
+                    @endforeach
+                </select>
+
+                <!-- Type Filter -->
+                <select name="type" onchange="this.form.submit()" class="w-40 {{ $filters['type'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('tasks.type') }}</option>
+                    <option value="template" {{ $filters['type'] === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
+                    <option value="instance" {{ $filters['type'] === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
+                    <option value="plain" {{ $filters['type'] === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
+                </select>
+
+                @if(collect($filters)->filter()->isNotEmpty())
+                    <a href="{{ route('teams.kanban', [$team, 'reset_filters' => 1]) }}" class="text-xs font-bold text-red-500 uppercase tracking-widest">{{ __('tasks.clear_filters') }}</a>
+                @endif
+            </form>
+        </div>
+
     @php
         $quadrantConfig = $team->getQuadrantConfig();
     @endphp
