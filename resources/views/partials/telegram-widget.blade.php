@@ -92,7 +92,7 @@
                             </div>
                         </template>
 
-                        <!-- Sticker si existe -->
+                        <!-- Sticker estático (.webp) -->
                         <template x-if="msg.file_type === 'sticker'">
                             <div class="mb-2 flex justify-center">
                                 <template x-if="msg.sticker">
@@ -102,6 +102,42 @@
                                     <div class="py-4 text-gray-400 flex flex-col items-center">
                                         <svg class="w-8 h-8 mb-1 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg>
                                         <span class="text-[9px] font-bold uppercase tracking-widest italic">Sticker no disponible</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Sticker de vídeo (.webm) -->
+                        <template x-if="msg.file_type === 'sticker_video'">
+                            <div class="mb-2 flex justify-center">
+                                <template x-if="msg.sticker">
+                                    <video :src="msg.sticker" class="w-32 h-32 object-contain" autoplay loop muted playsinline></video>
+                                </template>
+                                <template x-if="!msg.sticker">
+                                    <span class="text-4xl">🎬</span>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Sticker animado (.tgs / Lottie - no reproducible nativamente) -->
+                        <template x-if="msg.file_type === 'sticker_animated'">
+                            <div class="mb-2 flex flex-col items-center gap-1">
+                                <span class="text-5xl" title="Sticker animado (no reproducible en web)">🌀</span>
+                                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Sticker animado</span>
+                            </div>
+                        </template>
+
+                        <!-- Animación (GIF enviado como MP4) -->
+                        <template x-if="msg.file_type === 'animation'">
+                            <div class="mb-2 -mx-2 -mt-2 overflow-hidden border-b border-black/5 bg-gray-100 dark:bg-gray-900">
+                                <template x-if="msg.photo">
+                                    <video :src="msg.photo" class="w-full max-h-60 object-cover" autoplay loop muted playsinline
+                                           @click="window.open(msg.photo, '_blank')" style="cursor:pointer"></video>
+                                </template>
+                                <template x-if="!msg.photo">
+                                    <div class="py-10 flex flex-col items-center justify-center text-gray-400">
+                                        <span class="text-4xl mb-2">🎞️</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-widest">Animación purgada</span>
                                     </div>
                                 </template>
                             </div>

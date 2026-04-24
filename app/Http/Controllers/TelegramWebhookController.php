@@ -52,10 +52,23 @@ class TelegramWebhookController extends Controller
             $voiceDuration = $update['message']['voice']['duration'];
             $voicePath = $this->downloadFile($fileId, 'voice');
             $fileType = 'voice';
+        } elseif (isset($update['message']['animation'])) {
+            // GIFs sent via Telegram are actually MP4 animations
+            $fileId = $update['message']['animation']['file_id'];
+            $photoPath = $this->downloadFile($fileId, 'animations');
+            $fileType = 'animation';
         } elseif (isset($update['message']['sticker'])) {
-            $fileId = $update['message']['sticker']['file_id'];
+            $stickerData = $update['message']['sticker'];
+            $fileId = $stickerData['file_id'];
             $stickerPath = $this->downloadFile($fileId, 'stickers');
-            $fileType = 'sticker';
+            // Detect sticker type for proper frontend rendering
+            if (!empty($stickerData['is_animated'])) {
+                $fileType = 'sticker_animated'; // .tgs (Lottie JSON)
+            } elseif (!empty($stickerData['is_video'])) {
+                $fileType = 'sticker_video'; // .webm
+            } else {
+                $fileType = 'sticker'; // .webp (static)
+            }
         }
 
         // 1. Check if it's a private chat /start

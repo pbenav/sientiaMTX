@@ -22,10 +22,9 @@ class MediaController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($teamId) {
-            $query->where('attachable_type', Task::class)
-                ->whereHas('task', function($q) use ($teamId) {
-                    $q->where('team_id', $teamId);
-                });
+            $query->whereHasMorph('attachable', [Task::class], function($q) use ($teamId) {
+                $q->where('team_id', $teamId);
+            });
         }
 
         $attachments = $query->get();
