@@ -224,12 +224,12 @@
                  style="display: none; max-height: 250px;">
                 
                 <div class="flex-1 overflow-y-auto custom-scrollbar">
-                    <div class="grid grid-cols-10 gap-0.5">
+                    <div class="grid grid-cols-12 gap-0">
                         @foreach([
                             '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','👋','👌','👍','👎','👏','🙏','💪','❤️','🔥','✨','🚀','✅','❌','⚠️','💡'
                         ] as $emoji)
                             <button type="button" @click="newMessage += '{{ $emoji }}'; $refs.chatInput.focus();" 
-                                    class="text-lg hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded-lg transition-all hover:scale-125">{{ $emoji }}</button>
+                                    class="text-base hover:bg-gray-100 dark:hover:bg-gray-700 p-0.5 rounded transition-all hover:scale-125">{{ $emoji }}</button>
                         @endforeach
                     </div>
                 </div>
