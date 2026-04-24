@@ -2292,14 +2292,12 @@
             }
         }
 
-        // Listen on window scroll
-        window.addEventListener('scroll', () => updateBar(window.scrollY), { passive: true });
-
-        // Also listen on main content container (some layouts use overflow-y on a div)
-        const main = document.querySelector('main') || document.querySelector('[id*="content"]');
-        if (main) {
-            main.addEventListener('scroll', () => updateBar(main.scrollTop), { passive: true });
-        }
+        // The app uses #mainContent as the scroll container
+        const scroller = document.getElementById('mainContent') || window;
+        scroller.addEventListener('scroll', () => {
+            const scrollY = scroller === window ? window.scrollY : scroller.scrollTop;
+            updateBar(scrollY);
+        }, { passive: true });
     })();
 </script>
 </x-app-layout>
