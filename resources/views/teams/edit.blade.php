@@ -105,6 +105,28 @@
                                     <x-input-error :messages="$errors->get('telegram_chat_id')" class="mt-2" />
                                 </div>
                             </div>
+
+                            @if(auth()->user()->is_admin)
+                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span class="p-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414a1 1 0 00-.707-.293H4" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Mantenimiento (Admin)') }}</h3>
+                                </div>
+                                
+                                <div>
+                                    <x-input-label for="disk_quota_gb" :value="__('Cuota de Almacenamiento (GB)')"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                    <x-text-input id="disk_quota_gb" name="disk_quota_gb" type="number" step="0.1" min="0.1" class="block w-full font-bold bg-white dark:bg-gray-800"
+                                        :value="old('disk_quota_gb', $team->disk_quota / 1024 / 1024 / 1024)" />
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Define el límite máximo de archivos que este equipo puede alojar.</p>
+                                    <x-input-error :messages="$errors->get('disk_quota_gb')" class="mt-2" />
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
 

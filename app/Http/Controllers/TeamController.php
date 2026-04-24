@@ -136,12 +136,22 @@ class TeamController extends Controller
     {
         $this->authorize('update', $team);
 
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
             'description' => 'nullable|string|max:1000',
             'telegram_chat_id' => 'nullable|string|max:255',
             'settings' => 'nullable|array',
-        ]);
+        ];
+
+        if (auth()->user()->is_admin) {
+            $rules['disk_quota_gb'] = 'required|numeric|min:0.1';
+        }
+
+        $validated = $request->validate($rules);
+
+        if (auth()->user()->is_admin && $request->has('disk_quota_gb')) {
+            $validated['disk_quota'] = (int)($request->disk_quota_gb * 1024 * 1024 * 1024);
+        }
 
         $validated['slug'] = str($validated['name'])->slug();
 

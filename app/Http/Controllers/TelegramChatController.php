@@ -13,11 +13,12 @@ class TelegramChatController extends Controller
     /**
      * Enviar un mensaje desde la web al grupo de Telegram del equipo.
      */
-    public function sendMessage(Request $request)
+     public function sendMessage(Request $request)
     {
         $request->validate([
             'message' => 'nullable|string|max:1000',
             'photo' => 'nullable|image|max:5120', // Max 5MB
+            'voice' => 'nullable|mimes:ogg,webm,mp3,wav|max:5120', // Max 5MB
             'team_id' => 'required|exists:teams,id',
         ]);
 
@@ -25,6 +26,7 @@ class TelegramChatController extends Controller
         $team = Team::findOrFail($request->team_id);
         $text = $request->input('message') ?? '';
         $photo = $request->file('photo');
+        $voice = $request->file('voice');
         
         $chatId = $team->telegram_chat_id;
 
@@ -38,9 +40,17 @@ class TelegramChatController extends Controller
 
         try {
             $photoPath = null;
+            $voicePath = null;
+            $voiceDuration = null;
+            $fileType = 'text';
+
             if ($photo) {
-                // Si mandamos foto, el texto es opcional (caption)
-                $photoPath = $photo->store('telegram_photos', 'public');
+                $photoPath = $photo->store('telegram/photos', 'public');
+                $fileType = 'photo';
+            } elseif ($voice) {
+                $voicePath = $voice->store('telegram/voice', 'public');
+                $fileType = 'voice';
+                // Note: duration could be calculated here if needed, but we'll leave it as null for web-sent voices for now
             } elseif (!$text) {
                 return response()->json(['error' => 'Mensaje vacío'], 422);
             }
@@ -52,6 +62,8 @@ class TelegramChatController extends Controller
                 'author_name' => $user->name,
                 'text' => $text,
                 'photo_path' => $photoPath,
+                'voice_path' => $voicePath,
+                'file_type' => $fileType,
                 'is_from_web' => true,
             ]);
 
@@ -62,6 +74,14 @@ class TelegramChatController extends Controller
                 $response = Http::attach(
                     'photo', file_get_contents($photo->getRealPath()), $photo->getClientOriginalName()
                 )->post("https://api.telegram.org/bot{$token}/sendPhoto", [
+                    'chat_id' => $chatId,
+                    'caption' => $caption,
+                    'parse_mode' => 'Markdown',
+                ]);
+            } elseif ($voice) {
+                $response = Http::attach(
+                    'voice', file_get_contents($voice->getRealPath()), $voice->getClientOriginalName()
+                )->post("https://api.telegram.org/bot{$token}/sendVoice", [
                     'chat_id' => $chatId,
                     'caption' => $caption,
                     'parse_mode' => 'Markdown',
@@ -87,6 +107,9 @@ class TelegramChatController extends Controller
                         'from_me' => true,
                         'time' => $localMsg->created_at->format('H:i'),
                         'photo' => $localMsg->photo_url,
+                        'voice' => $localMsg->voice_url,
+                        'sticker' => $localMsg->sticker_url,
+                        'file_type' => $localMsg->file_type,
                     ]
                 ]);
             }
@@ -136,6 +159,9 @@ class TelegramChatController extends Controller
                     'from_me' => $msg->user_id === auth()->id() && $msg->is_from_web,
                     'time' => $msg->created_at->format('H:i'),
                     'photo' => $msg->photo_url,
+                    'voice' => $msg->voice_url,
+                    'sticker' => $msg->sticker_url,
+                    'file_type' => $msg->file_type,
                 ];
             });
 

@@ -2,10 +2,61 @@
     @section('title', __('tasks.disk_quota'))
 
     <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                {{ __('tasks.disk_quota') }}
-            </h1>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
+                    {{ __('tasks.disk_quota') }}
+                </h1>
+            </div>
+
+            @if(auth()->user()->is_admin || $teams->isNotEmpty())
+                <div class="flex items-center gap-2">
+                    @if($teamId && ($currentTeam = $teams->find($teamId)))
+                        @if(auth()->user()->is_admin || auth()->user()->getRole($currentTeam) === 'coordinator')
+                            <a href="{{ route('teams.storage.index', $currentTeam) }}" 
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-600/20 active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                {{ __('Mantenimiento del Equipo') }}
+                            </a>
+                        @endif
+                    @elseif(auth()->user()->is_admin || $teams->isNotEmpty())
+                        {{-- Selector rápido de mantenimiento si no hay equipo filtrado --}}
+                        <x-dropdown align="right" width="64">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 border border-gray-200 dark:border-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    {{ __('Mantenimiento por Equipo') }}
+                                    <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                <div class="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800 mb-1">
+                                    {{ __('Seleccionar Equipo') }}
+                                </div>
+                                <div class="max-h-64 overflow-y-auto">
+                                    @foreach($teams as $team)
+                                        @if(auth()->user()->is_admin || auth()->user()->getRole($team) === 'coordinator')
+                                            <x-dropdown-link :href="route('teams.storage.index', $team)">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <span class="font-bold">{{ $team->name }}</span>
+                                                    <span class="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter">Limpieza</span>
+                                                </div>
+                                            </x-dropdown-link>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </x-slot>
+                        </x-dropdown>
+                    @endif
+                </div>
+            @endif
         </div>
     </x-slot>
 
@@ -134,7 +185,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         @if ($file->task)
-                                            <a href="{{ route('teams.tasks.show', [$file->task->team_id, $file->task_id]) }}"
+                                            <a href="{{ route('teams.tasks.show', [$file->task->team_id, $file->task]) }}"
                                                 class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
                                                 {{ $file->task->title }}
                                             </a>
@@ -161,7 +212,7 @@
                                                     fileId: {{ $file->id }},
                                                     fileUrl: '{{ $file->storage_provider === 'google' ? $file->web_view_link : route('teams.attachments.view', [$file->task?->team_id ?? 0, $file]) }}',
                                                     fileType: '{{ $file->mime_type }}',
-                                                    taskId: {{ $file->task_id ?: 'null' }},
+                                                    taskId: {{ $file->attachable_type === 'App\\Models\\Task' ? $file->attachable_id : 'null' }},
                                                     autoSubmit: false 
                                                 })"
                                                 class="p-2 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"

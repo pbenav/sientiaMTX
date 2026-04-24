@@ -22,11 +22,15 @@ class Team extends Model
         'created_by_id',
         'quadrant_colors',
         'settings',
+        'disk_quota',
+        'disk_used',
     ];
 
     protected $casts = [
         'quadrant_colors' => 'array',
         'settings' => 'array',
+        'disk_quota' => 'integer',
+        'disk_used' => 'integer',
     ];
 
     protected static function boot(): void
@@ -189,5 +193,82 @@ class Team extends Model
             $b = hexdec(substr($hex, 4, 2));
         }
         return "rgba($r, $g, $b, $alpha)";
+    }
+
+    /**
+     * Check if team has enough quota for a new file.
+     */
+    public function hasAvailableQuota(int $bytes): bool
+    {
+        return ($this->disk_used + $bytes) <= $this->disk_quota;
+    }
+
+    /**
+     * Get disk usage as percentage (0-100)
+     */
+    public function getDiskUsagePercentageAttribute(): int
+    {
+        if ($this->disk_quota <= 0) return 0;
+        return (int) min(100, round(($this->disk_used / $this->disk_quota) * 100));
+    }
+
+    /**
+     * Sync the disk_used field based on actual attachments.
+     */
+    public function syncDiskUsed(): void
+    {
+        // 1. Calculate task attachments size
+        $taskIds = $this->tasks()->pluck('id');
+        $taskSize = TaskAttachment::where('attachable_type', Task::class)
+            ->whereIn('attachable_id', $taskIds)
+            ->sum('file_size');
+
+        // 2. Calculate forum attachments size
+        $threadIds = $this->forumThreads()->pluck('id');
+        $messageIds = ForumMessage::whereIn('forum_thread_id', $threadIds)->pluck('id');
+        
+        $forumSize = TaskAttachment::where('attachable_type', ForumMessage::class)
+            ->whereIn('attachable_id', $messageIds)
+            ->sum('file_size');
+
+        // 3. Calculate telegram media size
+        $telegramSize = TelegramMessage::where('team_id', $this->id)
+            ->get()
+            ->sum(function($msg) {
+                if ($msg->file_size > 0) return $msg->file_size;
+                
+                // Fallback: check physical disk for old messages
+                $path = $msg->photo_path ?: ($msg->voice_path ?: $msg->sticker_path);
+                if ($path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                    $size = \Illuminate\Support\Facades\Storage::disk('public')->size($path);
+                    // Update database to avoid re-checking disk
+                    $msg->update(['file_size' => $size]);
+                    return $size;
+                }
+                return 0;
+            });
+
+        $this->update(['disk_used' => (int)($taskSize + $forumSize + $telegramSize)]);
+        
+        $this->checkStorageAlerts();
+    }
+
+    /**
+     * Check usage and notify coordinators if threshold is reached.
+     */
+    public function checkStorageAlerts(): void
+    {
+        $percentage = $this->disk_usage_percentage;
+        
+        if ($percentage >= 90) {
+            $coordinators = $this->coordinators;
+            
+            if ($coordinators->isNotEmpty()) {
+                \Illuminate\Support\Facades\Notification::send(
+                    $coordinators, 
+                    new \App\Notifications\TeamStorageLimitReached($this, $percentage)
+                );
+            }
+        }
     }
 }

@@ -123,6 +123,18 @@
                 </x-slot>
             </x-dropdown>
         @endif
+
+        <!-- Mantenimiento de Almacenamiento -->
+        @if(auth()->user()->is_admin || $team->isCoordinator(auth()->user()))
+            <a href="{{ route('teams.storage.index', $team) }}" 
+               class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 active:scale-95 shadow-sm"
+               title="Gestión de espacio y purga de archivos">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span class="hidden sm:inline">Mantenimiento</span>
+            </a>
+        @endif
     </div>
 
     @include('tasks.partials.import-modal-script')

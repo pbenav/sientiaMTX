@@ -376,6 +376,12 @@ class TaskController extends Controller
 
         // Handle Local Attachments
         if ($request->hasFile('attachments')) {
+            $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
+            
+            if (!$team->hasAvailableQuota($totalUploadSize)) {
+                return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento. Libera espacio para subir más archivos.']);
+            }
+
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('attachments', 'public');
                 $originalName = $file->getClientOriginalName();

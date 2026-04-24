@@ -17,6 +17,7 @@ return [
     'status' => 'Estado',
     'assigned_to' => 'Asignado a',
     'unassigned' => 'Pendiente de asignación',
+    'assigned' => 'Asignado',
     'template' => 'Plantilla',
     'subtask' => 'Subtarea',
     'parent_task' => 'Tarea principal',

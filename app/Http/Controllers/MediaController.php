@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TaskAttachment;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,9 +22,10 @@ class MediaController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($teamId) {
-            $query->whereHas('task', function($q) use ($teamId) {
-                $q->where('team_id', $teamId);
-            });
+            $query->where('attachable_type', Task::class)
+                ->whereHas('task', function($q) use ($teamId) {
+                    $q->where('team_id', $teamId);
+                });
         }
 
         $attachments = $query->get();

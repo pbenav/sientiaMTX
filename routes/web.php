@@ -90,6 +90,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamController::class, 'removeInvitation'])->name('teams.invitations.destroy');
     Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');
 
+    // Storage Management
+    Route::get('/teams/{team}/storage', [\App\Http\Controllers\StorageController::class, 'index'])->name('teams.storage.index');
+    Route::post('/teams/{team}/storage/purge', [\App\Http\Controllers\StorageController::class, 'purge'])->name('teams.storage.purge');
+
     // Groups routes
     Route::post('/teams/{team}/groups', [GroupController::class, 'store'])->name('teams.groups.store');
     Route::patch('/teams/{team}/groups/{group}', [GroupController::class, 'update'])->name('teams.groups.update');

@@ -1179,7 +1179,13 @@
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div
                                         class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm border shrink-0 {{ $attachment->storage_provider === 'google' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : ($isFromParent ? 'bg-indigo-50 dark:bg-gray-800 text-indigo-500 border-gray-100 dark:border-gray-700' : 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 border-gray-100 dark:border-gray-700') }}">
-                                        @if($attachment->storage_provider === 'google')
+                                        @if(!$attachment->exists)
+                                            <div class="text-red-500/50">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                            </div>
+                                        @elseif($attachment->storage_provider === 'google')
                                             <svg class="w-6 h-6" viewBox="0 0 48 48">
                                                 <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
                                                 <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
@@ -1197,7 +1203,9 @@
                                     <div class="min-w-0">
                                         <p class="text-[12px] font-bold text-gray-800 dark:text-white truncate"
                                             title="{{ $attachment->file_name }}">
-                                            @if($attachment->storage_provider === 'google' && $attachment->web_view_link)
+                                            @if(!$attachment->exists)
+                                                <span class="text-gray-400 line-through decoration-red-500/30">{{ $attachment->file_name }}</span>
+                                            @elseif($attachment->storage_provider === 'google' && $attachment->web_view_link)
                                                 <a href="{{ $attachment->web_view_link }}" 
                                                    target="_blank" 
                                                    class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1">
@@ -1213,7 +1221,9 @@
                                             @endif
                                         </p>
                                         <p class="text-[10px] text-gray-400 flex items-center gap-1.5">
-                                            @if($attachment->storage_provider === 'google')
+                                            @if(!$attachment->exists)
+                                                <span class="text-red-500/70 font-bold uppercase tracking-tighter">{{ __('Archivo Purgado') }}</span>
+                                            @elseif($attachment->storage_provider === 'google')
                                                 <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 rounded font-black uppercase text-[8px]">Google Drive</span>
                                             @else
                                                 {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB

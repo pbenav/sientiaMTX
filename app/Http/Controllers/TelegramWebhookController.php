@@ -36,10 +36,26 @@ class TelegramWebhookController extends Controller
         $lastName = $from['last_name'] ?? '';
         $authorName = trim($firstName . ' ' . $lastName);
 
-        // Handle Photo
+        // Handle Media
         $photoPath = null;
+        $voicePath = null;
+        $voiceDuration = null;
+        $stickerPath = null;
+        $fileType = 'text';
+
         if (isset($update['message']['photo'])) {
-            $photoPath = $this->downloadPhoto($update['message']['photo']);
+            $fileId = end($update['message']['photo'])['file_id'];
+            $photoPath = $this->downloadFile($fileId, 'photos');
+            $fileType = 'photo';
+        } elseif (isset($update['message']['voice'])) {
+            $fileId = $update['message']['voice']['file_id'];
+            $voiceDuration = $update['message']['voice']['duration'];
+            $voicePath = $this->downloadFile($fileId, 'voice');
+            $fileType = 'voice';
+        } elseif (isset($update['message']['sticker'])) {
+            $fileId = $update['message']['sticker']['file_id'];
+            $stickerPath = $this->downloadFile($fileId, 'stickers');
+            $fileType = 'sticker';
         }
 
         // 1. Check if it's a private chat /start
@@ -58,46 +74,82 @@ class TelegramWebhookController extends Controller
 
         // 3. Handle messages from groups that are already linked to a team
         $team = \App\Models\Team::where('telegram_chat_id', $chatId)->first();
-        if ($team) {
-            \App\Models\TelegramMessage::create([
-                'team_id' => $team->id,
-                'author_name' => $authorName,
-                'text' => $text,
-                'photo_path' => $photoPath,
-                'telegram_message_id' => $messageId,
-                'is_from_web' => false,
-            ]);
+        if ($team && $messageId) {
+            // Check if we already have this message
+            $existing = \App\Models\TelegramMessage::where('telegram_message_id', $messageId)->first();
+            if (!$existing) {
+                $fileSize = 0;
+                
+                // If there's media, check if we have space before downloading
+                if ($photoPath || $voicePath || $stickerPath) {
+                    $path = $photoPath ?: ($voicePath ?: $stickerPath);
+                    if ($path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                        $fileSize = \Illuminate\Support\Facades\Storage::disk('public')->size($path);
+                    }
+                }
+
+                // SECURITY/QUOTA: If team is over limit, we don't save more media
+                if ($fileSize > 0 && !$team->hasAvailableQuota($fileSize)) {
+                    // Delete the physical file we just downloaded temporarily (or prevent download if we knew the size)
+                    if ($photoPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($photoPath); $photoPath = null; }
+                    if ($voicePath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($voicePath); $voicePath = null; }
+                    if ($stickerPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($stickerPath); $stickerPath = null; }
+                    
+                    $this->sendMessage($chatId, "⚠️ *¡ATENCIÓN!* El espacio de almacenamiento de vuestro equipo en Sientia MTX está *AGOTADO*.\n\nNo se ha podido guardar la imagen/audio. Avisad a un *Coordinador* para que realice una limpieza desde el Gestor de Disco.");
+                    $fileSize = 0;
+                    $fileType = 'text (storage full)';
+                }
+
+                \App\Models\TelegramMessage::create([
+                    'team_id' => $team->id,
+                    'author_name' => $authorName,
+                    'text' => $text,
+                    'photo_path' => $photoPath,
+                    'voice_path' => $voicePath,
+                    'voice_duration' => $voiceDuration,
+                    'sticker_path' => $stickerPath,
+                    'file_type' => $fileType,
+                    'telegram_message_id' => $messageId,
+                    'is_from_web' => false,
+                    'file_size' => $fileSize,
+                ]);
+            }
         }
 
         return response()->json(['status' => 'success']);
     }
 
     /**
-     * Download photo from Telegram.
+     * Download file from Telegram.
      */
-    protected function downloadPhoto($photoArray): ?string
+    protected function downloadFile($fileId, $subfolder): ?string
     {
         try {
             $token = config('services.telegram.bot_token');
-            // Take the largest version
-            $fileId = end($photoArray)['file_id'];
             
             $fileResponse = Http::get("https://api.telegram.org/bot{$token}/getFile", ['file_id' => $fileId]);
             if (!$fileResponse->successful()) return null;
             
-            $filePath = $fileResponse->json()['result']['file_path'];
+            $filePath = $fileResponse->json()['result']['file_path'] ?? null;
+            if (!$filePath) return null;
+
             $fileContent = Http::get("https://api.telegram.org/file/bot{$token}/{$filePath}");
             
             if (!$fileContent->successful()) return null;
 
             $ext = pathinfo($filePath, PATHINFO_EXTENSION);
-            $localName = 'telegram/photos/' . uniqid() . '.' . $ext;
+            if (!$ext) {
+                if ($subfolder === 'voice') $ext = 'ogg';
+                if ($subfolder === 'stickers') $ext = 'webp';
+            }
+
+            $localName = "telegram/{$subfolder}/" . uniqid() . '.' . $ext;
             
             \Illuminate\Support\Facades\Storage::disk('public')->put($localName, $fileContent->body());
             
             return $localName;
         } catch (\Exception $e) {
-            Log::error("Error downloading Telegram photo: " . $e->getMessage());
+            Log::error("Error downloading Telegram file ({$subfolder}): " . $e->getMessage());
             return null;
         }
     }

@@ -77,10 +77,52 @@
                         <span x-show="!msg.from_me" class="block text-[10px] font-bold mb-1 uppercase tracking-tight opacity-70" x-text="msg.author"></span>
                         
                         <!-- Imagen si existe -->
-                        <template x-if="msg.photo">
+                        <template x-if="msg.file_type === 'photo'">
                             <div class="mb-2 -mx-2 -mt-2 overflow-hidden border-b border-black/5 bg-gray-100 dark:bg-gray-900">
-                                <img :src="msg.photo" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:scale-105 transition-transform duration-300" 
-                                     @click="window.open(msg.photo, '_blank')">
+                                <template x-if="msg.photo">
+                                    <img :src="msg.photo" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:scale-105 transition-transform duration-300" 
+                                         @click="window.open(msg.photo, '_blank')">
+                                </template>
+                                <template x-if="!msg.photo">
+                                    <div class="py-10 flex flex-col items-center justify-center text-gray-400">
+                                        <svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2"/></svg>
+                                        <span class="text-[10px] font-bold uppercase tracking-widest">Imagen purgada</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Sticker si existe -->
+                        <template x-if="msg.file_type === 'sticker'">
+                            <div class="mb-2 flex justify-center">
+                                <template x-if="msg.sticker">
+                                    <img :src="msg.sticker" class="w-32 h-32 object-contain" :title="msg.text">
+                                </template>
+                                <template x-if="!msg.sticker">
+                                    <div class="py-4 text-gray-400 flex flex-col items-center">
+                                        <svg class="w-8 h-8 mb-1 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg>
+                                        <span class="text-[9px] font-bold uppercase tracking-widest italic">Sticker no disponible</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Audio si existe -->
+                        <template x-if="msg.file_type === 'voice'">
+                            <div class="mb-2 py-2 px-1 bg-black/5 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5">
+                                <div class="flex items-center gap-2 mb-1 px-1">
+                                    <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2.5"/></svg>
+                                    <span class="text-[9px] font-bold uppercase tracking-widest opacity-60">Mensaje de voz</span>
+                                </div>
+                                <template x-if="msg.voice">
+                                    <audio controls class="w-full h-8" :src="msg.voice"></audio>
+                                </template>
+                                <template x-if="!msg.voice">
+                                    <div class="flex items-center gap-2 py-1 px-2 border-t border-black/5 mt-1">
+                                        <svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2"/></svg>
+                                        <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Fichero purgado</span>
+                                    </div>
+                                </template>
                             </div>
                         </template>
 
@@ -117,7 +159,7 @@
         <form @submit.prevent="send()" class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 relative" x-data="{ showEmojis: false }">
             <!-- Emoji Picker -->
             <div x-show="showEmojis" @click.outside="showEmojis = false"
-                 class="absolute bottom-20 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl p-4 z-50 origin-bottom flex flex-col"
+                 class="absolute bottom-24 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl p-4 z-50 origin-bottom flex flex-col"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0 translate-y-2 scale-95"
                  x-transition:enter-end="opacity-100 translate-y-0 scale-100"
@@ -139,19 +181,39 @@
             </div>
             
             <div class="relative flex items-center gap-2">
-                <button type="button" @click="showEmojis = !showEmojis" :disabled="!teamId"
-                        class="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors disabled:opacity-50"
-                        title="Emojis">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </button>
+                <!-- Voice/Emoji Toggle -->
+                <div class="flex items-center gap-1">
+                    <button type="button" @click="showEmojis = !showEmojis" :disabled="!teamId || isRecording"
+                            class="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors disabled:opacity-50"
+                            title="Emojis">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </button>
+
+                    <!-- Voice Recorder Button -->
+                    <button type="button" @click="toggleRecording()" :disabled="!teamId"
+                            class="p-2 transition-all duration-300 relative group flex items-center justify-center rounded-xl"
+                            :class="isRecording ? 'bg-red-50 text-red-500 dark:bg-red-900/30' : 'text-gray-400 hover:text-rose-500 dark:hover:text-rose-400'"
+                            title="Enviar audio">
+                        <svg x-show="!isRecording" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                        <div x-show="isRecording" class="flex items-center gap-1">
+                            <span class="flex h-1.5 w-1.5 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                            </span>
+                            <span class="text-[9px] font-black font-mono" x-text="formatTime(recordingTime)"></span>
+                        </div>
+                    </button>
+                </div>
+
                 <div class="relative flex-1">
-                    <input x-ref="chatInput" x-model="newMessage" 
+                    <textarea x-ref="chatInput" x-model="newMessage" 
                            @paste="handlePaste($event)"
-                           type="text" 
-                           :placeholder="editingId ? 'Editando mensaje...' : 'Escribe un mensaje...'"
-                           :disabled="!teamId"
+                           @keydown.enter.prevent="if(!$event.shiftKey) send()"
+                           rows="2"
+                           :placeholder="isRecording ? 'Grabando audio...' : (editingId ? 'Editando mensaje...' : 'Escribe un mensaje...')"
+                           :disabled="!teamId || isRecording"
                            :class="editingId ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'bg-gray-100 dark:bg-gray-800 border-none'"
-                           class="w-full rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                           class="w-full rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-inner resize-none min-h-[45px] max-h-[120px] custom-scrollbar"></textarea>
                     
                     <!-- Preview of pending photo -->
                     <template x-if="pendingPhoto">
@@ -166,6 +228,19 @@
                         </div>
                     </template>
 
+                    <!-- Preview of pending voice -->
+                    <template x-if="pendingVoice">
+                        <div class="absolute bottom-full mb-3 left-0 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-2xl border border-rose-100 dark:border-rose-900/50 flex flex-col gap-2 min-w-[180px]">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-black uppercase text-rose-500 tracking-widest">Audio grabado</span>
+                                <button type="button" @click="pendingVoice = null; voicePreviewUrl = null" class="text-gray-400 hover:text-red-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </div>
+                            <audio controls class="w-full h-8" :src="voicePreviewUrl"></audio>
+                        </div>
+                    </template>
+
                     <!-- Cancel Edit Button -->
                     <template x-if="editingId">
                         <button type="button" @click="cancelEdit()" 
@@ -175,11 +250,11 @@
                     </template>
                 </div>
                 <button type="submit" 
-                        :disabled="(!newMessage.trim() && !pendingPhoto) || !teamId"
+                        :disabled="(!newMessage.trim() && !pendingPhoto && !pendingVoice) || !teamId || isRecording"
                         :class="editingId ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-500/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/30'"
-                        class="p-2.5 text-white rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed">
-                    <svg x-show="!editingId" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                    <svg x-show="editingId" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        class="p-2.5 sm:p-3 text-white rounded-xl sm:rounded-2xl shadow-lg transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed active:scale-95">
+                    <svg x-show="!editingId" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    <svg x-show="editingId" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 </button>
             </div>
             <p class="text-[9px] text-gray-400 mt-2 text-center">Conectado vía @SientiaBot</p>
@@ -232,6 +307,15 @@
             previewUrl: null,
             editingId: null,
             
+            // Voice Recording
+            isRecording: false,
+            recordingTime: 0,
+            recordingInterval: null,
+            mediaRecorder: null,
+            audioChunks: [],
+            pendingVoice: null,
+            voicePreviewUrl: null,
+
             pos: { x: 0, y: 0 },
             bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
             isDragging: false,
@@ -245,6 +329,59 @@
             },
             isResizing: false,
             
+            async toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    await this.startRecording();
+                }
+            },
+
+            async startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.audioChunks = [];
+
+                    this.mediaRecorder.ondataavailable = (e) => {
+                        this.audioChunks.push(e.data);
+                    };
+
+                    this.mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                        this.pendingVoice = new File([audioBlob], `voice_${new Date().getTime()}.webm`, { type: 'audio/webm' });
+                        this.voicePreviewUrl = URL.createObjectURL(audioBlob);
+                        
+                        // Stop all tracks to release mic
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    this.recordingTime = 0;
+                    this.recordingInterval = setInterval(() => {
+                        this.recordingTime++;
+                    }, 1000);
+                } catch (err) {
+                    console.error("No se pudo acceder al micrófono:", err);
+                    alert("Error: No se pudo acceder al micrófono.");
+                }
+            },
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    clearInterval(this.recordingInterval);
+                }
+            },
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            },
+
             startResize(e) {
                 this.isResizing = true;
                 const event = e.type.includes('touch') ? e.touches[0] : e;
@@ -416,7 +553,7 @@
                 }
             },
             async send() {
-                if ((!this.newMessage.trim() && !this.pendingPhoto) || !this.teamId) return;
+                if ((!this.newMessage.trim() && !this.pendingPhoto && !this.pendingVoice) || !this.teamId) return;
                 
                 if (this.editingId) {
                     await this.updateMsg();
@@ -429,10 +566,15 @@
                 if (this.pendingPhoto) {
                     formData.append('photo', this.pendingPhoto);
                 }
+                if (this.pendingVoice) {
+                    formData.append('voice', this.pendingVoice);
+                }
 
                 this.newMessage = '';
                 this.pendingPhoto = null;
                 this.previewUrl = null;
+                this.pendingVoice = null;
+                this.voicePreviewUrl = null;
                 
                 try {
                     const response = await fetch('{{ route('telegram.chat.send') }}', {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Task;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,6 +26,49 @@ class TaskAttachment extends Model
         return $this->morphTo();
     }
 
+    protected static function booted()
+    {
+        static::created(function ($attachment) {
+            $team = $attachment->getTeam();
+            if ($team) {
+                $team->increment('disk_used', $attachment->file_size);
+                // Refresh usage and check for alerts
+                $team->refresh()->checkStorageAlerts();
+            }
+        });
+
+        static::deleted(function ($attachment) {
+            $team = $attachment->getTeam();
+            if ($team) {
+                $team->decrement('disk_used', max(0, $attachment->file_size));
+            }
+        });
+    }
+
+    public function getTeam(): ?Team
+    {
+        $attachable = $this->attachable;
+        if (!$attachable) return null;
+
+        if ($this->attachable_type === Task::class || $this->attachable_type === 'App\Models\Task') {
+            return $attachable->team;
+        }
+
+        if ($this->attachable_type === \App\Models\ForumMessage::class || $this->attachable_type === 'App\Models\ForumMessage') {
+            return $attachable->thread?->team;
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper relation for when the attachment belongs to a Task.
+     */
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, 'attachable_id');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -33,6 +77,16 @@ class TaskAttachment extends Model
     public function logs()
     {
         return $this->hasMany(AttachmentLog::class, 'attachment_id');
+    }
+
+    /**
+     * Check if the physical file exists in storage.
+     */
+    public function getExistsAttribute(): bool
+    {
+        if ($this->storage_provider === 'google') return true; // Assume Drive files exist for now
+        if (!$this->file_path) return false;
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists($this->file_path);
     }
 
     /**
