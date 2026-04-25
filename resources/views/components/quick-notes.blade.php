@@ -216,7 +216,7 @@ document.addEventListener('alpine:init', () => {
         maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
         soundEnabled: localStorage.getItem('notes_sound_enabled') !== '0',
         
-        buttonPos: { right: 24, bottom: 24 },
+        buttonPos: { right: 24, bottom: 220 },
         isDraggingButton: false,
         wasButtonDragged: false,
         buttonDragOffset: { x: 0, y: 0 },
