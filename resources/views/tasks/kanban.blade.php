@@ -198,15 +198,14 @@
                                         </button>
                                     @endif
                                 </div>
-                                        <div class="flex items-center gap-1 sm:gap-2 shrink-0" onclick="event.stopPropagation()">
-                                            <div class="flex items-center gap-1 sm:gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                        <div class="flex items-center gap-1.5 sm:gap-2 transition-all duration-300" onclick="event.stopPropagation()">
                                                 <!-- Palette Icon -->
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 sm:h-3 w-2.5 sm:w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-3" />
                                                 </svg>
                                                 @foreach(['#fee2e2', '#dbeafe', '#dcfce7', '#fef3c7'] as $hex)
                                                     <button onclick="updateColumnColor({{ $column->id }}, '{{ $hex }}')" 
-                                                            class="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5 rounded-full border border-gray-300/50 dark:border-gray-600/50 hover:scale-125 transition-transform shadow-sm"
+                                                            class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 rounded-full border border-gray-300/30 dark:border-white/10 hover:scale-110 active:scale-95 transition-all shadow-sm"
                                                             style="background-color: {{ $hex }};"
                                                             title="Cambiar color"></button>
                                                 @endforeach
@@ -379,7 +378,7 @@
                                     {{ $task->title }}
                                 </span>
                                 <button onclick="unarchiveTask({{ $task->id }})" 
-                                        class="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-gray-400 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200"
+                                        class="p-1 rounded-lg opacity-60 group-hover:opacity-100 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-gray-400 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200"
                                         title="{{ __('tasks.restore') ?? 'Desarchivar' }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

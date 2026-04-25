@@ -92,6 +92,19 @@
                         Workspace & Portabilidad
                     </div>
 
+                    <!-- Imprimir Ficha -->
+                    <button type="button" onclick="printFullTask()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                        <div class="shrink-0 p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl group-hover:scale-110 transition-transform shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">Imprimir Ficha Técnica</span>
+                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Informe completo y detallado de la tarea</span>
+                        </div>
+                    </button>
+
                     <!-- Reproducir en Equipo -->
                     @php
                         $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
@@ -807,18 +820,28 @@
                         <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                             {{ __('tasks.description') }}
                         </h3>
-                        @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
-                        <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'description' })" 
-                                class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
-                                title="Mejorar Resumen con IA">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            Ax.ia
-                        </button>
-                        @endif
+                        <div class="flex items-center gap-2">
+                            @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
+                            <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'description' })" 
+                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
+                                    title="Mejorar Resumen con IA">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Ax.ia
+                            </button>
+                            @endif
+                            <button onclick="printSection('Descripción', 'description-content')" 
+                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                    title="Imprimir descripción">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Imprimir
+                            </button>
+                        </div>
                     </div>
-                    <div
+                    <div id="description-content"
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
                         {!! str($displayDescription)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     </div>
@@ -843,8 +866,8 @@
                                 Ax.ia
                             </button>
                             @endif
-                            <button onclick="printObservations()" 
-                                    class="p-2 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                            <button onclick="printSection('Observaciones', 'observations-content')" 
+                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
                                     title="Imprimir observaciones">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -860,16 +883,15 @@
                 </div>
 
                 <script>
-                    function printObservations() {
-                        const content = document.getElementById('observations-content').innerHTML;
+                    function printSection(sectionLabel, contentId) {
+                        const content = document.getElementById(contentId).innerHTML;
                         const taskTitle = @json($task->title);
-                        const isDark = document.documentElement.classList.contains('dark');
                         
                         const printWin = window.open('', '_blank', 'width=800,height=900');
                         printWin.document.write(`
                             <html>
                                 <head>
-                                    <title>Imprimir - ${taskTitle}</title>
+                                    <title>Imprimir ${sectionLabel} - ${taskTitle}</title>
                                     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
                                     <style>
                                         body { 
@@ -939,7 +961,7 @@
                                 <body>
                                     <div class="header">
                                         <div class="title-container">
-                                            <span class="brand">Sientia MTX &bull; Observaciones</span>
+                                            <span class="brand">Sientia MTX &bull; ${sectionLabel}</span>
                                             <h1 class="title">${taskTitle}</h1>
                                             <div class="meta">Documento generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}</div>
                                         </div>
@@ -952,6 +974,200 @@
                                             setTimeout(() => window.close(), 500);
                                         };
                                     <\/script>
+                                </body>
+                            </html>
+                        `);
+                        printWin.document.close();
+                    }
+
+                    function printPrivateNotes() {
+                        // Get current editor content
+                        const editor = document.getElementById('reply-content-private');
+                        let rawContent = editor ? editor.value : '';
+                        
+                        // If there is no EasyMDE instance yet, or we want to render the current markdown:
+                        // In SientiaMTX, we use a custom markdown renderer or a simple replacement for printing
+                        // But since we want it to look nice, we'll use a hidden div to render it if possible, 
+                        // or just send the raw text if it's simpler. 
+                        // However, EasyMDE has a .markdown() method but we don't have direct access here easily.
+                        
+                        // Better: If the user is printing "Private Notes", they likely want to print what they SEE.
+                        // But since it's an editor, let's just use the current value and wrap it in a pre or simple renderer.
+                        
+                        // Actually, I'll use a temporary hidden div to render markdown using the same logic as the backend if possible, 
+                        // or just use a simple converter. 
+                        
+                        // For now, let's just print it. If it's markdown, it might look a bit raw.
+                        // I'll add a simple marked.js-like logic or just a fallback.
+                        
+                        const taskTitle = @json($task->title);
+                        const printWin = window.open('', '_blank', 'width=800,height=900');
+                        
+                        // Basic markdown to HTML for the print view (very simple fallback)
+                        let htmlContent = rawContent
+                            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                            .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+                            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                            .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                            .replace(/\n/gim, '<br>');
+
+                        printWin.document.write(`
+                            <html>
+                                <head>
+                                    <title>Mis Notas Privadas - ${taskTitle}</title>
+                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                                    <style>
+                                        body { font-family: 'Inter', sans-serif; padding: 50px; color: #1e293b; line-height: 1.6; }
+                                        .header { border-bottom: 4px solid #d97706; margin-bottom: 40px; padding-bottom: 20px; }
+                                        .brand { font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; color: #d97706; }
+                                        .title { font-size: 28px; font-weight: 900; color: #0f172a; margin: 5px 0; }
+                                        .content { font-size: 15px; white-space: pre-wrap; }
+                                        @media print { body { padding: 0; } }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="header">
+                                        <span class="brand">Sientia MTX &bull; Notas Privadas (Confidencial)</span>
+                                        <h1 class="title">${taskTitle}</h1>
+                                        <div style="font-size: 10px; color: #94a3b8; font-weight: 700; margin-top: 10px;">GENERADO EL ${new Date().toLocaleDateString()} - SOLO PARA USO PERSONAL</div>
+                                    </div>
+                                    <div class="content">${htmlContent}</div>
+                                    <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
+                                </body>
+                            </html>
+                        `);
+                        printWin.document.close();
+                    }
+
+                    function printFullTask() {
+                        const taskTitle = @json($task->title);
+                        const status = @json(__('tasks.statuses.' . $task->status));
+                        const progress = @json($task->progress_percentage);
+                        const priority = @json($task->priority);
+                        const urgency = @json($task->urgency);
+                        const scheduled = @json($task->scheduled_date?->format('d/m/Y H:i') ?? '—');
+                        const due = @json($task->due_date?->format('d/m/Y H:i') ?? '—');
+                        const teamName = @json($team->name);
+                        
+                        const description = document.getElementById('description-content')?.innerHTML ?? '—';
+                        const observations = document.getElementById('observations-content')?.innerHTML ?? '—';
+                        
+                        const members = @json($task->assignedTo->pluck('name')->toArray());
+                        const skills = @json($task->skills->map(fn($s) => $s->name . ' (' . $s->category . ')')->toArray());
+
+                        const printWin = window.open('', '_blank', 'width=900,height=1000');
+                        printWin.document.write(`
+                            <html>
+                                <head>
+                                    <title>Ficha Técnica - ${taskTitle}</title>
+                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+                                    <style>
+                                        @page { size: A4; margin: 20mm; }
+                                        body { font-family: 'Inter', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; background: #fff; }
+                                        .container { max-width: 800px; margin: 0 auto; }
+                                        
+                                        .header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; position: relative; }
+                                        .brand { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #6366f1; display: block; margin-bottom: 10px; }
+                                        .title { font-size: 32px; font-weight: 900; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1; margin: 0; }
+                                        .team-badge { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: 800; background: #f8fafc; padding: 6px 14px; border: 1px solid #e2e8f0; color: #6366f1; border-radius: 12px; }
+                                        
+                                        .grid { display: grid; grid-template-cols: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+                                        .stat-card { background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #f1f5f9; }
+                                        .stat-label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #94a3b8; display: block; margin-bottom: 6px; letter-spacing: 0.05em; }
+                                        .stat-value { font-size: 13px; font-weight: 700; color: #1e293b; }
+                                        .stat-value.status { color: #059669; }
+                                        
+                                        .section { margin-bottom: 30px; }
+                                        .section-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+                                        .section-title::after { content: ''; flex: 1; height: 1px; background: #f1f5f9; }
+                                        .section-content { font-size: 14px; color: #475569; line-height: 1.6; }
+                                        .section-content img { max-width: 100%; border-radius: 12px; margin: 15px 0; border: 1px solid #f1f5f9; }
+                                        
+                                        .skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
+                                        .skill-tag { font-size: 10px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+                                        
+                                        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 10px; color: #94a3b8; text-align: center; }
+                                        
+                                        .progress-wrapper { width: 100%; height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 8px; overflow: hidden; }
+                                        .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #4f46e5); border-radius: 10px; }
+                                        
+                                        @media print {
+                                            body { padding: 0; }
+                                            .stat-card { background: #f8fafc !important; -webkit-print-color-adjust: exact; }
+                                            .progress-fill { background: #6366f1 !important; -webkit-print-color-adjust: exact; }
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="container">
+                                        <div class="header">
+                                            <span class="brand">Sientia MTX &bull; Ficha Técnica</span>
+                                            <h1 class="title">${taskTitle}</h1>
+                                            <div class="team-badge">${teamName}</div>
+                                        </div>
+                                        
+                                        <div class="grid">
+                                            <div class="stat-card">
+                                                <span class="stat-label">Estado</span>
+                                                <span class="stat-value status">${status}</span>
+                                            </div>
+                                            <div class="stat-card">
+                                                <span class="stat-label">Progreso</span>
+                                                <span class="stat-value">${progress}%</span>
+                                                <div class="progress-wrapper"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                                            </div>
+                                            <div class="stat-card">
+                                                <span class="stat-label">Prioridad</span>
+                                                <span class="stat-value" style="color: #e11d48">${priority.toUpperCase()}</span>
+                                            </div>
+                                            <div class="stat-card">
+                                                <span class="stat-label">Urgencia</span>
+                                                <span class="stat-value" style="color: #d97706">${urgency.toUpperCase()}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid" style="grid-template-cols: 1fr 1fr;">
+                                            <div class="stat-card">
+                                                <span class="stat-label">Inicio Programado</span>
+                                                <span class="stat-value">${scheduled}</span>
+                                            </div>
+                                            <div class="stat-card">
+                                                <span class="stat-label">Fecha Límite</span>
+                                                <span class="stat-value">${due}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="section">
+                                            <div class="section-title">Equipo Asignado</div>
+                                            <div class="section-content">
+                                                <div style="font-weight: 700; color: #1e293b;">${members.length > 0 ? members.join(', ') : 'Sin asignar'}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="section">
+                                            <div class="section-title">Descripción</div>
+                                            <div class="section-content">${description}</div>
+                                        </div>
+
+                                        <div class="section">
+                                            <div class="section-title">Observaciones</div>
+                                            <div class="section-content">${observations}</div>
+                                        </div>
+
+                                        <div class="section">
+                                            <div class="section-title">Skills & Capacidades</div>
+                                            <div class="skills-list">
+                                                ${skills.map(s => `<span class="skill-tag">${s}</span>`).join('') || '<span class="skill-tag">—</span>'}
+                                            </div>
+                                        </div>
+
+                                        <div class="footer">
+                                            Documento generado por Sientia MTX el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}
+                                        </div>
+                                    </div>
+                                    <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
                                 </body>
                             </html>
                         `);
@@ -1033,22 +1249,32 @@
                         </div>
                     </div>
 
-                    <button type="button" @click="doSave()" 
-                        :disabled="saving"
-                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-600/20 flex items-center gap-2">
-                        <template x-if="!saving">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                            </svg>
-                        </template>
-                        <template x-if="saving">
-                            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </template>
-                        <span x-text="saving ? 'Guardando...' : 'Guardar Notas'"></span>
-                    </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="doSave()" 
+                                :disabled="saving"
+                                class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-600/20 flex items-center gap-2">
+                                <template x-if="!saving">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                    </svg>
+                                </template>
+                                <template x-if="saving">
+                                    <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </template>
+                                <span x-text="saving ? 'Guardando...' : 'Guardar Notas'"></span>
+                            </button>
+                            <button type="button" onclick="printPrivateNotes()" 
+                                    class="px-2.5 py-1.5 bg-white dark:bg-gray-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-xl transition-all border border-amber-100 dark:border-amber-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                    title="Imprimir notas privadas">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Imprimir
+                            </button>
+                        </div>
                 </div>
 
                 <div class="relative z-10" id="private-notes-editor">

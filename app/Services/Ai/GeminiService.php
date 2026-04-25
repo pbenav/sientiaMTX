@@ -294,15 +294,15 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "TEAM_CONTEXT_ID: " . ($this->teamId ?? 'GLOBAL') . "\n";
         $systemInstruction .= "MODELO ACTIVO: {$this->targetModel}.\n";
         $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Si saludas o es charla trivial, usa texto plano.\n";
-        $systemInstruction .= "REGLA DE ENLACES: Nunca uses 'undefined' en una URL. Si no conoces el TEAM_ID, usa el TEAM_CONTEXT_ID proporcionado arriba.\n\n";
+        $systemInstruction .= "REGLA DE ENLACES: NUNCA, bajo ningún concepto, uses 'undefined' o 'null' en una URL. Si un recurso (tarea, hilo, mensaje) no tiene un TEAM_ID asociado en los datos de referencia, utiliza SIEMPRE el TEAM_CONTEXT_ID: " . ($this->teamId ?? '0') . ".\n";
+        $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Mantén un tono profesional, entusiasta y premium. Evita frases genéricas como 'Tu referencia se ha actualizado'. Sé específico.\n\n";
         
         $systemInstruction .= "INTENCIONES DE PAYLOAD:\n";
         $systemInstruction .= "1. 'simple_text': Resúmenes, explicaciones, correcciones. Usa 'content' para el Markdown.\n";
-        $systemInstruction .= "2. 'search_results': ¡IMPORTANTE! Úsalo siempre que uses las herramientas de búsqueda (search_tasks, search_forum). Estructura:\n";
-        $systemInstruction .= "   { \"intent\": \"search_results\", \"query\": \"término usado\", \"results\": { ...resultados de la herramienta... } }\n";
-        $systemInstruction .= "3. 'full_task': Solo para crear tareas nuevas. Requiere objecto 'task_data'.\n\n";
+        $systemInstruction .= "2. 'search_results': ¡IMPORTANTE! Úsalo siempre que consultes herramientas de búsqueda. Asegúrate de que cada elemento del resultado incluya su 'team_id'.\n";
+        $systemInstruction .= "3. 'full_task': Solo para crear tareas nuevas. Requiere objeto 'task_data'.\n\n";
         
-        $systemInstruction .= "SOBRE BÚSQUEDAS: Si realizas una búsqueda y no hay resultados, no envíes un payload vacío. Usa 'simple_text' para explicar amablemente que no has encontrado nada y sugiere alternativas.\n";
+        $systemInstruction .= "SOBRE BÚSQUEDAS: Si no hay resultados, explica por qué y ofrece ayuda para refinar la búsqueda. No respondas con un payload vacío.\n";
         $systemInstruction .= "IMPORTANTE: Cierra siempre tus bloques con [/PAYLOAD].\n";
         
         $fullPrompt = $contextInfo . "\nINSTRUCCIÓN DEL USUARIO: " . $prompt;

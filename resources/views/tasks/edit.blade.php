@@ -909,32 +909,15 @@
                 ring-color: rgba(124, 58, 237, 0.2) !important;
             }
 
-            .ts-dropdown {
-                border-radius: 1rem !important;
-                border-color: #e5e7eb !important;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-                margin-top: 5px !important;
-            }
-
-            .dark .ts-dropdown {
-                background-color: #111827 !important;
-                border-color: #374151 !important;
-                color: #f3f4f6 !important;
-            }
-
-            .ts-dropdown .active {
-                background-color: #7c3aed !important;
-                color: white !important;
-            }
-
-            .ts-dropdown .option {
-                padding: 0.5rem 1rem !important;
-            }
-
+            .ts-dropdown { border-radius: 1.25rem !important; border-color: #e5e7eb !important; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; margin-top: 8px !important; padding: 0.5rem !important; }
+            .dark .ts-dropdown { background-color: #0f172a !important; border-color: #1e293b !important; color: #f3f4f6 !important; }
+            .ts-dropdown .active { background-color: #f5f3ff !important; color: #4f46e5 !important; border-radius: 0.75rem !important; }
+            .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
+            .ts-dropdown .option { padding: 0.75rem 1rem !important; border-radius: 0.75rem !important; margin-bottom: 2px !important; border-left: 0 solid transparent !important; transition: all 0.2s !important; }
+            .ts-dropdown .active.option { border-left: 4px solid #4f46e5 !important; padding-left: calc(1rem - 4px) !important; }
+            
             /* Ocultar el select original para evitar duplicidad si TomSelect tarda un instante */
-            #parent_id_select {
-                display: none;
-            }
+            #parent_id_select { display: none; }
         </style>
 
         <script>
@@ -1029,25 +1012,27 @@
                         placeholder: '{{ __('tasks.search_task') ?? 'Buscar tarea...' }}',
                         render: {
                             option: function(data, escape) {
-                                return '<div class="flex flex-col py-0.5">' +
-                                    '<div class="flex items-center gap-2">' +
-                                    '<span class="text-[10px] font-mono font-black px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">#' +
-                                    escape(data.value) + '</span>' +
-                                    '<span class="font-bold text-gray-900 dark:text-white">' + escape(data
-                                        .text) + '</span>' +
+                                return '<div class="flex items-center gap-3">' +
+                                    '<div class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 border border-gray-200/50 dark:border-gray-700/50">' +
+                                        '<span class="text-[9px] font-mono font-black">#' + escape(data.value) + '</span>' +
                                     '</div>' +
-                                    '<span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-1">' +
-                                    '<i class="inline-block w-1 h-1 rounded-full bg-violet-400 mr-1.5 opacity-60"></i>' +
-                                    escape(data.assignee) +
-                                    '</span>' +
-                                    '</div>';
+                                    '<div class="flex flex-col min-w-0">' +
+                                        '<span class="font-bold text-gray-900 dark:text-white truncate text-xs">' + escape(data.text) + '</span>' +
+                                        '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' + 
+                                            '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
+                                            escape(data.assignee) + 
+                                        '</span>' +
+                                    '</div>' +
+                                '</div>';
                             },
                             item: function(data, escape) {
-                                return '<div class="flex items-center gap-2">' +
-                                    '<span class="text-[9px] font-mono font-bold text-gray-400">#' + escape(
-                                        data.value) + '</span>' +
-                                    '<span>' + escape(data.text) + '</span>' +
-                                    '<span class="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-mono">@' +
+                                return '<div class="flex items-center gap-2">' + 
+                                    '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
+                                    '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
+                                    '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
+                                '</div>';
+                            }
+                        }
                                     escape(data.assignee) + '</span>' +
                                     '</div>';
                             }

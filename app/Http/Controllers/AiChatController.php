@@ -295,7 +295,11 @@ class AiChatController extends Controller
                 'new_values' => [$column => $newContent],
                 'notes' => 'Transferido desde Ax.ia (' . $request->target . ')'
             ]);
-            return response()->json(['success' => true, 'message' => "Contenido inyectado en {$column} correctamente.", 'history_id' => $history->id]);
+            $msg = ($request->target === 'description') 
+                ? "El resumen de la tarea ha sido actualizado con éxito."
+                : "Se han integrado los nuevos detalles en el desarrollo de la tarea.";
+
+            return response()->json(['success' => true, 'message' => $msg, 'history_id' => $history->id]);
         }
 
         if ($request->target === 'private_note' || $request->target === 'private-notes') {
@@ -317,7 +321,7 @@ class AiChatController extends Controller
                 'content' => $textToInject
             ]);
             
-            return response()->json(['success' => true, 'message' => 'Nota interna/privada creada correctamente.']);
+            return response()->json(['success' => true, 'message' => 'Nota privada guardada y protegida correctamente.']);
         }
 
         if ($request->target === 'comment') {
@@ -344,7 +348,7 @@ class AiChatController extends Controller
                 'content' => "Ax.ia: " . $content
             ]);
 
-            return response()->json(['success' => true, 'message' => 'Respuesta publicada como comentario.']);
+            return response()->json(['success' => true, 'message' => 'Tu comentario ha sido publicado en el foro de la tarea.']);
         }
 
         return response()->json(['success' => false, 'message' => 'Destino no válido.']);
@@ -367,7 +371,7 @@ class AiChatController extends Controller
                 'user_id' => $request->user()->id,
                 'content' => $content
             ]);
-            return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo.']);
+            return response()->json(['success' => true, 'message' => 'Respuesta publicada con éxito en el hilo de discusión.']);
         }
 
         if ($request->target === 'draft') {
@@ -478,7 +482,7 @@ class AiChatController extends Controller
 
             return response()->json([
                 'success' => true, 
-                'message' => "Tarea \"{$task->title}\" creada con éxito.",
+                'message' => "La tarea \"{$task->title}\" ha sido generada y configurada correctamente.",
                 'task_id' => $task->id,
                 'team_id' => $task->team_id
             ]);
