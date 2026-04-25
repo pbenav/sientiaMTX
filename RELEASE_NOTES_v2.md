@@ -1,4 +1,4 @@
-# Sientia MTX - Registro de Actualizaciones: Inteligencia Colectiva y UX Premium
+# Sientia MTX v0.9.6RC2 - Registro de Actualizaciones: Inteligencia Colectiva y UX Premium
 
 Esta actualización transforma la manera en que los equipos capturan ideas y gestionan su flujo de trabajo, integrando herramientas de voz inteligentes, soporte para Markdown y una simbiosis total con la IA de Sientia.
 
