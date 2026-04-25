@@ -270,6 +270,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/google/drive/list', [GoogleDriveController::class, 'listContents'])->name('google.drive.list');
     Route::post('/teams/{team}/attachments/from-drive', [GoogleDriveController::class, 'attachFromDrive'])->name('teams.attachments.from-drive');
 
+    // QuickNotes Routes
+    Route::apiResource('quick-notes', \App\Http\Controllers\QuickNoteController::class);
+    Route::post('quick-notes/{quick_note}/attachment', [\App\Http\Controllers\QuickNoteController::class, 'uploadAttachment'])->name('quick-notes.attachment');
+
 });
 
 require __DIR__.'/auth.php';

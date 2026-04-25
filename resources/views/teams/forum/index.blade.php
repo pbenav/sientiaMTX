@@ -2,7 +2,19 @@
 
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-            <div class="flex items-center justify-between min-w-0 flex-1 gap-4 select-none">
+            <div class="flex flex-col min-w-0 flex-1">
+                <!-- Breadcrumbs -->
+                <div class="flex items-center gap-2 mb-1 overflow-hidden">
+                    <a href="{{ route('teams.show', $team) }}" 
+                       class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-violet-600 transition-all truncate">
+                        {{ $team->name }}
+                    </a>
+                    <svg class="w-3 h-3 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-500 shrink-0">
+                        {{ __('forum.title') ?? 'Foro' }}
+                    </span>
+                </div>
+
                 <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate flex items-center gap-3 tracking-tight">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

@@ -14,6 +14,18 @@
                 </a>
 
                 <div class="min-w-0 flex-1">
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center gap-2 mb-1 overflow-hidden">
+                        <a href="{{ route('teams.show', $team) }}" 
+                           class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-violet-600 transition-all truncate">
+                            {{ $team->name }}
+                        </a>
+                        <svg class="w-3 h-3 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+                        <a href="{{ route('teams.forum.index', $team) }}" 
+                           class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-violet-600 transition-all shrink-0">
+                            {{ __('forum.title') ?? 'Foro' }}
+                        </a>
+                    </div>
                     <div class="flex items-center gap-3" x-data="{ editingTitle: false }">
                         @if ($thread->is_pinned)
                             <span class="text-violet-500 shrink-0"><svg xmlns="http://www.w3.org/2000/svg"

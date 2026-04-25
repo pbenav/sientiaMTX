@@ -1135,6 +1135,10 @@
     @stack('scripts')
     <!-- Lottie Web for Telegram animated stickers -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
+    
+    @auth
+        <x-quick-notes />
+    @endauth
 </body>
 
 </html>

@@ -55,6 +55,13 @@
                     </svg>
                     <span>Deshacer</span>
                 </button>
+                <button @click="soundEnabled = !soundEnabled; localStorage.setItem('ai_sound_enabled', soundEnabled ? '1' : '0')" 
+                        class="p-2 hover:bg-white/10 rounded-full transition-colors" 
+                        :class="soundEnabled ? 'text-white' : 'text-indigo-300'"
+                        :title="soundEnabled ? 'Desactivar sonido' : 'Activar sonido'">
+                    <svg x-show="soundEnabled" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                    <svg x-show="!soundEnabled" style="display:none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+                </button>
                 <button @click="showHelp = !showHelp" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Ayuda">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </button>
@@ -292,20 +299,41 @@
         </div>
     </div>
 
+    <!-- QuickNote Trigger (Floating above AI) -->
+    <button 
+        @click="window.dispatchEvent(new CustomEvent('quick-note:create'))"
+        class="mb-3 w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 pointer-events-auto ring-2 ring-white dark:ring-gray-950"
+        title="Nueva Nota Rápida (Post-it)">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+    </button>
+
     <button 
         @mousedown="startDrag($event)" 
         @touchstart="startDrag($event)" 
         @click="toggle($event)"
-        class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto"
+        class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative"
         :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'"
         style="touch-action: none;"
     >
-        <svg x-show="!open" class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-        </svg>
-        <svg x-show="open" style="display:none;" class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <div x-show="!open" class="relative flex items-center justify-center">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <!-- Loading Indicator on Button -->
+            <div x-show="loading" class="absolute -inset-2">
+                <svg class="animate-spin w-16 h-16 sm:w-20 sm:h-20 text-indigo-400 opacity-40" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <svg x-show="open" style="display:none;" class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
+
+        <!-- Unread Indicator -->
+        <div x-show="!open && hasUnread" style="display:none;" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white dark:border-gray-950 rounded-full animate-bounce"></div>
     </button>
 </div>
 
@@ -314,7 +342,10 @@
         Alpine.data('sientiaAiAssistant', () => ({
             open: false,
             loading: false,
+            hasUnread: false,
+            soundEnabled: localStorage.getItem('ai_sound_enabled') !== '0',
             isSendingFile: false,
+            showHelp: false,
             input: '',
             messages: [
                 { role: 'ai', content: '¡Hola! Soy **Ax.ia**, tu asistente inteligente en Sientia. ¿En qué puedo ayudarte con tus tareas hoy?' }
@@ -322,21 +353,25 @@
             
             teamId: {{ $teamId ?: 'null' }},
             taskId: {{ $taskId ?: 'null' }},
-            attachmentId: null,
             threadId: {{ $threadId ?: 'null' }},
             messageId: {{ $messageId ?: 'null' }},
-            bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
-            showHelp: false,
-            currentModel: 'Sincronizando...',
+            attachmentId: null,
 
-            // Undo State
+            currentModel: 'Sincronizando...',
             canUndo: false,
-            undoTimeout: null,
-            lastActionData: null,
             lastPrompt: '',
             lastFile: null,
             retryCount: 0,
 
+            // Notification Audio
+            audio: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
+            
+            bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
+            
+            // Undo State
+            undoTimeout: null,
+            lastActionData: null,
+            
             // Audio Recording State
             isRecording: false,
             mediaRecorder: null,
@@ -543,16 +578,16 @@
                 }
                 this.open = !this.open;
                 
-                if (!this.open) {
-                    localStorage.setItem('ai_assistant_open', '0');
-                } else {
+                if (this.open) {
+                    this.hasUnread = false;
                     localStorage.setItem('ai_assistant_open', '1');
                     this.$nextTick(() => {
                         this.scrollToBottom();
-                        // Find the text input and focus it
                         const input = this.$el.querySelector('input[type="text"]');
                         if (input) input.focus();
                     });
+                } else {
+                    localStorage.setItem('ai_assistant_open', '0');
                 }
             },
 
@@ -756,7 +791,15 @@
                     is_error: isError
                 });
                 if (data.current_model) this.currentModel = data.current_model;
-                this.retryCount = 0; // Reset count on success
+                this.retryCount = 0;
+
+                // Notifications
+                if (!this.open) {
+                    this.hasUnread = true;
+                    this.playNotification();
+                } else {
+                    this.playNotification(); // Also play if open, for feedback
+                }
             } catch (error) {
                 console.error('AI Assistant Error:', error);
                 
@@ -1443,6 +1486,11 @@
                     const el = document.getElementById('ai-chat-messages');
                     if (el) el.scrollTop = el.scrollHeight;
                 }, 100);
+            },
+
+            playNotification() {
+                if (!this.soundEnabled) return;
+                this.audio.play().catch(e => console.log('Audio playback failed', e));
             }
         }));
     });
