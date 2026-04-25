@@ -19,6 +19,15 @@ class AiChatMessage extends Model
 
     protected $appends = ['file_url'];
 
+    protected static function booted()
+    {
+        static::deleting(function ($message) {
+            if ($message->file_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($message->file_path);
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

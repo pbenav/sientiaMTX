@@ -238,6 +238,17 @@ class AiChatController extends Controller
 
     public function clearHistory(Request $request)
     {
+        $messages = AiChatMessage::where('user_id', $request->user()->id)
+            ->when($request->team_id, function($q) use ($request) {
+                return $q->where('team_id', $request->team_id);
+            })
+            ->whereNotNull('file_path')
+            ->get();
+
+        foreach ($messages as $msg) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($msg->file_path);
+        }
+
         AiChatMessage::where('user_id', $request->user()->id)
             ->when($request->team_id, function($q) use ($request) {
                 return $q->where('team_id', $request->team_id);
