@@ -10,7 +10,8 @@
      @ai:set-context.window="setContext($event.detail)"
      @ai:analyze-file.window="analyzeFile($event.detail)"
      @ai:analyze-task.window="analyzeTask($event.detail)"
-     @ai:transfer-direct.window="transferToTask($event.detail)">
+     @ai:transfer-direct.window="transferToTask($event.detail)"
+     @ai:inject-note.window="injectNote($event.detail)">
     
     <!-- Chat Window -->
     <div 
@@ -433,6 +434,26 @@
                     if (input) {
                         input.focus();
                         input.select();
+                    }
+                });
+            },
+
+            injectNote(detail) {
+                this.open = true;
+                this.messages.push({ 
+                    role: 'system', 
+                    content: `Inyectando contenido de nota rápida.`
+                });
+                
+                this.input = `Sobre esta nota: "${detail.content}"\n\n¿Qué podemos hacer con ella?`;
+                
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                    const input = this.$el.querySelector('input[type="text"]');
+                    if (input) {
+                        input.focus();
+                        // Seleccionamos el final para que el usuario pueda escribir su petición
+                        input.setSelectionRange(input.value.length, input.value.length);
                     }
                 });
             },
