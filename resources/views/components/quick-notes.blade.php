@@ -455,7 +455,13 @@ document.addEventListener('alpine:init', () => {
                             body: formData
                         });
                         const updatedNote = await response.json();
-                        note.attachments = this.processAttachments(updatedNote.attachments);
+                        const processed = this.processAttachments(updatedNote.attachments);
+                        
+                        const nIdx = this.notes.findIndex(n => n.id === note.id);
+                        if (nIdx !== -1) {
+                            this.notes[nIdx].attachments = processed;
+                            this.notes = [...this.notes];
+                        }
                     } catch (e) {
                         console.error('Error uploading paste:', e);
                     }
@@ -494,7 +500,16 @@ document.addEventListener('alpine:init', () => {
                             body: formData
                         });
                         const updatedNote = await response.json();
-                        note.attachments = this.processAttachments(updatedNote.attachments);
+                        const processed = this.processAttachments(updatedNote.attachments);
+                        
+                        // Force reactivity by updating the note in the main array
+                        const index = this.notes.findIndex(n => n.id === note.id);
+                        if (index !== -1) {
+                            this.notes[index].attachments = processed;
+                            // Trigger full array refresh for Alpine
+                            this.notes = [...this.notes];
+                        }
+                        
                         this.recordingNoteId = null;
                     } catch (e) {
                         console.error('Error uploading recording:', e);
@@ -629,7 +644,13 @@ document.addEventListener('alpine:init', () => {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
-                note.attachments = note.attachments.filter(a => a.id !== att.id);
+                
+                // Force reactivity
+                const idx = this.notes.findIndex(n => n.id === note.id);
+                if (idx !== -1) {
+                    this.notes[idx].attachments = this.notes[idx].attachments.filter(a => a.id !== att.id);
+                    this.notes = [...this.notes];
+                }
             } catch (e) {
                 console.error('Error removing attachment:', e);
             }
