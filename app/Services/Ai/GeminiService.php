@@ -513,7 +513,7 @@ class GeminiService implements AiAssistantInterface
     /**
      * Helper to make the HTTP request to the Gemini API with Tool Support.
      */
-    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null, bool $isToolCall = false): string
+    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null, bool $isToolCall = false, bool $forceNoTools = false): string
     {
         if (empty($this->apiKey)) {
             Log::error('Gemini API key is missing.');
@@ -543,8 +543,14 @@ class GeminiService implements AiAssistantInterface
 
         $payload = [
             'contents' => $this->messagesHistory,
-            'tools' => $this->getToolsDefinition()
         ];
+
+        // Solo enviamos tools si el modelo es compatible (1.5+) y no hemos forzado su desactivación
+        $supportsTools = (str_contains($model, '1.5') || str_contains($model, '2.0') || str_contains($model, 'flash')) && !$forceNoTools;
+        
+        if ($supportsTools) {
+            $payload['tools'] = $this->getToolsDefinition();
+        }
 
         try {
             $response = Http::timeout(60)->post($url, $payload);
@@ -591,7 +597,13 @@ class GeminiService implements AiAssistantInterface
                 return $part['text'] ?? 'No se recibió contenido de la IA.';
             }
 
-            // --- Lógica de Resiliencia Total y Auto-Curación ---
+            // --- Lógica de Resiliencia y Auto-Curación ---
+
+            // ERROR ESPECIAL: Si el modelo no reconoce "tools", reintentamos inmediatamente SIN tools
+            if (str_contains($errorMsg, 'tools') && !$forceNoTools) {
+                Log::warning("Ax.ia: El modelo {$model} no soporta herramientas. Reintentando sin ellas...");
+                return $this->callGemini($model, $parts, $isFallback, $systemInstruction, $isToolCall, true);
+            }
             
             // Si el error indica que este modelo no sirve (por cuota, carga o esquema), buscamos otro.
             $shouldRetryWithAlternative = ($status === 429 || $status === 503 || $status === 400 || $status === 404);
@@ -620,7 +632,8 @@ class GeminiService implements AiAssistantInterface
                     
                     if ($isAvailable) {
                         Log::warning("Ax.ia: Resiliencia activada. Probando modelo alternativo: {$candidate}...");
-                        $res = $this->callGemini($candidate, $parts, true, $systemInstruction);
+                        // Si el fallo original fue por tools, probamos el alternativo también sin tools para asegurar
+                        $res = $this->callGemini($candidate, $parts, true, $systemInstruction, false, $forceNoTools);
                         
                         // Si el rescate funciona, devolvemos la respuesta inmediatamente y SIN notas
                         if (!str_contains($res, 'Lo siento, ha ocurrido un error')) {
