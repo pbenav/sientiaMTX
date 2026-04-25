@@ -196,18 +196,21 @@ document.addEventListener('alpine:init', () => {
             await this.refreshNotes();
         },
 
+        processAttachments(attachments) {
+            if (!attachments) return [];
+            return attachments.map(att => ({
+                ...att,
+                transcribing: false,
+                transcription: att.transcription || null
+            }));
+        },
+
         async refreshNotes() {
             try {
                 const response = await fetch('/quick-notes');
                 const data = await response.json();
                 this.notes = data.map(n => {
-                    if (n.attachments) {
-                        n.attachments = n.attachments.map(att => ({
-                            ...att,
-                            transcribing: false,
-                            transcription: att.transcription || null
-                        }));
-                    }
+                    n.attachments = this.processAttachments(n.attachments);
                     return n;
                 });
             } catch (e) {
@@ -241,6 +244,7 @@ document.addEventListener('alpine:init', () => {
                     })
                 });
                 const newNote = await response.json();
+                newNote.attachments = this.processAttachments(newNote.attachments);
                 this.notes.push(newNote);
                 this.focusNote(newNote.id);
             } catch (e) {
@@ -451,7 +455,7 @@ document.addEventListener('alpine:init', () => {
                             body: formData
                         });
                         const updatedNote = await response.json();
-                        note.attachments = updatedNote.attachments;
+                        note.attachments = this.processAttachments(updatedNote.attachments);
                     } catch (e) {
                         console.error('Error uploading paste:', e);
                     }
@@ -490,7 +494,7 @@ document.addEventListener('alpine:init', () => {
                             body: formData
                         });
                         const updatedNote = await response.json();
-                        note.attachments = updatedNote.attachments;
+                        note.attachments = this.processAttachments(updatedNote.attachments);
                         this.recordingNoteId = null;
                     } catch (e) {
                         console.error('Error uploading recording:', e);
