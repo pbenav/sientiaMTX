@@ -417,30 +417,47 @@ class AiChatController extends Controller
 
         \Illuminate\Support\Facades\Log::info("transferGlobalContent PAYLOAD EXTRAIDO", ['payload' => $payload, 'target' => $request->target]);
 
-        if (in_array($request->target, ['task', 'private_note', 'private-notes', 'observations', 'observations_append', 'description'])) {
-            // Create a new task for this content
+        if (in_array($request->target, ['task', 'private_note', 'private-notes', 'observations', 'observations_append', 'description', 'quick-note'])) {
+            $payload = $this->extractPayload($request->input('content'));
+            $user = $request->user();
+            
             $title = $request->title;
-            $desc = 'Tarea creada desde Ax.ia.';
-            $obs = '';
+            $content = '';
             
             if (is_array($payload)) {
                 if (($payload['intent'] ?? '') === 'simple_text') {
-                    $title = $title ?: 'Nota: ' . now()->format('d/m H:i');
-                    $obs = $payload['content'] ?? '';
+                    $content = $payload['content'] ?? '';
                 } elseif (($payload['intent'] ?? '') === 'full_task') {
                     $taskData = $payload['task_data'] ?? [];
                     $title = $title ?: ($taskData['title'] ?? null);
-                    $desc = $taskData['description'] ?? $desc;
-                    $obs = $taskData['observations'] ?? '';
+                    $content = $taskData['observations'] ?? $taskData['description'] ?? '';
                 } else {
                     $title = $title ?: ($payload['title'] ?? null);
-                    $desc = $payload['description'] ?? $desc;
-                    $obs = $payload['observations'] ?? '';
+                    $content = $payload['observations'] ?? $payload['description'] ?? json_encode($payload);
                 }
             } else {
-                $obs = $payload;
+                $content = $payload;
             }
 
+            if ($request->target === 'quick-note') {
+                $note = $user->quickNotes()->create([
+                    'content' => ($title ? "**$title**\n\n" : "") . $content,
+                    'position_x' => 100,
+                    'position_y' => 100,
+                    'color' => '#fef3c7',
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Se ha creado una nota rápida con el contenido de la IA.",
+                    'note_id' => $note->id
+                ]);
+            }
+
+            // Create a new task for this content
+            $desc = 'Tarea creada desde Ax.ia.';
+            $obs = $content;
+            
             try {
                 $task = \App\Models\Task::create([
                     'team_id' => $team->id,
@@ -452,31 +469,16 @@ class AiChatController extends Controller
                     'visibility' => 'private',
                     'status' => 'pending'
                 ]);
-                $task->refresh(); // ensure all fields are set
-                \Illuminate\Support\Facades\Log::info("transferGlobalContent TAREA CREADA", ['task_id' => $task->id]);
+                $task->refresh();
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("transferGlobalContent ERROR CREADO TAREA", ['e' => $e->getMessage()]);
                 return response()->json(['success' => false, 'message' => 'Error BD: ' . $e->getMessage()], 500);
             }
 
             if ($request->target === 'private_note' || $request->target === 'private-notes') {
-                $noteContent = '';
-                if (is_array($payload)) {
-                     if (($payload['intent'] ?? '') === 'simple_text') {
-                         $noteContent = $payload['content'] ?? '';
-                     } elseif (($payload['intent'] ?? '') === 'full_task') {
-                         $noteContent = $payload['task_data']['observations'] ?? 'Nota de tarea';
-                     } else {
-                         $noteContent = $payload['observations'] ?? 'Nota de tarea';
-                     }
-                } else {
-                     $noteContent = $payload;
-                }
-
                 \App\Models\TaskPrivateNote::create([
                     'task_id' => $task->id,
                     'user_id' => $user->id,
-                    'content' => $noteContent
+                    'content' => $obs
                 ]);
             }
 

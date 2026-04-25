@@ -1,7 +1,17 @@
-<div x-data="sientiaQuickNotes()" 
+<div x-data="sientiaQuickNotes" 
      class="fixed inset-0 pointer-events-none z-[8888]"
      @keydown.window.escape="closeAll()"
-     @quick-note:create.window="createNote()">
+     @quicknote-create.window="createNote()"
+     @quicknote-toggle-all.window="toggleAll()"
+     @quicknote-refresh.window="refreshNotes()"
+     @mousemove.window="handleMouseMove($event)"
+     @touchmove.window="handleMouseMove($event)"
+     @mouseup.window="stopMoving()"
+     @touchend.window="stopMoving()">
+
+    <style>
+        .swal2-container { z-index: 100000 !important; }
+    </style>
     
     <!-- Notes Container -->
     <template x-for="note in notes" :key="note.id">
@@ -29,10 +39,13 @@
                     </div>
                     
                     <div class="flex items-center gap-1">
-                        <button @click="toggleMinimize(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60">
+                        <button @click="toggleMinimize(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Minimizar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="note.is_minimized ? 'M12 4v16m8-8H4' : 'M20 12H4'" /></svg>
                         </button>
-                        <button @click="deleteNote(note)" class="p-1 hover:bg-red-500/20 hover:text-red-700 rounded-md transition-colors text-black/60">
+                        <button @click="hideNote(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Ocultar">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </button>
+                        <button @click="deleteNote(note)" class="p-1 hover:bg-red-500/20 hover:text-red-700 rounded-md transition-colors text-black/60" title="Eliminar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
@@ -51,16 +64,42 @@
                     <!-- Attachments Strip -->
                     <template x-if="note.attachments && note.attachments.length > 0">
                         <div class="mt-3 flex flex-wrap gap-2 pt-3 border-t border-black/5">
-                            <template x-for="att in note.attachments" :key="att.path">
+                            <template x-for="att in note.attachments" :key="att.id || att.path">
                                 <div class="group relative">
                                     <template x-if="att.type.startsWith('image/')">
                                         <img :src="att.url" class="w-12 h-12 rounded-lg object-cover shadow-sm border border-white/50">
                                     </template>
                                     <template x-if="att.type.startsWith('audio/')">
-                                        <div class="w-12 h-12 rounded-lg bg-black/5 flex items-center justify-center text-xl shadow-sm border border-white/50">🎤</div>
+                                        <div class="flex flex-col gap-2 bg-black/5 p-3 rounded-2xl border border-white/50 w-full group/att relative">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xs">🎤</span>
+                                                    <audio controls class="h-8 w-40" :src="att.url"></audio>
+                                                </div>
+                                                <div class="flex items-center gap-1">
+                                                    <button @click.stop="transcribe(note, att)" 
+                                                            :disabled="att.transcribing"
+                                                            class="p-2 hover:bg-indigo-600 hover:text-white rounded-lg transition-all text-indigo-600/60 bg-indigo-50/50" 
+                                                            title="Transcribir con Ax.ia">
+                                                        <svg x-show="!att.transcribing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5h12M9 3v2m1.042 11.35a.75.75 0 001.251-.248L12 12l.707 2.102a.75.75 0 001.251.248l3-3a.75.75 0 10-1.06-1.06l-2.189 2.189-.504-1.511a.75.75 0 00-1.41 0l-.504 1.511-2.189-2.189a.75.75 0 00-1.06 1.06l3 3z" /></svg>
+                                                        <svg x-show="att.transcribing" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke-width="2" stroke-linecap="round"/></svg>
+                                                    </button>
+                                                    <button @click="removeAttachment(note, att)" 
+                                                            class="p-1.5 hover:bg-red-600 hover:text-white rounded-lg transition-all text-black/40" 
+                                                            title="Eliminar audio">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div x-show="att.transcription" x-text="att.transcription" class="text-[10px] bg-white/50 p-2 rounded-lg border border-black/5 italic text-gray-700 leading-tight"></div>
+                                            
+                                            <!-- Transcribing indicator -->
+                                            <div x-show="att.transcribing" class="flex items-center gap-2 text-[9px] font-black uppercase tracking-tighter text-indigo-600 animate-pulse bg-indigo-50/80 px-2.5 py-1 rounded-full w-max border border-indigo-100">
+                                                <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
+                                                Transcribiendo...
+                                            </div>
+                                        </div>
                                     </template>
-                                    
-                                    <!-- Full view on hover/click could be added here -->
                                 </div>
                             </template>
                         </div>
@@ -80,8 +119,27 @@
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <button @click="startRecording(note)" :disabled="isRecording" class="p-1.5 hover:bg-black/5 rounded-full transition-colors text-black/60" :class="{'text-red-600 animate-pulse': isRecording && recordingNoteId === note.id}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 013 3v10a3 3 0 01-3 3 3 3 0 01-3-3V7a3 3 0 013-3z" /></svg>
+                            <button @click="startRecording(note)" 
+                                    class="p-1.5 hover:bg-black/5 rounded-full transition-all duration-300 relative group"
+                                    :class="isRecording && recordingNoteId === note.id ? 'text-red-600 bg-red-50' : 'text-black/60 hover:text-indigo-600'"
+                                    :disabled="isRecording && recordingNoteId !== note.id"
+                                    :title="isRecording && recordingNoteId === note.id ? 'Detener grabación' : 'Grabar audio'">
+                                
+                                <!-- Icono Micro (normal) -->
+                                <svg x-show="!(isRecording && recordingNoteId === note.id)" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 013 3v10a3 3 0 01-3 3 3 3 0 01-3-3V7a3 3 0 013-3z" />
+                                </svg>
+                                
+                                <!-- Icono Stop (grabando) -->
+                                <div x-show="isRecording && recordingNoteId === note.id" class="flex items-center justify-center">
+                                    <div class="w-3 h-3 bg-red-600 rounded-sm animate-pulse"></div>
+                                </div>
+
+                                <!-- Tooltip dinámico -->
+                                <span x-show="isRecording && recordingNoteId === note.id" class="absolute right-full mr-2 px-2 py-1 bg-red-600 text-white text-[8px] font-black rounded-md uppercase tracking-widest whitespace-nowrap animate-pulse flex items-center gap-1 shadow-lg">
+                                    <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
+                                    Grabando
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -102,8 +160,12 @@
     <!-- Global Toggle Button (if hidden) -->
     <button 
         x-show="notes.length > 0 && !allVisible"
-        @click="showAll()"
-        class="fixed bottom-32 right-6 p-4 bg-amber-400 text-amber-900 rounded-full shadow-2xl pointer-events-auto hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] z-[8887]"
+        @mousedown="startButtonDrag($event)"
+        @touchstart="startButtonDrag($event)"
+        @click="if(!wasButtonDragged) showAll()"
+        class="fixed p-4 bg-amber-400 text-amber-900 rounded-full shadow-2xl pointer-events-auto hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] z-[8887] select-none"
+        :class="isDraggingButton ? 'cursor-grabbing scale-110' : 'cursor-grab'"
+        :style="`right: ${buttonPos.right}px; bottom: ${buttonPos.bottom}px; touch-action: none;`"
     >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
         <span x-text="notes.length"></span> Notas
@@ -111,8 +173,8 @@
 </div>
 
 <script>
-function sientiaQuickNotes() {
-    return {
+document.addEventListener('alpine:init', () => {
+    Alpine.data('sientiaQuickNotes', () => ({
         notes: [],
         activeNoteId: null,
         isDragging: false,
@@ -124,15 +186,33 @@ function sientiaQuickNotes() {
         mediaRecorder: null,
         audioChunks: [],
         
+        // Button Dragging State
+        buttonPos: { right: 24, bottom: 128 },
+        isDraggingButton: false,
+        wasButtonDragged: false,
+        buttonDragOffset: { x: 0, y: 0 },
+        
         async init() {
-            const response = await fetch('/quick-notes');
-            this.notes = await response.json();
-            
-            // Listen for window resize to keep notes within bounds
-            window.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-            window.addEventListener('mouseup', () => this.stopMoving());
-            window.addEventListener('touchmove', (e) => this.handleMouseMove(e.touches[0]));
-            window.addEventListener('touchend', () => this.stopMoving());
+            await this.refreshNotes();
+        },
+
+        async refreshNotes() {
+            try {
+                const response = await fetch('/quick-notes');
+                const data = await response.json();
+                this.notes = data.map(n => {
+                    if (n.attachments) {
+                        n.attachments = n.attachments.map(att => ({
+                            ...att,
+                            transcribing: false,
+                            transcription: att.transcription || null
+                        }));
+                    }
+                    return n;
+                });
+            } catch (e) {
+                console.error('Error fetching notes:', e);
+            }
         },
 
         get allVisible() {
@@ -140,53 +220,115 @@ function sientiaQuickNotes() {
         },
 
         async createNote() {
-            const response = await fetch('/quick-notes', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    position_x: 100 + (this.notes.length * 20),
-                    position_y: 100 + (this.notes.length * 20),
-                    color: '#fef3c7'
-                })
-            });
-            const newNote = await response.json();
-            this.notes.push(newNote);
-            this.focusNote(newNote.id);
+            try {
+                const response = await fetch('/quick-notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        position_x: 100 + (this.notes.length * 20),
+                        position_y: 100 + (this.notes.length * 20),
+                        width: 300,
+                        height: 300,
+                        color: '#fef3c7',
+                        is_pinned: false,
+                        is_minimized: false,
+                        is_hidden: false
+                    })
+                });
+                const newNote = await response.json();
+                this.notes.push(newNote);
+                this.focusNote(newNote.id);
+            } catch (e) {
+                console.error('Error creating note:', e);
+            }
         },
 
         async updateNote(note) {
-            await fetch(`/quick-notes/${note.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    content: note.content,
-                    position_x: note.position_x,
-                    position_y: note.position_y,
-                    width: note.width,
-                    height: note.height,
-                    color: note.color,
-                    is_pinned: note.is_pinned,
-                    is_minimized: note.is_minimized
-                })
-            });
+            try {
+                await fetch(`/quick-notes/${note.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        content: note.content,
+                        position_x: note.position_x,
+                        position_y: note.position_y,
+                        width: note.width,
+                        height: note.height,
+                        color: note.color,
+                        is_pinned: !!note.is_pinned,
+                        is_minimized: !!note.is_minimized,
+                        is_hidden: !!note.is_hidden
+                    })
+                });
+            } catch (e) {
+                console.error('Error updating note:', e);
+            }
         },
 
         async deleteNote(note) {
-            if (!confirm('¿Seguro que quieres eliminar esta nota?')) return;
+            const isDark = document.documentElement.classList.contains('dark');
+            const result = await Swal.fire({
+                title: '<span class="text-xs font-black uppercase tracking-widest text-red-600">¿Eliminar Nota?</span>',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: isDark ? '#1e293b' : '#94a3b8',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#1e293b',
+                customClass: { popup: 'rounded-[2rem] border-none shadow-2xl' }
+            });
+
+            if (!result.isConfirmed) return;
             
-            await fetch(`/quick-notes/${note.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            try {
+                await fetch(`/quick-notes/${note.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                this.notes = this.notes.filter(n => n.id !== note.id);
+            } catch (e) {
+                console.error('Error deleting note:', e);
+            }
+        },
+
+        hideNote(note) {
+            note.is_hidden = true;
+            this.updateNote(note);
+        },
+
+        toggleMinimize(note) {
+            note.is_minimized = !note.is_minimized;
+            this.updateNote(note);
+        },
+
+        showAll() {
+            this.notes.forEach(n => {
+                if (n.is_hidden) {
+                    n.is_hidden = false;
+                    this.updateNote(n);
                 }
             });
-            this.notes = this.notes.filter(n => n.id !== note.id);
+        },
+
+        toggleAll() {
+            const anyVisible = this.notes.some(n => !n.is_hidden);
+            this.notes.forEach(n => {
+                n.is_hidden = anyVisible;
+                this.updateNote(n);
+            });
         },
 
         focusNote(id) {
@@ -198,8 +340,8 @@ function sientiaQuickNotes() {
             this.dragTarget = note;
             this.focusNote(note.id);
             this.dragOffset = {
-                x: (e.clientX || e.touches[0].clientX) - note.position_x,
-                y: (e.clientY || e.touches[0].clientY) - note.position_y
+                x: (e.clientX || (e.touches && e.touches[0].clientX)) - note.position_x,
+                y: (e.clientY || (e.touches && e.touches[0].clientY)) - note.position_y
             };
         },
 
@@ -215,21 +357,49 @@ function sientiaQuickNotes() {
             };
         },
 
+        startButtonDrag(e) {
+            this.isDraggingButton = true;
+            this.wasButtonDragged = false;
+            const event = e.type.includes('touch') ? e.touches[0] : e;
+            this.buttonDragOffset = {
+                x: window.innerWidth - event.clientX - this.buttonPos.right,
+                y: window.innerHeight - event.clientY - this.buttonPos.bottom
+            };
+        },
+
         handleMouseMove(e) {
+            const event = (e.touches && e.touches[0]) ? e.touches[0] : e;
+
+            // Notes Dragging
             if (this.isDragging && this.dragTarget) {
-                this.dragTarget.position_x = e.clientX - this.dragOffset.x;
-                this.dragTarget.position_y = e.clientY - this.dragOffset.y;
+                if (e.cancelable) e.preventDefault();
+                this.dragTarget.position_x = Math.round(event.clientX - this.dragOffset.x);
+                this.dragTarget.position_y = Math.round(event.clientY - this.dragOffset.y);
                 
-                // Constraints
                 this.dragTarget.position_x = Math.max(0, Math.min(this.dragTarget.position_x, window.innerWidth - this.dragTarget.width));
                 this.dragTarget.position_y = Math.max(0, Math.min(this.dragTarget.position_y, window.innerHeight - (this.dragTarget.is_minimized ? 40 : this.dragTarget.height)));
             }
             
+            // Notes Resizing
             if (this.isResizing && this.resizeTarget) {
-                const deltaX = e.clientX - this.initialSize.x;
-                const deltaY = e.clientY - this.initialSize.y;
-                this.resizeTarget.width = Math.max(200, this.initialSize.width + deltaX);
-                this.resizeTarget.height = Math.max(150, this.initialSize.height + deltaY);
+                if (e.cancelable) e.preventDefault();
+                const deltaX = event.clientX - this.initialSize.x;
+                const deltaY = event.clientY - this.initialSize.y;
+                this.resizeTarget.width = Math.round(Math.max(200, this.initialSize.width + deltaX));
+                this.resizeTarget.height = Math.round(Math.max(150, this.initialSize.height + deltaY));
+            }
+
+            // Global Button Dragging
+            if (this.isDraggingButton) {
+                const newRight = window.innerWidth - event.clientX - this.buttonDragOffset.x;
+                const newBottom = window.innerHeight - event.clientY - this.buttonDragOffset.y;
+                
+                if (Math.abs(newRight - this.buttonPos.right) > 3 || Math.abs(newBottom - this.buttonPos.bottom) > 3) {
+                    this.wasButtonDragged = true;
+                }
+                
+                this.buttonPos.right = Math.max(10, Math.min(newRight, window.innerWidth - 60));
+                this.buttonPos.bottom = Math.max(10, Math.min(newBottom, window.innerHeight - 60));
             }
         },
 
@@ -242,6 +412,11 @@ function sientiaQuickNotes() {
             this.isResizing = false;
             this.dragTarget = null;
             this.resizeTarget = null;
+            
+            // Button Dragging
+            setTimeout(() => {
+                this.isDraggingButton = false;
+            }, 50);
         },
 
         toggleMinimize(note) {
@@ -249,12 +424,8 @@ function sientiaQuickNotes() {
             this.updateNote(note);
         },
 
-        showAll() {
-            this.notes.forEach(n => n.is_hidden = false);
-        },
 
         closeAll() {
-            // Optional: just un-focus or actually hide
             this.activeNoteId = null;
         },
 
@@ -269,15 +440,20 @@ function sientiaQuickNotes() {
                     const formData = new FormData();
                     formData.append('file', blob);
                     
-                    const response = await fetch(`/quick-notes/${note.id}/attachment`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: formData
-                    });
-                    const updatedNote = await response.json();
-                    note.attachments = updatedNote.attachments;
+                    try {
+                        const response = await fetch(`/quick-notes/${note.id}/attachment`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: formData
+                        });
+                        const updatedNote = await response.json();
+                        note.attachments = updatedNote.attachments;
+                    } catch (e) {
+                        console.error('Error uploading paste:', e);
+                    }
                 }
             }
         },
@@ -303,16 +479,21 @@ function sientiaQuickNotes() {
                     const formData = new FormData();
                     formData.append('file', audioBlob, 'note_recording.webm');
                     
-                    const response = await fetch(`/quick-notes/${note.id}/attachment`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: formData
-                    });
-                    const updatedNote = await response.json();
-                    note.attachments = updatedNote.attachments;
-                    this.recordingNoteId = null;
+                    try {
+                        const response = await fetch(`/quick-notes/${note.id}/attachment`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: formData
+                        });
+                        const updatedNote = await response.json();
+                        note.attachments = updatedNote.attachments;
+                        this.recordingNoteId = null;
+                    } catch (e) {
+                        console.error('Error uploading recording:', e);
+                    }
                     
                     stream.getTracks().forEach(track => track.stop());
                 };
@@ -329,7 +510,125 @@ function sientiaQuickNotes() {
                 this.mediaRecorder.stop();
                 this.isRecording = false;
             }
+        },
+
+        async transcribe(note, att) {
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (!att.id) {
+                Swal.fire({
+                    icon: 'info',
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Actualización Necesaria</span>',
+                    text: 'Este audio necesita sincronizarse. Por favor, refresca la página (F5) y vuelve a intentarlo.',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color: isDark ? '#f1f5f9' : '#1e293b',
+                    customClass: { popup: 'rounded-[2rem]' }
+                });
+                return;
+            }
+
+            if (att.transcribing) return;
+            att.transcribing = true;
+
+            // Feedback inmediato
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#1e293b',
+            });
+            toast.fire({
+                icon: 'info',
+                title: 'Ax.ia está escuchando su audio...'
+            });
+            
+            try {
+                const url = window.location.origin + `/quick-notes/${note.id}/attachment/${att.id}/transcribe`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error del servidor');
+                }
+
+                const data = await response.json();
+                if (data.transcription) {
+                    att.transcription = data.transcription;
+                    
+                    const result = await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Transcripción Lista</span>',
+                        html: `<div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-left italic text-sm text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/30">${data.transcription}</div><p class="mt-4 text-xs font-bold text-gray-500">¿Quieres añadir este texto al contenido de la nota?</p>`,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, añadir texto',
+                        cancelButtonText: 'Cerrar',
+                        confirmButtonColor: '#4f46e5',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: isDark ? '#f1f5f9' : '#1e293b',
+                        customClass: { popup: 'rounded-[2.5rem]' }
+                    });
+
+                    if (result.isConfirmed) {
+                        note.content = (note.content || '') + '\n\n[Transcripción]: ' + data.transcription;
+                        this.updateNote(note);
+                    }
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener la transcripción.', background: isDark ? '#0f172a' : '#ffffff' });
+                }
+            } catch (e) {
+                console.error('Transcription error:', e);
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: 'Fallo en Transcripción', 
+                    text: e.message || 'Error de conexión',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color: isDark ? '#f1f5f9' : '#1e293b'
+                });
+            } finally {
+                att.transcribing = false;
+            }
+        },
+
+        async removeAttachment(note, att) {
+            const isDark = document.documentElement.classList.contains('dark');
+            const result = await Swal.fire({
+                title: '<span class="text-xs font-black uppercase tracking-widest text-red-600">¿Eliminar Audio?</span>',
+                text: "¿Estás seguro de que quieres borrar este archivo de audio?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: isDark ? '#1e293b' : '#94a3b8',
+                confirmButtonText: 'Sí, borrar',
+                cancelButtonText: 'Cancelar',
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#1e293b',
+                customClass: { popup: 'rounded-[2rem]' }
+            });
+
+            if (!result.isConfirmed) return;
+            
+            try {
+                await fetch(`/quick-notes/${note.id}/attachment/${att.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                note.attachments = note.attachments.filter(a => a.id !== att.id);
+            } catch (e) {
+                console.error('Error removing attachment:', e);
+            }
         }
-    }
-}
+    }));
+});
 </script>

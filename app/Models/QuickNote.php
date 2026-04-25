@@ -19,6 +19,7 @@ class QuickNote extends Model
         'color',
         'is_pinned',
         'is_minimized',
+        'is_hidden',
         'attachments',
     ];
 
@@ -26,6 +27,7 @@ class QuickNote extends Model
         'attachments' => 'array',
         'is_pinned' => 'boolean',
         'is_minimized' => 'boolean',
+        'is_hidden' => 'boolean',
         'position_x' => 'integer',
         'position_y' => 'integer',
         'width' => 'integer',

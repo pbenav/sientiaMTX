@@ -245,10 +245,14 @@ class User extends Authenticatable implements HasLocalePreference
         return $role ? $role->name : null;
     }
 
-    // Time Tracking Relationships
     public function timeLogs(): HasMany
     {
         return $this->hasMany(TimeLog::class);
+    }
+
+    public function quickNotes(): HasMany
+    {
+        return $this->hasMany(QuickNote::class);
     }
 
     public function activeWorkdayLog(): ?TimeLog
@@ -450,5 +454,5 @@ class User extends Authenticatable implements HasLocalePreference
             set: fn ($value) => $value ? encrypt($value) : null,
         );
     }
-}
 
+}

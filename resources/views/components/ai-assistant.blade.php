@@ -299,13 +299,21 @@
         </div>
     </div>
 
-    <!-- QuickNote Trigger (Floating above AI) -->
-    <button 
-        @click="window.dispatchEvent(new CustomEvent('quick-note:create'))"
-        class="mb-3 w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 pointer-events-auto ring-2 ring-white dark:ring-gray-950"
-        title="Nueva Nota Rápida (Post-it)">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
-    </button>
+    <!-- QuickNote Toggles (Floating above AI) -->
+    <div class="flex flex-col gap-2 mb-3 pointer-events-auto">
+        <button 
+            @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all'))"
+            class="w-10 h-10 bg-gray-800/80 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md"
+            title="Mostrar/Ocultar todas las notas">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+        </button>
+        <button 
+            @click="window.dispatchEvent(new CustomEvent('quicknote-create'))"
+            class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950"
+            title="Nueva Nota Rápida (Post-it)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+        </button>
+    </div>
 
     <button 
         @mousedown="startDrag($event)" 
@@ -1245,6 +1253,15 @@
                                         <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Crear una tarea completa en este equipo con este contenido.</div>
                                     </div>
                                 </button>
+                                <button data-action="quicknote" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left group">
+                                    <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                                        <span class="text-2xl">📌</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Post-it</div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Crear una nota flotante con este contenido para más tarde.</div>
+                                    </div>
+                                </button>
                                 <button data-action="update" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-left group">
                                     <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
@@ -1312,6 +1329,9 @@
                      if (!title) return;
                      this.submitServerTransfer('task', rawPayload, title);
                 } 
+                else if (selectedAction === 'quicknote') {
+                    this.submitServerTransfer('quick-note', rawPayload);
+                }
                 else if (selectedAction === 'update') {
                     let targetField = null;
                     await Swal.fire({
@@ -1347,6 +1367,15 @@
                                     <div class="flex-1">
                                         <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Nota Privada</div>
                                         <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Solo visible para ti y coordinadores.</div>
+                                    </div>
+                                </button>
+                                <button onclick="Swal.clickConfirm()" data-val="quick-note" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600">
+                                        <span>📌</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Post-it</div>
+                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Crear una nota flotante en pantalla.</div>
                                     </div>
                                 </button>
                             </div>
@@ -1413,8 +1442,7 @@
                 const isDark = document.documentElement.classList.contains('dark');
                 let url = '';
                 
-                // Si el objetivo es crear una tarea nueva ('task'), usamos siempre la ruta global independientemente de si estamos en una tarea o no
-                if (target === 'task' || !this.taskId) {
+                if (target === 'task' || target === 'quick-note' || !this.taskId) {
                     url = '{{ route('ai.transfer_global', ['team' => 'TEAM_ID']) }}'
                         .replace('TEAM_ID', this.teamId || '');
                     url = url.replace(/\/$/, ""); 
@@ -1438,38 +1466,15 @@
                     const data = await response.json();
                     if (data.success) {
                         this.canUndo = true;
-                        
-                        // Si es una tarea nueva, redirigimos directamente a la edición
+                        if (target === 'quick-note') window.dispatchEvent(new CustomEvent('quicknote-refresh'));
+
                         if (target === 'task' && data.task_id) {
-                             let teamId = data.team_id || this.teamId || 0;
-                             let editUrl = '{{ route('teams.tasks.edit', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'
-                                .replace('TEAM_ID', teamId)
-                                .replace('TASK_ID', data.task_id);
-                             
-                             Swal.fire({
-                                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¡Tarea Creada!</span>',
-                                text: 'Redirigiendo a edición...',
-                                icon: 'success',
-                                timer: 1500,
-                                showConfirmButton: false,
-                                background: isDark ? '#0f172a' : '#ffffff',
-                                customClass: { popup: 'rounded-[2rem]' }
-                             }).then(() => {
-                                window.location.href = editUrl;
-                             });
+                            let teamId = data.team_id || this.teamId || 0;
+                            let editUrl = '{{ route('teams.tasks.edit', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'.replace('TEAM_ID', teamId).replace('TASK_ID', data.task_id);
+                            Swal.fire({ title: '¡Tarea Creada!', text: 'Redirigiendo...', icon: 'success', timer: 1500, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => { window.location.href = editUrl; });
                         } else {
-                            Swal.fire({
-                                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¡Hecho!</span>',
-                                text: data.message,
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false,
-                                background: isDark ? '#0f172a' : '#ffffff',
-                                customClass: { popup: 'rounded-[2rem]' }
-                            }).then(() => {
-                                if (['description', 'observations', 'private_note', 'observations_append'].includes(target)) {
-                                    window.location.reload();
-                                }
+                            Swal.fire({ title: '¡Hecho!', text: data.message, icon: 'success', timer: 2000, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => {
+                                if (['description', 'observations', 'private_note', 'observations_append'].includes(target)) window.location.reload();
                             });
                         }
                     } else {
@@ -1481,12 +1486,6 @@
                 }
             },
 
-            scrollToBottom() {
-                setTimeout(() => {
-                    const el = document.getElementById('ai-chat-messages');
-                    if (el) el.scrollTop = el.scrollHeight;
-                }, 100);
-            },
 
             playNotification() {
                 if (!this.soundEnabled) return;
