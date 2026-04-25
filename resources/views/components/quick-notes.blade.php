@@ -91,7 +91,7 @@
                                     <template x-if="att.type.startsWith('image/')">
                                         <img :src="att.url" class="w-12 h-12 rounded-lg object-cover shadow-sm border border-white/50">
                                     </template>
-                                    <template x-if="att.type && (att.type.startsWith('audio/') || att.type.includes('audio'))">
+                                    <template x-if="att.type && (att.type.startsWith('audio/') || att.type.includes('audio') || att.type.includes('webm') || att.type.includes('mp4') || att.name.includes('note_recording'))">
                                         <div class="flex flex-col gap-2 bg-black/5 p-3 rounded-2xl border border-white/50 w-full group/att relative">
                                             <div class="flex items-center justify-between gap-2">
                                                 <div class="flex items-center gap-2">

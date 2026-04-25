@@ -110,13 +110,19 @@ class QuickNoteController extends Controller
         $file = $request->file('file');
         $path = $file->store('quick-notes/' . auth()->id(), 'public');
         
+        $mimeType = $file->getMimeType();
+        // Forzar tipo audio si es una grabación de la app
+        if (str_contains($file->getClientOriginalName(), 'note_recording')) {
+            $mimeType = str_replace('video/', 'audio/', $mimeType);
+        }
+
         $attachments = $quick_note->attachments ?? [];
         $attachments[] = [
             'id' => uniqid(),
             'name' => $file->getClientOriginalName(),
             'path' => $path,
             'url' => Storage::disk('public')->url($path),
-            'type' => $file->getMimeType(),
+            'type' => $mimeType,
             'created_at' => now(),
         ];
 
