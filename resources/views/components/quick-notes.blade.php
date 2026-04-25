@@ -1,13 +1,10 @@
 <div x-data="sientiaQuickNotes" 
-     class="fixed inset-0 pointer-events-none z-[8888]"
-     @keydown.window.escape="closeAll()"
-     @quicknote-create.window="createNote()"
-     @quicknote-toggle-all.window="toggleAll()"
-     @quicknote-refresh.window="refreshNotes()"
-     @mousemove.window="handleMouseMove($event)"
-     @touchmove.window="handleMouseMove($event)"
-     @mouseup.window="stopMoving()"
-     @touchend.window="stopMoving()">
+<div x-data="sientiaQuickNotes()" 
+     @pointermove.window="handleMouseMove($event)" 
+     @pointerup.window="stopAllDragging()"
+     @keydown.escape.window="showAll()"
+     class="fixed inset-0 pointer-events-none z-[9999]"
+     style="touch-action: none;">
 
     <style>
         .swal2-container { z-index: 100000 !important; }
@@ -20,7 +17,7 @@
             class="absolute pointer-events-auto transition-shadow duration-300"
             :class="{'shadow-2xl z-[8889]': activeNoteId === note.id, 'shadow-lg z-[8888]': activeNoteId !== note.id}"
             :style="`left: ${note.position_x}px; top: ${note.position_y}px; width: ${note.width}px; height: ${note.is_minimized ? '40px' : note.height + 'px'};`"
-            @mousedown="focusNote(note.id)"
+            @pointerdown="focusNote(note.id)"
         >
             <!-- Note Card -->
             <div 
@@ -30,8 +27,8 @@
                 <!-- Drag Handle / Toolbar -->
                 <div 
                     class="h-10 shrink-0 px-4 flex items-center justify-between cursor-move select-none border-b border-black/5 bg-black/5"
-                    @mousedown="startDrag($event, note)"
-                    @touchstart="startDrag($event, note)"
+                    @pointerdown="startDrag($event, note)"
+                    style="touch-action: none;"
                 >
                     <div class="flex items-center gap-2">
                         <div class="w-2 h-2 rounded-full bg-black/20"></div>
@@ -174,30 +171,27 @@
                     </div>
                 </div>
 
-                <!-- Resize Handle -->
+                <!-- Resizer Handle -->
                 <div 
-                    x-show="!note.is_minimized"
-                    class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-center justify-center group"
-                    @mousedown="startResize($event, note)"
+                    @pointerdown="startResize($event, note)" 
+                    class="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize flex items-end justify-end p-1 z-10"
+                    style="touch-action: none;"
                 >
-                    <div class="w-1.5 h-1.5 rounded-full bg-black/10 group-hover:bg-black/30 transition-colors"></div>
+                    <div class="w-3 h-3 border-r-2 border-b-2 border-black/20 rounded-br-sm group-hover:border-black/40 transition-colors"></div>
                 </div>
             </div>
         </div>
     </template>
 
-    <!-- Global Toggle Button (if hidden) -->
+    <!-- Global Toggle Button -->
     <button 
-        x-show="notes.length > 0 && !allVisible"
-        @mousedown="startButtonDrag($event)"
-        @touchstart="startButtonDrag($event)"
-        @click="if(!wasButtonDragged) showAll()"
-        class="fixed p-4 bg-amber-400 text-amber-900 rounded-full shadow-2xl pointer-events-auto hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] z-[8887] select-none"
-        :class="isDraggingButton ? 'cursor-grabbing scale-110' : 'cursor-grab'"
+        id="quick-notes-toggle"
+        @pointerdown="startButtonDrag($event)"
+        @click="if(!wasButtonDragged) toggleAll()"
+        class="fixed pointer-events-auto w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-[10000] border-4 border-white/20 backdrop-blur-sm"
         :style="`right: ${buttonPos.right}px; bottom: ${buttonPos.bottom}px; touch-action: none;`"
     >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-        <span x-text="notes.length"></span> Notas
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
     </button>
 </div>
 
@@ -218,10 +212,8 @@ document.addEventListener('alpine:init', () => {
         recordingInterval: null,
         maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
         soundEnabled: localStorage.getItem('notes_sound_enabled') !== '0',
-        notificationSound: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
         
-        // Button Dragging State
-        buttonPos: { right: 24, bottom: 220 },
+        buttonPos: { right: 24, bottom: 24 },
         isDraggingButton: false,
         wasButtonDragged: false,
         buttonDragOffset: { x: 0, y: 0 },
@@ -263,15 +255,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         sendToAi(note) {
-            window.dispatchEvent(new CustomEvent('ai:inject-note', { 
-                detail: { 
-                    content: note.content
-                } 
-            }));
-        },
-
-        get allVisible() {
-            return this.notes.some(n => !n.is_hidden);
+            window.dispatchEvent(new CustomEvent('ai:inject-note', { detail: { content: note.content } }));
         },
 
         async createNote() {
@@ -284,22 +268,13 @@ document.addEventListener('alpine:init', () => {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
-                        // Calculate center of screen
-                        position_x: Math.max(20, (window.innerWidth / 2) - 150 + (this.notes.length * 20 % 100)),
-                        position_y: Math.max(20, (window.innerHeight / 2) - 150 + (this.notes.length * 20 % 100)),
-                        width: 300,
-                        height: 300,
-                        color: '#fef3c7',
-                        is_pinned: false,
-                        is_minimized: false,
-                        is_hidden: false
+                        position_x: 100, position_y: 100, width: 300, height: 300
                     })
                 });
                 const newNote = await response.json();
                 newNote.attachments = this.processAttachments(newNote.attachments);
                 newNote.is_preview = false;
                 this.notes.push(newNote);
-                this.focusNote(newNote.id);
             } catch (e) {
                 console.error('Error creating note:', e);
             }
@@ -311,20 +286,9 @@ document.addEventListener('alpine:init', () => {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({
-                        content: note.content,
-                        position_x: note.position_x,
-                        position_y: note.position_y,
-                        width: note.width,
-                        height: note.height,
-                        color: note.color,
-                        is_pinned: !!note.is_pinned,
-                        is_minimized: !!note.is_minimized,
-                        is_hidden: !!note.is_hidden
-                    })
+                    body: JSON.stringify(note)
                 });
             } catch (e) {
                 console.error('Error updating note:', e);
@@ -367,11 +331,6 @@ document.addEventListener('alpine:init', () => {
             this.updateNote(note);
         },
 
-        toggleMinimize(note) {
-            note.is_minimized = !note.is_minimized;
-            this.updateNote(note);
-        },
-
         showAll() {
             this.notes.forEach(n => {
                 if (n.is_hidden) {
@@ -382,11 +341,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         toggleAll() {
-            const anyVisible = this.notes.some(n => !n.is_hidden);
-            this.notes.forEach(n => {
-                n.is_hidden = anyVisible;
-                this.updateNote(n);
-            });
+            this.notes.forEach(n => n.is_hidden = !n.is_hidden);
         },
 
         focusNote(id) {
@@ -394,13 +349,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         startDrag(e, note) {
+            if (e.target.closest('button') || e.target.closest('textarea') || e.target.closest('audio')) return;
             this.isDragging = true;
             this.dragTarget = note;
             this.focusNote(note.id);
             this.dragOffset = {
-                x: (e.clientX || (e.touches && e.touches[0].clientX)) - note.position_x,
-                y: (e.clientY || (e.touches && e.touches[0].clientY)) - note.position_y
+                x: e.clientX - note.position_x,
+                y: e.clientY - note.position_y
             };
+            if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
         },
 
         startResize(e, note) {
@@ -413,55 +370,54 @@ document.addEventListener('alpine:init', () => {
                 x: e.clientX,
                 y: e.clientY
             };
+            if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
         },
 
         startButtonDrag(e) {
             this.isDraggingButton = true;
             this.wasButtonDragged = false;
-            const event = e.type.includes('touch') ? e.touches[0] : e;
             this.buttonDragOffset = {
-                x: window.innerWidth - event.clientX - this.buttonPos.right,
-                y: window.innerHeight - event.clientY - this.buttonPos.bottom
+                x: window.innerWidth - e.clientX - this.buttonPos.right,
+                y: window.innerHeight - e.clientY - this.buttonPos.bottom
             };
+            if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
         },
 
         handleMouseMove(e) {
-            const event = (e.touches && e.touches[0]) ? e.touches[0] : e;
-
             // Notes Dragging
             if (this.isDragging && this.dragTarget) {
-                if (e.cancelable) e.preventDefault();
-                this.dragTarget.position_x = Math.round(event.clientX - this.dragOffset.x);
-                this.dragTarget.position_y = Math.round(event.clientY - this.dragOffset.y);
+                this.dragTarget.position_x = Math.round(e.clientX - this.dragOffset.x);
+                this.dragTarget.position_y = Math.round(e.clientY - this.dragOffset.y);
                 
+                // Keep inside screen
                 this.dragTarget.position_x = Math.max(0, Math.min(this.dragTarget.position_x, window.innerWidth - this.dragTarget.width));
                 this.dragTarget.position_y = Math.max(0, Math.min(this.dragTarget.position_y, window.innerHeight - (this.dragTarget.is_minimized ? 40 : this.dragTarget.height)));
             }
-            
+
             // Notes Resizing
             if (this.isResizing && this.resizeTarget) {
-                if (e.cancelable) e.preventDefault();
-                const deltaX = event.clientX - this.initialSize.x;
-                const deltaY = event.clientY - this.initialSize.y;
-                this.resizeTarget.width = Math.round(Math.max(200, this.initialSize.width + deltaX));
-                this.resizeTarget.height = Math.round(Math.max(150, this.initialSize.height + deltaY));
+                const deltaX = e.clientX - this.initialSize.x;
+                const deltaY = e.clientY - this.initialSize.y;
+                
+                this.resizeTarget.width = Math.max(250, Math.min(this.initialSize.width + deltaX, window.innerWidth - this.resizeTarget.position_x - 20));
+                this.resizeTarget.height = Math.max(150, Math.min(this.initialSize.height + deltaY, window.innerHeight - this.resizeTarget.position_y - 20));
             }
 
-            // Global Button Dragging
+            // Floating Button Dragging
             if (this.isDraggingButton) {
-                const newRight = window.innerWidth - event.clientX - this.buttonDragOffset.x;
-                const newBottom = window.innerHeight - event.clientY - this.buttonDragOffset.y;
+                const newRight = window.innerWidth - e.clientX - this.buttonDragOffset.x;
+                const newBottom = window.innerHeight - e.clientY - this.buttonDragOffset.y;
                 
-                if (Math.abs(newRight - this.buttonPos.right) > 3 || Math.abs(newBottom - this.buttonPos.bottom) > 3) {
+                if (Math.abs(newRight - this.buttonPos.right) > 5 || Math.abs(newBottom - this.buttonPos.bottom) > 5) {
                     this.wasButtonDragged = true;
                 }
-                
+
                 this.buttonPos.right = Math.max(10, Math.min(newRight, window.innerWidth - 60));
                 this.buttonPos.bottom = Math.max(10, Math.min(newBottom, window.innerHeight - 60));
             }
         },
 
-        stopMoving() {
+        stopAllDragging() {
             if (this.isDragging || this.isResizing) {
                 if (this.dragTarget) this.updateNote(this.dragTarget);
                 if (this.resizeTarget) this.updateNote(this.resizeTarget);
@@ -471,7 +427,7 @@ document.addEventListener('alpine:init', () => {
             this.dragTarget = null;
             this.resizeTarget = null;
             
-            // Button Dragging
+            // Wait a bit to reset isDraggingButton so click event can check wasButtonDragged
             setTimeout(() => {
                 this.isDraggingButton = false;
             }, 50);
