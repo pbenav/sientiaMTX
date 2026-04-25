@@ -190,10 +190,11 @@
         id="quick-notes-toggle"
         @pointerdown="startButtonDrag($event)"
         @click="if(!wasButtonDragged) toggleAll()"
-        class="fixed pointer-events-auto w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-[10000] border-4 border-white/20 backdrop-blur-sm"
+        class="fixed pointer-events-auto p-4 bg-amber-400 text-amber-900 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] z-[9999] select-none border-4 border-white/40 backdrop-blur-sm"
         :style="`right: ${buttonPos.right}px; bottom: ${buttonPos.bottom}px; touch-action: none;`"
     >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+        <span x-text="notes.length"></span> Notas
     </button>
 </div>
 
