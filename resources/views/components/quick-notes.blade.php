@@ -134,7 +134,7 @@
                     </template>
 
                     <!-- Bottom Actions -->
-                    <div class="mt-3 flex items-center justify-between gap-2">
+                    <div class="mt-3 flex items-center justify-between gap-2 pr-6">
                         <div class="flex items-center gap-1">
                             <template x-for="c in ['#fef3c7', '#dcfce7', '#dbeafe', '#f3e8ff', '#fee2e2']">
                                 <button 
