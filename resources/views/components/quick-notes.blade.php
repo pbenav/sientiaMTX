@@ -42,6 +42,10 @@
                         <button @click="toggleMinimize(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Minimizar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="note.is_minimized ? 'M12 4v16m8-8H4' : 'M20 12H4'" /></svg>
                         </button>
+                        <button @click="note.is_preview = !note.is_preview" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" :title="note.is_preview ? 'Editar nota' : 'Ver Markdown'">
+                            <svg x-show="!note.is_preview" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg x-show="note.is_preview" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
                         <button @click="hideNote(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Ocultar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </button>
@@ -53,22 +57,19 @@
 
                 <!-- Content Area -->
                 <div x-show="!note.is_minimized" class="flex-1 flex flex-col p-4 overflow-hidden">
-                    <div class="flex-1 flex flex-col overflow-hidden" x-data="{ editing: false }">
+                    <div class="flex-1 flex flex-col overflow-hidden">
                         <textarea 
-                            x-show="editing"
-                            x-ref="textarea"
+                            x-show="!note.is_preview"
                             x-model="note.content"
                             @input.debounce.1000ms="updateNote(note)"
                             @paste="handlePaste($event, note)"
-                            @blur="editing = false"
                             class="flex-1 w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-black/80 font-medium leading-relaxed resize-none placeholder:text-black/20"
                             placeholder="Escribe algo aquí... (Markdown soportado)"
                         ></textarea>
                         
                         <div 
-                            x-show="!editing"
-                            @click="editing = true; $nextTick(() => $refs.textarea.focus())"
-                            class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto cursor-text select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1"
+                            x-show="note.is_preview"
+                            class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1"
                             x-html="renderMarkdown(note.content || '*Escribe algo aquí...*')"
                         ></div>
                     </div>
@@ -235,6 +236,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json();
                 this.notes = data.map(n => {
                     n.attachments = this.processAttachments(n.attachments);
+                    n.is_preview = false;
                     return n;
                 });
             } catch (e) {
@@ -269,6 +271,7 @@ document.addEventListener('alpine:init', () => {
                 });
                 const newNote = await response.json();
                 newNote.attachments = this.processAttachments(newNote.attachments);
+                newNote.is_preview = false;
                 this.notes.push(newNote);
                 this.focusNote(newNote.id);
             } catch (e) {
