@@ -788,7 +788,9 @@
                 let cleanText = text.trim();
                 if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
                     try {
-                        const parsed = JSON.parse(cleanText);
+                        let sanitized = cleanText;
+                        sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
+                        const parsed = JSON.parse(sanitized);
                         if (parsed.content) cleanText = parsed.content;
                     } catch (e) {}
                 }
@@ -822,7 +824,14 @@
 
             generatePayloadCard(content) {
                 try {
-                    const data = JSON.parse(content);
+                    // Pre-procesamiento de seguridad para JSON mal formado (caracteres de escape inválidos comunes en LLMs)
+                    let sanitizedContent = content.trim();
+                    
+                    // Escapar backslashes que NO son seguidos por caracteres de escape válidos en JSON
+                    // Los válidos son: " \ / b f n r t u
+                    sanitizedContent = sanitizedContent.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
+
+                    const data = JSON.parse(sanitizedContent);
                     
                     // 3. SPECIAL: SEARCH RESULTS CARD
                     if (data.intent === 'search_results') {
@@ -959,7 +968,9 @@
                 // Si parece JSON, lo ponemos bonito
                 if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
                     try {
-                        const obj = JSON.parse(content);
+                        let sanitized = content.trim();
+                        sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
+                        const obj = JSON.parse(sanitized);
                         if (obj.content && obj.intent) {
                             return highlightPatterns(marked.parse(obj.content));
                         }
@@ -1065,7 +1076,9 @@
                 let textToInject = rawPayload; 
 
                 try {
-                    payloadData = JSON.parse(rawPayload);
+                    let sanitized = rawPayload.trim();
+                    sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
+                    payloadData = JSON.parse(sanitized);
                     if (typeof payloadData === 'object' && payloadData !== null) {
                         // Normalize the new intent format into the flat format expected by the frontend UI
                         if (payloadData.intent === 'full_task' && payloadData.task_data) {
