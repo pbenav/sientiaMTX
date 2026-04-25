@@ -224,6 +224,10 @@ document.addEventListener('alpine:init', () => {
         
         async init() {
             await this.refreshNotes();
+            this.$watch('notes', (val) => {
+                const anyVisible = val.some(n => !n.is_hidden);
+                window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible } }));
+            });
         },
 
         renderMarkdown(content) {
@@ -350,7 +354,23 @@ document.addEventListener('alpine:init', () => {
         },
 
         toggleAll() {
-            this.notes.forEach(n => n.is_hidden = !n.is_hidden);
+            const anyVisible = this.notes.some(n => !n.is_hidden);
+            const newState = anyVisible; // If any is visible, we hide ALL (newState = true)
+            
+            this.notes.forEach(n => n.is_hidden = newState);
+            
+            // Persist to server
+            fetch('{{ route('quick-notes.bulk-update') }}', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    ids: this.notes.map(n => n.id),
+                    is_hidden: newState
+                })
+            }).catch(e => console.error('Error in bulk update:', e));
         },
 
         focusNote(id) {

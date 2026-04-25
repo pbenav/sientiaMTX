@@ -211,4 +211,19 @@ class QuickNoteController extends Controller
             return response()->json(['message' => 'Error en la transcripción: ' . $e->getMessage()], 500);
         }
     }
+
+    public function bulkUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:quick_notes,id',
+            'is_hidden' => 'required|boolean',
+        ]);
+
+        auth()->user()->quickNotes()
+            ->whereIn('id', $validated['ids'])
+            ->update(['is_hidden' => $validated['is_hidden']]);
+
+        return response()->json(['success' => true]);
+    }
 }

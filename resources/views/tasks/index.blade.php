@@ -298,7 +298,7 @@
                                                 class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all mr-1"
                                                 data-id="{{ $task->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-3 w-3 transform transition-transform" fill="none"
+                                                    class="h-3 w-3 transform transition-transform {{ session('show_all_subtasks') ? 'rotate-90' : '' }}" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M9 5l7 7-7 7" />
@@ -470,7 +470,7 @@
                                 $maxProgress = $task->children->max('progress_percentage');
                             @endphp
                             @foreach ($task->children as $subtask)
-                                <tr class="subtask-row hidden bg-gray-50/50 dark:bg-gray-800/20 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-800/40"
+                                <tr class="subtask-row {{ session('show_all_subtasks') ? '' : 'hidden' }} bg-gray-50/50 dark:bg-gray-800/20 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-800/40"
                                     data-parent="{{ $task->id }}"
                                     onclick="if(!event.target.closest('button, a, input, select')) window.location='{{ route('teams.tasks.show', [$team, $subtask]) }}'">
                                     <td class="px-4 py-3 w-10 text-center" onclick="event.stopPropagation()">

@@ -180,7 +180,7 @@
                                                     class="toggle-subtasks-matrix p-0.5 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-transform z-20 relative"
                                                     data-id="{{ $task->id }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                                        class="h-3 w-3 transform transition-transform" fill="none"
+                                                        class="h-3 w-3 transform transition-transform {{ session('show_all_subtasks') ? 'rotate-90' : '' }}" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2" d="M9 5l7 7-7 7" />
@@ -235,7 +235,7 @@
 
                                         <!-- Subtasks List (Hidden by default) -->
                                         @if ($task->children->count() > 0)
-                                            <div class="subtasks-matrix-list hidden pl-6 pr-2 space-y-1 pb-2"
+                                            <div class="subtasks-matrix-list {{ session('show_all_subtasks') ? '' : 'hidden' }} pl-6 pr-2 space-y-1 pb-2"
                                                 data-parent="{{ $task->id }}">
                                                 @foreach ($task->children as $child)
                                                     <div

@@ -14,15 +14,14 @@ class SkillController extends Controller
 
         if ($team) {
             $this->authorize('update', $team);
-            $query->where('team_id', $team->id);
-            $teams = collect([$team]); // Only this team is relevant
-        } else {
-            if (!auth()->user()->can('admin')) {
-                abort(403);
-            }
-            $query->whereNull('team_id');
-            $teams = \App\Models\Team::orderBy('name')->get();
+            return redirect()->route('teams.edit', ['team' => $team, 'tab' => 'skills']);
         }
+
+        if (!auth()->user()->can('admin')) {
+            abort(403);
+        }
+        $query->whereNull('team_id');
+        $teams = \App\Models\Team::orderBy('name')->get();
 
         $skills = $query->get();
         return view('settings.skills', compact('skills', 'teams', 'team'));

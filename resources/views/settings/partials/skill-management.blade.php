@@ -157,7 +157,6 @@
             </form>
         </div>
     </div>
-</div>
 
 <script>
     function getBaseRoute() {

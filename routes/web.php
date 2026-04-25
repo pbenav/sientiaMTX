@@ -238,6 +238,7 @@ Route::middleware('auth')->group(function () {
 
     // Preferencias de usuario (sesión)
     Route::post('/preferences/hide-completed', [\App\Http\Controllers\TaskController::class, 'toggleHideCompleted'])->name('tasks.toggle-hide-completed');
+    Route::post('/preferences/subtasks-visibility', [\App\Http\Controllers\TaskController::class, 'toggleSubtasksVisibility'])->name('tasks.toggle-subtasks-visibility');
     // --- Telegram Chat Experiment ---
     Route::prefix('telegram-chat')->name('telegram.chat.')->group(function () {
         Route::get('/messages', [\App\Http\Controllers\TelegramChatController::class, 'getMessages'])->name('messages');
@@ -271,6 +272,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/attachments/from-drive', [GoogleDriveController::class, 'attachFromDrive'])->name('teams.attachments.from-drive');
 
     // QuickNotes Routes
+    Route::patch('quick-notes/bulk', [\App\Http\Controllers\QuickNoteController::class, 'bulkUpdate'])->name('quick-notes.bulk-update');
     Route::apiResource('quick-notes', \App\Http\Controllers\QuickNoteController::class);
     Route::post('quick-notes/{quick_note}/attachment', [\App\Http\Controllers\QuickNoteController::class, 'uploadAttachment'])->name('quick-notes.attachment');
     Route::post('quick-notes/{quick_note}/attachment/{attachment}/transcribe', [\App\Http\Controllers\QuickNoteController::class, 'transcribeAttachment'])->name('quick-notes.attachment.transcribe');

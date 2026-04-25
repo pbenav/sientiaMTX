@@ -1098,11 +1098,23 @@ class TaskController extends Controller
     /**
      * Toggle hide completed tasks preference (session-based)
      */
-    public function toggleHideCompleted(Request $request)
+    public function toggleHideCompleted()
     {
         $current = session('hide_completed_tasks', true);
         session(['hide_completed_tasks' => !$current]);
-        return response()->json(['hide_completed' => !$current]);
+
+        return response()->json(['success' => true, 'hide_completed' => !$current]);
+    }
+
+    public function toggleSubtasksVisibility(Request $request)
+    {
+        // If 'show' is provided, we use it (absolute set). Otherwise, toggle.
+        $current = session('show_all_subtasks', false);
+        $show = $request->has('show') ? $request->boolean('show') : !$current;
+        
+        session(['show_all_subtasks' => $show]);
+
+        return response()->json(['success' => true, 'show' => $show]);
     }
 
     /**

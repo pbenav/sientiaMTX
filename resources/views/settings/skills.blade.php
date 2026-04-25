@@ -45,7 +45,7 @@
         @endif
     </x-slot>
 
-    <div class="py-12 px-4 text-xs font-bold">
+    <div class="py-12 px-4">
         <div class="max-w-7xl mx-auto">
             @if(!isset($team))
                 @include('settings.partials.tabs')
@@ -53,7 +53,9 @@
                 @include('teams.partials.settings-tabs')
             @endif
 
-            @include('settings.partials.skill-management')
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                @include('settings.partials.skill-management')
+            </div>
         </div>
     </div>
 </x-app-layout>

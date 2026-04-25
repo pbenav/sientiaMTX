@@ -520,15 +520,15 @@ class GeminiService implements AiAssistantInterface
             return "Error: No se ha configurado la clave de Ax.ia. Por favor, ve a tu Perfil -> Integraciones y configura tu Clave API de Gemini.";
         }
 
-        if (empty($model)) {
-            $model = 'gemini-1.5-flash';
-        }
+        // Determinar si el modelo soporta herramientas
+        $supportsTools = (str_contains($model, '1.5') || str_contains($model, '2.0') || str_contains($model, 'flash')) && !$forceNoTools;
 
-        // Determinar la URL. v1 para estables, v1beta para experimentales/preview.
+        // Determinar la URL. v1 para estables, v1beta para experimentales/preview/tools.
         $cleanId = str_replace('models/', '', $model);
         $finalModelPath = "models/{$cleanId}";
         
-        $v = (str_contains($cleanId, 'preview') || str_contains($cleanId, 'deep-research') || $isToolCall) ? 'v1beta' : 'v1';
+        // FIX: Si usamos tools, es mucho más seguro usar v1beta ya que v1 a veces rechaza el campo 'tools' según el modelo/región
+        $v = (str_contains($cleanId, 'preview') || str_contains($cleanId, 'deep-research') || $isToolCall || $supportsTools) ? 'v1beta' : 'v1';
         $url = "https://generativelanguage.googleapis.com/{$v}/{$finalModelPath}:generateContent?key={$this->apiKey}";
 
         if (!$isToolCall) {
@@ -544,9 +544,6 @@ class GeminiService implements AiAssistantInterface
         $payload = [
             'contents' => $this->messagesHistory,
         ];
-
-        // Solo enviamos tools si el modelo es compatible (1.5+) y no hemos forzado su desactivación
-        $supportsTools = (str_contains($model, '1.5') || str_contains($model, '2.0') || str_contains($model, 'flash')) && !$forceNoTools;
         
         if ($supportsTools) {
             $payload['tools'] = $this->getToolsDefinition();
@@ -600,8 +597,8 @@ class GeminiService implements AiAssistantInterface
             // --- Lógica de Resiliencia y Auto-Curación ---
 
             // ERROR ESPECIAL: Si el modelo no reconoce "tools", reintentamos inmediatamente SIN tools
-            if (str_contains($errorMsg, 'tools') && !$forceNoTools) {
-                Log::warning("Ax.ia: El modelo {$model} no soporta herramientas. Reintentando sin ellas...");
+            if ((str_contains($errorMsg, 'tools') || str_contains($errorMsg, 'Unknown name')) && !$forceNoTools) {
+                Log::warning("Ax.ia: El modelo {$model} parece no soportar herramientas o el endpoint las rechaza. Reintentando sin ellas...");
                 return $this->callGemini($model, $parts, $isFallback, $systemInstruction, $isToolCall, true);
             }
             

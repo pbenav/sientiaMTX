@@ -91,8 +91,9 @@
             @endforeach
             {{-- Divider + toggle --}}
             <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
-            <div class="shrink-0">
+            <div class="flex items-center gap-1 shrink-0 ml-1">
                 @include('teams.partials.hide-completed-toggle')
+                @include('teams.partials.subtasks-visibility-toggle')
             </div>
         </div>
     </div>

@@ -168,69 +168,73 @@
 
                     <!-- Bubble Message (User/AI) -->
                     <template x-if="msg.role !== 'system'">
-                        <div :class="msg.role === 'user' ? 'self-end bg-indigo-600 text-white rounded-3xl rounded-tr-none shadow-indigo-500/20' : 'self-start bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 rounded-3xl rounded-tl-none shadow-black/5 border border-gray-100 dark:border-gray-700/50'" 
-                             class="px-5 py-3.5 max-w-[90%] text-sm relative group shadow-xl transition-all">
-                            <div x-html="renderMarkdown(msg.content)" 
-                                 :class="msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert text-gray-800 dark:text-gray-100'" 
-                                 class="leading-relaxed prose prose-sm max-w-none"></div>
+                        <div class="flex flex-col w-full mb-8 last:mb-12">
+                            <div :class="msg.role === 'user' ? 'self-end bg-indigo-600 text-white rounded-3xl rounded-tr-none shadow-indigo-500/20' : 'self-start bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 rounded-3xl rounded-tl-none shadow-black/5 border border-gray-100 dark:border-gray-700/50'" 
+                                 class="px-5 py-3.5 max-w-[90%] text-sm relative group shadow-xl transition-all">
+                                <div x-html="renderMarkdown(msg.content)" 
+                                     :class="msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert text-gray-800 dark:text-gray-100'" 
+                                     class="leading-relaxed prose prose-sm max-w-none"></div>
 
-                            <!-- Attachment Preview -->
-                            <template x-if="msg.file_url">
-                                <div class="mt-4 pt-4 border-t border-white/20 dark:border-gray-700/50">
-                                    <template x-if="msg.file_type && msg.file_type.startsWith('audio/')">
-                                        <div class="flex flex-col gap-2">
-                                            <div class="flex items-center gap-2 text-[10px] opacity-70">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                                                <span x-text="msg.file_name || 'Audio grabado'"></span>
+                                <!-- Attachment Preview -->
+                                <template x-if="msg.file_url">
+                                    <div class="mt-4 pt-4 border-t border-white/20 dark:border-gray-700/50">
+                                        <template x-if="msg.file_type && msg.file_type.startsWith('audio/')">
+                                            <div class="flex flex-col gap-2">
+                                                <div class="flex items-center gap-2 text-[10px] opacity-70">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                                                    <span x-text="msg.file_name || 'Audio grabado'"></span>
+                                                </div>
+                                                <audio controls class="w-full h-8 rounded-lg" :src="msg.file_url"></audio>
                                             </div>
-                                            <audio controls class="w-full h-8 rounded-lg" :src="msg.file_url"></audio>
-                                        </div>
-                                    </template>
-                                    <template x-if="!msg.file_type || !msg.file_type.startsWith('audio/')">
-                                        <a :href="msg.file_url" target="_blank" 
-                                           class="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all border border-transparent hover:border-indigo-400/30 group/file">
-                                            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-500">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="text-[11px] font-bold truncate" x-text="msg.file_name || 'Descargar archivo'"></div>
-                                                <div class="text-[9px] opacity-60 uppercase tracking-widest font-black" x-text="msg.file_type || 'Archivo'"></div>
-                                            </div>
-                                        </a>
-                                    </template>
-                                </div>
-                            </template>
-                            
-                            <!-- Quick Actions (Only for AI messages) -->
-                            <template x-if="msg.role === 'ai'">
-                                <div class="absolute -bottom-10 right-0 flex space-x-1 text-sans">
-                                    <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                                    </button>
-                                    @if(auth()->user()->google_token)
-                                    <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="Guardar en Google Drive">
-                                        <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
-                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
-                                            <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
-                                            <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
-                                        </svg>
-                                    </button>
-                                    @endif
-                                    
-                                    <template x-if="msg.is_error">
-                                        <div class="flex space-x-2 mt-2">
-                                            <button @click="retryLastRequest()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 transition-all text-[9px] font-bold uppercase tracking-tight" title="Reintentar">
-                                                <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                <span>Reintentar</span>
+                                        </template>
+                                        <template x-if="!msg.file_type || !msg.file_type.startsWith('audio/')">
+                                            <a :href="msg.file_url" target="_blank" 
+                                               class="flex items-center gap-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all border border-transparent hover:border-indigo-400/30 group/file">
+                                                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-500">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="text-[11px] font-bold truncate" x-text="msg.file_name || 'Descargar archivo'"></div>
+                                                    <div class="text-[9px] opacity-60 uppercase tracking-widest font-black" x-text="msg.file_type || 'Archivo'"></div>
+                                                </div>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <!-- Quick Actions (Only for AI messages) -->
+                                <template x-if="msg.role === 'ai'">
+                                    <div class="absolute -bottom-10 right-0 flex items-center gap-2">
+                                        <div class="flex space-x-1 text-sans">
+                                            <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             </button>
-                                            <button @click="recoverPrompt()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 transition-all text-[9px] font-bold uppercase tracking-tight" title="Recuperar texto">
-                                                <svg class="w-3 h-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                                                <span>Recuperar</span>
+                                            @if(auth()->user()->google_token)
+                                            <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="Guardar en Google Drive">
+                                                <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
+                                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                </svg>
                                             </button>
+                                            @endif
                                         </div>
-                                    </template>
-                                </div>
-                            </template>
+
+                                        <template x-if="msg.is_error">
+                                            <div class="flex space-x-2">
+                                                <button @click="retryLastRequest()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 text-white shadow-xl shadow-red-500/40 hover:bg-red-700 transition-all text-[10px] font-black uppercase tracking-tight" title="Reintentar ahora">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                    <span>Reintentar</span>
+                                                </button>
+                                                <button @click="recoverPrompt()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-white shadow-xl shadow-amber-500/40 hover:bg-amber-600 transition-all text-[10px] font-black uppercase tracking-tight" title="Rescatar mi texto">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                                    <span>Rescatar</span>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -253,14 +257,17 @@
         <!-- Input Area -->
         <div class="p-3 sm:p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
             <form @submit.prevent="sendMessage" class="flex items-center space-x-2 sm:space-x-3">
-                <input 
+                <textarea 
                     x-model="input" 
+                    x-ref="aiInput"
                     @paste="handlePaste($event)"
-                    type="text" 
-                    class="flex-1 min-w-0 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-5 shadow-inner"
+                    @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()"
+                    rows="1"
+                    class="flex-1 min-w-0 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-5 shadow-inner resize-none overflow-y-auto max-h-32 transition-all"
                     :placeholder="isRecording ? 'Grabando...' : 'Pregunta...'" 
                     :disabled="loading || isRecording"
-                >
+                    @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                ></textarea>
                 
                 <!-- Quick Multi-modal Actions -->
                 <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
@@ -302,11 +309,18 @@
 
     <!-- QuickNote Toggles (Floating above AI) -->
     <div class="flex flex-col gap-2 mb-3 pointer-events-auto">
-        <button 
+        <button type="button" 
             @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all'))"
-            class="w-10 h-10 bg-gray-800/80 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md"
-            title="Mostrar/Ocultar todas las notas">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md"
+            :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
+            :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Mostrar notas rápidas'">
+            <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <svg x-show="!quickNotesVisible" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+            </svg>
         </button>
         <button 
             @click="window.dispatchEvent(new CustomEvent('quicknote-create'))"
@@ -364,6 +378,7 @@
             taskId: {{ $taskId ?: 'null' }},
             threadId: {{ $threadId ?: 'null' }},
             messageId: {{ $messageId ?: 'null' }},
+            quickNotesVisible: false,
             attachmentId: null,
 
             currentModel: 'Sincronizando...',
@@ -392,8 +407,9 @@
 
             init() {
                 this.loadHistory();
-                // Persistencia desactivada por petición del usuario
-                // if (localStorage.getItem('ai_assistant_open') === '1') { this.open = true; }
+                window.addEventListener('quicknote-state-changed', (e) => {
+                    this.quickNotesVisible = e.detail.anyVisible;
+                });
             },
 
             async loadHistory() {
@@ -763,15 +779,15 @@
                 }
                 this.input = this.lastPrompt;
                 this.pendingFile = this.lastFile;
-                // Auto-resize el textarea para acomodar el texto rescatado
-                setTimeout(() => {
+                
+                this.$nextTick(() => {
                     const textarea = this.$refs.aiInput;
                     if (textarea) {
                         textarea.style.height = 'auto';
                         textarea.style.height = textarea.scrollHeight + 'px';
                         textarea.focus();
                     }
-                }, 50);
+                });
             },
 
             async sendMessage() {
