@@ -1,13 +1,16 @@
 <x-app-layout>
     @section('title', $task->title)    @php
-        // Find if the current user has a personal instance of this goal (regardless of being a template or not)
-        $personalInstance =
-            $task->is_template || $task->children()->exists()
-                ? $task
-                    ->instances()
-                    ->where('assigned_user_id', auth()->id())
-                    ->first()
-                : null;
+        // 1. Identify the personal execution instance
+        $personalInstance = null;
+        if ($task->is_template || $task->children()->exists()) {
+            // If it's a template/parent, find the instance assigned to the current user
+            $personalInstance = $task->instances()
+                ->where('assigned_user_id', auth()->id())
+                ->first();
+        } elseif ($task->assigned_user_id === auth()->id()) {
+            // If it's a regular task assigned to me, it IS my execution
+            $personalInstance = $task;
+        }
     @endphp
 
     <x-slot name="header">
@@ -541,6 +544,7 @@
                     @endif
                     <div class="overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl custom-scrollbar"
                         x-data="{ 
+                            selectedMembers: [],
                             sortKey: 'name', 
                             sortDir: 'asc',
                             sort(key) {
@@ -564,12 +568,48 @@
                                     return 0;
                                 });
                                 rows.forEach(row => tbody.appendChild(row));
+                            },
+                            toggleAll() {
+                                const checkboxes = Array.from(document.querySelectorAll('.member-checkbox:not(:disabled)'));
+                                if (this.selectedMembers.length === checkboxes.length) {
+                                    this.selectedMembers = [];
+                                } else {
+                                    this.selectedMembers = checkboxes.map(c => c.value);
+                                }
                             }
                         }">
+                        <!-- Bulk Actions Bar -->
+                        <div x-show="selectedMembers.length > 0" 
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 -translate-y-4"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="m-4 p-3 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800/50 rounded-2xl flex items-center justify-between shadow-sm sticky top-2 z-20">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-black text-violet-700 dark:text-violet-400 uppercase tracking-widest">
+                                    <span x-text="selectedMembers.length"></span> {{ __('seleccionados') }}
+                                </span>
+                            </div>
+                            <button @click="nudgeUser(selectedMembers)" 
+                                    class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                {{ __('Recordatorio Masivo') }}
+                            </button>
+                        </div>
+
                         <table class="w-full text-left text-sm">
                             <thead
                                 class="sticky top-0 z-10 bg-gray-50/95 dark:bg-gray-800/95 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-200 dark:border-gray-700">
                                 <tr>
+                                    @if($team->isCoordinator(auth()->user()))
+                                    <th class="px-4 py-3 w-10">
+                                        <input type="checkbox" 
+                                               @click="toggleAll()" 
+                                               :checked="selectedMembers.length > 0 && selectedMembers.length === document.querySelectorAll('.member-checkbox:not(:disabled)').length"
+                                               class="rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer">
+                                    </th>
+                                    @endif
                                     <th class="px-4 py-3 cursor-pointer hover:text-violet-500 transition-colors group" @click="sort('name')">
                                         <div class="flex items-center gap-2">
                                             {{ __('teams.members') }}
@@ -625,7 +665,18 @@
                                         data-time="{{ $instSeconds }}"
                                         x-show="roadmapQuery === '' || '{{ strtolower($instMemberName) }}'.includes(roadmapQuery.toLowerCase()) || '{{ strtolower($inst->name) }}'.includes(roadmapQuery.toLowerCase())"
                                         x-transition
-                                        @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
+                                        @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a, input')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
+                                        
+                                        @if($team->isCoordinator(auth()->user()))
+                                        <td class="px-4 py-4" onclick="event.stopPropagation()">
+                                            <input type="checkbox" 
+                                                   value="{{ $isSimulated ? $task->id : $inst->id }}" 
+                                                   x-model="selectedMembers" 
+                                                   class="member-checkbox rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer"
+                                                   {{ $inst->status === 'completed' ? 'disabled' : '' }}>
+                                        </td>
+                                        @endif
+
                                         <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-4">
                                                     <div class="relative">
@@ -709,7 +760,7 @@
                                         </td>
                                         <td class="px-4 py-4 text-right">
                                             @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
-                                                <button onclick="event.stopPropagation(); nudgeUser({{ $isSimulated ? $task->id : $inst->id }})"
+                                                <button onclick="event.stopPropagation(); nudgeUser('{{ $isSimulated ? $task->id : $inst->id }}')"
                                                     class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
                                                     title="{{ __('tasks.nudge_user') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block"
@@ -743,55 +794,7 @@
                 </div>
             @endif
 
-            @if ($task->isInstance())
-                <div
-                    class="bg-indigo-50/80 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm dark:shadow-none transition-colors mb-6">
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-2xl bg-white dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm border border-indigo-100 dark:border-indigo-500/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-extrabold text-indigo-900 dark:text-indigo-300 tracking-tight">
-                                @if($task->assigned_user_id === auth()->id())
-                                    {{ __('tasks.personal_instance_notice') }}
-                                @else
-                                    {{ __('tasks.personal_instance_notice_others', ['name' => ($task->assignedUser?->name ?? ($task->creator?->name ?? 'User'))]) }}
-                                @endif
-                                
-                                @if ($team->isCoordinator(auth()->user()))
-                                    <div class="inline-block relative">
-                                        <select onchange="reassignTask({{ $task->id }}, this.value)" class="text-xs bg-white dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 hover:border-indigo-300 rounded-lg ml-2 px-2 py-1 shadow-sm font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer">
-                                            <option value="" disabled {{ !$task->assigned_user_id ? 'selected' : '' }}>{{ __('Reasignar a...') }}</option>
-                                            <option value="unassign">-- {{ __('Pendiente de asignación') }} --</option>
-                                            @foreach($team->members()->orderBy('name')->get() as $member)
-                                                <option value="{{ $member->id }}" {{ $task->assigned_user_id === $member->id ? 'selected' : '' }}>
-                                                    {{ $member->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                @endif
-                            </p>
-                            <p class="text-xs text-indigo-700/70 dark:text-indigo-400/80 font-medium">
-                                @if($task->assigned_user_id === auth()->id())
-                                    {{ __('tasks.personal_instance_description') }}
-                                @else
-                                    {{ __('tasks.personal_instance_description_others') }}
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                    <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}"
-                        class="text-xs font-bold text-indigo-600 dark:text-indigo-300 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-500 px-5 py-2.5 bg-white dark:bg-indigo-500/10 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-500/20 transition-all text-center">
-                        {{ __('tasks.view_global_goal') }}
-                    </a>
-                </div>
-            @endif
+
 
             <!-- Skills / Árbol de Capacidades -->
             @php $taskSkills = $task->skills; @endphp
@@ -881,13 +884,56 @@
                         {!! str($displayObservations)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     </div>
                 </div>
+            @endif
 
-                <script>
-                    function printSection(sectionLabel, contentId) {
-                        const content = document.getElementById(contentId).innerHTML;
-                        const taskTitle = @json($task->title);
-                        
-                        const printWin = window.open('', '_blank', 'width=800,height=900');
+            @if($personalInstance && $personalInstance->assigned_user_id === auth()->id())
+                <div class="bg-white dark:bg-gray-900 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-5 shadow-sm mt-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 border border-amber-100 dark:border-amber-800/50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">
+                                {{ __('tasks.private_notes') }}
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="printPrivateNotes()" class="p-1.5 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 rounded-xl transition-all border border-amber-100 dark:border-amber-800/50 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" title="Imprimir notas privadas">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Imprimir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <form action="{{ route('teams.tasks.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
+                        @csrf
+                        <x-markdown-editor 
+                            name="content" 
+                            id="reply-content-private"
+                            :value="old('content', $personalInstance->currentPrivateNote?->content)"
+                            :label="null"
+                            rows="6"
+                            placeholder="Escribe aquí tus notas personales sobre esta tarea... Nadie más podrá verlas."
+                        />
+                        <div class="mt-3 flex justify-end">
+                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95">
+                                {{ __('tasks.save_notes') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @endif
+
+            <script>
+                function printSection(sectionLabel, contentId) {
+                    const content = document.getElementById(contentId).innerHTML;
+                    const taskTitle = @json($task->title);
+                    
+                    const printWin = window.open('', '_blank', 'width=800,height=900');
                         printWin.document.write(`
                             <html>
                                 <head>
@@ -1285,178 +1331,11 @@
                         printWin.document.close();
                     }
                 </script>
-            @endif
-
-            <!-- Private Notes -->
-            <div x-data="{ 
-                saving: false,
-                doSave() {
-                    this.saving = true;
-                    // Fuerza la lectura del DOM justo antes de enviar
-                    const editor = document.getElementById('reply-content-private');
-                    const contentValue = editor ? editor.value : '';
-
-                    fetch('{{ route('teams.tasks.private-notes.update', [$team, $task]) }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ content: contentValue })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        this.saving = false;
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Guardado',
-                                text: data.message,
-                                toast: true,
-                                position: 'top-end',
-                                timer: 3000,
-                                showConfirmButton: false
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        this.saving = false;
-                        console.error(err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'No se pudo guardar la nota.',
-                            toast: true,
-                            position: 'top-end',
-                            timer: 3000,
-                            showConfirmButton: false
-                        });
-                    });
-                }
-            }"
-            class="bg-white dark:bg-gray-900 border border-amber-200/50 dark:border-amber-900/30 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors relative overflow-hidden group">
-                
-                {{-- Decorative background icon --}}
-                <div class="absolute -right-4 -top-4 text-amber-500/5 dark:text-amber-500/10 rotate-12 group-hover:rotate-6 transition-transform duration-500 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-32 h-32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                </div>
-
-                <div class="flex items-center justify-between mb-4 relative z-10">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest">
-                                {{ __('Mis Notas Privadas') }}
-                            </h3>
-                            <p class="text-[9px] text-amber-600/50 dark:text-amber-500/40 font-bold uppercase tracking-tighter">Solo visibles para ti</p>
-                        </div>
-                    </div>
-
-                        <div class="flex items-center gap-2">
-                            <button type="button" @click="doSave()" 
-                                :disabled="saving"
-                                class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-600/20 flex items-center gap-2">
-                                <template x-if="!saving">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                    </svg>
-                                </template>
-                                <template x-if="saving">
-                                    <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                </template>
-                                <span x-text="saving ? 'Guardando...' : 'Guardar Notas'"></span>
-                            </button>
-                            <button type="button" onclick="printPrivateNotes()" 
-                                    class="px-2.5 py-1.5 bg-white dark:bg-gray-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-xl transition-all border border-amber-100 dark:border-amber-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                                    title="Imprimir notas privadas">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                </svg>
-                                Imprimir
-                            </button>
-                        </div>
-                </div>
-
-                <div class="relative z-10" id="private-notes-editor">
-                    <x-markdown-editor 
-                        name="private_content" 
-                        :value="$task->currentPrivateNote?->content ?? ''"
-                        id="reply-content-private"
-                        placeholder="Escribe aquí tus reflexiones, avances o notas que nadie más deba ver..."
-                        rows="8"
-                        :upload-url="route('teams.forum.upload_image', $team)"
-                    />
-                </div>
-            </div>
 
 
-            <!-- History -->
-            @if ($task->histories->isNotEmpty())
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
-                    <div
-                        class="px-5 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
-                        <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                            {{ __('tasks.history') }}</h3>
-                    </div>
-                    <div class="divide-y divide-gray-50 dark:divide-gray-800 max-h-[250px] overflow-y-auto">
-                        @foreach ($task->histories->sortByDesc('created_at')->take(20) as $h)
-                            <div class="px-5 py-2 text-xs transition-colors hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-50 dark:border-gray-800/50 last:border-none" x-data="{ open: false }">
-                                <div class="flex items-center justify-between gap-4 cursor-pointer" @click="open = !open">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <img src="{{ $h->user ? $h->user->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
-                                            alt="{{ $h->user?->name ?? '?' }}"
-                                            class="w-6 h-6 rounded-lg object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
-                                        <div class="truncate">
-                                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ $h->user?->name ?? '—' }}</span>
-                                            <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/40 text-indigo-500 dark:text-indigo-400 px-1.5 py-0.5 rounded ml-1 font-black uppercase tracking-tighter">{{ $h->action }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3 shrink-0">
-                                        <span class="text-[10px] text-gray-400 font-medium tabular-nums">{{ $h->created_at->format('d/m H:i') }}</span>
-                                        <svg class="h-3 w-3 text-gray-300 transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
-                                    </div>
-                                </div>
-                                
-                                <div x-show="open" style="display: none;" class="mt-3 ml-9 pb-2 border-l-2 border-indigo-100 dark:border-indigo-900/50 pl-4 space-y-2 animate-fade-in-down" x-transition>
-                                    @if($h->old_values || $h->new_values)
-                                        <div class="flex flex-col gap-2">
-                                            @foreach(($h->new_values ?? []) as $key => $val)
-                                                <div class="flex flex-col gap-0.5">
-                                                    <span class="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">{{ $key }}</span>
-                                                    <div class="flex items-center gap-2 text-[10px]">
-                                                        <span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded line-through opacity-70">
-                                                            {{ is_array($h->old_values[$key] ?? null) ? 'JSON' : ($h->old_values[$key] ?? '—') }}
-                                                        </span>
-                                                        <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                        <span class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">
-                                                            {{ is_array($val) ? 'JSON' : $val }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                    @if($h->notes)
-                                        <p class="text-[10px] text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl">{{ $h->notes }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+
+
+
 
             <!-- Attachments Section -->
             <div x-data="{}"
@@ -1598,7 +1477,7 @@
                                     <button type="button" 
                                         onclick="showAttachmentHistory({{ $attachment->id }})"
                                         class="p-1.5 text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors"
-                                        title="Ver histórico de movimientos">
+                                        title="{{ __('tasks.history') ?? 'Ver histórico' }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
@@ -1673,94 +1552,143 @@
                 @endif
             </div>
 
-            <!-- Disk Quota Widget -->
-            <div
-                class="bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
-                <div class="flex items-center justify-between mb-4">
-                    <span
-                        class="text-xs text-violet-600 dark:text-violet-400 font-bold uppercase tracking-widest">{{ __('tasks.disk_quota') }}</span>
-                    <span class="text-xs text-gray-400 font-medium">
-                        {{ number_format(auth()->user()->disk_used / 1024 / 1024, 1) }} /
-                        {{ number_format(auth()->user()->disk_quota / 1024 / 1024, 0) }} MB
-                    </span>
-                </div>
-                @php
-                    $perc =
-                        auth()->user()->disk_quota > 0
-                            ? (auth()->user()->disk_used / auth()->user()->disk_quota) * 100
-                            : 0;
-                    $barColor = $perc > 90 ? 'bg-red-500' : ($perc > 70 ? 'bg-amber-500' : 'bg-violet-500');
-                @endphp
-                <div class="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
-                    <div class="h-full {{ $barColor }} shadow-lg" style="width: {{ $perc }}%"></div>
-                </div>
-                <p
-                    class="text-[11px] text-gray-500 dark:text-gray-400 mt-3 font-medium flex items-center gap-1.5 font-sans">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {{ __('tasks.quota_usage_tip') }}
-                </p>
-            </div>
         </div>
 
         <!-- Sidebar -->
         <div class="space-y-4">
-            <!-- Personal Execution Card (if applicable) -->
-            @if ($personalInstance && $personalInstance->assigned_user_id === auth()->id())
-                <div class="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 pointer-events-none"></div>
-                    <p class="relative text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-widest font-bold mb-1 flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        {{ __('tasks.your_execution') ?? 'Tu Ejecución' }}
+            <!-- 1. Plan Maestro Card -->
+            @if ($task->is_template)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm space-y-4">
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('ACCIONES DEL PLAN MAESTRO') }}</p>
+                    
+                    <div class="space-y-2">
+                        @if ($task->status !== 'completed')
+                            <button onclick="updateTaskStatus('completed')"
+                                class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 rounded-xl transition-all shadow-md shadow-emerald-600/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                {{ __('Cerrar Plan Maestro') }}
+                            </button>
+                        @else
+                            <button onclick="updateTaskStatus('pending')"
+                                class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 text-xs font-bold py-3 rounded-xl transition-all border border-emerald-200 dark:border-emerald-700">
+                                {{ __('Reabrir Plan Maestro') }}
+                            </button>
+                        @endif
+
+                        @if ($task->status !== 'blocked')
+                            <button onclick="updateTaskStatus('blocked')"
+                                class="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold py-3 rounded-xl transition-all border border-red-100 dark:border-red-900/30">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                {{ __('tasks.report_blocker') }}
+                            </button>
+                        @endif
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">
+                            <span>{{ __('tasks.roadmap_progress') }}</span>
+                            <span>{{ $task->progress }}%</span>
+                        </div>
+                        <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-violet-500 transition-all duration-1000" style="width: {{ $task->progress }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            @elseif ($task->isInstance())
+                <div class="bg-indigo-50/80 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-4 space-y-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm border border-indigo-100 dark:border-indigo-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-widest">{{ __('Plan Maestro Relacionado') }}</p>
+                            @if ($team->isCoordinator(auth()->user()))
+                                <div class="mt-1">
+                                    <select onchange="reassignTask({{ $task->id }}, this.value)" class="w-full text-[10px] bg-white dark:bg-indigo-900 border border-indigo-100 dark:border-indigo-800 rounded-lg px-2 py-1 shadow-sm font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer">
+                                        <option value="" disabled {{ !$task->assigned_user_id ? 'selected' : '' }}>{{ __('Reasignar a...') }}</option>
+                                        <option value="unassign">-- {{ __('Pendiente') }} --</option>
+                                        @foreach($team->members()->orderBy('name')->get() as $member)
+                                            <option value="{{ $member->id }}" {{ $task->assigned_user_id === $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @else
+                                <p class="text-[11px] font-bold text-indigo-900 dark:text-indigo-200 truncate">{{ $task->assignedUser?->name ?? __('Sin asignar') }}</p>
+                            @endif
+                        </div>
+                    </div>
+                    <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="block w-full text-center text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 py-2 bg-white dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20 transition-all">
+                        {{ __('tasks.view_global_goal') }}
+                    </a>
+                </div>
+            @else
+                <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm dark:shadow-none">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 shrink-0 border border-gray-200 dark:border-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ __('tasks.plan_master') }}</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium">{{ __('Esta tarea no es parte de un Plan Maestro.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- 2. Tu ejecución Card -->
+            @if ($personalInstance)
+                <div class="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl p-5 space-y-4 shadow-sm dark:shadow-none transition-colors relative overflow-hidden">
+                    <p class="relative text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-widest font-black flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        {{ __('tasks.your_execution') ?? 'TU EJECUCIÓN' }}
                     </p>
 
-                    @if ($personalInstance->status !== 'completed')
-                        <button onclick="updateTaskStatus('completed', {{ $personalInstance->id }})"
-                            class="relative w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            {{ __('tasks.mark_complete') }}
-                        </button>
-                    @else
-                        <button onclick="updateTaskStatus('pending', {{ $personalInstance->id }})"
-                            class="relative w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-xs font-bold py-2.5 rounded-xl transition-all border border-indigo-200 dark:border-indigo-700">
-                            {{ __('tasks.reopen_task') }}
-                        </button>
-                    @endif
+                    <div class="space-y-2 relative">
+                        @if ($personalInstance->status !== 'completed')
+                            <button onclick="updateTaskStatus('completed', {{ $personalInstance->id }})"
+                                class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-xl transition-all shadow-md shadow-indigo-600/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                {{ __('tasks.mark_complete') }}
+                            </button>
+                        @else
+                            <button onclick="updateTaskStatus('pending', {{ $personalInstance->id }})"
+                                class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-xs font-bold py-3 rounded-xl transition-all border border-indigo-200 dark:border-indigo-700 shadow-sm">
+                                {{ __('tasks.reopen_task') }}
+                            </button>
+                        @endif
 
-                    @if ($personalInstance->status === 'blocked')
-                        <button onclick="updateTaskStatus('in_progress', {{ $personalInstance->id }})"
-                            class="relative w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm animate-pulse">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            {{ __('tasks.unblock_task') }}
-                        </button>
-                    @else
-                        <button onclick="updateTaskStatus('blocked', {{ $personalInstance->id }})"
-                            class="relative w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-red-200 dark:border-red-500/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            {{ __('tasks.report_blocker') }}
-                        </button>
-                    @endif
+                        @if ($personalInstance->status !== 'blocked')
+                            <button onclick="updateTaskStatus('blocked', {{ $personalInstance->id }})"
+                                class="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold py-3 rounded-xl transition-all border border-red-100 dark:border-red-900/30">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                {{ __('tasks.report_blocker') }}
+                            </button>
+                        @endif
+                    </div>
 
-                    <div class="relative pt-2 border-t border-indigo-100/50 dark:border-indigo-800/30 mt-2">
-                        <label class="flex items-center justify-between text-[10px] text-indigo-400 dark:text-indigo-500 uppercase tracking-widest font-bold mb-3">
-                            <span>{{ __('tasks.your_progress') ?? 'Tu Progreso' }}</span>
-                            <div class="flex items-center gap-1 min-w-[3rem] justify-end">
-                                <span id="personal-progress-val" class="text-indigo-600 dark:text-indigo-400 tabular-nums">{{ $personalInstance->progress }}</span>
-                                <span class="text-indigo-400 text-[8px]">%</span>
+                    <div class="relative pt-4 border-t border-indigo-100/50 dark:border-indigo-800/30 mt-2">
+                        <label class="flex items-center justify-between text-[9px] text-indigo-400 dark:text-indigo-500 uppercase tracking-widest font-black mb-3">
+                            <span>{{ __('tasks.your_progress') ?? 'TU PROGRESO' }}</span>
+                            <div class="flex items-center gap-1 min-w-[3rem] justify-end font-bold">
+                                <span id="personal-progress-val" class="text-indigo-600 dark:text-indigo-400 tabular-nums text-sm">{{ $personalInstance->progress_percentage }}</span>
+                                <span class="text-indigo-400 text-[10px]">%</span>
                             </div>
                         </label>
                         <div class="flex items-center gap-3">
-                            <input type="range" min="0" max="100" value="{{ $personalInstance->progress }}"
-                                class="flex-1 h-1.5 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg appearance-none cursor-pointer accent-indigo-600 border border-indigo-200 dark:border-indigo-700/50 shadow-inner"
+                            <input type="range" min="0" max="100" value="{{ $personalInstance->progress_percentage }}"
+                                class="flex-1 h-1 bg-indigo-100 dark:bg-indigo-900/40 rounded-full appearance-none cursor-pointer accent-indigo-600"
                                 oninput="document.getElementById('personal-progress-val').innerText = this.value"
                                 onchange="updateTaskProgress(this.value, {{ $personalInstance->id }}, '{{ $personalInstance->status }}')">
                         </div>
@@ -1768,215 +1696,40 @@
                 </div>
             @endif
 
-            <!-- Global / Generic Actions -->
-            @php
-                $showGlobalActions = (!$task->is_template && ($task->assigned_user_id === auth()->id() || $team->isCoordinator(auth()->user()) || $task->created_by_id === auth()->id())) || 
-                                      ($task->is_template && ($team->isCoordinator(auth()->user()) || $task->created_by_id === auth()->id()));
-            @endphp
-
-            @if ($showGlobalActions)
-                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1">
-                        {{ $task->is_template ? __('Acciones del Plan Maestro') : __('tasks.actions') }}
-                    </p>
-
-                    @if ($task->status !== 'completed')
-                        <button onclick="updateTaskStatus('completed', {{ $task->id }})"
-                            class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white dark:text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            {{ $task->is_template ? __('Cerrar Plan Maestro') : __('tasks.mark_complete') }}
-                        </button>
-                    @else
-                        <button onclick="updateTaskStatus('pending', {{ $task->id }})"
-                            class="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold py-2.5 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
-                            {{ $task->is_template ? __('Reabrir Plan Maestro') : __('tasks.reopen_task') }}
-                        </button>
-                    @endif
-
-                    @if ($task->status === 'blocked')
-                        <button onclick="updateTaskStatus('in_progress', {{ $task->id }})"
-                            class="w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm animate-pulse">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            {{ __('tasks.unblock_task') }}
-                        </button>
-                    @else
-                        <button onclick="updateTaskStatus('blocked', {{ $task->id }})"
-                            class="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl transition-all border border-red-200 dark:border-red-500/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            {{ __('tasks.report_blocker') }}
-                        </button>
-                    @endif
-
-                    @if (!$personalInstance)
-                        @php
-                            $isAutomatic = $task->is_template || $task->children()->exists();
-                        @endphp
-                        <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-                            <label class="flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
-                                <span>{{ $isAutomatic ? (__('tasks.global_progress') ?? 'Progreso Global') : __('tasks.progress') }}</span>
-                                <div class="flex items-center gap-1 min-w-[3rem] justify-end">
-                                    <span id="global-progress-val-sidebar" class="text-violet-600 dark:text-violet-400 tabular-nums">{{ $task->progress }}</span>
-                                    <span class="text-gray-400 text-[8px]">%</span>
-                                </div>
-                            </label>
-                            <div class="flex items-center gap-3">
-                                <input type="range" min="0" max="100" value="{{ $task->progress }}"
-                                    class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none transition-none {{ $isAutomatic ? 'cursor-not-allowed opacity-60' : 'cursor-pointer accent-violet-600' }}"
-                                    {{ $isAutomatic ? 'disabled' : '' }}
-                                    oninput="document.getElementById('global-progress-val-sidebar').innerText = this.value"
-                                    onchange="updateTaskProgress(this.value, {{ $task->id }}, '{{ $task->status }}')">
-
-                                @if ($isAutomatic)
-                                    <span class="text-[10px] text-gray-400 italic">({{ __('tasks.automatic') ?? 'Auto' }})</span>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            @endif
-
-            <!-- My Tracking -->
-            @php
-                $trackingTask = $task->is_template ? $personalInstance : $task;
-            @endphp
-
-            @if ($trackingTask && !$task->is_template)
-                <div x-data="{ 
-                    taskId: {{ $trackingTask->id }},
-                    get isActive() { return Alpine.store('timer').activeTaskId == this.taskId },
-                    get elapsed() { return this.isActive ? Alpine.store('timer').elapsed : 0 },
-                    formatTime(seconds) {
-                        const h = Math.floor(seconds / 3600);
-                        const m = Math.floor((seconds % 3600) / 60);
-                        const s = seconds % 60;
-                        return [h, m, s].map(v => v < 10 ? '0' + v : v).join(':');
-                    }
-                }"
-                class="bg-white dark:bg-gray-900 border-2 transition-all duration-500 rounded-2xl p-5 shadow-sm overflow-hidden group"
-                :class="isActive ? 'border-violet-500 shadow-violet-500/10' : 'border-gray-100 dark:border-gray-800'">
-                    <div class="flex items-center justify-between mb-4">
-                        <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black">
-                            {{ __('Mi Seguimiento') }}
-                        </p>
-                        <div x-show="isActive" class="flex items-center gap-1.5" x-cloak>
-                            <span class="relative flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                            </span>
-                            <span class="text-[9px] font-bold text-red-500 uppercase tracking-tighter animate-pulse">{{ __('En curso') }}</span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="min-w-0">
-                            <p class="text-2xl font-black text-gray-900 dark:text-white tabular-nums tracking-tighter" x-text="isActive ? formatTime(elapsed) : '00:00:00'">
-                            </p>
-                            <p class="text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-1">
-                                {{ __('Total hoy') }}: <span class="font-bold text-gray-600 dark:text-gray-300">{{ $trackingTask->trackedTimeTodayHuman() }}</span>
-                            </p>
-                        </div>
-                        
-                        @include('tasks.partials.task-timer-button', ['task' => $trackingTask])
-                    </div>
-
-                    @php
-                        $otherWorkersCount = count(array_filter($activeUserIds, fn($id) => $id !== auth()->id()));
-                    @endphp
-                    @if($otherWorkersCount > 0)
-                        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                            <div class="flex -space-x-2 overflow-hidden">
-                                @foreach($activeUserIds as $oid)
-                                    @if($oid !== auth()->id())
-                                        @php $ou = \App\Models\User::find($oid); @endphp
-                                        <img src="{{ $ou->profile_photo_url }}" alt="{{ $ou->name }}" 
-                                            class="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white dark:ring-gray-900 shadow-sm" title="{{ $ou->name }} {{ __('está trabajando ahora') }}">
-                                    @endif
-                                @endforeach
-                            </div>
-                            <span class="text-[9px] font-black text-violet-500 uppercase tracking-widest animate-pulse">
-                                {{ $otherWorkersCount }} {{ $otherWorkersCount == 1 ? __('MIEMBRO TRABAJANDO') : __('MIEMBROS TRABAJANDO') }}
-                            </span>
-                        </div>
-                    @endif
-                </div>
-            @endif
-
-            <!-- Owner -->
-            <div
-                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors">
+            <!-- 3. Propietario Card -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none">
                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
                     {{ __('tasks.owner') }}
                 </p>
                 <div class="flex items-center gap-3">
                     <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
                         alt="{{ $task->creator?->name ?? '?' }}"
-                        class="w-10 h-10 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800">
+                        class="w-10 h-10 rounded-xl object-cover shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
                     <div class="min-w-0">
-                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 truncate">
-                            {{ $task->creator?->name ?? '—' }}</p>
-                        <p class="text-[10px] text-gray-500 dark:text-gray-600">{{ __('tasks.created_at') }}:
-                            {{ $task->created_at->format('d M Y') }}</p>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 truncate">{{ $task->creator?->name ?? '—' }}</p>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-600 uppercase font-black tracking-tighter">{{ $task->created_at->format('d M Y') }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Status -->
-            <div
-                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none transition-colors">
+            <!-- 4. Estado Card -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-none">
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('tasks.status') }}</span>
-                    <span
-                        class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
+                    <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('tasks.status') }}</span>
+                    <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
                         {{ __('tasks.statuses.' . $task->status) }}
                     </span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('tasks.quadrant') }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('tasks.quadrant') }}</span>
                     <span class="text-[11px] font-bold {{ $qCfg['color'] }} uppercase tracking-wider">
                         Q{{ $q }}: {{ __('tasks.quadrants.' . $q . '.label') }}
                     </span>
                 </div>
-                <div class="pt-1 border-t border-gray-100 dark:border-gray-800 mt-2">
-                    <div class="{{ $qCfg['bg'] }} rounded-xl p-3 text-[11px]">
-                        <p class="font-bold {{ $qCfg['color'] }} uppercase tracking-tighter">
-                            {{ __('tasks.quadrants.' . $q . '.description') }}</p>
-                        <p class="text-gray-500 dark:text-gray-400 mt-1.5 italic font-medium leading-relaxed">💡
-                            {{ __('tasks.quadrants.' . $q . '.tip') }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Priority / Urgency -->
-            <div
-                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors">
-                @foreach ([['tasks.priority', $task->priority, 'tasks.priorities'], ['tasks.urgency', $task->urgency, 'tasks.urgencies']] as [$lbl, $val, $map])
-                    <div class="flex items-center justify-between">
-                        <span
-                            class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __($lbl) }}</span>
-                        <span
-                            class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __($map . '.' . $val) }}</span>
-                    </div>
-                @endforeach
-
                 <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span
-                        class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
                     <div class="flex items-center gap-1.5">
-                        <div
-                            class="w-2 h-2 rounded-full {{ $task->visibility === 'public' ? 'bg-violet-500' : 'bg-amber-500' }}">
-                        </div>
+                        <div class="w-2 h-2 rounded-full {{ $task->visibility === 'public' ? 'bg-violet-500' : 'bg-amber-500' }}"></div>
                         <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
                             {{ $task->visibility === 'public' ? __('tasks.public') : __('tasks.private') }}
                         </span>
@@ -1984,135 +1737,169 @@
                 </div>
             </div>
 
-            <!-- Dates -->
+            <!-- 5. Prioridad Card -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
+                @foreach ([['tasks.priority', $task->priority, 'tasks.priorities'], ['tasks.urgency', $task->urgency, 'tasks.urgencies']] as [$lbl, $val, $map])
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __($lbl) }}</span>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __($map . '.' . $val) }}</span>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- 6. Fechas Card -->
             @if ($task->due_date || $task->scheduled_date)
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none transition-colors">
-                    
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
                     @if ($task->scheduled_date)
-                        <div class="flex items-center justify-between font-mono mb-3 pb-3 border-b border-gray-50 dark:border-gray-800/50">
-                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide font-sans">{{ __('tasks.scheduled_date') ?? 'Fecha de Inicio' }}</span>
-                            <span class="text-[11px] text-gray-700 dark:text-gray-300 font-medium">{{ $task->scheduled_date->format('d M Y, H:i') }}</span>
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-50 dark:border-gray-800/50">
+                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.scheduled_date') ?? 'Fecha de Inicio' }}</span>
+                            <span class="text-[11px] text-gray-700 dark:text-gray-300 font-bold tabular-nums">{{ $task->scheduled_date->format('d M Y, H:i') }}</span>
                         </div>
                     @endif
-
                     @if ($task->due_date)
-                        <div class="flex items-center justify-between font-mono pt-2">
-                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide font-sans">{{ __('tasks.due_date') }}</span>
-                            @php
-                                $isPast = now()->isAfter($task->due_date) && $task->status !== 'completed';
-                                $isNear = now()->diffInDays($task->due_date, false) <= 2 && now()->diffInDays($task->due_date, false) >=0 && $task->status !== 'completed';
-                                $dueBg = $isPast ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400' : 
-                                        ($isNear ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400' : 
-                                        'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200');
-                            @endphp
-                            <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border {{ $dueBg }} transition-colors shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-[11px] font-bold tracking-tight">{{ $task->due_date->format('d M Y, H:i') }}</span>
-                                @if($isPast)
-                                    <span class="text-[9px] font-black uppercase tracking-widest ml-1.5 border-l border-current pl-2 py-0.5 opacity-90">{{ __('tasks.overdue') }}</span>
-                                @elseif($isNear)
-                                    <span class="text-[9px] font-black uppercase tracking-widest ml-1.5 border-l border-current pl-2 py-0.5 opacity-90">{{ __('tasks.expires_soon') }}</span>
-                                @endif
-                            </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.due_date') }}</span>
+                            <span class="text-[11px] text-gray-700 dark:text-gray-300 font-bold tabular-nums">{{ $task->due_date->format('d M Y, H:i') }}</span>
                         </div>
                     @endif
                 </div>
             @endif
 
-            <!-- Autoprogram Settings -->
+            <!-- 7. Autoprogramación Card -->
             @if ($task->is_autoprogrammable)
-                <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none transition-colors border-l-4 border-l-violet-500 mb-4">
+                <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 space-y-3 shadow-sm border-l-4 border-l-violet-500">
                     <div class="flex items-center justify-between">
-                        <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-bold">
-                            {{ __('tasks.autoprogram_active') ?? 'Autoprogramación JIT' }}
-                        </p>
+                        <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-bold">{{ __('tasks.autoprogram_active') ?? 'Autoprogramación JIT' }}</p>
                         <div class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></div>
                     </div>
-                    
                     <div class="space-y-2">
                         <div class="flex justify-between text-[11px]">
-                            <span class="text-gray-400">{{ __('tasks.frequency') }}:</span>
+                            <span class="text-gray-400 font-medium">{{ __('tasks.frequency') }}:</span>
                             <span class="font-bold text-gray-700 dark:text-gray-300">{{ __('tasks.' . ($task->autoprogram_settings['frequency'] ?? 'daily')) }} (x{{ $task->autoprogram_settings['interval'] ?? 1 }})</span>
                         </div>
-                        <div class="flex justify-between text-[11px]">
-                            <span class="text-gray-400">{{ __('tasks.lead_time') }}:</span>
-                            <span class="font-bold text-gray-700 dark:text-gray-300">{{ $task->autoprogram_settings['lead_value'] ?? 7 }} {{ __('tasks.' . ($task->autoprogram_settings['lead_unit'] ?? 'days')) }}</span>
-                        </div>
                         @if(isset($task->autoprogram_settings['next_occurrence_at']))
-                        <div class="flex justify-between text-[11px] pt-1 border-t border-gray-50 dark:border-gray-800">
-                            <span class="text-gray-400">{{ __('tasks.next_wakeup') ?? 'Próximo despertar' }}:</span>
-                            <span class="text-violet-600 dark:text-violet-400 font-bold">
-                                {{ \Carbon\Carbon::parse($task->autoprogram_settings['next_occurrence_at'])->format('d M Y') }}
-                            </span>
-                        </div>
+                            <div class="flex justify-between text-[11px] pt-1 border-t border-gray-50 dark:border-gray-800">
+                                <span class="text-gray-400 font-medium">{{ __('tasks.next_wakeup') ?? 'Próximo despertar' }}:</span>
+                                <span class="text-violet-600 dark:text-violet-400 font-black">{{ \Carbon\Carbon::parse($task->autoprogram_settings['next_occurrence_at'])->format('d M Y') }}</span>
+                            </div>
                         @endif
                     </div>
                 </div>
             @endif
 
+            <!-- 8. Quota de disco Card -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.disk_quota') }}</h3>
+                    <span class="text-[10px] text-gray-400 font-black tabular-nums">{{ number_format(auth()->user()->disk_used / 1024 / 1024, 1) }}MB / {{ number_format(auth()->user()->disk_quota / 1024 / 1024, 0) }}MB</span>
+                </div>
+                @php
+                    $perc = auth()->user()->disk_quota > 0 ? (auth()->user()->disk_used / auth()->user()->disk_quota) * 100 : 0;
+                    $barColor = $perc > 90 ? 'bg-red-500' : ($perc > 70 ? 'bg-amber-500' : 'bg-blue-500');
+                @endphp
+                <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full {{ $barColor }} transition-all duration-1000 shadow-sm" style="width: {{ $perc }}%"></div>
+                </div>
+            </div>
 
+            <!-- 9. Historial Card -->
+            <!-- 9. Historial Card -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                <div class="bg-gray-50/50 dark:bg-gray-800/50 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                    <h3 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.activity_history') ?? 'HISTORIAL DE CAMBIOS' }}</h3>
+                </div>
+                <div class="divide-y divide-gray-50 dark:divide-gray-800/50 max-h-80 overflow-y-auto custom-scrollbar">
+                    @forelse (($task->histories?->sortByDesc('created_at') ?? collect())->take(15) as $log)
+                        <div class="flex items-center justify-between px-4 py-3 hover:bg-gray-50/30 dark:hover:bg-gray-800/20 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://ui-avatars.com/api/?name=S&color=7c3aed&background=f5f3ff' }}" 
+                                    alt="{{ $log->user?->name ?? 'System' }}"
+                                    class="w-7 h-7 rounded-lg object-cover shadow-sm border border-gray-100 dark:border-gray-700">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $log->user?->name ?? 'Sistema' }}</span>
+                                    <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-800/50">
+                                        {{ $log->action_label ?? 'UPDATED' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium tabular-nums">{{ $log->created_at->format('d/m H:i') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center">
+                            <p class="text-xs text-gray-400 italic">{{ __('tasks.no_history') }}</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
 
-            <!-- Forum Thread Widget -->
+            <!-- 10. Discusion en el foro Card -->
             @include('teams.forum.partials.thread-widget')
-
         </div>
-    </div>
-
     @push('scripts')
         <script>
-            function nudgeUser(taskId) {
+            function nudgeUser(taskIds) {
+                const isBulk = Array.isArray(taskIds);
+                const ids = isBulk ? taskIds : [taskIds];
+                
                 Swal.fire({
-                    title: '{{ __('tasks.nudge_user') }}?',
-                    text: '{{ __('tasks.nudge_confirm_text') }}',
+                    title: isBulk ? '¿Enviar recordatorio masivo?' : '¿Enviar recordatorio?',
+                    html: `
+                        <p class="text-sm text-gray-500 mb-4">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
+                        <textarea id="nudge-message" class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm focus:ring-violet-500 min-h-[100px] p-3 shadow-inner" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
+                    `,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#6366f1',
+                    confirmButtonColor: '#7c3aed',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: 'Sí, enviar',
+                    confirmButtonText: 'Enviar',
                     cancelButtonText: 'Cancelar',
                     background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
-                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827',
+                    preConfirm: () => {
+                        return document.getElementById('nudge-message').value;
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/teams/{{ $team->id }}/tasks/${taskId}/nudge`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                        'content')
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: '¡Enviado!',
-                                        text: data.message,
-                                        icon: 'success',
-                                        timer: 2000,
-                                        showConfirmButton: false,
-                                        background: document.documentElement.classList.contains('dark') ?
-                                            '#111827' : '#fff',
-                                        color: document.documentElement.classList.contains('dark') ?
-                                            '#fff' : '#111827'
-                                    }).then(() => location.reload());
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
+                        const customMessage = result.value;
+                        const url = isBulk ? `/teams/{{ $team->id }}/tasks/bulk-nudge` : `/teams/{{ $team->id }}/tasks/${taskIds}/nudge`;
+                        const payload = isBulk ? { task_ids: ids, custom_message: customMessage } : { custom_message: customMessage };
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
                                 Swal.fire({
-                                    title: 'Error',
-                                    text: 'No se pudo enviar el recordatorio',
-                                    icon: 'error',
-                                    background: document.documentElement.classList.contains('dark') ?
-                                        '#111827' : '#fff',
-                                    color: document.documentElement.classList.contains('dark') ? '#fff' :
-                                        '#111827'
+                                    title: '¡Listo!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    showConfirmButton: false,
+                                    background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                                }).then(() => {
+                                    if (isBulk) {
+                                        window.location.reload();
+                                    }
                                 });
-                            });
+                            } else {
+                                Swal.fire('Error', data.message || 'No se pudo enviar el recordatorio.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', 'Ocurrió un error en la conexión.', 'error');
+                        });
                     }
                 });
             }

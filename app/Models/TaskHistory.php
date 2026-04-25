@@ -26,5 +26,10 @@ class TaskHistory extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getActionLabelAttribute(): string
+    {
+        return strtoupper($this->action ?? 'UPDATED');
+    }
 }
 

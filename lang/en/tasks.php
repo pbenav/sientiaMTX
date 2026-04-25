@@ -7,6 +7,7 @@ return [
     'updated' => 'Task updated successfully.',
     'synced_success' => 'Changes synced successfully to all members.',
     'deleted' => 'Task deleted successfully.',
+    'activity_history' => 'Activity History',
     'overdue' => 'Overdue',
     'expires_soon' => 'Expires soon',
     'name' => 'Title',

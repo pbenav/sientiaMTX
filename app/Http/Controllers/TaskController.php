@@ -1257,17 +1257,16 @@ class TaskController extends Controller
     /**
      * Nudge a user assigned to a task instance
      */
-    public function nudge(Team $team, Task $task)
+    public function nudge(Request $request, Team $team, Task $task)
     {
         $this->authorize('update', $team);
 
-        if (!$task->isInstance()) {
-            return response()->json(['success' => false, 'message' => 'Solo se pueden enviar recordatorios sobre instancias individuales.'], 400);
+        if (!$task->isInstance() && !$task->is_template) {
+            return response()->json(['success' => false, 'message' => 'Recordatorio no aplicable a este tipo de tarea.'], 400);
         }
 
-        $parent = $task->parent;
-        $progress = $parent->progress;
         $type = 'collaborative';
+        $progress = $task->progress;
 
         if ($task->status === 'blocked') {
             $type = 'unblocking';
@@ -1284,7 +1283,9 @@ class TaskController extends Controller
             ], 400);
         }
 
-        $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress));
+        $customMessage = $request->input('custom_message');
+        
+        $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress, $customMessage));
 
         $task->increment('nudge_count');
         $task->refresh();
@@ -1293,6 +1294,47 @@ class TaskController extends Controller
             'success' => true, 
             'message' => __('tasks.nudge_sent'),
             'nudge_count' => $task->nudge_count
+        ]);
+    }
+
+    /**
+     * Bulk nudge multiple task instances
+     */
+    public function bulkNudge(Request $request, Team $team)
+    {
+        $this->authorize('update', $team);
+
+        $validated = $request->validate([
+            'task_ids' => 'required|array',
+            'task_ids.*' => 'exists:tasks,id',
+            'custom_message' => 'nullable|string|max:500'
+        ]);
+
+        $tasks = Task::whereIn('id', $validated['task_ids'])->where('team_id', $team->id)->get();
+        $count = 0;
+
+        foreach ($tasks as $task) {
+            $type = 'collaborative';
+            $progress = $task->progress;
+
+            if ($task->status === 'blocked') {
+                $type = 'unblocking';
+            } elseif ($task->due_date && $task->due_date->isFuture() && $task->due_date->diffInHours(now()) < 24) {
+                $type = 'deadline';
+            }
+
+            $recipient = $task->assignedUser ?: $task->creator;
+
+            if ($recipient) {
+                $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress, $validated['custom_message']));
+                $task->increment('nudge_count');
+                $count++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Se han enviado {$count} recordatorios correctamente.",
         ]);
     }
 

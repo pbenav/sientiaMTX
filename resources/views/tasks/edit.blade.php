@@ -898,23 +898,42 @@
                 transition: all 0.2s;
             }
 
+            .ts-control {
+                border-radius: 0.75rem !important;
+                padding: 0.625rem 1rem !important;
+                border-width: 1px !important;
+                background-color: #f9fafb !important;
+                border-color: #e5e7eb !important;
+                box-shadow: none !important;
+                transition: all 0.2s !important;
+            }
+
             .dark .ts-control {
                 background-color: #1f2937 !important;
                 border-color: #374151 !important;
                 color: #f3f4f6 !important;
             }
 
-            .ts-control:focus {
+            .ts-wrapper.focus .ts-control {
                 border-color: #7c3aed !important;
-                ring-color: rgba(124, 58, 237, 0.2) !important;
+                ring: 2px solid rgba(124, 58, 237, 0.2) !important;
+                outline: none !important;
             }
 
-            .ts-dropdown { border-radius: 1.25rem !important; border-color: #e5e7eb !important; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; margin-top: 8px !important; padding: 0.5rem !important; }
-            .dark .ts-dropdown { background-color: #0f172a !important; border-color: #1e293b !important; color: #f3f4f6 !important; }
-            .ts-dropdown .active { background-color: #f5f3ff !important; color: #4f46e5 !important; border-radius: 0.75rem !important; }
+            .ts-dropdown { 
+                border-radius: 1rem !important; 
+                border-color: #e5e7eb !important; 
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; 
+                margin-top: 6px !important; 
+                padding: 0.4rem !important; 
+                z-index: 100 !important;
+            }
+            .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
+            .ts-dropdown .active { background-color: #f5f3ff !important; color: #4f46e5 !important; border-radius: 0.6rem !important; }
             .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
-            .ts-dropdown .option { padding: 0.75rem 1rem !important; border-radius: 0.75rem !important; margin-bottom: 2px !important; border-left: 0 solid transparent !important; transition: all 0.2s !important; }
-            .ts-dropdown .active.option { border-left: 4px solid #4f46e5 !important; padding-left: calc(1rem - 4px) !important; }
+            .ts-dropdown .option { padding: 0.6rem 0.8rem !important; border-radius: 0.6rem !important; margin-bottom: 2px !important; transition: all 0.2s !important; }
+            .ts-dropdown .active.option { background-color: #f5f3ff !important; }
+            .dark .ts-dropdown .active.option { background-color: #4f46e5 !important; }
             
             /* Ocultar el select original para evitar duplicidad si TomSelect tarda un instante */
             #parent_id_select { display: none; }
@@ -1028,13 +1047,9 @@
                             item: function(data, escape) {
                                 return '<div class="flex items-center gap-2">' + 
                                     '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
-                                    '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
+                                    '<span class="font-medium text-gray-900 dark:text-white text-xs">' + escape(data.text) + '</span>' +
                                     '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
                                 '</div>';
-                            }
-                        }
-                                    escape(data.assignee) + '</span>' +
-                                    '</div>';
                             }
                         }
                     });
