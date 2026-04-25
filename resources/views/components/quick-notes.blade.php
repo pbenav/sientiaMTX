@@ -55,6 +55,13 @@
                         <button @click="sendToAi(note)" class="p-1 hover:bg-indigo-500/20 hover:text-indigo-700 rounded-md transition-colors text-black/60" title="Enviar a Ax.ia">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </button>
+                        <button @click="soundEnabled = !soundEnabled; localStorage.setItem('notes_sound_enabled', soundEnabled ? '1' : '0')" 
+                                class="p-1 hover:bg-black/10 rounded-md transition-colors"
+                                :class="soundEnabled ? 'text-indigo-600' : 'text-black/30'"
+                                :title="soundEnabled ? 'Desactivar sonido' : 'Activar sonido'">
+                            <svg x-show="soundEnabled" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                            <svg x-show="!soundEnabled" style="display:none;" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+                        </button>
                         <button @click="hideNote(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Ocultar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </button>
@@ -210,6 +217,8 @@ document.addEventListener('alpine:init', () => {
         recordingTime: 0,
         recordingInterval: null,
         maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
+        soundEnabled: localStorage.getItem('notes_sound_enabled') !== '0',
+        notificationSound: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
         
         // Button Dragging State
         buttonPos: { right: 24, bottom: 220 },
@@ -658,6 +667,12 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 const data = await response.json();
+                
+                // Play notification sound if enabled
+                if (this.soundEnabled && this.notificationSound) {
+                    this.notificationSound.play().catch(e => console.log("Sound play prevented"));
+                }
+
                 if (data.transcription) {
                     att.transcription = data.transcription;
                     
