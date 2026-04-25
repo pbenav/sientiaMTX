@@ -442,8 +442,8 @@ class AiChatController extends Controller
             if ($request->target === 'quick-note') {
                 $note = $user->quickNotes()->create([
                     'content' => ($title ? "**$title**\n\n" : "") . $content,
-                    'position_x' => 100,
-                    'position_y' => 100,
+                    'position_x' => 250,
+                    'position_y' => 200,
                     'color' => '#fef3c7',
                 ]);
 

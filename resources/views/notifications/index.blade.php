@@ -7,9 +7,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight whitespace-nowrap">
-                    {{ __('Notificaciones') }}
-                </h2>
+                <div>
+                    <nav class="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mb-1 font-medium select-none" aria-label="breadcrumb">
+                        <a href="{{ route('dashboard') }}" class="hover:text-indigo-600 transition-colors">{{ __('Inicio') }}</a>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                        <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ __('Notificaciones') }}</span>
+                    </nav>
+                    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight whitespace-nowrap">
+                        {{ __('Notificaciones') }}
+                    </h2>
+                </div>
             </div>
             <div class="flex items-center gap-4 ml-12">
                 <button onclick="window.location.reload()" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-bold text-[10px] text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200">

@@ -229,8 +229,9 @@ document.addEventListener('alpine:init', () => {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
-                        position_x: 100 + (this.notes.length * 20),
-                        position_y: 100 + (this.notes.length * 20),
+                        // Calculate center of screen
+                        position_x: Math.max(20, (window.innerWidth / 2) - 150 + (this.notes.length * 20 % 100)),
+                        position_y: Math.max(20, (window.innerHeight / 2) - 150 + (this.notes.length * 20 % 100)),
                         width: 300,
                         height: 300,
                         color: '#fef3c7',
