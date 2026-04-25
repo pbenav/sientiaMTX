@@ -24,8 +24,24 @@
 
         .gantt .bar { fill: #e5e7eb; stroke-width: 2px; opacity: 1; transition: all 0.3s ease; }
         .gantt .bar-progress { fill: currentColor; opacity: 1; }
-        .gantt .bar-label { fill: #1f2937 !important; font-weight: 800; font-size: 11px; text-shadow: 0 0 2px rgba(255,255,255,0.8); pointer-events: none; }
-        .dark .gantt .bar-label { fill: #f9fafb !important; text-shadow: 0 0 4px rgba(0,0,0,0.5); }
+        .gantt .bar-label { display: none !important; }
+        .gantt .bar-label-container { 
+            display: flex; 
+            align-items: center; 
+            height: 100%; 
+            width: 100%; 
+            padding: 0 10px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+            font-weight: 800; 
+            font-size: 11px; 
+            color: #1f2937;
+            text-shadow: 0 0 2px rgba(255,255,255,0.8);
+            pointer-events: none;
+            line-height: 1;
+        }
+        .dark .gantt .bar-label-container { color: #f9fafb; text-shadow: 0 0 4px rgba(0,0,0,0.5); }
         .dark .gantt .bar { fill: #374151; }
 
         /* Dynamic Quadrant Colors - Light Theme */
@@ -330,7 +346,45 @@
                     });
                 }
             });
-            setTimeout(() => { centerToday(); drawTodayLine(); }, 500);
+            setTimeout(() => { 
+                centerToday(); 
+                drawTodayLine(); 
+                truncateLabels();
+            }, 500);
+        }
+
+        function truncateLabels() {
+            const wrappers = document.querySelectorAll('.bar-wrapper');
+            wrappers.forEach(w => {
+                const bar = w.querySelector('.bar');
+                const label = w.querySelector('.bar-label');
+                if (bar && label) {
+                    const barWidth = parseFloat(bar.getAttribute('width'));
+                    const barHeight = parseFloat(bar.getAttribute('height'));
+                    const barX = parseFloat(bar.getAttribute('x'));
+                    const barY = parseFloat(bar.getAttribute('y'));
+                    
+                    // Remove any existing foreignObject we added
+                    const existingFO = w.querySelector('foreignObject');
+                    if (existingFO) existingFO.remove();
+
+                    if (barWidth < 30) return; // Don't show anything in tiny bars
+
+                    const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+                    fo.setAttribute('x', barX);
+                    fo.setAttribute('y', barY);
+                    fo.setAttribute('width', barWidth);
+                    fo.setAttribute('height', barHeight);
+                    fo.setAttribute('style', 'pointer-events: none;');
+
+                    const div = document.createElement('div');
+                    div.className = 'bar-label-container';
+                    div.textContent = label.textContent;
+                    
+                    fo.appendChild(div);
+                    w.appendChild(fo);
+                }
+            });
         }
 
         function renderActionWave() {
