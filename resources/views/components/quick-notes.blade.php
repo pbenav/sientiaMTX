@@ -188,6 +188,7 @@
     <!-- Global Toggle Button -->
     <button 
         id="quick-notes-toggle"
+        x-show="notes.length > 0"
         @pointerdown="startButtonDrag($event)"
         @click="if(!wasButtonDragged) toggleAll()"
         class="fixed pointer-events-auto p-4 bg-amber-400 text-amber-900 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] z-[9999] select-none border-4 border-white/40 backdrop-blur-sm"
@@ -216,7 +217,7 @@ document.addEventListener('alpine:init', () => {
         maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
         soundEnabled: localStorage.getItem('notes_sound_enabled') !== '0',
         
-        buttonPos: { right: 24, bottom: 220 },
+        buttonPos: { right: 16, bottom: 220 },
         isDraggingButton: false,
         wasButtonDragged: false,
         buttonDragOffset: { x: 0, y: 0 },
