@@ -1043,131 +1043,242 @@
 
                     function printFullTask() {
                         const taskTitle = @json($task->title);
+                        const taskId = @json($task->id);
+                        const taskUuid = @json($task->uuid);
                         const status = @json(__('tasks.statuses.' . $task->status));
                         const progress = @json($task->progress_percentage);
-                        const priority = @json($task->priority);
-                        const urgency = @json($task->urgency);
-                        const scheduled = @json($task->scheduled_date?->format('d/m/Y H:i') ?? '—');
-                        const due = @json($task->due_date?->format('d/m/Y H:i') ?? '—');
+                        const priorityLabel = @json(__('tasks.priorities.' . $task->priority));
+                        const urgencyLabel = @json(__('tasks.urgencies.' . $task->urgency));
+                        const scheduled = @json($task->scheduled_date?->format('d/m/y H:i') ?? '—');
+                        const due = @json($task->due_date?->format('d/m/y H:i') ?? '—');
                         const teamName = @json($team->name);
+                        const creator = @json($task->creator?->name ?? '—');
                         
                         const description = document.getElementById('description-content')?.innerHTML ?? '—';
                         const observations = document.getElementById('observations-content')?.innerHTML ?? '—';
                         
                         const members = @json($task->assignedTo->pluck('name')->toArray());
-                        const skills = @json($task->skills->map(fn($s) => $s->name . ' (' . $s->category . ')')->toArray());
+                        const skills = @json($task->skills->map(fn($s) => $s->name)->toArray());
 
-                        const printWin = window.open('', '_blank', 'width=900,height=1000');
+                        const printWin = window.open('', '_blank', 'width=950,height=1100');
                         printWin.document.write(`
-                            <html>
+                            <!DOCTYPE html>
+                            <html lang="es">
                                 <head>
+                                    <meta charset="UTF-8">
                                     <title>Ficha Técnica - ${taskTitle}</title>
-                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+                                    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
                                     <style>
-                                        @page { size: A4; margin: 20mm; }
-                                        body { font-family: 'Inter', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; background: #fff; }
-                                        .container { max-width: 800px; margin: 0 auto; }
+                                        @page { size: A4; margin: 0; }
+                                        body { 
+                                            font-family: 'Outfit', sans-serif; 
+                                            color: #1e293b; 
+                                            line-height: 1.2; 
+                                            margin: 0; padding: 0; background: #fff; 
+                                            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+                                        }
                                         
-                                        .header { border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; position: relative; }
-                                        .brand { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #6366f1; display: block; margin-bottom: 10px; }
-                                        .title { font-size: 32px; font-weight: 900; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1; margin: 0; }
-                                        .team-badge { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: 800; background: #f8fafc; padding: 6px 14px; border: 1px solid #e2e8f0; color: #6366f1; border-radius: 12px; }
+                                        .sheet {
+                                            position: relative;
+                                            max-width: 210mm;
+                                            width: 100%;
+                                            margin: 0 auto;
+                                            padding: 18mm 22mm;
+                                            box-sizing: border-box;
+                                            page-break-after: avoid;
+                                        }
+
+                                        .side-accent {
+                                            position: absolute;
+                                            top: 100px; left: 0; height: 60%; width: 3px;
+                                            background: linear-gradient(to bottom, #ef4444, #f87171);
+                                            border-radius: 0 3px 3px 0;
+                                            opacity: 0.5;
+                                        }
+
+                                        .header {
+                                            display: flex; justify-content: space-between; align-items: flex-end;
+                                            margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;
+                                        }
+
+                                        .logo-text { 
+                                            font-family: 'Outfit', sans-serif; 
+                                            font-weight: 900; 
+                                            font-size: 22px; 
+                                            color: #0f172a;
+                                            letter-spacing: -0.04em;
+                                            line-height: 1;
+                                        }
+                                        .logo-text .dot { color: #ef4444; }
+                                        .logo-text .suffix { color: #94a3b8; font-weight: 400; font-size: 16px; margin-left: 2px; }
                                         
-                                        .grid { display: grid; grid-template-cols: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-                                        .stat-card { background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #f1f5f9; }
-                                        .stat-label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #94a3b8; display: block; margin-bottom: 6px; letter-spacing: 0.05em; }
-                                        .stat-value { font-size: 13px; font-weight: 700; color: #1e293b; }
-                                        .stat-value.status { color: #059669; }
-                                        
-                                        .section { margin-bottom: 30px; }
-                                        .section-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-                                        .section-title::after { content: ''; flex: 1; height: 1px; background: #f1f5f9; }
-                                        .section-content { font-size: 14px; color: #475569; line-height: 1.6; }
-                                        .section-content img { max-width: 100%; border-radius: 12px; margin: 15px 0; border: 1px solid #f1f5f9; }
-                                        
-                                        .skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
-                                        .skill-tag { font-size: 10px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
-                                        
-                                        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 10px; color: #94a3b8; text-align: center; }
-                                        
-                                        .progress-wrapper { width: 100%; height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 8px; overflow: hidden; }
-                                        .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #4f46e5); border-radius: 10px; }
+                                        .document-info { text-align: right; }
+                                        .doc-type { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.15em; margin-bottom: 2px; }
+                                        .task-uuid { font-family: 'JetBrains Mono', monospace; font-size: 6.5px; color: #cbd5e1; }
+
+                                        .main-title {
+                                            font-size: 19px; font-weight: 900; color: #0f172a;
+                                            letter-spacing: -0.02em; margin: 0 0 10px 0;
+                                        }
+
+                                        .meta-strip {
+                                            display: flex; gap: 1px; background: #f1f5f9;
+                                            border: 1px solid #f1f5f9; border-radius: 6px;
+                                            overflow: hidden; margin-bottom: 15px;
+                                        }
+                                        .meta-strip-item {
+                                            flex: 1; background: #fff; padding: 6px 10px;
+                                            display: flex; flex-direction: column;
+                                        }
+                                        .meta-strip-label { font-size: 6px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1px; }
+                                        .meta-strip-value { font-size: 9px; font-weight: 700; color: #1e293b; white-space: nowrap; }
+
+                                        .content-layout {
+                                            display: grid; grid-template-cols: 1fr 180px; gap: 20px;
+                                        }
+
+                                        .section { margin-bottom: 12px; }
+                                        .section-title { 
+                                            font-size: 8px; font-weight: 900; text-transform: uppercase; 
+                                            color: #ef4444; margin-bottom: 4px;
+                                            display: flex; align-items: center; gap: 6px;
+                                        }
+                                        .section-title::after { content: ''; flex: 1; height: 1px; background: #fef2f2; }
+
+                                        .section-body { font-size: 11.5px; color: #334155; line-height: 1.4; }
+                                        .section-body img { max-width: 100%; border-radius: 4px; margin: 4px 0; }
+
+                                        .sidebar-box {
+                                            background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #f1f5f9;
+                                        }
+                                        .sidebar-item { margin-bottom: 8px; }
+                                        .sidebar-label { font-size: 6.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 2px; display: block; }
+                                        .sidebar-value { font-size: 9px; font-weight: 700; color: #475569; }
+
+                                        .pill-list { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+                                        .pill { font-size: 7.5px; font-weight: 700; background: #fff; border: 1px solid #e2e8f0; padding: 1px 5px; border-radius: 3px; color: #64748b; }
+
+                                        .validation-area {
+                                            margin-top: 15px; display: flex; gap: 40px;
+                                        }
+                                        .signature-box { flex: 1; border-top: 1px solid #f1f5f9; padding-top: 4px; min-height: 30px; }
+                                        .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }
+
+                                        .footer { 
+                                            margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9;
+                                            display: flex; justify-content: space-between;
+                                            font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase;
+                                        }
                                         
                                         @media print {
-                                            body { padding: 0; }
-                                            .stat-card { background: #f8fafc !important; -webkit-print-color-adjust: exact; }
-                                            .progress-fill { background: #6366f1 !important; -webkit-print-color-adjust: exact; }
+                                            html, body { height: auto; }
+                                            .sheet { border: none; height: auto; min-height: 0; }
                                         }
                                     </style>
                                 </head>
                                 <body>
-                                    <div class="container">
-                                        <div class="header">
-                                            <span class="brand">Sientia MTX &bull; Ficha Técnica</span>
-                                            <h1 class="title">${taskTitle}</h1>
-                                            <div class="team-badge">${teamName}</div>
-                                        </div>
+                                    <div class="sheet">
+                                        <div class="side-accent"></div>
                                         
-                                        <div class="grid">
-                                            <div class="stat-card">
-                                                <span class="stat-label">Estado</span>
-                                                <span class="stat-value status">${status}</span>
+                                        <header class="header">
+                                            <div class="logo-text">
+                                                sientia<span class="dot">.</span><span class="suffix">MTX</span>
                                             </div>
-                                            <div class="stat-card">
-                                                <span class="stat-label">Progreso</span>
-                                                <span class="stat-value">${progress}%</span>
-                                                <div class="progress-wrapper"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                                            <div class="document-info">
+                                                <div class="doc-type">Ficha Técnica &bull; ${teamName}</div>
+                                                <div class="task-uuid">ID: ${taskUuid.toUpperCase()}</div>
                                             </div>
-                                            <div class="stat-card">
-                                                <span class="stat-label">Prioridad</span>
-                                                <span class="stat-value" style="color: #e11d48">${priority.toUpperCase()}</span>
+                                        </header>
+
+                                        <h1 class="main-title">${taskTitle}</h1>
+
+                                        <div class="meta-strip">
+                                            <div class="meta-strip-item">
+                                                <span class="meta-strip-label">Estado</span>
+                                                <span class="meta-strip-value" style="color: #ef4444">${status}</span>
                                             </div>
-                                            <div class="stat-card">
-                                                <span class="stat-label">Urgencia</span>
-                                                <span class="stat-value" style="color: #d97706">${urgency.toUpperCase()}</span>
+                                            <div class="meta-strip-item">
+                                                <span class="meta-strip-label">Progreso</span>
+                                                <span class="meta-strip-value">${progress}%</span>
                                             </div>
-                                        </div>
-                                        
-                                        <div class="grid" style="grid-template-cols: 1fr 1fr;">
-                                            <div class="stat-card">
-                                                <span class="stat-label">Inicio Programado</span>
-                                                <span class="stat-value">${scheduled}</span>
+                                            <div class="meta-strip-item">
+                                                <span class="meta-strip-label">Prioridad</span>
+                                                <span class="meta-strip-value">${priorityLabel}</span>
                                             </div>
-                                            <div class="stat-card">
-                                                <span class="stat-label">Fecha Límite</span>
-                                                <span class="stat-value">${due}</span>
+                                            <div class="meta-strip-item">
+                                                <span class="meta-strip-label">Urgencia</span>
+                                                <span class="meta-strip-value">${urgencyLabel}</span>
+                                            </div>
+                                            <div class="meta-strip-item" style="flex: 1.2;">
+                                                <span class="meta-strip-label">Inicio</span>
+                                                <span class="meta-strip-value">${scheduled}</span>
+                                            </div>
+                                            <div class="meta-strip-item" style="flex: 1.2;">
+                                                <span class="meta-strip-label">Límite</span>
+                                                <span class="meta-strip-value" style="color: #ef4444">${due}</span>
                                             </div>
                                         </div>
 
-                                        <div class="section">
-                                            <div class="section-title">Equipo Asignado</div>
-                                            <div class="section-content">
-                                                <div style="font-weight: 700; color: #1e293b;">${members.length > 0 ? members.join(', ') : 'Sin asignar'}</div>
+                                        <div class="content-layout">
+                                            <div class="main-content">
+                                                <div class="section">
+                                                    <div class="section-title">Descripción</div>
+                                                    <div class="section-body">${description}</div>
+                                                </div>
+
+                                                <div class="section">
+                                                    <div class="section-title">Observaciones</div>
+                                                    <div class="section-body">${observations}</div>
+                                                </div>
+                                            </div>
+
+                                            <aside class="sidebar-content">
+                                                <div class="sidebar-box">
+                                                    <div class="sidebar-item">
+                                                        <span class="sidebar-label">Propietario</span>
+                                                        <div class="sidebar-value">${creator}</div>
+                                                    </div>
+
+                                                    <div class="sidebar-item">
+                                                        <span class="sidebar-label">Asignados</span>
+                                                        <div class="pill-list">
+                                                            ${members.map(m => `<span class="pill">${m}</span>`).join('') || '<span class="pill">Sin asignar</span>'}
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="sidebar-item" style="border-top: 1px dashed #f1f5f9; padding-top: 6px; margin-top: 6px;">
+                                                        <span class="sidebar-label">Capacidades</span>
+                                                        <div class="pill-list">
+                                                            ${skills.map(s => `<span class="pill" style="color: #ef4444; border-color: #fee2e2;">${s}</span>`).join('') || '<span class="pill">—</span>'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                        </div>
+
+                                        <div class="validation-area">
+                                            <div class="signature-box">
+                                                <div class="signature-label">Firma Responsable</div>
+                                            </div>
+                                            <div class="signature-box">
+                                                <div class="signature-label">Validación Sistema</div>
+                                                <div style="font-size: 5px; color: #cbd5e1; margin-top: 1px; font-family: monospace;">TSR: ${new Date().getTime()}</div>
                                             </div>
                                         </div>
 
-                                        <div class="section">
-                                            <div class="section-title">Descripción</div>
-                                            <div class="section-content">${description}</div>
-                                        </div>
-
-                                        <div class="section">
-                                            <div class="section-title">Observaciones</div>
-                                            <div class="section-content">${observations}</div>
-                                        </div>
-
-                                        <div class="section">
-                                            <div class="section-title">Skills & Capacidades</div>
-                                            <div class="skills-list">
-                                                ${skills.map(s => `<span class="skill-tag">${s}</span>`).join('') || '<span class="skill-tag">—</span>'}
-                                            </div>
-                                        </div>
-
-                                        <div class="footer">
-                                            Documento generado por Sientia MTX el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}
-                                        </div>
+                                        <footer class="footer">
+                                            <span>Sientia MTX Ecosystem &bull; v0.9.5</span>
+                                            <span>${new Date().toLocaleString()}</span>
+                                        </footer>
                                     </div>
-                                    <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
+                                    <script>
+                                        window.onload = function() { 
+                                            setTimeout(() => {
+                                                window.print(); 
+                                                setTimeout(() => window.close(), 500);
+                                            }, 300);
+                                        };
+                                    <\/script>
                                 </body>
                             </html>
                         `);
