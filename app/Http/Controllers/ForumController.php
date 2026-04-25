@@ -292,6 +292,7 @@ class ForumController extends Controller
             }
         }
 
+        $thread->increment('views');
         $thread->load(['user']);
         
         $messages = $thread->messages()

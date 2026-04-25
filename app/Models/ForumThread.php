@@ -13,6 +13,7 @@ class ForumThread extends Model
         'title',
         'is_pinned',
         'is_locked',
+        'views',
     ];
 
     protected $casts = [
