@@ -101,6 +101,7 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
             'title' => $this->thread->title,
             'author' => $this->message->user->name,
             'team_id' => $this->thread->team_id,
+            'team_name' => $this->thread->team?->name,
             'type' => 'forum',
             'message' => Str::limit($this->message->content, 50)
         ];

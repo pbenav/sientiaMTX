@@ -81,6 +81,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             'task_id' => $this->task->id,
             'title' => $this->task->title,
             'team_id' => $this->task->team_id,
+            'team_name' => $this->task->team?->name,
             'assigned_by' => $this->assignedBy->name,
             'type' => 'assigned',
             'message' => __('tasks.notifications.assigned_body', ['user' => $this->assignedBy->name, 'title' => $this->task->title])

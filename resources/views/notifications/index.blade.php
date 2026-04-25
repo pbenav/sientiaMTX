@@ -178,9 +178,16 @@
                                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 {{ $notification->unread() ? 'font-bold' : '' }}">
                                         {{ $notification->data['title'] ?? ($notification->data['message'] ?? 'Nueva notificación') }}
                                     </p>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
-                                        {{ $notification->created_at->diffForHumans() }}
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        @if(isset($notification->data['team_name']))
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 uppercase tracking-tight">
+                                                {{ $notification->data['team_name'] }}
+                                            </span>
+                                        @endif
+                                        <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 @if($type === 'morning_summary')

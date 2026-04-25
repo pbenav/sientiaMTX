@@ -59,6 +59,14 @@
                                     <x-input-error :messages="$errors->get('KANBAN_COMPLETED_LIMIT')" class="mt-2" />
                                 </div>
 
+                                <!-- Quick Notes Audio Limit -->
+                                <div class="md:col-span-1">
+                                    <x-input-label for="quick_notes_audio_max_duration" value="Duración máx. audio notas (segundos)" />
+                                    <x-text-input id="quick_notes_audio_max_duration" name="quick_notes_audio_max_duration" type="number"
+                                        class="mt-1 block w-full" :value="old('quick_notes_audio_max_duration', $limits['quick_notes_audio_max_duration'])" required min="5" max="300" />
+                                    <x-input-error :messages="$errors->get('quick_notes_audio_max_duration')" class="mt-2" />
+                                </div>
+
                                 <!-- Zona Horaria Global -->
                                 <div class="md:col-span-3" x-data="{ search: '', tz: '{{ old('site_timezone', $site_timezone) }}' }">
                                     <x-input-label for="site_timezone" value="Zona Horaria Global del Sitio" />

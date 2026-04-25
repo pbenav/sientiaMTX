@@ -69,7 +69,7 @@
                                     <template x-if="att.type.startsWith('image/')">
                                         <img :src="att.url" class="w-12 h-12 rounded-lg object-cover shadow-sm border border-white/50">
                                     </template>
-                                    <template x-if="att.type.startsWith('audio/')">
+                                    <template x-if="att.type && (att.type.startsWith('audio/') || att.type.includes('audio'))">
                                         <div class="flex flex-col gap-2 bg-black/5 p-3 rounded-2xl border border-white/50 w-full group/att relative">
                                             <div class="flex items-center justify-between gap-2">
                                                 <div class="flex items-center gap-2">
@@ -138,7 +138,7 @@
                                 <!-- Tooltip dinámico -->
                                 <span x-show="isRecording && recordingNoteId === note.id" class="absolute right-full mr-2 px-2 py-1 bg-red-600 text-white text-[8px] font-black rounded-md uppercase tracking-widest whitespace-nowrap animate-pulse flex items-center gap-1 shadow-lg">
                                     <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
-                                    Grabando
+                                    Grabando <span class="ml-1 opacity-80" x-text="`${recordingTime}s / ${maxRecordingTime}s`"></span>
                                 </span>
                             </button>
                         </div>
@@ -185,9 +185,12 @@ document.addEventListener('alpine:init', () => {
         recordingNoteId: null,
         mediaRecorder: null,
         audioChunks: [],
+        recordingTime: 0,
+        recordingInterval: null,
+        maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
         
         // Button Dragging State
-        buttonPos: { right: 24, bottom: 128 },
+        buttonPos: { right: 24, bottom: 220 },
         isDraggingButton: false,
         wasButtonDragged: false,
         buttonDragOffset: { x: 0, y: 0 },
@@ -480,6 +483,15 @@ document.addEventListener('alpine:init', () => {
                 this.mediaRecorder = new MediaRecorder(stream);
                 this.audioChunks = [];
                 this.recordingNoteId = note.id;
+                this.recordingTime = 0;
+
+                // Timer interval
+                this.recordingInterval = setInterval(() => {
+                    this.recordingTime++;
+                    if (this.recordingTime >= this.maxRecordingTime) {
+                        this.stopRecording(note);
+                    }
+                }, 1000);
 
                 this.mediaRecorder.ondataavailable = (event) => {
                     this.audioChunks.push(event.data);
@@ -529,6 +541,10 @@ document.addEventListener('alpine:init', () => {
             if (this.mediaRecorder && this.isRecording) {
                 this.mediaRecorder.stop();
                 this.isRecording = false;
+                if (this.recordingInterval) {
+                    clearInterval(this.recordingInterval);
+                    this.recordingInterval = null;
+                }
             }
         },
 
@@ -587,20 +603,28 @@ document.addEventListener('alpine:init', () => {
                     
                     const result = await Swal.fire({
                         title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Transcripción Lista</span>',
-                        html: `<div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-left italic text-sm text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/30">${data.transcription}</div><p class="mt-4 text-xs font-bold text-gray-500">¿Quieres añadir este texto al contenido de la nota?</p>`,
+                        html: `<div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-left italic text-sm text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/30">${data.transcription}</div><p class="mt-4 text-[10px] font-black text-gray-500 text-center uppercase tracking-widest">¿Qué quieres hacer?</p>`,
                         icon: 'success',
                         showCancelButton: true,
-                        confirmButtonText: 'Sí, añadir texto',
+                        showDenyButton: true,
+                        confirmButtonText: 'Añadir y Mantener',
+                        denyButtonText: 'Añadir y BORRAR AUDIO',
                         cancelButtonText: 'Cerrar',
                         confirmButtonColor: '#4f46e5',
+                        denyButtonColor: '#ef4444',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color: isDark ? '#f1f5f9' : '#1e293b',
                         customClass: { popup: 'rounded-[2.5rem]' }
                     });
 
-                    if (result.isConfirmed) {
+                    if (result.isConfirmed || result.isDenied) {
                         note.content = (note.content || '') + '\n\n[Transcripción]: ' + data.transcription;
-                        this.updateNote(note);
+                        await this.updateNote(note);
+                        
+                        if (result.isDenied) {
+                            // Borrar audio directamente si se eligió esa opción
+                            this.performDeleteAttachment(note, att);
+                        }
                     }
                 } else {
                     Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener la transcripción.', background: isDark ? '#0f172a' : '#ffffff' });
@@ -636,7 +660,10 @@ document.addEventListener('alpine:init', () => {
             });
 
             if (!result.isConfirmed) return;
-            
+            this.performDeleteAttachment(note, att);
+        },
+
+        async performDeleteAttachment(note, att) {
             try {
                 await fetch(`/quick-notes/${note.id}/attachment/${att.id}`, {
                     method: 'DELETE',

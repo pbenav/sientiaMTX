@@ -59,6 +59,7 @@ class TaskEventNotification extends Notification
         return [
             'task_id' => $this->task->id,
             'team_id' => $this->task->team_id,
+            'team_name' => $this->task->team?->name,
             'type' => $this->type,
             'title' => $this->getSubject(),
             'message' => $this->getMessage(),

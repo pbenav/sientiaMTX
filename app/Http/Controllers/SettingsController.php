@@ -39,6 +39,7 @@ class SettingsController extends Controller
                 'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100),
                 'session_lifetime' => env('SESSION_LIFETIME', 120),
                 'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10),
+                'quick_notes_audio_max_duration' => \App\Models\Setting::get('quick_notes_audio_max_duration', 60),
             ],
             'telegram' => [
                 'bot_token' => config('services.telegram.bot_token'),
@@ -255,6 +256,7 @@ class SettingsController extends Controller
             'TELEGRAM_BOT_TOKEN' => 'sometimes|nullable|string',
             'update_existing_users' => 'sometimes|boolean',
             'site_timezone' => 'sometimes|nullable|timezone',
+            'quick_notes_audio_max_duration' => 'sometimes|numeric|min:5|max:300',
         ]);
 
         try {
@@ -262,6 +264,11 @@ class SettingsController extends Controller
             if (isset($data['site_timezone'])) {
                 \App\Models\Setting::set('site_timezone', $data['site_timezone']);
                 unset($data['site_timezone']);
+            }
+
+            if (isset($data['quick_notes_audio_max_duration'])) {
+                \App\Models\Setting::set('quick_notes_audio_max_duration', $data['quick_notes_audio_max_duration']);
+                unset($data['quick_notes_audio_max_duration']);
             }
 
             foreach ($data as $key => $value) {

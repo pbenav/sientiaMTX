@@ -115,7 +115,7 @@ class QuickNoteController extends Controller
             'id' => uniqid(),
             'name' => $file->getClientOriginalName(),
             'path' => $path,
-            'url' => Storage::url($path),
+            'url' => Storage::disk('public')->url($path),
             'type' => $file->getMimeType(),
             'created_at' => now(),
         ];
