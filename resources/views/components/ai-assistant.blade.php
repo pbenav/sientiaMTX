@@ -386,6 +386,7 @@
             mediaRecorder: null,
             audioChunks: [],
             recordingTime: 0,
+            maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
             recordingInterval: null,
             pendingFile: null,
 
@@ -632,17 +633,27 @@
             async startRecording() {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    this.mediaRecorder = new MediaRecorder(stream);
+                    
+                    // Detect supported mime type
+                    const mimeType = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav']
+                        .find(type => MediaRecorder.isTypeSupported(type)) || '';
+                    
+                    this.mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
                     this.audioChunks = [];
-                    this.recordingTime = 0;
+                    this.recordingTime = this.maxRecordingTime; // Start from max for countdown
 
                     this.mediaRecorder.ondataavailable = (event) => {
                         this.audioChunks.push(event.data);
                     };
 
                     this.mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-                        this.pendingFile = new File([audioBlob], `recording_${new Date().getTime()}.webm`, { type: 'audio/webm' });
+                        const finalMimeType = this.mediaRecorder.mimeType || 'audio/webm';
+                        const extension = finalMimeType.includes('mp4') ? 'm4a' : 
+                                         (finalMimeType.includes('webm') ? 'webm' : 
+                                         (finalMimeType.includes('ogg') ? 'ogg' : 'wav'));
+                        
+                        const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
+                        this.pendingFile = new File([audioBlob], `recording_${new Date().getTime()}.${extension}`, { type: finalMimeType });
                         
                         // Stop all tracks to release the microphone
                         stream.getTracks().forEach(track => track.stop());
@@ -655,7 +666,10 @@
                     this.isRecording = true;
                     
                     this.recordingInterval = setInterval(() => {
-                        this.recordingTime++;
+                        this.recordingTime--;
+                        if (this.recordingTime <= 0) {
+                            this.stopRecording();
+                        }
                     }, 1000);
 
                 } catch (err) {

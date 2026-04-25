@@ -160,7 +160,7 @@
                                 <!-- Tooltip dinámico -->
                                 <span x-show="isRecording && recordingNoteId === note.id" class="absolute right-full mr-2 px-2 py-1 bg-red-600 text-white text-[8px] font-black rounded-md uppercase tracking-widest whitespace-nowrap animate-pulse flex items-center gap-1 shadow-lg">
                                     <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
-                                    Grabando <span class="ml-1 opacity-80" x-text="`${recordingTime}s / ${maxRecordingTime}s`"></span>
+                                    Grabando <span class="ml-1 opacity-80 font-bold" x-text="`${recordingTime}s`"></span>
                                 </span>
                             </button>
                         </div>
@@ -521,15 +521,20 @@ document.addEventListener('alpine:init', () => {
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                this.mediaRecorder = new MediaRecorder(stream);
+                
+                // Detect supported mime type for mobile compatibility (iOS/Android)
+                const mimeType = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav']
+                    .find(type => MediaRecorder.isTypeSupported(type)) || '';
+                
+                this.mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
                 this.audioChunks = [];
                 this.recordingNoteId = note.id;
-                this.recordingTime = 0;
+                this.recordingTime = this.maxRecordingTime;
 
                 // Timer interval
                 this.recordingInterval = setInterval(() => {
-                    this.recordingTime++;
-                    if (this.recordingTime >= this.maxRecordingTime) {
+                    this.recordingTime--;
+                    if (this.recordingTime <= 0) {
                         this.stopRecording(note);
                     }
                 }, 1000);
@@ -539,9 +544,14 @@ document.addEventListener('alpine:init', () => {
                 };
 
                 this.mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                    const finalMimeType = this.mediaRecorder.mimeType || 'audio/webm';
+                    const extension = finalMimeType.includes('mp4') ? 'm4a' : 
+                                     (finalMimeType.includes('webm') ? 'webm' : 
+                                     (finalMimeType.includes('ogg') ? 'ogg' : 'wav'));
+                    
+                    const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
                     const formData = new FormData();
-                    formData.append('file', audioBlob, 'note_recording.webm');
+                    formData.append('file', audioBlob, `note_recording.${extension}`);
                     
                     try {
                         const response = await fetch(`/quick-notes/${note.id}/attachment`, {
