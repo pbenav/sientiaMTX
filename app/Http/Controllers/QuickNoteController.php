@@ -153,7 +153,7 @@ class QuickNoteController extends Controller
 
     public function transcribeAttachment(Request $request, QuickNote $quick_note, $attachmentId)
     {
-        Log::info("Transcripción solicitada", ['note_id' => $quick_note->id, 'att_id' => $attachmentId]);
+        \Log::info("Transcripción solicitada", ['note_id' => $quick_note->id, 'att_id' => $attachmentId]);
         $this->authorize('update', $quick_note);
 
         $attachments = $quick_note->attachments ?? [];
@@ -166,17 +166,17 @@ class QuickNoteController extends Controller
             }
         }
 
-        if (!$targetAtt || !str_starts_with($targetAtt['type'], 'audio/')) {
-            Log::warning("Ax.ia Transcripción: Adjunto no válido", ['id' => $attachmentId, 'found' => !!$targetAtt]);
+        if (!$targetAtt || (!str_starts_with($targetAtt['type'], 'audio/') && !str_contains($targetAtt['type'], 'webm'))) {
+            \Log::warning("Ax.ia Transcripción: Adjunto no válido", ['id' => $attachmentId, 'found' => !!$targetAtt, 'type' => $targetAtt['type'] ?? 'none']);
             return response()->json(['message' => 'Audio no encontrado o tipo inválido.'], 422);
         }
 
         try {
-            Log::info("Ax.ia Transcripción: Iniciando...", ['file' => $targetAtt['path']]);
+            \Log::info("Ax.ia Transcripción: Iniciando...", ['file' => $targetAtt['path']]);
             $filePath = Storage::disk('public')->path($targetAtt['path']);
             
             if (!file_exists($filePath)) {
-                Log::error("Ax.ia Transcripción: El archivo físico no existe en " . $filePath);
+                \Log::error("Ax.ia Transcripción: El archivo físico no existe en " . $filePath);
                 return response()->json(['message' => 'El archivo de audio no existe físicamente en el servidor.'], 404);
             }
             $file = new \Illuminate\Http\UploadedFile(
@@ -199,14 +199,15 @@ class QuickNoteController extends Controller
                 try {
                     $json = json_decode($transcription, true);
                     $transcription = $json['content'] ?? $json['text'] ?? $transcription;
-                } catch (\Exception $e) {}
+                } catch (\Throwable $e) {}
             }
 
             return response()->json([
                 'transcription' => trim($transcription),
                 'attachment_id' => $attachmentId
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            \Log::error("Error en transcripción QuickNote: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Error en la transcripción: ' . $e->getMessage()], 500);
         }
     }
