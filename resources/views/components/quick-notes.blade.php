@@ -53,13 +53,25 @@
 
                 <!-- Content Area -->
                 <div x-show="!note.is_minimized" class="flex-1 flex flex-col p-4 overflow-hidden">
-                    <textarea 
-                        x-model="note.content"
-                        @input.debounce.1000ms="updateNote(note)"
-                        @paste="handlePaste($event, note)"
-                        class="flex-1 w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-black/80 font-medium leading-relaxed resize-none placeholder:text-black/20"
-                        placeholder="Escribe algo aquí... pega imágenes o graba audio"
-                    ></textarea>
+                    <div class="flex-1 flex flex-col overflow-hidden" x-data="{ editing: false }">
+                        <textarea 
+                            x-show="editing"
+                            x-ref="textarea"
+                            x-model="note.content"
+                            @input.debounce.1000ms="updateNote(note)"
+                            @paste="handlePaste($event, note)"
+                            @blur="editing = false"
+                            class="flex-1 w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-black/80 font-medium leading-relaxed resize-none placeholder:text-black/20"
+                            placeholder="Escribe algo aquí... (Markdown soportado)"
+                        ></textarea>
+                        
+                        <div 
+                            x-show="!editing"
+                            @click="editing = true; $nextTick(() => $refs.textarea.focus())"
+                            class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto cursor-text select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1"
+                            x-html="renderMarkdown(note.content || '*Escribe algo aquí...*')"
+                        ></div>
+                    </div>
 
                     <!-- Attachments Strip -->
                     <template x-if="note.attachments && note.attachments.length > 0">
@@ -197,6 +209,15 @@ document.addEventListener('alpine:init', () => {
         
         async init() {
             await this.refreshNotes();
+        },
+
+        renderMarkdown(content) {
+            if (!content) return '';
+            try {
+                return marked.parse(content, { breaks: true, gfm: true });
+            } catch (e) {
+                return content;
+            }
         },
 
         processAttachments(attachments) {
