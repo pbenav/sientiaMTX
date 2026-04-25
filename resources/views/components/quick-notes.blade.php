@@ -550,8 +550,10 @@ document.addEventListener('alpine:init', () => {
                                      (finalMimeType.includes('ogg') ? 'ogg' : 'wav'));
                     
                     const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
+                    const audioFile = new File([audioBlob], `note_recording.${extension}`, { type: finalMimeType });
+                    
                     const formData = new FormData();
-                    formData.append('file', audioBlob, `note_recording.${extension}`);
+                    formData.append('file', audioFile);
                     
                     try {
                         const response = await fetch(`/quick-notes/${note.id}/attachment`, {
@@ -578,10 +580,12 @@ document.addEventListener('alpine:init', () => {
                         console.error('Error uploading recording:', e);
                     }
                     
-                    stream.getTracks().forEach(track => track.stop());
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
                 };
 
-                this.mediaRecorder.start();
+                this.mediaRecorder.start(1000); // Send data every second
                 this.isRecording = true;
             } catch (err) {
                 console.error('Error recording:', err);

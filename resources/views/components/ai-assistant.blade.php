@@ -656,13 +656,15 @@
                         this.pendingFile = new File([audioBlob], `recording_${new Date().getTime()}.${extension}`, { type: finalMimeType });
                         
                         // Stop all tracks to release the microphone
-                        stream.getTracks().forEach(track => track.stop());
+                        if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                        }
                         
                         // Trigger message send automatically for recordings
                         this.sendMessage();
                     };
 
-                    this.mediaRecorder.start();
+                    this.mediaRecorder.start(1000); // Send data every second
                     this.isRecording = true;
                     
                     this.recordingInterval = setInterval(() => {
