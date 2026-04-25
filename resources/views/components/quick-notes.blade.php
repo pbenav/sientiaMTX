@@ -544,18 +544,22 @@ document.addEventListener('alpine:init', () => {
                 };
 
                 this.mediaRecorder.onstop = async () => {
+                    console.log("QuickNotes: Grabación detenida. Chunks:", this.audioChunks.length);
                     const finalMimeType = this.mediaRecorder.mimeType || 'audio/webm';
+                    console.log("QuickNotes: MIME Type detectado:", finalMimeType);
+                    
                     const extension = finalMimeType.includes('mp4') ? 'm4a' : 
                                      (finalMimeType.includes('webm') ? 'webm' : 
                                      (finalMimeType.includes('ogg') ? 'ogg' : 'wav'));
                     
-                    const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
-                    const audioFile = new File([audioBlob], `note_recording.${extension}`, { type: finalMimeType });
-                    
-                    const formData = new FormData();
-                    formData.append('file', audioFile);
-                    
                     try {
+                        const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
+                        const audioFile = new File([audioBlob], `note_recording.${extension}`, { type: finalMimeType });
+                        console.log("QuickNotes: Archivo creado:", audioFile.name, audioFile.size, "bytes");
+                        
+                        const formData = new FormData();
+                        formData.append('file', audioFile);
+                        
                         const response = await fetch(`/quick-notes/${note.id}/attachment`, {
                             method: 'POST',
                             headers: {
@@ -564,28 +568,29 @@ document.addEventListener('alpine:init', () => {
                             },
                             body: formData
                         });
+                        
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        
                         const updatedNote = await response.json();
                         const processed = this.processAttachments(updatedNote.attachments);
                         
-                        // Force reactivity by updating the note in the main array
                         const index = this.notes.findIndex(n => n.id === note.id);
                         if (index !== -1) {
                             this.notes[index].attachments = processed;
-                            // Trigger full array refresh for Alpine
                             this.notes = [...this.notes];
                         }
-                        
-                        this.recordingNoteId = null;
+                        console.log("QuickNotes: Subida completada.");
                     } catch (e) {
-                        console.error('Error uploading recording:', e);
-                    }
-                    
-                    if (stream) {
-                        stream.getTracks().forEach(track => track.stop());
+                        console.error('QuickNotes: Error en subida de grabación:', e);
+                    } finally {
+                        this.recordingNoteId = null;
+                        if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                        }
                     }
                 };
 
-                this.mediaRecorder.start(1000); // Send data every second
+                this.mediaRecorder.start(1000);
                 this.isRecording = true;
             } catch (err) {
                 console.error('Error recording:', err);

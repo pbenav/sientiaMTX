@@ -647,13 +647,21 @@
                     };
 
                     this.mediaRecorder.onstop = () => {
+                        console.log("Ax.ia: Grabación detenida. Chunks:", this.audioChunks.length);
                         const finalMimeType = this.mediaRecorder.mimeType || 'audio/webm';
+                        console.log("Ax.ia: MIME Type detectado:", finalMimeType);
+                        
                         const extension = finalMimeType.includes('mp4') ? 'm4a' : 
                                          (finalMimeType.includes('webm') ? 'webm' : 
                                          (finalMimeType.includes('ogg') ? 'ogg' : 'wav'));
                         
-                        const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
-                        this.pendingFile = new File([audioBlob], `recording_${new Date().getTime()}.${extension}`, { type: finalMimeType });
+                        try {
+                            const audioBlob = new Blob(this.audioChunks, { type: finalMimeType });
+                            this.pendingFile = new File([audioBlob], `recording_${new Date().getTime()}.${extension}`, { type: finalMimeType });
+                            console.log("Ax.ia: Archivo creado:", this.pendingFile.name, this.pendingFile.size, "bytes");
+                        } catch (e) {
+                            console.error("Ax.ia: Error creando archivo de audio:", e);
+                        }
                         
                         // Stop all tracks to release the microphone
                         if (stream) {
