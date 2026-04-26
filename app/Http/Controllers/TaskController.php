@@ -230,7 +230,12 @@ class TaskController extends Controller
 
         // --- Hide completed filter (session-based preference) ---
         if (session('hide_completed_tasks', true) && !$filters['status']) {
-            $query->whereNotIn('status', ['completed', 'cancelled']);
+            $query->where(function ($q) {
+                $q->whereNotIn('status', ['completed', 'cancelled'])
+                  ->orWhereHas('children', function ($cq) {
+                      $cq->whereNotIn('status', ['completed', 'cancelled']);
+                  });
+            });
         }
 
         // --- Pagination ---
