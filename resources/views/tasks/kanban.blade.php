@@ -226,9 +226,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                                         </svg>
                                     </div>
-                                </div>
                             </div>
-                        </div>
 
                         <!-- Tasks List -->
                         <div class="flex-1 overflow-y-auto px-1.5 sm:px-2 pb-2.5 sm:pb-3.5 md:pb-4 space-y-2 sm:space-y-2.5 md:space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
@@ -396,8 +394,8 @@
             </div>
         </div>
     </div>
+    </div>
 
-    @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
