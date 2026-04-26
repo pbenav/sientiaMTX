@@ -56,7 +56,10 @@ class WakeupAutoprogrammedTasks extends Command
             $deletedCount = $master->children()
                 ->where('scheduled_date', '>', now()->endOfDay())
                 ->where('status', 'pending')
-                ->delete();
+                ->get()
+                ->each
+                ->delete()
+                ->count();
             
             if ($deletedCount > 0) {
                 $this->line("  - {$master->title}: Eliminadas {$deletedCount} ocurrencias futuras.");

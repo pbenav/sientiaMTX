@@ -97,6 +97,7 @@ class CheckTasksIntegrity extends Command
         $unassigned = Task::where('is_template', false)
             ->whereNull('assigned_user_id')
             ->whereDoesntHave('assignments')
+            ->whereDoesntHave('children') // PROTEGEMOS PLANES MAESTRO/CARPETAS: Si tiene hijos, es útil aunque no tenga asignado directo
             ->get();
 
         if ($unassigned->isEmpty()) {

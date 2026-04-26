@@ -850,7 +850,7 @@ class TaskController extends Controller
                 // Delete instances not belonging to the new user set (including orphaned null-assigned ones)
                 // ONLY delete instances that were previously assigned to users who are no longer in the set.
                 // We PROTECT "unassigned" subtasks (Project Skeleton / Manual Subtasks) by ignoring whereNull.
-                $task->instances()->whereNotNull('assigned_user_id')->whereNotIn('assigned_user_id', $uniqueUserIds)->delete();
+                $task->instances()->whereNotNull('assigned_user_id')->whereNotIn('assigned_user_id', $uniqueUserIds)->get()->each->delete();
 
                 foreach ($uniqueUserIds as $userId) {
                     if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
@@ -887,7 +887,7 @@ class TaskController extends Controller
                 }
             } else {
                 // Not a template anymore: clean up
-                $task->instances()->whereNotNull('assigned_user_id')->delete();
+                $task->instances()->whereNotNull('assigned_user_id')->get()->each->delete();
                 $task->assigned_user_id = null; // Mark as unassigned
             }
             $task->save();
