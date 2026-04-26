@@ -528,7 +528,8 @@ class Task extends Model
         $lastOccurrence = $this->children()->whereNotNull('scheduled_date')->orderBy('scheduled_date', 'desc')->first();
         
         // If we already reached the limit based on count
-        if ($limitType === 'count' && $this->children()->count() >= (int)$limitValue) {
+        $occurrenceCount = $this->children()->where('metadata->is_occurrence', true)->count();
+        if ($limitType === 'count' && $occurrenceCount >= (int)$limitValue) {
             $this->update(['is_autoprogrammable' => false]);
             return;
         }
@@ -594,6 +595,9 @@ class Task extends Model
         $occurrence->due_date = $currentDate->copy()->addSeconds($durationInSeconds);
         $occurrence->status = 'pending';
         $occurrence->progress_percentage = 0;
+        
+        // Mark as a system-generated occurrence to protect user-created subtasks
+        $occurrence->metadata = array_merge($occurrence->metadata ?? [], ['is_occurrence' => true]);
         
         // Handle Sequential Dependency (Point to the last child in the chain)
         if ($sequential && $lastOccurrence) {

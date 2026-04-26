@@ -54,6 +54,7 @@ class WakeupAutoprogrammedTasks extends Command
             // Eliminamos todos los hijos que estén programados a partir de mañana
             // Esto permite resetear el sistema al nuevo modelo JIT
             $deletedCount = $master->children()
+                ->where('metadata->is_occurrence', true) // SOLO borramos lo que el sistema generó
                 ->where('scheduled_date', '>', now()->endOfDay())
                 ->where('status', 'pending')
                 ->get()
