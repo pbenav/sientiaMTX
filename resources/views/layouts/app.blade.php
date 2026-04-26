@@ -90,14 +90,18 @@
                 count: {{ auth()->check() ? Auth::user()->unreadNotifications->count() : 0 }},
                 lastChecked: Date.now(),
                 firstCheck: true,
+                lastSummaryShown: localStorage.getItem('last_notification_summary_shown') || 0,
                 
                 async check() {
                     try {
                         const res = await fetch('{{ route('notifications.unread-count') }}');
                         const data = await res.json();
                         
-                        // If it's the first check and there are unread notifications, notify about pending work
-                        if (this.firstCheck && data.count > 0) {
+                        // Only show pending summary if it hasn't been shown in the last 2 hours
+                        const now = Date.now();
+                        const twoHours = 2 * 60 * 60 * 1000;
+                        
+                        if (this.firstCheck && data.count > 0 && (now - this.lastSummaryShown) > twoHours) {
                             if (data.count === 1) {
                                 this.showToast(data.unread[0]);
                             } else {
@@ -119,6 +123,8 @@
                                 });
                             }
                             this.firstCheck = false;
+                            this.lastSummaryShown = now;
+                            localStorage.setItem('last_notification_summary_shown', now);
                         } 
                         // If count increased during session, show the new one
                         else if (data.count > this.count && data.unread.length > 0) {
@@ -158,11 +164,11 @@
                 
                 init() {
                     @auth
-                    // Initial check delayed to avoid conflict with welcome modal/greeting
-                    setTimeout(() => this.check(), 30000);
-
-                    // Poll more frequently for "real-time" (15 seconds)
-                    setInterval(() => this.check(), 15000);
+                    // Initial check
+                    setTimeout(() => this.check(), 5000);
+                    
+                    // Poll less frequently (1 minute)
+                    setInterval(() => this.check(), 60000);
 
                     // Re-check when coming back to the tab
                     document.addEventListener('visibilitychange', () => {
