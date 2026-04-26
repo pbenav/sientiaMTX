@@ -247,6 +247,12 @@ class GanttController extends Controller
             }
         }
     
+        // Step 2.1: ENSURE HIERARCHY INTEGRITY
+        // If we are showing a child, we MUST show its parent (even if completed/hidden) 
+        // to maintain the grouping structure in the Gantt UI.
+        $parentIds = Task::whereIn('id', $ganttTaskIds->filter())->whereNotNull('parent_id')->pluck('parent_id');
+        $ganttTaskIds = $ganttTaskIds->merge($parentIds);
+
         if ($team->isModerator($user)) {
              $templateIds = $team->tasks()->where('is_template', true)->pluck('id');
              $ganttTaskIds = $ganttTaskIds->merge($templateIds);
@@ -261,7 +267,6 @@ class GanttController extends Controller
 
         $query = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
             ->whereIn('id', $uniqueIds)
-            ->when(session('hide_completed_tasks', true) && !($filters['status'] ?? null), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
