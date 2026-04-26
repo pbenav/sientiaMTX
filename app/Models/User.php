@@ -255,6 +255,32 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(QuickNote::class);
     }
 
+    /**
+     * Check if the user is currently tracking a specific task.
+     */
+    public function isTrackingTask(int $taskId): bool
+    {
+        $active = $this->activeTaskLog();
+        return $active && $active->task_id === $taskId;
+    }
+
+    /**
+     * Get the total seconds tracked by the user for a specific task.
+     * Includes the current active session if it exists.
+     */
+    public function getTaskTrackingSeconds(int $taskId): int
+    {
+        $logs = $this->timeLogs()->where('task_id', $taskId)->get();
+        
+        return (int) $logs->sum(function($log) {
+            if ($log->end_at) {
+                return $log->start_at->diffInSeconds($log->end_at);
+            }
+            // If it's the active log, include seconds until now
+            return $log->start_at->diffInSeconds(now());
+        });
+    }
+
     public function activeWorkdayLog(): ?TimeLog
     {
         if ($this->relationLoaded('timeLogs')) {
