@@ -579,6 +579,13 @@
                     console.error('Error clearing history:', e);
                 }
             },
+            
+            // Drag variables
+            pos: { x: 0, y: 0 },
+            isDragging: false,
+            wasDragged: false,
+            startX: 0,
+            startY: 0,
 
             startDrag(e) {
                 if (this.open) return;
