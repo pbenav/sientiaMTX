@@ -56,6 +56,35 @@ class Service extends Model
         };
     }
 
+    public function hasUserReportedRecently($userId, $type = null): bool
+    {
+        $query = $this->reports()
+            ->where('user_id', $userId)
+            ->where('created_at', '>=', now()->subHour());
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        return $query->exists();
+    }
+
+    public function getRecentUpReportsCount(): int
+    {
+        return $this->reports()
+            ->where('type', 'up')
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+    }
+
+    public function getRecentDownReportsCount(): int
+    {
+        return $this->reports()
+            ->where('type', 'down')
+            ->where('created_at', '>=', now()->subHours(2))
+            ->count();
+    }
+
     public function getIncidentHistory(): array
     {
         $tenDaysAgo = now()->subDays(10)->startOfDay();

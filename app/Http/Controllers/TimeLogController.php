@@ -172,6 +172,20 @@ class TimeLogController extends Controller
                 $q->latest()->limit(5);
             }])->get();
 
-        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData', 'services'));
+        $incidencePoints = \App\Models\ServiceReport::whereIn('service_id', $services->pluck('id'))
+            ->where('type', 'down')
+            ->where('created_at', '>=', now()->subHours(2))
+            ->with(['user', 'service'])
+            ->get()
+            ->filter(fn($r) => $r->user && $r->user->location_lat)
+            ->map(fn($r) => [
+                'lat' => (float)$r->user->location_lat,
+                'lng' => (float)$r->user->location_lng,
+                'service' => $r->service->name,
+                'user' => $r->user->name,
+                'time' => $r->created_at->diffForHumans()
+            ])->values();
+
+        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData', 'services', 'incidencePoints'));
     }
 }

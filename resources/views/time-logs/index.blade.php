@@ -711,6 +711,25 @@
                     map.fitBounds(bounds, { padding: [50, 50] });
                 }
             }
+
+            // Señales de Incidencia Sentinel
+            const incidencePoints = @json($incidencePoints ?? []);
+            
+            incidencePoints.forEach(p => {
+                const pulseIcon = L.divIcon({
+                    className: 'relative',
+                    html: `
+                        <div class="flex h-12 w-12 items-center justify-center -ml-6 -mt-6">
+                            <span class="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-4 w-4 bg-rose-600 shadow-lg border-2 border-white flex items-center justify-center text-[8px] text-white font-black">!</span>
+                        </div>
+                    `,
+                    iconSize: [0, 0]
+                });
+
+                L.marker([p.lat, p.lng], { icon: pulseIcon }).addTo(map)
+                 .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-rose-600">⚠️ Alerta Sentinel</span><br><b class="text-xs text-gray-900">${p.service}</b><br><span class="text-[10px] text-gray-500">Reportado por: ${p.user}</span><br><span class="text-[8px] font-black text-gray-400 uppercase mt-1 block">${p.time}</span></div>`);
+            });
         });
     </script>
     <!-- Modal Global Mi Zona -->
