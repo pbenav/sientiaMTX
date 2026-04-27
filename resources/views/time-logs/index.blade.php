@@ -717,19 +717,24 @@
             const incidencePoints = @json($incidencePoints ?? []);
             
             incidencePoints.forEach(p => {
+                const color = p.type === 'down' ? 'rose' : 'emerald';
+                const symbol = p.type === 'down' ? '!' : '✓';
                 const pulseIcon = L.divIcon({
                     className: 'incidence-beacon',
                     html: `
                         <div class="flex h-12 w-12 items-center justify-center -ml-6 -mt-6">
-                            <span class="animate-ping absolute inline-flex h-10 w-10 rounded-full bg-rose-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-5 w-5 bg-rose-600 shadow-xl border-2 border-white flex items-center justify-center text-[10px] text-white font-black">!</span>
+                            <span class="animate-ping absolute inline-flex h-10 w-10 rounded-full bg-${color}-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-5 w-5 bg-${color}-600 shadow-xl border-2 border-white flex items-center justify-center text-[10px] text-white font-black">${symbol}</span>
                         </div>
                     `,
                     iconSize: [0, 0]
                 });
 
+                const label = p.type === 'down' ? '⚠️ Alerta Sentinel' : '✅ Recuperación Sentinel';
+                const labelColor = p.type === 'down' ? 'rose' : 'emerald';
+
                 L.marker([p.lat, p.lng], { icon: pulseIcon }).addTo(map)
-                 .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-rose-600">⚠️ Alerta Sentinel</span><br><b class="text-xs text-gray-900">${p.service}</b><br><span class="text-[10px] text-gray-500">Reportado por: ${p.user}</span><br><span class="text-[8px] font-black text-gray-400 uppercase mt-1 block">${p.time}</span></div>`);
+                 .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}-600">${label}</span><br><b class="text-xs text-gray-900">${p.service}</b><br><span class="text-[10px] text-gray-500">Reportado por: ${p.user}</span><br><span class="text-[8px] font-black text-gray-400 uppercase mt-1 block">${p.time}</span></div>`);
             });
         });
     </script>

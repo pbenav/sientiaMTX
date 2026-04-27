@@ -173,14 +173,15 @@ class TimeLogController extends Controller
             }])->get();
 
         $incidencePoints = \App\Models\ServiceReport::whereIn('service_id', $services->pluck('id'))
-            ->where('type', 'down')
-            ->where('created_at', '>=', now()->subHours(2))
+            ->whereIn('type', ['up', 'down'])
+            ->where('created_at', '>=', now()->subHours(1))
             ->with(['user', 'service'])
             ->get()
             ->filter(fn($r) => $r->user && $r->user->location_lat)
             ->map(fn($r) => [
                 'lat' => (float)$r->user->location_lat,
                 'lng' => (float)$r->user->location_lng,
+                'type' => $r->type,
                 'service' => $r->service->name,
                 'user' => $r->user->name,
                 'time' => $r->created_at->diffForHumans()
