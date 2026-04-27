@@ -98,7 +98,7 @@
                                 </button>
                             </form>
 
-                            <!-- Botón KA! (Caída/Inestable) -->
+                            <!-- Botón KO (Caída/Inestable) -->
                             <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1">
                                 @csrf
                                 <input type="hidden" name="type" value="down">
@@ -107,7 +107,7 @@
                                     class="group w-full py-2 bg-white dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-900/20 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all border border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/50 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed">
                                     <div class="flex items-center justify-center gap-1.5">
                                         <div class="w-1.5 h-1.5 rounded-full {{ $service->status !== 'up' ? 'bg-red-500 animate-ping' : 'bg-gray-300 dark:bg-gray-600' }} {{ !$userReportedDown ? 'group-hover:animate-bounce' : '' }}"></div>
-                                        <span>KA!</span>
+                                        <span>KO</span>
                                         @if($downCount > 0)
                                             <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[7px] font-black rounded-md">{{ $downCount }}</span>
                                         @endif
