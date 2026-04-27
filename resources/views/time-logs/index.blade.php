@@ -616,7 +616,8 @@
         .leaflet-pane { z-index: 1 !important; }
         .leaflet-top, .leaflet-bottom { z-index: 2 !important; }
         .custom-div-icon { z-index: 10 !important; }
-        .leaflet-popup { z-index: 20 !important; }
+        .incidence-beacon { z-index: 999 !important; }
+        .leaflet-popup { z-index: 1000 !important; }
     </style>
     
     <script>
@@ -717,11 +718,11 @@
             
             incidencePoints.forEach(p => {
                 const pulseIcon = L.divIcon({
-                    className: 'relative',
+                    className: 'incidence-beacon',
                     html: `
                         <div class="flex h-12 w-12 items-center justify-center -ml-6 -mt-6">
-                            <span class="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-rose-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-4 w-4 bg-rose-600 shadow-lg border-2 border-white flex items-center justify-center text-[8px] text-white font-black">!</span>
+                            <span class="animate-ping absolute inline-flex h-10 w-10 rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-5 w-5 bg-rose-600 shadow-xl border-2 border-white flex items-center justify-center text-[10px] text-white font-black">!</span>
                         </div>
                     `,
                     iconSize: [0, 0]
