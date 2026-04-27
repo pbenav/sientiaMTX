@@ -438,6 +438,84 @@
 
 
 
+
+
+
+            @php
+                $displayDescription = $task->description ?: ($task->parent?->description ?? null);
+                $displayObservations = $task->observations ?: ($task->parent?->observations ?? null);
+            @endphp
+
+            @if ($displayDescription)
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            {{ __('tasks.description') }}
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
+                            <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'description' })" 
+                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
+                                    title="Mejorar Resumen con IA">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Ax.ia
+                            </button>
+                            @endif
+                            <button onclick="printSection('Descripción', 'description-content')" 
+                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                    title="Imprimir descripción">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Imprimir
+                            </button>
+                        </div>
+                    </div>
+                    <div id="description-content"
+                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
+                        {!! str($displayDescription)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                    </div>
+                </div>
+            @endif
+
+            @if ($displayObservations)
+                <div
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            {{ __('tasks.observations') }}
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
+                            <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'observaciones' })" 
+                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
+                                    title="Desarrollar contenido con IA">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Ax.ia
+                            </button>
+                            @endif
+                            <button onclick="printSection('Observaciones', 'observations-content')" 
+                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                    title="Imprimir observaciones">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Imprimir
+                            </button>
+                        </div>
+                    </div>
+                    <div id="observations-content"
+                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
+                        {!! str($displayObservations)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                    </div>
+                </div>
+            @endif
+
             @if ($task->is_template || $task->children()->exists() || $task->assignedTo->isNotEmpty())
                 @php
                     $isRoadmap = $task->is_template || $task->children()->exists();
@@ -800,83 +878,6 @@
                             </div>
                         </div>
                     @endif
-                </div>
-            @endif
-
-
-
-            @php
-                $displayDescription = $task->description ?: ($task->parent?->description ?? null);
-                $displayObservations = $task->observations ?: ($task->parent?->observations ?? null);
-            @endphp
-
-            @if ($displayDescription)
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                            {{ __('tasks.description') }}
-                        </h3>
-                        <div class="flex items-center gap-2">
-                            @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
-                            <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'description' })" 
-                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
-                                    title="Mejorar Resumen con IA">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                                Ax.ia
-                            </button>
-                            @endif
-                            <button onclick="printSection('Descripción', 'description-content')" 
-                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                                    title="Imprimir descripción">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                </svg>
-                                Imprimir
-                            </button>
-                        </div>
-                    </div>
-                    <div id="description-content"
-                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
-                        {!! str($displayDescription)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
-                    </div>
-                </div>
-            @endif
-
-            @if ($displayObservations)
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                            {{ __('tasks.observations') }}
-                        </h3>
-                        <div class="flex items-center gap-2">
-                            @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
-                            <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'observaciones' })" 
-                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
-                                    title="Desarrollar contenido con IA">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                                Ax.ia
-                            </button>
-                            @endif
-                            <button onclick="printSection('Observaciones', 'observations-content')" 
-                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                                    title="Imprimir observaciones">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                </svg>
-                                Imprimir
-                            </button>
-                        </div>
-                    </div>
-                    <div id="observations-content"
-                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
-                        {!! str($displayObservations)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
-                    </div>
                 </div>
             @endif
 
