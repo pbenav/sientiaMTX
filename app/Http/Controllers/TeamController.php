@@ -36,7 +36,7 @@ class TeamController extends Controller
     {
         $this->authorize('admin'); // Ensure only global admins can access
 
-        $query = Team::with(['members', 'creator']);
+        $query = Team::with(['creator'])->withCount(['members', 'tasks']);
 
         // Sorting
         $sort = $request->get('sort', 'name');

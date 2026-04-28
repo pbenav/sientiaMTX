@@ -81,7 +81,34 @@
                                     </th>
                                 @endforeach
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Creador</th>
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Miembros</th>
+                                <th class="px-6 py-4">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'members_count', 'direction' => $sort === 'members_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
+                                       class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'members_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
+                                        Miembros
+                                        <div class="flex flex-col {{ $sort === 'members_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'members_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === 'members_count' && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </a>
+                                </th>
+                                <th class="px-6 py-4">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'tasks_count', 'direction' => $sort === 'tasks_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
+                                       class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'tasks_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
+                                        Tareas
+                                        <div class="flex flex-col {{ $sort === 'tasks_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'tasks_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === 'tasks_count' && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </a>
+                                </th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -111,7 +138,12 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                            {{ $team->members->count() }} miembros
+                                            {{ $team->members_count }} miembros
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
+                                            {{ $team->tasks_count }} tareas
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right space-x-2">
