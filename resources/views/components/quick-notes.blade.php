@@ -1,12 +1,14 @@
 <div x-data="sientiaQuickNotes()" 
+     @mousedown.window="handleWindowBlur($event)"
      @pointermove.window="handleMouseMove($event)" 
      @pointerup.window="stopAllDragging()"
-     @keydown.escape.window="showAll()"
+     @keydown.escape.window="hideAll()"
      @quicknote-create.window="createNote()"
      @quicknote-toggle-all.window="toggleAll()"
      @quicknote-refresh.window="refreshNotes()"
      class="fixed inset-0 pointer-events-none z-[9999]"
-     style="touch-action: none;">
+     style="touch-action: none;"
+     x-init="window.addEventListener('blur', () => hideAll())">
 
     <style>
         .swal2-container { z-index: 100000 !important; }
@@ -470,6 +472,34 @@ document.addEventListener('alpine:init', () => {
 
         closeAll() {
             this.activeNoteId = null;
+        },
+
+        hideAll() {
+            const anyVisible = this.notes.some(n => !n.is_hidden);
+            if (anyVisible) {
+                this.toggleAll();
+            }
+        },
+
+        handleWindowBlur(e) {
+            // Check if there are any visible notes
+            const anyVisible = this.notes.some(n => !n.is_hidden);
+            if (!anyVisible) return;
+
+            // Don't hide if clicking inside a note
+            if (e.target.closest('.absolute.pointer-events-auto')) return;
+            
+            // Don't hide if clicking the toggle button
+            if (e.target.closest('#quick-notes-toggle')) return;
+
+            // Don't hide if clicking an AI assistant component (they work together)
+            if (e.target.closest('.ai-assistant-container') || e.target.closest('#ai-assistant-button')) return;
+
+            // Don't hide if clicking a SweetAlert
+            if (e.target.closest('.swal2-container')) return;
+
+            // Auto-hide all notes
+            this.hideAll();
         },
 
         async handlePaste(e, note) {
