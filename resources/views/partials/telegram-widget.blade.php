@@ -705,7 +705,8 @@
                 this.newMessage = '';
 
                 try {
-                    const response = await fetch(`/telegram-chat/messages/${id}`, {
+                    const url = '{{ route("telegram.chat.update", ":id") }}'.replace(':id', id);
+                    const response = await fetch(url, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
@@ -732,7 +733,8 @@
                 if (!confirm('¿Borrar mensaje? Se eliminará de Telegram y del historial.')) return;
                 
                 try {
-                    const response = await fetch(`/telegram-chat/messages/${msgId}`, {
+                    const url = '{{ route("telegram.chat.delete", ":id") }}'.replace(':id', msgId);
+                    const response = await fetch(url, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -742,6 +744,9 @@
                     
                     if (response.ok) {
                         this.messages = this.messages.filter(m => m.id !== msgId);
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.error || 'No se pudo borrar'));
                     }
                 } catch (e) {
                     console.error('Error deleting message:', e);

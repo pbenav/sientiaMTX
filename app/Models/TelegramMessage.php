@@ -20,6 +20,7 @@ class TelegramMessage extends Model
         'voice_duration',
         'sticker_path',
         'file_type',
+        'file_size',
         'reply_to_message_id',
         'reply_to_text',
     ];

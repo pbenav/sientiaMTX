@@ -102,6 +102,8 @@ class TelegramChatController extends Controller
                 $data = $response->json();
                 $localMsg->update(['telegram_message_id' => $data['result']['message_id']]);
                 
+                Log::info("Mensaje enviado a Telegram, ID: {$data['result']['message_id']}");
+
                 return response()->json([
                     'success' => true,
                     'message' => [
@@ -118,6 +120,7 @@ class TelegramChatController extends Controller
                 ]);
             }
 
+            Log::error("Error de Telegram: " . $response->body());
             return response()->json([
                 'reply' => '😕 No he podido enviar el mensaje a Telegram.'
             ]);
@@ -187,7 +190,8 @@ class TelegramChatController extends Controller
 
         // Solo el autor puede editar
         if ($message->user_id !== $user->id) {
-            abort(403);
+            Log::warning("Intento de edición no autorizado: Usuario {$user->id} intentó editar mensaje {$message->id} (Autor: {$message->user_id})");
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
         $text = $request->input('message');
