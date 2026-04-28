@@ -20,6 +20,7 @@ class TelegramChatController extends Controller
             'photo' => 'nullable|image|max:5120', // Max 5MB
             'voice' => 'nullable|mimes:ogg,webm,mp3,wav|max:5120', // Max 5MB
             'team_id' => 'required|exists:teams,id',
+            'reply_to_id' => 'nullable|exists:telegram_messages,id',
         ]);
 
         $user = auth()->user();
@@ -65,33 +66,36 @@ class TelegramChatController extends Controller
                 'voice_path' => $voicePath,
                 'file_type' => $fileType,
                 'is_from_web' => true,
+                'reply_to_message_id' => $request->reply_to_id ? TelegramMessage::find($request->reply_to_id)?->telegram_message_id : null,
+                'reply_to_text' => $request->reply_to_id ? TelegramMessage::find($request->reply_to_id)?->text : null,
             ]);
 
-            // Formateamos el pie del mensaje
+            // Formateamos el pie del mensaje usando HTML (más robusto que Markdown para tildes y caracteres especiales)
+            // Formateamos el pie del mensaje usando Markdown (original)
             $caption = "💬 *[{$user->name}]:*\n{$text}";
             
+            $params = [
+                'chat_id' => $chatId,
+                'parse_mode' => 'Markdown',
+            ];
+
+            if ($localMsg->reply_to_message_id) {
+                $params['reply_to_message_id'] = $localMsg->reply_to_message_id;
+            }
+
             if ($photo) {
+                $params['caption'] = $caption;
                 $response = Http::attach(
                     'photo', file_get_contents($photo->getRealPath()), $photo->getClientOriginalName()
-                )->post("https://api.telegram.org/bot{$token}/sendPhoto", [
-                    'chat_id' => $chatId,
-                    'caption' => $caption,
-                    'parse_mode' => 'Markdown',
-                ]);
+                )->post("https://api.telegram.org/bot{$token}/sendPhoto", $params);
             } elseif ($voice) {
+                $params['caption'] = $caption;
                 $response = Http::attach(
                     'voice', file_get_contents($voice->getRealPath()), $voice->getClientOriginalName()
-                )->post("https://api.telegram.org/bot{$token}/sendVoice", [
-                    'chat_id' => $chatId,
-                    'caption' => $caption,
-                    'parse_mode' => 'Markdown',
-                ]);
+                )->post("https://api.telegram.org/bot{$token}/sendVoice", $params);
             } else {
-                $response = Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
-                    'chat_id' => $chatId,
-                    'text' => $caption,
-                    'parse_mode' => 'Markdown',
-                ]);
+                $params['text'] = $caption;
+                $response = Http::post("https://api.telegram.org/bot{$token}/sendMessage", $params);
             }
 
             if ($response->successful()) {
@@ -162,6 +166,7 @@ class TelegramChatController extends Controller
                     'voice' => $msg->voice_url,
                     'sticker' => $msg->sticker_url,
                     'file_type' => $msg->file_type,
+                    'reply_to_text' => $msg->reply_to_text,
                 ];
             });
 

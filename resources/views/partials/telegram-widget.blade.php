@@ -185,6 +185,14 @@
                             </div>
                         </template>
 
+                        <!-- Respuesta a otro mensaje -->
+                        <template x-if="msg.reply_to_text">
+                            <div class="mb-2 py-1.5 px-2.5 bg-black/5 dark:bg-white/5 rounded-lg border-l-2 border-white/30 dark:border-blue-500/50 italic text-[10px] opacity-80 line-clamp-2">
+                                <span class="font-bold block uppercase text-[8px] mb-0.5 tracking-tighter">Respuesta a:</span>
+                                <span x-text="msg.reply_to_text"></span>
+                            </div>
+                        </template>
+
                         <p class="text-sm leading-relaxed whitespace-pre-wrap" x-text="msg.text" x-show="msg.text"></p>
                         
                         <!-- Footer del mensaje: Hora y acciones -->
@@ -200,6 +208,13 @@
                                         {{ __('Editar') }}
                                     </button>
                                 </template>
+
+                                <!-- Botón de responder -->
+                                <button @click="setReply(msg)"
+                                        class="text-[9px] font-bold uppercase tracking-tighter"
+                                        :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-blue-400 hover:text-blue-500'">
+                                    {{ __('Responder') }}
+                                </button>
 
                                 <!-- Botón de borrar -->
                                 <button @click="deleteMsg(msg.id)"
@@ -274,6 +289,19 @@
                            :class="editingId ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'bg-gray-100 dark:bg-gray-800 border-none'"
                            class="w-full rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-inner resize-none min-h-[45px] max-h-[120px] custom-scrollbar"></textarea>
                     
+                    <!-- Preview of pending reply -->
+                    <template x-if="replyToId">
+                        <div class="absolute bottom-full mb-3 left-0 right-0 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-2xl border-l-4 border-blue-500 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
+                            <div class="overflow-hidden">
+                                <span class="text-[9px] font-black uppercase text-blue-500 tracking-widest block mb-0.5">Respondiendo a:</span>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate italic" x-text="replyToText"></p>
+                            </div>
+                            <button type="button" @click="cancelReply()" class="text-gray-400 hover:text-red-500 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </template>
+
                     <!-- Preview of pending photo -->
                     <template x-if="pendingPhoto">
                         <div class="absolute bottom-full mb-3 left-0 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl border border-blue-100 dark:border-blue-900/50 flex items-center gap-3 animate-bounce-subtle">
@@ -365,6 +393,8 @@
             pendingPhoto: null,
             previewUrl: null,
             editingId: null,
+            replyToId: null,
+            replyToText: null,
             
             // Voice Recording
             isRecording: false,
@@ -598,6 +628,16 @@
                 this.editingId = null;
                 this.newMessage = '';
             },
+            setReply(msg) {
+                this.replyToId = msg.id;
+                this.replyToText = msg.text || (msg.file_type === 'photo' ? 'Imagen' : (msg.file_type === 'voice' ? 'Audio' : 'Mensaje'));
+                this.$refs.chatInput.focus();
+                this.editingId = null;
+            },
+            cancelReply() {
+                this.replyToId = null;
+                this.replyToText = null;
+            },
             handlePaste(e) {
                 const items = (e.clipboardData || e.originalEvent.clipboardData).items;
                 for (let index in items) {
@@ -622,6 +662,9 @@
                 const formData = new FormData();
                 formData.append('message', this.newMessage);
                 formData.append('team_id', this.teamId);
+                if (this.replyToId) {
+                    formData.append('reply_to_id', this.replyToId);
+                }
                 if (this.pendingPhoto) {
                     formData.append('photo', this.pendingPhoto);
                 }
@@ -634,6 +677,8 @@
                 this.previewUrl = null;
                 this.pendingVoice = null;
                 this.voicePreviewUrl = null;
+                this.replyToId = null;
+                this.replyToText = null;
                 
                 try {
                     const response = await fetch('{{ route('telegram.chat.send') }}', {

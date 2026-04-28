@@ -35,6 +35,10 @@ class TelegramWebhookController extends Controller
         $firstName = $from['first_name'] ?? 'Usuario';
         $lastName = $from['last_name'] ?? '';
         $authorName = trim($firstName . ' ' . $lastName);
+        
+        $replyTo = $update['message']['reply_to_message'] ?? null;
+        $replyToMessageId = $replyTo['message_id'] ?? null;
+        $replyToText = $replyTo['text'] ?? $replyTo['caption'] ?? null;
 
         // Handle Media
         $photoPath = null;
@@ -125,6 +129,8 @@ class TelegramWebhookController extends Controller
                     'telegram_message_id' => $messageId,
                     'is_from_web' => false,
                     'file_size' => $fileSize,
+                    'reply_to_message_id' => $replyToMessageId,
+                    'reply_to_text' => $replyToText,
                 ]);
             }
         }
