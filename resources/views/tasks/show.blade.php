@@ -3,16 +3,19 @@
         // 1. Identify the personal execution instance
         $isAssigned = $task->assigned_user_id === auth()->id() || $task->assignedTo->contains(auth()->id());
 
-        $personalInstance = null;
+        // Lógica de Notas Privadas e Instancia de ejecución:
+        // 1. Si la tarea es una plantilla (is_template), buscamos si el usuario tiene una instancia propia para esa tarea.
+        // 2. Si no es plantilla, la tarea en sí es la instancia de ejecución.
+        // 2. Si la tarea es una plantilla (is_template), buscamos si el usuario tiene una instancia propia.
+        // Si no la tiene, o si no es plantilla, la instancia personal para notas es la propia tarea.
+        $personalInstance = $task;
         if ($task->is_template) {
-            $personalInstance = $task->instances()
+            $instance = $task->instances()
                 ->where('assigned_user_id', auth()->id())
                 ->first();
-        } elseif (!$task->is_template) {
-            // Root task or child of something that is not a template
-            // If I am assigned or it's a collaborative root task
-            if ($isAssigned || (!$task->parent_id && !$task->isInstance())) {
-                $personalInstance = $task;
+            
+            if ($instance) {
+                $personalInstance = $instance;
             }
         }
 
@@ -516,7 +519,7 @@
                 </div>
             @endif
 
-            @if ($task->is_template || $task->children()->exists() || $task->assignedTo->isNotEmpty())
+            @if ($task->is_template || $task->children()->exists() || $task->assignedTo->isNotEmpty() || $task->assigned_user_id)
                 @php
                     $isRoadmap = $task->is_template || $task->children()->exists();
                     $currentUser = auth()->user();
@@ -881,7 +884,8 @@
                 </div>
             @endif
 
-            @if($personalInstance && ($personalInstance->assigned_user_id === auth()->id() || $personalInstance->assignedTo->contains(auth()->id())))
+            {{-- Sección de Notas Privadas: Disponible para cualquier usuario con acceso a la tarea --}}
+            @if($personalInstance)
                 <div class="bg-white dark:bg-gray-900 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-5 shadow-sm mt-5">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
@@ -1044,15 +1048,8 @@
                         const taskTitle = @json($task->title);
                         const printWin = window.open('', '_blank', 'width=800,height=900');
                         
-                        // Basic markdown to HTML for the print view (very simple fallback)
-                        let htmlContent = rawContent
-                            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                            .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
-                            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-                            .replace(/\*(.*)\*/gim, '<em>$1</em>')
-                            .replace(/\n/gim, '<br>');
+                        // Usamos marked.parse para renderizar el markdown correctamente si está disponible
+                        let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
 
                         printWin.document.write(`
                             <html>
@@ -1768,7 +1765,7 @@
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
                     @if ($task->scheduled_date)
                         <div class="flex items-center justify-between pb-3 border-b border-gray-50 dark:border-gray-800/50">
-                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.scheduled_date') ?? 'Fecha de Inicio' }}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ $task->is_autoprogrammable ? 'Inicio del Ciclo' : (__('tasks.scheduled_date') ?? 'Fecha de Inicio') }}</span>
                             <span class="text-[11px] text-gray-700 dark:text-gray-300 font-bold tabular-nums">{{ $task->scheduled_date->format('d M Y, H:i') }}</span>
                         </div>
                     @endif
@@ -1795,7 +1792,7 @@
                         </div>
                         @if(isset($task->autoprogram_settings['next_occurrence_at']))
                             <div class="flex justify-between text-[11px] pt-1 border-t border-gray-50 dark:border-gray-800">
-                                <span class="text-gray-400 font-medium">{{ __('tasks.next_wakeup') ?? 'Próximo despertar' }}:</span>
+                                <span class="text-gray-400 font-medium">Próxima ocurrencia:</span>
                                 <span class="text-violet-600 dark:text-violet-400 font-black">{{ \Carbon\Carbon::parse($task->autoprogram_settings['next_occurrence_at'])->format('d M Y') }}</span>
                             </div>
                         @endif
@@ -2371,6 +2368,7 @@
         @include('tasks.partials.import-modal-script')
     @endpush
 
+    @push('scripts')
 {{-- ============================================================
      BARRA FLOTANTE DE ACCIONES RÁPIDAS
      ============================================================ --}}
@@ -2476,34 +2474,45 @@
     }
 </script>
 
-<script>
-    (function() {
-        const bar = document.getElementById('task-floating-bar');
-        let visible = false;
+    <script>
+        (function() {
+            const bar = document.getElementById('task-floating-bar');
+            if (!bar) return;
 
-        function updateBar(scrollY) {
-            const shouldShow = scrollY > 150;
-            if (shouldShow === visible) return;
-            visible = shouldShow;
-            if (visible) {
-                bar.style.opacity = '1';
-                bar.style.transform = 'translateX(-50%) translateY(0)';
-                bar.style.pointerEvents = 'auto';
-            } else {
-                bar.style.opacity = '0';
-                bar.style.transform = 'translateX(-50%) translateY(1rem)';
-                bar.style.pointerEvents = 'none';
+            let visible = false;
+
+            function updateBar(scrollY) {
+                const shouldShow = scrollY > 150;
+                if (shouldShow === visible) return;
+                visible = shouldShow;
+                if (visible) {
+                    bar.style.opacity = '1';
+                    bar.style.transform = 'translateX(-50%) translateY(0)';
+                    bar.style.pointerEvents = 'auto';
+                } else {
+                    bar.style.opacity = '0';
+                    bar.style.transform = 'translateX(-50%) translateY(1rem)';
+                    bar.style.pointerEvents = 'none';
+                }
             }
-        }
 
-        // Catch scroll on any container
-        const checkScroll = (e) => {
-            const target = e.target === document ? document.documentElement : e.target;
-            const scrollY = target.scrollTop || window.scrollY || 0;
-            updateBar(scrollY);
-        };
+            // Detección de scroll mejorada
+            const checkScroll = (e) => {
+                let scrollY = 0;
+                if (e && e.target && e.target !== document) {
+                    scrollY = e.target.scrollTop;
+                } else {
+                    scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                }
+                updateBar(scrollY);
+            };
 
-        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-    })();
-</script>
+            // Escuchar en ventana y capturar eventos de contenedores internos
+            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            
+            // Verificación inicial
+            setTimeout(() => checkScroll(), 100);
+        })();
+    </script>
+@endpush
 </x-app-layout>

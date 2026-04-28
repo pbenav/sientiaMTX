@@ -22,23 +22,31 @@ class WakeupAutoprogrammedTasks extends Command
 
         foreach ($tasks as $task) {
             $settings = $task->autoprogram_settings;
-            $nextAt = isset($settings['next_occurrence_at']) ? Carbon::parse($settings['next_occurrence_at']) : ($task->scheduled_date ? Carbon::parse($task->scheduled_date) : now());
-            
             $leadValue = (int)($settings['lead_value'] ?? 7);
             $leadUnit = $settings['lead_unit'] ?? 'days';
 
-            $wakeupThreshold = $nextAt->copy();
-            switch ($leadUnit) {
-                case 'hours': $wakeupThreshold->subHours($leadValue); break;
-                case 'days': $wakeupThreshold->subDays($leadValue); break;
-                case 'weeks': $wakeupThreshold->subWeeks($leadValue); break;
-                case 'months': $wakeupThreshold->subMonths($leadValue); break;
-                default: $wakeupThreshold->subDays($leadValue);
-            }
+            // Generamos todas las ocurrencias que entren en el umbral de preaviso
+            // de forma iterativa en una sola ejecución.
+            while ($task->is_autoprogrammable) {
+                $settings = $task->autoprogram_settings;
+                $nextAt = isset($settings['next_occurrence_at']) ? Carbon::parse($settings['next_occurrence_at']) : ($task->scheduled_date ? Carbon::parse($task->scheduled_date) : now());
+                
+                $wakeupThreshold = $nextAt->copy();
+                switch ($leadUnit) {
+                    case 'hours': $wakeupThreshold->subHours($leadValue); break;
+                    case 'days': $wakeupThreshold->subDays($leadValue); break;
+                    case 'weeks': $wakeupThreshold->subWeeks($leadValue); break;
+                    case 'months': $wakeupThreshold->subMonths($leadValue); break;
+                    default: $wakeupThreshold->subDays($leadValue);
+                }
 
-            if (now()->greaterThanOrEqualTo($wakeupThreshold)) {
-                $this->info("Despertando tarea: {$task->title} para la fecha {$nextAt->toDateString()}");
-                $task->generateOccurrences();
+                if (now()->greaterThanOrEqualTo($wakeupThreshold)) {
+                    $this->info("Despertando tarea: {$task->title} para la fecha {$nextAt->toDateString()}");
+                    $task->generateOccurrences();
+                    $task->refresh(); // Refrescamos el modelo para obtener el nuevo next_occurrence_at
+                } else {
+                    break; // Salimos del bucle si la siguiente ya no entra en el umbral
+                }
             }
         }
 

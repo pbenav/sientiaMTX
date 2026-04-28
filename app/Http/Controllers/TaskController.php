@@ -367,14 +367,6 @@ class TaskController extends Controller
             'service_id' => $validated['service_id'] ?? null,
         ]);
 
-        if ($task->is_autoprogrammable) {
-            // JIT Generation will be handled by the artisan command
-            // We just ensure early metadata if needed
-            $settings = $task->autoprogram_settings;
-            $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
-            $task->update(['autoprogram_settings' => $settings]);
-        }
-
         \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
         $task->syncKanbanColumn();
 
@@ -532,6 +524,16 @@ class TaskController extends Controller
                     }
                 }
             }
+        }
+
+        // --- AUTOPROGRAMMING TRIGGER (Now at the end to ensure assignments are ready) ---
+        if ($task->is_autoprogrammable) {
+            $settings = $task->autoprogram_settings;
+            if (!isset($settings['next_occurrence_at'])) {
+                $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
+                $task->update(['autoprogram_settings' => $settings]);
+            }
+            $task->autoWakeup();
         }
 
         \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
@@ -696,8 +698,8 @@ class TaskController extends Controller
             'parent_id' => array_key_exists('parent_id', $validated) ? $validated['parent_id'] : $task->parent_id,
             'progress_percentage' => array_key_exists('progress_percentage', $validated) ? $validated['progress_percentage'] : $task->progress_percentage,
             'visibility' => array_key_exists('visibility', $validated) ? $validated['visibility'] : $task->visibility,
-            'is_autoprogrammable' => $request->boolean('is_autoprogrammable'),
-            'autoprogram_settings' => $request->input('autoprogram_settings'),
+            'is_autoprogrammable' => $request->has('is_autoprogrammable') ? $request->boolean('is_autoprogrammable') : $task->is_autoprogrammable,
+            'autoprogram_settings' => $request->has('autoprogram_settings') ? $request->input('autoprogram_settings') : $task->autoprogram_settings,
             'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
@@ -705,11 +707,6 @@ class TaskController extends Controller
             'service_id' => array_key_exists('service_id', $validated) ? $validated['service_id'] : $task->service_id,
         ]);
 
-        if ($task->is_autoprogrammable && (!isset($task->autoprogram_settings['next_occurrence_at']) || $request->has('scheduled_date'))) {
-            $settings = $task->autoprogram_settings;
-            $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
-            $task->update(['autoprogram_settings' => $settings]);
-        }
 
         if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
             $task->created_by_id = $validated['created_by_id'];
@@ -855,7 +852,13 @@ class TaskController extends Controller
                 // Delete instances not belonging to the new user set (including orphaned null-assigned ones)
                 // ONLY delete instances that were previously assigned to users who are no longer in the set.
                 // We PROTECT "unassigned" subtasks (Project Skeleton / Manual Subtasks) by ignoring whereNull.
-                $task->instances()->whereNotNull('assigned_user_id')->whereNotIn('assigned_user_id', $uniqueUserIds)->get()->each->delete();
+                $task->instances()
+                    ->whereNotNull('assigned_user_id')
+                    ->where('metadata->is_occurrence', '!=', true) // Protect occurrences from distributed sync
+                    ->whereNotIn('assigned_user_id', $uniqueUserIds)
+                    ->get()
+                    ->each
+                    ->delete();
 
                 foreach ($uniqueUserIds as $userId) {
                     if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
@@ -892,10 +895,26 @@ class TaskController extends Controller
                 }
             } else {
                 // Not a template anymore: clean up
-                $task->instances()->whereNotNull('assigned_user_id')->get()->each->delete();
+                // Not a template anymore: clean up only if NOT an occurrence
+                $task->instances()
+                    ->whereNotNull('assigned_user_id')
+                    ->where('metadata->is_occurrence', '!=', true) // Protect occurrences
+                    ->get()
+                    ->each
+                    ->delete();
                 $task->assigned_user_id = null; // Mark as unassigned
             }
             $task->save();
+        }
+
+        // --- AUTOPROGRAMMING TRIGGER (Now at the end to ensure assignments are ready) ---
+        if ($task->is_autoprogrammable) {
+            $settings = $task->autoprogram_settings;
+            if (!isset($settings['next_occurrence_at']) || $task->wasChanged('scheduled_date')) {
+                $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
+                $task->update(['autoprogram_settings' => $settings]);
+            }
+            $task->autoWakeup();
         }
 
         $task->syncKanbanColumn();
