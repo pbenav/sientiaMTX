@@ -227,9 +227,17 @@ document.addEventListener('alpine:init', () => {
         
         async init() {
             window.addEventListener('resize', () => {
+                const wasMobile = this.windowWidth < 768;
                 this.windowWidth = window.innerWidth;
+                const isMobile = this.windowWidth < 768;
+                
+                // Si acabamos de entrar en modo móvil, adaptamos las notas que estén fuera
+                if (isMobile && !wasMobile) {
+                    this.adaptNotesToMobile();
+                }
             });
             await this.refreshNotes();
+            this.adaptNotesToMobile();
             this.$watch('notes', (val) => {
                 const anyVisible = val.some(n => !n.is_hidden);
                 window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible } }));
@@ -237,23 +245,32 @@ document.addEventListener('alpine:init', () => {
         },
 
         getNoteStyle(note, index) {
-            const isMobile = this.windowWidth < 768;
+            const isActive = this.activeNoteId === note.id;
+            const zIndex = (isActive ? 9000 : 8888) + index;
             
-            if (isMobile) {
-                const visibleNotes = this.notes.filter(n => !n.is_hidden);
-                const vIndex = visibleNotes.indexOf(note);
-                const topOffset = 70 + (vIndex * 48); // Un poco más de espacio para que se vea el header
-                const isActive = this.activeNoteId === note.id;
-                
-                // Si está activa y no minimizada, le damos más altura
-                const height = note.is_minimized ? 40 : (isActive ? 450 : 200);
-                const zIndex = (isActive ? 9000 : 8888) + vIndex;
-                
-                return `left: 8px; top: ${topOffset}px; width: calc(100% - 16px); height: ${height}px; z-index: ${zIndex};`;
-            }
+            return `left: ${note.position_x}px; top: ${note.position_y}px; width: ${note.width}px; height: ${note.is_minimized ? '40px' : note.height + 'px'}; z-index: ${zIndex};`;
+        },
 
-            // Desktop style (as stored)
-            return `left: ${note.position_x}px; top: ${note.position_y}px; width: ${note.width}px; height: ${note.is_minimized ? '40px' : note.height + 'px'};`;
+        adaptNotesToMobile() {
+            if (this.windowWidth >= 768) return;
+            
+            let visibleIndex = 0;
+            this.notes.forEach((note) => {
+                if (note.is_hidden) return;
+                
+                // Si la nota está "perdida" (fuera de los límites del móvil) o es demasiado ancha
+                const isOffScreen = note.position_x > this.windowWidth - 50 || 
+                                   note.position_y > window.innerHeight - 50 ||
+                                   note.width > this.windowWidth;
+
+                if (isOffScreen) {
+                    note.position_x = 10;
+                    note.position_y = 80 + (visibleIndex * 45);
+                    note.width = Math.min(this.windowWidth - 20, 350);
+                    if (!note.is_minimized) note.height = 300;
+                }
+                visibleIndex++;
+            });
         },
 
         renderMarkdown(content) {
@@ -283,6 +300,7 @@ document.addEventListener('alpine:init', () => {
                     n.is_preview = false;
                     return n;
                 });
+                this.adaptNotesToMobile();
             } catch (e) {
                 console.error('Error fetching notes:', e);
             }
