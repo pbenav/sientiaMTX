@@ -171,7 +171,7 @@
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
-            class="min-h-[120px] bg-white dark:bg-gray-950/20 py-4 px-5"
+            class="min-h-[120px] max-h-[600px] overflow-y-auto custom-scrollbar bg-white dark:bg-gray-950/20 py-4 px-5"
             x-cloak>
             <div class="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed" x-html="preview"></div>
             <template x-if="!content">

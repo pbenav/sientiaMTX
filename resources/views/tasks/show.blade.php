@@ -408,7 +408,7 @@
         $totalFormattedTask = (floor($totalSecondsTask / 3600) > 0 ? floor($totalSecondsTask / 3600) . "h " : "") . floor(($totalSecondsTask % 3600) / 60) . "m";
     @endphp
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 lg:pb-0">
         <!-- Main content -->
         <div class="lg:col-span-2 space-y-5">
             <!-- Task Name Card -->
@@ -826,9 +826,9 @@
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300" style="width: {{ $inst->progress }}%"></div>
+                                                        <div id="inst-progress-bar-{{ $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300" style="width: {{ $inst->progress }}%"></div>
                                                     </div>
-                                                    <span class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
+                                                    <span id="inst-progress-val-{{ $inst->id }}" class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -910,14 +910,16 @@
                     
                     <form action="{{ route('teams.tasks.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
                         @csrf
-                        <x-markdown-editor 
-                            name="content" 
-                            id="reply-content-private"
-                            :value="old('content', $personalInstance->currentPrivateNote?->content)"
-                            :label="null"
-                            rows="6"
-                            placeholder="Escribe aquí tus notas personales sobre esta tarea... Nadie más podrá verlas."
-                        />
+                        <div class="max-h-[500px] overflow-y-auto custom-scrollbar">
+                            <x-markdown-editor 
+                                name="content" 
+                                id="reply-content-private"
+                                :value="old('content', $personalInstance->currentPrivateNote?->content)"
+                                :label="null"
+                                rows="6"
+                                placeholder="Escribe aquí tus notas personales sobre esta tarea... Nadie más podrá verlas."
+                            />
+                        </div>
                         <div class="mt-3 flex justify-end">
                             <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95">
                                 {{ __('tasks.save_notes') }}
@@ -1580,10 +1582,10 @@
                     <div class="pt-2 border-t border-violet-100 dark:border-violet-900/20">
                         <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-violet-400 mb-1">
                             <span>{{ __('tasks.roadmap_progress') }}</span>
-                            <span>{{ $task->progress }}%</span>
+                            <span id="global-progress-val">{{ $task->progress }}%</span>
                         </div>
                         <div class="w-full h-1 bg-violet-100 dark:bg-violet-900/30 rounded-full overflow-hidden">
-                            <div class="h-full bg-violet-500 transition-all duration-1000" style="width: {{ $task->progress }}%"></div>
+                            <div id="global-progress-bar" class="h-full bg-violet-500 transition-all duration-1000" style="width: {{ $task->progress }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -2076,7 +2078,6 @@
                                 if (data.parent_progress !== null) {
                                     if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
                                     if (gBar) {
-                                        gBar.style.transition = 'none';
                                         gBar.style.width = data.parent_progress + '%';
                                     }
                                 }
@@ -2430,7 +2431,7 @@
 
 <script>
     function savePrivateNotes() {
-        const content = document.getElementById('private-notes-area').value;
+        const content = document.getElementById('reply-content-private').value;
         const button = event.currentTarget;
         const originalText = button.innerHTML;
         
