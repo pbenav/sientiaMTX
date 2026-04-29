@@ -2172,15 +2172,22 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'No se pudo actualizar el progreso',
-                            icon: 'error',
-                            background: document.documentElement.classList.contains('dark') ?
-                                '#111827' : '#fff',
-                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
-                        });
+                        console.error('AutoPriority Error:', error);
+                        const errorMsg = 'No se pudo actualizar la prioridad automática';
+                        if (typeof Toast !== 'undefined') {
+                            Toast.fire({
+                                icon: 'error',
+                                title: errorMsg
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: errorMsg,
+                                icon: 'error',
+                                background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                            });
+                        }
                     });
             }
 
