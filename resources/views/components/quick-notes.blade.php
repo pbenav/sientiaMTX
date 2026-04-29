@@ -15,12 +15,12 @@
     </style>
     
     <!-- Notes Container -->
-    <template x-for="note in notes" :key="note.id">
+    <template x-for="(note, index) in notes" :key="note.id">
         <div 
             x-show="!note.is_hidden"
-            class="absolute pointer-events-auto transition-shadow duration-300"
+            class="absolute pointer-events-auto transition-all duration-300"
             :class="{'shadow-2xl z-[8889]': activeNoteId === note.id, 'shadow-lg z-[8888]': activeNoteId !== note.id}"
-            :style="`left: ${note.position_x}px; top: ${note.position_y}px; width: ${note.width}px; height: ${note.is_minimized ? '40px' : note.height + 'px'};`"
+            :style="getNoteStyle(note, index)"
             @pointerdown="focusNote(note.id)"
         >
             <!-- Note Card -->
@@ -219,17 +219,41 @@ document.addEventListener('alpine:init', () => {
         maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
         soundEnabled: localStorage.getItem('notes_sound_enabled') !== '0',
         
+        windowWidth: window.innerWidth,
         buttonPos: { right: 16, bottom: 24 },
         isDraggingButton: false,
         wasButtonDragged: false,
         buttonDragOffset: { x: 0, y: 0 },
         
         async init() {
+            window.addEventListener('resize', () => {
+                this.windowWidth = window.innerWidth;
+            });
             await this.refreshNotes();
             this.$watch('notes', (val) => {
                 const anyVisible = val.some(n => !n.is_hidden);
                 window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible } }));
             });
+        },
+
+        getNoteStyle(note, index) {
+            const isMobile = this.windowWidth < 768;
+            
+            if (isMobile) {
+                const visibleNotes = this.notes.filter(n => !n.is_hidden);
+                const vIndex = visibleNotes.indexOf(note);
+                const topOffset = 70 + (vIndex * 48); // Un poco más de espacio para que se vea el header
+                const isActive = this.activeNoteId === note.id;
+                
+                // Si está activa y no minimizada, le damos más altura
+                const height = note.is_minimized ? 40 : (isActive ? 450 : 200);
+                const zIndex = (isActive ? 9000 : 8888) + vIndex;
+                
+                return `left: 8px; top: ${topOffset}px; width: calc(100% - 16px); height: ${height}px; z-index: ${zIndex};`;
+            }
+
+            // Desktop style (as stored)
+            return `left: ${note.position_x}px; top: ${note.position_y}px; width: ${note.width}px; height: ${note.is_minimized ? '40px' : note.height + 'px'};`;
         },
 
         renderMarkdown(content) {
