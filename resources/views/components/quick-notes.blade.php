@@ -397,6 +397,10 @@ document.addEventListener('alpine:init', () => {
         hideNote(note) {
             note.is_hidden = true;
             this.updateNote(note);
+            this.notes = [...this.notes]; // Force reactivity
+            window.dispatchEvent(new CustomEvent('quicknote-state-changed', { 
+                detail: { anyVisible: this.notes.some(n => !n.is_hidden) } 
+            }));
         },
 
         showAll() {
@@ -406,6 +410,8 @@ document.addEventListener('alpine:init', () => {
                     this.updateNote(n);
                 }
             });
+            this.notes = [...this.notes]; // Force reactivity
+            window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible: true } }));
         },
 
         toggleAll() {
@@ -413,6 +419,10 @@ document.addEventListener('alpine:init', () => {
             const newState = anyVisible; // If any is visible, we hide ALL (newState = true)
             
             this.notes.forEach(n => n.is_hidden = newState);
+            this.notes = [...this.notes]; // Force reactivity
+            
+            // Dispatch event for other components (like AI Assistant)
+            window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible: !newState } }));
             
             // Persist to server
             fetch('{{ route('quick-notes.bulk-update') }}', {
