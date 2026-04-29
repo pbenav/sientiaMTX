@@ -18,7 +18,7 @@
     <template x-for="(note, index) in notes" :key="note.id">
         <div 
             x-show="!note.is_hidden"
-            class="absolute pointer-events-auto transition-all duration-300"
+            class="absolute pointer-events-auto transition-shadow duration-300"
             :class="{'shadow-2xl z-[8889]': activeNoteId === note.id, 'shadow-lg z-[8888]': activeNoteId !== note.id}"
             :style="getNoteStyle(note, index)"
             @pointerdown="focusNote(note.id)"
@@ -63,10 +63,10 @@
                             <svg x-show="soundEnabled" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
                             <svg x-show="!soundEnabled" style="display:none;" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
                         </button>
-                        <button @click="hideNote(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Ocultar">
+                        <button @click.stop="hideNote(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Ocultar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </button>
-                        <button @click="deleteNote(note)" class="p-1 hover:bg-red-500/20 hover:text-red-700 rounded-md transition-colors text-black/60" title="Eliminar">
+                        <button @click.stop="deleteNote(note)" class="p-1 hover:bg-red-500/20 hover:text-red-700 rounded-md transition-colors text-black/60" title="Eliminar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
@@ -230,6 +230,8 @@ document.addEventListener('alpine:init', () => {
                 const wasMobile = this.windowWidth < 768;
                 this.windowWidth = window.innerWidth;
                 const isMobile = this.windowWidth < 768;
+                
+                if (!this.notes) return;
                 
                 // Forzamos que todas las notas estén dentro de los límites actuales
                 this.notes.forEach(note => {
@@ -509,9 +511,9 @@ document.addEventListener('alpine:init', () => {
             this.dragTarget = null;
             this.resizeTarget = null;
             
-            // Wait a bit to reset isDraggingButton so click event can check wasButtonDragged
+            this.isDraggingButton = false;
             setTimeout(() => {
-                this.isDraggingButton = false;
+                this.wasButtonDragged = false;
             }, 50);
         },
 
