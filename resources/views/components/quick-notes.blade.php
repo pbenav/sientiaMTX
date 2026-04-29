@@ -1,5 +1,5 @@
 <div x-data="sientiaQuickNotes()" 
-     @mousedown.window="handleWindowBlur($event)"
+     @pointerdown.window="handleWindowBlur($event)"
      @pointermove.window="handleMouseMove($event)" 
      @pointerup.window="stopAllDragging()"
      @keydown.escape.window="hideAll()"
@@ -191,6 +191,7 @@
     <button 
         id="quick-notes-toggle"
         x-show="notes.length > 0"
+        @mousedown.stop
         @pointerdown="startButtonDrag($event)"
         @click="if(!wasButtonDragged) toggleAll()"
         class="fixed pointer-events-auto p-4 bg-amber-400 text-amber-900 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] z-[9999] select-none border-4 border-white/40 backdrop-blur-sm"
@@ -549,17 +550,19 @@ document.addEventListener('alpine:init', () => {
             const anyVisible = this.notes.some(n => !n.is_hidden);
             if (!anyVisible) return;
 
-            // Don't hide if clicking inside a note
-            if (e.target.closest('.absolute.pointer-events-auto')) return;
-            
-            // Don't hide if clicking the toggle button
-            if (e.target.closest('#quick-notes-toggle')) return;
+            // Use composedPath() to be sure we find the triggers even if DOM changes
+            const path = e.composedPath();
+            const isClickInsideExcluded = path.some(el => {
+                if (!el || !el.classList) return false;
+                return el.classList.contains('quick-notes-trigger') || 
+                       el.id === 'quick-notes-toggle' || 
+                       el.classList.contains('ai-assistant-container') ||
+                       el.id === 'ai-assistant-button' ||
+                       el.classList.contains('swal2-container') ||
+                       (el.classList.contains('absolute') && el.style.zIndex >= 8888);
+            });
 
-            // Don't hide if clicking an AI assistant component (they work together)
-            if (e.target.closest('.ai-assistant-container') || e.target.closest('#ai-assistant-button')) return;
-
-            // Don't hide if clicking a SweetAlert
-            if (e.target.closest('.swal2-container')) return;
+            if (isClickInsideExcluded) return;
 
             // Auto-hide all notes
             this.hideAll();

@@ -2181,7 +2181,13 @@
                     })
                     .catch(error => {
                         console.error('AutoPriority Error:', error);
-                        const errorMsg = 'No se pudo actualizar la prioridad automática';
+                        let errorMsg = 'No se pudo actualizar la prioridad automática';
+                        
+                        // Si tenemos un objeto de error con mensaje específico
+                        if (error.message && error.message.includes('Error del servidor')) {
+                            // Intentamos no hacer nada especial, pero el throw de arriba ya tiene el status
+                        }
+
                         if (typeof Toast !== 'undefined') {
                             Toast.fire({
                                 icon: 'error',

@@ -124,6 +124,7 @@ class Task extends Model
         'skill_id' => 'integer',
         'service_id' => 'integer',
         'is_autoprogrammable' => 'boolean',
+        'auto_priority' => 'boolean',
     ];
 
     public function service(): BelongsTo

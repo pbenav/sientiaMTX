@@ -1603,20 +1603,36 @@ class TaskController extends Controller
 
     public function toggleAutoPriority(Team $team, Task $task)
     {
-        $this->authorize('update', $task);
+        \Log::info("Toggle AutoPriority Attempt: Task #{$task->id} by User #" . auth()->id());
+        
+        try {
+            $this->authorize('update', $task);
+            
+            $task->auto_priority = !$task->auto_priority;
+            $task->save();
 
-        $task->auto_priority = !$task->auto_priority;
-        $task->save();
+            if ($task->auto_priority) {
+                $task->updateAutoPriority();
+            }
 
-        if ($task->auto_priority) {
-            $task->updateAutoPriority();
+            \Log::info("Toggle AutoPriority SUCCESS: Task #{$task->id} is now " . ($task->auto_priority ? 'ON' : 'OFF'));
+
+            return response()->json([
+                'success' => true,
+                'auto_priority' => $task->auto_priority,
+                'priority' => $task->priority,
+                'priority_label' => __('tasks.priorities.' . $task->priority)
+            ]);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            \Log::error("Toggle AutoPriority AUTH FAILED: " . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        } catch (\Exception $e) {
+            \Log::error("Toggle AutoPriority CRITICAL ERROR: " . $e->getMessage(), [
+                'task_id' => $task->id,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'auto_priority' => $task->auto_priority,
-            'priority' => $task->priority,
-            'priority_label' => __('tasks.priorities.' . $task->priority)
-        ]);
     }
 }

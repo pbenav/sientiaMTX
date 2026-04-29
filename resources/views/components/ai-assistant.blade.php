@@ -1,7 +1,7 @@
 @props(['user' => auth()->user(), 'teamId' => null, 'taskId' => null, 'threadId' => null, 'messageId' => null])
 
 <div x-data="sientiaAiAssistant()" 
-     class="fixed z-[9999] flex flex-col items-start font-sans bottom-32 sm:bottom-24 left-4 pointer-events-none"
+     class="fixed z-[9999] flex flex-col items-start font-sans bottom-32 sm:bottom-24 left-4 pointer-events-none ai-assistant-container"
      :style="`transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
      @mousemove.window="drag($event)"
      @touchmove.window="drag($event)"
@@ -11,7 +11,8 @@
      @ai:analyze-file.window="analyzeFile($event.detail)"
      @ai:analyze-task.window="analyzeTask($event.detail)"
      @ai:transfer-direct.window="transferToTask($event.detail)"
-     @ai:inject-note.window="injectNote($event.detail)">
+     @ai:inject-note.window="injectNote($event.detail)"
+     @quicknote-state-changed.window="quickNotesVisible = $event.detail.anyVisible">
     
     <!-- Chat Window -->
     <div 
@@ -310,8 +311,8 @@
     <!-- QuickNote Toggles (Floating above AI) -->
     <div class="flex flex-col gap-2 mb-3 pointer-events-auto">
         <button type="button" 
-            @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all'))"
-            class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md"
+            @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
+            class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger"
             :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
             :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Mostrar notas rápidas'">
             <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -323,8 +324,8 @@
             </svg>
         </button>
         <button 
-            @click="window.dispatchEvent(new CustomEvent('quicknote-create'))"
-            class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950"
+            @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
+            class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 quick-notes-trigger"
             title="Nueva Nota Rápida (Post-it)">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
         </button>
