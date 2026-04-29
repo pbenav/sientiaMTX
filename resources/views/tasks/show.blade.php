@@ -590,7 +590,7 @@
                             <div class="text-right min-w-[6rem]">
                                 <div class="flex items-center justify-end gap-2 mb-1.5">
                                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Progreso') }}</span>
-                                    <span class="text-sm font-black text-violet-600 dark:text-violet-400 tabular-nums">{{ round($prog) }}%</span>
+                                    <span class="text-sm font-black text-violet-600 dark:text-violet-400 tabular-nums js-global-progress-val">{{ round($prog) }}%</span>
                                     @if(!$isRoadmap && $totalInst > 1)
                                         <span class="text-[9px] font-bold text-violet-500/70 border border-violet-200 dark:border-violet-800 rounded-lg px-2 py-0.5 bg-violet-50/50 dark:bg-violet-900/10 ml-1 animate-fade-in uppercase tracking-wider">
                                             {{ __('tasks.collaborative_hint') }}
@@ -598,7 +598,7 @@
                                     @endif
                                 </div>
                                 <div class="w-24 bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden ml-auto">
-                                    <div class="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full transition-all duration-700 ease-out"
+                                    <div class="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full transition-all duration-700 ease-out js-global-progress-bar"
                                         style="width: {{ $prog }}%">
                                     </div>
                                 </div>
@@ -608,9 +608,8 @@
 
                     <div
                         class="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
-                        <div id="global-progress-bar"
-                            class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20"
-                            style="width: {{ $prog }}%; transition: none !important;"></div>
+                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20 js-global-progress-bar"
+                             style="width: {{ $prog }}%; transition: none !important;"></div>
                     </div>
 
                     @if ($hasBlocker)
@@ -680,6 +679,7 @@
                                 </span>
                             </div>
                             <button @click="nudgeUser(selectedMembers)" 
+                                    x-show="selectedMembers.length > 0"
                                     class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -692,7 +692,7 @@
                             <thead
                                 class="sticky top-0 z-10 bg-gray-50/95 dark:bg-gray-800/95 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-200 dark:border-gray-700">
                                 <tr>
-                                    @if($team->isCoordinator(auth()->user()))
+                                    @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                     <th class="px-4 py-3 w-10">
                                         <input type="checkbox" 
                                                @click="toggleAll()" 
@@ -757,7 +757,7 @@
                                         x-transition
                                         @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a, input')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
                                         
-                                        @if($team->isCoordinator(auth()->user()))
+                                        @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                         <td class="px-4 py-4" onclick="event.stopPropagation()">
                                             <input type="checkbox" 
                                                    value="{{ $isSimulated ? $task->id : $inst->id }}" 
@@ -826,9 +826,9 @@
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                        <div id="inst-progress-bar-{{ $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300" style="width: {{ $inst->progress }}%"></div>
+                                                        <div id="inst-progress-bar-{{ $isSimulated ? $task->id . '-' . $inst->user_id : $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300 js-member-progress-bar" style="width: {{ $inst->progress }}%"></div>
                                                     </div>
-                                                    <span id="inst-progress-val-{{ $inst->id }}" class="text-[9px] text-gray-400 font-bold w-5 tabular-nums">{{ $inst->progress }}%</span>
+                                                    <span id="inst-progress-val-{{ $isSimulated ? $task->id . '-' . $inst->user_id : $inst->id }}" class="text-[9px] text-gray-400 font-bold w-5 tabular-nums js-member-progress-val">{{ $inst->progress }}%</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -849,8 +849,8 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-4 text-right">
-                                            @if ($inst->status !== 'completed' && $team->isCoordinator(auth()->user()))
-                                                <button onclick="event.stopPropagation(); nudgeUser('{{ $isSimulated ? $task->id : $inst->id }}')"
+                                            @if ($inst->status !== 'completed' && ($team->isCoordinator(auth()->user()) || auth()->id() !== ($isSimulated ? $inst->user_id : $inst->assigned_user_id)))
+                                                <button onclick="event.stopPropagation(); nudgeUser('{{ $isSimulated ? $task->id : $inst->id }}', '{{ $isSimulated ? $inst->user_id : ($inst->assigned_user_id ?? '') }}')"
                                                     class="p-2 text-violet-600 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-400/10 rounded-lg transition-all"
                                                     title="{{ __('tasks.nudge_user') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block"
@@ -1582,10 +1582,10 @@
                     <div class="pt-2 border-t border-violet-100 dark:border-violet-900/20">
                         <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-violet-400 mb-1">
                             <span>{{ __('tasks.roadmap_progress') }}</span>
-                            <span id="global-progress-val">{{ $task->progress }}%</span>
+                            <span class="js-global-progress-val">{{ $task->progress }}%</span>
                         </div>
                         <div class="w-full h-1 bg-violet-100 dark:bg-violet-900/30 rounded-full overflow-hidden">
-                            <div id="global-progress-bar" class="h-full bg-violet-500 transition-all duration-1000" style="width: {{ $task->progress }}%"></div>
+                            <div class="h-full bg-violet-500 transition-all duration-1000 js-global-progress-bar" style="width: {{ $task->progress }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -1670,7 +1670,7 @@
                         </label>
                         <div class="flex items-center gap-3">
                             <input type="range" min="0" max="100" value="{{ $personalInstance->progress_percentage }}"
-                                class="flex-1 h-1 bg-indigo-100 dark:bg-indigo-900/50 rounded-full appearance-none cursor-pointer accent-indigo-600"
+                                class="flex-1 h-1 bg-indigo-100 dark:bg-indigo-900/50 rounded-full appearance-none cursor-pointer accent-indigo-600 js-member-progress-slider"
                                 oninput="document.getElementById('personal-progress-val').innerText = this.value"
                                 onchange="updateTaskProgress(this.value, {{ $personalInstance->id }}, '{{ $personalInstance->status }}')">
                         </div>
@@ -1875,7 +1875,7 @@
 
     @push('scripts')
         <script>
-            function nudgeUser(taskIds) {
+            function nudgeUser(taskIds, userId = null) {
                 const isBulk = Array.isArray(taskIds);
                 const ids = isBulk ? taskIds : [taskIds];
                 
@@ -1901,6 +1901,7 @@
                         const customMessage = result.value;
                         const url = isBulk ? `/teams/{{ $team->id }}/tasks/bulk-nudge` : `/teams/{{ $team->id }}/tasks/${taskIds}/nudge`;
                         const payload = isBulk ? { task_ids: ids, custom_message: customMessage } : { custom_message: customMessage };
+                        if (userId) payload.user_id = userId;
 
                         fetch(url, {
                             method: 'POST',
@@ -2064,23 +2065,28 @@
                                 window.location.reload();
                             } else {
                                 // Subtle label update without animations that feel like glitches
+                                // Actualización masiva de todos los elementos de progreso
+                                const finalProgress = data.parent_progress !== null ? data.parent_progress : data.task_progress;
+                                const finalProgressRounded = Math.round(finalProgress);
+
+                                document.querySelectorAll('.js-global-progress-val').forEach(el => el.innerText = finalProgressRounded + '%');
+                                document.querySelectorAll('.js-global-progress-bar').forEach(el => el.style.width = finalProgress + '%');
+
+                                // Sincronizar todos los miembros (tareas colaborativas/maestras)
+                                document.querySelectorAll('.js-member-progress-bar').forEach(bar => {
+                                    bar.style.width = finalProgress + '%';
+                                });
+                                document.querySelectorAll('.js-member-progress-val').forEach(val => {
+                                    val.innerText = finalProgressRounded + '%';
+                                });
+                                document.querySelectorAll('.js-member-progress-slider').forEach(slider => {
+                                    slider.value = finalProgressRounded;
+                                });
+
+                                // Elemento específico del sidebar si existe
                                 const valSpan = document.getElementById('progress-val');
-                                const gVal = document.getElementById('global-progress-val');
-                                const gBar = document.getElementById('global-progress-bar');
-                                const instBar = document.getElementById(`inst-progress-bar-${taskId}`);
-                                const instVal = document.getElementById(`inst-progress-val-${taskId}`);
+                                if (valSpan) valSpan.innerText = finalProgressRounded;
 
-                                if (valSpan) valSpan.innerText = progress;
-                                if (instBar) instBar.style.width = progress + '%';
-                                if (instVal) instVal.innerText = progress + '%';
-
-                                // Update global progress factors if we have them
-                                if (data.parent_progress !== null) {
-                                    if (gVal) gVal.innerText = Math.round(data.parent_progress) + '%';
-                                    if (gBar) {
-                                        gBar.style.width = data.parent_progress + '%';
-                                    }
-                                }
                             }
                         }
                     })

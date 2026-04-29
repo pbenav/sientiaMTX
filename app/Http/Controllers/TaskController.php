@@ -1283,11 +1283,7 @@ class TaskController extends Controller
      */
     public function nudge(Request $request, Team $team, Task $task)
     {
-        $this->authorize('update', $team);
-
-        if (!$task->isInstance() && !$task->is_template) {
-            return response()->json(['success' => false, 'message' => 'Recordatorio no aplicable a este tipo de tarea.'], 400);
-        }
+        $this->authorize('view', $team);
 
         $type = 'collaborative';
         $progress = $task->progress;
@@ -1298,7 +1294,8 @@ class TaskController extends Controller
             $type = 'deadline';
         }
 
-        $recipient = $task->assignedUser ?: $task->creator;
+        $recipientId = $request->input('user_id');
+        $recipient = $recipientId ? \App\Models\User::find($recipientId) : ($task->assignedUser ?: $task->creator);
 
         if (!$recipient) {
             return response()->json([
@@ -1326,7 +1323,7 @@ class TaskController extends Controller
      */
     public function bulkNudge(Request $request, Team $team)
     {
-        $this->authorize('update', $team);
+        $this->authorize('view', $team);
 
         $validated = $request->validate([
             'task_ids' => 'required|array',
@@ -1347,7 +1344,8 @@ class TaskController extends Controller
                 $type = 'deadline';
             }
 
-            $recipient = $task->assignedUser ?: $task->creator;
+            $recipientId = $request->input('user_id');
+            $recipient = $recipientId ? \App\Models\User::find($recipientId) : ($task->assignedUser ?: $task->creator);
 
             if ($recipient) {
                 $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress, $validated['custom_message']));
