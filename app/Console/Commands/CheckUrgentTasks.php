@@ -32,6 +32,17 @@ class CheckUrgentTasks extends Command
         $this->info('Checking for urgent tasks...');
         $this->line('Server now (UTC): ' . now()->toDateTimeString());
 
+        // 0. Procesar prioridades automáticas
+        $this->info('Actualizando prioridades automáticas...');
+        Task::where('auto_priority', true)
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereNotNull('due_date')
+            ->chunk(100, function ($tasks) {
+                foreach ($tasks as $task) {
+                    $task->updateAutoPriority();
+                }
+            });
+
         // 1. Recopilar usuarios y sus tareas que necesitan notificación
         $userTasks = [];
 

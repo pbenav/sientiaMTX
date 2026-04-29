@@ -1757,9 +1757,29 @@
                 @foreach ([['tasks.priority', $task->priority, 'tasks.priorities'], ['tasks.urgency', $task->urgency, 'tasks.urgencies']] as [$lbl, $val, $map])
                     <div class="flex items-center justify-between">
                         <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __($lbl) }}</span>
-                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __($map . '.' . $val) }}</span>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 {{ $map === 'tasks.priorities' ? 'js-priority-label' : '' }}">{{ __($map . '.' . $val) }}</span>
                     </div>
                 @endforeach
+
+                <div class="pt-2 border-t border-gray-50 dark:border-gray-800/50 mt-2">
+                    <button id="btn-auto-priority" onclick="toggleAutoPriority()" 
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 {{ $task->auto_priority ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800' : 'bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border border-transparent hover:border-gray-200 dark:hover:border-gray-700' }}">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 {{ $task->auto_priority ? 'animate-pulse' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span class="text-[10px] font-bold uppercase tracking-wider">{{ __('Prioridad Automática') }}</span>
+                        </div>
+                        <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $task->auto_priority ? 'bg-violet-500' : 'bg-gray-200 dark:bg-gray-700' }}">
+                            <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $task->auto_priority ? 'translate-x-3' : 'translate-x-0' }}"></span>
+                        </div>
+                    </button>
+                    @if($task->due_date)
+                        <p class="text-[9px] text-gray-400 mt-1.5 px-1 italic">
+                            {{ __('La prioridad escalará según el tiempo restante hasta la entrega.') }}
+                        </p>
+                    @endif
+                </div>
             </div>
 
             <!-- 8. Fechas Card -->
@@ -2087,6 +2107,67 @@
                                 const valSpan = document.getElementById('progress-val');
                                 if (valSpan) valSpan.innerText = finalProgressRounded;
 
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+
+            function toggleAutoPriority() {
+                const btn = document.getElementById('btn-auto-priority');
+                if (!btn) return;
+
+                fetch("{{ route('teams.tasks.toggle-auto-priority', [$team, $task]) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update UI state
+                            const isOn = data.auto_priority;
+                            
+                            // Update button styles
+                            btn.classList.toggle('bg-violet-50', isOn);
+                            btn.classList.toggle('dark:bg-violet-900/20', isOn);
+                            btn.classList.toggle('text-violet-600', isOn);
+                            btn.classList.toggle('dark:text-violet-400', isOn);
+                            btn.classList.toggle('border-violet-100', isOn);
+                            btn.classList.toggle('dark:border-violet-800', isOn);
+                            
+                            btn.classList.toggle('bg-gray-50', !isOn);
+                            btn.classList.toggle('dark:bg-gray-800/50', !isOn);
+                            btn.classList.toggle('text-gray-500', !isOn);
+                            btn.classList.toggle('dark:text-gray-400', !isOn);
+                            btn.classList.toggle('border-transparent', !isOn);
+                            
+                            const svg = btn.querySelector('svg');
+                            if (svg) svg.classList.toggle('animate-pulse', isOn);
+                            
+                            const dot = btn.querySelector('span.pointer-events-none');
+                            const bg = btn.querySelector('div.relative.inline-flex');
+                            if (dot) {
+                                dot.style.transform = isOn ? 'translateX(0.75rem)' : 'translateX(0)';
+                                bg.classList.toggle('bg-violet-500', isOn);
+                                bg.classList.toggle('bg-gray-200', !isOn);
+                                bg.classList.toggle('dark:bg-gray-700', !isOn);
+                            }
+
+                            // Update priority label if it changed
+                            document.querySelectorAll('.js-priority-label').forEach(el => {
+                                el.innerText = data.priority_label;
+                            });
+
+                            if (typeof Toast !== 'undefined') {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: isOn ? 'Prioridad automática activada' : 'Prioridad automática desactivada'
+                                });
                             }
                         }
                     })

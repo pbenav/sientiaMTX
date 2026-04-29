@@ -147,6 +147,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/{task}/nudge', [TaskController::class, 'nudge'])->name('teams.tasks.nudge');
     Route::post('/teams/{team}/tasks/bulk-nudge', [TaskController::class, 'bulkNudge'])->name('teams.tasks.bulk-nudge');
     Route::post('/teams/{team}/tasks/{task}/move', [TaskController::class, 'move'])->name('teams.tasks.move');
+    Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
     Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
     Route::get('/teams/{team}/tasks/{task}/export-json', [TaskController::class, 'exportJson'])->name('teams.tasks.export-json');
     Route::post('/teams/{team}/tasks/import-json', [TaskController::class, 'importJson'])->name('teams.tasks.import-json');

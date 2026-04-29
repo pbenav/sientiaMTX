@@ -76,6 +76,7 @@ class Task extends Model
         'title',
         'description',
         'priority',
+        'auto_priority',
         'urgency',
         'status',
         'scheduled_date',
@@ -232,6 +233,53 @@ class Task extends Model
     public function isInstance(): bool
     {
         return !empty($this->parent_id) && !$this->is_template;
+    }
+
+    /**
+     * Update task priority automatically based on remaining time
+     */
+    public function updateAutoPriority()
+    {
+        if (!$this->auto_priority || !$this->due_date || $this->status === 'completed') {
+            return;
+        }
+
+        $start = $this->scheduled_date ?: $this->created_at;
+        $now = now();
+        $due = $this->due_date;
+
+        if ($now->gt($due)) {
+            $this->priority = 'critical';
+            $this->save();
+            return;
+        }
+
+        $totalDuration = $start->diffInSeconds($due);
+        if ($totalDuration <= 0) return;
+
+        $remainingTime = $now->diffInSeconds($due, false);
+        $percentageRemaining = ($remainingTime / $totalDuration) * 100;
+
+        $priorities = ['low', 'medium', 'high', 'critical'];
+        // We need to know the "Initial" priority to scale it.
+        // But since we don't store it separately, we'll assume the scaling is absolute 
+        // or relative to a baseline in metadata.
+        // Let's use a simpler approach: fixed mapping by percentage for "Auto" mode.
+        
+        $newPriority = $this->priority;
+
+        if ($percentageRemaining < 10) {
+            $newPriority = 'critical';
+        } elseif ($percentageRemaining < 25) {
+            $newPriority = 'high';
+        } elseif ($percentageRemaining < 50) {
+            $newPriority = 'medium';
+        }
+
+        if ($newPriority !== $this->priority) {
+            $this->priority = $newPriority;
+            $this->save();
+        }
     }
 
     /**

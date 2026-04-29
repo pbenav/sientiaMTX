@@ -1600,4 +1600,23 @@ class TaskController extends Controller
 
         return $task;
     }
+
+    public function toggleAutoPriority(Team $team, Task $task)
+    {
+        $this->authorize('update', $task);
+
+        $task->auto_priority = !$task->auto_priority;
+        $task->save();
+
+        if ($task->auto_priority) {
+            $task->updateAutoPriority();
+        }
+
+        return response()->json([
+            'success' => true,
+            'auto_priority' => $task->auto_priority,
+            'priority' => $task->priority,
+            'priority_label' => __('tasks.priorities.' . $task->priority)
+        ]);
+    }
 }
