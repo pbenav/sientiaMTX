@@ -2119,14 +2119,22 @@
                 const btn = document.getElementById('btn-auto-priority');
                 if (!btn) return;
 
-                fetch("{{ route('teams.tasks.toggle-auto-priority', [$team, $task]) }}", {
+                fetch(`/teams/{{ $team->id }}/tasks/{{ $task->id }}/toggle-auto-priority`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                console.error('Server Error:', text);
+                                throw new Error('Error del servidor: ' + response.status);
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             // Update UI state
