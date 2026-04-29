@@ -231,7 +231,16 @@ document.addEventListener('alpine:init', () => {
                 this.windowWidth = window.innerWidth;
                 const isMobile = this.windowWidth < 768;
                 
-                // Si acabamos de entrar en modo móvil, adaptamos las notas que estén fuera
+                // Forzamos que todas las notas estén dentro de los límites actuales
+                this.notes.forEach(note => {
+                    const maxX = window.innerWidth - (isMobile ? 40 : 100);
+                    const maxY = window.innerHeight - 40;
+                    
+                    if (note.position_x > maxX) note.position_x = Math.max(0, maxX);
+                    if (note.position_y > maxY) note.position_y = Math.max(0, maxY);
+                    if (note.width > window.innerWidth) note.width = window.innerWidth - 20;
+                });
+
                 if (isMobile && !wasMobile) {
                     this.adaptNotesToMobile();
                 }
