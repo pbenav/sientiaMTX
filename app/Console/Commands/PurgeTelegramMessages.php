@@ -57,7 +57,7 @@ class PurgeTelegramMessages extends Command
         // Final sync to be 100% sure the counters are correct
         $team->syncDiskUsed();
 
-        $this->success("Successfully purged {$count} messages for team '{$team->name}'.");
+        $this->info("Successfully purged {$count} messages for team '{$team->name}'.");
         return 0;
     }
 }
