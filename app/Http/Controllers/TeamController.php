@@ -149,6 +149,10 @@ class TeamController extends Controller
 
         $validated = $request->validate($rules);
 
+        if (isset($validated['telegram_chat_id'])) {
+            $validated['telegram_chat_id'] = trim($validated['telegram_chat_id']);
+        }
+
         if (auth()->user()->is_admin && $request->has('disk_quota_gb')) {
             $validated['disk_quota'] = (int)($request->disk_quota_gb * 1024 * 1024 * 1024);
         }

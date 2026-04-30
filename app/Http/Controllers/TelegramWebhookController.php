@@ -30,14 +30,13 @@ class TelegramWebhookController extends Controller
             'chat_id' => $update['message']['chat']['id'] ?? $update['edited_message']['chat']['id'] ?? 'N/A'
         ]);
 
-        // Determinar si es un mensaje nuevo o editado
         $message = $update['message'] ?? $update['edited_message'] ?? null;
 
         if (!$message || !isset($message['chat']['id'])) {
             return response()->json(['status' => 'ignored']);
         }
 
-        $chatId = (string) $message['chat']['id']; // Forzar a string para comparación segura
+        $chatId = trim((string) $message['chat']['id']); // Limpiar espacios por seguridad
         $text = $message['text'] ?? $message['caption'] ?? '';
         $messageId = $message['message_id'] ?? null;
         $from = $message['from'] ?? [];
@@ -102,13 +101,15 @@ class TelegramWebhookController extends Controller
         $team = \App\Models\Team::where('telegram_chat_id', $chatId)->first();
         
         if (!$team) {
-            Log::debug("Telegram message ignored: No team found with chat_id {$chatId}");
-            return response()->json(['status' => 'success']); // Respond 200 to Telegram even if not found
+            Log::warning("Telegram Webhook: No se encontró equipo para el chat_id '{$chatId}'");
+            return response()->json(['status' => 'success']); 
         }
 
         if ($messageId) {
-            // Check if we already have this message
-            $existing = \App\Models\TelegramMessage::where('telegram_message_id', $messageId)->first();
+            // Check if we already have this message (IMPORTANT: Scope to team_id to avoid collisions)
+            $existing = \App\Models\TelegramMessage::where('team_id', $team->id)
+                ->where('telegram_message_id', $messageId)
+                ->first();
             
             // Si es un mensaje editado, actualizamos el texto si ya existe
             if ($existing && isset($update['edited_message'])) {
