@@ -102,59 +102,76 @@ class TelegramWebhookController extends Controller
         
         if (!$team) {
             Log::warning("Telegram Webhook: No se encontró equipo para el chat_id '{$chatId}'");
-            return response()->json(['status' => 'success']); 
+            return response()->json(['status' => 'success']);
         }
 
         if ($messageId) {
+            Log::info("Telegram Webhook: Procesando messageId {$messageId} para el equipo '{$team->name}'");
+
             // Check if we already have this message (IMPORTANT: Scope to team_id to avoid collisions)
             $existing = \App\Models\TelegramMessage::where('team_id', $team->id)
                 ->where('telegram_message_id', $messageId)
                 ->first();
             
-            // Si es un mensaje editado, actualizamos el texto si ya existe
-            if ($existing && isset($update['edited_message'])) {
-                $existing->update(['text' => $text . ' (editado)']);
+            if ($existing) {
+                if (isset($update['edited_message'])) {
+                    Log::info("Telegram Webhook: Actualizando mensaje editado {$messageId}");
+                    $existing->update(['text' => $text . ' (editado)']);
+                } else {
+                    Log::info("Telegram Webhook: Mensaje {$messageId} ignorado por ser duplicado.");
+                }
                 return response()->json(['status' => 'success']);
             }
 
             if (!$existing) {
-                $fileSize = 0;
+                Log::info("Telegram Webhook: Intentando guardar nuevo mensaje {$messageId} en DB...");
                 
-                // If there's media, check if we have space before downloading
-                if ($photoPath || $voicePath || $stickerPath) {
-                    $path = $photoPath ?: ($voicePath ?: $stickerPath);
-                    if ($path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-                        $fileSize = \Illuminate\Support\Facades\Storage::disk('public')->size($path);
-                    }
-                }
-
-                // SECURITY/QUOTA: If team is over limit, we don't save more media
-                if ($fileSize > 0 && !$team->hasAvailableQuota($fileSize)) {
-                    // Delete the physical file we just downloaded temporarily
-                    if ($photoPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($photoPath); $photoPath = null; }
-                    if ($voicePath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($voicePath); $voicePath = null; }
-                    if ($stickerPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($stickerPath); $stickerPath = null; }
-                    
-                    $this->sendMessage($chatId, "⚠️ *¡ATENCIÓN!* El espacio de almacenamiento de vuestro equipo en Sientia MTX está *AGOTADO*.\n\nNo se ha podido guardar la imagen/audio.");
+                try {
                     $fileSize = 0;
-                    $fileType = 'text (storage full)';
-                }
+                    
+                    // If there's media, check if we have space before downloading
+                    if ($photoPath || $voicePath || $stickerPath) {
+                        $path = $photoPath ?: ($voicePath ?: $stickerPath);
+                        if ($path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                            $fileSize = \Illuminate\Support\Facades\Storage::disk('public')->size($path);
+                        }
+                    }
 
-                \App\Models\TelegramMessage::create([
-                    'team_id' => $team->id,
-                    'author_name' => $authorName,
-                    'text' => $text,
-                    'photo_path' => $photoPath,
-                    'voice_path' => $voicePath,
-                    'voice_duration' => $voiceDuration,
-                    'sticker_path' => $stickerPath,
-                    'file_type' => $fileType,
-                    'telegram_message_id' => $messageId,
-                    'is_from_web' => false,
-                    'file_size' => $fileSize,
-                    'reply_to_message_id' => $replyToMessageId,
-                    'reply_to_text' => $replyToText,
-                ]);
+                    // SECURITY/QUOTA: If team is over limit, we don't save more media
+                    if ($fileSize > 0 && !$team->hasAvailableQuota($fileSize)) {
+                        Log::warning("Telegram Webhook: Cuota agotada para el equipo {$team->name}");
+                        if ($photoPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($photoPath); $photoPath = null; }
+                        if ($voicePath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($voicePath); $voicePath = null; }
+                        if ($stickerPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($stickerPath); $stickerPath = null; }
+                        
+                        $this->sendMessage($chatId, "⚠️ *¡ATENCIÓN!* El espacio de almacenamiento de vuestro equipo en Sientia MTX está *AGOTADO*.");
+                        $fileSize = 0;
+                        $fileType = 'text (storage full)';
+                    }
+
+                    $newMsg = \App\Models\TelegramMessage::create([
+                        'team_id' => $team->id,
+                        'author_name' => $authorName,
+                        'text' => $text,
+                        'photo_path' => $photoPath,
+                        'voice_path' => $voicePath,
+                        'voice_duration' => $voiceDuration,
+                        'sticker_path' => $stickerPath,
+                        'file_type' => $fileType,
+                        'telegram_message_id' => $messageId,
+                        'is_from_web' => false,
+                        'file_size' => $fileSize,
+                        'reply_to_message_id' => $replyToMessageId,
+                        'reply_to_text' => $replyToText,
+                    ]);
+
+                    Log::info("Telegram Webhook: Mensaje {$messageId} guardado con éxito. ID Local: " . $newMsg->id);
+
+                } catch (\Exception $e) {
+                    Log::error("Telegram Webhook: ERROR CRÍTICO al guardar mensaje: " . $e->getMessage(), [
+                        'exception' => $e
+                    ]);
+                }
             }
         }
 
