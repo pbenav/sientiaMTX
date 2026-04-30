@@ -93,6 +93,25 @@
                             <span class="hidden sm:inline">Finalizar Plan Maestro</span>
                         </button>
                     </form>
+                    @else
+                    <form action="{{ route('teams.tasks.update', [$team, $task]) }}" method="POST" class="inline" 
+                          onsubmit="return confirm('¿Deseas reabrir este Plan Maestro?')">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="in_progress">
+                        <input type="hidden" name="title" value="{{ $task->title }}">
+                        <input type="hidden" name="priority" value="{{ $task->priority }}">
+                        <input type="hidden" name="urgency" value="{{ $task->urgency }}">
+                        <input type="hidden" name="visibility" value="{{ $task->visibility }}">
+                        <input type="hidden" name="progress_percentage" value="50">
+
+                        <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-amber-500 hover:bg-amber-400 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-amber-500/20 font-bold active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span class="hidden sm:inline">Reabrir Plan Maestro</span>
+                        </button>
+                    </form>
                     @endif
 
                     <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
