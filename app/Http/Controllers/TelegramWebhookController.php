@@ -22,21 +22,30 @@ class TelegramWebhookController extends Controller
 
         $update = $request->all();
         
-        Log::info('Telegram Update Received:', $update);
+        // Log detallado para diagnóstico
+        Log::info('Telegram Update Received:', [
+            'update_id' => $update['update_id'] ?? 'unknown',
+            'has_message' => isset($update['message']),
+            'has_edited_message' => isset($update['edited_message']),
+            'chat_id' => $update['message']['chat']['id'] ?? $update['edited_message']['chat']['id'] ?? 'N/A'
+        ]);
 
-        if (!isset($update['message']['chat']['id'])) {
+        // Determinar si es un mensaje nuevo o editado
+        $message = $update['message'] ?? $update['edited_message'] ?? null;
+
+        if (!$message || !isset($message['chat']['id'])) {
             return response()->json(['status' => 'ignored']);
         }
 
-        $chatId = $update['message']['chat']['id'];
-        $text = $update['message']['text'] ?? $update['message']['caption'] ?? '';
-        $messageId = $update['message']['message_id'] ?? null;
-        $from = $update['message']['from'] ?? [];
+        $chatId = (string) $message['chat']['id']; // Forzar a string para comparación segura
+        $text = $message['text'] ?? $message['caption'] ?? '';
+        $messageId = $message['message_id'] ?? null;
+        $from = $message['from'] ?? [];
         $firstName = $from['first_name'] ?? 'Usuario';
         $lastName = $from['last_name'] ?? '';
         $authorName = trim($firstName . ' ' . $lastName);
         
-        $replyTo = $update['message']['reply_to_message'] ?? null;
+        $replyTo = $message['reply_to_message'] ?? null;
         $replyToMessageId = $replyTo['message_id'] ?? null;
         $replyToText = $replyTo['text'] ?? $replyTo['caption'] ?? null;
 
@@ -47,22 +56,22 @@ class TelegramWebhookController extends Controller
         $stickerPath = null;
         $fileType = 'text';
 
-        if (isset($update['message']['photo'])) {
-            $fileId = end($update['message']['photo'])['file_id'];
+        if (isset($message['photo'])) {
+            $fileId = end($message['photo'])['file_id'];
             $photoPath = $this->downloadFile($fileId, 'photos');
             $fileType = 'photo';
-        } elseif (isset($update['message']['voice'])) {
-            $fileId = $update['message']['voice']['file_id'];
-            $voiceDuration = $update['message']['voice']['duration'];
+        } elseif (isset($message['voice'])) {
+            $fileId = $message['voice']['file_id'];
+            $voiceDuration = $message['voice']['duration'];
             $voicePath = $this->downloadFile($fileId, 'voice');
             $fileType = 'voice';
-        } elseif (isset($update['message']['animation'])) {
+        } elseif (isset($message['animation'])) {
             // GIFs sent via Telegram are actually MP4 animations
-            $fileId = $update['message']['animation']['file_id'];
+            $fileId = $message['animation']['file_id'];
             $photoPath = $this->downloadFile($fileId, 'animations');
             $fileType = 'animation';
-        } elseif (isset($update['message']['sticker'])) {
-            $stickerData = $update['message']['sticker'];
+        } elseif (isset($message['sticker'])) {
+            $stickerData = $message['sticker'];
             $fileId = $stickerData['file_id'];
             $stickerPath = $this->downloadFile($fileId, 'stickers');
             // Detect sticker type for proper frontend rendering
@@ -91,9 +100,22 @@ class TelegramWebhookController extends Controller
 
         // 3. Handle messages from groups that are already linked to a team
         $team = \App\Models\Team::where('telegram_chat_id', $chatId)->first();
-        if ($team && $messageId) {
+        
+        if (!$team) {
+            Log::debug("Telegram message ignored: No team found with chat_id {$chatId}");
+            return response()->json(['status' => 'success']); // Respond 200 to Telegram even if not found
+        }
+
+        if ($messageId) {
             // Check if we already have this message
             $existing = \App\Models\TelegramMessage::where('telegram_message_id', $messageId)->first();
+            
+            // Si es un mensaje editado, actualizamos el texto si ya existe
+            if ($existing && isset($update['edited_message'])) {
+                $existing->update(['text' => $text . ' (editado)']);
+                return response()->json(['status' => 'success']);
+            }
+
             if (!$existing) {
                 $fileSize = 0;
                 
@@ -107,12 +129,12 @@ class TelegramWebhookController extends Controller
 
                 // SECURITY/QUOTA: If team is over limit, we don't save more media
                 if ($fileSize > 0 && !$team->hasAvailableQuota($fileSize)) {
-                    // Delete the physical file we just downloaded temporarily (or prevent download if we knew the size)
+                    // Delete the physical file we just downloaded temporarily
                     if ($photoPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($photoPath); $photoPath = null; }
                     if ($voicePath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($voicePath); $voicePath = null; }
                     if ($stickerPath) { \Illuminate\Support\Facades\Storage::disk('public')->delete($stickerPath); $stickerPath = null; }
                     
-                    $this->sendMessage($chatId, "⚠️ *¡ATENCIÓN!* El espacio de almacenamiento de vuestro equipo en Sientia MTX está *AGOTADO*.\n\nNo se ha podido guardar la imagen/audio. Avisad a un *Coordinador* para que realice una limpieza desde el Gestor de Disco.");
+                    $this->sendMessage($chatId, "⚠️ *¡ATENCIÓN!* El espacio de almacenamiento de vuestro equipo en Sientia MTX está *AGOTADO*.\n\nNo se ha podido guardar la imagen/audio.");
                     $fileSize = 0;
                     $fileType = 'text (storage full)';
                 }

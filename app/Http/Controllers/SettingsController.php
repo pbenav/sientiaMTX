@@ -422,11 +422,15 @@ class SettingsController extends Controller
         }
 
         $webhookUrl = route('telegram.webhook');
+        $secret = config('services.telegram.webhook_secret');
 
         try {
-            $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", [
-                'url' => $webhookUrl,
-            ]);
+            $params = ['url' => $webhookUrl];
+            if ($secret) {
+                $params['secret_token'] = $secret;
+            }
+
+            $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", $params);
 
             if ($response->successful()) {
                 $result = $response->json();
