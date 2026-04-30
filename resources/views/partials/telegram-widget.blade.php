@@ -543,7 +543,13 @@
                     return;
                 }
                 this.open = !this.open;
-                if(this.open) this.scrollToBottom();
+                if(this.open) {
+                    this.scrollToBottom();
+                    // Reset unread count after 2 seconds of being open
+                    setTimeout(() => {
+                        if (this.open) this.unread = 0;
+                    }, 2000);
+                }
             },
 
             initChat() {
@@ -572,14 +578,30 @@
                             this.firstMessageId = newMsgs[0].id;
                             this.lastMessageId = latestIncomingId;
                             this.scrollToBottom();
-                        } else if (latestIncomingId > this.lastMessageId) {
-                            // Solo añadimos los nuevos al final
-                            const filtered = newMsgs.filter(m => m.id > this.lastMessageId);
-                            if (filtered.length > 0) {
-                                if (!this.open) this.unread += filtered.length;
-                                this.messages = [...this.messages, ...filtered];
-                                this.lastMessageId = latestIncomingId;
-                                if (this.open) this.scrollToBottom();
+                        } else {
+                            // 1. Detectar y aplicar ediciones en mensajes existentes
+                            let hasEdits = false;
+                            this.messages.forEach(m => {
+                                const match = newMsgs.find(nm => nm.id === m.id);
+                                if (match && match.text !== m.text) {
+                                    m.text = match.text;
+                                    hasEdits = true;
+                                }
+                            });
+
+                            // 2. Añadir mensajes nuevos si los hay
+                            if (latestIncomingId > this.lastMessageId) {
+                                const filtered = newMsgs.filter(m => m.id > this.lastMessageId);
+                                if (filtered.length > 0) {
+                                    if (!this.open) {
+                                        this.unread += filtered.length;
+                                    } else {
+                                        this.unread = 0;
+                                    }
+                                    this.messages = [...this.messages, ...filtered];
+                                    this.lastMessageId = latestIncomingId;
+                                    if (this.open) this.scrollToBottom();
+                                }
                             }
                         }
                     }

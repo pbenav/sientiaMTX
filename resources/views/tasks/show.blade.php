@@ -73,15 +73,38 @@
             @endcan
 
             @if ($task->is_template && ($team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id))
-                <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span class="hidden sm:inline">{{ __('tasks.sync_members') }}</span>
-                    </button>
-                </form>
+                <div class="flex items-center gap-2">
+                    @if($task->status !== 'completed')
+                    <form action="{{ route('teams.tasks.update', [$team, $task]) }}" method="POST" class="inline" 
+                          onsubmit="return confirm('¿Estás seguro de que deseas cerrar este Plan Maestro? Esto marcará todas las ejecuciones de los miembros como completadas al 100%.')">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="completed">
+                        <input type="hidden" name="title" value="{{ $task->title }}">
+                        <input type="hidden" name="priority" value="{{ $task->priority }}">
+                        <input type="hidden" name="urgency" value="{{ $task->urgency }}">
+                        <input type="hidden" name="visibility" value="{{ $task->visibility }}">
+                        <input type="hidden" name="progress_percentage" value="100">
+
+                        <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-500/20 font-bold active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="hidden sm:inline">Finalizar Plan Maestro</span>
+                        </button>
+                    </form>
+                    @endif
+
+                    <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span class="hidden sm:inline">{{ __('tasks.sync_members') }}</span>
+                        </button>
+                    </form>
+                </div>
             @endif
 
             <!-- TIMER BUTTON (Start/Stop) -->

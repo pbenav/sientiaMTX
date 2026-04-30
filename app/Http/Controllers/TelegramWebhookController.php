@@ -22,25 +22,19 @@ class TelegramWebhookController extends Controller
 
         $update = $request->all();
         
-        // Log detallado para diagnóstico
-        Log::info('Telegram Update Received:', [
-            'update_id' => $update['update_id'] ?? 'unknown',
-            'has_message' => isset($update['message']),
-            'has_edited_message' => isset($update['edited_message']),
-            'chat_id' => $update['message']['chat']['id'] ?? $update['edited_message']['chat']['id'] ?? 'N/A'
-        ]);
-
-        $message = $update['message'] ?? $update['edited_message'] ?? null;
+        // Determinar si es un mensaje nuevo o editado (soporta mensajes de grupo y posts de canal/hilo)
+        $isEdit = isset($update['edited_message']) || isset($update['edited_channel_post']);
+        $message = $update['message'] ?? $update['edited_message'] ?? $update['edited_channel_post'] ?? null;
 
         if (!$message || !isset($message['chat']['id'])) {
             return response()->json(['status' => 'ignored']);
         }
 
-        $chatId = trim((string) $message['chat']['id']); // Limpiar espacios por seguridad
+        $chatId = trim((string) $message['chat']['id']);
         $text = $message['text'] ?? $message['caption'] ?? '';
         $messageId = $message['message_id'] ?? null;
-        $from = $message['from'] ?? [];
-        $firstName = $from['first_name'] ?? 'Usuario';
+        $from = $message['from'] ?? $message['sender_chat'] ?? [];
+        $firstName = $from['first_name'] ?? $from['title'] ?? 'Usuario';
         $lastName = $from['last_name'] ?? '';
         $authorName = trim($firstName . ' ' . $lastName);
         
@@ -106,26 +100,19 @@ class TelegramWebhookController extends Controller
         }
 
         if ($messageId) {
-            Log::info("Telegram Webhook: Procesando messageId {$messageId} para el equipo '{$team->name}'");
-
             // Check if we already have this message (IMPORTANT: Scope to team_id to avoid collisions)
             $existing = \App\Models\TelegramMessage::where('team_id', $team->id)
                 ->where('telegram_message_id', $messageId)
                 ->first();
             
             if ($existing) {
-                if (isset($update['edited_message'])) {
-                    Log::info("Telegram Webhook: Actualizando mensaje editado {$messageId}");
-                    $existing->update(['text' => $text . ' (editado)']);
-                } else {
-                    Log::info("Telegram Webhook: Mensaje {$messageId} ignorado por ser duplicado.");
+                if ($isEdit) {
+                    $existing->update(['text' => $text]);
                 }
                 return response()->json(['status' => 'success']);
             }
 
             if (!$existing) {
-                Log::info("Telegram Webhook: Intentando guardar nuevo mensaje {$messageId} en DB...");
-                
                 try {
                     $fileSize = 0;
                     
@@ -165,7 +152,6 @@ class TelegramWebhookController extends Controller
                         'reply_to_text' => $replyToText,
                     ]);
 
-                    Log::info("Telegram Webhook: Mensaje {$messageId} guardado con éxito. ID Local: " . $newMsg->id);
 
                 } catch (\Exception $e) {
                     Log::error("Telegram Webhook: ERROR CRÍTICO al guardar mensaje: " . $e->getMessage(), [

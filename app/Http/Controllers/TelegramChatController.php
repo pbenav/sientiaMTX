@@ -101,8 +101,6 @@ class TelegramChatController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
                 $localMsg->update(['telegram_message_id' => $data['result']['message_id']]);
-                
-                Log::info("Mensaje enviado a Telegram, ID: {$data['result']['message_id']}");
 
                 return response()->json([
                     'success' => true,

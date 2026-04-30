@@ -31,16 +31,26 @@ class Task extends Model
         static::saving(function (self $model) {
             // Unarchive tasks that are not 100% completed
             if ($model->isDirty('progress_percentage') || $model->isDirty('status')) {
-                if ($model->progress_percentage < 100 && $model->status === 'completed') {
-                    $model->status = 'in_progress';
-                    $model->is_archived = false;
-                } elseif ($model->progress_percentage == 100 && !in_array($model->status, ['completed', 'cancelled'])) {
+                // If status is manually set to completed/cancelled, force progress to 100
+                if (in_array($model->status, ['completed', 'cancelled']) && $model->progress_percentage < 100) {
+                    $model->progress_percentage = 100;
+                }
+                
+                // Inverse: If progress reaches 100, set status to completed
+                if ($model->progress_percentage == 100 && !in_array($model->status, ['completed', 'cancelled'])) {
                     $model->status = 'completed';
                 } elseif ($model->progress_percentage > 0 && $model->progress_percentage < 100 && in_array($model->status, ['pending', 'todo'])) {
                     $model->status = 'in_progress';
                 } elseif ($model->progress_percentage == 0 && in_array($model->status, ['in_progress', 'completed'])) {
                     $model->status = 'pending';
                 }
+            }
+
+            // Cascade completion: If this task is completed, all children should be completed
+            if ($model->isDirty('status') && $model->status === 'completed') {
+                $model->children()->where('status', '!=', 'completed')->each(function($child) {
+                    $child->update(['status' => 'completed', 'progress_percentage' => 100]);
+                });
             }
 
             // Sync archived status: If not completed, it should NOT be archived
@@ -288,6 +298,8 @@ class Task extends Model
      */
     public function getProgressAttribute(): int
     {
+        if (in_array($this->status, ['completed', 'cancelled'])) return 100;
+
         // If it has children (subtasks or instances), calculate aggregate progress
         if ($this->children()->exists()) {
             $totalCount = $this->children()->count();
