@@ -14,7 +14,10 @@
                 </a>
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
                         {{ __('navigation.task_list') }}
                     </h1>
                 </div>
@@ -22,7 +25,7 @@
         </div>
 
         <!-- View Switcher Sub-Header -->
-        <div class="mt-4 mb-2 flex w-full">
+        <div class="mt-8 mb-4 flex w-full">
             @include('teams.partials.view-switcher')
         </div>
 

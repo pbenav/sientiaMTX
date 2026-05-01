@@ -14,7 +14,10 @@
                 </a>
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
                         {{ __('teams.eisenhower_matrix') }}
                     </h1>
                 </div>
@@ -22,7 +25,7 @@
         </div>
 
         <!-- View Switcher Sub-Header -->
-        <div class="mt-4 mb-2 flex w-full">
+        <div class="mt-8 mb-4 flex w-full">
             @include('teams.partials.view-switcher')
         </div>
 
