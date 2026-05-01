@@ -5,16 +5,31 @@
 
     @if ($layout === 'vertical')
         <!-- Overlay for mobile when sidebar is open -->
-    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition ease-out duration-300"
+    <div id="sidebar-overlay"
+        x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 lg:hidden"
         style="display: none" x-cloak></div>
+    <script>
+        if (window.innerWidth >= 1024) {
+            document.getElementById('sidebar-overlay').style.display = 'none';
+        }
+    </script>
 
-    <!-- Sidebar for Vertical Layout -->
     <aside id="sidebar"
-        class="fixed inset-y-0 left-0 z-40 w-64 transition-transform duration-300 border-r border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        style="display: none"
+        class="fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl -translate-x-full lg:translate-x-0"
+        :class="{
+            'translate-x-0': sidebarOpen,
+            '-translate-x-full': !sidebarOpen,
+            'transition-transform duration-300': mounted
+        }">
+        <script>
+            if (window.innerWidth >= 1024) {
+                document.getElementById('sidebar').style.display = 'block';
+            }
+        </script>
         <div class="flex flex-col h-full px-4 py-6 overflow-y-auto">
             <!-- Logo area with Toggle Button -->
             <div class="mb-10 px-2 flex items-center justify-between gap-2">

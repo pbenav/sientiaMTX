@@ -2,27 +2,26 @@
 
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-            <div class="flex flex-col min-w-0 flex-1">
-                <!-- Breadcrumbs -->
-                <div class="flex items-center gap-2 mb-1 overflow-hidden">
-                    <a href="{{ route('teams.show', $team) }}" 
-                       class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-violet-600 transition-all truncate">
-                        {{ $team->name }}
-                    </a>
-                    <svg class="w-3 h-3 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-500 shrink-0">
-                        {{ __('forum.title') ?? 'Foro' }}
-                    </span>
-                </div>
-
-                <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate flex items-center gap-3 tracking-tight">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                <a href="{{ route('teams.dashboard', $team) }}"
+                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
-                    {{ __('forum.title') ?? 'Foro' }}
-                </h1>
+                </a>
+                <div class="min-w-0 flex-1">
+                    @include('teams.partials.breadcrumb')
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate flex items-center gap-3 tracking-tight">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                        </svg>
+                        {{ __('forum.title') ?? 'Foro' }}
+                    </h1>
+                </div>
             </div>
         </div>
 

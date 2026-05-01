@@ -3,14 +3,24 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-black text-gray-900 dark:text-white heading">{{ __('teams.my_teams') }}</h1>
-                <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">
-                    {{ __('teams.title') }}
-                </p>
+            <div class="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                <a href="{{ route('dashboard') }}"
+                    class="p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white heading truncate">{{ __('teams.my_teams') }}</h1>
+                    <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-0.5">
+                        {{ __('teams.title') }}
+                    </p>
+                </div>
             </div>
             <a href="{{ route('teams.create') }}"
-                class="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20 active:scale-95">
+                class="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />

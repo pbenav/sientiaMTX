@@ -236,6 +236,7 @@
                                         <!-- Subtasks List (Hidden by default) -->
                                         @if ($task->children->count() > 0)
                                             <div class="subtasks-matrix-list {{ session('show_all_subtasks') ? '' : 'hidden' }} pl-6 pr-2 space-y-1 pb-2"
+                                                {!! session('show_all_subtasks') ? '' : 'style="display: none;"' !!}
                                                 data-parent="{{ $task->id }}">
                                                 @foreach ($task->children as $child)
                                                     <div
@@ -530,7 +531,8 @@
                     const icon = this.querySelector('svg');
 
                     if (sublist) {
-                        sublist.classList.toggle('hidden');
+                        const isHidden = sublist.classList.toggle('hidden');
+                        sublist.style.display = isHidden ? 'none' : '';
                         icon.classList.toggle('rotate-90');
                     }
                 });

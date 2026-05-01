@@ -219,7 +219,7 @@
                     </button>
                 </div>
             </div>
-            <div class="overflow-x-auto min-h-[200px]">
+            <div class="overflow-x-auto min-h-[200px] no-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
@@ -471,6 +471,7 @@
                             @endphp
                             @foreach ($task->children as $subtask)
                                 <tr class="subtask-row {{ session('show_all_subtasks') ? '' : 'hidden' }} bg-gray-50/50 dark:bg-gray-800/20 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-800/40"
+                                    {!! session('show_all_subtasks') ? '' : 'style="display: none;"' !!}
                                     data-parent="{{ $task->id }}"
                                     onclick="if(!event.target.closest('button, a, input, select')) window.location='{{ route('teams.tasks.show', [$team, $subtask]) }}'">
                                     <td class="px-4 py-3 w-10 text-center" onclick="event.stopPropagation()">
@@ -738,7 +739,8 @@
                     const icon = button.querySelector('svg');
 
                     subtasks.forEach(st => {
-                        st.classList.toggle('hidden');
+                        const isHidden = st.classList.toggle('hidden');
+                        st.style.display = isHidden ? 'none' : '';
                     });
 
                     icon.classList.toggle('rotate-90');

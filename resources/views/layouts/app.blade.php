@@ -1,5 +1,10 @@
 @php
     $layout = auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal');
+    // Normalize maxWidth to ensure it includes the 'max-w-' prefix if it's a standard size
+    if (isset($maxWidth) && !str_starts_with($maxWidth, 'max-w-') && $maxWidth !== 'none') {
+        $maxWidth = 'max-w-' . $maxWidth;
+    }
+    $maxWidth = $maxWidth ?? 'max-w-7xl';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
@@ -199,11 +204,12 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            overflow-x: hidden !important;
+            min-height: 100vh;
         }
 
+        /* Essential for sticky elements to work correctly in some browsers */
         html {
-            overflow-x: hidden !important;
+            scroll-behavior: smooth;
         }
 
         h1,
@@ -218,25 +224,55 @@
             display: none !important;
         }
 
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         /* Prevent layout clipping on mobile for wide content like Kanban */
         @media (max-width: 1024px) {
-            /* Only allow horizontal scroll for specific views that need it */
-            #mainContent[data-wide-content] {
+            #mainContent[data-wide-content="true"] {
                 overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
             }
             #mainContent {
                 max-width: none !important;
                 width: 100% !important;
-                overflow-x: hidden !important;
             }
         }
+
+        /* Critical Layout Stability Styles - Prevents FOUC/Flicker */
+        @if($layout === 'vertical')
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            @media (min-width: 1024px) {
+                #sidebar { transform: translateX(0); }
+                #mainContent.lg-layout-v-fix, 
+                footer.lg-layout-v-fix, 
+                .header-v-fix { 
+                    padding-left: 18rem !important; 
+                }
+            }
+        @endif
+
+        /* Critical Responsive Visibility - Prevents Mobile Overlays on Desktop FOUC */
+        @media (min-width: 640px) { .sm\:hidden { display: none !important; } }
+        @media (min-width: 768px) { .md\:hidden { display: none !important; } }
+        @media (min-width: 1024px) { .lg\:hidden { display: none !important; } }
+        @media (min-width: 1280px) { .xl\:hidden { display: none !important; } }
     </style>
 </head>
 
 <body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased" x-data="{
-    layout: '{{ auth()->check() ? (auth()->user()->layout ?: 'horizontal') : request()->cookie('layout', 'horizontal') }}',
-    sidebarOpen: window.innerWidth > 1024,
+    layout: '{{ $layout }}',
+    sidebarOpen: window.innerWidth >= 1024,
+    mounted: false,
     init() {
+        this.$nextTick(() => { this.mounted = true; });
         window.addEventListener('resize', () => {
             if (window.innerWidth < 1024) {
                 this.sidebarOpen = false;
@@ -274,7 +310,7 @@
     @include('layouts.navigation-sidebar')
 
     <!-- Navigation -->
-    <nav x-show="layout === 'horizontal'" {{ $layout === 'vertical' ? 'style=display:none' : '' }}
+    <nav x-show="layout === 'horizontal'" style="{{ $layout === 'vertical' ? 'display:none' : '' }}"
         x-data="{ mobileMenuOpen: false }"
         class="bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 sticky top-0 z-[80] w-full overflow-visible">
         <div class="max-w-none lg:{{ $maxWidth }} mx-auto px-2 sm:px-6 lg:px-8">
@@ -580,6 +616,8 @@
 
         {{-- Backdrop --}}
         <div x-show="open"
+             x-cloak
+             style="display: none"
              x-transition:enter="transition-opacity ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -592,6 +630,7 @@
 
         {{-- Drawer panel --}}
         <div x-show="open"
+             style="display: none"
              x-transition:enter="transition ease-out duration-250"
              x-transition:enter-start="-translate-x-full"
              x-transition:enter-end="translate-x-0"
@@ -787,9 +826,9 @@
         </div>
     @endif
 
-    <!-- Header for Vertical Layout -->
     <div x-show="layout === 'vertical'" x-cloak
-        class="sticky top-0 z-20 w-full bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300"
+        style="{{ $layout === 'horizontal' ? 'display:none' : '' }}"
+        class="sticky top-0 z-20 w-full bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300 {{ $layout === 'vertical' ? 'header-v-fix' : '' }}"
         :class="sidebarOpen ? 'lg:pl-72' : ''">
         <div class="w-full">
             <!-- Row 1: Global Navigation & System Tools -->
@@ -816,9 +855,9 @@
                 </div>
             </div>
 
-            <!-- Row 2: Page specific content (Slot) - Takes 100% width -->
-            <div class="w-full px-2 sm:px-6 lg:px-8 py-3">
-                <div class="min-w-0 prose-headers:m-0">
+            <!-- Row 2: Page specific content (Slot) -->
+            <div class="w-full px-2 sm:px-6 lg:px-8 py-2">
+                <div class="min-w-0">
                     @if (isset($header))
                         {{ $header }}
                     @endif
@@ -828,11 +867,19 @@
     </div>
 
     <!-- Page content -->
-    <main id="mainContent" class="px-3 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8 overflow-x-hidden"
+    <main id="mainContent" 
+        class="px-3 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8 {{ $layout === 'vertical' ? 'lg-layout-v-fix' : '' }}"
+        style="{{ $layout === 'vertical' ? 'padding-left: 18rem;' : '' }}"
+        data-wide-content="{{ ($maxWidth === 'max-w-full' || $maxWidth === 'max-w-none') ? 'true' : 'false' }}"
         :class="[
             layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : '',
             'w-full max-w-none lg:{{ $maxWidth }} lg:mx-auto'
         ]">
+        <script>
+            if (window.innerWidth < 1024) {
+                document.getElementById('mainContent').style.paddingLeft = '0';
+            }
+        </script>
 
         @if (isset($header) && $layout === 'horizontal')
             <div class="mb-6">
@@ -844,8 +891,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-4"
+    <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-4 {{ $layout === 'vertical' ? 'lg-layout-v-fix' : '' }}"
+        style="{{ $layout === 'vertical' ? 'padding-left: 18rem;' : '' }}"
         :class="layout === 'vertical' ? (sidebarOpen ? 'lg:pl-72' : '') : ''">
+        <script>
+            if (window.innerWidth < 1024) {
+                document.querySelector('footer').style.paddingLeft = '0';
+            }
+        </script>
         <div
             class="max-w-none lg:{{ $maxWidth }} lg:mx-auto px-2 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
             <div class="mb-2 md:mb-0 flex items-center gap-2">
