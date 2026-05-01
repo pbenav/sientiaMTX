@@ -74,45 +74,7 @@
 
             @if ($task->is_template && ($team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id))
                 <div class="flex items-center gap-2">
-                    @if($task->status !== 'completed')
-                    <form action="{{ route('teams.tasks.update', [$team, $task]) }}" method="POST" class="inline" 
-                          onsubmit="return confirm('¿Estás seguro de que deseas cerrar este Plan Maestro? Esto marcará todas las ejecuciones de los miembros como completadas al 100%.')">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="status" value="completed">
-                        <input type="hidden" name="title" value="{{ $task->title }}">
-                        <input type="hidden" name="priority" value="{{ $task->priority }}">
-                        <input type="hidden" name="urgency" value="{{ $task->urgency }}">
-                        <input type="hidden" name="visibility" value="{{ $task->visibility }}">
-                        <input type="hidden" name="progress_percentage" value="100">
 
-                        <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-500/20 font-bold active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span class="hidden sm:inline">Finalizar Plan Maestro</span>
-                        </button>
-                    </form>
-                    @else
-                    <form action="{{ route('teams.tasks.update', [$team, $task]) }}" method="POST" class="inline" 
-                          onsubmit="return confirm('¿Deseas reabrir este Plan Maestro?')">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="status" value="in_progress">
-                        <input type="hidden" name="title" value="{{ $task->title }}">
-                        <input type="hidden" name="priority" value="{{ $task->priority }}">
-                        <input type="hidden" name="urgency" value="{{ $task->urgency }}">
-                        <input type="hidden" name="visibility" value="{{ $task->visibility }}">
-                        <input type="hidden" name="progress_percentage" value="50">
-
-                        <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-amber-500 hover:bg-amber-400 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-amber-500/20 font-bold active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            <span class="hidden sm:inline">Reabrir Plan Maestro</span>
-                        </button>
-                    </form>
-                    @endif
 
                     <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
                         @csrf
@@ -1608,6 +1570,14 @@
                                 </svg>
                                 {{ __('Cerrar Plan Maestro') }}
                             </button>
+                        @else
+                            <button onclick="updateTaskStatus('in_progress')"
+                                class="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold py-3 rounded-xl transition-all shadow-md shadow-amber-500/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                {{ __('Reabrir Plan Maestro') }}
+                            </button>
                         @endif
 
                         @if ($task->status !== 'blocked')
@@ -1903,7 +1873,7 @@
                 </div>
                 <div class="divide-y divide-gray-50 dark:divide-gray-800/50 max-h-80 overflow-y-auto custom-scrollbar">
                     @forelse (($task->histories?->sortByDesc('created_at') ?? collect())->take(15) as $log)
-                        <div class="flex items-center justify-between px-4 py-3 hover:bg-gray-50/30 dark:hover:bg-gray-800/20 transition-colors group">
+                        <div onclick="showHistoryDiff({{ $log->id }})" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50/30 dark:hover:bg-gray-800/20 transition-colors group cursor-pointer">
                             <div class="flex items-center gap-3">
                                 <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://ui-avatars.com/api/?name=S&color=7c3aed&background=f5f3ff' }}" 
                                     alt="{{ $log->user?->name ?? 'System' }}"
@@ -2360,6 +2330,26 @@
 
     @push('modals')
         <x-google-drive-picker :team="$team" />
+    <div id="task-history-diff-modal" class="hidden fixed inset-0 z-[110] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-950/80 backdrop-blur-sm transition-opacity" onclick="closeHistoryDiff()"></div>
+            <div class="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-200 dark:border-gray-800">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+                    <div>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white heading uppercase tracking-tight" id="history-diff-action">Cambios Realizados</h3>
+                        <p id="history-diff-date" class="text-xs text-gray-500 dark:text-gray-400 font-medium"></p>
+                    </div>
+                    <button onclick="closeHistoryDiff()" class="text-gray-400 hover:text-gray-500 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+                <div class="px-6 py-6 max-h-[70vh] overflow-y-auto custom-scrollbar" id="history-diff-content">
+                    <!-- Diff will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Attachment History Modal -->
     <div id="attachment-history-modal" class="hidden fixed inset-0 z-[110] overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
@@ -2382,6 +2372,139 @@
     </div>
 
     <script>
+        function showHistoryDiff(id) {
+            const histories = @json($task->histories->sortByDesc('created_at')->take(15)->values());
+            const log = histories.find(h => h.id == id);
+            
+            if (!log || !log.old_values || !log.new_values) {
+                // If it's a simple action without values (like 'cloned' or 'blocked'), we might just show notes
+                if (log && log.notes) {
+                    Swal.fire({
+                        title: log.action.toUpperCase(),
+                        text: log.notes,
+                        icon: 'info',
+                        background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                    });
+                }
+                return;
+            }
+
+            document.getElementById('history-diff-action').innerText = log.action.toUpperCase();
+            document.getElementById('history-diff-date').innerText = new Date(log.created_at).toLocaleString();
+            const content = document.getElementById('history-diff-content');
+            content.innerHTML = '';
+
+            const fieldLabels = {
+                'title': 'Título',
+                'description': 'Descripción',
+                'status': 'Estado',
+                'priority': 'Prioridad',
+                'urgency': 'Urgencia',
+                'progress_percentage': 'Progreso',
+                'due_date': 'Fecha de entrega',
+                'scheduled_date': 'Fecha de inicio',
+                'visibility': 'Visibilidad',
+                'observations': 'Observaciones',
+                'cognitive_load': 'Carga cognitiva',
+                'is_backstage': 'Backstage',
+                'skill_id': 'Capacidad principal',
+                'service_id': 'Servicio asociado'
+            };
+
+            const valueFormatters = {
+                'status': (v) => {
+                    const map = { 'pending': 'Pendiente', 'in_progress': 'En Progreso', 'completed': 'Completada', 'cancelled': 'Cancelada', 'blocked': 'Bloqueada' };
+                    return map[v] || v;
+                },
+                'priority': (v) => {
+                    const map = { 'low': 'Baja', 'medium': 'Media', 'high': 'Alta', 'critical': 'Crítica' };
+                    return map[v] || v;
+                },
+                'urgency': (v) => {
+                    const map = { 'low': 'Baja', 'medium': 'Media', 'high': 'Alta', 'critical': 'Crítica' };
+                    return map[v] || v;
+                },
+                'progress_percentage': (v) => v + '%',
+                'visibility': (v) => v === 'public' ? 'Público' : 'Privado',
+                'is_backstage': (v) => v ? 'Sí' : 'No',
+                'due_date': (v) => v ? new Date(v).toLocaleString() : '—',
+                'scheduled_date': (v) => v ? new Date(v).toLocaleString() : '—',
+                'autoprogram_settings': (v) => {
+                    if (!v) return '—';
+                    try {
+                        const obj = typeof v === 'string' ? JSON.parse(v) : v;
+                        return '<pre class="whitespace-pre-wrap font-mono text-[9px]">' + JSON.stringify(obj, null, 2) + '</pre>';
+                    } catch (e) { return v; }
+                }
+            };
+
+            const ignoredFields = ['updated_at', 'created_at', 'id', 'uuid', 'google_synced_at', 'matrix_order', 'kanban_order', 'kanban_column_id'];
+            
+            let hasChanges = false;
+            let html = '<div class="space-y-4">';
+
+            for (const key in log.new_values) {
+                if (ignoredFields.includes(key)) continue;
+                
+                const oldVal = log.old_values[key];
+                const newVal = log.new_values[key];
+
+                if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                    hasChanges = true;
+                    const label = fieldLabels[key] || key;
+                    const formatter = valueFormatters[key] || ((v) => {
+                        if (v === null || v === undefined) return '—';
+                        if (typeof v === 'boolean') return v ? 'Sí' : 'No';
+                        return v;
+                    });
+                    
+                    html += `
+                        <div class="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+                            <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">${label}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                                <div class="bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400 p-2 rounded-lg text-xs border border-red-100 dark:border-red-900/20 line-through opacity-60 break-all overflow-hidden">
+                                    ${formatter(oldVal)}
+                                </div>
+                                <div class="bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 p-2 rounded-lg text-xs border border-emerald-100 dark:border-emerald-900/20 font-bold break-all overflow-hidden">
+                                    ${formatter(newVal)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            if (!hasChanges) {
+                html += '<p class="text-center text-gray-500 italic py-4">No hay cambios detallados registrados para esta acción.</p>';
+            }
+
+            if (log.notes) {
+                html += `
+                    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-xl">
+                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">NOTAS</p>
+                        <p class="text-xs text-blue-700 dark:text-blue-300 font-medium">${log.notes}</p>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+
+            document.getElementById('task-history-diff-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeHistoryDiff() {
+            document.getElementById('task-history-diff-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeHistoryDiff();
+        });
+
         function showAttachmentHistory(id) {
             const attachments = @json($allAttachments);
             const attachment = attachments.find(a => a.id == id);

@@ -581,12 +581,13 @@
                         } else {
                             // 1. Detectar y aplicar ediciones en mensajes existentes
                             let hasEdits = false;
-                            this.messages.forEach(m => {
+                            this.messages = this.messages.map(m => {
                                 const match = newMsgs.find(nm => nm.id === m.id);
                                 if (match && match.text !== m.text) {
-                                    m.text = match.text;
                                     hasEdits = true;
+                                    return { ...m, text: match.text };
                                 }
+                                return m;
                             });
 
                             // 2. Añadir mensajes nuevos si los hay
