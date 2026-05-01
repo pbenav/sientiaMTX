@@ -71,6 +71,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        
+        if ($user) {
+            // Auto-stop any active time logs (workday and task) on logout
+            $user->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

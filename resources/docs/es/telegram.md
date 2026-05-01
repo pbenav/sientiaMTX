@@ -28,14 +28,25 @@ Accede a tu panel de administración en SientiaMTX y sigue estos pasos:
 ---
 
 ## 3. Activación para Usuarios (Paso Individual)
-
-Cada usuario debe vincular su propia cuenta de Telegram para recibir alertas:
-
-1. Haz clic en el enlace a tu bot (o únete manualmente por su nombre de usuario).
-2. Pulsa el botón **"INICIAR"** o envía el comando `/start`.
-3. El bot te responderá con tu **ID de Chat Numérico** (ej: `987654321`).
-4. Vuelve a SientiaMTX, ve a tu **Perfil > Ajustes de Notificación** y pega ese ID en el campo correspondiente.
-5. Marca la casilla **"Recibir avisos por Telegram"**.
+ 
+Para que el sistema sepa a quién enviar cada alerta, cada miembro del equipo debe vincular su cuenta de Telegram de forma privada. **El administrador no puede hacer este paso por ti.**
+ 
+### ¿Por qué activarlo?
+Como usuario, recibirás en tiempo real:
+- **Resumen Matutino**: Tus tareas pendientes del día y una cita motivacional personalizada.
+- **Alertas Críticas**: Avisos de tareas que vencen pronto (especialmente las del Cuadrante 1).
+- **Avisos de Bloqueo**: Si un compañero marca como "Bloqueada" una tarea que depende de ti, o si un servicio que usas (Sentinel) cae.
+- **Hitos**: Confirmación cuando tus tareas han sido validadas o completadas.
+ 
+### Pasos para el usuario:
+1. **Localiza al Bot**: Haz clic en el enlace a tu bot corporativo o búscalo por su nombre de usuario en Telegram.
+2. **Inicia la Conversación**: Pulsa el botón **"INICIAR"** o envía el comando `/start`.
+3. **Obtén tu ID**: El bot te saludará y te entregará tu **Chat ID Numérico** único (ej: `987654321`).
+4. **Vincúlalo en SientiaMTX**: 
+   - Ve a tu **Perfil** (esquina superior derecha) > **Ajustes de Notificación**.
+   - Pega tu ID en el campo **"Telegram Chat ID"**.
+   - Marca la casilla **"Recibir avisos por Telegram"**.
+5. **Personaliza**: Puedes elegir cuántas horas antes del vencimiento quieres recibir el primer aviso (por defecto 24h).
 
 ---
 
