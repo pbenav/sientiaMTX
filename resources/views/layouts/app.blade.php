@@ -457,6 +457,16 @@
                                      <span class="font-bold">{{ __('navigation.settings') }}</span>
                                  </a>
                              @endcan
+                             
+                             {{-- System Preferences for Tablet/Medium screens --}}
+                             <div class="px-4 py-2 mt-1 text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 dark:bg-gray-800/80 border-y border-gray-100 dark:border-gray-700">{{ __('Preferencias') }}</div>
+                             <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 bg-white dark:bg-gray-900">
+                                 @auth @include('layouts.partials.workday-timer') @endauth
+                                 @include('layouts.partials.theme-toggle')
+                                 @include('layouts.partials.layout-toggle')
+                                 @include('layouts.partials.language-toggle')
+                                 @include('layouts.partials.zoom-controls')
+                             </div>
                              @endauth
                         </div>
                     </div>
