@@ -3,9 +3,16 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Gestión de Equipos</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Administración global de todos los equipos del sistema.</p>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Gestión de Equipos</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Administración global de todos los equipos del sistema.</p>
+                </div>
             </div>
             <div>
                 <a href="{{ route('teams.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-violet-500/20">

@@ -1,8 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-xl text-white leading-tight heading">
-            {{ __('Legal Texts Configuration') }}
-        </h2>
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Configuración Legal</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Define los términos de servicio, política de privacidad y cookies de la plataforma.</p>
+            </div>
+        </div>
     </x-slot>
 
     <!-- Trix Editor Assets -->

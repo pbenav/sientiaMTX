@@ -2,8 +2,17 @@
     @section('title', 'Ajustes de Apariencia')
 
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Ajustes de Apariencia</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Personaliza la estética visual de la plataforma y el renderizado de contenidos.</p>
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.828 2.828a2 2 0 010 2.828l-1.657 1.657M7 7.343l-1.657-1.657a2 2 0 010-2.828l2.828-2.828a2 2 0 012.828 0l1.657 1.657" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Ajustes de Apariencia</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Personaliza la estética visual de la plataforma y el renderizado de contenidos.</p>
+            </div>
+        </div>
     </x-slot>
 
     <div class="py-12 px-4">

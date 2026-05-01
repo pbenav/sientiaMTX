@@ -3,9 +3,16 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('navigation.users') }}</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Manage global user roles and access.') }}</p>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('navigation.users') }}</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Manage global user roles and access.') }}</p>
+                </div>
             </div>
             <div>
                 <a href="{{ route('settings.users.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-violet-500/20">
