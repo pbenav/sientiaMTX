@@ -228,28 +228,14 @@ document.addEventListener('alpine:init', () => {
         
         async init() {
             window.addEventListener('resize', () => {
-                const wasMobile = this.windowWidth < 768;
                 this.windowWidth = window.innerWidth;
-                const isMobile = this.windowWidth < 768;
-                
-                if (!this.notes) return;
-                
-                // Forzamos que todas las notas estén dentro de los límites actuales
-                this.notes.forEach(note => {
-                    const maxX = window.innerWidth - (isMobile ? 40 : 100);
-                    const maxY = window.innerHeight - 40;
-                    
-                    if (note.position_x > maxX) note.position_x = Math.max(0, maxX);
-                    if (note.position_y > maxY) note.position_y = Math.max(0, maxY);
-                    if (note.width > window.innerWidth) note.width = window.innerWidth - 20;
-                });
-
-                if (isMobile && !wasMobile) {
-                    this.adaptNotesToMobile();
-                }
+                this.ensureAllInBounds();
             });
             await this.refreshNotes();
-            this.adaptNotesToMobile();
+            
+            // On initial load, we DO NOT force adaptNotesToMobile if we want to respect hidden state
+            // but we need to ensure they are at least in bounds.
+            
             this.$watch('notes', (val) => {
                 const anyVisible = val.some(n => !n.is_hidden);
                 window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible } }));
@@ -263,26 +249,49 @@ document.addEventListener('alpine:init', () => {
             return `left: ${note.position_x}px; top: ${note.position_y}px; width: ${note.width}px; height: ${note.is_minimized ? '40px' : note.height + 'px'}; z-index: ${zIndex};`;
         },
 
-        adaptNotesToMobile() {
-            if (this.windowWidth >= 768) return;
+        ensureAllInBounds() {
+            if (!this.notes) return;
+            const isMobile = window.innerWidth < 768;
             
+            this.notes.forEach(note => {
+                // CRÍTICO: No tocamos la nota si está oculta.
+                if (note.is_hidden) return;
+
+                const maxX = window.innerWidth - (isMobile ? 40 : 100);
+                const maxY = window.innerHeight - (note.is_minimized ? 50 : 100);
+                
+                if (note.position_x > maxX) note.position_x = Math.max(0, maxX);
+                if (note.position_y > maxY) note.position_y = Math.max(0, maxY);
+                
+                if (note.width > window.innerWidth) {
+                    note.width = window.innerWidth - 20;
+                    note.position_x = 10;
+                }
+            });
+        },
+
+        adaptNotesToMobile() {
+            // Esta función ahora solo se usa para RE-UBICAR notas que estarían perdidas
+            // cuando se pulsa el botón de mostrar.
             let visibleIndex = 0;
             this.notes.forEach((note) => {
                 if (note.is_hidden) return;
                 
-                // Si la nota está "perdida" (fuera de los límites del móvil) o es demasiado ancha
-                const isOffScreen = note.position_x > this.windowWidth - 50 || 
+                const isOffScreen = note.position_x > window.innerWidth - 50 || 
                                    note.position_y > window.innerHeight - 50 ||
-                                   note.width > this.windowWidth;
+                                   note.width > window.innerWidth - 20;
 
-                if (isOffScreen) {
-                    note.position_x = 10;
-                    note.position_y = 80 + (visibleIndex * 45);
-                    note.width = Math.min(this.windowWidth - 20, 350);
-                    if (!note.is_minimized) note.height = 300;
+                if (isOffScreen || window.innerWidth < 768) {
+                    // En móvil o si está fuera, forzamos posición limpia
+                    note.position_x = 10 + (visibleIndex * 5);
+                    note.position_y = 80 + (visibleIndex * 40);
+                    if (window.innerWidth < 768) {
+                        note.width = Math.min(window.innerWidth - 20, 350);
+                    }
                 }
                 visibleIndex++;
             });
+            this.ensureAllInBounds();
         },
 
         renderMarkdown(content) {
@@ -310,9 +319,10 @@ document.addEventListener('alpine:init', () => {
                 this.notes = data.map(n => {
                     n.attachments = this.processAttachments(n.attachments);
                     n.is_preview = false;
+                    // Ensure is_hidden is a boolean, even if it comes as 0/1 from DB
+                    n.is_hidden = !!n.is_hidden;
                     return n;
                 });
-                this.adaptNotesToMobile();
             } catch (e) {
                 console.error('Error fetching notes:', e);
             }
@@ -417,10 +427,17 @@ document.addEventListener('alpine:init', () => {
 
         toggleAll() {
             const anyVisible = this.notes.some(n => !n.is_hidden);
-            const newState = anyVisible; // If any is visible, we hide ALL (newState = true)
+            const newState = anyVisible; // true si vamos a ocultar
             
-            this.notes.forEach(n => n.is_hidden = newState);
-            this.notes = [...this.notes]; // Force reactivity
+            this.notes = this.notes.map(n => {
+                n.is_hidden = newState;
+                return n;
+            });
+
+            // Si las estamos mostrando, forzamos que aparezcan dentro de la pantalla
+            if (!newState) {
+                this.adaptNotesToMobile();
+            }
             
             // Dispatch event for other components (like AI Assistant)
             window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible: !newState } }));
@@ -430,6 +447,7 @@ document.addEventListener('alpine:init', () => {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
