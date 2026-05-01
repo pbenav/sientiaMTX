@@ -11,7 +11,7 @@
     </button>
     <div x-show="open" x-transition x-cloak
         class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-[90]">
-        <button @click="updateLayout('horizontal')"
+        <button @click="updateLayout('horizontal'); open = false"
             class="w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             :class="layout === 'horizontal' ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-gray-600 dark:text-gray-300'">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -19,7 +19,7 @@
             </svg>
             Horizontal
         </button>
-        <button @click="updateLayout('vertical')"
+        <button @click="updateLayout('vertical'); open = false"
             class="w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             :class="layout === 'vertical' ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-gray-600 dark:text-gray-300'">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

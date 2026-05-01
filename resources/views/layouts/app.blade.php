@@ -246,11 +246,11 @@
 
         /* Critical Layout Stability Styles - Prevents FOUC/Flicker */
         @if($layout === 'vertical')
-            #sidebar {
-                transform: translateX(-100%);
+            #sidebar:not(.translate-x-0) {
+                transform: translateX(-100%) !important;
             }
             @media (min-width: 1024px) {
-                #sidebar { transform: translateX(0); }
+                #sidebar { transform: translateX(0) !important; }
                 #mainContent.lg-layout-v-fix, 
                 footer.lg-layout-v-fix, 
                 .header-v-fix { 
@@ -269,10 +269,13 @@
 
 <body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased" x-data="{
     layout: '{{ $layout }}',
-    sidebarOpen: window.innerWidth >= 1024,
+    sidebarOpen: false,
     mounted: false,
     init() {
-        this.$nextTick(() => { this.mounted = true; });
+        this.$nextTick(() => { 
+            this.mounted = true; 
+            this.sidebarOpen = (window.innerWidth >= 1024 && this.layout === 'vertical');
+        });
         window.addEventListener('resize', () => {
             if (window.innerWidth < 1024) {
                 this.sidebarOpen = false;
@@ -300,7 +303,9 @@
         }
         @endauth
 
-        // Reload to apply layout structure
+        // Option: No reload for real-time switch if logic permits, 
+        // but since structure differs vastly, we'll keep reload but ensure it works.
+        // To fix the 'double click' issue, we ensure the cookie is set and then reload.
         window.location.reload();
     }
 }">
@@ -471,7 +476,7 @@
                         </a>
                         @endauth
                         <!-- Hamburger -->
-                        <button @click="window.dispatchEvent(new CustomEvent('mobile-menu-open'))"
+                        <button @click="layout === 'vertical' ? (sidebarOpen = true) : window.dispatchEvent(new CustomEvent('mobile-menu-open'))"
                             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             aria-label="Menu">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
