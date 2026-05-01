@@ -23,6 +23,10 @@
             this.zoomVal = newZoom;
             this.tempZoomVal = newZoom;
         });
+
+        window.addEventListener('close-other-system-menus', (e) => {
+            if (e.detail.id !== 'zoom-menu') this.open = false;
+        });
     },
 
     apply() {
@@ -44,7 +48,7 @@
     }
 }">
     <!-- Botón Lupa -->
-    <button @click="open = !open" 
+    <button @click="if(!open) window.dispatchEvent(new CustomEvent('close-other-system-menus', { detail: { id: 'zoom-menu' } })); open = !open" 
             class="flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 w-9 h-9 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-800"
             title="{{ __('navigation.zoom_controls') }}">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" :class="zoomVal != 100 ? 'text-violet-500' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -57,10 +61,10 @@
          @click.outside="open = false"
          @click.stop
          x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
+         x-transition:enter-start="opacity-0 scale-95 translate-y-4 lg:translate-y-[-10px]"
          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
          x-cloak style="display: none"
-         class="absolute right-0 mt-3 w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl z-[90] p-6 text-gray-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5">
+         class="fixed bottom-4 left-4 right-4 lg:absolute lg:bottom-auto lg:left-auto lg:right-0 lg:mt-3 w-auto lg:w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl z-[90] p-6 text-gray-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5">
         
         <div class="flex flex-col gap-6">
             <!-- Header -->

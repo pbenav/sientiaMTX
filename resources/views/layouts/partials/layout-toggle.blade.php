@@ -1,5 +1,12 @@
-<div class="relative" x-data="{ open: false }">
-    <button @click="open = !open" @click.outside="open = false"
+<div class="relative" x-data="{ 
+    open: false,
+    init() {
+        window.addEventListener('close-other-system-menus', (e) => {
+            if (e.detail.id !== 'layout-menu') this.open = false;
+        });
+    }
+}">
+    <button @click="if(!open) window.dispatchEvent(new CustomEvent('close-other-system-menus', { detail: { id: 'layout-menu' } })); open = !open" @click.outside="open = false"
         class="flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 w-9 h-9 rounded-lg transition-all"
         title="{{ __('Change Layout') }}">
         <svg x-show="layout === 'horizontal'" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

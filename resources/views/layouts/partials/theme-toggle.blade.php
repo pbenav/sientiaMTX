@@ -1,6 +1,11 @@
 <div class="relative" x-data="{
     open: false,
     theme: '{{ auth()->check() ? auth()->user()->theme : request()->cookie('theme', 'system') }}',
+    init() {
+        window.addEventListener('close-other-system-menus', (e) => {
+            if (e.detail.id !== 'theme-menu') this.open = false;
+        });
+    },
     updateTheme(newTheme) {
         this.theme = newTheme;
         this.open = false;
@@ -26,7 +31,7 @@
         @endauth
     }
 }">
-    <button @click="open = !open" @click.outside="open = false"
+    <button @click="if(!open) window.dispatchEvent(new CustomEvent('close-other-system-menus', { detail: { id: 'theme-menu' } })); open = !open" @click.outside="open = false"
         class="flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 w-9 h-9 rounded-lg transition-all">
         <!-- Sun -->
         <svg x-show="theme === 'light'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
