@@ -826,7 +826,7 @@
         </div>
     @endif
 
-    <div x-show="layout === 'vertical'" x-cloak
+    <div x-show="layout === 'vertical'"
         style="{{ $layout === 'horizontal' ? 'display:none' : '' }}"
         class="sticky top-0 z-20 w-full bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 transition-all duration-300 {{ $layout === 'vertical' ? 'header-v-fix' : '' }}"
         :class="sidebarOpen ? 'lg:pl-72' : ''">
