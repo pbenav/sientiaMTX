@@ -285,6 +285,8 @@
         });
     },
     async updateLayout(newLayout) {
+        if (this.layout === newLayout) return;
+        
         this.layout = newLayout;
         document.cookie = 'layout=' + newLayout + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
 
@@ -303,9 +305,6 @@
         }
         @endauth
 
-        // Option: No reload for real-time switch if logic permits, 
-        // but since structure differs vastly, we'll keep reload but ensure it works.
-        // To fix the 'double click' issue, we ensure the cookie is set and then reload.
         window.location.reload();
     }
 }">
