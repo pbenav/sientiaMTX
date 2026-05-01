@@ -9,12 +9,12 @@
         x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 lg:hidden"
+        x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 lg:hidden"
         x-cloak></div>
 
     <aside id="sidebar"
         x-show="sidebarOpen || window.innerWidth >= 1024"
-        class="fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl lg:translate-x-0"
+        class="fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 dark:border-gray-800 bg-white lg:bg-white/80 dark:bg-gray-900 lg:dark:bg-gray-900/80 backdrop-blur-xl lg:translate-x-0"
         :class="{
             'translate-x-0': sidebarOpen || window.innerWidth >= 1024,
             '-translate-x-full': !sidebarOpen && window.innerWidth < 1024,
