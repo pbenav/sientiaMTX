@@ -28,6 +28,7 @@ class ForumMessageController extends Controller
 
         $validated = $request->validate([
             'content' => 'required|string|max:10000',
+            'parent_id' => 'nullable|exists:forum_messages,id',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
             'drive_attachments' => 'nullable|string',
@@ -36,6 +37,7 @@ class ForumMessageController extends Controller
 
         $message = $thread->messages()->create([
             'user_id' => auth()->id(),
+            'parent_id' => $validated['parent_id'] ?? null,
             'content' => $validated['content'],
             'is_private' => $request->boolean('is_private'),
         ]);
@@ -149,6 +151,11 @@ class ForumMessageController extends Controller
         if (!empty($matches[1])) {
             $mentionedUsers = User::whereIn('id', $matches[1])->get();
             $recipients = $recipients->merge($mentionedUsers);
+        }
+
+        // 5. Parent message author (Response awareness)
+        if ($message->parent && $message->parent->user) {
+            $recipients->push($message->parent->user);
         }
         
         // --- Final Filter and Dispatch ---
