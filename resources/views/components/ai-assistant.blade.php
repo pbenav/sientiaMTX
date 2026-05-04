@@ -11,6 +11,7 @@
      @ai:analyze-file.window="analyzeFile($event.detail)"
      @ai:analyze-task.window="analyzeTask($event.detail)"
      @ai:transfer-direct.window="transferToTask($event.detail)"
+     @ai:smart-inject.window="smartInject($event.detail)"
      @ai:inject-note.window="injectNote($event.detail)"
      @quicknote-state-changed.window="quickNotesVisible = $event.detail.anyVisible">
     
@@ -308,28 +309,28 @@
         </div>
     </div>
 
-    <!-- QuickNote Toggles (Floating above AI) -->
-    <div class="flex flex-col gap-2 mb-3 pointer-events-auto">
-        <button type="button" 
-            @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
-            class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger"
-            :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
-            :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Mostrar notas rápidas'">
-            <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            <svg x-show="!quickNotesVisible" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-            </svg>
-        </button>
-        <button 
-            @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
-            class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 quick-notes-trigger"
-            title="Nueva Nota Rápida (Post-it)">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
-        </button>
-    </div>
+        <!-- Floating Actions for Quick Notes (when visible) -->
+        <div class="flex flex-col gap-3 mb-3 pointer-events-auto items-center">
+            <button type="button" 
+                @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
+                class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger"
+                :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
+                :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Mostrar notas rápidas'">
+                <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg x-show="!quickNotesVisible" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                </svg>
+            </button>
+            <button 
+                @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
+                class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 quick-notes-trigger"
+                title="Nueva Nota Rápida (Post-it)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+            </button>
+        </div>
 
     <button 
         @mousedown="startDrag($event)" 
@@ -362,8 +363,12 @@
 </div>
 
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('sientiaAiAssistant', () => ({
+    (function() {
+        const registerAssistant = () => {
+            if (window.sientiaAiAssistantRegistered) return;
+            window.sientiaAiAssistantRegistered = true;
+            
+            Alpine.data('sientiaAiAssistant', () => ({
             open: false,
             loading: false,
             hasUnread: false,
@@ -375,10 +380,10 @@
                 { role: 'ai', content: '¡Hola! Soy **Ax.ia**, tu asistente inteligente en Sientia. ¿En qué puedo ayudarte con tus tareas hoy?' }
             ],
             
-            teamId: {{ $teamId ?: 'null' }},
-            taskId: {{ $taskId ?: 'null' }},
-            threadId: {{ $threadId ?: 'null' }},
-            messageId: {{ $messageId ?: 'null' }},
+            teamId: @json($teamId ?? null),
+            taskId: @json($taskId ?? null),
+            threadId: @json($threadId ?? null),
+            messageId: @json($messageId ?? null),
             quickNotesVisible: false,
             attachmentId: null,
 
@@ -402,7 +407,7 @@
             mediaRecorder: null,
             audioChunks: [],
             recordingTime: 0,
-            maxRecordingTime: {{ \App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
+            maxRecordingTime: {{ (int)\App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
             recordingInterval: null,
             pendingFile: null,
 
@@ -424,6 +429,15 @@
                         console.log(`Ax.ia: Contexto auto-detectado (Team: ${this.teamId}, Task: ${this.taskId})`);
                     }
                 }
+
+                this.lastFocusedEl = null;
+                window.addEventListener('focusin', (e) => {
+                    if (!e.target.closest('.ai-assistant-container') && 
+                        !e.target.closest('.swal2-container') &&
+                        (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) {
+                        this.lastFocusedEl = e.target;
+                    }
+                }, true);
 
                 window.addEventListener('quicknote-state-changed', (e) => {
                     this.quickNotesVisible = e.detail.anyVisible;
@@ -1072,7 +1086,7 @@
                             <div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-[13px] leading-relaxed font-medium">${marked.parse(payloadContent)}</div>
                             <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-indigo-100/50 dark:border-slate-800">
                                 <span class="text-[9px] font-bold text-indigo-400/80 mr-auto uppercase tracking-tighter italic">Listo para inyectar</span>
-                                <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(sanitizedContent).replace(/"/g, '&quot;')}, direct: false } }))" 
+                                <button onclick="window.dispatchEvent(new CustomEvent('ai:smart-inject', { detail: { content: ${JSON.stringify(sanitizedContent).replace(/"/g, '&quot;')} } }))" 
                                         class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                     <span>Inyectar</span>
@@ -1195,8 +1209,9 @@
                 // 1. DATA PREPARATION
                 let content = (typeof detail === 'string') ? detail : (detail.content || '');
                 const isDirect = (typeof detail === 'object' && detail.direct);
+                const isSilent = (typeof detail === 'object' && detail.silent);
                 
-                this.open = false;
+                if (!isSilent) this.open = false;
                 const isDark = document.documentElement.classList.contains('dark');
                 
                 const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
@@ -1227,43 +1242,76 @@
                 }
 
                 // 2. FAST PATH: DIRECT INJECTION
+                let targetEl = null;
+                
                 if (isDirect) {
-                    let targetEl = document.activeElement;
-                    const preferredIds = ['reply-content', 'observations', 'description'];
+                    targetEl = this.lastFocusedEl;
                     
-                    // Priority 1: Check if active element is a valid input
-                    if (!targetEl || (!['TEXTAREA', 'INPUT'].includes(targetEl.tagName) && !targetEl.closest('.ql-editor') && !targetEl.classList.contains('ql-editor'))) {
-                        // Priority 2: Look for our preferred IDs
-                        for (const id of preferredIds) {
-                            const el = document.getElementById(id);
-                            if (el && el.offsetParent !== null) { // Visible
-                                targetEl = el;
-                                break;
-                            }
+                    if (!targetEl || !document.body.contains(targetEl)) {
+                        targetEl = document.activeElement;
+                    }
+
+                    if (targetEl && (targetEl.closest('.ai-assistant-container') || targetEl.closest('.swal2-container'))) {
+                        targetEl = null;
+                    }
+                    
+                    // Priority 2: Look for our preferred IDs
+                    // If we are in a Task Detail view, Private Notes should be high priority
+                    let searchOrder = ['reply-content-private', 'reply-content', 'description', 'observations', 'private_note'];
+                    
+                    if (payloadData.private_note) {
+                        searchOrder = ['reply-content-private', 'private_note', 'description', 'observations'];
+                    } else if (payloadData.description && !payloadData.observations) {
+                        searchOrder = ['description', 'observations', 'reply-content-private', 'reply-content'];
+                    }
+                    
+                    console.log('[Ax.ia] Buscando objetivo de inyección en orden:', searchOrder);
+
+                    for (const id of searchOrder) {
+                        const el = document.getElementById(id);
+                        if (el && (el.offsetParent !== null || el.closest('[x-data]'))) { 
+                            targetEl = el;
+                            console.log('[Ax.ia] Objetivo encontrado por ID:', id);
+                            break;
                         }
-                        
-                        // Priority 3: Fallback to any visible editor
-                        if (!targetEl || targetEl === document.activeElement) {
-                            targetEl = document.querySelector('.ql-editor') || document.querySelector('textarea:not([style*="display: none"])');
+                    }
+                    
+                    // Priority 3: Fallback to any visible Sientia editor
+                    if (!targetEl || targetEl === document.activeElement || targetEl.tagName === 'BODY') {
+                        const anyEditor = document.querySelector('[id*="reply-content"], [id*="textarea"]');
+                        if (anyEditor) {
+                            targetEl = anyEditor;
+                            console.log('[Ax.ia] Objetivo encontrado por selector general:', anyEditor.id);
                         }
                     }
 
                     if (targetEl) {
-                        const isQuill = targetEl.classList.contains('ql-editor') || targetEl.closest('.ql-editor');
-                        const actualEditor = targetEl.classList.contains('ql-editor') ? targetEl : targetEl.closest('.ql-editor');
+                        // Visual Feedback: Pulse effect
+                        targetEl.classList.add('ai-inject-pulse');
+                        setTimeout(() => targetEl.classList.remove('ai-inject-pulse'), 1500);
 
                         // Support for Sientia Custom Markdown Editor (Alpine.js based)
-                        const alpineComponent = targetEl.closest('[x-data]') ? Alpine.$data(targetEl.closest('[x-data]')) : null;
-                        const isSientiaEditor = alpineComponent && (alpineComponent.content !== undefined && alpineComponent.insertAtCursor !== undefined);
+                        const targetComponent = typeof Alpine !== 'undefined' ? Alpine.$data(targetEl.closest('[x-data]')) : null;
+                        if (targetComponent && targetComponent.tab) {
+                            targetComponent.tab = 'write';
+                        }
+                        
+                        const isQuill = targetEl.classList.contains('ql-editor') || targetEl.closest('.ql-editor');
+                        const actualEditor = targetEl.classList.contains('ql-editor') ? targetEl : targetEl.closest('.ql-editor');
+                        const isSientiaEditor = targetComponent && (typeof targetComponent.insertAtCursor === 'function' || targetComponent.content !== undefined);
 
                         if (isQuill && actualEditor) {
                             actualEditor.innerHTML += marked.parse(textToInject);
                             actualEditor.dispatchEvent(new Event('input', { bubbles: true }));
                         } else if (isSientiaEditor) {
-                            // If it's our custom editor, we use its native insertion method to maintain history/state
-                            alpineComponent.insertAtCursor(textToInject);
+                            // If it's our custom editor, we use its native insertion method or direct content update
+                            if (typeof targetComponent.insertAtCursor === 'function') {
+                                targetComponent.insertAtCursor(textToInject);
+                            } else {
+                                targetComponent.content = (targetComponent.content || '') + textToInject;
+                            }
                             // Also ensure the tab is switched to 'write'
-                            if (alpineComponent.tab) alpineComponent.tab = 'write';
+                            if (targetComponent.tab) targetComponent.tab = 'write';
                         } else {
                             const start = targetEl.selectionStart || 0;
                             const end = targetEl.selectionEnd || 0;
@@ -1278,255 +1326,12 @@
                         targetEl.focus();
                         if (targetEl.scrollIntoView) { targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                         
-                        Swal.fire({ icon: 'success', title: '¡Inyectado!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
-                    } else {
-                        // FALLBACK AL PORTAPAPELES (Robusto con Retardo)
-                        setTimeout(() => {
-                            console.log('Ax.ia: Intentando copia al portapapeles...', textToInject);
-                            
-                            const copyFallback = (text) => {
-                                try {
-                                    if (navigator.clipboard && window.isSecureContext) {
-                                        return navigator.clipboard.writeText(text);
-                                    } else {
-                                        throw new Error('Clipboard API unavailable');
-                                    }
-                                } catch (e) {
-                                    const textArea = document.createElement("textarea");
-                                    textArea.value = text;
-                                    // Súper oculto pero funcional
-                                    textArea.style.position = "fixed";
-                                    textArea.style.left = "-200vw";
-                                    textArea.style.top = "-200vh";
-                                    document.body.prepend(textArea);
-                                    textArea.focus();
-                                    textArea.select();
-                                    try {
-                                        const successful = document.execCommand('copy');
-                                        console.log('Ax.ia: Copia tradicional exitosa?', successful);
-                                    } catch (err) {
-                                        console.error('Ax.ia: Error crítico en copia tradicional:', err);
-                                    }
-                                    document.body.removeChild(textArea);
-                                    return Promise.resolve();
-                                }
-                            };
-
-                            copyFallback(textToInject).then(() => {
-                                Swal.fire({ 
-                                    icon: 'info', 
-                                    title: 'Copiado al portapapeles', 
-                                    text: 'No había un campo activo, así que lo tienes listo para pegar (Ctrl+V).',
-                                    toast: true, 
-                                    position: 'top-end', 
-                                    timer: 5000, 
-                                    showConfirmButton: false 
-                                });
-                            });
-                        }, 150); // Pequeño retardo para dejar que SweetAlert cierre
+                        if (!isSilent) Swal.fire({ icon: 'success', title: '¡Inyectado!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                        return true;
                     }
-                    return;
+                    return false;
                 }
-
-                // 3. NORMAL PATH: ACTION SELECTOR
-                let selectedAction = null;
-                await Swal.fire({
-                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¿Qué quieres hacer con este contenido?</span>',
-                    html: `
-                        <div class="p-2 space-y-4 text-left">
-                            <div id="ai-main-actions" class="grid grid-cols-1 gap-3">
-                                <button data-action="new" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all text-left group">
-                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Nueva Tarea</div>
-                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Crear una tarea completa en este equipo con este contenido.</div>
-                                    </div>
-                                </button>
-                                <button data-action="quicknote" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left group">
-                                    <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                                        <span class="text-2xl">📌</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Post-it</div>
-                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Crear una nota flotante con este contenido para más tarde.</div>
-                                    </div>
-                                </button>
-                                <button data-action="update" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-left group">
-                                    <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Añadir a Tarea Actual</div>
-                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Integrar el texto en la descripción u observaciones de esta tarea.</div>
-                                    </div>
-                                </button>
-                                <button data-action="cursor" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-slate-900 hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-left group">
-                                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Pegar en Cursor</div>
-                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Inyectar en el campo de texto donde estabas escribiendo.</div>
-                                    </div>
-                                </button>
-                                ${this.threadId ? `
-                                <button data-action="forum" class="flex items-center gap-4 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left group">
-                                    <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">Contestar al Foro</div>
-                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">Publicar esta respuesta en el hilo de discusión actual.</div>
-                                    </div>
-                                </button>` : ''}
-                            </div>
-                        </div>
-                    `,
-                    showConfirmButton: false,
-                    showCancelButton: false,
-                    background: isDark ? '#0f172a' : '#ffffff',
-                    color: isDark ? '#f1f5f9' : '#1e293b',
-                    customClass: { popup: 'rounded-[3rem] border-none shadow-2xl overflow-hidden', htmlContainer: 'p-0 m-0' },
-                    didOpen: () => {
-                        const grid = document.getElementById('ai-main-actions');
-                        grid.onclick = (e) => {
-                            const btn = e.target.closest('button');
-                            if (btn && btn.dataset.action) {
-                                selectedAction = btn.dataset.action;
-                                Swal.clickConfirm();
-                            }
-                        };
-                    }
-                });
-
-                if (!selectedAction) return;
-
-                // 4. ACTION IMPLEMENTATION
-                if (selectedAction === 'new') {
-                     const defaultTitle = payloadData.title || '';
-                     const { value: title } = await Swal.fire({
-                         title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Título de la Tarea</span>',
-                         input: 'text',
-                         inputValue: defaultTitle,
-                         background: isDark ? '#0f172a' : '#ffffff',
-                         color: isDark ? '#f1f5f9' : '#1e293b',
-                         confirmButtonText: 'Crear y Ver',
-                         confirmButtonColor: '#4f46e5',
-                         customClass: { popup: 'rounded-[2.5rem]', input: 'rounded-xl border-gray-200' },
-                         inputValidator: (v) => !v && '¡Necesitas un título!'
-                     });
-                     if (!title) return;
-                     this.submitServerTransfer('task', rawPayload, title);
-                } 
-                else if (selectedAction === 'quicknote') {
-                    this.submitServerTransfer('quick-note', rawPayload);
-                }
-                else if (selectedAction === 'update') {
-                    let targetField = null;
-                    await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-violet-600">¿Dónde inyectamos en la tarea?</span>',
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f1f5f9' : '#1e293b',
-                        showConfirmButton: false,
-                        customClass: { popup: 'rounded-[2.5rem]' },
-                        html: `
-                            <div class="grid grid-cols-1 gap-3 p-2">
-                                <button onclick="Swal.clickConfirm()" data-val="observations" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Desarrollo (Observaciones)</div>
-                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Añadir al final del campo de observaciones.</div>
-                                    </div>
-                                </button>
-                                <button onclick="Swal.clickConfirm()" data-val="description" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Resumen (Descripción)</div>
-                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Sobrescribir el resumen de la tarea actual.</div>
-                                    </div>
-                                </button>
-                                <button onclick="Swal.clickConfirm()" data-val="private_note" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-all text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Nota Privada</div>
-                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Solo visible para ti y coordinadores.</div>
-                                    </div>
-                                </button>
-                                <button onclick="Swal.clickConfirm()" data-val="quick-note" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600">
-                                        <span>📌</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Post-it</div>
-                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Crear una nota flotante en pantalla.</div>
-                                    </div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: () => {
-                            document.querySelectorAll('.ai-sub-action').forEach(btn => {
-                                btn.addEventListener('click', () => { targetField = btn.dataset.val; });
-                            });
-                        }
-                    });
-                    if (!targetField) return;
-                    this.submitServerTransfer(targetField, rawPayload);
-                } 
-                else if (selectedAction === 'cursor') {
-                    this.transferToTask({ content: rawPayload, direct: true });
-                }
-                else if (selectedAction === 'forum') {
-                    let forumAction = null;
-                    await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-amber-600">Opciones para el Foro</span>',
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f1f5f9' : '#1e293b',
-                        showConfirmButton: false,
-                        customClass: { popup: 'rounded-[2.5rem]' },
-                        html: `
-                            <div class="grid grid-cols-1 gap-3 p-2">
-                                <button onclick="Swal.clickConfirm()" data-val="reply" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Publicar Ahora</div>
-                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Enviar la respuesta al hilo directamente.</div>
-                                    </div>
-                                </button>
-                                <button onclick="Swal.clickConfirm()" data-val="draft" class="ai-sub-action flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-900 hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-black text-gray-900 dark:text-white text-[11px] uppercase tracking-tight">Revisar Borrador</div>
-                                        <div class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Cargar en el editor para que puedas retocarlo.</div>
-                                    </div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: () => {
-                            document.querySelectorAll('.ai-sub-action').forEach(btn => {
-                                btn.addEventListener('click', () => { forumAction = btn.dataset.val; });
-                            });
-                        }
-                    });
-                    if (!forumAction) return;
-                    
-                    if (forumAction === 'draft') {
-                        this.transferToTask({ content: rawPayload, direct: true });
-                    } else {
-                        this.submitServerTransfer('reply', rawPayload);
-                    }
-                }
+                return false;
             },
 
             async submitServerTransfer(target, rawContent, title = null) {
@@ -1539,15 +1344,30 @@
                     if (taskMatch) this.taskId = taskMatch[1];
                 }
 
-                if (target === 'task' || target === 'quick-note' || !this.taskId) {
+                const isTaskSpecific = ['description', 'observations', 'private_note', 'observations_append'].includes(target);
+                console.log(`[Ax.ia] Iniciando transferencia: ${target} para tarea ${this.taskId} en equipo ${this.teamId}`);
+
+                if ((target === 'task' || target === 'quick-note' || !this.taskId) && !isTaskSpecific) {
                     url = '{{ route('ai.transfer_global', ['team' => 'TEAM_ID']) }}'
                         .replace('TEAM_ID', this.teamId || '');
                     url = url.replace(/\/$/, ""); 
                 } else {
+                    if (!this.taskId) {
+                        const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
+                        if (taskMatch) this.taskId = taskMatch[1];
+                    }
+                    
+                    if (!this.taskId) {
+                        Swal.fire('Error', 'No se ha podido detectar la tarea actual.', 'error');
+                        return;
+                    }
+
                     url = '{{ route('ai.transfer', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'
-                        .replace('TEAM_ID', this.teamId || 0)
-                        .replace('TASK_ID', this.taskId);
+                        .replace('TEAM_ID', this.teamId || '')
+                        .replace('TASK_ID', this.taskId || '');
                 }
+
+                console.log(`[Ax.ia] URL final: ${url}`);
 
                 try {
                     const response = await fetch(url, {
@@ -1584,10 +1404,125 @@
             },
 
 
+            async smartInject(detail) {
+            const isDark = document.documentElement.classList.contains('dark');
+            let content = (typeof detail === 'string') ? detail : (detail.content || '');
+            const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
+            let rawPayload = (match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim());
+            rawPayload = rawPayload.replace(/^```[\w]*\n/, '').replace(/\n```$/, '').trim();
+
+            let firstLevelSelection = null;
+            await Swal.fire({
+            title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¿Qué quieres hacer?</span>',
+            background: isDark ? '#0f172a' : '#ffffff',
+            showConfirmButton: false,
+                    html: `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2">
+            <button type="button" onclick="window._aiSelect1('new-task')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 transition-all text-center group">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Tarea</div>
+            </button>
+            <button type="button" onclick="window._aiSelect1('current-task')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 transition-all text-center group">
+            <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            </div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Tarea Actual</div>
+            </button>
+            <button type="button" onclick="window._aiSelect1('quick-note')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 transition-all text-center group">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 7h.01M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+            </div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nota Post-it</div>
+            </button>
+            <button type="button" onclick="window._aiSelect1('active-editor')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-slate-900 hover:border-emerald-600 transition-all text-center group">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Editor Activo</div>
+            </button>
+            </div>
+            `,
+            didOpen: () => {
+            window._aiSelect1 = (val) => {
+            firstLevelSelection = val;
+            Swal.clickConfirm();
+            };
+            }
+            });
+
+            if (!firstLevelSelection) return;
+
+            if (firstLevelSelection === 'new-task') {
+            this.submitServerTransfer('task', rawPayload);
+            } else if (firstLevelSelection === 'quick-note') {
+            this.submitServerTransfer('quick-note', rawPayload);
+            } else if (firstLevelSelection === 'active-editor') {
+            const success = await this.transferToTask({ content: rawPayload, direct: true, silent: false });
+            if (!success) Swal.fire('Aviso', 'No hay editor activo.', 'info');
+            } else if (firstLevelSelection === 'current-task') {
+            if (!this.taskId) {
+                        const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
+            if (taskMatch) this.taskId = taskMatch[1];
+            }
+            if (!this.taskId) {
+            Swal.fire('Error', 'No se detecta tarea actual.', 'error');
+            return;
+            }
+
+            let secondLevelSelection = null;
+            await Swal.fire({
+            title: '<span class="text-xs font-black uppercase tracking-widest text-violet-600">¿En qué parte de la tarea?</span>',
+            background: isDark ? '#0f172a' : '#ffffff',
+            showConfirmButton: false,
+                        html: `
+                            <div class="grid grid-cols-1 gap-3 p-2">
+            <button type="button" onclick="window._aiSelect2('description')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 transition-all text-left group">
+            <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Resumen</div>
+            </button>
+            <button type="button" onclick="window._aiSelect2('observations')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 transition-all text-left group">
+            <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Desarrollo</div>
+            </button>
+            <button type="button" onclick="window._aiSelect2('private_note')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-slate-100 bg-white dark:bg-slate-900 hover:border-slate-600 transition-all text-left group">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Nota Privada</div>
+            </button>
+            </div>
+            `,
+            didOpen: () => {
+            window._aiSelect2 = (val) => {
+            secondLevelSelection = val;
+            Swal.clickConfirm();
+            };
+            }
+            });
+
+                    if (secondLevelSelection) {
+                        this.submitServerTransfer(secondLevelSelection, rawPayload);
+                    }
+                }
+            },
+
             playNotification() {
                 if (!this.soundEnabled) return;
                 this.audio.play().catch(e => console.log('Audio playback failed', e));
             }
         }));
-    });
+        };
+
+        if (window.Alpine) {
+            registerAssistant();
+        } else {
+            document.addEventListener('alpine:init', registerAssistant);
+        }
+    })();
 </script>
