@@ -18,6 +18,7 @@
             const textarea = document.getElementById('forum-thread-textarea-{{ $rootTask->id }}');
             if (textarea) {
                 textarea.value = content;
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
                 textarea.focus();
             }
         },
@@ -28,6 +29,7 @@
             const textarea = document.getElementById('forum-thread-textarea-{{ $rootTask->id }}');
             if (textarea) {
                 textarea.value = '';
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
                 textarea.focus();
             }
         },

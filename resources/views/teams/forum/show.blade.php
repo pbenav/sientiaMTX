@@ -360,6 +360,7 @@
                 if (textarea) {
                     const quote = `> **${name}**: ${content}\n\n`;
                     textarea.value = quote + textarea.value;
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
                     textarea.focus();
                     textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
@@ -378,6 +379,7 @@
                             if (textarea) {
                                 const quote = `> **${name}**: ${content}\n\n`;
                                 textarea.value = quote;
+                                textarea.dispatchEvent(new Event('input', { bubbles: true }));
                             }
                         }
                     }
