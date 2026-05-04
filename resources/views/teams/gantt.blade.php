@@ -28,16 +28,16 @@
         .gantt .bar-label-container { 
             display: flex; 
             align-items: center; 
+            justify-content: flex-start; /* Ensure left alignment */
             height: 100%; 
-            width: 100%; 
-            padding: 0 10px; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
+            width: 800px; /* Large width to allow text to overflow the bar to the right */
+            padding: 0 6px; 
+            overflow: visible; /* Allow text to be seen outside the bar */
             white-space: nowrap; 
             font-weight: 800; 
-            font-size: 11px; 
+            font-size: 10px; /* Slightly smaller for better fit */
             color: #1f2937;
-            text-shadow: 0 0 2px rgba(255,255,255,0.8);
+            text-shadow: 0 0 3px rgba(255,255,255,0.9);
             pointer-events: none;
             line-height: 1;
         }
@@ -376,12 +376,14 @@
                     const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
                     fo.setAttribute('x', barX);
                     fo.setAttribute('y', barY);
-                    fo.setAttribute('width', barWidth);
+                    fo.setAttribute('width', 800); // Set a large width so it doesn't clip short bars
                     fo.setAttribute('height', barHeight);
                     fo.setAttribute('style', 'pointer-events: none;');
 
                     const div = document.createElement('div');
                     div.className = 'bar-label-container';
+                    // Use innerHTML if you want to support HTML entities, or textContent for safety
+                    // The label.textContent already has the emojis/icons
                     div.textContent = label.textContent;
                     
                     fo.appendChild(div);
