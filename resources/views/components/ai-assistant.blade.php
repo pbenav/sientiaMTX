@@ -408,6 +408,23 @@
 
             init() {
                 this.loadHistory();
+                
+                // Auto-detect context from URL if missing
+                if (!this.teamId || !this.taskId) {
+                    const path = window.location.pathname;
+                    const teamMatch = path.match(/\/teams\/(\d+)/);
+                    const taskMatch = path.match(/\/tasks\/(\d+)/);
+                    const forumMatch = path.match(/\/forum\/(\d+)/);
+
+                    if (teamMatch && !this.teamId) this.teamId = teamMatch[1];
+                    if (taskMatch && !this.taskId) this.taskId = taskMatch[1];
+                    if (forumMatch && !this.threadId) this.threadId = forumMatch[1];
+                    
+                    if (this.teamId || this.taskId) {
+                        console.log(`Ax.ia: Contexto auto-detectado (Team: ${this.teamId}, Task: ${this.taskId})`);
+                    }
+                }
+
                 window.addEventListener('quicknote-state-changed', (e) => {
                     this.quickNotesVisible = e.detail.anyVisible;
                 });
@@ -1235,9 +1252,18 @@
                         const isQuill = targetEl.classList.contains('ql-editor') || targetEl.closest('.ql-editor');
                         const actualEditor = targetEl.classList.contains('ql-editor') ? targetEl : targetEl.closest('.ql-editor');
 
+                        // Support for Sientia Custom Markdown Editor (Alpine.js based)
+                        const alpineComponent = targetEl.closest('[x-data]') ? Alpine.$data(targetEl.closest('[x-data]')) : null;
+                        const isSientiaEditor = alpineComponent && (alpineComponent.content !== undefined && alpineComponent.insertAtCursor !== undefined);
+
                         if (isQuill && actualEditor) {
                             actualEditor.innerHTML += marked.parse(textToInject);
                             actualEditor.dispatchEvent(new Event('input', { bubbles: true }));
+                        } else if (isSientiaEditor) {
+                            // If it's our custom editor, we use its native insertion method to maintain history/state
+                            alpineComponent.insertAtCursor(textToInject);
+                            // Also ensure the tab is switched to 'write'
+                            if (alpineComponent.tab) alpineComponent.tab = 'write';
                         } else {
                             const start = targetEl.selectionStart || 0;
                             const end = targetEl.selectionEnd || 0;
@@ -1507,6 +1533,12 @@
                 const isDark = document.documentElement.classList.contains('dark');
                 let url = '';
                 
+                // Re-verify taskId from URL if it's missing in state just before transfer
+                if (!this.taskId) {
+                    const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
+                    if (taskMatch) this.taskId = taskMatch[1];
+                }
+
                 if (target === 'task' || target === 'quick-note' || !this.taskId) {
                     url = '{{ route('ai.transfer_global', ['team' => 'TEAM_ID']) }}'
                         .replace('TEAM_ID', this.teamId || '');
