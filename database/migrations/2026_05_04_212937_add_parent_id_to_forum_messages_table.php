@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('forum_messages', function (Blueprint $table) {
-            $table->foreignId('parent_id')->after('forum_thread_id')->nullable()->constrained('forum_messages')->onDelete('cascade');
-        });
+        if (!Schema::hasColumn('forum_messages', 'parent_id')) {
+            Schema::table('forum_messages', function (Blueprint $table) {
+                $table->foreignId('parent_id')->after('forum_thread_id')->nullable()->constrained('forum_messages')->onDelete('cascade');
+            });
+        }
     }
 
     /**
@@ -21,9 +23,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('forum_messages', function (Blueprint $table) {
-            $table->dropForeign(['parent_id']);
-            $table->dropColumn('parent_id');
-        });
+        if (Schema::hasColumn('forum_messages', 'parent_id')) {
+            Schema::table('forum_messages', function (Blueprint $table) {
+                $table->dropForeign(['parent_id']);
+                $table->dropColumn('parent_id');
+            });
+        }
     }
 };
