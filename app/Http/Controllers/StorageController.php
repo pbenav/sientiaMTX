@@ -46,21 +46,53 @@ class StorageController extends Controller
             }
         }
 
-        // Task attachments scoped to this team
+        // Task attachments scoped to this team (Local only)
         $teamTaskIds = $team->tasks()->pluck('id');
-        $attachments = TaskAttachment::whereIn('attachable_id', $teamTaskIds)
+        $taskAttachments = TaskAttachment::whereIn('attachable_id', $teamTaskIds)
             ->where('attachable_type', \App\Models\Task::class)
-            ->where('storage_provider', '!=', 'google')
+            ->where('storage_provider', 'local')
             ->get();
 
-        $attachmentBytes = 0;
-        foreach ($attachments as $att) {
+        $taskBytes = 0;
+        foreach ($taskAttachments as $att) {
             if ($att->file_path && Storage::disk('public')->exists($att->file_path)) {
-                $attachmentBytes += Storage::disk('public')->size($att->file_path);
+                $taskBytes += Storage::disk('public')->size($att->file_path);
             }
         }
 
-        $totalBytes = $telegramBytes + $attachmentBytes;
+        // Forum attachments scoped to this team (Local only)
+        $forumAttachments = TaskAttachment::where('attachable_type', \App\Models\ForumMessage::class)
+            ->whereHas('attachable', function($q) use ($team) {
+                $q->whereHas('thread', function($sq) use ($team) {
+                    $sq->where('team_id', $team->id);
+                });
+            })
+            ->where('storage_provider', 'local')
+            ->get();
+
+        $forumBytes = 0;
+        foreach ($forumAttachments as $att) {
+            if ($att->file_path && Storage::disk('public')->exists($att->file_path)) {
+                $forumBytes += Storage::disk('public')->size($att->file_path);
+            }
+        }
+
+        // Google Drive Attachments (Just for info)
+        $googleDriveCount = TaskAttachment::where(function($q) use ($teamTaskIds, $team) {
+                $q->whereIn('attachable_id', $teamTaskIds)->where('attachable_type', \App\Models\Task::class);
+            })
+            ->orWhere(function($q) use ($team) {
+                $q->where('attachable_type', \App\Models\ForumMessage::class)
+                  ->whereHas('attachable', function($sq) use ($team) {
+                      $sq->whereHas('thread', function($ssq) use ($team) {
+                          $ssq->where('team_id', $team->id);
+                      });
+                  });
+            })
+            ->where('storage_provider', 'google')
+            ->count();
+
+        $totalBytes = $telegramBytes + $taskBytes + $forumBytes;
 
         $stats = [
             'telegram' => [
@@ -68,10 +100,20 @@ class StorageController extends Controller
                 'size'  => $telegramBytes,
                 'readable_size' => $this->formatBytes($telegramBytes),
             ],
-            'attachments' => [
-                'count' => $attachments->count(),
-                'size'  => $attachmentBytes,
-                'readable_size' => $this->formatBytes($attachmentBytes),
+            'tasks' => [
+                'count' => $taskAttachments->count(),
+                'size'  => $taskBytes,
+                'readable_size' => $this->formatBytes($taskBytes),
+            ],
+            'forum' => [
+                'count' => $forumAttachments->count(),
+                'size'  => $forumBytes,
+                'readable_size' => $this->formatBytes($forumBytes),
+            ],
+            'google' => [
+                'count' => $googleDriveCount,
+                'size' => 0,
+                'readable_size' => 'N/A (Cloud)',
             ],
             'total_size' => [
                 'size' => $totalBytes,
@@ -152,6 +194,7 @@ class StorageController extends Controller
             // Adjuntos de Tareas
             $taskAttachments = TaskAttachment::where('attachable_type', Task::class)
                 ->whereHas('task', fn($q) => $q->where('team_id', $team->id))
+                ->where('storage_provider', 'local') // Only local files count for space
                 ->where('created_at', '<', $dateLimit)
                 ->get();
 
@@ -162,6 +205,7 @@ class StorageController extends Controller
                         $sq->where('team_id', $team->id);
                     });
                 })
+                ->where('storage_provider', 'local') // Only local files count for space
                 ->where('created_at', '<', $dateLimit)
                 ->get();
 

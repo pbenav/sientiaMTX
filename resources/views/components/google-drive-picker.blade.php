@@ -126,7 +126,13 @@
                     this.breadcrumbs.push({ id: file.id, name: file.name });
                 } else {
                     if (this.mode === 'collect') {
-                        window.dispatchEvent(new CustomEvent('drive-file-selected', { detail: file }));
+                        window.dispatchEvent(new CustomEvent('drive-file-selected', { 
+                            detail: {
+                                file: file,
+                                targetId: this.targetId,
+                                targetType: this.targetType
+                            }
+                        }));
                         this.isOpen = false;
                     } else {
                         this.attachFile(file);

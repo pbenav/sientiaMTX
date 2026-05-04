@@ -43,16 +43,7 @@
                         <button @click="toggleMinimize(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Minimizar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="note.is_minimized ? 'M12 4v16m8-8H4' : 'M20 12H4'" /></svg>
                         </button>
-                        <button @click="note.is_preview = !note.is_preview" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" :title="note.is_preview ? 'Editar nota' : 'Ver Markdown'">
-                            <!-- Icono Chispas (Ver Markdown) -->
-                            <svg x-show="!note.is_preview" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
-                            </svg>
-                            <!-- Icono Lápiz (Editar) -->
-                            <svg x-show="note.is_preview" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </button>
+
                         <button @click="sendToAi(note)" class="p-1 hover:bg-indigo-500/20 hover:text-indigo-700 rounded-md transition-colors text-black/60" title="Enviar a Ax.ia">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </button>
@@ -77,7 +68,9 @@
                     <div class="flex-1 flex flex-col overflow-hidden">
                         <textarea 
                             x-show="!note.is_preview"
+                            x-ref="textarea"
                             x-model="note.content"
+                            @blur="note.is_preview = true; updateNote(note)"
                             @input.debounce.1000ms="updateNote(note)"
                             @paste="handlePaste($event, note)"
                             class="flex-1 w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-black/80 font-medium leading-relaxed resize-none placeholder:text-black/20"
@@ -86,7 +79,7 @@
                         
                         <div 
                             x-show="note.is_preview"
-                            @click="note.is_preview = false; $nextTick(() => { $refs.textarea.focus(); $refs.textarea.select(); })"
+                            @click="note.is_preview = false; $nextTick(() => { $refs.textarea.focus(); })"
                             class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1 cursor-text"
                             x-html="renderMarkdown(note.content || '*Escribe algo aquí...*')"
                         ></div>

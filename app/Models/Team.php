@@ -221,18 +221,20 @@ class Team extends Model
      */
     public function syncDiskUsed(): void
     {
-        // 1. Calculate task attachments size
+        // 1. Calculate task attachments size (excluding Google Drive)
         $taskIds = $this->tasks()->pluck('id');
         $taskSize = TaskAttachment::where('attachable_type', Task::class)
             ->whereIn('attachable_id', $taskIds)
+            ->where('storage_provider', '!=', 'google')
             ->sum('file_size');
 
-        // 2. Calculate forum attachments size
+        // 2. Calculate forum attachments size (excluding Google Drive)
         $threadIds = $this->forumThreads()->pluck('id');
         $messageIds = ForumMessage::whereIn('forum_thread_id', $threadIds)->pluck('id');
         
         $forumSize = TaskAttachment::where('attachable_type', ForumMessage::class)
             ->whereIn('attachable_id', $messageIds)
+            ->where('storage_provider', '!=', 'google')
             ->sum('file_size');
 
         // 3. Calculate telegram media size

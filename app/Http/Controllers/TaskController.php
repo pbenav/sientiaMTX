@@ -1515,17 +1515,28 @@ class TaskController extends Controller
             'user_id' => auth()->id(),
             'action' => 'delete',
             'metadata' => [
-                'file_name' => $attachment->file_name
+                'file_name' => $attachment->file_name,
+                'storage_provider' => $attachment->storage_provider
             ],
             'ip_address' => request()->ip()
         ]);
 
         // Remove file from disk if exists
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
+        if ($attachment->storage_provider === 'local' && \Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($attachment->file_path);
             
             // Update user disk usage (decrement) only if file existed and was deleted
             $attachment->user->decrement('disk_used', $attachment->file_size);
+        } elseif ($attachment->storage_provider === 'google' && $attachment->provider_file_id) {
+            // ONLY delete from Google Drive if explicitly requested
+            if (request()->boolean('delete_from_drive')) {
+                try {
+                    $googleService = app(\App\Services\Google\GoogleDriveService::class);
+                    $googleService->deleteFile(auth()->user(), $attachment->provider_file_id, $team->id);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to delete from Google Drive during attachment destruction: ' . $e->getMessage());
+                }
+            }
         }
         
         $attachment->delete();

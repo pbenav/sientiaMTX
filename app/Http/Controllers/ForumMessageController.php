@@ -69,29 +69,31 @@ class ForumMessageController extends Controller
             }
         }
 
-        // Handle Drive Attachments
+        // Handle Drive/AJAX Attachments
         if ($request->has('drive_attachments') && !empty($request->drive_attachments)) {
             $driveFiles = json_decode($request->drive_attachments, true);
             if (is_array($driveFiles)) {
                 foreach ($driveFiles as $file) {
+                    $isLocal = isset($file['provider']) && $file['provider'] === 'local';
+                    
                     $attachment = $message->attachments()->create([
                         'user_id' => auth()->id(),
                         'file_name' => $file['name'],
-                        'file_path' => 'google_drive/' . $file['id'],
+                        'file_path' => $isLocal ? ($file['path'] ?? '') : 'google_drive/' . $file['id'],
                         'file_size' => $file['size'] ?? 0,
-                        'mime_type' => $file['mimeType'] ?? 'application/octet-stream',
-                        'storage_provider' => 'google',
-                        'provider_file_id' => $file['id'],
-                        'web_view_link' => $file['webViewLink'],
+                        'mime_type' => $file['mimeType'] ?? ($file['mime_type'] ?? 'application/octet-stream'),
+                        'storage_provider' => $isLocal ? 'local' : 'google',
+                        'provider_file_id' => $isLocal ? null : $file['id'],
+                        'web_view_link' => $isLocal ? null : $file['webViewLink'],
                     ]);
 
                     AttachmentLog::create([
                         'attachment_id' => $attachment->id,
                         'user_id' => auth()->id(),
-                        'action' => 'drive_migration',
+                        'action' => $isLocal ? 'upload' : 'drive_migration',
                         'metadata' => [
-                            'file_id' => $file['id'],
-                            'source' => 'google_drive'
+                            'file_id' => $isLocal ? null : $file['id'],
+                            'source' => $isLocal ? 'local_ajax' : 'google_drive'
                         ],
                         'ip_address' => request()->ip()
                     ]);
@@ -191,12 +193,78 @@ class ForumMessageController extends Controller
 
         $validated = $request->validate([
             'content' => 'required|string|max:10000',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
+            'drive_attachments' => 'nullable|string',
         ]);
 
         $message->update([
             'content' => $validated['content'],
             'is_edited' => true,
         ]);
+
+        // Handle Local Attachments
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments', 'public');
+                $originalName = $file->getClientOriginalName();
+                $datePrefix = date('Y-m-d-');
+                $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
+                $attachment = $message->attachments()->create([
+                    'user_id' => auth()->id(),
+                    'file_path' => $path,
+                    'file_name' => $fileName,
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                ]);
+
+                AttachmentLog::create([
+                    'attachment_id' => $attachment->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'upload',
+                    'metadata' => [
+                        'original_name' => $originalName,
+                        'size' => $file->getSize(),
+                        'context' => 'edit'
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            }
+        }
+
+        // Handle Drive/AJAX Attachments
+        if ($request->has('drive_attachments') && !empty($request->drive_attachments)) {
+            $driveFiles = json_decode($request->drive_attachments, true);
+            if (is_array($driveFiles)) {
+                foreach ($driveFiles as $file) {
+                    $isLocal = isset($file['provider']) && $file['provider'] === 'local';
+                    
+                    $attachment = $message->attachments()->create([
+                        'user_id' => auth()->id(),
+                        'file_name' => $file['name'],
+                        'file_path' => $isLocal ? ($file['path'] ?? '') : 'google_drive/' . $file['id'],
+                        'file_size' => $file['size'] ?? 0,
+                        'mime_type' => $file['mimeType'] ?? ($file['mime_type'] ?? 'application/octet-stream'),
+                        'storage_provider' => $isLocal ? 'local' : 'google',
+                        'provider_file_id' => $isLocal ? null : $file['id'],
+                        'web_view_link' => $isLocal ? null : $file['webViewLink'],
+                    ]);
+
+                    AttachmentLog::create([
+                        'attachment_id' => $attachment->id,
+                        'user_id' => auth()->id(),
+                        'action' => $isLocal ? 'upload' : 'drive_migration',
+                        'metadata' => [
+                            'file_id' => $isLocal ? null : $file['id'],
+                            'source' => $isLocal ? 'local_ajax' : 'google_drive',
+                            'context' => 'edit'
+                        ],
+                        'ip_address' => request()->ip()
+                    ]);
+                }
+            }
+        }
 
         return back()->with('success', __('forum.message_updated'));
     }
@@ -218,6 +286,54 @@ class ForumMessageController extends Controller
         $message->delete();
 
         return back()->with('success', __('forum.message_deleted'));
+    }
+
+    /**
+     * Upload an attachment via AJAX.
+     */
+    public function uploadAttachment(Request $request, Team $team)
+    {
+        \Illuminate\Support\Facades\Log::info('Forum Upload Request ALL:', $request->all());
+        
+        $file = $request->file('attachment_file');
+        
+        if (!$file) {
+            \Illuminate\Support\Facades\Log::error('No file found in request with name: attachment_file');
+            return response()->json(['message' => 'No se encontró el archivo en la petición.'], 422);
+        }
+
+        if (!$file->isValid()) {
+            $errorCode = $file->getError();
+            $errorMessage = match ($errorCode) {
+                UPLOAD_ERR_INI_SIZE => 'El archivo es demasiado grande para la configuración del servidor (upload_max_filesize).',
+                UPLOAD_ERR_FORM_SIZE => 'El archivo es demasiado grande para el formulario.',
+                UPLOAD_ERR_PARTIAL => 'La subida se ha interrumpido.',
+                UPLOAD_ERR_NO_FILE => 'No se ha subido ningún archivo.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Falta la carpeta temporal en el servidor.',
+                UPLOAD_ERR_CANT_WRITE => 'Error al escribir el archivo en el disco.',
+                UPLOAD_ERR_EXTENSION => 'Una extensión de PHP detuvo la subida del archivo.',
+                default => 'Error de subida desconocido: ' . $file->getErrorMessage(),
+            };
+            
+            \Illuminate\Support\Facades\Log::error('File Upload Error:', ['code' => $errorCode, 'msg' => $errorMessage]);
+            return response()->json(['message' => 'Error de subida: ' . $errorMessage], 422);
+        }
+
+        \Illuminate\Support\Facades\Log::info('File Received:', [
+            'name' => $file->getClientOriginalName(),
+            'size' => $file->getSize() . ' bytes',
+            'mime' => $file->getMimeType()
+        ]);
+
+        $originalName = $file->getClientOriginalName();
+        $path = $file->store('forum/attachments', 'public');
+
+        return response()->json([
+            'name' => $originalName,
+            'path' => $path,
+            'size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+        ]);
     }
 
     /**

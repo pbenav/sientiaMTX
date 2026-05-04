@@ -310,4 +310,24 @@ class GoogleDriveService
 
         return null;
     }
+
+    /**
+     * Delete a file from Google Drive
+     */
+    public function deleteFile(User $user, string $fileId, ?int $teamId = null): bool
+    {
+        $token = $this->getValidToken($user, $teamId);
+        if (!$token) return false;
+
+        $response = Http::withToken($token)->delete($this->baseUrl . "/files/{$fileId}", [
+            'supportsAllDrives' => 'true'
+        ]);
+
+        if ($response->successful() || $response->status() === 404) {
+            return true;
+        }
+
+        Log::error("Google Drive Delete Error for {$fileId}: " . $response->body());
+        return false;
+    }
 }

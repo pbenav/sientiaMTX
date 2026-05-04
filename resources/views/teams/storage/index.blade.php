@@ -68,7 +68,7 @@
                     </div>
 
                     <!-- Desglose por carpetas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Telegram -->
                         <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 shadow-xl border border-gray-100 dark:border-gray-700 relative group transition-all hover:scale-[1.02]">
                             <div class="flex items-center justify-between mb-6">
@@ -97,19 +97,62 @@
                                 <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500 shadow-inner">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </div>
-                                <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Gestión de Tareas</span>
+                                <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Tareas</span>
                             </div>
-                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Documentación</h4>
-                            <p class="text-sm text-gray-500 mb-6">Adjuntos subidos a tareas y proyectos</p>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Tareas</h4>
+                            <p class="text-sm text-gray-500 mb-6">Adjuntos locales en tareas</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
-                                    <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['attachments']['count'] }}</span>
+                                    <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['tasks']['count'] }}</span>
                                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
                                 </div>
                                 <div class="text-center flex-1">
-                                    <span class="block text-lg font-black text-blue-500">{{ $stats['attachments']['readable_size'] }}</span>
+                                    <span class="block text-lg font-black text-blue-500">{{ $stats['tasks']['readable_size'] }}</span>
                                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Foro -->
+                        <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 shadow-xl border border-gray-100 dark:border-gray-700 relative group transition-all hover:scale-[1.02]">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shadow-inner">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+                                </div>
+                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Foro</span>
+                            </div>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Muro</h4>
+                            <p class="text-sm text-gray-500 mb-6">Adjuntos locales en mensajes</p>
+                            <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
+                                <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
+                                    <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['forum']['count'] }}</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
+                                </div>
+                                <div class="text-center flex-1">
+                                    <span class="block text-lg font-black text-blue-500">{{ $stats['forum']['readable_size'] }}</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Google Drive -->
+                        <div class="md:col-span-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2.5rem] p-6 shadow-sm border border-blue-100 dark:border-blue-900/20 relative group transition-all hover:scale-[1.01] flex items-center justify-between gap-8">
+                            <div class="flex items-center gap-6">
+                                <div class="w-16 h-16 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center text-blue-500 shadow-md">
+                                    <svg class="w-10 h-10" viewBox="0 0 48 48">
+                                        <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                        <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                        <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-2xl font-black text-blue-900 dark:text-blue-100 uppercase tracking-tighter">Google Drive</h4>
+                                    <p class="text-sm text-blue-700/60 dark:text-blue-400/60 font-medium">Archivos vinculados desde la nube (Impacto 0 en cuota local)</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-4xl font-black text-blue-600 dark:text-blue-400 tracking-tighter">{{ $stats['google']['count'] }}</span>
+                                <span class="text-[10px] font-black text-blue-500/50 uppercase tracking-[0.2em]">Documentos Vinculados</span>
                             </div>
                         </div>
                     </div>
@@ -158,8 +201,8 @@
                                         <label class="flex items-center gap-3 p-3 rounded-2xl border border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer group">
                                             <input type="checkbox" name="types[]" value="attachments" class="w-5 h-5 rounded-lg text-rose-500 focus:ring-rose-500 border-gray-300">
                                             <div>
-                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">Adjuntos de Tareas</span>
-                                                <span class="text-[10px] text-gray-400 font-medium italic">Se recomienda discreción</span>
+                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">Documentación (Tareas y Foro)</span>
+                                                <span class="text-[10px] text-gray-400 font-medium italic">Solo archivos locales. No afecta a Drive.</span>
                                             </div>
                                         </label>
                                     </div>

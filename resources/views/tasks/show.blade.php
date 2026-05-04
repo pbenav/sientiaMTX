@@ -1530,7 +1530,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button"
-                                                    onclick="confirmAttachmentDelete({{ $attachment->id }})"
+                                                    onclick="confirmAttachmentDelete({{ $attachment->id }}, '{{ $attachment->storage_provider }}')"
                                                     class="p-1.5 text-gray-500 hover:text-red-600 transition-colors"
                                                     title="{{ __('tasks.delete') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
@@ -2247,20 +2247,60 @@
                 });
             }
 
-            function confirmAttachmentDelete(id) {
-                Swal.fire({
-                    title: "{{ __('tasks.delete_attachment_confirm') }}",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: '{{ __('Yes, delete user') }}'.replace('user', ''), // Reutilizando estilo
-                    cancelButtonText: '{{ __('Cancel') }}'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById(`delete-attachment-${id}`).submit();
-                    }
-                });
+            function confirmAttachmentDelete(id, provider = 'local') {
+                if (provider === 'google') {
+                    Swal.fire({
+                        title: '¿Qué deseas hacer?',
+                        text: "Este archivo está en Google Drive. ¿Quieres eliminarlo de la nube o solo desvincularlo de esta tarea?",
+                        icon: 'question',
+                        showDenyButton: true,
+                        showCancelButton: true,
+                        confirmButtonText: 'Eliminar de Drive y MTX',
+                        denyButtonText: 'Solo desvincular de MTX',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#ef4444',
+                        denyButtonColor: '#6b7280',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            denyButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Delete from both
+                            const form = document.getElementById(`delete-attachment-${id}`);
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'delete_from_drive';
+                            input.value = '1';
+                            form.appendChild(input);
+                            form.submit();
+                        } else if (result.isDenied) {
+                            // Only unlink
+                            document.getElementById(`delete-attachment-${id}`).submit();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: "{{ __('tasks.delete_attachment_confirm') }}",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: '{{ __('Sí, eliminar') }}',
+                        cancelButtonText: '{{ __('Cancelar') }}',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(`delete-attachment-${id}`).submit();
+                        }
+                    });
+                }
             }
 
             async function handleAttachmentUpload(input) {

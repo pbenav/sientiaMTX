@@ -185,7 +185,7 @@
                     $isCurrentUser = $message->user_id === auth()->id();
                 @endphp
 
-                <div class="flex gap-4 {{ $isCurrentUser ? 'flex-row-reverse' : '' }}">
+                <div id="msg-{{ $message->id }}" class="flex gap-4 {{ $isCurrentUser ? 'flex-row-reverse' : '' }} scroll-mt-24">
                     <!-- Avatar -->
                     <div class="flex-shrink-0 mt-1">
                         <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
@@ -217,6 +217,16 @@
                             <!-- Actions Bar -->
                             <div id="actions-{{ $message->id }}" class="flex items-center gap-1 shrink-0">
                                 @if (!$thread->is_locked)
+                                    <!-- Share -->
+                                    <button type="button"
+                                        onclick="shareMessage({{ $message->id }})"
+                                        class="p-1.5 text-gray-400 hover:text-emerald-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
+                                        title="Compartir enlace directo">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                        </svg>
+                                    </button>
+
                                     <!-- Reply -->
                                     <button type="button"
                                         onclick="quoteMessage({{ json_encode($message->user->name) }}, {{ json_encode($message->content) }})"
@@ -379,6 +389,24 @@
                                                         </svg>
                                                     </button>
 
+                                                    @if(auth()->id() === $attachment->user_id || auth()->user()->getRole($team) === 'coordinator')
+                                                        <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" 
+                                                              method="POST" 
+                                                              id="delete-attachment-{{ $attachment->id }}"
+                                                              class="inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="button" 
+                                                                onclick="confirmAttachmentDelete({{ $attachment->id }}, '{{ $attachment->storage_provider }}')"
+                                                                class="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                                                title="Eliminar">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
                                                     <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
                                                        target="_blank"
                                                        class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
@@ -396,11 +424,86 @@
 
                         <!-- Edit Mode (Hidden) -->
                         @if ($isCurrentUser)
-                            <div id="message-edit-{{ $message->id }}" class="hidden w-full pt-2">
-                                <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
+                            <div id="message-edit-{{ $message->id }}" class="hidden w-full pt-2"
+                                 x-data="{ 
+                                    driveFiles: [], 
+                                    uploadingLocal: false,
+                                    addFile(detail) { 
+                                        console.log('addFile edit:', JSON.stringify(detail));
+                                        if (detail.targetId === 'edit-message-{{ $message->id }}') {
+                                            const file = detail.file;
+                                            const fileId = file.id || file.google_id || (file.provider + '_' + file.name);
+                                            if (!this.driveFiles.find(f => f.id === fileId)) {
+                                                this.driveFiles = [...this.driveFiles, {
+                                                    id: fileId,
+                                                    name: file.name,
+                                                    webViewLink: file.webViewLink || file.url,
+                                                    size: file.size || 0,
+                                                    mime_type: file.mimeType || file.mime_type,
+                                                    provider: file.provider || 'google'
+                                                }];
+                                            }
+                                        }
+                                    },
+                                    async uploadLocalFile(e) {
+                                        console.log('uploadLocalFile edit triggered');
+                                        const files = e.target.files;
+                                        if (!files.length) return;
+                                        this.uploadingLocal = true;
+                                        for (let i = 0; i < files.length; i++) {
+                                            console.log('File to upload (edit):', files[i].name, 'Size:', files[i].size, 'bytes');
+                                            const formData = new FormData();
+                                            formData.append('attachment_file', files[i]);
+                                            try {
+                                                const res = await fetch('{{ route('teams.forum.upload_attachment', $team) }}', {
+                                                    method: 'POST',
+                                                    headers: { 
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                        'Accept': 'application/json'
+                                                    },
+                                                    body: formData
+                                                });
+                                                if (!res.ok) {
+                                                    const errorData = await res.json();
+                                                    throw new Error(errorData.message || 'Error de subida');
+                                                }
+                                                const data = await res.json();
+                                                this.driveFiles = [...this.driveFiles, {
+                                                    id: 'local_' + Date.now() + i,
+                                                    name: data.name,
+                                                    path: data.path,
+                                                    size: data.size,
+                                                    mime_type: data.mime_type,
+                                                    provider: 'local'
+                                                }];
+                                            } catch (err) { 
+                                                console.error('Upload failed', err);
+                                                Swal.fire({
+                                                    title: 'Error de subida',
+                                                    text: err.message,
+                                                    icon: 'error',
+                                                    customClass: {
+                                                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                                                        confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                                                    }
+                                                });
+                                            }
+                                        }
+                                        this.uploadingLocal = false;
+                                        e.target.value = '';
+                                    },
+                                    removeFile(id) {
+                                        this.driveFiles = this.driveFiles.filter(f => f.id !== id);
+                                    }
+                                 }"
+                                 @drive-file-selected.window="addFile($event.detail)">
+                                <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST" enctype="multipart/form-data"
+                                      onsubmit="return validateForumForm(this)">
                                     @csrf
                                     @method('PATCH')
-                                    <div class="space-y-3">
+                                    <input type="hidden" name="drive_attachments" :value="JSON.stringify(driveFiles)">
+                                    <div class="space-y-4">
+
                                         <x-markdown-editor 
                                             name="content" 
                                             id="edit-content-{{ $message->id }}"
@@ -409,15 +512,81 @@
                                             :upload-url="route('teams.forum.upload_image', $team)"
                                             :mentions-url="route('teams.mentions', $team)"
                                         />
-                                        <div class="flex justify-end gap-3 mt-2">
-                                            <button type="button" onclick="cancelEdit({{ $message->id }})" 
-                                                class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors uppercase tracking-widest">
-                                                {{ __('Cancelar') }}
-                                            </button>
-                                            <button type="submit" 
-                                                class="px-6 py-2 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 active:scale-95 uppercase tracking-widest">
-                                                {{ __('Guardar Cambios') }}
-                                            </button>
+
+                                        <!-- Unified Attachments Preview (Edit Mode) -->
+                                        <div x-show="driveFiles.length > 0" class="mt-4 p-2 border-2 border-dashed border-violet-200 dark:border-violet-900/30 rounded-2xl">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                <template x-for="file in driveFiles" :key="file.id">
+                                                    <div class="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 animate-fade-in group">
+                                                        <div class="flex items-center gap-2 truncate">
+                                                            <template x-if="file.provider === 'google'">
+                                                                <svg class="w-4 h-4" viewBox="0 0 48 48">
+                                                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                                </svg>
+                                                            </template>
+                                                            <template x-if="file.provider === 'local'">
+                                                                <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                            </template>
+                                                            <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300 truncate" x-text="file.name"></span>
+                                                        </div>
+                                                        <button type="button" @click="removeFile(file.id)" class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <!-- Attachment Controls for Edit (Simplified) -->
+                                        @php
+                                            $hasGoogleToken = auth()->user()->google_token || 
+                                                             auth()->user()->teams()->where('team_id', $team->id)->whereNotNull('team_user.google_token')->exists();
+                                        @endphp
+
+                                        <div class="flex items-center justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                            <div class="flex items-center gap-2">
+                                                <label class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-500 rounded-xl cursor-pointer transition-all group relative">
+                                                    <div class="text-violet-500 group-hover:scale-110 transition-transform">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                    </div>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Local') }}</span>
+                                                        <span class="text-[8px] text-gray-400 font-medium">Máx: {{ ini_get('upload_max_filesize') }}</span>
+                                                    </div>
+                                                    <input type="file" multiple class="hidden" @change="uploadLocalFile($event)">
+                                                    <template x-if="uploadingLocal">
+                                                        <div class="absolute inset-0 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center rounded-xl">
+                                                            <svg class="animate-spin h-3 w-3 text-violet-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                        </div>
+                                                    </template>
+                                                </label>
+
+                                                @if($hasGoogleToken)
+                                                    <button type="button" 
+                                                        @click="$dispatch('open-drive-picker', { id: 'edit-message-{{ $message->id }}', type: 'forum_message', mode: 'collect' })"
+                                                        class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-500 rounded-xl transition-all group">
+                                                        <svg class="w-4 h-4" viewBox="0 0 48 48">
+                                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                            <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                            <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                        </svg>
+                                                        <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Drive') }}</span>
+                                                    </button>
+                                                @endif
+                                            </div>
+
+                                            <div class="flex items-center gap-3">
+                                                <button type="button" onclick="cancelEdit({{ $message->id }})" 
+                                                    class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors uppercase tracking-widest">
+                                                    {{ __('Cancelar') }}
+                                                </button>
+                                                <button type="submit" 
+                                                    class="px-6 py-2 text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 active:scale-95 uppercase tracking-widest">
+                                                    {{ __('Guardar') }}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -436,37 +605,91 @@
 
             <!-- Reply Box -->
             @if (!$thread->is_locked)
-                <div
-                    class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-indigo-600">
-                    </div>
+                <div class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-indigo-600"></div>
                     <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST" enctype="multipart/form-data"
                           x-data="{ 
                             driveFiles: [], 
-                            addFile(file) { 
-                                if (!this.driveFiles.find(f => f.id === file.id)) {
-                                    this.driveFiles.push({
-                                        id: file.id,
-                                        name: file.name,
-                                        webViewLink: file.webViewLink,
-                                        size: file.size || 0,
-                                        mimeType: file.mimeType
-                                    });
+                            uploadingLocal: false,
+                            addFile(detail) {
+                                console.log('addFile detailed:', JSON.stringify(detail));
+                                if (!detail.targetId || detail.targetId === 'reply-box') {
+                                    const file = detail.file;
+                                    const fileId = file.id || file.google_id || (file.provider + '_' + file.name);
+                                    if (!this.driveFiles.find(f => f.id === fileId)) {
+                                        this.driveFiles = [...this.driveFiles, {
+                                            id: fileId,
+                                            name: file.name,
+                                            webViewLink: file.webViewLink || file.url,
+                                            size: file.size || 0,
+                                            mime_type: file.mimeType || file.mime_type,
+                                            provider: file.provider || 'google'
+                                        }];
+                                        console.log('File added to driveFiles. New length:', this.driveFiles.length);
+                                    }
                                 }
+                            },
+                            async uploadLocalFile(e) {
+                                console.log('uploadLocalFile triggered');
+                                const files = e.target.files;
+                                if (!files.length) return;
+                                this.uploadingLocal = true;
+                                for (let i = 0; i < files.length; i++) {
+                                    console.log('File to upload:', files[i].name, 'Size:', files[i].size, 'bytes');
+                                    const formData = new FormData();
+                                    formData.append('attachment_file', files[i]);
+                                    try {
+                                        const res = await fetch('{{ route('teams.forum.upload_attachment', $team) }}', {
+                                            method: 'POST',
+                                            headers: { 
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Accept': 'application/json'
+                                            },
+                                            body: formData
+                                        });
+                                        if (!res.ok) {
+                                            const errorData = await res.json();
+                                            throw new Error(errorData.message || 'Error de subida');
+                                        }
+                                        const data = await res.json();
+                                        console.log('Upload success', data);
+                                        this.driveFiles = [...this.driveFiles, {
+                                            id: 'local_' + Date.now() + i,
+                                            name: data.name,
+                                            path: data.path,
+                                            size: data.size,
+                                            mime_type: data.mime_type,
+                                            provider: 'local'
+                                        }];
+                                    } catch (err) { 
+                                        console.error('Upload failed', err);
+                                        Swal.fire({
+                                            title: 'Error de subida',
+                                            text: err.message,
+                                            icon: 'error',
+                                            customClass: {
+                                                popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                                                confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                                            }
+                                        });
+                                    }
+                                }
+                                this.uploadingLocal = false;
+                                e.target.value = '';
                             },
                             removeFile(id) {
                                 this.driveFiles = this.driveFiles.filter(f => f.id !== id);
                             }
                           }"
-                          @drive-file-selected.window="addFile($event.detail)">
+                          @drive-file-selected.window="addFile($event.detail)"
+                          onsubmit="return validateForumForm(this)">
                         @csrf
                         <input type="hidden" name="drive_attachments" :value="JSON.stringify(driveFiles)">
                         <div class="flex gap-4">
                             <div class="flex-shrink-0 hidden sm:block">
-                                <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" 
-                                    class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
+                                <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
                             </div>
-                            <div class="flex-1 space-y-3 pl-2">
+                            <div class="flex-1">
                                 <x-markdown-editor 
                                     name="content" 
                                     id="reply-content"
@@ -476,83 +699,84 @@
                                     :mentions-url="route('teams.mentions', $team)"
                                 />
 
-                                @if($thread->task_id)
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-                                        <div class="flex items-center gap-3">
-                                            <label class="relative inline-flex items-center cursor-pointer group">
-                                                <input type="checkbox" name="is_private" value="1" class="sr-only peer">
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
-                                                <span class="ml-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 group-hover:text-red-600 transition-colors">
-                                                    {{ __('Respuesta Privada') }}
-                                                </span>
-                                            </label>
-                                            <div class="flex items-center gap-1 text-[10px] text-gray-400 font-medium italic">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836c-.149.598.013 1.224.421 1.633a.75.75 0 001.06-1.06 1.124 1.124 0 01-.316-.925l.71-2.837c.474-1.895-1.48-3.483-3.2-2.62a.75.75 0 00.708 1.322zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
-                                                </svg>
-                                                {{ __('Solo visible para intervinientes de la tarea') }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <!-- File Attachments -->
-                                <div class="flex flex-col gap-3">
-                                    <div class="flex items-center justify-between px-1">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('Adjuntar archivos') }}</label>
-                                        
-                                        @if(auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists())
-                                            <button type="button" @click="$dispatch('open-drive-picker', { mode: 'collect' })"
-                                                class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                                                <svg class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" viewBox="0 0 24 24"></svg>
-                                                {{ __('Google Drive') }}
-                                            </button>
-                                        @endif
-                                    </div>
-
-                                    <!-- Drive Files List -->
-                                    <template x-if="driveFiles.length > 0">
-                                        <div class="grid grid-cols-1 gap-2 mb-2">
-                                            <template x-for="file in driveFiles" :key="file.id">
-                                                <div class="flex items-center justify-between p-2 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30">
-                                                    <div class="flex items-center gap-2 min-w-0">
-                                                        <svg class="w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 48 48">
+                                <!-- Unified Attachments Preview (Directly under editor) -->
+                                <div x-show="driveFiles.length > 0" class="mt-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <template x-for="(file, index) in driveFiles" :key="file.id">
+                                            <div class="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 animate-fade-in group">
+                                                <div class="flex items-center gap-2 truncate">
+                                                    <template x-if="file.provider === 'google'">
+                                                        <svg class="w-4 h-4" viewBox="0 0 48 48">
                                                             <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
                                                             <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
                                                             <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                                                         </svg>
-                                                        <span class="text-[11px] font-bold text-blue-800 dark:text-blue-300 truncate" x-text="file.name"></span>
-                                                    </div>
-                                                    <button type="button" @click="removeFile(file.id)" class="text-blue-400 hover:text-red-500 transition-colors p-1">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                    </button>
+                                                    </template>
+                                                    <template x-if="file.provider === 'local'">
+                                                        <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                    </template>
+                                                    <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300 truncate" x-text="file.name"></span>
                                                 </div>
-                                            </template>
-                                        </div>
-                                    </template>
-
-                                    <input type="file" name="attachments[]" multiple
-                                        class="block w-full text-xs text-gray-500
-                                        file:mr-4 file:py-2 file:px-4
-                                        file:rounded-xl file:border-0
-                                        file:text-[10px] file:font-black file:uppercase file:tracking-widest
-                                        file:bg-violet-50 file:text-violet-700
-                                        hover:file:bg-violet-100
-                                        dark:file:bg-violet-900/30 dark:file:text-violet-400
-                                        bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl cursor-pointer">
-                                    <p class="text-[9px] text-gray-500 ml-1 italic">{{ __('Puedes seleccionar varios archivos locales o vincularlos desde Drive.') }}</p>
+                                                <button type="button" @click="removeFile(file.id)" class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
 
-                                <div class="flex justify-end relative">
-                                    <button type="submit"
-                                        class="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-600/20">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform rotate-90"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                            stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                @if($thread->task_id)
+                                    <div class="flex items-center justify-between gap-4 py-2">
+                                        <label class="relative inline-flex items-center cursor-pointer group">
+                                            <input type="checkbox" name="is_private" value="1" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
+                                            <span class="ml-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 group-hover:text-red-600 transition-colors">
+                                                {{ __('Respuesta Privada') }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                @endif
+
+                                @php
+                                    $hasGoogleToken = auth()->user()->google_token || 
+                                                     auth()->user()->teams()->where('team_id', $team->id)->whereNotNull('team_user.google_token')->exists();
+                                @endphp
+
+                                <div class="flex items-center justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                    <div class="flex items-center gap-2">
+                                        <label class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-500 rounded-xl cursor-pointer transition-all group relative">
+                                            <div class="text-violet-500 group-hover:scale-110 transition-transform">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                            </div>
+                                            <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Local') }}</span>
+                                            <input type="file" multiple class="hidden" @change="uploadLocalFile($event)">
+                                            <template x-if="uploadingLocal">
+                                                <div class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex items-center justify-center rounded-xl">
+                                                    <svg class="animate-spin h-3 w-3 text-violet-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                </div>
+                                            </template>
+                                        </label>
+
+                                        @if($hasGoogleToken)
+                                            <button type="button" 
+                                                @click="$dispatch('open-drive-picker', { id: 'reply-box', type: 'forum_message', mode: 'collect' })"
+                                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-blue-500 rounded-xl transition-all group">
+                                                <svg class="w-4 h-4" viewBox="0 0 48 48">
+                                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                </svg>
+                                                <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Drive') }}</span>
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <button type="submit" 
+                                        class="inline-flex items-center gap-2 px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-black rounded-2xl transition-all shadow-lg shadow-violet-600/20 active:scale-95 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                         </svg>
-                                        Enviar respuesta
+                                        {{ __('Enviar respuesta') }}
                                     </button>
                                 </div>
                             </div>
@@ -682,6 +906,25 @@
                 return false;
             }
 
+            window.validateForumForm = function(form) {
+                const content = form.querySelector('textarea[name="content"]').value.trim();
+                if (!content) {
+                    Swal.fire({
+                        title: '{{ __('Mensaje vacío') }}',
+                        text: '{{ __('El mensaje será desechado si no escribes algo.') }}',
+                        icon: 'warning',
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: '{{ __('Entendido') }}',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    });
+                    return false;
+                }
+                return true;
+            }
+
             window.confirmDeleteMessage = function(form, isFirst) {
                 const text = isFirst ? '{{ __('Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?') }}' : '{{ __('¿Eliminar este mensaje?') }}';
                 Swal.fire({
@@ -707,6 +950,80 @@
                     }
                 });
                 return false;
+            }
+
+            window.confirmAttachmentDelete = function(id, provider = 'local') {
+                if (provider === 'google') {
+                    Swal.fire({
+                        title: '¿Qué deseas hacer?',
+                        text: "Este archivo está en Google Drive. ¿Quieres eliminarlo de la nube o solo desvincularlo de esta tarea?",
+                        icon: 'question',
+                        showDenyButton: true,
+                        showCancelButton: true,
+                        confirmButtonText: 'Eliminar de Drive y MTX',
+                        denyButtonText: 'Solo desvincular de MTX',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#ef4444',
+                        denyButtonColor: '#6b7280',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            denyButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Delete from both
+                            const form = document.getElementById(`delete-attachment-${id}`);
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'delete_from_drive';
+                            input.value = '1';
+                            form.appendChild(input);
+                            form.submit();
+                        } else if (result.isDenied) {
+                            // Only unlink
+                            document.getElementById(`delete-attachment-${id}`).submit();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: "{{ __('¿Eliminar este archivo?') }}",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: '{{ __('Sí, eliminar') }}',
+                        cancelButtonText: '{{ __('Cancelar') }}',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(`delete-attachment-${id}`).submit();
+                        }
+                    });
+                }
+            }
+
+            window.shareMessage = function(id) {
+                const url = window.location.origin + window.location.pathname + '#msg-' + id;
+                navigator.clipboard.writeText(url).then(() => {
+                    Swal.fire({
+                        title: '{{ __("Enlace copiado") }}',
+                        text: '{{ __("El enlace directo a este mensaje ha sido copiado al portapapeles.") }}',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            title: 'text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                            htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        }
+                    });
+                });
             }
         </script>
     @endpush
