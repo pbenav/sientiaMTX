@@ -10,13 +10,30 @@
     x-data="{
         showEmojiPicker: false,
         editingMessageId: null,
+        replyingToId: null,
+        replyingToName: '',
         startWidgetEdit(id, content) {
             this.editingMessageId = id;
+            this.replyingToId = null;
             const textarea = document.getElementById('forum-thread-textarea-{{ $rootTask->id }}');
             if (textarea) {
                 textarea.value = content;
                 textarea.focus();
             }
+        },
+        startReply(id, name) {
+            this.replyingToId = id;
+            this.replyingToName = name;
+            this.editingMessageId = null;
+            const textarea = document.getElementById('forum-thread-textarea-{{ $rootTask->id }}');
+            if (textarea) {
+                textarea.value = '';
+                textarea.focus();
+            }
+        },
+        cancelReply() {
+            this.replyingToId = null;
+            this.replyingToName = '';
         },
         cancelWidgetEdit() {
             this.editingMessageId = null;
@@ -76,49 +93,95 @@
         <div class="space-y-4">
             <div class="max-h-[300px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
                 id="widget-messages-container">
-                @forelse($rootTask->forumThread->messages()->with('user')->get() as $message)
-                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 {{ $loop->last ? 'mb-1' : '' }}">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <div class="flex items-center gap-1.5">
-                                <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
-                                    class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 flex-shrink-0">
-                                <span
-                                    class="text-[10px] font-bold text-gray-700 dark:text-gray-200 line-clamp-1">{{ $message->user->name }}</span>
-                            </div>
-                            <span class="text-[9px] text-gray-400" title="{{ $message->created_at }}">
-                                {{ $message->created_at->diffForHumans() }}
-                            </span>
-                        </div>
-                        <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap markdown-content" id="msg-content-{{ $message->id }}">
-                            @php
-                                $decoded = json_decode($message->content, true);
-                                $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
-                            @endphp
-
-                            @if($isJson)
-                                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 my-1 border border-gray-100 dark:border-gray-700 font-mono text-[10px] overflow-x-auto">
-                                    <pre><code>{{ json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                @forelse($rootTask->forumThread->messages()->whereNull('parent_id')->with(['user', 'replies.user'])->orderBy('created_at', 'asc')->get() as $message)
+                    <div class="group">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 mb-2 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center gap-1.5">
+                                    <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
+                                        class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 flex-shrink-0">
+                                    <span class="text-[10px] font-bold text-gray-700 dark:text-gray-200 line-clamp-1">{{ $message->user->name }}</span>
                                 </div>
-                            @else
-                                {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
-                            @endif
-                        </div>
-                        
-                        @if(!$rootTask->forumThread->is_locked && (auth()->id() === $message->user_id || auth()->user()->getRole($team) === 'coordinator'))
-                            <div class="flex items-center gap-2 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                @if(auth()->id() === $message->user_id)
-                                    <button type="button" @click="startWidgetEdit({{ $message->id }}, {{ json_encode($message->content) }})" 
-                                        class="text-[9px] font-bold text-blue-500 hover:text-blue-600 uppercase tracking-tighter transition-colors">
-                                        {{ __('Editar') }}
-                                    </button>
+                                <span class="text-[9px] text-gray-400" title="{{ $message->created_at }}">
+                                    {{ $message->created_at->diffForHumans() }}
+                                </span>
+                            </div>
+                            <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap markdown-content" id="msg-content-{{ $message->id }}">
+                                @php
+                                    $decoded = json_decode($message->content, true);
+                                    $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
+                                @endphp
+    
+                                @if($isJson)
+                                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 my-1 border border-gray-100 dark:border-gray-700 font-mono text-[10px] overflow-x-auto">
+                                        <pre><code>{{ json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                    </div>
+                                @else
+                                    {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                                 @endif
-                                <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}" method="POST" onsubmit="return confirm('¿Eliminar mensaje?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-[9px] font-bold text-red-400 hover:text-red-500 uppercase tracking-tighter transition-colors">
-                                        {{ __('Eliminar') }}
-                                    </button>
-                                </form>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button type="button" @click="startReply({{ $message->id }}, '{{ $message->user->name }}')" 
+                                    class="text-[9px] font-bold text-violet-500 hover:text-violet-600 uppercase tracking-tighter transition-colors flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                    {{ __('Responder') }}
+                                </button>
+
+                                @if(!$rootTask->forumThread->is_locked && (auth()->id() === $message->user_id || auth()->user()->getRole($team) === 'coordinator'))
+                                    @if(auth()->id() === $message->user_id)
+                                        <button type="button" @click="startWidgetEdit({{ $message->id }}, {{ json_encode($message->content) }})" 
+                                            class="text-[9px] font-bold text-blue-500 hover:text-blue-600 uppercase tracking-tighter transition-colors">
+                                            {{ __('Editar') }}
+                                        </button>
+                                    @endif
+                                    <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}" method="POST" onsubmit="return confirm('¿Eliminar mensaje?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-[9px] font-bold text-red-400 hover:text-red-500 uppercase tracking-tighter transition-colors">
+                                            {{ __('Eliminar') }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Replies -->
+                        @if($message->replies->count() > 0)
+                            <div class="ml-6 space-y-2 border-l-2 border-gray-100 dark:border-gray-800 pl-3 mb-4">
+                                @foreach($message->replies as $reply)
+                                    <div class="bg-white dark:bg-gray-900/50 rounded-xl p-2.5 border border-gray-100 dark:border-gray-800 group/reply relative">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <div class="flex items-center gap-1.5">
+                                                <img src="{{ $reply->user->profile_photo_url }}" alt="{{ $reply->user->name }}" 
+                                                    class="w-4 h-4 rounded-full object-cover border border-white dark:border-gray-800">
+                                                <span class="text-[9px] font-bold text-gray-600 dark:text-gray-300">{{ $reply->user->name }}</span>
+                                            </div>
+                                            <span class="text-[8px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-600 dark:text-gray-400 leading-snug">
+                                            {!! Str::markdown($reply->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                        </div>
+                                        
+                                        @if(!$rootTask->forumThread->is_locked && (auth()->id() === $reply->user_id || auth()->user()->getRole($team) === 'coordinator'))
+                                            <div class="flex items-center gap-2 mt-1.5 opacity-0 group-hover/reply:opacity-100 transition-opacity">
+                                                @if(auth()->id() === $reply->user_id)
+                                                    <button type="button" @click="startWidgetEdit({{ $reply->id }}, {{ json_encode($reply->content) }})" 
+                                                        class="text-[8px] font-bold text-blue-400 hover:text-blue-500 uppercase tracking-tighter">
+                                                        {{ __('Editar') }}
+                                                    </button>
+                                                @endif
+                                                <form action="{{ route('teams.forum.messages.destroy', [$team, $reply]) }}" method="POST" onsubmit="return confirm('¿Eliminar respuesta?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-[8px] font-bold text-red-300 hover:text-red-400 uppercase tracking-tighter">
+                                                        {{ __('Eliminar') }}
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
                             </div>
                         @endif
                     </div>
@@ -136,6 +199,9 @@
                     @csrf
                     <template x-if="editingMessageId">
                         <input type="hidden" name="_method" value="PATCH">
+                    </template>
+                    <template x-if="replyingToId">
+                        <input type="hidden" name="parent_id" :value="replyingToId">
                     </template>
                     <div class="mb-2">
                         <x-markdown-editor 
@@ -173,6 +239,12 @@
                 
                 <template x-if="editingMessageId">
                     <p class="text-[9px] text-amber-600 font-bold mt-1 uppercase tracking-widest animate-pulse">Editando mensaje...</p>
+                </template>
+                <template x-if="replyingToId">
+                    <div class="flex items-center justify-between mt-1 px-3 py-1 bg-violet-50 dark:bg-violet-900/20 rounded-lg">
+                        <p class="text-[9px] text-violet-600 dark:text-violet-400 font-bold uppercase tracking-widest">Respondiendo a <span x-text="replyingToName"></span></p>
+                        <button type="button" @click="cancelReply()" class="text-[9px] font-black text-violet-400 hover:text-violet-600">✕</button>
+                    </div>
                 </template>
                 @error('content')
                     <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>
