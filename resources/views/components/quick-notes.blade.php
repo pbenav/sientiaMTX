@@ -86,7 +86,8 @@
                         
                         <div 
                             x-show="note.is_preview"
-                            class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1"
+                            @click="note.is_preview = false; $nextTick(() => { $refs.textarea.focus(); $refs.textarea.select(); })"
+                            class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1 cursor-text"
                             x-html="renderMarkdown(note.content || '*Escribe algo aquí...*')"
                         ></div>
                     </div>
@@ -318,7 +319,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json();
                 this.notes = data.map(n => {
                     n.attachments = this.processAttachments(n.attachments);
-                    n.is_preview = false;
+                    n.is_preview = true;
                     // Ensure is_hidden is a boolean, even if it comes as 0/1 from DB
                     n.is_hidden = !!n.is_hidden;
                     return n;
@@ -351,7 +352,7 @@ document.addEventListener('alpine:init', () => {
                 });
                 const newNote = await response.json();
                 newNote.attachments = this.processAttachments(newNote.attachments);
-                newNote.is_preview = false;
+                newNote.is_preview = false; // Start new notes in edit mode
                 this.notes.push(newNote);
                 this.focusNote(newNote.id);
             } catch (e) {

@@ -102,7 +102,7 @@ class ForumMessageController extends Controller
         // Touch the thread to push it to the top
         $thread->touch();
 
-        // --- Multi-Stakeholder Notification Logic ---
+        // --- Multi-Stakeholder & Mention Notification Logic ---
         $recipients = collect();
         
         // 1. Thread creator (always notified of new activity)
@@ -112,35 +112,24 @@ class ForumMessageController extends Controller
         
         // 2. Task-related stakeholders
         if ($thread->task) {
-            // Find ALL tasks in this hierarchy (up to the root and down to all descendants)
-            // Since subtasks share the root thread, stakeholders from ANY subtask should know.
-            
-            // Get root task first
             $rootTask = $thread->task;
             while ($rootTask->parent_id && $rootTask->parent) {
                 $rootTask = $rootTask->parent;
             }
             
-            // Recurse function to collect all involved users in the task tree
             $collectStakeholders = function($task) use (&$recipients, &$collectStakeholders) {
-                // Owner
                 if ($task->creator) $recipients->push($task->creator);
-                // Direct Assignee (Individual Instance)
                 if ($task->assignedUser) $recipients->push($task->assignedUser);
-                // Collaborators (Template Task)
                 if ($task->assignedTo) {
                     foreach ($task->assignedTo as $user) {
                         $recipients->push($user);
                     }
                 }
-                
-                // Recurse to children
                 foreach ($task->children as $child) {
                     $collectStakeholders($child);
                 }
             };
             
-            // We start from the root task and go down, as all tasks in this tree use this thread
             $rootTask->load(['creator', 'assignedUser', 'assignedTo', 'children.creator', 'children.assignedUser', 'children.assignedTo']);
             $collectStakeholders($rootTask);
         }
@@ -152,11 +141,16 @@ class ForumMessageController extends Controller
             ->get()
             ->pluck('user');
         $recipients = $recipients->merge($previousCommenters);
+
+        // 4. Mentioned Users (NEW)
+        preg_match_all('/<!--mention:(\d+)-->/', $message->content, $matches);
+        if (!empty($matches[1])) {
+            $mentionedUsers = User::whereIn('id', $matches[1])->get();
+            $recipients = $recipients->merge($mentionedUsers);
+        }
         
         // --- Final Filter and Dispatch ---
-        // If private, only stakeholders receive it. If public, everyone in previous list.
         if ($message->is_private && $thread->task) {
-            // Re-filter recipients: only those who have access to the task
             $task = $thread->task;
             $recipients = $recipients->filter(function($u) use ($task) {
                 return $u->id === $task->created_by_id ||
@@ -166,7 +160,6 @@ class ForumMessageController extends Controller
             });
         }
 
-        // Clean up: Unique users, exclude current sender, filter empty values
         $recipients = $recipients->filter(function($u) {
             return $u && $u->id !== auth()->id() && !empty($u->email);
         })->unique('id');

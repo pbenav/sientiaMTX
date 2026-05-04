@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.removeMember');
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamController::class, 'removeInvitation'])->name('teams.invitations.destroy');
     Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');
+    Route::get('/teams/{team}/mentions', [TeamController::class, 'mentionUsers'])->name('teams.mentions');
 
     // Storage Management
     Route::get('/teams/{team}/storage', [\App\Http\Controllers\StorageController::class, 'index'])->name('teams.storage.index');

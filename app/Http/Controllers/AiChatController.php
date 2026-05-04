@@ -272,20 +272,7 @@ class AiChatController extends Controller
         
         if ($request->target === 'description' || $request->target === 'observations' || $request->target === 'observations_append') {
             $column = ($request->target === 'description') ? 'description' : 'observations';
-            
-            $textToInject = '';
-            if (is_array($payload)) {
-                if (($payload['intent'] ?? '') === 'simple_text') {
-                    $textToInject = $payload['content'] ?? '';
-                } elseif (($payload['intent'] ?? '') === 'full_task') {
-                    $taskData = $payload['task_data'] ?? [];
-                    $textToInject = $taskData[$column] ?? $taskData['description'] ?? $taskData['observations'] ?? '';
-                } else {
-                    $textToInject = $payload[$column] ?? $payload['description'] ?? $payload['observations'] ?? '';
-                }
-            } else {
-                $textToInject = $payload;
-            }
+            $textToInject = $this->getBestTextFromPayload($payload, $column);
             
             $oldContent = $task->{$column} ?: '';
             
@@ -314,18 +301,7 @@ class AiChatController extends Controller
         }
 
         if ($request->target === 'private_note' || $request->target === 'private-notes') {
-            $textToInject = '';
-            if (is_array($payload)) {
-                if (($payload['intent'] ?? '') === 'simple_text') {
-                    $textToInject = $payload['content'] ?? '';
-                } elseif (($payload['intent'] ?? '') === 'full_task') {
-                    $textToInject = $payload['task_data']['observations'] ?? json_encode($payload['task_data']);
-                } else {
-                    $textToInject = $payload['description'] ?? $payload['observations'] ?? json_encode($payload);
-                }
-            } else {
-                $textToInject = $payload;
-            }
+            $textToInject = $this->getBestTextFromPayload($payload, 'observations');
             $note = \App\Models\TaskPrivateNote::create([
                 'task_id' => $task->id,
                 'user_id' => auth()->id(),
@@ -436,19 +412,9 @@ class AiChatController extends Controller
             $content = '';
             
             if (is_array($payload)) {
-                if (($payload['intent'] ?? '') === 'simple_text') {
-                    $content = $payload['content'] ?? '';
-                } elseif (($payload['intent'] ?? '') === 'full_task') {
-                    $taskData = $payload['task_data'] ?? [];
-                    $title = $title ?: ($taskData['title'] ?? null);
-                    $content = $taskData['observations'] ?? $taskData['description'] ?? '';
-                } else {
-                    $title = $title ?: ($payload['title'] ?? null);
-                    $content = $payload['observations'] ?? $payload['description'] ?? json_encode($payload);
-                }
-            } else {
-                $content = $payload;
+                $title = $title ?: ($payload['title'] ?? $payload['task_data']['title'] ?? null);
             }
+            $content = $this->getBestTextFromPayload($payload, 'observations');
 
             if ($request->target === 'quick-note') {
                 $note = $user->quickNotes()->create([
@@ -555,8 +521,51 @@ class AiChatController extends Controller
         ]);
     }
 
+    private function getBestTextFromPayload($payload, $target = 'observations')
+    {
+        if (!is_array($payload)) {
+            return (string) $payload;
+        }
+
+        // Intent explicit handling
+        if (($payload['intent'] ?? '') === 'simple_text') {
+            return $payload['content'] ?? $payload['text'] ?? '';
+        }
+
+        if (($payload['intent'] ?? '') === 'full_task') {
+            $taskData = $payload['task_data'] ?? [];
+            if ($target === 'description') {
+                return $taskData['description'] ?? $taskData['content'] ?? $taskData['text'] ?? '';
+            }
+            return $taskData['observations'] ?? $taskData['description'] ?? $taskData['content'] ?? $taskData['text'] ?? '';
+        }
+
+        // General fallback search
+        $keys = [$target];
+        if ($target === 'observations' || $target === 'observations_append') {
+            $keys[] = 'description';
+        } elseif ($target === 'description') {
+            $keys[] = 'observations';
+        }
+        
+        $keys = array_merge($keys, ['content', 'text', 'message', 'body']);
+
+        foreach ($keys as $key) {
+            if (!empty($payload[$key])) {
+                return (string) $payload[$key];
+            }
+        }
+
+        // Final fallback: JSON representation if nothing else
+        return json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+
     private function extractPayload($content)
     {
+        if (is_array($content)) {
+            return $content;
+        }
+
         $raw = '';
         if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
             $raw = trim($matches[1]);

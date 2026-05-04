@@ -1036,7 +1036,10 @@
                         { regex: /\[(URGENTE|ALTA|MEDIA|BAJA)\]/g, class: 'bg-red-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black shadow-md' },
                         { regex: /\[(PENDIENTE|EN PROCESO|COMPLETADA)\]/g, class: 'bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black shadow-md' }
                     ];
-                    let payloadContent = data.content || '';
+                    let payloadContent = data.content || data.description || (data.task_data ? (data.task_data.description || data.task_data.observations || '') : '');
+                    if (data.title || (data.task_data && data.task_data.title)) {
+                        payloadContent = `**${data.title || data.task_data.title}**\n\n${payloadContent}`;
+                    }
                     highlights.forEach(h => { payloadContent = payloadContent.replace(h.regex, `<span class="${h.class}">$1</span>`); });
 
                     return `
@@ -1052,7 +1055,7 @@
                             <div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-[13px] leading-relaxed font-medium">${marked.parse(payloadContent)}</div>
                             <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-indigo-100/50 dark:border-slate-800">
                                 <span class="text-[9px] font-bold text-indigo-400/80 mr-auto uppercase tracking-tighter italic">Listo para inyectar</span>
-                                <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(data.content || '').replace(/"/g, '&quot;')}, direct: false } }))" 
+                                <button onclick="window.dispatchEvent(new CustomEvent('ai:transfer-direct', { detail: { content: ${JSON.stringify(sanitizedContent).replace(/"/g, '&quot;')}, direct: false } }))" 
                                         class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                     <span>Inyectar</span>

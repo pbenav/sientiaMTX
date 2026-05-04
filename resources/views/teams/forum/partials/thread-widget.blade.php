@@ -138,54 +138,36 @@
                     <template x-if="editingMessageId">
                         <input type="hidden" name="_method" value="PATCH">
                     </template>
-                    <textarea name="content" rows="3" id="forum-thread-textarea-{{ $rootTask->id }}"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border {{ $errors->has('content') ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-violet-500' }} rounded-xl text-xs py-2 pl-3 pr-[4.5rem] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors resize-y"
-                        placeholder="{{ __('forum.write_message') }}..." required></textarea>
-                    
-                    <div class="absolute right-2 bottom-2 flex items-center gap-1">
-                        <!-- Emoji Button -->
-                        <div class="relative">
-                            <button type="button" @click="showEmojiPicker = !showEmojiPicker" @click.outside="showEmojiPicker = false"
-                                class="p-1.5 text-gray-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/40 rounded-lg transition-colors"
-                                title="Añadir emoticono">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </button>
-                            <!-- Simple Emoji Panel -->
-                            <div x-show="showEmojiPicker" x-transition style="display: none;"
-                                class="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-2 z-50 w-48 max-h-48 overflow-y-auto grid grid-cols-5 gap-1 text-base">
-                                @php
-                                    $emojis = ['😊','😂','😉','😍','😘','😜','😎','😭','😡','🥺','👍','👎','👏','🙌','🤝','🔥','✨','❤️','🎉','💯'];
-                                @endphp
-                                @foreach($emojis as $emoji)
-                                    <button type="button" onclick="insertEmoji('{{ $emoji }}', 'forum-thread-textarea-{{ $rootTask->id }}')" 
-                                        class="hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 transition-colors text-center cursor-pointer">
-                                        {{ $emoji }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-
+                    <div class="mb-2">
+                        <x-markdown-editor 
+                            name="content" 
+                            id="forum-thread-textarea-{{ $rootTask->id }}"
+                            rows="4"
+                            placeholder="{{ __('forum.write_message') }}..."
+                            :upload-url="route('teams.forum.upload_image', $team)"
+                            :mentions-url="route('teams.mentions', $team)"
+                            required
+                        />
+                    </div>
+                                      <div class="flex justify-end mt-2">
                         <button type="submit"
                             :class="editingMessageId ? 'bg-amber-500 hover:bg-amber-600' : 'bg-violet-600 hover:bg-violet-700'"
-                            class="p-1.5 text-white rounded-lg transition-colors shadow-sm"
+                            class="px-4 py-2 text-white rounded-xl transition-all shadow-md flex items-center gap-2 text-xs font-bold"
                             title="Enviar mensaje">
-                            <svg x-show="!editingMessageId" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                            <span x-text="editingMessageId ? 'Actualizar' : 'Enviar'"></span>
+                            <svg x-show="!editingMessageId" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                             </svg>
-                            <svg x-show="editingMessageId" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <svg x-show="editingMessageId" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                         </button>
                         
                         <!-- Cancel Button -->
                         <button x-show="editingMessageId" style="display:none;" type="button" @click="cancelWidgetEdit()"
-                            class="p-1.5 bg-gray-200 text-gray-500 hover:bg-gray-300 rounded-lg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            class="ml-2 px-4 py-2 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-xl transition-all text-xs font-bold">
+                            {{ __('Cancelar') }}
                         </button>
                     </div>
                 </form>

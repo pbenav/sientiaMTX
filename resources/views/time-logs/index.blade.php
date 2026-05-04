@@ -742,13 +742,37 @@
         });
     </script>
     <!-- Modal Global Mi Zona -->
-    <div x-data="{ open: false }" @open-zone-modal.window="open = true" x-cloak>
+    <div x-data="{ 
+        open: false,
+        searchQuery: '',
+        isSearching: false,
+        searchResults: [],
+        async searchLocation() {
+            if (!this.searchQuery.trim()) return;
+            this.isSearching = true;
+            this.searchResults = [];
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}&limit=5`);
+                this.searchResults = await response.json();
+            } catch (e) {
+                console.error('Error searching location:', e);
+            } finally {
+                this.isSearching = false;
+            }
+        },
+        selectLocation(res) {
+            this.$refs.latInput.value = res.lat;
+            this.$refs.lngInput.value = res.lon;
+            this.searchResults = [];
+            this.searchQuery = res.display_name;
+        }
+    }" @open-zone-modal.window="open = true" x-cloak>
         <div x-show="open" 
              class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
              style="display: none;">
             
             <div @click.away="open = false" 
-                 class="w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 p-8 transform transition-all overflow-hidden">
+                 class="w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 p-8 transform transition-all overflow-visible">
                 
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase flex items-center gap-2">
@@ -762,6 +786,33 @@
 
                 <form action="{{ route('user.update-zone') }}" method="POST" class="space-y-5">
                     @csrf @method('PATCH')
+                    
+                    <div class="relative">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Buscador GPS / Dirección</label>
+                        <div class="relative">
+                            <input type="text" x-model="searchQuery" @keydown.enter.prevent="searchLocation()" placeholder="Ciudad, calle o código postal..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none">
+                            <button type="button" @click="searchLocation()" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-xl transition-all">
+                                <svg x-show="!isSearching" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <svg x-show="isSearching" style="display:none;" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Search Results Dropdown -->
+                        <div x-show="searchResults.length > 0" class="absolute z-[10001] w-full mt-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto">
+                            <template x-for="res in searchResults" :key="res.place_id">
+                                <button type="button" @click="selectLocation(res)" class="w-full text-left px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-0">
+                                    <p class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="res.display_name"></p>
+                                    <p class="text-[10px] text-gray-400 mt-0.5" x-text="`${res.lat}, ${res.lon}`"></p>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Nombre de tu territorio</label>
                         <input type="text" name="working_area_name" value="{{ auth()->user()->working_area_name }}" placeholder="Ej: Zafarraya Central" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
@@ -770,11 +821,11 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Latitud</label>
-                            <input type="number" name="location_lat" step="any" value="{{ auth()->user()->location_lat }}" placeholder="37.0..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
+                            <input type="number" name="location_lat" x-ref="latInput" step="any" value="{{ auth()->user()->location_lat }}" placeholder="37.0..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Longitud</label>
-                            <input type="number" name="location_lng" step="any" value="{{ auth()->user()->location_lng }}" placeholder="-4.1..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
+                            <input type="number" name="location_lng" x-ref="lngInput" step="any" value="{{ auth()->user()->location_lng }}" placeholder="-4.1..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
                         </div>
                     </div>
 

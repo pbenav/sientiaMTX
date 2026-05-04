@@ -246,6 +246,13 @@ class ForumController extends Controller
             ->pluck('user');
         $recipients = $recipients->merge($previousCommenters);
 
+        // 4. Mentioned Users (NEW)
+        preg_match_all('/<!--mention:(\d+)-->/', $message->content, $matches);
+        if (!empty($matches[1])) {
+            $mentionedUsers = \App\Models\User::whereIn('id', $matches[1])->get();
+            $recipients = $recipients->merge($mentionedUsers);
+        }
+
         // Filter: Unique users, exclude current sender, and must have an email
         $recipients = $recipients->filter(function($u) {
             return $u && $u->id !== auth()->id() && !empty($u->email);

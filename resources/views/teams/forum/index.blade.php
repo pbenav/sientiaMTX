@@ -339,6 +339,7 @@
                         placeholder="Escribe aquí el contexto de la conversación... (Soporta Markdown)"
                         required
                         :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
                     />
                     <x-input-error class="mt-2" :messages="$errors->get('content')" />
                 </div>

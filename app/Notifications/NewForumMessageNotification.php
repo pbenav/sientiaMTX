@@ -34,8 +34,11 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
      */
     public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
+        $isMentioned = str_contains($this->message->content, "<!--mention:{$notifiable->id}-->");
+        $title = $isMentioned ? 'Te han mencionado - ' . $this->thread->title : 'Nuevo comentario - ' . $this->thread->title;
+
         return (new WebPushMessage)
-            ->title('Nuevo comentario - ' . $this->thread->title)
+            ->title($title)
             ->icon('/images/logo-icon.png')
             ->body($this->message->user->name . ': ' . Str::limit($this->message->content, 50))
             ->action('Ver comentario', 'view_forum_message')
@@ -52,11 +55,16 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
         
         $authorName = $this->message->user->name;
         $taskName = $this->thread->task ? $this->thread->task->title : null;
+        $isMentioned = str_contains($this->message->content, "<!--mention:{$notifiable->id}-->");
         
+        $subject = $isMentioned ? "Te han mencionado en {$this->thread->title}" : "Nuevo comentario - {$this->thread->title}";
+
         $mail = (new MailMessage)
-            ->subject('Nuevo comentario - ' . $this->thread->title)
+            ->subject($subject)
             ->greeting('Hola ' . $notifiable->name . ' 👋,')
-            ->line("**{$authorName}** ha dejado un nuevo comentario en el hilo de discusión **{$this->thread->title}**.");
+            ->line($isMentioned 
+                ? "**{$authorName}** te ha mencionado en el hilo de discusión **{$this->thread->title}**."
+                : "**{$authorName}** ha dejado un nuevo comentario en el hilo de discusión **{$this->thread->title}**.");
             
         if ($taskName) {
             $mail->line("Este hilo pertenece a la tarea: **{$taskName}**");
@@ -77,9 +85,12 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
         $url = route('teams.forum.show', [$team->id, $this->thread->id]);
         $authorName = $this->message->user->name;
         $taskName = $this->thread->task ? "*Tarea*: {$this->thread->task->title}\n" : "";
+        $isMentioned = str_contains($this->message->content, "<!--mention:{$notifiable->id}-->");
+
+        $title = $isMentioned ? "📣 *Te han mencionado en el foro*" : "💬 *Nuevo comentario en el foro*";
 
         return [
-            'text' => "💬 *Nuevo comentario en el foro*\n\n" .
+            'text' => $title . "\n\n" .
                       "*Hilo*: {$this->thread->title}\n" .
                       $taskName .
                       "*Autor*: {$authorName}\n\n" .
@@ -95,6 +106,8 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $isMentioned = str_contains($this->message->content, "<!--mention:{$notifiable->id}-->");
+
         return [
             'thread_id' => $this->thread->id,
             'message_id' => $this->message->id,
@@ -103,7 +116,8 @@ class NewForumMessageNotification extends Notification implements ShouldQueue
             'team_id' => $this->thread->team_id,
             'team_name' => $this->thread->team?->name,
             'type' => 'forum',
-            'message' => Str::limit($this->message->content, 50)
+            'is_mention' => $isMentioned,
+            'message' => $isMentioned ? 'Te ha mencionado: ' . Str::limit($this->message->content, 50) : Str::limit($this->message->content, 50)
         ];
     }
 }

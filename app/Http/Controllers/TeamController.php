@@ -538,4 +538,25 @@ class TeamController extends Controller
 
         return view('teams.partials.active-network-list', compact('members'));
     }
+
+    /**
+     * Get team members for mentions in JSON format.
+     */
+    public function mentionUsers(Team $team)
+    {
+        $this->authorize('view', $team);
+
+        $members = $team->members()
+            ->select('users.id', 'users.name')
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->profile_photo_url,
+                ];
+            });
+
+        return response()->json($members);
+    }
 }

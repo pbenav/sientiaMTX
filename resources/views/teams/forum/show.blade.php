@@ -407,6 +407,7 @@
                                             :value="$message->content"
                                             rows="12"
                                             :upload-url="route('teams.forum.upload_image', $team)"
+                                            :mentions-url="route('teams.mentions', $team)"
                                         />
                                         <div class="flex justify-end gap-3 mt-2">
                                             <button type="button" onclick="cancelEdit({{ $message->id }})" 
@@ -472,6 +473,7 @@
                                     rows="10"
                                     placeholder="Escribe tu respuesta aquí..."
                                     :upload-url="route('teams.forum.upload_image', $team)"
+                                    :mentions-url="route('teams.mentions', $team)"
                                 />
 
                                 @if($thread->task_id)
