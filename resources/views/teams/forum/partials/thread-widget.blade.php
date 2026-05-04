@@ -17,7 +17,6 @@
                 textarea.value = content;
                 textarea.focus();
             }
-            }
         },
         cancelWidgetEdit() {
             this.editingMessageId = null;
