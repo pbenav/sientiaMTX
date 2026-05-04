@@ -276,13 +276,8 @@ class AiChatController extends Controller
             
             $oldContent = $task->{$column} ?: '';
             
-            // Si es descripción, ¿sobrescribimos o añadimos? 
-            // El usuario dijo "sobrescribir" en el Swal del componente.
-            if ($request->target === 'description') {
-                $newContent = trim($textToInject);
-            } else {
-                $newContent = trim($oldContent . "\n\n" . $textToInject);
-            }
+            // Siempre añadimos al final (append) para no perder trabajo previo
+            $newContent = trim($oldContent . "\n\n" . $textToInject);
 
             $task->update([$column => $newContent]);
             
@@ -301,12 +296,12 @@ class AiChatController extends Controller
         }
 
         if ($request->target === 'private_note' || $request->target === 'private-notes') {
-            $textToInject = $this->getBestTextFromPayload($payload, 'observations');
-            $note = \App\Models\TaskPrivateNote::create([
-                'task_id' => $task->id,
-                'user_id' => auth()->id(),
-                'content' => $textToInject
-            ]);
+            $textToInject = $this->getBestTextFromPayload($payload, 'private_note');
+            
+            $note = \App\Models\TaskPrivateNote::updateOrCreate(
+                ['task_id' => $task->id, 'user_id' => auth()->id()],
+                ['content' => $textToInject]
+            );
             
             return response()->json(['success' => true, 'message' => 'Nota privada guardada y protegida correctamente.']);
         }
