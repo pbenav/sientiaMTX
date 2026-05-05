@@ -1,144 +1,121 @@
-# SientiaMTX - User Manual (v0.9.2Beta)
+# SientiaMTX - User Manual (v1.0.0-GA)
 
-SientiaMTX is an **intelligent productivity manager** built on the Eisenhower Matrix. It helps you distinguish between what's urgent and what's truly important, so you can always focus on what matters most.
+SientiaMTX is not just a task list. It is an **intelligent productivity manager** based on the Eisenhower Matrix that helps you differentiate the urgent from the important so you never lose focus on what really matters.
 
 ---
 
-## 🔐 1. Access & Profile
+## 🔐 1. Access and Profile
 
-### Logging In
-Sign in with your email and password. If your administrator has enabled Google, you can also use the **"Connect Google"** button to link your account and sync calendars.
+### Login
+Access with your email and password. If your administrator has configured Google, you can also use the **"Connect Google"** button to link your account and sync calendars.
 
 ### Profile Settings
-Open the user menu (top-right corner) → **Profile**:
-- **Name & Email**: Your identification within the team.
-- **Password**: Change it regularly for security.
-- **Timezone**: Critical for correct task due dates and notification timing.
-- **Language**: Switch between Spanish and English — the documentation language updates automatically.
+In the user menu (top right corner) → **Profile**:
+
+- **Name and email**: Identification data within the team.
+- **Password**: Change it periodically for security.
+- **Time zone**: Important for task deadlines to be correct.
+- **Language**: Switch between Spanish and English; manuals will also change automatically.
 
 ---
 
 ## 📋 2. The Eisenhower Matrix
 
-All tasks are automatically classified into four quadrants:
+All your tasks are automatically classified into four quadrants:
 
 | Quadrant | Description | Recommended Action |
 |---|---|---|
-| **Q1 — Do Now** | Urgent & Important | Top immediate priority |
-| **Q2 — Plan** | Not Urgent but Important | Schedule dedicated time |
+| **Q1 — Do Now** | Urgent and Important | Immediate top priority |
+| **Q2 — Schedule** | Not Urgent but Important | Schedule a specific time |
 | **Q3 — Delegate** | Urgent but Not Important | Assign to another member |
-| **Q4 — Eliminate** | Neither Urgent nor Important | Remove or postpone indefinitely |
+| **Q4 — Eliminate** | Neither Urgent nor Important | Discard or postpone indefinitely |
 
 > [!TIP]
-> High-performing teams live mostly in **Q2**. A Q1-heavy board signals a need for better proactive planning.
+> The best teams work mainly in **Q2**. If your board is full of Q1, it's a sign that more strategic planning is needed.
 
 ---
 
 ## 📑 3. Creating and Managing Tasks
 
-### Creating a Task
+### Create a task
 
-1. Inside a team, click **"+ New Task"**.
+1. Inside a team, click the **"+ New Task"** button.
 2. Fill in: title, description, priority, and urgency.
-3. Choose **Visibility**:
-   - **Public**: Visible to the entire team.
-   - **Private**: Visible only to you (the creator). You'll still receive alerts if the task is urgent.
-4. Set a **due date** to activate the reminder system.
-5. Save with **"Create Task"**.
+3. Choose **visibility**:
+   - **Public**: The entire team will see it.
+   - **Private**: Only visible to you (the creator).
+4. Assign a **deadline** to activate the reminder system.
 
 ### Task Statuses
 - **Pending**: Not yet started.
-- **In Progress**: Actively being worked on.
-- **Completed**: Done. Can be hidden from the main board.
-- **Blocked**: A collaborator has flagged an impediment. The coordinator is notified automatically.
+- **In Progress**: Someone is working on it.
+- **Completed**: Finished.
+- **Blocked**: A technical or other impediment has been marked.
 
 ---
 
-## 🤝 4. Collaborative Tasks
+## 🏛️ 4. Nested Discussion Forums
 
-When a coordinator assigns a public task to multiple members, the system creates an **individual instance** for each person. This enables:
-- Independent progress tracking per person.
-- Separate notifications per assignee.
-- A global overview for the coordinator on the team dashboard.
+The Team Forum allows for structured and deep communication:
+
+- **Threads and Topics**: Discussions are organized by threads to maintain order.
+- **Citations and References**: Reply to specific messages by citing the original text to maintain the conversation flow.
+- **Real-Time Preview**: Check how your message (Markdown and images) will look before publishing.
+- **Mentions**: Tag other members (@username) to send them a direct notification.
+- **Attachments**: Upload images and documents directly to the conversation.
 
 ---
 
-## 📊 5. Available Views
+## 📊 5. Views and Visualization
 
-### Eisenhower Matrix Board
-The main view showing four quadrants. Ideal for daily priority review.
-
-### Task List
-Tabular view with filters by status, urgency, and assignee.
-
-### Gantt Chart
-Timeline visualization showing task start/end dates and dependencies between tasks.
+### Eisenhower Board (Matrix)
+Main view for daily priority review.
 
 ### Kanban Board
-Customizable columns (default: Pending, In Progress, Completed). Supports **full drag-and-drop**.
+Visual management using columns with full **Drag & Drop** support.
+
+### Gantt Chart (Roadmap)
+Optimized temporal visualization. Task labels are visible even on short bars, allowing for a fluid reading of the schedule without needing to interact with each element.
+
+### Active Network
+A real-time widget that shows which team members are connected, their working location, and if they have any active tasks at the moment (green/red indicator).
 
 ---
 
-## 🔔 6. Telegram Notifications
+## 🤖 6. Ax.ia: AI Assistant
 
-To receive alerts on your phone:
+Ax.ia (powered by Gemini) is integrated throughout the entire workflow:
 
-1. Find your company's bot in Telegram and send `/start`.
-2. Copy the **Chat ID** the bot replies with.
-3. In your **Profile → Notification Settings**, paste the ID and enable **"Receive alerts via Telegram"**.
-4. Set how many hours in advance you want reminders (default: 24h).
-
-You'll automatically receive:
-- A **morning summary** with your day's tasks and a motivational AI quote.
-- An **urgent alert** when a Q1 task is approaching its deadline.
+- **Task Analysis**: Ask Ax.ia to summarize a complex task or create subtasks from a description.
+- **Voice Transcription**: Record a voice note in your "Quick Notes" and let Ax.ia transcribe it to text automatically.
+- **Content Generation**: Create professional drafts or forum replies in seconds.
 
 ---
 
-## 🌓 7. Visual Themes
+## 📝 7. Quick Notes (Post-its)
 
-From your profile, choose between three visual modes:
-- ☀️ **Light**: Clean and professional.
-- 🌙 **Dark**: Easy on the eyes for low-light environments.
-- ✨ **System**: Automatically matches your device preference.
-
----
-
-## ⌨️ 8. Shortcuts & Productivity Tips
-
-- **Drag & Drop** in Kanban: Move tasks between columns with your mouse.
-- **Quick Filters**: Use the top bar in the task list to search by title, tag, or assignee.
-- **Lock Icon** 🔒: Indicates a private task in the team view.
-- **Q1 Indicator** 🔴: Critical tasks are shown with a red border across all views.
-- **Google Sync**: Connect your Google Calendar to see tasks as events and import existing events as tasks.
-- **Roadmap Scroll**: For tasks with many members, the list is scrollable to maintain usability.
+Capture ideas on the fly without leaving where you are:
+- **Floating Notes**: Drag them around the screen and minimize them as needed.
+- **Voice Notes**: Record short audios and transcribe them with Ax.ia.
+- **Sync**: Your notes follow you on all your devices.
 
 ---
 
-## 🛠️ 9. Service Monitoring (Sentinel)
+## 🔔 8. Notifications and Telegram
 
-## 📡 Sentinel: Collaborative Monitoring
-SientiaMTX includes an early warning system for critical services (Telegram, Google, Official Portals, etc.).
-- **Report Outage**: Any member can alert about a service interruption.
-- **Validation**: The community confirms or denies the outage, avoiding false alarms.
-- **Sentinel Bonus**: Reporting validated outages grants Energy/XP bonuses for taking care of the team.
+Link your Telegram account to receive:
+- **Morning Summary**: Personalized daily briefing.
+- **Q1 Alarms**: Reminders for urgent tasks near expiration.
+- **Forum Mentions**: Notifications for direct replies and new task assignments.
 
-## 😊 Icon Picker
-In all text fields and descriptions, you now have a quick UTF-8 icon picker to visually categorize your tasks and projects.
+---
 
-### Service Statuses
-- 🟢 **Active**: The service is functioning normally.
-- 🟡 **Unstable**: Someone has reported an issue, but it hasn't been confirmed by other members yet.
-- 🔴 **Down**: The system has verified the outage after multiple matching reports.
+## 📡 9. Sentinel: Monitoring
 
-### How to Collaborate
-1. If you notice a tool is not working, click **"Report Outage"** on its corresponding card.
-2. If a service is down but you see it's working again, click **"Confirm Recovery"**.
-3. **Sentinel Bonus**: Being the first to report an alert that is later verified by the team awards XP and Energy points (see Gamification section).
+SientiaMTX includes an early warning system for critical services:
+- **Report Outage**: Inform the team if a service (e.g., Google Drive) is not working.
+- **Collective Validation**: Other members confirm the incident to generate a global alert.
+- **Sentinel Bonus**: Receive XP and Vital Energy points for helping monitor the team's ecosystem.
 
-### Task Dependencies
-When creating or editing a task, you can select a service it depends on:
-- If the associated service goes down, the task will automatically show a **technical blocker alert** on the Dashboard.
-- This allows the team to quickly identify that a delay is due to an external technical cause.
-
-> [!IMPORTANT]
-> Only team coordinators can add or remove new services from the monitoring list.
+---
+**Sientia MTX: Elevating productivity through AI and an exceptional user experience.**

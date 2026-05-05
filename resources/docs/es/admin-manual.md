@@ -1,144 +1,95 @@
-# 🛡️ Manual del Administrador — SientiaMTX
+# 🛡️ Manual del Administrador — SientiaMTX (v1.0.0-GA)
 
 Como **Coordinador** o **Administrador** de SientiaMTX, tienes herramientas avanzadas para gestionar equipos, supervisar el progreso global y mantener la infraestructura del sistema en perfecto estado.
 
 ---
 
-## 👥 1. Gestión de Usuarios
+## 👥 1. Gestión de Usuarios y Seguridad
 
-### Crear Nuevos Usuarios
-Desde **Configuración → Usuarios → Crear Usuario**:
-1. Introduce el nombre, correo y contraseña inicial.
-2. Activa la opción **"Es Administrador"** si debe tener acceso a la configuración global.
-3. El usuario recibirá un correo de bienvenida (si el servidor de correo está configurado).
+### Roles y Jerarquía
+SientiaMTX utiliza una jerarquía de roles estricta para proteger la integridad de los datos:
+- **Administrador Global**: Acceso a toda la configuración del sistema y gestión de usuarios.
+- **Propietario de Equipo**: Creador del equipo. Su rol está protegido y no puede ser degradado por coordinadores.
+- **Coordinador**: Puede gestionar miembros y tareas dentro de su equipo, pero **no puede** editar perfiles globales de otros usuarios (email/nombre).
+- **Miembro**: Colabora en las tareas del equipo.
 
-### Roles del Sistema
-| Rol | Permisos |
-|---|---|
-| **Administrador** | Acceso total: configuración, usuarios, notificaciones, Telegram |
-| **Coordinador** | Gestiona su equipo: crea, edita y reasigna tareas de otros |
-| **Miembro** | Crea sus propias tareas y colabora en las públicas del equipo |
-
-### Desactivar o Eliminar Usuarios
-En la lista de usuarios, usa los botones de acción de cada fila. Eliminar un usuario no borra sus tareas; las reasigna automáticamente al administrador del equipo.
+### Auditoría de Seguridad Reciente
+Se han implementado estándares de seguridad de nivel empresarial:
+- **Protección de Perfiles**: Los coordinadores ya no pueden modificar el email de los miembros para evitar riesgos de suplantación.
+- **Integridad de Archivos**: Las subidas de archivos en Foros y Tareas están validadas por membresía de equipo y cuotas de disco.
 
 ---
 
 ## 🏢 2. Gestión de Equipos
 
-Cada equipo en SientiaMTX es un **espacio de trabajo independiente** con sus propias tareas, tableros y miembros.
+### Cuotas de Disco
+Cada equipo tiene una cuota de disco configurable por el administrador:
+1. Ve a **Configuración → Equipos**.
+2. Ajusta el límite de GB permitidos para ese equipo.
+3. El sistema bloqueará nuevas subidas si se alcanza el límite.
 
-### Crear un Equipo
-Desde el dashboard principal → **"Crear Nuevo Equipo"**:
-- Nombre, descripción e imagen de portada.
-- El creador del equipo se convierte automáticamente en su **Coordinador**.
-
-### Añadir Miembros
-Dentro del equipo → **Miembros → Invitar**:
-- Busca al usuario por su email (debe estar registrado en el sistema).
-- Asigna su rol: Miembro o Coordinador.
-
-### Grupos dentro del Equipo
-Crea grupos (departamentos, áreas) para poder asignar tareas masivas:
-1. Dentro del equipo → **Miembros → Crear Grupo**.
-2. Cuando crees una tarea, en el selector de "Asignados" podrás elegir un grupo completo.
+### Grupos de Trabajo
+Crea grupos para asignaciones masivas. Al asignar una tarea a un grupo, SientiaMTX crea automáticamente una instancia para cada miembro del grupo.
 
 ---
 
-## 📊 3. Supervisión de Tareas
+## 📊 3. Supervisión y Dashboard
 
-Como coordinador, tienes visibilidad completa sobre:
+### Red Activa (Active Network)
+Como coordinador, puedes ver en tiempo real quién está trabajando, su ubicación geográfica (si está habilitada) y su carga de trabajo actual. Esto facilita la delegación inteligente basada en la disponibilidad real.
 
-- **Dashboard del Equipo**: Gráfica de progreso global, tareas por estado y rendimiento por miembro.
-- **Reasignar Tareas**: Si un miembro abandona el equipo o está de baja, puedes reasignar sus tareas desde la vista de lista.
-- **Enviar "Empujón" (Nudge)**: Si una tarea está bloqueada o llevas tiempo sin actualizaciones, el botón 🔔 envía un recordatorio al responsable.
-
-### Ver Tareas Privadas
-> [!WARNING]
-> Por diseño de seguridad, **los coordinadores NO pueden ver las tareas privadas** de otros miembros. Solo el propietario de la tarea puede verla. Esta restricción es intencional y garantiza la privacidad del trabajador.
+### Empujones (Nudges)
+Si detectas una tarea Q1 (Crítica) estancada, usa el botón 🔔 para enviar un recordatorio inmediato por Telegram/Email al responsable.
 
 ---
 
-## ⚙️ 4. Configuración Global (Solo Administradores)
+## ☁️ 4. Gestión de Almacenamiento (Purga)
 
-### Correo Electrónico (SMTP)
-En **Configuración → Correo**:
-- Configura el servidor SMTP (host, puerto, credenciales).
-- Usa el botón **"Enviar Email de Prueba"** para verificar la configuración antes de guardar.
-
-### Notificaciones y Telegram
-En la misma sección de Configuración:
-1. Introduce el **Token del Bot** (obtenido de @BotFather).
-2. Introduce el **Nombre del Bot** (sin el @).
-3. Guarda y pulsa **"Registrar Webhook"**.
-4. Usa **"Info del Webhook"** para verificar que Telegram confirma la conexión.
-
-> [!IMPORTANT]
-> El webhook SOLO funciona con HTTPS. Asegúrate de que tu dominio tiene un certificado SSL válido.
+Para mantener el servidor optimizado, puedes purgar archivos antiguos:
+1. Ve a **Configuración → Almacenamiento**.
+2. Elige el periodo de tiempo (ej. más de 30 días).
+3. Selecciona qué purgar: Archivos de Telegram, Adjuntos obsoletos o Logs de IA.
+4. El sistema liberará espacio físico en el disco inmediatamente.
 
 ---
 
-## ☁️ 5. Gestión del Almacenamiento
+## 🤖 5. Configuración de IA (Ax.ia)
 
-Cada usuario tiene una **cuota de espacio en disco** para archivos adjuntos en tareas.
-
-- Visualiza el consumo de cada usuario en **Configuración → Usuarios** (barra de progreso de disco).
-- Los archivos se almacenan en `storage/app/task-attachments/` y están protegidos de acceso directo desde el navegador.
-- Puedes eliminar archivos huérfanos ejecutando:
-
-```bash
-php artisan media:clean-orphans
-```
+SientiaMTX utiliza modelos **Gemini** (Google AI). Como administrador:
+- Configura la **API Key** global en el archivo `.env` o permite que cada equipo use su propia clave desde su panel de ajustes.
+- Recomendamos el modelo `gemini-1.5-flash` por su equilibrio entre velocidad y coste.
 
 ---
 
 ## 🔧 6. Mantenimiento del Servidor
 
-### Verificar estado de las colas
+### Comandos Esenciales (CLI)
 
+**Limpiar archivos huérfanos:**
 ```bash
-supervisorctl status
-php artisan queue:monitor default
+php artisan media:clean-orphans
 ```
 
-### Reiniciar trabajadores tras un despliegue
-
+**Sincronizar cuotas de disco:**
 ```bash
-php artisan queue:restart
-sudo supervisorctl restart sientiamtx-worker:*
+php artisan disk:sync-all
 ```
 
-### Limpiar caché tras actualización
-
+**Actualización del Sistema:**
 ```bash
 git pull origin main
-composer install --no-dev --optimize-autoloader
+composer install --optimize-autoloader --no-dev
 php artisan migrate --force
 php artisan optimize:clear
 npm run build
-php artisan queue:restart
-```
-
-### Monitoreo del Log de Errores
-
-```bash
-tail -f storage/logs/laravel.log
 ```
 
 ---
 
-## 🛡️ 7. Seguridad y Buenas Prácticas
+## 🛡️ 7. Buenas Prácticas
+- **HTTPS Obligatorio**: Necesario para la integración con Telegram y Google.
+- **Backups**: Realiza un dump semanal de la base de datos y de la carpeta `storage/app/public`.
+- **API Keys**: Nunca compartas el `.env` ni las claves de Gemini.
 
-- **Claves API**: El token de Telegram se guarda en `.env`, nunca lo incluyas en el código fuente ni en el control de versiones.
-- **Actualizaciones**: Ejecuta `git pull` regularmente para recibir parches de seguridad.
-- **Backups**: Programa un volcado diario de la base de datos:
-
-```bash
-mysqldump -u usuario -p sientia_mtx > backup_$(date +%Y%m%d).sql
-```
-
-- **HTTPS**: Todos los webhooks de Telegram requieren HTTPS. Usa Let's Encrypt si no tienes certificado:
-
-```bash
-certbot --nginx -d tu-dominio.com
-```
+---
+**Sientia MTX: Seguridad y control total para equipos de alto rendimiento.**

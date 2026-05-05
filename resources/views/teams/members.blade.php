@@ -130,6 +130,7 @@
 
                                 <div class="flex items-center gap-1 w-[48px] justify-center">
                                     @if ($member->id !== $team->created_by_id)
+                                        @if(auth()->user()->is_admin)
                                         <button type="button" x-data=""
                                             x-on:click="$dispatch('open-modal', 'edit-member-{{ $member->id }}')"
                                             class="text-gray-400 hover:text-violet-500 transition-colors p-1">
@@ -139,6 +140,7 @@
                                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
+                                        @endif
 
                                         <form id="remove-member-{{ $member->id }}" method="POST"
                                             action="{{ route('teams.removeMember', [$team, $member]) }}"

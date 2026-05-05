@@ -1,74 +1,54 @@
 # 🤖 Configuración de Telegram y Notificaciones
 
-SientiaMTX integra un potente sistema de notificaciones que utiliza un Bot de Telegram para enviarte resúmenes diarios, alertas de tareas urgentes y avisos de hitos importantes.
+SientiaMTX utiliza un Bot de Telegram para enviarte resúmenes diarios, alertas de tareas urgentes y avisos de hilos en los foros. Esta guía te explica cómo activarlo en pocos pasos.
 
 ---
 
-## 1. Crear tu Bot en Telegram
+## 📲 1. Activación para Miembros (Recomendado)
 
-Para empezar, necesitas un **Token de API** oficial proporcionado por Telegram:
+Si tu equipo ya tiene un bot configurado, solo necesitas vincular tu cuenta personal para empezar a recibir avisos. **Esto es lo único que necesitan hacer la mayoría de los usuarios.**
 
-1. Busca al usuario `@BotFather` en tu aplicación de Telegram.
-2. Envía el comando `/newbot`.
-3. Sigue las instrucciones para darle un **nombre** (ej: *SientiaMTX Notificador*) y un **nombre de usuario** (ej: *SientiaMTX_Bot*).
-4. BotFather te entregará un **Token** (ej: `123456789:ABCDefGhIJKlmNoPqRsTuVwXyZ`). **¡Guárdalo a buen recaudo!**
+### Pasos para vincular tu cuenta:
+1. **Busca el bot de tu equipo** en Telegram (pregunta a tu coordinador por el nombre del bot).
+2. Haz clic en **INICIAR** (START) o envía el comando `/start`.
+3. El bot te responderá con tu **ID de Chat** (un número largo, ej: `123456789`).
+4. En SientiaMTX, ve a tu **Perfil → Configuración de Notificaciones**.
+5. Pega ese número en el campo **"Telegram Chat ID"**.
+6. Activa la opción **"Recibir avisos por Telegram"** y guarda los cambios.
 
----
-
-## 2. Vincular el Bot con SientiaMTX
-
-Accede a tu panel de administración en SientiaMTX y sigue estos pasos:
-
-1. Ve a **Configuración > Notificaciones y Telegram**.
-2. Introduce el **Nombre del Bot** (sin el @) y el **Token** que te dio BotFather.
-3. Haz clic en **Guardar Configuración**.
-4. Verás una sección llamada **Gestión del Webhook**. Haz clic en el botón **"Registrar Webhook en Telegram"**.
-   - *Nota: Asegúrate de que tu sitio tiene HTTPS activo, ya que Telegram lo requiere para enviar datos.*
+> [!TIP]
+> Puedes configurar cuántas horas de antelación prefieres para tus recordatorios de tareas (por defecto: 24h).
 
 ---
 
-## 3. Activación para Usuarios (Paso Individual)
- 
-Para que el sistema sepa a quién enviar cada alerta, cada miembro del equipo debe vincular su cuenta de Telegram de forma privada. **El administrador no puede hacer este paso por ti.**
- 
-### ¿Por qué activarlo?
-Como usuario, recibirás en tiempo real:
-- **Resumen Matutino**: Tus tareas pendientes del día y una cita motivacional personalizada.
-- **Alertas Críticas**: Avisos de tareas que vencen pronto (especialmente las del Cuadrante 1).
-- **Avisos de Bloqueo**: Si un compañero marca como "Bloqueada" una tarea que depende de ti, o si un servicio que usas (Sentinel) cae.
-- **Hitos**: Confirmación cuando tus tareas han sido validadas o completadas.
- 
-### Pasos para el usuario:
-1. **Localiza al Bot**: Haz clic en el enlace a tu bot corporativo o búscalo por su nombre de usuario en Telegram.
-2. **Inicia la Conversación**: Pulsa el botón **"INICIAR"** o envía el comando `/start`.
-3. **Obtén tu ID**: El bot te saludará y te entregará tu **Chat ID Numérico** único (ej: `987654321`).
-4. **Vincúlalo en SientiaMTX**: 
-   - Ve a tu **Perfil** (esquina superior derecha) > **Ajustes de Notificación**.
-   - Pega tu ID en el campo **"Telegram Chat ID"**.
-   - Marca la casilla **"Recibir avisos por Telegram"**.
-5. **Personaliza**: Puedes elegir cuántas horas antes del vencimiento quieres recibir el primer aviso (por defecto 24h).
+## 🛡️ 2. Configuración para Administradores (Avanzado)
+
+Si eres el administrador del sistema o quieres configurar un bot nuevo para el servidor global, sigue estos pasos:
+
+### A. Crear el Bot en Telegram
+1. Habla con **`@BotFather`** en Telegram.
+2. Usa `/newbot` y sigue las instrucciones para obtener tu **API Token**.
+3. Guarda el token en un lugar seguro.
+
+### B. Vincular el Bot con SientiaMTX
+1. Entra en **Configuración → Notificaciones y Telegram**.
+2. Introduce el **Nombre del Bot** (sin la @) y el **Token**.
+3. Pulsa **"Guardar"** y luego **"Registrar Webhook"**.
+4. Verifica con **"Info del Webhook"** que la conexión sea exitosa (requiere HTTPS).
 
 ---
 
-## 4. Tipos de Notificaciones
+## 🔔 ¿Qué notificaciones recibiré?
 
-SientiaMTX enviará automáticamente:
-
-- **Resumen Matutino**: Todas las mañanas con tus tareas del día y una frase motivacional de la IA.
-- **Alertas de Urgencia**: Cuando una tarea del **Cuadrante 1 (Importante y Urgente)** se acerca a su plazo (vencimiento < 2 horas).
-- **Hitos de Proyecto**: Cuando se completa un porcentaje clave (50%, 75%, 100%) de una tarea colaborativa.
-- **Bloqueos**: Si un colaborador marca una tarea como "Bloqueada", el coordinador recibirá un aviso inmediato.
+| Notificación | Cuándo ocurre |
+|---|---|
+| **Resumen Matutino** | Cada mañana con tus tareas del día. |
+| **Alerta Q1 (Crítica)** | Cuando una tarea urgente está próxima a vencer. |
+| **Menciones** | Cuando alguien te etiqueta en el foro o un comentario. |
+| **Nuevas Tareas** | Cuando se te asigna una tarea pública o de grupo. |
 
 ---
 
-## 🛡️ Solución de Problemas (Troubleshooting)
-
-### El comando de alertas no se ejecuta
-Si las notificaciones automáticas no se envían, verifica que tienes la **Tarea Programada (Cron)** activa en tu servidor:
-```bash
-* * * * * cd /var/www/sientiaMTX && php artisan schedule:run >> /dev/null 2>&1
-```
-
-### El bot no responde
-1. Verifica que el Webhook esté registrado (puedes verlo en el botón "Info Webhook").
-2. Asegúrate de que el puerto 443 del servidor está abierto para las IPs de Telegram.
+## 🛠️ Solución de Problemas
+- **El bot no responde**: Asegúrate de estar hablando con el bot correcto y que el administrador haya registrado el Webhook.
+- **No llegan los mensajes**: Verifica que tu Chat ID sea el correcto y que el servicio de colas (Supervisor) esté activo en el servidor.

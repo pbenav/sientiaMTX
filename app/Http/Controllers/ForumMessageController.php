@@ -300,6 +300,10 @@ class ForumMessageController extends Controller
      */
     public function uploadAttachment(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json(['message' => __('teams.unauthorized_access')], 403);
+        }
+
         \Illuminate\Support\Facades\Log::info('Forum Upload Request ALL:', $request->all());
         
         $file = $request->file('attachment_file');
@@ -348,6 +352,10 @@ class ForumMessageController extends Controller
      */
     public function uploadImage(Request $request, Team $team)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json(['message' => __('teams.unauthorized_access')], 403);
+        }
+
         $request->validate([
             'image' => 'required|image|max:10240', // Max 10MB
         ]);

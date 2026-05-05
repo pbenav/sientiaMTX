@@ -1,95 +1,54 @@
 # 🤖 Telegram & Notifications Setup
 
-SientiaMTX integrates a powerful notification system that uses a Telegram Bot to send you daily summaries, urgent task alerts, and important milestone notifications — all in real time and tailored to your schedule.
+SientiaMTX uses a Telegram Bot to send you daily summaries, urgent task alerts, and forum thread notifications. This guide explains how to activate it in a few simple steps.
 
 ---
 
-## 1. Create Your Bot on Telegram
+## 📲 1. Activation for Members (Recommended)
 
-### Step-by-Step with BotFather
+If your team already has a bot configured, you only need to link your personal account to start receiving alerts. **This is all most users need to do.**
 
-1. Open Telegram and search for **`@BotFather`** (the official bot manager).
-2. Send the command `/newbot`.
-3. Choose a **display name** for your bot (e.g., *My Company Notifier*).
-4. Choose a **username** ending in `bot` (e.g., *mycompany_mtx_bot*).
-5. BotFather will reply with your **API Token**:
-   ```
-   123456789:ABCDefGhIJKlmNoPqRsTuVwXyZ
-   ```
-   **Keep this token secret and never share it publicly.**
+### Steps to link your account:
+1. **Search for your team's bot** on Telegram (ask your coordinator for the bot's name).
+2. Click **START** or send the `/start` command.
+3. The bot will reply with your **Chat ID** (a long number, e.g., `123456789`).
+4. In SientiaMTX, go to your **Profile → Notification Settings**.
+5. Paste that number into the **"Telegram Chat ID"** field.
+6. Enable the **"Receive alerts via Telegram"** option and save changes.
+
+> [!TIP]
+> You can configure how many hours in advance you prefer for your task reminders (default: 24h).
 
 ---
 
-## 2. Connect the Bot to SientiaMTX
+## 🛡️ 2. Configuration for Administrators (Advanced)
 
-As an administrator:
+If you are the system administrator or want to set up a new bot for the global server, follow these steps:
 
+### A. Create the Bot on Telegram
+1. Message **`@BotFather`** on Telegram.
+2. Use `/newbot` and follow the instructions to get your **API Token**.
+3. Keep the token in a safe place.
+
+### B. Link the Bot to SientiaMTX
 1. Go to **Settings → Notifications & Telegram**.
-2. Enter the **Bot Name** (without the `@` symbol).
-3. Paste the **Token** from BotFather.
-4. Click **"Save Settings"**.
-5. Click **"Register Webhook in Telegram"**.
-   - You'll see a confirmation message if everything is connected.
-   - Use **"Webhook Info"** to verify that Telegram has received your webhook URL.
-
-> [!IMPORTANT]
-> Your site **must have HTTPS** enabled. Telegram will reject webhook registrations on plain HTTP domains. Use Let's Encrypt if needed: `certbot --nginx -d your-domain.com`
+2. Enter the **Bot Name** (without the @) and the **Token**.
+3. Click **"Save"** and then **"Register Webhook"**.
+4. Verify with **"Webhook Info"** that the connection is successful (requires HTTPS).
 
 ---
 
-## 3. Individual User Activation
+## 🔔 What notifications will I receive?
 
-Each user must link their own Telegram account:
-
-1. Find your company's bot in Telegram (by its username) and click **START** or send `/start`.
-2. The bot will reply with your **Chat ID** (a numeric code, e.g. `987654321`).
-3. In SientiaMTX, go to **Profile → Notification Settings**.
-4. Paste the Chat ID in the **"Telegram Chat ID"** field.
-5. Enable **"Receive alerts via Telegram"**.
-6. Set your preferred **advance notice hours** (default: 24h before deadline).
-
----
-
-## 4. Types of Notifications
-
-| Notification | Trigger | Audience |
-|---|---|---|
-| **Morning Summary** | Daily schedule | All opted-in users |
-| **Urgent Alert** | Q1 task near deadline | Task owner + assignees |
-| **Milestone Reached** | 50%, 75%, 100% completion | Team coordinator |
-| **Task Blocked** | Member marks task as blocked | Team coordinator |
-
----
-
-## 5. How the Queue System Works
-
-SientiaMTX uses **Laravel Queues** to send notifications asynchronously. This means:
-- Notifications are stored in the database first.
-- **Supervisor** processes them in the background without slowing down the app.
-- If a notification fails (e.g., bad Telegram token), it retries up to 3 times.
-
-To check the queue health:
-
-```bash
-supervisorctl status
-php artisan queue:monitor default
-```
+| Notification | When it happens |
+|---|---|
+| **Morning Summary** | Every morning with your tasks for the day. |
+| **Q1 Alert (Critical)** | When an urgent task is near its deadline. |
+| **Mentions** | When someone tags you in the forum or a comment. |
+| **New Tasks** | When a public or group task is assigned to you. |
 
 ---
 
 ## 🛠️ Troubleshooting
-
-### Bot doesn't respond to `/start`
-- Verify the bot exists by searching its username in Telegram.
-- Confirm the token in Settings matches the one from BotFather.
-
-### Webhook registration fails
-- Ensure your domain is accessible via HTTPS on port 443.
-- Check `storage/logs/laravel.log` for error details.
-- Run `php artisan optimize:clear` and try registering again.
-
-### Notifications not arriving
-1. Verify the user has a valid Chat ID set in their profile.
-2. Confirm Supervisor is running: `supervisorctl status`
-3. Check the worker log: `tail -f storage/logs/worker.log`
-4. Manually trigger the check: `php artisan tasks:check-urgent`
+- **The bot doesn't respond**: Make sure you are talking to the correct bot and that the administrator has registered the Webhook.
+- **Messages are not arriving**: Verify that your Chat ID is correct and that the queue service (Supervisor) is active on the server.

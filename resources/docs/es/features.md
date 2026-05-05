@@ -1,79 +1,64 @@
-# Sientia MTX: Guía Maestra de Funcionalidades
-*Versión para usuarios y stakeholders*
+# Sientia MTX: Guía Maestra de Funcionalidades (v1.0.0-GA)
+
+SientiaMTX es un ecosistema de productividad de alto rendimiento que fusiona la metodología de Eisenhower con Inteligencia Artificial avanzada.
 
 ---
 
-## 🚀 1. El Corazón del Sistema: Dashboard Operativo
+## 🚀 1. Dashboard Operativo de Alto Impacto
 
-El Dashboard no es una simple pantalla de inicio; es el centro de mando donde converge la energía del equipo y el estado crítico de los servicios.
+El centro de mando donde converge el esfuerzo del equipo y el pulso de los servicios.
 
-### 📊 La Matriz de Eisenhower (Cuadrantes de Valor)
-*   **Visualización Dinámica**: Las tareas se clasifican automáticamente en cuatro cuadrantes según su Importancia y Urgencia.
-    *   **Q1 (Crítico)**: Lo que hay que hacer *ya*.
-    *   **Q2 (Planificación)**: El motor del progreso a largo plazo.
-    *   **Q3 (Reactivo)**: Interrupciones y urgencias menores.
-    *   **Q4 (Mantenimiento)**: Tareas necesarias pero de bajo impacto inmediato.
-*   **Interacción**: Permite ver de un vistazo dónde está el cuello de botella del equipo.
+### 📊 La Matriz de Eisenhower
+*   **Visualización Inteligente**: Clasificación automática de tareas en Q1 (Urgente/Importante), Q2 (Planificación), Q3 (Delegación) y Q4 (Eliminación).
+*   **Foco en el Valor**: Diseño optimizado para reducir la fatiga visual y priorizar el trabajo que genera impacto real.
 
-### 🛡️ Sentinel: Monitorización de Servicios
-*   **Estado en Tiempo Real**: Un panel premium que muestra el pulso de los servicios críticos (Web, Servidores, APIs).
-*   **Gráficos Sparkline**: Pequeñas gráficas de actividad que muestran la disponibilidad/incidencias de los últimos días por cada servicio.
-*   **Selector de Iconos Avanzado**: Personalización de servicios con el catálogo completo de emojis.
+### 🛡️ Sentinel: Monitorización Colaborativa
+*   **Pulso de Servicios**: Monitorización en tiempo real de herramientas críticas con indicadores visuales de estado (🟢, 🟡, 🔴).
+*   **Bono Centinela**: Sistema de incentivos gamificado para los miembros que reportan y validan caídas de servicio.
 
-### 🔋 Gestión de Energía y Resiliencia (Gamificación)
-*   **Barra de Energía Personal**: Cada usuario gestiona su capacidad cognitiva. Las tareas "drenan" energía según su complejidad.
-*   **Workday Toggle**: El botón de "Inicio/Fin de Jornada" que sincroniza la disponibilidad real del equipo.
-*   **Fresh Start (80% Bonus)**: El sistema garantiza que cada mañana el equipo empiece con al menos el 80% de energía, fomentando un entorno de trabajo sostenible y libre de burnout.
+### 🔋 Gestión de Energía (Flow)
+*   **Energía Vital**: Cada usuario tiene un nivel de energía que se consume según la carga cognitiva de las tareas, previniendo el burnout mediante un sistema de "Fresh Start" matutino.
 
 ---
 
-## 💬 2. Comunicación y Ax.ia: El Foro Inteligente
+## 💬 2. Comunicación Estructurada e IA
 
-### 🏛️ Foro de Hilos
-*   **Comunicación Estructurada**: Hilos de discusión por temas para evitar la dispersión de información.
-*   **Subida de Imágenes**: Soporte nativo para capturas y diagramas.
+### 🏛️ Foros Anidados (Threads)
+*   **Discusiones Profundas**: Soporte para hilos de conversación anidados, citas directas y menciones de usuarios.
+*   **Previsualización Premium**: Sistema de previsualización antes de publicar con renderizado completo de Markdown e imágenes.
 
-### 🤖 Ax.ia: El Asistente de IA Integrado
-*   **Interacción Contextual**: No es un chat genérico; conoce el contexto del equipo y de las tareas.
-*   **Inyección de Contenido**: La IA genera "Payloads" profesionales que pueden inyectarse directamente en la descripción o notas de una tarea con un solo clic.
-*   **Creación Ad-hoc**: ¿Hablando de una idea en el foro? Pide a Ax.ia que cree una tarea a partir de la conversación sin salir de la pantalla.
+### 🤖 Ax.ia: Tu Copiloto de Productividad
+*   **IA Everywhere**: Integrada en tareas, foros y notas rápidas.
+*   **Voz a Texto**: Transcripción automática de notas de voz en segundos.
+*   **Payloads Inteligentes**: La IA genera resúmenes y desgloses de tareas que se inyectan directamente en el flujo de trabajo.
 
 ---
 
 ## 📋 3. Gestión de Tareas de Próxima Generación
 
-### 🔘 Vistas Flexibles
-*   **Vista Lista**: Filtrado avanzado por etiquetas, miembros, estado y prioridades.
-*   **Tablero Kanban**: Gestión visual mediante columnas (Pendiente, En curso, Bloqueado, Completado).
-*   **Gantt / Roadmap**: Visualización temporal de las dependencias y la duración de los proyectos.
+### 🔘 Vistas Dinámicas
+*   **Kanban Reactivo**: Columnas personalizables con animaciones FLIP para un movimiento fluido de tareas.
+*   **Gantt Optimizado**: Roadmap visual con etiquetas de lectura directa en las barras, sin necesidad de hover.
+*   **Active Network**: Mapa y widget de disponibilidad en tiempo real para saber qué se está haciendo en cada rincón del equipo.
 
-### 📝 Detalle Maestro de Tarea
-*   **Descripciones y Observaciones**: Editor Markdown completo para una documentación clara.
-*   **Notas Privadas**: Un bloc de notas personal dentro de cada tarea, visible *solo* para el usuario actual.
-*   **Historial de Auditoría**: Registro inmutable de quién hizo qué y cuándo.
-*   **Anexos y Drive**: Gestión de archivos locales e integración nativa con Google Drive.
-
-### 🧩 Planes Maestros y Automatización
-*   **Tareas Autoprogramables**: Configuración de recurrencias (diaria, semanal, mensual) con lógica de "Antelación" (la tarea se crea X días antes de su ejecución).
-*   **Distribución Inteligente**: Crea un "Plan Maestro" y repártelo entre múltiples miembros del equipo; Sientia creará instancias individuales para cada uno automáticamente.
-*   **Reproducción Cruzada**: Copia una tarea de un equipo a otro en segundos manteniendo toda la información relevante.
+### 🧩 Automatización y Planes Maestros
+*   **Tareas Recurrentes**: Autoprogramación con lógica de antelación.
+*   **Distribución Masiva**: Capacidad de repartir un Plan Maestro entre decenas de miembros, creando instancias individuales automáticamente.
 
 ---
 
-## 🔗 4. Ecosistema de Integraciones
+## 🔗 4. Integración y Portabilidad
 
-### 🌐 Google Workspace
-*   **Google Tasks Sync**: Sincronización bidireccional de tareas con la app oficial de Google.
-*   **Google Calendar**: Exportación automática de fechas de entrega al calendario personal.
-*   **Google Drive**: Selector de archivos integrado para adjuntar documentación sin consumir espacio local.
-
-### 📤 Portabilidad JSON
-*   **Exportar/Importar JSON**: Descarga toda la configuración de una tarea en un archivo portátil e impórtala en cualquier otro equipo o instancia de Sientia. Ideal para crear plantillas maestras externas o backups rápidos.
+*   **Google Workspace**: Sincronización con Drive, Calendar y Tasks.
+*   **Telegram Bot**: Centro de notificaciones móvil con Chat ID securizado.
+*   **Exportación JSON**: Toda la inteligencia de una tarea o equipo puede exportarse para ser replicada o archivada.
 
 ---
 
-## 🎮 5. Gamificación: El Skill Tree (Árbol de Capacidades)
+## 🎮 5. Gamificación: El Skill Tree
 
-*   **Asignación por Capas**: Las tareas se vinculan a habilidades específicas (Soporte, Desarrollo, Sistemas, etc.).
-*   **Visibilidad Backstage**: Opción para marcar tareas de "preparación" que visibilizan el esfuerzo invisible.
-*   **Puntos de Resiliencia**: Recompensas por completar tareas difíciles o fuera del área de confort habitual.
+*   **Evolución Profesional**: Las tareas alimentan un árbol de habilidades (Soporte, Desarrollo, Sistemas, etc.), permitiendo ver el crecimiento real de cada colaborador.
+*   **Puntos de Resiliencia**: Reconocimiento especial para quienes aceptan retos fuera de su área de especialidad.
+
+---
+**Sientia MTX: Inteligencia Colectiva para Equipos de Alto Rendimiento.**

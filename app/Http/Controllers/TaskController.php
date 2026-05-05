@@ -1384,6 +1384,14 @@ class TaskController extends Controller
 
     public function uploadAttachment(\Illuminate\Http\Request $request, Team $team, Task $task)
     {
+        if (auth()->user()->cannot('view', $team)) {
+            return back()->with('error', __('teams.unauthorized_access'));
+        }
+
+        if ($task->team_id !== $team->id) {
+            abort(404);
+        }
+
         $maxSizeKB = (int)ini_get('upload_max_filesize') * 1024;
         $request->validate([
             'file' => "required|file|max:$maxSizeKB",

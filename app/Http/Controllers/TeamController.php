@@ -273,16 +273,11 @@ class TeamController extends Controller
             'role_id' => 'required|exists:team_roles,id',
         ]);
 
-        // PROTECT: Cannot promote yourself to Coordinator if you aren't already one.
-        // Actually, the Policy already restricts this to Coordinators/Owners.
-        // But let's be double sure: If you are NOT the owner and NOT a coordinator, abort.
-        if (!$team->isOwner(auth()->user()) && !$team->isCoordinator(auth()->user())) {
-             abort(403, 'Unauthorized action.');
+        // PROTECT: Cannot change the role of the team owner/creator
+        if ($user->id === $team->created_by_id) {
+            return back()->with('error', __('teams.cannot_modify_owner'));
         }
 
-        // Even if you ARE a coordinator, you shouldn't be able to remove your own coordinator status
-        // unless there's at least one other coordinator (though usually the owner is the safety net).
-        
         $team->members()->updateExistingPivot($user->id, ['role_id' => $validated['role_id']]);
 
         return back()->with('success', __('teams.member_role_updated'));
@@ -293,7 +288,7 @@ class TeamController extends Controller
      */
     public function updateMemberInfo(Request $request, Team $team, User $user)
     {
-        $this->authorize('manageMembers', $team);
+        $this->authorize('admin');
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',

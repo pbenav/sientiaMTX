@@ -1,4 +1,4 @@
-# SientiaMTX - Manual de Usuario (v0.9.2Beta)
+# SientiaMTX - Manual de Usuario (v1.0.0-GA)
 
 SientiaMTX no es solo una lista de tareas. Es un **gestor de productividad inteligente** basado en la Matriz de Eisenhower que te ayuda a diferenciar lo urgente de lo importante para que nunca pierdas el foco en lo que realmente importa.
 
@@ -43,102 +43,79 @@ Todas tus tareas se clasifican automáticamente en cuatro cuadrantes:
 2. Rellena: título, descripción, prioridad y urgencia.
 3. Elige la **visibilidad**:
    - **Pública**: La verá todo el equipo.
-   - **Privada**: Solo visible para ti (el creador). El sistema igualmente te enviará alertas si es urgente.
+   - **Privada**: Solo visible para ti (el creador).
 4. Asigna una **fecha límite** para activar el sistema de recordatorios.
-5. Guarda con **"Crear Tarea"**.
 
 ### Estados de una Tarea
 - **Pendiente**: Aún sin comenzar.
 - **En Progreso**: Alguien está trabajando en ella.
-- **Completada**: Finalizada. Puede ocultarse del tablero principal.
-- **Bloqueada**: Un colaborador ha marcado un impedimento. El coordinador recibe un aviso automático.
+- **Completada**: Finalizada.
+- **Bloqueada**: Se ha marcado un impedimento técnico o de otro tipo.
 
 ---
 
-## 🤝 4. Tareas Colaborativas
+## 🏛️ 4. Foros de Discusión Anidados
 
-Cuando un coordinador asigna una tarea pública a varios miembros, el sistema crea una **instancia individual** para cada persona. Esto permite:
-- Seguimiento de progreso independiente por persona.
-- Notificaciones separadas para cada asignado.
-- Visión global para el coordinador desde el dashboard del equipo.
+El Foro de Equipo permite una comunicación estructurada y profunda:
+
+- **Hilos y Temas**: Las discusiones se organizan por hilos para mantener el orden.
+- **Citas y Referencias**: Responde a mensajes específicos citando el texto original para mantener el hilo de la conversación.
+- **Previsualización en Tiempo Real**: Comprueba cómo quedará tu mensaje (Markdown e imágenes) antes de publicarlo.
+- **Menciones**: Etiqueta a otros miembros (@usuario) para que reciban una notificación directa.
+- **Archivos Adjuntos**: Sube imágenes y documentos directamente a la conversación.
 
 ---
 
-## 📊 5. Vistas Disponibles
+## 📊 5. Vistas y Visualización
 
 ### Tablero Eisenhower (Matriz)
-Vista principal con los cuatro cuadrantes. Ideal para la revisión diaria de prioridades.
-
-### Lista de Tareas
-Vista tabular con filtros por estado, urgencia y responsable. Exportable.
-
-### Diagrama de Gantt
-Visualización temporal de tareas con fechas de inicio y fin. Muestra dependencias entre tareas.
+Vista principal para la revisión diaria de prioridades.
 
 ### Tablero Kanban
-Columnas personalizables (por defecto: Pendiente, En Progreso, Completada). Soporta **arrastrar y soltar**.
+Gestión visual mediante columnas con soporte total para **Arrastrar y Soltar** (Drag & Drop).
+
+### Diagrama de Gantt (Roadmap)
+Visualización temporal optimizada. Las etiquetas de las tareas son visibles incluso en barras cortas, permitiendo una lectura fluida del cronograma sin necesidad de interactuar con cada elemento.
+
+### Red Activa (Active Network)
+Un widget en tiempo real que muestra qué miembros del equipo están conectados, en qué ubicación están trabajando y si tienen alguna tarea activa en ese momento (indicador verde/rojo).
 
 ---
 
-## 🔔 6. Notificaciones Telegram
+## 🤖 6. Ax.ia: Inteligencia Artificial Asistente
 
-Para recibir alertas en tu móvil:
+Ax.ia (potenciada por Gemini) está integrada en todo el flujo de trabajo:
 
-1. Busca tu bot de empresa en Telegram y escribe `/start`.
-2. Copia el **Chat ID** que te responde el bot.
-3. En tu **Perfil → Configuración de Notificaciones**, pega ese ID y activa la opción **"Recibir avisos por Telegram"**.
-4. Elige en cuántas horas de antelación quieres los recordatorios (por defecto: 24h).
-
-Recibirás automáticamente:
-- **Resumen matutino** con tus tareas del día y una cita motivacional.
-- **Alerta urgente** cuando una tarea de Q1 está próxima a vencer.
+- **Análisis de Tareas**: Pide a Ax.ia que resuma una tarea compleja o que cree subtareas a partir de una descripción.
+- **Transcripción de Voz**: Graba una nota de voz en tus "Notas Rápidas" y deja que Ax.ia la transcriba a texto automáticamente.
+- **Generación de Contenido**: Crea borradores profesionales o respuestas para el foro en segundos.
 
 ---
 
-## 🌓 7. Temas Visuales
+## 📝 7. Notas Rápidas (Post-its)
 
-Desde tu perfil puedes elegir entre tres modos visuales:
-- ☀️ **Claro**: Limpio y profesional.
-- 🌙 **Oscuro**: Para trabajar de noche o en entornos oscuros.
-- ✨ **Sistema**: Se adapta automáticamente a la preferencia de tu dispositivo.
-
----
-
-## ⌨️ 8. Atajos y Productividad
-
-- **Arrastrar y Soltar** en Kanban: Mueve tareas entre columnas con el ratón.
-- **Filtros rápidos**: En la lista de tareas, usa la barra superior para buscar por título, etiqueta o responsable.
-- **Símbolo de Bloqueo** 🔒: Indica que una tarea es privada en la vista del equipo.
-- **Indicador Q1** 🔴: Las tareas críticas se muestran con borde rojo en todas las vistas.
-- **Scroll del Roadmap**: En tareas con muchos miembros, la lista es scrollable para mantener la usabilidad.
+Captura ideas al vuelo sin salir de donde estés:
+- **Notas Flotantes**: Arrástralas por la pantalla y minimízalas según necesites.
+- **Notas de Voz**: Graba audios cortos y transcríbelos con Ax.ia.
+- **Sincronización**: Tus notas te acompañan en todos tus dispositivos.
 
 ---
 
-## 🛠️ 9. Monitorización de Servicios (Sentinel)
+## 🔔 8. Notificaciones y Telegram
 
-## 📡 Sentinel: Monitorización Colaborativa
-SientiaMTX incluye un sistema de alerta temprana para servicios críticos (Telegram, Google, Portales Oficiales, etc.). 
-- **Reportar Caída**: Cualquier miembro puede alertar sobre una interrupción de servicio.
-- **Validación**: La comunidad confirma o desmiente la caída, evitando falsas alarmas.
-- **Bono Centinela**: Reportar caídas validadas otorga bonus de Energía/XP por cuidar del equipo.
+Vincula tu cuenta de Telegram para recibir:
+- **Resumen matutino** personalizado.
+- **Alertas de Q1** próximas a vencer.
+- **Menciones en Foros** y avisos de nuevas tareas asignadas.
 
-## 😊 Selector de Iconos
-En todos los campos de texto y descripciones, ahora dispones de un selector rápido de iconos UTF-8 para categorizar visualmente tus tareas y proyectos.
+---
 
-### Estados de un Servicio
-- 🟢 **Activo**: El servicio funciona con normalidad.
-- 🟡 **Inestable**: Alguien ha reportado una incidencia, pero aún no ha sido confirmada por otros miembros.
-- 🔴 **Caído**: El sistema ha verificado la caída tras múltiples reportes coincidentes.
+## 📡 9. Sentinel: Monitorización
 
-### Cómo colaborar
-1. Si detectas que una herramienta no funciona, haz clic en **"Reportar Caída"** en su tarjeta correspondiente.
-2. Si un servicio está caído y ves que ya funciona, haz clic en **"Confirmar Recuperación"**.
-3. **Bono Centinela**: Ser el primero en reportar una alerta que luego es verificada por el equipo otorga puntos de XP y Energía (ver sección de Gamificación).
+SientiaMTX incluye un sistema de alerta temprana para servicios críticos:
+- **Reportar Caída**: Informa al equipo si un servicio (ej. Google Drive) no funciona.
+- **Validación Colectiva**: Otros miembros confirman la incidencia para generar una alerta global.
+- **Bonus Centinela**: Recibe puntos de XP y Energía Vital por ayudar a monitorizar el ecosistema del equipo.
 
-### Dependencias en Tareas
-Al crear o editar una tarea, puedes seleccionar un servicio del que dependa:
-- Si el servicio asociado cae, la tarea mostrará automáticamente un **aviso de bloqueo técnico** en el Dashboard.
-- Esto permite al equipo identificar rápidamente que el retraso en esa tarea se debe a una causa externa y técnica.
-
-> [!IMPORTANT]
-> Solo los coordinadores del equipo pueden añadir o eliminar nuevos servicios de la lista de monitorización.
+---
+**Sientia MTX: Elevando la productividad mediante la IA y una experiencia de usuario excepcional.**
