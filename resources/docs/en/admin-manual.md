@@ -1,4 +1,4 @@
-# 🛡️ Admin Manual — SientiaMTX (v1.0.0-GA)
+# 🛡️ Admin Manual — SientiaMTX (v0.9.8.RC3)
 
 As a **Coordinator** or **Administrator** of SientiaMTX, you have advanced tools to manage teams, monitor global progress, and maintain the system infrastructure in perfect condition.
 

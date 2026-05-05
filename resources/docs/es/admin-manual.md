@@ -1,4 +1,4 @@
-# 🛡️ Manual del Administrador — SientiaMTX (v1.0.0-GA)
+# 🛡️ Manual del Administrador — SientiaMTX (v0.9.8.RC3)
 
 Como **Coordinador** o **Administrador** de SientiaMTX, tienes herramientas avanzadas para gestionar equipos, supervisar el progreso global y mantener la infraestructura del sistema en perfecto estado.
 
