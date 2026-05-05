@@ -1,63 +1,84 @@
-<p align="center">
-    <img src="https://raw.githubusercontent.com/pbenav/cth-mobile/main/assets/icon/icon.png" width="128" alt="SientiaMTX Logo">
-</p>
-
-<h1 align="center">SientiaMTX</h1>
+# 🚀 SientiaMTX (v1.0.0-GA)
 
 <p align="center">
-    <strong>Gestión de Productividad Inteligente y Colaborativa</strong><br>
-    Potenciado por IA (Ax.ia) y basado en la Matriz de Eisenhower.
+  <img src="https://raw.githubusercontent.com/pbenav/cth-mobile/main/assets/icon/icon.png" width="150" alt="SientiaMTX Logo">
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/version-1.0.0--GA-violet" alt="Version">
-    <img src="https://img.shields.io/badge/license-GNU%20AGPLv3-blue" alt="License">
-    <img src="https://img.shields.io/badge/framework-Laravel%2011-red" alt="Framework">
+  <strong>Inteligencia Colectiva y Productividad de Alto Rendimiento</strong><br>
+  Una plataforma de gestión de tareas potenciada por IA y basada en la metodología de Eisenhower.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GNU%20AGPLv3-blue.svg" alt="License"></a>
+  <a href="https://laravel.com"><img src="https://img.shields.io/badge/Framework-Laravel%2011-red.svg" alt="Laravel"></a>
+  <img src="https://img.shields.io/badge/status-Stable-emerald.svg" alt="Status">
+  <img src="https://img.shields.io/badge/version-1.0.0--GA-violet.svg" alt="Version">
 </p>
 
 ---
 
-## 🚀 ¿Qué es SientiaMTX?
+## 💡 El Concepto
+SientiaMTX no es solo una herramienta de gestión; es un ecosistema diseñado para maximizar el **Flow** del equipo. Al combinar la **Matriz de Eisenhower** con un asistente de **Inteligencia Artificial (Ax.ia)**, el sistema no solo organiza tareas, sino que ayuda a entender el valor real de cada acción.
 
-SientiaMTX no es solo una herramienta de gestión de tareas; es un ecosistema diseñado para elevar la **Inteligencia Colectiva** de los equipos. Utiliza la metodología de la **Matriz de Eisenhower** para clasificar el trabajo, integrando inteligencia artificial de vanguardia y una experiencia de usuario (UX) premium para minimizar la fricción operativa.
+## ✨ Características Principales
 
-## ✨ Funcionalidades Destacadas
+### 🧠 IA Ax.ia (Gemini Integration)
+*   **Voz a Texto**: Transcripción instantánea de notas de voz en notas de texto.
+*   **Análisis Predictivo**: Desglose automático de tareas complejas en planes de acción.
+*   **Payloads de IA**: Inyección directa de contenido generado por IA en el flujo de trabajo.
 
-- **🏛️ Foros de Equipo Anidados**: Discusiones estructuradas con hilos, citas, menciones y previsualización en tiempo real.
-- **🤖 Ax.ia (IA Assistant)**: Asistente integrado basado en Gemini para análisis de tareas, transcripción de notas de voz y creación automática de contenido.
-- **📊 Vistas Avanzadas**: Matriz de Eisenhower, Kanban reactivo, Roadmap (Gantt) optimizado y Red Activa en tiempo real.
-- **🎙️ Notas Rápidas y Voz**: Captura de ideas mediante Post-its flotantes y grabación de audio con transcripción automática.
-- **🎮 Gamificación (Skill Tree)**: Sistema de XP, niveles de habilidad y gestión de Energía Vital para prevenir el burnout.
-- **📡 Sentinel**: Monitorización colaborativa de servicios críticos con alertas tempranas.
-- **☁️ Google Integration**: Sincronización con Drive, Tasks y Calendar.
+### 📊 Visualización Avanzada
+*   **Matriz Eisenhower**: Cuadrantes dinámicos para priorización inmediata.
+*   **Kanban Premium**: Gestión visual con animaciones fluidas y estados reactivos.
+*   **Gantt Optimizado**: Roadmap temporal con etiquetas legibles sin interacción.
+*   **Active Network**: Monitorización en tiempo real de la disponibilidad y carga del equipo.
 
-## 📚 Documentación
+### 💬 Comunicación Estructurada
+*   **Foros Anidados**: Hilos de discusión con soporte para citas, menciones y previsualización Markdown.
+*   **Notificaciones Inteligentes**: Integración total con Telegram para alertas Q1 y resúmenes matutinos.
 
-Puedes encontrar guías detalladas en la carpeta `resources/docs`:
+### 🎮 Gamificación y Salud Laboral
+*   **Skill Tree**: Evolución de habilidades reales (Dev, Ops, Support, etc.) basada en tareas completadas.
+*   **Vital Energy**: Monitorización de la carga cognitiva para prevenir el burnout del equipo.
+*   **Sentinel**: Sistema colaborativo para detectar y reportar caídas de servicios críticos.
 
-- [Manual de Usuario (ES)](resources/docs/es/user-manual.md) / [User Manual (EN)](resources/docs/en/user-manual.md)
-- [Manual del Administrador (ES)](resources/docs/es/admin-manual.md) / [Admin Manual (EN)](resources/docs/en/admin-manual.md)
-- [Guía de Instalación (ES)](resources/docs/es/installation.md) / [Installation Guide (EN)](resources/docs/en/installation.md)
-- [Integración con Telegram](resources/docs/es/telegram.md)
+## 🛠️ Instalación Rápida
 
-## 🛠️ Requisitos Técnicos
+```bash
+# 1. Clonar y entrar
+git clone https://github.com/pbenav/sientiaMTX.git && cd sientiaMTX
 
-- **PHP** 8.2+
-- **MySQL** 8.0+ / PostgreSQL
-- **Node.js** 20+
-- **Redis** (Opcional, recomendado para colas y caché)
+# 2. Dependencias
+composer install --optimize-autoloader --no-dev
+npm install && npm run build
 
-## 🛡️ Seguridad y Auditoría
+# 3. Entorno
+cp .env.example .env
+php artisan key:generate
 
-SientiaMTX sigue estándares estrictos de seguridad:
-- Protección contra Mass Assignment.
-- Jerarquía de roles protegida por Policy.
-- Auditoría de dependencias mensual.
-- Encriptación de claves de integración.
+# 4. Base de datos
+php artisan migrate --force
+```
+
+## 📚 Documentación Completa
+
+Hemos preparado manuales detallados para cada perfil:
+
+*   📖 [**Manual de Usuario (ES)**](resources/docs/es/user-manual.md) / [**User Manual (EN)**](resources/docs/en/user-manual.md)
+*   🛡️ [**Manual de Administrador (ES)**](resources/docs/es/admin-manual.md) / [**Admin Manual (EN)**](resources/docs/en/admin-manual.md)
+*   🚀 [**Guía de Instalación**](resources/docs/es/installation.md)
+*   🤖 [**Configuración de Telegram**](resources/docs/es/telegram.md)
+
+## 🛡️ Seguridad
+Este proyecto ha pasado por una auditoría de seguridad rigurosa, implementando:
+*   Jerarquía de roles protegida.
+*   Gestión de cuotas de disco por equipo.
+*   Validación de membresía en todos los endpoints de archivos.
+*   Protección contra inyección y escalada de privilegios.
 
 ## ⚖️ Licencia
-
-SientiaMTX es **software libre y de código abierto** distribuido bajo la licencia [GNU AGPL v3](LICENSE).
+Distribuido bajo la licencia **GNU AGPL v3**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
-**Desarrollado por pbenav (2022-2026)**
+**Desarrollado con ❤️ por pbenav (2022-2026)**
