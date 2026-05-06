@@ -14,7 +14,8 @@ class KudoController extends Controller
     {
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'type' => 'required|string',
+            'type' => 'required|array|min:1',
+            'type.*' => 'string',
             'message' => 'nullable|string|max:255',
             'task_id' => 'nullable|exists:tasks,id',
         ]);
@@ -28,7 +29,7 @@ class KudoController extends Controller
             'to_user_id' => $validated['receiver_id'],
             'team_id' => $team->id,
             'task_id' => $validated['task_id'] ?? null,
-            'type' => $validated['type'],
+            'type' => implode(', ', $validated['type']),
             'message' => $validated['message'],
         ]);
 

@@ -305,11 +305,27 @@
                                 
                                 <div class="flex items-center justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-800 mt-4">
                                     <div class="flex items-center gap-2">
+                                        @php
+                                            $isTeamLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+                                        @endphp
                                         <label class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-500 rounded-xl cursor-pointer transition-all group">
                                             <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
                                             <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Local') }}</span>
                                             <input type="file" multiple class="hidden" @change="uploadLocalFile($event)">
                                         </label>
+                                        @if($isTeamLinked)
+                                            <button type="button" @click="$dispatch('open-drive-picker', { targetId: 'reply-box' })"
+                                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-blue-500 rounded-xl cursor-pointer transition-all group">
+                                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                                                <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Drive') }}</span>
+                                            </button>
+                                        @else
+                                            <a href="{{ route('profile.edit', ['tab' => 'integrations']) }}" 
+                                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-500 rounded-xl cursor-pointer transition-all group" title="Vincular Drive">
+                                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" /></svg>
+                                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-tight">{{ __('Vincular') }}</span>
+                                            </a>
+                                        @endif
                                     </div>
 
                                     <button type="submit" 

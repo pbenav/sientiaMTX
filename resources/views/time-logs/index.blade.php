@@ -131,7 +131,7 @@
                                 </h3>
                                 <p class="text-xs text-gray-500 mt-1">Reconoce el esfuerzo horizontal de un compañero.</p>
                             </div>
-                            <form action="{{ route('teams.kudos.store', $team) }}" method="POST" class="p-6 space-y-4">
+                            <form action="{{ route('teams.kudos.store', $team) }}" method="POST" class="p-6 space-y-4" x-data="{ types: ['Ayuda Técnica'] }" @submit="if(types.length === 0) { $event.preventDefault(); Swal.fire({title: '¡Ojo!', text: 'Selecciona al menos una categoría', icon: 'warning', confirmButtonColor: '#8b5cf6', customClass: { popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white', confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]' }}); }">
                                 @csrf
                                 <div>
                                     <label class="block text-[10px] font-black uppercase text-gray-400 mb-2">¿Para quién?</label>
@@ -147,7 +147,7 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     @foreach(['Ayuda Técnica', 'Apoyo Moral', 'Innovación', 'Resiliencia', 'Gestión Caos', 'Compañerismo'] as $cat)
                                         <label class="cursor-pointer">
-                                            <input type="radio" name="type" value="{{ $cat }}" class="peer sr-only" required @if($loop->first) checked @endif>
+                                            <input type="checkbox" name="type[]" value="{{ $cat }}" class="peer sr-only" x-model="types">
                                             <div class="p-2 border border-gray-100 dark:border-gray-700 rounded-lg text-center text-[10px] font-bold text-gray-600 dark:text-gray-400 peer-checked:bg-violet-600 peer-checked:text-white peer-checked:border-violet-600 transition-all uppercase tracking-tighter">
                                                 {{ $cat }}
                                             </div>
