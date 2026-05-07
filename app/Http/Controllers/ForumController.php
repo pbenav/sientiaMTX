@@ -27,11 +27,12 @@ class ForumController extends Controller
         $isCoordinator = $team->isCoordinator(auth()->user());
 
         $filters = $this->getPersistentFilters($request, 'forum', [
-            'search', 'orphaned'
+            'search'
         ]);
         
         $search = $filters['search'] ?? null;
-        $showOrphaned = $filters['orphaned'] ?? null;
+        $showOrphaned = $request->get('orphaned') ?? null;
+        $filters['orphaned'] = $showOrphaned;
 
         $threads = $team->forumThreads()
             ->when($search, function($query) use ($search) {

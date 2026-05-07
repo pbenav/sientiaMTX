@@ -89,7 +89,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         @if($filters['orphaned'] ?? null)
-                            <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="text-xs font-bold text-gray-500 hover:text-gray-700 px-4 py-2 transition-colors">{{ __('forum.back_to_forum') }}</a>
+                            <a href="{{ route('teams.forum.index', $team) }}" class="text-xs font-bold text-gray-500 hover:text-gray-700 px-4 py-2 transition-colors">{{ __('forum.back_to_forum') }}</a>
                         @else
                             <a href="{{ route('teams.forum.index', [$team, 'orphaned' => 1]) }}" class="text-xs font-black uppercase tracking-tighter text-indigo-700 hover:text-indigo-800 px-4 py-2 transition-colors">{{ __('forum.view_orphans') }}</a>
                         @endif
