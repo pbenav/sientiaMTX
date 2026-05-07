@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Middleware de autodetección dinámico de la dirección del webhook
 app.use((req, res, next) => {
-    const webhookUrl = req.query.webhook_url || req.body.webhook_url;
+    const webhookUrl = req.query?.webhook_url || req.body?.webhook_url;
     if (webhookUrl) {
         currentWebhookUrl = webhookUrl;
     }
