@@ -263,4 +263,38 @@ class WhatsappController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Proxy de estado global de WhatsApp Web Bridge
+     */
+    public function status(Request $request)
+    {
+        try {
+            $response = Http::timeout(3)->get('http://localhost:3001/api/status');
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+            return response()->json(['ready' => false, 'qr' => ''], 502);
+        } catch (\Exception $e) {
+            return response()->json(['ready' => false, 'qr' => '', 'error' => $e->getMessage()], 502);
+        }
+    }
+
+    /**
+     * Proxy de estado de WhatsApp Personal
+     */
+    public function personalStatus(Request $request)
+    {
+        try {
+            $session = 'user_' . auth()->id();
+            $init = $request->get('init') === 'true' ? '&init=true' : '';
+            $response = Http::timeout(3)->get('http://localhost:3001/api/status?session=' . $session . $init);
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+            return response()->json(['ready' => false, 'qr' => ''], 502);
+        } catch (\Exception $e) {
+            return response()->json(['ready' => false, 'qr' => '', 'error' => $e->getMessage()], 502);
+        }
+    }
 }

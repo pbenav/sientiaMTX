@@ -435,7 +435,7 @@
                 pollingInterval: null,
                 async checkStatus() {
                     try {
-                        const url = 'http://localhost:3001/api/status?session=user_{{ auth()->id() }}' + (this.initSession ? '&init=true' : '');
+                        const url = '{{ route('whatsapp.personal-status') }}' + (this.initSession ? '?init=true' : '');
                         const response = await fetch(url);
                         const data = await response.json();
                         this.ready = data.ready;
@@ -605,7 +605,7 @@
             },
             async checkStatus() {
                 try {
-                    const res = await fetch('http://localhost:3001/api/status');
+                    const res = await fetch('{{ route('whatsapp.status') }}');
                     if (res.ok) {
                         const data = await res.json();
                         this.serviceAvailable = true;
