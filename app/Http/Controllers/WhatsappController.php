@@ -297,4 +297,21 @@ class WhatsappController extends Controller
             return response()->json(['ready' => false, 'qr' => '', 'error' => $e->getMessage()], 502);
         }
     }
+
+    /**
+     * Desvincula o reinicia la sesión de WhatsApp Personal
+     */
+    public function personalRestart(Request $request)
+    {
+        try {
+            $session = 'user_' . auth()->id();
+            $response = Http::timeout(10)->post('http://localhost:3001/api/restart', [
+                'session' => $session
+            ]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error desvinculando WhatsApp Personal: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }

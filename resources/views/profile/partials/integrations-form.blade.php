@@ -468,10 +468,12 @@
                 async restartSession() {
                     if (!confirm('¿Deseas desvincular o reiniciar tu cuenta de WhatsApp Personal?')) return;
                     try {
-                        await fetch('http://localhost:3001/api/restart', {
+                        await fetch('{{ route('whatsapp.personal-restart') }}', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ session: 'user_{{ auth()->id() }}' })
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
                         });
                         this.ready = false;
                         this.qr = null;

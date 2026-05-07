@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/whatsapp/restart', [\App\Http\Controllers\WhatsappController::class, 'restart'])->name('whatsapp.restart');
     Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsappController::class, 'status'])->name('whatsapp.status');
     Route::get('/whatsapp/personal-status', [\App\Http\Controllers\WhatsappController::class, 'personalStatus'])->name('whatsapp.personal-status');
+    Route::post('/whatsapp/personal-restart', [\App\Http\Controllers\WhatsappController::class, 'personalRestart'])->name('whatsapp.personal-restart');
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnread'])->name('notifications.unread-count');
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::match(['get', 'patch'], '/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
