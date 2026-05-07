@@ -54,6 +54,11 @@
                 class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 Apariencia del Equipo
             </button>
+            <button @click="tab = 'whatsapp'" 
+                :class="tab === 'whatsapp' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                WhatsApp del Equipo
+            </button>
         </div>
 
         <!-- General Info Tab -->
@@ -400,6 +405,161 @@
                             <br><br>
                             Un equipo creativo puede usar fuentes grandes y colores vibrantes, mientras que uno técnico puede preferir algo más condensado y sobrio.
                         </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WhatsApp Tab -->
+        <div x-show="tab === 'whatsapp'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
+            <div x-data="{
+                    ready: false,
+                    qr: null,
+                    loading: false,
+                    initSession: false,
+                    pollingInterval: null,
+                    async checkStatus() {
+                        try {
+                            const url = '{{ route('whatsapp.team-status') }}?team_id={{ $team->id }}' + (this.initSession ? '&init=true' : '');
+                            const response = await fetch(url);
+                            const data = await response.json();
+                            this.ready = data.ready;
+                            this.qr = data.qr;
+                            if (this.ready) {
+                                this.initSession = false;
+                            }
+                        } catch (e) {
+                            console.error('Error consultando estado de WhatsApp del Equipo:', e);
+                        }
+                    },
+                    startPolling() {
+                        this.loading = true;
+                        this.checkStatus();
+                        this.pollingInterval = setInterval(() => {
+                            this.checkStatus();
+                        }, 3000);
+                    },
+                    stopPolling() {
+                        if (this.pollingInterval) {
+                            clearInterval(this.pollingInterval);
+                            this.pollingInterval = null;
+                        }
+                        this.loading = false;
+                    },
+                    async startConnection() {
+                        this.initSession = true;
+                        await this.checkStatus();
+                    },
+                    async restartSession() {
+                        if (!confirm('¿Deseas desvincular o reiniciar la cuenta de WhatsApp corporativa de este Equipo?')) return;
+                        try {
+                            await fetch('{{ route('whatsapp.team-restart') }}', {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ team_id: {{ $team->id }} })
+                            });
+                            this.ready = false;
+                            this.qr = null;
+                            this.initSession = true;
+                            this.startPolling();
+                        } catch (e) {
+                            console.error('Error al reiniciar sesión de equipo:', e);
+                        }
+                    }
+                 }"
+                 x-init="checkStatus(); startPolling()"
+                 x-on:destroy="stopPolling()"
+                 class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-500">
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span>WhatsApp Corporativo de Equipo</span>
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-[8px] font-black uppercase rounded-full">Canal de Equipo</span>
+                            </h4>
+                            <p class="text-[10px] text-gray-400 font-medium">Vincula un número de teléfono móvil corporativo exclusivo para el equipo <strong>{{ $team->name }}</strong></p>
+                        </div>
+                    </div>
+                    <div>
+                        <template x-if="ready">
+                            <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 dark:border-emerald-800">Conectado</span>
+                        </template>
+                        <template x-if="!ready && qr">
+                            <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[10px] font-black uppercase rounded-lg border border-amber-100 dark:border-amber-800 animate-pulse">Esperando Escaneo</span>
+                        </template>
+                        <template x-if="!ready && !qr">
+                            <span class="px-3 py-1 bg-gray-50 dark:bg-gray-800 text-gray-400 text-[10px] font-black uppercase rounded-lg border border-gray-200 dark:border-gray-700">Desconectado</span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Interfaz de Conexión en Caja de Coherencia Gris idéntica a Telegram -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gray-50/50 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
+                    <div class="space-y-4">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Al vincular un WhatsApp exclusivo de equipo, los mensajes del foro, notificaciones de tareas del equipo y alertas se enviarán directamente con este número corporativo. Toda la comunicación está aislada de forma segura para este equipo.
+                        </p>
+                        
+                        <div class="flex gap-3 pt-2">
+                            <!-- Botón de Conexión Pasiva -->
+                            <template x-if="!ready && !qr && !initSession">
+                                <button @click="startConnection()" type="button" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-[10px] font-black uppercase rounded-xl transition-all shadow-md shadow-emerald-500/10">
+                                    Vincular WhatsApp de Equipo
+                                </button>
+                            </template>
+
+                            <!-- Botón de Desvinculación -->
+                            <template x-if="ready || qr || initSession">
+                                <button @click="restartSession()" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 text-[10px] font-black uppercase rounded-xl transition-all">
+                                    Desvincular Cuenta
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Panel de QR / Cargando / Listo -->
+                    <div class="flex justify-center md:border-l border-gray-100 dark:border-gray-800 md:pl-8 py-2 min-h-[14rem] items-center">
+                        <!-- Caso 1: Listo y conectado -->
+                        <div x-show="ready" class="flex flex-col items-center text-center space-y-2">
+                            <div class="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100 dark:border-emerald-800/50">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white">¡Sesión de Equipo Activa!</span>
+                            <span class="text-[10px] text-gray-400">El número está listo para enviar y recibir notificaciones corporativas de este equipo.</span>
+                        </div>
+
+                        <!-- Caso 2: QR disponible para escaneo -->
+                        <div x-show="!ready && qr" class="flex flex-col items-center space-y-4">
+                            <div class="p-3 bg-white rounded-2xl shadow-xl border border-gray-100 inline-block">
+                                <img :src="qr" alt="WhatsApp QR Code" class="w-44 h-44 object-contain">
+                            </div>
+                            <div class="text-center">
+                                <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block">Escanea el Código</span>
+                                <span class="text-[8px] text-gray-400 mt-1 block">Abre WhatsApp > Dispositivos Vinculados > Vincular un Dispositivo</span>
+                            </div>
+                        </div>
+
+                        <!-- Caso 3: Iniciando o buscando estado -->
+                        <div x-show="!ready && !qr && initSession" class="flex flex-col items-center text-center space-y-3">
+                            <svg class="w-8 h-8 text-emerald-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Generando sesión...</span>
+                            <span class="text-[8px] text-gray-400">Iniciando Puppeteer en el servidor para el equipo de forma aislada</span>
+                        </div>
+
+                        <!-- Caso 4: Desconectado pasivo -->
+                        <div x-show="!ready && !qr && !initSession" class="flex flex-col items-center text-center space-y-2 text-gray-400">
+                            <svg class="w-12 h-12 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">Sin Vinculación Activa</span>
+                        </div>
                     </div>
                 </div>
             </div>

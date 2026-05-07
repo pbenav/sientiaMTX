@@ -223,7 +223,7 @@ class WhatsappController extends Controller
     /**
      * Método auxiliar para enviar mensajes a través del servicio Node.js
      */
-    public function sendMessage($phone, $message)
+    public function sendMessage($phone, $message, $session = null)
     {
         $user = auth()->user();
         $notifSettings = $user ? ($user->notification_settings ?? $user->defaultNotificationSettings()) : null;
@@ -232,10 +232,23 @@ class WhatsappController extends Controller
         }
 
         try {
-            $response = Http::post('http://localhost:3001/api/send', [
+            $payload = [
                 'phone' => $phone,
                 'message' => $message,
-            ]);
+            ];
+            
+            if ($session) {
+                $payload['session'] = $session;
+            }
+
+            $response = Http::post('http://localhost:3001/api/send', $payload);
+
+            // Fallback resiliente: Si la sesión específica falla o no está lista, intentamos con default
+            if (!$response->successful() && $session && $session !== 'default') {
+                Log::info("Envío fallido con sesión {$session}. Reintentando con sesión default como fallback...");
+                $payload['session'] = 'default';
+                $response = Http::post('http://localhost:3001/api/send', $payload);
+            }
 
             return $response->json();
         } catch (\Exception $e) {
@@ -311,6 +324,49 @@ class WhatsappController extends Controller
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error('Error desvinculando WhatsApp Personal: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Proxy de estado de WhatsApp de Equipo
+     */
+    public function teamStatus(Request $request)
+    {
+        try {
+            $team = \App\Models\Team::findOrFail($request->get('team_id'));
+            if (!$team->members->contains(auth()->id()) && !auth()->user()->is_admin) {
+                abort(403);
+            }
+            $session = 'team_' . $team->id;
+            $init = $request->get('init') === 'true' ? '&init=true' : '';
+            $response = Http::timeout(3)->get('http://localhost:3001/api/status?session=' . $session . $init);
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+            return response()->json(['ready' => false, 'qr' => ''], 502);
+        } catch (\Exception $e) {
+            return response()->json(['ready' => false, 'qr' => '', 'error' => $e->getMessage()], 502);
+        }
+    }
+
+    /**
+     * Desvincula o reinicia la sesión de WhatsApp de Equipo
+     */
+    public function teamRestart(Request $request)
+    {
+        try {
+            $team = \App\Models\Team::findOrFail($request->get('team_id'));
+            if ($team->user_id !== auth()->id() && !auth()->user()->is_admin) {
+                abort(403);
+            }
+            $session = 'team_' . $team->id;
+            $response = Http::timeout(10)->post('http://localhost:3001/api/restart', [
+                'session' => $session
+            ]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error desvinculando WhatsApp de Equipo: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }

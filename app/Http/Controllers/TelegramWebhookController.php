@@ -168,11 +168,20 @@ class TelegramWebhookController extends Controller
                     if ($isSyncEnabled) {
                         if ($team->whatsapp_chat_id && !empty($text) && !str_contains($text, '🟢 [WhatsApp]')) {
                             Log::info("Sincronización: Reenviando mensaje de Telegram a WhatsApp para el equipo {$team->name}");
-                            \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
+                            $syncResponse = \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
                                 'phone' => $team->whatsapp_chat_id,
                                 'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
                                 'webhook_url' => route('whatsapp.webhook'),
+                                'session' => 'team_' . $team->id
                             ]);
+                            if (!$syncResponse->successful()) {
+                                \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
+                                    'phone' => $team->whatsapp_chat_id,
+                                    'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
+                                    'webhook_url' => route('whatsapp.webhook'),
+                                    'session' => 'default'
+                                ]);
+                            }
 
                             // Crear registro espejo de WhatsApp para que aparezca en el widget de la web de inmediato
                             \App\Models\WhatsappMessage::create([
