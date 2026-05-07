@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 // Mapa de clientes en memoria (Multi-sesión dinámica)
 const sessions = {};
 
-// Obtiene o inicializa la sesión de un cliente específico
+// Obtiene o inicializa la sesión de un cliente específico con optimización de RAM estricta
 function getSession(sessionId = 'default') {
     if (sessions[sessionId]) {
         return sessions[sessionId];
@@ -47,6 +47,11 @@ function getSession(sessionId = 'default') {
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
+                '--disable-extensions',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--js-flags="--max-old-space-size=128"', // Limita la RAM interna de V8 en cada Chromium
                 '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
             ],
             timeout: 60000,
@@ -125,7 +130,7 @@ function getSession(sessionId = 'default') {
                 author: authorName,
                 mediaData: mediaData,
                 mediaMimetype: mediaMimetype,
-                session: sessionId // Permite a Laravel identificar la sesión de origen
+                session: sessionId
             });
             console.log(`=> Webhook enviado a Laravel para sesión ${sessionId}`);
         } catch (error) {
@@ -149,6 +154,17 @@ getSession('default');
 // 1. Obtener el estado actual (y el QR si es necesario) de una sesión específica
 app.get('/api/status', (req, res) => {
     const sessionId = req.query.session || 'default';
+    const forceInit = req.query.init === 'true';
+
+    // OPTIMIZACIÓN PASIVA: Si la sesión no existe en memoria y no forzamos el arranque (carga pasiva del perfil),
+    // devolvemos desconectado de inmediato sin inicializar Puppeteer para no gastar RAM.
+    if (!sessions[sessionId] && sessionId !== 'default' && !forceInit) {
+        return res.json({
+            ready: false,
+            qr: null
+        });
+    }
+
     const session = getSession(sessionId);
     res.json({
         ready: session.ready,
@@ -221,6 +237,6 @@ app.post('/api/restart', async (req, res) => {
 
 // Arrancamos el servidor Express
 app.listen(PORT, () => {
-    console.log(`Servidor puente de WhatsApp MULTI-SESIÓN corriendo en el puerto ${PORT}`);
+    console.log(`Servidor puente de WhatsApp MULTI-SESIÓN OPTIMIZADO corriendo en el puerto ${PORT}`);
     console.log(`Webhook dinámico (autodetectado), por defecto: ${currentWebhookUrl}`);
 });

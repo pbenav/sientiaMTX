@@ -185,6 +185,10 @@ class SettingsController extends Controller
             'timezone' => 'nullable|timezone',
         ]);
 
+        $user_settings = $user->notification_settings ?? $user->defaultNotificationSettings();
+        $user_settings['whatsapp_personal_allowed'] = $request->boolean('whatsapp_personal_allowed');
+        $user->notification_settings = $user_settings;
+
         $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],

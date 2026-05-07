@@ -97,6 +97,21 @@
                                     :value="old('disk_quota', $user->disk_quota / 1024 / 1024)" required min="1" />
                                 <x-input-error class="mt-2" :messages="$errors->get('disk_quota')" />
                             </div>
+
+                            <div class="flex items-center gap-3 pt-6 md:col-span-2 lg:col-span-3">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="whatsapp_personal_allowed" value="1" 
+                                           class="rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500/20 w-5 h-5 cursor-pointer"
+                                           {{ old('whatsapp_personal_allowed', ($user->notification_settings['whatsapp_personal_allowed'] ?? false)) ? 'checked' : '' }}>
+                                    <div class="ml-3">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                            <span>Permitir WhatsApp Personal (Premium)</span>
+                                            <span class="px-2 py-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[8px] font-black uppercase rounded-full">Premium</span>
+                                        </span>
+                                        <span class="block text-[10px] text-gray-400 font-medium">Habilita a este usuario la capacidad de vincular su propio número de WhatsApp móvil privado de forma aislada en su perfil</span>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="mt-6 flex justify-end">
