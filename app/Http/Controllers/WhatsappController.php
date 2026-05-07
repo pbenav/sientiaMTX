@@ -100,6 +100,33 @@ class WhatsappController extends Controller
                 foreach ($pending as $pMsg) {
                     if ($pMsg->text === $body || ($pMsg->text && str_contains($body, $pMsg->text))) {
                         $pMsg->update(['message_id' => $messageId]);
+
+                        // Reenvío inmediato a Telegram para mensajes originados en la propia web de WhatsApp
+                        $creator = $team->creator;
+                        $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
+                        $isSyncEnabled = $creator ? ($creatorSettings['sync_chats'] ?? false) : true;
+                        if ($isSyncEnabled) {
+                            $botToken = config('services.telegram.bot_token');
+                            if ($botToken && $team->telegram_chat_id && !empty($body)) {
+                                $cleanBody = strip_tags($body);
+                                Log::info("Sincronización Web: Reenviando mensaje enviado desde la web a Telegram");
+                                \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                                    'chat_id' => $team->telegram_chat_id,
+                                    'text' => "🟢 [WhatsApp] {$author}:\n{$cleanBody}",
+                                ]);
+                                // Crear registro espejo de Telegram para que aparezca en el widget de la web de inmediato
+                                \App\Models\TelegramMessage::create([
+                                    'team_id' => $team->id,
+                                    'author_name' => "🟢 [WhatsApp] {$author}",
+                                    'text' => $cleanBody,
+                                    'file_type' => 'text',
+                                    'telegram_message_id' => 'sync_' . uniqid(),
+                                    'is_from_web' => true,
+                                    'file_size' => 0,
+                                ]);
+                            }
+                        }
+
                         return response()->json(['status' => 'success']);
                     }
                 }
@@ -165,6 +192,20 @@ class WhatsappController extends Controller
                         \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
                             'chat_id' => $team->telegram_chat_id,
                             'text' => "🟢 [WhatsApp] {$author}:\n{$cleanBody}",
+                        ]);
+
+                        // Crear registro espejo de Telegram para que aparezca en el widget de la web de inmediato
+                        \App\Models\TelegramMessage::create([
+                            'team_id' => $team->id,
+                            'author_name' => "🟢 [WhatsApp] {$author}",
+                            'text' => $cleanBody,
+                            'file_type' => $type,
+                            'photo_path' => $photoPath,
+                            'voice_path' => $voicePath,
+                            'sticker_path' => $stickerPath,
+                            'telegram_message_id' => 'sync_' . uniqid(),
+                            'is_from_web' => true,
+                            'file_size' => $fileSize,
                         ]);
                     }
                 } else {

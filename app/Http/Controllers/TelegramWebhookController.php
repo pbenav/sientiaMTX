@@ -173,6 +173,20 @@ class TelegramWebhookController extends Controller
                                 'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
                                 'webhook_url' => route('whatsapp.webhook'),
                             ]);
+
+                            // Crear registro espejo de WhatsApp para que aparezca en el widget de la web de inmediato
+                            \App\Models\WhatsappMessage::create([
+                                'team_id' => $team->id,
+                                'message_id' => 'sync_' . uniqid(),
+                                'from_me' => false,
+                                'author' => "🔵 [Telegram] {$authorName}",
+                                'text' => strip_tags($text),
+                                'file_type' => $fileType,
+                                'photo_path' => $photoPath,
+                                'voice_path' => $voicePath,
+                                'sticker_path' => $stickerPath,
+                                'file_size' => $fileSize,
+                            ]);
                         }
                     } else {
                         Log::info("Sincronización desactivada por preferencia de perfil para el equipo {$team->name}");
