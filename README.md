@@ -1,4 +1,4 @@
-# 🚀 SientiaMTX (v0.9.8.RC3)
+# 🚀 SientiaMTX (v0.9.9RC4)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/pbenav/cth-mobile/main/assets/icon/icon.png" width="150" alt="SientiaMTX Logo">
