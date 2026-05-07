@@ -153,14 +153,22 @@ class WhatsappController extends Controller
                 ]);
 
                 // Reenvío automático Inter-Bridge a Telegram si está configurado en el equipo
-                $botToken = config('services.telegram.bot_token');
-                if ($botToken && $team->telegram_chat_id && !empty($body) && !str_contains($body, '🔵 *[Telegram]*')) {
-                    $cleanBody = strip_tags($body);
-                    \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
-                        'chat_id' => $team->telegram_chat_id,
-                        'text' => "🟢 *[WhatsApp] {$author}:*\n{$cleanBody}",
-                        'parse_mode' => 'Markdown',
-                    ]);
+                $creator = $team->creator;
+                $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
+                $isSyncEnabled = $creator ? ($creatorSettings['sync_chats'] ?? false) : true;
+
+                if ($isSyncEnabled) {
+                    $botToken = config('services.telegram.bot_token');
+                    if ($botToken && $team->telegram_chat_id && !empty($body) && !str_contains($body, '🔵 *[Telegram]*')) {
+                        $cleanBody = strip_tags($body);
+                        Log::info("Sincronización: Reenviando mensaje de WhatsApp a Telegram para el equipo {$team->name}");
+                        \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                            'chat_id' => $team->telegram_chat_id,
+                            'text' => "🟢 [WhatsApp] {$author}:\n{$cleanBody}",
+                        ]);
+                    }
+                } else {
+                    Log::info("Sincronización desactivada por preferencia de perfil para el equipo {$team->name}");
                 }
 
             } catch (\Exception $e) {

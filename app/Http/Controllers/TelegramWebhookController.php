@@ -161,11 +161,21 @@ class TelegramWebhookController extends Controller
                     ]);
 
                     // Reenvío automático Inter-Bridge a WhatsApp si está configurado en el equipo
-                    if ($team->whatsapp_chat_id && !empty($text) && !str_contains($text, '🟢 *[WhatsApp]*')) {
-                        \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
-                            'phone' => $team->whatsapp_chat_id,
-                            'message' => "🔵 *[Telegram] {$authorName}:*\n" . strip_tags($text),
-                        ]);
+                    $creator = $team->creator;
+                    $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
+                    $isSyncEnabled = $creator ? ($creatorSettings['sync_chats'] ?? false) : true;
+
+                    if ($isSyncEnabled) {
+                        if ($team->whatsapp_chat_id && !empty($text) && !str_contains($text, '🟢 [WhatsApp]')) {
+                            Log::info("Sincronización: Reenviando mensaje de Telegram a WhatsApp para el equipo {$team->name}");
+                            \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
+                                'phone' => $team->whatsapp_chat_id,
+                                'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
+                                'webhook_url' => route('whatsapp.webhook'),
+                            ]);
+                        }
+                    } else {
+                        Log::info("Sincronización desactivada por preferencia de perfil para el equipo {$team->name}");
                     }
 
                 } catch (\Exception $e) {
