@@ -99,6 +99,14 @@ class TelegramWebhookController extends Controller
             return response()->json(['status' => 'success']);
         }
 
+        // Deactivate backend processing if the team creator has disabled the Telegram module
+        $creator = $team->creator;
+        $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
+        if ($creatorSettings && !($creatorSettings['telegram'] ?? false)) {
+            Log::info("Telegram Webhook ignorado: El creador del equipo {$team->name} tiene desactivado el módulo de Telegram.");
+            return response()->json(['status' => 'success']);
+        }
+
         if ($messageId) {
             // Check if we already have this message (IMPORTANT: Scope to team_id to avoid collisions)
             $existing = \App\Models\TelegramMessage::where('team_id', $team->id)
@@ -152,6 +160,13 @@ class TelegramWebhookController extends Controller
                         'reply_to_text' => $replyToText,
                     ]);
 
+                    // Reenvío automático Inter-Bridge a WhatsApp si está configurado en el equipo
+                    if ($team->whatsapp_chat_id && !empty($text) && !str_contains($text, '🟢 *[WhatsApp]*')) {
+                        \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
+                            'phone' => $team->whatsapp_chat_id,
+                            'message' => "🔵 *[Telegram] {$authorName}:*\n" . strip_tags($text),
+                        ]);
+                    }
 
                 } catch (\Exception $e) {
                     Log::error("Telegram Webhook: ERROR CRÍTICO al guardar mensaje: " . $e->getMessage(), [

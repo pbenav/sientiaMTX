@@ -16,8 +16,19 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $whatsappStatus = ['ready' => false, 'qr' => null];
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(1)->get('http://localhost:3001/api/status');
+            if ($response->successful()) {
+                $whatsappStatus = $response->json();
+            }
+        } catch (\Exception $e) {
+            // El servicio de Node.js no está corriendo
+        }
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'whatsappStatus' => $whatsappStatus,
         ]);
     }
 
@@ -136,6 +147,26 @@ class ProfileController extends Controller
         }
 
         return $redirectUrl->with('status', 'notifications-updated');
+    }
+
+    /**
+     * Update the user's chat integration toggles (Telegram/WhatsApp) independently.
+     */
+    public function updateChatIntegrations(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $current = $user->notification_settings ?? $user->defaultNotificationSettings();
+        
+        $current['telegram'] = $request->boolean('telegram');
+        $current['whatsapp'] = $request->boolean('whatsapp');
+        $current['sync_chats'] = $request->boolean('sync_chats');
+        
+        $user->notification_settings = $current;
+        $user->save();
+        
+        return \Illuminate\Support\Facades\Redirect::route('profile.edit', ['tab' => 'integrations'])
+            ->withFragment('chat-systems')
+            ->with('status', 'integrations-updated');
     }
 
     /**

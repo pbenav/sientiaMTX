@@ -111,6 +111,26 @@
                                 </div>
                             </div>
 
+                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Integración WhatsApp</h3>
+                                </div>
+                                
+                                <div>
+                                    <x-input-label for="whatsapp_chat_id" value="ID DE CHAT/NÚMERO DE WHATSAPP"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                    <x-text-input id="whatsapp_chat_id" name="whatsapp_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
+                                        :value="old('whatsapp_chat_id', $team->whatsapp_chat_id)" placeholder="34600123456" />
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Para vincular el grupo o número, pon el ID (ej: 1234567890@c.us). Los mensajes se recibirán en el widget de WhatsApp.</p>
+                                    <x-input-error :messages="$errors->get('whatsapp_chat_id')" class="mt-2" />
+                                </div>
+                            </div>
+
                             @if(auth()->user()->is_admin)
                             <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
                                 <div class="flex items-center gap-2 mb-5">

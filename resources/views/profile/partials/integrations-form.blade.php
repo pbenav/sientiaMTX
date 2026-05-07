@@ -15,6 +15,9 @@
     
     // Preferencias de IA
     $prefs = $user->aiPreferences->keyBy(fn($p) => $p->team_id ?? 'global');
+
+    // Preferencias de Notificaciones (para los toggles)
+    $notifSettings = $user->notification_settings ?? $user->defaultNotificationSettings();
 @endphp
 
 <section x-data="{ 
@@ -297,6 +300,47 @@
             </form>
         </div>
 
+        <!-- 🔌 SISTEMAS DE CHAT (Habilitar / Deshabilitar) -->
+        <div id="chat-systems" class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
+            <div class="flex items-center gap-4">
+                <div class="p-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-500">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white">Sistemas de Chat</h4>
+                    <p class="text-[10px] text-gray-400 font-medium">Habilita o deshabilita los módulos de chat y widgets en la plataforma</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('profile.chat-integrations.update') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4" x-data x-on:change="$el.submit()">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="tab" value="integrations">
+                
+                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <!-- Checkbox oculto auxiliar para que envíe 0 si se desmarca -->
+                    <input type="hidden" name="telegram" value="0">
+                    <input type="checkbox" name="telegram" value="1" {{ ($notifSettings['telegram'] ?? false) ? 'checked' : '' }} class="w-5 h-5 rounded-lg text-sky-500 focus:ring-sky-500 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Activar módulo Telegram</span>
+                </label>
+                
+                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <!-- Checkbox oculto auxiliar para que envíe 0 si se desmarca -->
+                    <input type="hidden" name="whatsapp" value="0">
+                    <input type="checkbox" name="whatsapp" value="1" {{ ($notifSettings['whatsapp'] ?? false) ? 'checked' : '' }} class="w-5 h-5 rounded-lg text-emerald-500 focus:ring-emerald-500 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Activar módulo WhatsApp</span>
+                </label>
+
+                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <!-- Checkbox oculto auxiliar para que envíe 0 si se desmarca -->
+                    <input type="hidden" name="sync_chats" value="0">
+                    <input type="checkbox" name="sync_chats" value="1" {{ ($notifSettings['sync_chats'] ?? false) ? 'checked' : '' }} class="w-5 h-5 rounded-lg text-violet-500 focus:ring-violet-500 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Sincronizar canales</span>
+                </label>
+            </form>
+        </div>
+
+        @if($notifSettings['telegram'] ?? false)
         <!-- 📱 TELEGRAM NOTIFICATIONS (Global Maestro) -->
         <div x-transition class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-6">
             <form method="POST" action="{{ route('profile.notifications.update') }}" class="space-y-4">
@@ -359,5 +403,148 @@
                 </div>
             </form>
         </div>
+        @endif
+
+        @if($notifSettings['whatsapp'] ?? false)
+        <!-- 🟢 WHATSAPP WEB BRIDGE (Global Maestro - Con Autorefresco en Tiempo Real) -->
+        <div id="whatsapp-bridge" x-transition x-data="{
+            ready: {{ ($whatsappStatus['ready'] ?? false) ? 'true' : 'false' }},
+            qr: '{{ $whatsappStatus['qr'] ?? '' }}',
+            serviceAvailable: {{ (isset($whatsappStatus['ready']) || isset($whatsappStatus['qr'])) ? 'true' : 'false' }},
+            pollInterval: null,
+            
+            init() {
+                this.startPolling();
+            },
+            startPolling() {
+                if (this.pollInterval) clearInterval(this.pollInterval);
+                this.pollInterval = setInterval(() => this.checkStatus(), 5000);
+            },
+            destroy() {
+                if (this.pollInterval) clearInterval(this.pollInterval);
+            },
+            async checkStatus() {
+                try {
+                    const res = await fetch('http://localhost:3001/api/status');
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.serviceAvailable = true;
+                        this.ready = !!data.ready;
+                        this.qr = data.qr || '';
+                    } else {
+                        this.serviceAvailable = false;
+                    }
+                } catch(e) {
+                    this.serviceAvailable = false;
+                    console.error('Error polling WhatsApp status:', e);
+                }
+            },
+            async restartClient(btn) {
+                const oldText = btn.innerText;
+                btn.disabled = true;
+                btn.innerText = 'Reiniciando...';
+                try {
+                    await fetch('{{ route('whatsapp.restart') }}', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    });
+                    this.qr = '';
+                    this.ready = false;
+                    setTimeout(() => this.checkStatus(), 2000);
+                } catch(e) {
+                    console.error('Error al reiniciar el cliente:', e);
+                } finally {
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerText = oldText;
+                    }, 4000);
+                }
+            }
+        }" class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-500">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.35-.01-1.02-.2-1.53-.37-.6-.2-1.07-.31-1.03-.66.02-.18.27-.36.75-.55 2.94-1.28 4.9-2.13 5.88-2.54 2.8-.1.5.15.5.99c.01.26-.01.52-.06.78z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">WhatsApp Bridge</h4>
+                        <p class="text-[10px] text-gray-400 font-medium">Vincula WhatsApp para recibir y enviar mensajes desde Sientia</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50/50 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
+                <!-- 1. Servicio no disponible -->
+                <div x-show="!serviceAvailable" class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-gray-900 dark:text-white">Servicio no disponible</h5>
+                        <p class="text-xs text-gray-500 mt-1">Parece que el servicio interno (Node.js) no está corriendo en el servidor. Contacta al administrador para que inicie el <code>whatsapp-service</code>.</p>
+                    </div>
+                </div>
+
+                <!-- 2. ¡WhatsApp Conectado! -->
+                <div x-show="serviceAvailable && ready" class="flex items-start gap-4" style="display: none;">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-gray-900 dark:text-white">¡WhatsApp Conectado!</h5>
+                        <p class="text-xs text-gray-500 mt-1">El bot está listo y escuchando mensajes en tiempo real. Ahora puedes configurar los grupos o chats en las opciones de cada Equipo.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Requiere vinculación (QR activo) -->
+                <div x-show="serviceAvailable && !ready && qr" class="flex flex-col md:flex-row gap-6 items-start" style="display: none;">
+                    <div class="flex-1">
+                        <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            Requiere vinculación
+                        </h5>
+                        <ul class="space-y-2">
+                            <li class="flex items-start gap-3">
+                                <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">1</span>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Abre WhatsApp en tu teléfono personal o de empresa.</p>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">2</span>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Ve a <strong>Configuración > Dispositivos vinculados</strong>.</p>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">3</span>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Escanea el código QR que ves a la derecha.</p>
+                            </li>
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <p class="text-[10px] text-gray-400 italic">El QR se refresca automáticamente cada 5 segundos.</p>
+                            <button type="button" @click="restartClient($event.target)" class="mt-2 text-[10px] font-black text-emerald-600 uppercase hover:text-emerald-700 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Generar nuevo QR
+                            </button>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-auto flex justify-center">
+                        <div class="p-3 bg-white rounded-2xl shadow-xl border border-gray-100 inline-block">
+                            <img :src="qr" alt="WhatsApp QR Code" class="w-48 h-48 md:w-56 md:h-56 object-contain">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Iniciando el cliente (sin QR todavía) -->
+                <div x-show="serviceAvailable && !ready && !qr" class="flex items-start gap-4" style="display: none;">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shrink-0">
+                        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-gray-900 dark:text-white">Generando código QR...</h5>
+                        <p class="text-xs text-gray-500 mt-1">El servicio está procesando la solicitud en segundo plano. El código QR aparecerá aquí automáticamente en unos instantes sin necesidad de recargar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
     </div>
 </section>

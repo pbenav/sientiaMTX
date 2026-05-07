@@ -143,6 +143,7 @@ class User extends Authenticatable implements HasLocalePreference
             'web_push' => false,
             'telegram' => false,
             'whatsapp' => false,
+            'sync_chats' => false,
             'quiet_hours_enabled' => true,
             'quiet_hours_start' => '22:00',
             'quiet_hours_end' => '08:00',

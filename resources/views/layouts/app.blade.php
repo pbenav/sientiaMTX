@@ -968,7 +968,15 @@
 
     <!-- Telegram Chat Experiment -->
     @auth
-        @include('partials.telegram-widget')
+        @php
+            $notifSettings = auth()->user()->notification_settings ?? auth()->user()->defaultNotificationSettings();
+        @endphp
+        @if($notifSettings['telegram'] ?? false)
+            @include('partials.telegram-widget')
+        @endif
+        @if($notifSettings['whatsapp'] ?? false)
+            @include('partials.whatsapp-widget')
+        @endif
 
         @php
             $currTeam = request()->route('team') ?? $team ?? null;
@@ -1215,8 +1223,10 @@
     </script>
     @stack('modals')
     @stack('scripts')
-    <!-- Lottie Web for Telegram animated stickers -->
+    @if(($notifSettings['telegram'] ?? false) || ($notifSettings['whatsapp'] ?? false))
+    <!-- Lottie Web for animated stickers -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
+    @endif
     
     @auth
         <x-quick-notes />

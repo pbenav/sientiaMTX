@@ -38,6 +38,7 @@ class DocumentationController extends Controller
             'es' => [
                 'installation' => 'Instalación',
                 'telegram' => 'Configuración Telegram',
+                'whatsapp' => 'Configuración WhatsApp',
                 'user-manual' => 'Manual de Usuario',
                 'admin-manual' => 'Manual de Administrador',
                 'gamification' => 'Sistema de Gamificación',
@@ -45,6 +46,7 @@ class DocumentationController extends Controller
             'en' => [
                 'installation' => 'Installation',
                 'telegram' => 'Telegram Setup',
+                'whatsapp' => 'WhatsApp Setup',
                 'user-manual' => 'User Manual',
                 'admin-manual' => 'Admin Manual',
                 'gamification' => 'Gamification System',

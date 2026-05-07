@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 // Telegram Webhook (Public)
 Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
 
+// WhatsApp Webhook (Public)
+Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappController::class, 'webhook'])->name('whatsapp.webhook');
+
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
     if (auth()->check()) {
@@ -63,10 +66,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::patch('/profile/ai', [ProfileController::class, 'updateAi'])->name('profile.ai.update');
     Route::patch('/profile/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.notifications.update');
+    Route::patch('/profile/chat-integrations', [ProfileController::class, 'updateChatIntegrations'])->name('profile.chat-integrations.update');
     Route::post('/notifications/subscribe', [\App\Http\Controllers\WebPushController::class, 'store'])->name('webpush.subscribe');
     Route::post('/notifications/unsubscribe', [\App\Http\Controllers\WebPushController::class, 'destroy'])->name('webpush.unsubscribe');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/telegram/test', [ProfileController::class, 'testTelegram'])->name('profile.telegram.test');
+    Route::post('/whatsapp/restart', [\App\Http\Controllers\WhatsappController::class, 'restart'])->name('whatsapp.restart');
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnread'])->name('notifications.unread-count');
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::match(['get', 'patch'], '/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
@@ -200,6 +205,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'updateLegalSettings'])->name('settings.legal.update');
         Route::post('/settings/telegram/test', [\App\Http\Controllers\SettingsController::class, 'testTelegram'])->name('settings.telegram.test');
         Route::post('/settings/telegram/register', [\App\Http\Controllers\SettingsController::class, 'registerTelegramWebhook'])->name('settings.telegram.register');
+        Route::get('/settings/whatsapp', [\App\Http\Controllers\WhatsappController::class, 'index'])->name('settings.whatsapp');
 
         // Global Skills Management (Global scope only)
         Route::get('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'appearanceSettings'])->name('settings.appearance');
@@ -249,6 +255,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/send', [\App\Http\Controllers\TelegramChatController::class, 'sendMessage'])->name('send');
         Route::patch('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'update'])->name('update');
         Route::delete('/messages/{message}', [\App\Http\Controllers\TelegramChatController::class, 'destroy'])->name('delete');
+    });
+
+    // --- WhatsApp Chat ---
+    Route::prefix('whatsapp-chat')->name('whatsapp.chat.')->group(function () {
+        Route::get('/messages', [\App\Http\Controllers\WhatsappChatController::class, 'getMessages'])->name('messages');
+        Route::post('/send', [\App\Http\Controllers\WhatsappChatController::class, 'sendMessage'])->name('send');
+        Route::patch('/messages/{message}', [\App\Http\Controllers\WhatsappChatController::class, 'update'])->name('update');
+        Route::delete('/messages/{message}', [\App\Http\Controllers\WhatsappChatController::class, 'destroy'])->name('delete');
     });
 
     // --- AI Assistant ---

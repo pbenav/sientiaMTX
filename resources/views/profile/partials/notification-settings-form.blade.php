@@ -65,14 +65,14 @@
                 </div>
 
                 <!-- WhatsApp -->
-                <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 group hover:shadow-sm transition-all opacity-50 shadow-inner">
+                <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 group hover:shadow-sm transition-all shadow-inner">
                     <div class="flex-1">
-                        <label class="block text-sm font-bold text-gray-400 dark:text-gray-500">
+                        <label for="whatsapp" class="block text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
                             {{ __('notifications.channel_whatsapp') }}
                         </label>
-                        <span class="text-[10px] text-amber-500 font-bold uppercase tracking-tighter">{{ __('notifications.coming_soon') }}</span>
                     </div>
-                    <input type="checkbox" disabled class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-gray-400 cursor-not-allowed">
+                    <input type="checkbox" id="whatsapp" name="whatsapp" value="1" {{ ($settings['whatsapp'] ?? false) ? 'checked' : '' }}
+                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
                 </div>
             </div>
         </div>

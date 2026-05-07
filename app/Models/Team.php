@@ -19,6 +19,7 @@ class Team extends Model
         'slug',
         'description',
         'telegram_chat_id',
+        'whatsapp_chat_id',
         'created_by_id',
         'quadrant_colors',
         'settings',

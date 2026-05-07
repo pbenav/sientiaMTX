@@ -140,6 +140,7 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
             'description' => 'nullable|string|max:1000',
             'telegram_chat_id' => 'nullable|string|max:255',
+            'whatsapp_chat_id' => 'nullable|string|max:255',
             'settings' => 'nullable|array',
         ];
 
@@ -151,6 +152,9 @@ class TeamController extends Controller
 
         if (isset($validated['telegram_chat_id'])) {
             $validated['telegram_chat_id'] = trim($validated['telegram_chat_id']);
+        }
+        if (isset($validated['whatsapp_chat_id'])) {
+            $validated['whatsapp_chat_id'] = trim($validated['whatsapp_chat_id']);
         }
 
         if (auth()->user()->is_admin && $request->has('disk_quota_gb')) {

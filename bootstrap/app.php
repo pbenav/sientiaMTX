@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             '/telegram/webhook',
+            '/whatsapp/webhook',
         ]);
 
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy

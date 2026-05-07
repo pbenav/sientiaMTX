@@ -62,7 +62,7 @@ class StorageController extends Controller
 
         // Forum attachments scoped to this team (Local only)
         $forumAttachments = TaskAttachment::where('attachable_type', \App\Models\ForumMessage::class)
-            ->whereHas('attachable', function($q) use ($team) {
+            ->whereHasMorph('attachable', [\App\Models\ForumMessage::class], function($q) use ($team) {
                 $q->whereHas('thread', function($sq) use ($team) {
                     $sq->where('team_id', $team->id);
                 });
@@ -83,7 +83,7 @@ class StorageController extends Controller
             })
             ->orWhere(function($q) use ($team) {
                 $q->where('attachable_type', \App\Models\ForumMessage::class)
-                  ->whereHas('attachable', function($sq) use ($team) {
+                  ->whereHasMorph('attachable', [\App\Models\ForumMessage::class], function($sq) use ($team) {
                       $sq->whereHas('thread', function($ssq) use ($team) {
                           $ssq->where('team_id', $team->id);
                       });
@@ -200,7 +200,7 @@ class StorageController extends Controller
 
             // Adjuntos de Mensajes de Foro
             $forumAttachments = TaskAttachment::where('attachable_type', \App\Models\ForumMessage::class)
-                ->whereHas('attachable', function($q) use ($team) {
+                ->whereHasMorph('attachable', [\App\Models\ForumMessage::class], function($q) use ($team) {
                     $q->whereHas('thread', function($sq) use ($team) {
                         $sq->where('team_id', $team->id);
                     });
