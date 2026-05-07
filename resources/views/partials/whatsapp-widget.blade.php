@@ -694,14 +694,22 @@
                     formData.append('voice', this.pendingVoice);
                 }
 
-                this.newMessage = '';
-                this.pendingPhoto = null;
-                this.previewUrl = null;
-                this.pendingVoice = null;
-                this.voicePreviewUrl = null;
-                this.replyToId = null;
-                this.replyToText = null;
-                
+                // Guardamos el texto temporalmente por si falla la llamada
+                const backupMessage = this.newMessage;
+
+                const formData = new FormData();
+                formData.append('message', backupMessage);
+                formData.append('team_id', this.teamId);
+                if (this.replyToId) {
+                    formData.append('reply_to_id', this.replyToId);
+                }
+                if (this.pendingPhoto) {
+                    formData.append('photo', this.pendingPhoto);
+                }
+                if (this.pendingVoice) {
+                    formData.append('voice', this.pendingVoice);
+                }
+
                 try {
                     const response = await fetch('{{ route('whatsapp.chat.send') }}', {
                         method: 'POST',
@@ -713,10 +721,45 @@
                     });
                     
                     if (response.ok) {
+                        // Limpiamos los inputs solo si se envió con éxito
+                        this.newMessage = '';
+                        this.pendingPhoto = null;
+                        this.previewUrl = null;
+                        this.pendingVoice = null;
+                        this.voicePreviewUrl = null;
+                        this.replyToId = null;
+                        this.replyToText = null;
                         this.refreshMessages();
+                    } else {
+                        const errorData = await response.json();
+                        let errorMessage = errorData.reply || errorData.error || 'No se pudo enviar el mensaje';
+                        if (errorData.errors && errorData.errors.message) {
+                            errorMessage = errorData.errors.message[0];
+                        }
+                        
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '¡Atención!',
+                                text: errorMessage,
+                                confirmButtonColor: '#10b981'
+                            });
+                        } else {
+                            alert('⚠️ Error al enviar: ' + errorMessage);
+                        }
                     }
                 } catch (e) {
                     console.error('Error enviando:', e);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Red',
+                            text: 'No se pudo conectar con el servidor. Reintenta en unos instantes.',
+                            confirmButtonColor: '#10b981'
+                        });
+                    } else {
+                        alert('⚠️ Error de conexión al servidor.');
+                    }
                 }
             },
             async updateMsg() {
