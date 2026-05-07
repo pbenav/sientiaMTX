@@ -560,9 +560,10 @@
                 }
                 
                 this.refreshMessages(true);
-                setInterval(() => this.refreshMessages(), 8000); // Polling cada 8s
+                setInterval(() => this.refreshMessages(), 12000); // Polling cada 12s
             },
             async refreshMessages(initial = false) {
+                if (document.hidden && !initial) return;
                 if (!this.teamId || this.loading) return;
 
                 try {

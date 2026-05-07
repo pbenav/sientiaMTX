@@ -434,6 +434,7 @@
                 initSession: false,
                 pollingInterval: null,
                 async checkStatus() {
+                    if (document.hidden) return;
                     try {
                         const url = '{{ route('whatsapp.personal-status') }}' + (this.initSession ? '?init=true' : '');
                         const response = await fetch(url);
@@ -452,7 +453,7 @@
                     this.checkStatus();
                     this.pollingInterval = setInterval(() => {
                         this.checkStatus();
-                    }, 3000);
+                    }, 6000);
                 },
                 stopPolling() {
                     if (this.pollingInterval) {
@@ -600,12 +601,13 @@
             },
             startPolling() {
                 if (this.pollInterval) clearInterval(this.pollInterval);
-                this.pollInterval = setInterval(() => this.checkStatus(), 5000);
+                this.pollInterval = setInterval(() => this.checkStatus(), 10000);
             },
             destroy() {
                 if (this.pollInterval) clearInterval(this.pollInterval);
             },
             async checkStatus() {
+                if (document.hidden) return;
                 try {
                     const res = await fetch('{{ route('whatsapp.status') }}');
                     if (res.ok) {
