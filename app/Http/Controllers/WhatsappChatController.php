@@ -16,7 +16,7 @@ class WhatsappChatController extends Controller
      public function sendMessage(Request $request)
     {
         $request->validate([
-            'message' => 'nullable|string|max:1000',
+            'message' => 'nullable|string|max:10000',
             'photo' => 'nullable|image|max:5120', // Max 5MB
             'voice' => 'nullable|mimes:ogg,webm,mp3,wav|max:5120', // Max 5MB
             'team_id' => 'required|exists:teams,id',
