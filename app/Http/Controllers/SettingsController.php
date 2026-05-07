@@ -91,6 +91,17 @@ class SettingsController extends Controller
             $query->where('is_admin', false);
         }
 
+        if ($request->filled('premium')) {
+            if ($request->get('premium') === '1') {
+                $query->where('notification_settings->whatsapp_personal_allowed', true);
+            } elseif ($request->get('premium') === '0') {
+                $query->where(function ($q) {
+                    $q->whereNull('notification_settings')
+                      ->orWhere('notification_settings->whatsapp_personal_allowed', false);
+                });
+            }
+        }
+
         $perPage = $request->get('per_page', 25);
         if ($perPage === 'all') {
             $perPage = $query->count() ?: 1;
@@ -102,6 +113,7 @@ class SettingsController extends Controller
             'users' => $users,
             'search' => $request->get('search', ''),
             'role' => $request->get('role', ''),
+            'premium' => $request->get('premium', ''),
             'sort' => $sort,
             'direction' => $direction,
         ]);

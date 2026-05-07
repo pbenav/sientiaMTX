@@ -41,9 +41,16 @@
                     </div>
                     <select name="role"
                             class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
-                        <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('Todos') }}</option>
+                        <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('Todos los Roles') }}</option>
                         <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrador') }}</option>
                         <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('Usuario') }}</option>
+                    </select>
+
+                    <select name="premium"
+                            class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
+                        <option value="" {{ $premium === '' ? 'selected' : '' }}>{{ __('Todos los Planes') }}</option>
+                        <option value="1" {{ $premium === '1' ? 'selected' : '' }}>{{ __('Premium (WhatsApp)') }}</option>
+                        <option value="0" {{ $premium === '0' ? 'selected' : '' }}>{{ __('Estándar') }}</option>
                     </select>
 
                     <select name="per_page" onchange="this.form.submit()"
@@ -58,7 +65,7 @@
                         <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
                             {{ __('Filtrar') }}
                         </button>
-                @if (request()->anyFilled(['search', 'role']))
+                @if (request()->anyFilled(['search', 'role', 'premium']))
                     <a href="{{ route('settings.users') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
                         {{ __('Limpiar') }}
                     </a>
@@ -121,7 +128,7 @@
                                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $user->email }}
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 flex flex-wrap items-center gap-1.5">
                                         @if ($user->is_admin)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
                                                 {{ __('Administrator') }}
@@ -129,6 +136,12 @@
                                         @else
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                                                 {{ __('User') }}
+                                            </span>
+                                        @endif
+
+                                        @if ($user->notification_settings['whatsapp_personal_allowed'] ?? false)
+                                            <span class="inline-flex items-center px-2 py-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[9px] font-black uppercase rounded-full shadow-sm border border-transparent tracking-wider">
+                                                Premium
                                             </span>
                                         @endif
                                     </td>
