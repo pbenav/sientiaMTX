@@ -99,6 +99,8 @@ class WhatsappChatController extends Controller
                 $params['mediaFilename'] = $voice->getClientOriginalName();
             }
 
+            $params['webhook_url'] = route('whatsapp.webhook');
+
             // Llamada al bridge de NodeJS
             $response = Http::post("http://localhost:3001/api/send", $params);
 

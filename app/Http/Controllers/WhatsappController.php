@@ -16,7 +16,9 @@ class WhatsappController extends Controller
         // Consultamos el estado al servicio Node.js (opcional para precargar datos)
         $status = ['ready' => false, 'qr' => null];
         try {
-            $response = Http::timeout(2)->get('http://localhost:3001/api/status');
+            $response = Http::timeout(2)->get('http://localhost:3001/api/status', [
+                'webhook_url' => route('whatsapp.webhook')
+            ]);
             if ($response->successful()) {
                 $status = $response->json();
             }

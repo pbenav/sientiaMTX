@@ -6,11 +6,20 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001; // Usamos 3001 para no pisar el 3000 si está ocupado
-const LARAVEL_WEBHOOK_URL = process.env.LARAVEL_WEBHOOK_URL || 'http://localhost:8000/whatsapp/webhook';
+let currentWebhookUrl = process.env.LARAVEL_WEBHOOK_URL || 'http://localhost:8000/whatsapp/webhook';
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Middleware de autodetección dinámico de la dirección del webhook
+app.use((req, res, next) => {
+    const webhookUrl = req.query.webhook_url || req.body.webhook_url;
+    if (webhookUrl) {
+        currentWebhookUrl = webhookUrl;
+    }
+    next();
+});
 
 // Estado de la conexión
 let currentQR = null;
@@ -103,7 +112,7 @@ client.on('message_create', async (message) => {
         }
 
         // Enviamos el mensaje al webhook de Laravel
-        await axios.post(LARAVEL_WEBHOOK_URL, {
+        await axios.post(currentWebhookUrl, {
             id: message.id.id,
             from: message.from,
             to: message.to,
@@ -115,7 +124,7 @@ client.on('message_create', async (message) => {
             mediaData: mediaData,
             mediaMimetype: mediaMimetype
         });
-        console.log('=> Webhook enviado a Laravel correctamente');
+        console.log('=> Webhook enviado a Laravel en: ' + currentWebhookUrl);
     } catch (error) {
         console.error('Error enviando webhook a Laravel:', error.message);
     }
@@ -194,5 +203,5 @@ client.initialize();
 // Arrancamos el servidor Express
 app.listen(PORT, () => {
     console.log(`Servidor puente de WhatsApp corriendo en el puerto ${PORT}`);
-    console.log(`Webhook configurado apuntando a: ${LARAVEL_WEBHOOK_URL}`);
+    console.log(`Webhook dinámico (autodetectado), por defecto: ${currentWebhookUrl}`);
 });
