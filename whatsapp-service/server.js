@@ -51,6 +51,13 @@ function getSession(sessionId = 'default') {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
+                '--disable-accelerated-2d-canvas',
+                '--disable-background-networking',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--mute-audio',
+                '--no-pings',
                 '--js-flags="--max-old-space-size=128"', // Limita la RAM interna de V8 en cada Chromium
                 '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
             ],
@@ -65,7 +72,30 @@ function getSession(sessionId = 'default') {
         ready: false
     };
 
+    // Temporizador de auto-sleep por inactividad
+    let inactivityTimeout = null;
+    const resetInactivityTimer = () => {
+        if (sessionId === 'default') return; // La sesión por defecto nunca se duerme de forma activa
+        if (inactivityTimeout) clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(async () => {
+            console.log(`[Auto-Sleep] Durmiendo sesión de equipo inactiva: ${sessionId} para liberar CPU/RAM.`);
+            try {
+                if (sessions[sessionId]) {
+                    const clientToDestroy = sessions[sessionId].client;
+                    delete sessions[sessionId];
+                    await clientToDestroy.destroy();
+                }
+            } catch (err) {
+                console.error(`[Auto-Sleep Error - ${sessionId}] Error al dormir la sesión:`, err.message);
+            }
+        }, 1200000); // 20 minutos de inactividad
+    };
+
+    // Inicializar el temporizador de inactividad
+    resetInactivityTimer();
+
     client.on('qr', async (qr) => {
+        resetInactivityTimer();
         console.log(`[Multi-Sesión QR - ${sessionId}] Generado nuevo código QR.`);
         try {
             sessionState.qr = await qrcode.toDataURL(qr);
@@ -76,6 +106,7 @@ function getSession(sessionId = 'default') {
     });
 
     client.on('ready', () => {
+        resetInactivityTimer();
         console.log(`[Multi-Sesión - ${sessionId}] ¡Cliente listo y conectado!`);
         sessionState.ready = true;
         sessionState.qr = null;
@@ -85,9 +116,11 @@ function getSession(sessionId = 'default') {
         console.log(`[Multi-Sesión - ${sessionId}] Cliente desconectado:`, reason);
         sessionState.ready = false;
         sessionState.qr = null;
+        if (inactivityTimeout) clearTimeout(inactivityTimeout);
     });
 
     client.on('message_create', async (message) => {
+        resetInactivityTimer();
         if (!message.from) return;
         
         console.log(`[Multi-Sesión Msg - ${sessionId}] De: ${message.from} (Mío: ${message.fromMe}): ${message.body}`);
