@@ -317,28 +317,161 @@
                 @method('PATCH')
                 <input type="hidden" name="tab" value="integrations">
                 
-                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <!-- Checkbox oculto auxiliar para que envíe 0 si se desmarca -->
-                    <input type="hidden" name="telegram" value="0">
-                    <input type="checkbox" name="telegram" value="1" {{ ($notifSettings['telegram'] ?? false) ? 'checked' : '' }} class="w-5 h-5 rounded-lg text-sky-500 focus:ring-sky-500 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
                     <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Activar módulo Telegram</span>
+                    <div class="relative inline-flex items-center">
+                        <input type="hidden" name="telegram" value="0">
+                        <input type="checkbox" name="telegram" value="1" {{ ($notifSettings['telegram'] ?? false) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-sky-300 dark:peer-focus:ring-sky-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-sky-500"></div>
+                    </div>
                 </label>
                 
-                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <!-- Checkbox oculto auxiliar para que envíe 0 si se desmarca -->
-                    <input type="hidden" name="whatsapp" value="0">
-                    <input type="checkbox" name="whatsapp" value="1" {{ ($notifSettings['whatsapp'] ?? false) ? 'checked' : '' }} class="w-5 h-5 rounded-lg text-emerald-500 focus:ring-emerald-500 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
                     <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Activar módulo WhatsApp</span>
+                    <div class="relative inline-flex items-center">
+                        <input type="hidden" name="whatsapp" value="0">
+                        <input type="checkbox" name="whatsapp" value="1" {{ ($notifSettings['whatsapp'] ?? false) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                    </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <!-- Checkbox oculto auxiliar para que envíe 0 si se desmarca -->
-                    <input type="hidden" name="sync_chats" value="0">
-                    <input type="checkbox" name="sync_chats" value="1" {{ ($notifSettings['sync_chats'] ?? false) ? 'checked' : '' }} class="w-5 h-5 rounded-lg text-violet-500 focus:ring-violet-500 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
                     <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Sincronizar canales</span>
+                    <div class="relative inline-flex items-center">
+                        <input type="hidden" name="sync_chats" value="0">
+                        <input type="checkbox" name="sync_chats" value="1" {{ ($notifSettings['sync_chats'] ?? false) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                    </div>
                 </label>
             </form>
         </div>
+
+        @if($notifSettings['whatsapp'] ?? false)
+        <!-- 🟢 WHATSAPP PERSONAL (Vinculación Individual Premium) -->
+        <div x-data="{
+                ready: false,
+                qr: null,
+                loading: false,
+                pollingInterval: null,
+                async checkStatus() {
+                    try {
+                        const response = await fetch('http://localhost:3001/api/status?session=user_{{ auth()->id() }}');
+                        const data = await response.json();
+                        this.ready = data.ready;
+                        this.qr = data.qr;
+                    } catch (e) {
+                        console.error('Error consultando estado de WhatsApp Personal:', e);
+                    }
+                },
+                startPolling() {
+                    this.loading = true;
+                    this.checkStatus();
+                    this.pollingInterval = setInterval(() => {
+                        this.checkStatus();
+                    }, 3000);
+                },
+                stopPolling() {
+                    if (this.pollingInterval) {
+                        clearInterval(this.pollingInterval);
+                        this.pollingInterval = null;
+                    }
+                    this.loading = false;
+                },
+                async restartSession() {
+                    if (!confirm('¿Deseas desvincular o reiniciar tu cuenta de WhatsApp Personal?')) return;
+                    try {
+                        await fetch('http://localhost:3001/api/restart', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session: 'user_{{ auth()->id() }}' })
+                        });
+                        this.ready = false;
+                        this.qr = null;
+                        this.startPolling();
+                    } catch (e) {
+                        console.error('Error al reiniciar sesión:', e);
+                    }
+                }
+             }"
+             x-init="checkStatus(); startPolling()"
+             x-on:destroy="stopPolling()"
+             class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-500">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span>Mi WhatsApp Personal</span>
+                            <span class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full">Premium</span>
+                        </h4>
+                        <p class="text-[10px] text-gray-400 font-medium">Vincula tu propio número de WhatsApp móvil privado de forma aislada</p>
+                    </div>
+                </div>
+                <div>
+                    <template x-if="ready">
+                        <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 dark:border-emerald-800">Conectado</span>
+                    </template>
+                    <template x-if="!ready && qr">
+                        <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[10px] font-black uppercase rounded-lg border border-amber-100 dark:border-amber-800 animate-pulse">Esperando Escaneo</span>
+                    </template>
+                    <template x-if="!ready && !qr">
+                        <span class="px-3 py-1 bg-gray-50 dark:bg-gray-800 text-gray-400 text-[10px] font-black uppercase rounded-lg border border-gray-200 dark:border-gray-700">Desconectado</span>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Interfaz de Conexión -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-4 border-t border-gray-50 dark:border-gray-800">
+                <div class="space-y-2">
+                    <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Al vincular tu WhatsApp personal, podrás enviar y recibir mensajes directamente con tu número privado en las alertas automatizadas y chats autorizados. Toda la comunicación está encriptada y aislada en tu perfil.
+                    </p>
+                    
+                    <div class="flex gap-3 pt-2">
+                        <button @click="restartSession()" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 text-[10px] font-black uppercase rounded-xl transition-all">
+                            Desvincular Cuenta
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mostrar QR o Estado Activo -->
+                <div class="flex justify-center md:justify-end">
+                    <!-- Estado Conectado -->
+                    <template x-if="ready">
+                        <div class="p-6 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100/30 rounded-2xl flex flex-col items-center text-center max-w-xs">
+                            <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white mb-3 shadow-lg shadow-emerald-500/20">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400">¡Sincronización Activa!</span>
+                            <span class="text-[9px] text-gray-400 mt-1">Tu WhatsApp personal ya está plenamente enlazado.</span>
+                        </div>
+                    </template>
+
+                    <!-- Estado Esperando Escaneo (Muestra el QR) -->
+                    <template x-if="!ready && qr">
+                        <div class="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl flex flex-col items-center max-w-xs shadow-inner">
+                            <img :src="qr" class="w-48 h-48 rounded-xl" alt="QR WhatsApp Personal">
+                            <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-3 text-center">Escanea desde WhatsApp Móvil<br><span class="text-gray-400 font-medium">Dispositivos vinculados > Vincular un dispositivo</span></span>
+                        </div>
+                    </template>
+
+                    <!-- Estado Cargando / Generando sesión -->
+                    <template x-if="!ready && !qr">
+                        <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl flex flex-col items-center justify-center max-w-xs text-center border border-dashed border-gray-200 dark:border-gray-700 w-full min-h-[14rem]">
+                            <svg class="w-8 h-8 text-gray-400 animate-spin mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Iniciando Puppeteer...</span>
+                            <span class="text-[8px] text-gray-400 mt-1">Generando canal multi-sesión aislado en segundo plano</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        @endif
 
         @if($notifSettings['telegram'] ?? false)
         <!-- 📱 TELEGRAM NOTIFICATIONS (Global Maestro) -->
