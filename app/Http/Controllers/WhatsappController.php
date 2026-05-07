@@ -159,7 +159,7 @@ class WhatsappController extends Controller
 
                 if ($isSyncEnabled) {
                     $botToken = config('services.telegram.bot_token');
-                    if ($botToken && $team->telegram_chat_id && !empty($body) && !str_contains($body, '🔵 *[Telegram]*')) {
+                    if ($botToken && $team->telegram_chat_id && !empty($body) && !str_contains($body, '🔵 [Telegram]')) {
                         $cleanBody = strip_tags($body);
                         Log::info("Sincronización: Reenviando mensaje de WhatsApp a Telegram para el equipo {$team->name}");
                         \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
