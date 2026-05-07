@@ -32,18 +32,69 @@ Una vez conectado, debes indicar a qué chat de WhatsApp debe "escuchar" cada eq
 
 ---
 
-## 🛡️ 3. Configuración para Administradores
+## 🛡️ 3. Guía de Despliegue para Administradores (Instalación desde Cero)
 
-El subsistema de WhatsApp requiere que el servicio puente (Node.js) esté corriendo en el servidor.
+El subsistema de WhatsApp requiere que el servicio puente (Node.js) esté corriendo de forma ininterrumpida en el servidor. Sigue esta guía paso a paso para desplegarlo en producción de forma robusta.
 
-### A. Puesta en marcha del Bridge
-1. Accede a la carpeta del servicio: `cd whatsapp-service`.
-2. Instala las dependencias: `npm install`.
-3. Levanta el servidor: `node server.js` (se recomienda usar **PM2** para que siempre esté activo).
-4. El servicio corre por defecto en el **puerto 3001**.
+### A. Requisitos de Memoria (Súper Importante)
+El puente de WhatsApp levanta un navegador Chromium completo a través de Puppeteer, el cual consume entre **300 MB y 500 MB de RAM**.
 
-### B. Seguridad y Webhooks
-El bridge de Node.js envía los mensajes entrantes a Laravel mediante un Webhook a la dirección `http://localhost:8000/whatsapp/webhook`. Asegúrate de que esta URL sea accesible desde el servicio de Node.
+> [!IMPORTANT]
+> Si vas a desplegar en un VPS pequeño o en un **contenedor LXC de Proxmox** (de 1 GB o 2 GB de RAM), es altamente recomendado aumentar la memoria a **2 GB de RAM** o, en su defecto, crear un archivo **SWAP (Memoria de Intercambio) de 2 GB** en tu Linux para evitar caídas del servidor SSH o del proceso de base de datos por falta de memoria (OOM Killer):
+> ```bash
+> sudo fallocate -l 2G /swapfile
+> sudo chmod 600 /swapfile
+> sudo mkswap /swapfile
+> sudo swapon /swapfile
+> echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+> ```
+
+### B. Instalación de Dependencias Gráficas de Chromium
+En servidores Linux sin entorno gráfico (headless) modernos (como **Ubuntu 22.04 / 24.04**), debes instalar las bibliotecas nativas que requiere Chromium para poder abrirse.
+
+Ejecuta el siguiente comando simplificado y compatible con sistemas modernos (incluyendo paquetes de transición `t64`):
+```bash
+sudo apt update
+sudo apt install -y libgbm1 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libasound2t64 ca-certificates fonts-liberation xdg-utils wget libnspr4
+```
+
+> [!TIP]
+> **Asistente Automático de Puppeteer:**  
+> También puedes entrar a la carpeta del servicio en tu servidor y dejar que Puppeteer instale de forma automática todas las dependencias del sistema operativo actual ejecutando:
+> ```bash
+> npx puppeteer system-deps
+> ```
+
+### C. Puesta en Marcha del Bridge con PM2
+Para asegurarte de que el puente corra permanentemente en segundo plano, se reinicie si hay fallos y arranque solo con el sistema, utiliza **PM2**:
+
+1. **Instala PM2 de forma global en el servidor**:
+   ```bash
+   sudo npm install -g pm2
+   ```
+
+2. **Accede a la carpeta del servicio e instala dependencias de Node**:
+   ```bash
+   cd /var/www/sientiaMTX/whatsapp-service
+   npm install
+   ```
+
+3. **Inicia el bridge de WhatsApp**:
+   ```bash
+   pm2 start server.js --name "whatsapp-bridge"
+   ```
+
+4. **Configura el arranque automático con el inicio del sistema**:
+   ```bash
+   pm2 startup
+   # (Copia y pega la línea de comando sudo que te arroje PM2 para habilitar el servicio systemd)
+   pm2 save
+   ```
+
+### D. Autodetección Dinámica del Webhook (Sin Configuración)
+No necesitas configurar ninguna variable de entorno ni IP fija para el webhook de Laravel.  
+El bridge de Node cuenta con un **sistema de autodetección en caliente**: cada vez que Laravel interactúa con el bridge en el puerto `3001` (por ejemplo, al cargar el perfil para ver el código QR o enviar un mensaje), Laravel le chiva dinámicamente su URL actual (`route('whatsapp.webhook')`). El bridge se actualiza en memoria al instante y redirige todos los mensajes recibidos a esa dirección exacta de forma automática.
+
 
 ---
 
