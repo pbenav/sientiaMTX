@@ -197,7 +197,7 @@
                     <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
                         @csrf
                         @method('PATCH')
-                        <x-markdown-editor name="content" id="edit-content-{{ $message->id }}" :value="$message->content" rows="8" />
+                        <x-markdown-editor name="content" id="edit-content-{{ $message->id }}" :value="$message->content" rows="8" :upload-url="route('teams.forum.upload_image', $team)" :mentions-url="route('teams.mentions', $team)" />
                         <div class="flex justify-end gap-2 mt-2">
                             <button type="button" onclick="cancelEdit({{ $message->id }})" class="text-xs font-bold text-gray-500">Cancelar</button>
                             <button type="submit" class="px-4 py-1 bg-violet-600 text-white rounded-xl text-xs font-bold">Guardar</button>
