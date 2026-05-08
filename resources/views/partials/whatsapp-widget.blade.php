@@ -1,5 +1,12 @@
+@php
+    $currentTeam = $team ?? null;
+    if (!$currentTeam && request()->route('team')) {
+        $routeTeam = request()->route('team');
+        $currentTeam = is_object($routeTeam) ? $routeTeam : \App\Models\Team::find($routeTeam);
+    }
+@endphp
 
-@if(isset($team) && ( ($team->settings['has_whatsapp'] ?? false) || (auth()->check() && auth()->user()->is_admin) ))
+@if($currentTeam && ( ($currentTeam->settings['has_whatsapp'] ?? false) || (auth()->check() && auth()->user()->is_admin) ))
 
 <div x-data="whatsappChat()" 
      class="fixed z-[9999] flex flex-col items-end bottom-48 sm:bottom-40 right-4 pointer-events-none"

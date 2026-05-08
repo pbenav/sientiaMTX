@@ -974,7 +974,14 @@
         @if($notifSettings['telegram'] ?? false)
             @include('partials.telegram-widget')
         @endif
-        @if(($notifSettings['whatsapp'] ?? false) || (isset($team) && ($team->settings['has_whatsapp'] ?? false)))
+        @php
+            $layoutTeam = $team ?? null;
+            if (!$layoutTeam && request()->route('team')) {
+                $routeTeam = request()->route('team');
+                $layoutTeam = is_object($routeTeam) ? $routeTeam : \App\Models\Team::find($routeTeam);
+            }
+        @endphp
+        @if(($notifSettings['whatsapp'] ?? false) || ($layoutTeam && ($layoutTeam->settings['has_whatsapp'] ?? false)))
             @include('partials.whatsapp-widget')
         @endif
 
