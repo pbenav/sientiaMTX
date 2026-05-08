@@ -588,7 +588,7 @@
 
 
 
-        @if(($notifSettings['whatsapp'] ?? false) && auth()->user()->is_admin)
+        @if(false)
         <!-- 🟢 WHATSAPP WEB BRIDGE (Global Maestro - Con Autorefresco en Tiempo Real) -->
         <div id="whatsapp-bridge" x-transition x-data="{
             ready: {{ ($whatsappStatus['ready'] ?? false) ? 'true' : 'false' }},
