@@ -58,7 +58,9 @@ function getSession(sessionId = 'default') {
                 '--disable-renderer-backgrounding',
                 '--mute-audio',
                 '--no-pings',
-                '--js-flags="--max-old-space-size=512"', // Limita la RAM interna de V8 en cada Chromium para evitar OOM
+                '--aggressive-cache-discard',
+                '--disable-ipc-flooding-protection',
+                '--js-flags="--max-old-space-size=256"', // Reduce a 256MB el límite para cada pestaña, ideal para servidores con poca RAM
                 '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
             ],
             timeout: 60000,

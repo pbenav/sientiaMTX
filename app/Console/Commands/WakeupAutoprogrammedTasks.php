@@ -26,8 +26,16 @@ class WakeupAutoprogrammedTasks extends Command
             $leadUnit = $settings['lead_unit'] ?? 'days';
 
             // Generamos todas las ocurrencias que entren en el umbral de preaviso
-            // de forma iterativa en una sola ejecución.
+            // Generamos todas las ocurrencias que entren en el umbral de preaviso
+            // de forma iterativa en una sola ejecución. Con salvaguarda para evitar bucles infinitos.
+            $safetyCounter = 0;
             while ($task->is_autoprogrammable) {
+                if ($safetyCounter >= 5) {
+                    $this->warn("  [Salvaguarda] Se ha alcanzado el límite de 5 iteraciones consecutivas para '{$task->title}' para evitar bucles infinitos de CPU.");
+                    break;
+                }
+                $safetyCounter++;
+
                 $settings = $task->autoprogram_settings;
                 $nextAt = isset($settings['next_occurrence_at']) ? Carbon::parse($settings['next_occurrence_at']) : ($task->scheduled_date ? Carbon::parse($task->scheduled_date) : now());
                 
