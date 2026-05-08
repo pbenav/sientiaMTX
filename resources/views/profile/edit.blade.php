@@ -11,6 +11,7 @@
             <!-- Tabs Nav -->
             <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 overflow-x-auto">
                 <button @click="activeTab = 'general'" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
+                <button @click="activeTab = 'invitations_vip'" :class="activeTab === 'invitations_vip' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Invitaciones VIP</button>
                 <button @click="activeTab = 'integrations'" :class="activeTab === 'integrations' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Integraciones e IA</button>
                 <button @click="activeTab = 'notifications'" :class="activeTab === 'notifications' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Notificaciones</button>
                 <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Seguridad y Privacidad</button>
@@ -24,7 +25,14 @@
                     </div>
                 </div>
             </div>
-
+            <!-- TAB: Invitaciones VIP -->
+            <div x-show="activeTab === 'invitations_vip'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+                <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
+                    <div class="max-w-xl">
+                        @include('profile.partials.invitations-vip-form')
+                    </div>
+                </div>
+            </div>
             <!-- TAB: Integrations -->
             <div x-show="activeTab === 'integrations'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">

@@ -32,9 +32,14 @@ class ProfileController extends Controller
             // El servicio de Node.js no está corriendo
         }
 
+        $invitationsList = \App\Models\Invitation::where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('profile.edit', [
             'user' => $request->user(),
             'whatsappStatus' => $whatsappStatus,
+            'invitationsList' => $invitationsList,
         ]);
     }
 
@@ -317,5 +322,23 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Generar un nuevo pase VIP de invitación.
+     */
+    public function generateInvitation(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        if ($user->invitations_left <= 0) {
+            return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('error', 'No te quedan invitaciones disponibles.');
+        }
+
+        \App\Models\Invitation::create([
+            'user_id' => $user->id,
+            'code' => \Illuminate\Support\Str::random(16),
+        ]);
+
+        return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('status', 'invitation-generated');
     }
 }
