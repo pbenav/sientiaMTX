@@ -273,7 +273,12 @@ app.post('/api/restart', async (req, res) => {
 // 4. Sincronizar historial reciente de un chat específico (retroactividad tras desconexión)
 app.post('/api/sync', async (req, res) => {
     const sessionId = req.body.session || req.query.session || 'default';
-    const session = getSession(sessionId);
+    
+    if (!sessions[sessionId]) {
+        return res.status(503).json({ success: false, error: 'La sesión de WhatsApp solicitada no está activa o inicializada.' });
+    }
+    
+    const session = sessions[sessionId];
 
     if (!session.ready) {
         return res.status(503).json({ success: false, error: 'El cliente de WhatsApp no está conectado todavía.' });

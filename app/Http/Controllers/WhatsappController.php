@@ -402,18 +402,7 @@ class WhatsappController extends Controller
                 return response()->json($response->json());
             }
 
-            // Fallback con sesión default
-            $responseFallback = Http::timeout(60)->post('http://localhost:3001/api/sync', [
-                'session' => 'default',
-                'phone' => $chatId,
-                'limit' => 50
-            ]);
-
-            if ($responseFallback->successful()) {
-                return response()->json($responseFallback->json());
-            }
-
-            return response()->json(['success' => false, 'error' => 'El servicio de WhatsApp no está conectado o listo.'], 502);
+            return response()->json(['success' => false, 'error' => 'El servicio de WhatsApp de este equipo no está conectado o listo.'], 502);
         } catch (\Exception $e) {
             Log::error('Error en sincronización de WhatsApp: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
