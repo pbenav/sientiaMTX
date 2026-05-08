@@ -38,7 +38,7 @@ function getSession(sessionId = 'default') {
         }),
         webVersionCache: {
             type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1017577156-alpha.html'
         },
         puppeteer: {
             headless: true,
@@ -58,7 +58,7 @@ function getSession(sessionId = 'default') {
                 '--disable-renderer-backgrounding',
                 '--mute-audio',
                 '--no-pings',
-                '--js-flags="--max-old-space-size=128"', // Limita la RAM interna de V8 en cada Chromium
+                '--js-flags="--max-old-space-size=512"', // Limita la RAM interna de V8 en cada Chromium para evitar OOM
                 '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
             ],
             timeout: 60000,
@@ -264,6 +264,82 @@ app.post('/api/restart', async (req, res) => {
         res.json({ success: true, message: 'Cliente reiniciando, esperando nuevo QR...' });
     } catch (error) {
         console.error(`Error reiniciando sesión ${sessionId}:`, error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 4. Sincronizar historial reciente de un chat específico (retroactividad tras desconexión)
+app.post('/api/sync', async (req, res) => {
+    const sessionId = req.body.session || req.query.session || 'default';
+    const session = getSession(sessionId);
+
+    if (!session.ready) {
+        return res.status(503).json({ success: false, error: 'El cliente de WhatsApp no está conectado todavía.' });
+    }
+
+    const { phone, limit = 50 } = req.body;
+
+    if (!phone) {
+        return res.status(400).json({ success: false, error: 'Se requiere el teléfono o grupo (phone).' });
+    }
+
+    try {
+        let chatId = phone;
+        if (!chatId.includes('@c.us') && !chatId.includes('@g.us') && !chatId.includes('@s.whatsapp.net')) {
+            chatId = `${phone}@c.us`;
+        }
+
+        console.log(`[Sincronización WhatsApp] Iniciando recuperación de hasta ${limit} mensajes de ${chatId}...`);
+        const chat = await session.client.getChatById(chatId);
+        const messages = await chat.fetchMessages({ limit: parseInt(limit) });
+
+        let processedCount = 0;
+        // Procesamos los mensajes recuperados
+        for (const msg of messages) {
+            let authorName = 'Usuario';
+            try {
+                const contact = await msg.getContact();
+                authorName = contact.pushname || contact.name || msg.author || msg.from;
+                if (authorName && authorName.includes('@')) {
+                    authorName = authorName.split('@')[0];
+                }
+            } catch (e) {}
+
+            let mediaData = null;
+            let mediaMimetype = null;
+            if (msg.hasMedia) {
+                try {
+                    const media = await msg.downloadMedia();
+                    if (media) {
+                        mediaData = media.data;
+                        mediaMimetype = media.mimetype;
+                    }
+                } catch (e) {}
+            }
+
+            try {
+                await axios.post(currentWebhookUrl, {
+                    id: msg.id.id,
+                    from: msg.from,
+                    to: msg.to,
+                    body: msg.body,
+                    type: msg.type,
+                    timestamp: msg.timestamp,
+                    fromMe: msg.fromMe,
+                    author: authorName,
+                    mediaData: mediaData,
+                    mediaMimetype: mediaMimetype,
+                    session: sessionId
+                });
+                processedCount++;
+            } catch (err) {
+                // Mensajes duplicados o fallos de conexión aislados se ignoran de forma segura
+            }
+        }
+
+        res.json({ success: true, count: messages.length, processed: processedCount });
+    } catch (error) {
+        console.error(`Error sincronizando chat para sesión ${sessionId}:`, error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

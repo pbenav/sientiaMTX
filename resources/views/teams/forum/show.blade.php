@@ -607,6 +607,51 @@
                     });
                 });
             }
+
+            window.voteMessage = function(messageId, button) {
+                const url = `/teams/{{ $team->id }}/forum/messages/${messageId}/vote`;
+                
+                button.disabled = true;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const countSpan = button.querySelector('.votes-count');
+                        if (countSpan) {
+                            countSpan.textContent = data.votes_count;
+                        }
+                        const svg = button.querySelector('svg');
+                        if (data.voted) {
+                            button.classList.remove('text-gray-400');
+                            button.classList.add('text-violet-600', 'dark:text-violet-400');
+                            if (svg) svg.setAttribute('fill', 'currentColor');
+                            
+                            button.classList.add('scale-125', 'transition-transform', 'duration-200');
+                            setTimeout(() => button.classList.remove('scale-125'), 200);
+                        } else {
+                            button.classList.remove('text-violet-600', 'dark:text-violet-400');
+                            button.classList.add('text-gray-400');
+                            if (svg) svg.setAttribute('fill', 'none');
+                            
+                            button.classList.add('scale-75', 'transition-transform', 'duration-200');
+                            setTimeout(() => button.classList.remove('scale-75'), 200);
+                        }
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => {
+                    button.disabled = false;
+                });
+            }
         </script>
     @endpush
 </x-app-layout>

@@ -370,4 +370,33 @@ class ForumMessageController extends Controller
             'url' => asset('storage/' . $path),
         ]);
     }
+
+    /**
+     * Alternar el voto (votar/desvotar) en un mensaje del foro.
+     */
+    public function voteToggle(Team $team, ForumMessage $message)
+    {
+        $thread = $message->thread;
+        if ($thread->team_id !== $team->id) {
+            abort(404);
+        }
+
+        $user = auth()->user();
+        
+        if ($message->votes()->where('user_id', $user->id)->exists()) {
+            $message->votes()->detach($user->id);
+            $voted = false;
+        } else {
+            $message->votes()->attach($user->id);
+            $voted = true;
+        }
+        if (request()->ajax() || request()->wantsJson() || request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'voted' => $voted,
+                'votes_count' => $message->votes()->count()
+            ]);
+        }
+        return back()->with('success', $voted ? 'Voto registrado correctamente.' : 'Voto retirado correctamente.');
+    }
 }

@@ -374,4 +374,49 @@ class WhatsappController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Sincroniza el historial de WhatsApp del equipo tras reconexión o desconexión.
+     */
+    public function sync(Request $request)
+    {
+        try {
+            $team = \App\Models\Team::findOrFail($request->get('team_id'));
+            if (!$team->members->contains(auth()->id()) && !auth()->user()->is_admin) {
+                abort(403);
+            }
+
+            $chatId = $team->whatsapp_chat_id;
+            if (!$chatId) {
+                return response()->json(['success' => false, 'error' => 'No hay número de WhatsApp vinculado a este equipo.'], 422);
+            }
+
+            $session = 'team_' . $team->id;
+            $response = Http::timeout(60)->post('http://localhost:3001/api/sync', [
+                'session' => $session,
+                'phone' => $chatId,
+                'limit' => 50
+            ]);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+
+            // Fallback con sesión default
+            $responseFallback = Http::timeout(60)->post('http://localhost:3001/api/sync', [
+                'session' => 'default',
+                'phone' => $chatId,
+                'limit' => 50
+            ]);
+
+            if ($responseFallback->successful()) {
+                return response()->json($responseFallback->json());
+            }
+
+            return response()->json(['success' => false, 'error' => 'El servicio de WhatsApp no está conectado o listo.'], 502);
+        } catch (\Exception $e) {
+            Log::error('Error en sincronización de WhatsApp: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }

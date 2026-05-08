@@ -49,9 +49,19 @@
                     </div>
                 </div>
             </div>
-            <button @click="open = false" class="text-white/50 hover:text-white transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <div class="flex items-center gap-3">
+                <button @click="syncMessages()" 
+                        :disabled="syncing || !teamId"
+                        class="text-white/60 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10 disabled:opacity-50"
+                        title="Sincronizar mensajes pendientes">
+                    <svg class="w-5 h-5" :class="syncing ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+                    </svg>
+                </button>
+                <button @click="open = false" class="text-white/50 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
 
         <!-- Área de Mensajes -->
@@ -403,6 +413,7 @@
             audioChunks: [],
             pendingVoice: null,
             voicePreviewUrl: null,
+            syncing: false,
 
             pos: { x: 0, y: 0 },
             bottomPos: (window.innerWidth < 640) ? '8rem' : '6rem',
@@ -803,6 +814,42 @@
                     }
                 } catch (e) {
                     console.error('Error deleting message:', e);
+                }
+            },
+            async syncMessages() {
+                if (!this.teamId || this.syncing) return;
+                this.syncing = true;
+                try {
+                    const response = await fetch('{{ route("whatsapp.chat.sync") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ team_id: this.teamId })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        await this.refreshMessages();
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Sincronizado!',
+                                text: `Se han recuperado ${data.count || 0} mensajes de WhatsApp pendientes.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    } else {
+                        const err = await response.json();
+                        alert('Aviso: ' + (err.error || 'No se pudo sincronizar en este momento.'));
+                    }
+                } catch (e) {
+                    console.error('Error sincronizando:', e);
+                } finally {
+                    this.syncing = false;
                 }
             },
             scrollToBottom() {

@@ -93,9 +93,10 @@
         </div>
     @else
         <div class="space-y-4">
-            <div class="max-h-[300px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+            <div class="max-h-[700px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
                 id="widget-messages-container">
-                @forelse($rootTask->forumThread->messages()->whereNull('parent_id')->with(['user', 'replies.user'])->orderBy('created_at', 'asc')->get() as $message)
+                @forelse($rootTask->forumThread->messages()->whereNull('parent_id')->withCount('votes')->with(['user', 'replies.user'])->orderBy('votes_count', 'desc')->orderBy('created_at', 'asc')->get() as $message)
+
                     <div class="group">
                         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 mb-2 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all">
                             <div class="flex items-center justify-between mb-1.5">
@@ -123,7 +124,15 @@
                                 @endif
                             </div>
                             
-                            <div class="flex items-center gap-3 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center gap-3 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700/50 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <button type="button" onclick="voteMessage({{ $message->id }}, this)" 
+                                    class="text-[9px] font-bold {{ $message->hasVotedBy(auth()->user()) ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400 hover:text-violet-600' }} uppercase tracking-tighter transition-all flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="{{ $message->hasVotedBy(auth()->user()) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
+                                    </svg>
+                                    <span>Votar</span> (<span class="votes-count">{{ $message->votes_count ?? $message->votes()->count() }}</span>)
+                                </button>
+
                                 <button type="button" @click="startReply({{ $message->id }}, '{{ $message->user->name }}')" 
                                     class="text-[9px] font-bold text-violet-500 hover:text-violet-600 uppercase tracking-tighter transition-colors flex items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
@@ -264,6 +273,51 @@
                             input.setSelectionRange(newPos, newPos);
                             input.focus();
                         }
+                    }
+
+                    function voteMessage(messageId, button) {
+                        const url = `/teams/{{ $team->id }}/forum/messages/${messageId}/vote`;
+                        
+                        button.disabled = true;
+                        
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                const countSpan = button.querySelector('.votes-count');
+                                if (countSpan) {
+                                    countSpan.textContent = data.votes_count;
+                                }
+                                const svg = button.querySelector('svg');
+                                if (data.voted) {
+                                    button.classList.remove('text-gray-400');
+                                    button.classList.add('text-violet-600', 'dark:text-violet-400');
+                                    if (svg) svg.setAttribute('fill', 'currentColor');
+                                    
+                                    button.classList.add('scale-125', 'transition-transform', 'duration-200');
+                                    setTimeout(() => button.classList.remove('scale-125'), 200);
+                                } else {
+                                    button.classList.remove('text-violet-600', 'dark:text-violet-400');
+                                    button.classList.add('text-gray-400');
+                                    if (svg) svg.setAttribute('fill', 'none');
+                                    
+                                    button.classList.add('scale-75', 'transition-transform', 'duration-200');
+                                    setTimeout(() => button.classList.remove('scale-75'), 200);
+                                }
+                            }
+                        })
+                        .catch(err => console.error(err))
+                        .finally(() => {
+                            button.disabled = false;
+                        });
                     }
 
                     // Removed auto-scroll to bottom as per user request to see thread from the start

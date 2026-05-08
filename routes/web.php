@@ -139,6 +139,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/forum/{thread}/messages', [ForumMessageController::class, 'store'])->name('teams.forum.messages.store');
     Route::patch('/teams/{team}/forum/messages/{message}', [ForumMessageController::class, 'update'])->name('teams.forum.messages.update');
     Route::delete('/teams/{team}/forum/messages/{message}', [ForumMessageController::class, 'destroy'])->name('teams.forum.messages.destroy');
+    Route::post('/teams/{team}/forum/messages/{message}/vote', [ForumMessageController::class, 'voteToggle'])->name('teams.forum.messages.vote');
     Route::post('/teams/{team}/forum/upload-image', [ForumMessageController::class, 'uploadImage'])->name('teams.forum.upload_image');
     Route::post('/teams/{team}/forum/upload-attachment', [ForumMessageController::class, 'uploadAttachment'])->name('teams.forum.upload_attachment');
     
@@ -268,6 +269,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/send', [\App\Http\Controllers\WhatsappChatController::class, 'sendMessage'])->name('send');
         Route::patch('/messages/{message}', [\App\Http\Controllers\WhatsappChatController::class, 'update'])->name('update');
         Route::delete('/messages/{message}', [\App\Http\Controllers\WhatsappChatController::class, 'destroy'])->name('delete');
+        Route::post('/sync', [\App\Http\Controllers\WhatsappController::class, 'sync'])->name('sync');
     });
 
     // --- AI Assistant ---

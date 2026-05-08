@@ -35,6 +35,16 @@
             <!-- Actions Bar -->
             <div id="actions-{{ $message->id }}" class="flex items-center gap-1 shrink-0">
                 @if (!$thread->is_locked)
+                    <!-- Vote Button -->
+                    <button type="button" onclick="voteMessage({{ $message->id }}, this)"
+                        class="p-1 text-gray-400 {{ $message->hasVotedBy(auth()->user()) ? 'text-violet-600 dark:text-violet-400' : 'hover:text-violet-600' }} bg-gray-50 dark:bg-gray-800 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold"
+                        title="Votar comentario">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="{{ $message->hasVotedBy(auth()->user()) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
+                        </svg>
+                        <span class="votes-count">{{ $message->votes_count ?? $message->votes()->count() }}</span>
+                    </button>
+
                     <!-- Share -->
                     <button type="button" onclick="shareMessage({{ $message->id }})"
                         class="p-1 text-gray-400 hover:text-emerald-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"

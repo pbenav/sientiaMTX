@@ -78,4 +78,17 @@ class ForumMessage extends Model
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');
     }
+
+    public function votes()
+    {
+        return $this->belongsToMany(User::class, 'forum_message_votes', 'forum_message_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function hasVotedBy($user)
+    {
+        if (!$user) return false;
+        $userId = $user instanceof User ? $user->id : $user;
+        return $this->votes()->where('user_id', $userId)->exists();
+    }
 }

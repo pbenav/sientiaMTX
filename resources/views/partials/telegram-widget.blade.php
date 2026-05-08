@@ -49,9 +49,18 @@
                     </div>
                 </div>
             </div>
-            <button @click="open = false" class="text-white/50 hover:text-white transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <div class="flex items-center gap-3">
+                <button @click="refreshMessages(true)" 
+                        class="text-white/60 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10"
+                        title="Actualizar conversación">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+                    </svg>
+                </button>
+                <button @click="open = false" class="text-white/50 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
 
         <!-- Área de Mensajes -->
