@@ -176,7 +176,7 @@ class TelegramWebhookController extends Controller
                                 'phone' => $team->whatsapp_chat_id,
                                 'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
                                 'webhook_url' => route('whatsapp.webhook'),
-                                'session' => 'team_' . $team->id
+                                'session' => 'team_' . ($team->slug ?: $team->id)
                             ]);
                             if (!$syncResponse->successful()) {
                                 \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [

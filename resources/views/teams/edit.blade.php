@@ -54,11 +54,13 @@
                 class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 Apariencia del Equipo
             </button>
+            @if(($team->settings['has_whatsapp'] ?? false) || auth()->user()->is_admin)
             <button @click="tab = 'whatsapp'" 
                 :class="tab === 'whatsapp' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                 class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 WhatsApp del Equipo
             </button>
+            @endif
         </div>
 
         <!-- General Info Tab -->
@@ -116,6 +118,7 @@
                                 </div>
                             </div>
 
+                            @if(($team->settings['has_whatsapp'] ?? false) || auth()->user()->is_admin)
                             <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
                                 <div class="flex items-center gap-2 mb-5">
                                     <span class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
@@ -135,6 +138,7 @@
                                     <x-input-error :messages="$errors->get('whatsapp_chat_id')" class="mt-2" />
                                 </div>
                             </div>
+                            @endif
 
                             @if(auth()->user()->is_admin)
                             <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
@@ -147,13 +151,27 @@
                                     <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Mantenimiento (Admin)') }}</h3>
                                 </div>
                                 
-                                <div>
-                                    <x-input-label for="disk_quota_gb" :value="__('Cuota de Almacenamiento (GB)')"
-                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
-                                    <x-text-input id="disk_quota_gb" name="disk_quota_gb" type="number" step="0.1" min="0.1" class="block w-full font-bold bg-white dark:bg-gray-800"
-                                        :value="old('disk_quota_gb', $team->disk_quota / 1024 / 1024 / 1024)" />
-                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Define el límite máximo de archivos que este equipo puede alojar.</p>
-                                    <x-input-error :messages="$errors->get('disk_quota_gb')" class="mt-2" />
+                                <div class="space-y-4">
+                                    <div>
+                                        <x-input-label for="disk_quota_gb" :value="__('Cuota de Almacenamiento (GB)')"
+                                            class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                        <x-text-input id="disk_quota_gb" name="disk_quota_gb" type="number" step="0.1" min="0.1" class="block w-full font-bold bg-white dark:bg-gray-800"
+                                            :value="old('disk_quota_gb', $team->disk_quota / 1024 / 1024 / 1024)" />
+                                        <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Define el límite máximo de archivos que este equipo puede alojar.</p>
+                                        <x-input-error :messages="$errors->get('disk_quota_gb')" class="mt-2" />
+                                    </div>
+
+                                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
+                                        <div>
+                                            <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">WhatsApp Integrado (Premium)</span>
+                                            <span class="text-[10px] text-gray-400 font-medium">Permitir vinculación de canal QR</span>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="hidden" name="settings[has_whatsapp]" value="0">
+                                            <input type="checkbox" name="settings[has_whatsapp]" value="1" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             @endif
@@ -410,6 +428,7 @@
             </div>
         </div>
 
+        @if(($team->settings['has_whatsapp'] ?? false) || auth()->user()->is_admin)
         <!-- WhatsApp Tab -->
         <div x-show="tab === 'whatsapp'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
             <div x-data="{
@@ -578,6 +597,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     @push('scripts')

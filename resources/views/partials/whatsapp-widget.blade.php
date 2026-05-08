@@ -1,4 +1,6 @@
 
+@if(isset($team) && ( ($team->settings['has_whatsapp'] ?? false) || (auth()->check() && auth()->user()->is_admin) ))
+
 <div x-data="whatsappChat()" 
      class="fixed z-[9999] flex flex-col items-end bottom-48 sm:bottom-40 right-4 pointer-events-none"
      :style="`transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
@@ -861,3 +863,4 @@
         }
     }
 </script>
+@endif

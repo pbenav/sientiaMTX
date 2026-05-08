@@ -78,6 +78,7 @@ function getSession(sessionId = 'default') {
     // Temporizador de auto-sleep por inactividad
     let inactivityTimeout = null;
     const resetInactivityTimer = () => {
+        return; // Desactivar el auto-sleep para mantener el canal conectado 24/7 y evitar desvinculaciones por reconexiones repetitivas
         if (sessionId === 'default') return; // La sesión por defecto nunca se duerme de forma activa
         if (inactivityTimeout) clearTimeout(inactivityTimeout);
         inactivityTimeout = setTimeout(async () => {

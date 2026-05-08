@@ -342,7 +342,7 @@ class WhatsappController extends Controller
             if (!$team->members->contains(auth()->id()) && !auth()->user()->is_admin) {
                 abort(403);
             }
-            $session = 'team_' . $team->id;
+            $session = 'team_' . ($team->slug ?: $team->id);
             $init = $request->get('init') === 'true' ? '&init=true' : '';
             $response = Http::timeout(3)->get('http://localhost:3001/api/status?session=' . $session . $init);
             if ($response->successful()) {
@@ -364,7 +364,7 @@ class WhatsappController extends Controller
             if ($team->user_id !== auth()->id() && !auth()->user()->is_admin) {
                 abort(403);
             }
-            $session = 'team_' . $team->id;
+            $session = 'team_' . ($team->slug ?: $team->id);
             $response = Http::timeout(10)->post('http://localhost:3001/api/restart', [
                 'session' => $session
             ]);
@@ -391,7 +391,7 @@ class WhatsappController extends Controller
                 return response()->json(['success' => false, 'error' => 'No hay número de WhatsApp vinculado a este equipo.'], 422);
             }
 
-            $session = 'team_' . $team->id;
+            $session = 'team_' . ($team->slug ?: $team->id);
             $response = Http::timeout(60)->post('http://localhost:3001/api/sync', [
                 'session' => $session,
                 'phone' => $chatId,
