@@ -33,6 +33,8 @@ class User extends Authenticatable implements HasLocalePreference
         'password',
         'locale',
         'timezone',
+        'is_approved',
+        'invitations_left',
         'theme',
         'layout',
         'google_id',
