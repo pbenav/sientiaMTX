@@ -98,6 +98,13 @@
                                 <x-input-error class="mt-2" :messages="$errors->get('disk_quota')" />
                             </div>
 
+                            <div>
+                                <x-input-label for="invitations_left" :value="__('Invitaciones Disponibles')" />
+                                <x-text-input id="invitations_left" name="invitations_left" type="number" class="mt-1 block w-full"
+                                    :value="old('invitations_left', $user->invitations_left ?? 0)" required min="0" />
+                                <x-input-error class="mt-2" :messages="$errors->get('invitations_left')" />
+                            </div>
+
                             <div class="flex items-center gap-3 pt-6 md:col-span-2 lg:col-span-3">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="checkbox" name="whatsapp_personal_allowed" value="1" 

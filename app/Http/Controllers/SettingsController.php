@@ -208,6 +208,7 @@ class SettingsController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
             'disk_quota' => 'required|numeric|min:1',
             'timezone' => 'nullable|timezone',
+            'invitations_left' => 'nullable|integer|min:0',
         ]);
 
         $user_settings = $user->notification_settings ?? $user->defaultNotificationSettings();
@@ -220,6 +221,7 @@ class SettingsController extends Controller
             'locale' => $validated['locale'],
             'timezone' => $validated['timezone'] ?? $user->timezone,
             'disk_quota' => $validated['disk_quota'] * 1024 * 1024,
+            'invitations_left' => $validated['invitations_left'] ?? 0,
         ]);
 
         if (!empty($validated['password'])) {
