@@ -213,7 +213,9 @@
         <label class="block text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ $label }}</label>
     @endif
 
-    <div class="relative flex flex-col w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[2rem] shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/50"
+    <div @click.outside="mentioning = false"
+         @keyup.escape.window="mentioning = false"
+         class="relative flex flex-col w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[2rem] shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/50"
          :class="uploading ? 'opacity-70 pointer-events-none' : ''">
         
         <!-- Mention Dropdown (Now placed here to be relative to the entire component but absolute positioned) -->
