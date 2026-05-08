@@ -219,7 +219,7 @@
          :class="uploading ? 'opacity-70 pointer-events-none' : ''">
         
         <!-- Mention Dropdown (Now placed here to be relative to the entire component but absolute positioned) -->
-        <div x-show="mentioning && filteredMentions.length > 0" 
+        <div x-show="mentioning && filteredMentions.length > 0 && mentionPos.top > 0" 
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-y-4"
              x-transition:enter-end="opacity-100 translate-y-0"
@@ -262,7 +262,7 @@
         </template>
         
         <!-- Header / Toolbar -->
-        <div class="relative z-50 flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem]">
+        <div class="relative z-50 flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem]">
             <div class="flex p-1 bg-gray-200/50 dark:bg-gray-950/50 rounded-xl">
                 <button type="button" 
                     @click="tab = 'write'"
