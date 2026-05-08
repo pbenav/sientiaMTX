@@ -71,7 +71,8 @@ function getSession(sessionId = 'default') {
     const sessionState = {
         client: client,
         qr: null,
-        ready: false
+        ready: false,
+        authenticated: false
     };
 
     // Temporizador de auto-sleep por inactividad
@@ -107,16 +108,25 @@ function getSession(sessionId = 'default') {
         }
     });
 
+    client.on('authenticated', () => {
+        resetInactivityTimer();
+        console.log(`[Multi-Sesión - ${sessionId}] Autenticado con éxito.`);
+        sessionState.authenticated = true;
+        sessionState.qr = null;
+    });
+
     client.on('ready', () => {
         resetInactivityTimer();
         console.log(`[Multi-Sesión - ${sessionId}] ¡Cliente listo y conectado!`);
         sessionState.ready = true;
+        sessionState.authenticated = true;
         sessionState.qr = null;
     });
 
     client.on('disconnected', (reason) => {
         console.log(`[Multi-Sesión - ${sessionId}] Cliente desconectado:`, reason);
         sessionState.ready = false;
+        sessionState.authenticated = false;
         sessionState.qr = null;
         if (inactivityTimeout) clearTimeout(inactivityTimeout);
     });
@@ -196,6 +206,7 @@ app.get('/api/status', (req, res) => {
     if (!sessions[sessionId] && sessionId !== 'default' && !forceInit) {
         return res.json({
             ready: false,
+            authenticated: false,
             qr: null
         });
     }
@@ -203,6 +214,7 @@ app.get('/api/status', (req, res) => {
     const session = getSession(sessionId);
     res.json({
         ready: session.ready,
+        authenticated: session.authenticated || false,
         qr: session.qr
     });
 });

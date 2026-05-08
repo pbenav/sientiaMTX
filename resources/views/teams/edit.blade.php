@@ -414,6 +414,7 @@
         <div x-show="tab === 'whatsapp'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
             <div x-data="{
                     ready: false,
+                    authenticated: false,
                     qr: null,
                     loading: false,
                     initSession: false,
@@ -424,6 +425,7 @@
                             const response = await fetch(url);
                             const data = await response.json();
                             this.ready = data.ready;
+                            this.authenticated = data.authenticated || false;
                             this.qr = data.qr;
                             if (this.ready) {
                                 this.initSession = false;
@@ -493,10 +495,13 @@
                         <template x-if="ready">
                             <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 dark:border-emerald-800">Conectado</span>
                         </template>
-                        <template x-if="!ready && qr">
+                        <template x-if="!ready && authenticated">
+                            <span class="px-3 py-1 bg-violet-50 dark:bg-violet-900/20 text-violet-600 text-[10px] font-black uppercase rounded-lg border border-violet-100 dark:border-violet-800 animate-pulse">Autenticado / Cargando...</span>
+                        </template>
+                        <template x-if="!ready && !authenticated && qr">
                             <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[10px] font-black uppercase rounded-lg border border-amber-100 dark:border-amber-800 animate-pulse">Esperando Escaneo</span>
                         </template>
-                        <template x-if="!ready && !qr">
+                        <template x-if="!ready && !authenticated && !qr">
                             <span class="px-3 py-1 bg-gray-50 dark:bg-gray-800 text-gray-400 text-[10px] font-black uppercase rounded-lg border border-gray-200 dark:border-gray-700">Desconectado</span>
                         </template>
                     </div>
@@ -518,7 +523,7 @@
                             </template>
 
                             <!-- Botón de Desvinculación -->
-                            <template x-if="ready || qr || initSession">
+                            <template x-if="ready || qr || initSession || authenticated">
                                 <button @click="restartSession()" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 text-[10px] font-black uppercase rounded-xl transition-all">
                                     Desvincular Cuenta
                                 </button>
@@ -537,8 +542,17 @@
                             <span class="text-[10px] text-gray-400">El número está listo para enviar y recibir notificaciones corporativas de este equipo.</span>
                         </div>
 
+                        <!-- Caso 1.1: Autenticado pero esperando sincronización completa (ready = false, authenticated = true) -->
+                        <div x-show="!ready && authenticated" class="flex flex-col items-center text-center space-y-3">
+                            <div class="w-16 h-16 rounded-full bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center text-violet-500 shadow-sm border border-violet-100 dark:border-violet-800/50">
+                                <svg class="w-8 h-8 text-violet-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </div>
+                            <span class="text-xs font-bold text-violet-600 dark:text-violet-400 animate-pulse">¡Enlazado con éxito!</span>
+                            <span class="text-[10px] text-gray-400">WhatsApp se ha autenticado. Sincronizando chats e historial inicial en segundo plano...</span>
+                        </div>
+
                         <!-- Caso 2: QR disponible para escaneo -->
-                        <div x-show="!ready && qr" class="flex flex-col items-center space-y-4">
+                        <div x-show="!ready && qr && !authenticated" class="flex flex-col items-center space-y-4">
                             <div class="p-3 bg-white rounded-2xl shadow-xl border border-gray-100 inline-block">
                                 <img :src="qr" alt="WhatsApp QR Code" class="w-44 h-44 object-contain">
                             </div>
@@ -549,14 +563,14 @@
                         </div>
 
                         <!-- Caso 3: Iniciando o buscando estado -->
-                        <div x-show="!ready && !qr && initSession" class="flex flex-col items-center text-center space-y-3">
+                        <div x-show="!ready && !qr && initSession && !authenticated" class="flex flex-col items-center text-center space-y-3">
                             <svg class="w-8 h-8 text-emerald-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Generando sesión...</span>
                             <span class="text-[8px] text-gray-400">Iniciando Puppeteer en el servidor para el equipo de forma aislada</span>
                         </div>
 
                         <!-- Caso 4: Desconectado pasivo -->
-                        <div x-show="!ready && !qr && !initSession" class="flex flex-col items-center text-center space-y-2 text-gray-400">
+                        <div x-show="!ready && !qr && !initSession && !authenticated" class="flex flex-col items-center text-center space-y-2 text-gray-400">
                             <svg class="w-12 h-12 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                             <span class="text-[10px] font-bold uppercase tracking-widest">Sin Vinculación Activa</span>
                         </div>
