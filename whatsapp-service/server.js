@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const qrcode = require('qrcode');
+const fs = require('fs');
+const path = require('path');
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
 const app = express();
@@ -202,20 +204,38 @@ app.get('/api/status', (req, res) => {
     const sessionId = req.query.session || 'default';
     const forceInit = req.query.init === 'true';
 
-    // OPTIMIZACIÓN PASIVA: Si la sesión no existe en memoria y no forzamos el arranque (carga pasiva del perfil),
-    // devolvemos desconectado de inmediato sin inicializar Puppeteer para no gastar RAM.
-    if (!sessions[sessionId] && sessionId !== 'default' && !forceInit) {
-        return res.json({
-            ready: false,
-            authenticated: false,
-            qr: null
-        });
+    // Comprobar si existe la carpeta física de la sesión en disco
+    const sessionDir = path.join(__dirname, '.wwebjs_auth', `session-sientia-mtx-${sessionId}`);
+    const hasSavedSession = fs.existsSync(sessionDir);
+
+    if (!sessions[sessionId] && sessionId !== 'default') {
+        // Si no está en memoria pero existe en disco, ¡la levantamos automáticamente en segundo plano de forma transparente!
+        if (hasSavedSession) {
+            console.log(`[Auto-Reconexión] Detectadas credenciales en disco para sesión: ${sessionId}. Reconectando en segundo plano...`);
+            getSession(sessionId);
+            
+            return res.json({
+                ready: false,
+                authenticated: true,
+                qr: null,
+                connecting: true
+            });
+        }
+
+        // Si no hay sesión en memoria ni en disco, y no forzamos, devolvemos desvinculado
+        if (!forceInit) {
+            return res.json({
+                ready: false,
+                authenticated: false,
+                qr: null
+            });
+        }
     }
 
     const session = getSession(sessionId);
     res.json({
         ready: session.ready,
-        authenticated: session.authenticated || false,
+        authenticated: session.authenticated || hasSavedSession || false,
         qr: session.qr
     });
 });
@@ -270,6 +290,17 @@ app.post('/api/restart', async (req, res) => {
             await session.client.destroy();
         } catch(e) {
             console.log('Error al destruir cliente:', e.message);
+        }
+
+        // Borrar la carpeta física de credenciales en disco para forzar un QR limpio
+        try {
+            const sessionDir = path.join(__dirname, '.wwebjs_auth', `session-sientia-mtx-${sessionId}`);
+            if (fs.existsSync(sessionDir)) {
+                fs.rmSync(sessionDir, { recursive: true, force: true });
+                console.log(`[LocalAuth] Borrada carpeta física de credenciales tras desvinculación explícita: ${sessionId}`);
+            }
+        } catch (err) {
+            console.error('Error borrando sesión física:', err.message);
         }
         
         // Volvemos a inicializarlo de inmediato
