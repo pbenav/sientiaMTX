@@ -305,13 +305,34 @@ Route::middleware('auth')->group(function () {
     Route::post('quick-notes/{quick_note}/attachment/{attachment}/transcribe', [\App\Http\Controllers\QuickNoteController::class, 'transcribeAttachment'])->name('quick-notes.attachment.transcribe');
     Route::delete('quick-notes/{quick_note}/attachment/{attachment}', [\App\Http\Controllers\QuickNoteController::class, 'deleteAttachment'])->name('quick-notes.attachment.destroy');
 
-    // Waitlist Route
+    // Waitlist Routes
     Route::get('/waitlist', function() {
         if (auth()->user()->is_approved) {
             return redirect()->route('dashboard');
         }
         return view('auth.waitlist');
     })->name('waitlist');
+
+    Route::post('/waitlist/redeem', function(\Illuminate\Http\Request $request) {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $invitation = \App\Models\Invitation::where('code', $request->code)->whereNull('used_at')->first();
+        if (!$invitation) {
+            return back()->withErrors(['code' => __('El código VIP no es válido o ya ha sido consumido.')]);
+        }
+
+        $user = auth()->user();
+        $user->update(['is_approved' => true]);
+
+        $invitation->update(['used_at' => now()]);
+        if ($invitation->user_id) {
+            $invitation->user()->decrement('invitations_left');
+        }
+
+        return redirect()->route('dashboard')->with('success', __('¡Pase VIP canjeado con éxito! Tu cuenta ha sido aprobada.'));
+    })->name('waitlist.redeem');
 
 });
 

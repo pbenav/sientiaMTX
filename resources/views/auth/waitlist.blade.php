@@ -30,19 +30,40 @@
         </div>
 
         <!-- Botones de Acción -->
-        <div class="border-t border-gray-100 dark:border-gray-800 pt-6 flex flex-col gap-3">
-            <p class="text-xs text-gray-500 dark:text-gray-500">
-                {{ __('¿Tienes un pase VIP o quieres entrar con otra cuenta?') }}
-            </p>
-            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                @csrf
-                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm rounded-xl transition-all active:scale-[0.98]">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"></path>
-                    </svg>
-                    {{ __('Cerrar Sesión') }}
-                </button>
-            </form>
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-6 flex flex-col gap-4">
+            <div class="space-y-2 text-center">
+                <p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+                    {{ __('¿Tienes un pase VIP?') }}
+                </p>
+                <form method="POST" action="{{ route('waitlist.redeem') }}" class="flex gap-2 max-w-sm mx-auto">
+                    @csrf
+                    <input type="text" name="code" placeholder="{{ __('Código VIP (ej: XYZ)') }}" required
+                           class="flex-1 min-w-0 px-3.5 py-2 text-xs font-mono uppercase bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400">
+                    <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap">
+                        {{ __('Canjear') }}
+                    </button>
+                </form>
+                @if($errors->has('code'))
+                    <p class="text-xs font-semibold text-red-500 mt-1">
+                        {{ $errors->first('code') }}
+                    </p>
+                @endif
+            </div>
+
+            <div class="border-t border-gray-100 dark:border-gray-800/50 pt-4">
+                <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2">
+                    {{ __('¿Quieres entrar con otra cuenta?') }}
+                </p>
+                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @csrf
+                    <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm rounded-xl transition-all active:scale-[0.98]">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"></path>
+                        </svg>
+                        {{ __('Cerrar Sesión') }}
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </x-guest-layout>
