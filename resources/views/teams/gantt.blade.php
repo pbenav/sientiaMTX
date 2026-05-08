@@ -388,6 +388,17 @@
                     
                     fo.appendChild(div);
                     w.appendChild(fo);
+
+                    // Sincronizar el arrastre en caliente usando MutationObserver para que el título acompañe a la barra
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.type === 'attributes' && mutation.attributeName === 'x') {
+                                const newX = bar.getAttribute('x');
+                                fo.setAttribute('x', newX);
+                            }
+                        });
+                    });
+                    observer.observe(bar, { attributes: true, attributeFilter: ['x'] });
                 }
             });
         }
