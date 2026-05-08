@@ -135,7 +135,8 @@
                                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $user->email }}
                                     </td>
-                                    <td class="px-6 py-4 flex flex-wrap items-center gap-1.5">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-wrap items-center gap-1.5">
                                         @if (!$user->is_approved)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 animate-pulse">
                                                 {{ __('Pendiente') }}
@@ -157,8 +158,10 @@
                                                 Premium
                                             </span>
                                         @endif
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right flex items-center justify-end gap-2">
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <div class="flex items-center justify-end gap-2">
                                         @if (!$user->is_approved)
                                             <form action="{{ route('settings.users.approve', $user) }}" method="POST">
                                                 @csrf
@@ -180,6 +183,7 @@
                                         @else
                                             <span class="text-xs text-gray-400 italic">{{ __('Current User') }}</span>
                                         @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
