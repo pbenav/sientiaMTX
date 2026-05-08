@@ -94,6 +94,7 @@
             </x-primary-button>
         </div>
 
+        <input type="hidden" name="code" value="{{ request()->query('code') }}">
         <input type="hidden" name="timezone" id="timezone" value="{{ config('app.timezone', 'UTC') }}">
         <script>
             try {

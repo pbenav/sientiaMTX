@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\EnsureLatestLegalConsent::class,
+            \App\Http\Middleware\EnsureUserIsApproved::class,
         ]);
 
         $middleware->encryptCookies(except: [

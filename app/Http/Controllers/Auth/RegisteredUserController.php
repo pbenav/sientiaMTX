@@ -43,9 +43,20 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'locale' => ['required', 'string', 'in:en,es'],
             'terms' => ['accepted'],
+            'code' => ['nullable', 'string'],
         ]);
 
         $isFirstUser = User::count() === 0;
+        $isApproved = $isFirstUser;
+
+        // Comprobar código de invitación
+        $invitation = null;
+        if ($request->filled('code')) {
+            $invitation = \App\Models\Invitation::where('code', $request->code)->whereNull('used_at')->first();
+            if ($invitation) {
+                $isApproved = true;
+            }
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -54,11 +65,20 @@ class RegisteredUserController extends Controller
             'locale' => $request->input('locale'),
             'timezone' => $request->input('timezone', config('app.timezone', 'UTC')),
             'is_admin' => $isFirstUser,
+            'is_approved' => $isApproved,
+            'invitations_left' => 5,
             'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
             'privacy_policy_accepted_at' => now(),
             'terms_accepted_at' => now(),
             'marketing_accepted_at' => $request->has('marketing') ? now() : null,
         ]);
+
+        if ($invitation) {
+            $invitation->update(['used_at' => now()]);
+            if ($invitation->user_id) {
+                $invitation->user()->decrement('invitations_left');
+            }
+        }
 
         // Process pending invitations
         $invitations = \App\Models\TeamInvitation::where('email', $user->email)->get();

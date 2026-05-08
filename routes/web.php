@@ -303,6 +303,14 @@ Route::middleware('auth')->group(function () {
     Route::post('quick-notes/{quick_note}/attachment/{attachment}/transcribe', [\App\Http\Controllers\QuickNoteController::class, 'transcribeAttachment'])->name('quick-notes.attachment.transcribe');
     Route::delete('quick-notes/{quick_note}/attachment/{attachment}', [\App\Http\Controllers\QuickNoteController::class, 'deleteAttachment'])->name('quick-notes.attachment.destroy');
 
+    // Waitlist Route
+    Route::get('/waitlist', function() {
+        if (auth()->user()->is_approved) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.waitlist');
+    })->name('waitlist');
+
 });
 
 require __DIR__.'/auth.php';
