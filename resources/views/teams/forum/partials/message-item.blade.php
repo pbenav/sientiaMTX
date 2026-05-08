@@ -194,13 +194,66 @@
                 <div id="message-edit-{{ $message->id }}" class="hidden w-full pt-2"
                      x-data="{ driveFiles: [], uploadingLocal: false }"
                      @drive-file-selected.window="if($event.detail.targetId === 'edit-{{ $message->id }}') driveFiles.push($event.detail.file)">
-                    <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST">
+                    <form action="{{ route('teams.forum.messages.update', [$team, $message]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PATCH')
                         <x-markdown-editor name="content" id="edit-content-{{ $message->id }}" :value="$message->content" rows="8" :upload-url="route('teams.forum.upload_image', $team)" :mentions-url="route('teams.mentions', $team)" />
-                        <div class="flex justify-end gap-2 mt-2">
+                        
+                        <!-- Adjuntar nuevos archivos al editar -->
+                        <div class="flex flex-col gap-3 mt-4">
+                            <div class="flex items-center justify-between px-1">
+                                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Adjuntar nuevos archivos') }}</label>
+                                
+                                @php 
+                                    $isTeamLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+                                @endphp
+
+                                @if($isTeamLinked)
+                                    <button type="button" @click="$dispatch('open-drive-picker', { mode: 'collect', targetId: 'edit-{{ $message->id }}' })"
+                                        class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                                        <svg class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" viewBox="0 0 24 24"></svg>
+                                        {{ __('Google Drive') }}
+                                    </button>
+                                @endif
+                            </div>
+
+                            <!-- Drive Files List en Edición -->
+                            <template x-if="driveFiles.length > 0">
+                                <div class="grid grid-cols-1 gap-2 mb-1">
+                                    <template x-for="file in driveFiles" :key="file.id">
+                                        <div class="flex items-center justify-between p-2 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <svg class="w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 48 48">
+                                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                </svg>
+                                                <span class="text-[11px] font-bold text-blue-800 dark:text-blue-300 truncate" x-text="file.name"></span>
+                                            </div>
+                                            <button type="button" @click="driveFiles = driveFiles.filter(f => f.id !== file.id)" class="text-blue-400 hover:text-red-500 transition-colors p-1">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <input type="hidden" name="drive_attachments" :value="JSON.stringify(driveFiles)">
+
+                            <input type="file" name="attachments[]" multiple
+                                class="block w-full text-xs text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-xl file:border-0
+                                file:text-[10px] file:font-black file:uppercase file:tracking-widest
+                                file:bg-violet-50 file:text-violet-700
+                                hover:file:bg-violet-100
+                                dark:file:bg-violet-900/30 dark:file:text-violet-400
+                                bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl cursor-pointer">
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-4">
                             <button type="button" onclick="cancelEdit({{ $message->id }})" class="text-xs font-bold text-gray-500">Cancelar</button>
-                            <button type="submit" class="px-4 py-1 bg-violet-600 text-white rounded-xl text-xs font-bold">Guardar</button>
+                            <button type="submit" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-violet-500/10">Guardar</button>
                         </div>
                     </form>
                 </div>
