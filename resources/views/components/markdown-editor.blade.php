@@ -11,6 +11,7 @@
     mentionQuery: '',
     mentionIndex: 0,
     mentionPos: { top: 0, left: 0 },
+    cancelledAt: -1,
     
     init() {
         this.$watch('mentionQuery', value => {
@@ -94,8 +95,12 @@
         const cursor = textarea.selectionStart;
         const textBefore = this.content.substring(0, cursor);
         
+        if (e && e.data === '@') {
+            this.cancelledAt = -1;
+        }
+
         const lastAt = textBefore.lastIndexOf('@');
-        if (lastAt !== -1 && (lastAt === 0 || /\s/.test(textBefore[lastAt - 1]))) {
+        if (lastAt !== -1 && lastAt !== this.cancelledAt && (lastAt === 0 || /\s/.test(textBefore[lastAt - 1]))) {
             const query = textBefore.substring(lastAt + 1);
             if (!/\s/.test(query)) {
                 this.mentioning = true;
@@ -124,7 +129,12 @@
                 this.selectMention(this.filteredMentions[this.mentionIndex]);
             } else if (e.key === 'Escape') {
                 this.mentioning = false;
+                const cursor = this.$refs.textarea.selectionStart;
+                const textBefore = this.content.substring(0, cursor);
+                this.cancelledAt = textBefore.lastIndexOf('@');
             }
+        } else if (e.key === 'Escape') {
+            this.mentioning = false;
         }
     },
 
@@ -213,8 +223,8 @@
         <label class="block text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ $label }}</label>
     @endif
 
-    <div @click.outside="mentioning = false"
-         @keyup.escape.window="mentioning = false"
+    <div @click.outside="if (mentioning) { mentioning = false; const cursor = $refs.textarea?.selectionStart; const textBefore = content.substring(0, cursor || 0); cancelledAt = textBefore.lastIndexOf('@'); }"
+         @keyup.escape.window="if (mentioning) { mentioning = false; const cursor = $refs.textarea?.selectionStart; const textBefore = content.substring(0, cursor || 0); cancelledAt = textBefore.lastIndexOf('@'); }"
          class="relative flex flex-col w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[2rem] shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/50"
          :class="uploading ? 'opacity-70 pointer-events-none' : ''">
         
