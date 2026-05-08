@@ -336,7 +336,7 @@ class ProfileController extends Controller
 
         \App\Models\Invitation::create([
             'user_id' => $user->id,
-            'code' => \Illuminate\Support\Str::random(16),
+            'code' => 'VIP-' . strtoupper(\Illuminate\Support\Str::random(8)),
         ]);
 
         return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('status', 'invitation-generated');

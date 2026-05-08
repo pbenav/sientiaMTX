@@ -318,7 +318,13 @@ Route::middleware('auth')->group(function () {
             'code' => 'required|string',
         ]);
 
-        $invitation = \App\Models\Invitation::where('code', $request->code)->whereNull('used_at')->first();
+        $code = trim($request->code);
+        $invitation = \App\Models\Invitation::where(function($query) use ($code) {
+            $query->where('code', $code)
+                  ->orWhere('code', strtoupper($code))
+                  ->orWhere('code', strtolower($code));
+        })->whereNull('used_at')->first();
+
         if (!$invitation) {
             return back()->withErrors(['code' => __('El código VIP no es válido o ya ha sido consumido.')]);
         }

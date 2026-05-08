@@ -49,10 +49,16 @@ class RegisteredUserController extends Controller
         $isFirstUser = User::count() === 0;
         $isApproved = $isFirstUser;
 
-        // Comprobar código de invitación
+        // Comprobar código de invitación de forma flexible
         $invitation = null;
         if ($request->filled('code')) {
-            $invitation = \App\Models\Invitation::where('code', $request->code)->whereNull('used_at')->first();
+            $code = trim($request->code);
+            $invitation = \App\Models\Invitation::where(function($query) use ($code) {
+                $query->where('code', $code)
+                      ->orWhere('code', strtoupper($code))
+                      ->orWhere('code', strtolower($code));
+            })->whereNull('used_at')->first();
+
             if ($invitation) {
                 $isApproved = true;
             }
