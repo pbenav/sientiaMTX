@@ -12,8 +12,8 @@
     mentionIndex: 0,
     mentionPos: { top: 0, left: 0 },
     cancelledAt: -1,
-    
     init() {
+        this.fetchMentions();
         this.$watch('mentionQuery', value => {
             this.mentionIndex = 0;
         });
@@ -24,10 +24,16 @@
     },
 
     async fetchMentions() {
-        if (!this.mentionsUrl || this.mentions.length > 0) return;
+        if (!this.mentionsUrl) return;
+        if (window.sientiaMentionsCache && window.sientiaMentionsCache.length > 0) {
+            this.mentions = window.sientiaMentionsCache;
+            return;
+        }
         try {
             const res = await fetch(this.mentionsUrl);
-            this.mentions = await res.json();
+            const data = await res.json();
+            window.sientiaMentionsCache = data;
+            this.mentions = data;
         } catch (e) {
             console.error('Error fetching mentions:', e);
         }
@@ -83,8 +89,8 @@
         
         // Adjust for scroll and add small offset
         this.mentionPos = {
-            top: offsetTop - scrollTop + 25,
-            left: offsetLeft - scrollLeft
+            top: offsetTop - scrollTop + 60,
+            left: offsetLeft - scrollLeft + 15
         };
         
         document.body.removeChild(div);
@@ -102,7 +108,7 @@
         const lastAt = textBefore.lastIndexOf('@');
         if (lastAt !== -1 && lastAt !== this.cancelledAt && (lastAt === 0 || /\s/.test(textBefore[lastAt - 1]))) {
             const query = textBefore.substring(lastAt + 1);
-            if (!/\s/.test(query)) {
+            if (query.length <= 15 && !/\s/.test(query)) {
                 this.mentioning = true;
                 this.mentionQuery = query;
                 this.mentionIndex = 0;
@@ -128,13 +134,21 @@
                 e.preventDefault();
                 this.selectMention(this.filteredMentions[this.mentionIndex]);
             } else if (e.key === 'Escape') {
-                this.mentioning = false;
-                const cursor = this.$refs.textarea.selectionStart;
-                const textBefore = this.content.substring(0, cursor);
-                this.cancelledAt = textBefore.lastIndexOf('@');
+                this.cancelMention();
             }
         } else if (e.key === 'Escape') {
             this.mentioning = false;
+        }
+    },
+
+    cancelMention() {
+        if (!this.mentioning) return;
+        this.mentioning = false;
+        const textarea = this.$refs.textarea;
+        if (textarea) {
+            const cursor = textarea.selectionStart;
+            const textBefore = this.content.substring(0, cursor);
+            this.cancelledAt = textBefore.lastIndexOf('@');
         }
     },
 
@@ -223,13 +237,13 @@
         <label class="block text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ $label }}</label>
     @endif
 
-    <div @click.outside="if (mentioning) { mentioning = false; const cursor = $refs.textarea?.selectionStart; const textBefore = content.substring(0, cursor || 0); cancelledAt = textBefore.lastIndexOf('@'); }"
-         @keyup.escape.window="if (mentioning) { mentioning = false; const cursor = $refs.textarea?.selectionStart; const textBefore = content.substring(0, cursor || 0); cancelledAt = textBefore.lastIndexOf('@'); }"
+    <div @click.outside="cancelMention()"
+         @keyup.escape.window="cancelMention()"
          class="relative flex flex-col w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[2rem] shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/50"
          :class="uploading ? 'opacity-70 pointer-events-none' : ''">
         
         <!-- Mention Dropdown (Now placed here to be relative to the entire component but absolute positioned) -->
-        <div x-show="mentioning && filteredMentions.length > 0 && mentionPos.top > 0" 
+        <div x-show="mentioning && filteredMentions.length > 0" 
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-y-4"
              x-transition:enter-end="opacity-100 translate-y-0"
