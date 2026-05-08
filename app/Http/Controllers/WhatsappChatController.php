@@ -28,10 +28,6 @@ class WhatsappChatController extends Controller
         ]);
 
         $user = auth()->user();
-        $notifSettings = $user->notification_settings ?? $user->defaultNotificationSettings();
-        if (!($notifSettings['whatsapp'] ?? false)) {
-            return response()->json(['reply' => '⚠️ El módulo de WhatsApp está desactivado en tus preferencias.'], 403);
-        }
 
         $team = Team::findOrFail($request->team_id);
         $text = $request->input('message') ?? '';
@@ -150,10 +146,6 @@ class WhatsappChatController extends Controller
     public function getMessages(Request $request)
     {
         $user = auth()->user();
-        $notifSettings = $user->notification_settings ?? $user->defaultNotificationSettings();
-        if (!($notifSettings['whatsapp'] ?? false)) {
-            return response()->json(['messages' => []]);
-        }
 
         $teamId = $request->query('team_id');
         $beforeId = $request->query('before_id');
