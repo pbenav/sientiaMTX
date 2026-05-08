@@ -106,6 +106,14 @@ class SettingsController extends Controller
             }
         }
 
+        if ($request->filled('approved')) {
+            if ($request->get('approved') === '1') {
+                $query->where('is_approved', true);
+            } elseif ($request->get('approved') === '0') {
+                $query->where('is_approved', false);
+            }
+        }
+
         $perPage = $request->get('per_page', 25);
         if ($perPage === 'all') {
             $perPage = $query->count() ?: 1;
@@ -118,6 +126,7 @@ class SettingsController extends Controller
             'search' => $request->get('search', ''),
             'role' => $request->get('role', ''),
             'premium' => $request->get('premium', ''),
+            'approved' => $request->get('approved', ''),
             'sort' => $sort,
             'direction' => $direction,
         ]);

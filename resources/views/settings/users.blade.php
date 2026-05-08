@@ -53,6 +53,13 @@
                         <option value="0" {{ $premium === '0' ? 'selected' : '' }}>{{ __('Estándar') }}</option>
                     </select>
 
+                    <select name="approved"
+                            class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
+                        <option value="" {{ request('approved') === null || request('approved') === '' ? 'selected' : '' }}>{{ __('Todos los Estados') }}</option>
+                        <option value="1" {{ request('approved') === '1' ? 'selected' : '' }}>{{ __('Aprobados') }}</option>
+                        <option value="0" {{ request('approved') === '0' ? 'selected' : '' }}>{{ __('Pendientes (Waitlist)') }}</option>
+                    </select>
+
                     <select name="per_page" onchange="this.form.submit()"
                             class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300 cursor-pointer">
                         <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
@@ -65,7 +72,7 @@
                         <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
                             {{ __('Filtrar') }}
                         </button>
-                @if (request()->anyFilled(['search', 'role', 'premium']))
+                @if (request()->anyFilled(['search', 'role', 'premium', 'approved']))
                     <a href="{{ route('settings.users') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
                         {{ __('Limpiar') }}
                     </a>
@@ -151,7 +158,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                    <td class="px-6 py-4 whitespace-nowrap text-right flex items-center justify-end gap-2">
                                         @if (!$user->is_approved)
                                             <form action="{{ route('settings.users.approve', $user) }}" method="POST">
                                                 @csrf
