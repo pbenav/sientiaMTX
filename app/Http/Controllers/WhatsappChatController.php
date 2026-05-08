@@ -84,6 +84,7 @@ class WhatsappChatController extends Controller
             $caption = "💬 *[{$user->name}]:*\n{$text}";
             
             $params = [
+                'session' => 'team_' . $team->id,
                 'phone' => $chatId,
                 'message' => $caption,
             ];
