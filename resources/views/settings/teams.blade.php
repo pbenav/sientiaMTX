@@ -128,8 +128,16 @@
                                                 {{ substr($team->name, 0, 2) }}
                                             </div>
                                             <div>
-                                                <a href="{{ auth()->user()->can('view', $team) ? route('teams.show', $team) : route('teams.edit', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors">
-                                                    {{ $team->name }}
+                                                <a href="{{ auth()->user()->can('view', $team) ? route('teams.show', $team) : route('teams.edit', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors inline-flex items-center gap-2">
+                                                    <span>{{ $team->name }}</span>
+                                                    @if($team->settings['has_whatsapp'] ?? false)
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-sm animate-bounce-subtle">
+                                                            <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                                                                <path d="M19.057 20.464c-1.42 1.42-3.845 2.536-6.107 2.536-5.411 0-9.816-4.404-9.816-9.816 0-1.745.457-3.418 1.32-4.896L3 3l5.523 1.45c1.4-.801 3.012-1.25 4.718-1.25 5.412 0 9.816 4.404 9.816 9.816 0 2.63-1.02 5.101-2.88 6.966l-.12.482zM12.24 4.81c-4.63 0-8.4 3.77-8.4 8.4 0 1.57.435 3.1 1.254 4.44l.117.195-.824 3.013 3.08-.808.19.113c1.3.774 2.784 1.182 4.3 1.182 4.631 0 8.4-3.77 8.4-8.4 0-2.244-.873-4.354-2.458-5.939A8.345 8.345 0 0012.24 4.81zm4.846 7.258c-.3-.149-1.771-.864-2.044-.962-.273-.099-.472-.149-.671.149-.198.297-.768.962-.94 1.16-.173.199-.347.223-.647.074-.3-.149-1.265-.462-2.41-1.474-.89-.787-1.49-1.758-1.664-2.056-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.15-.173.199-.297.298-.495.099-.198.05-.371-.025-.52-.075-.149-.672-1.62-.92-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.771-.717 2.018-1.412.247-.694.247-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                                                            </svg>
+                                                            <span>WhatsApp Premium</span>
+                                                        </span>
+                                                    @endif
                                                 </a>
                                                 <div class="text-[10px] text-gray-400 uppercase font-black tracking-tight mt-0.5">
                                                     {{ $team->slug }}
