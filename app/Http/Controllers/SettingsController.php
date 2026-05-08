@@ -511,6 +511,17 @@ class SettingsController extends Controller
         return back()->with('success', __('¡Ajustes de apariencia actualizados correctamente!'));
     }
 
+    /**
+     * Aprobar a un usuario de la lista de espera.
+     */
+    public function approveUser(User $user)
+    {
+        $user->is_approved = true;
+        $user->save();
+
+        return back()->with('success', __('Usuario aprobado y activado con éxito en Sientia.'));
+    }
+
     protected function updateEnv($key, $value)
     {
         $path = base_path('.env');

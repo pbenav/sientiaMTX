@@ -206,6 +206,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'updateUser'])->name('settings.users.update');
         Route::delete('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'destroyUser'])->name('settings.users.destroy');
         Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\SettingsController::class, 'acceptUserInvitation'])->name('settings.users.accept-invitation');
+        Route::post('/settings/users/{user}/approve', [\App\Http\Controllers\SettingsController::class, 'approveUser'])->name('settings.users.approve');
         
         // Legal Settings
         Route::get('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'legalSettings'])->name('settings.legal');

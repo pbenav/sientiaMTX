@@ -129,6 +129,12 @@
                                         {{ $user->email }}
                                     </td>
                                     <td class="px-6 py-4 flex flex-wrap items-center gap-1.5">
+                                        @if (!$user->is_approved)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 animate-pulse">
+                                                {{ __('Pendiente') }}
+                                            </span>
+                                        @endif
+
                                         @if ($user->is_admin)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
                                                 {{ __('Administrator') }}
@@ -145,7 +151,16 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                        @if (!$user->is_approved)
+                                            <form action="{{ route('settings.users.approve', $user) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/30 dark:text-emerald-400 transition-colors active:scale-95">
+                                                    {{ __('Aprobar') }}
+                                                </button>
+                                            </form>
+                                        @endif
+
                                         @if ($user->id !== auth()->id())
                                             <form action="{{ route('settings.users.toggle-admin', $user) }}" method="POST" id="toggle-admin-{{ $user->id }}">
                                                 @csrf
