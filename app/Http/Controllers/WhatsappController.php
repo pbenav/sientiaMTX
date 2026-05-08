@@ -361,7 +361,7 @@ class WhatsappController extends Controller
     {
         try {
             $team = \App\Models\Team::findOrFail($request->get('team_id'));
-            if ($team->user_id !== auth()->id() && !auth()->user()->is_admin) {
+            if ($team->user_id !== auth()->id() && !$team->isCoordinator(auth()->user()) && !auth()->user()->is_admin) {
                 abort(403);
             }
             $session = 'team_' . ($team->slug ?: $team->id);

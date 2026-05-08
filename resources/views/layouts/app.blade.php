@@ -974,7 +974,7 @@
         @if($notifSettings['telegram'] ?? false)
             @include('partials.telegram-widget')
         @endif
-        @if($notifSettings['whatsapp'] ?? false)
+        @if(($notifSettings['whatsapp'] ?? false) || (isset($team) && ($team->settings['has_whatsapp'] ?? false)))
             @include('partials.whatsapp-widget')
         @endif
 
