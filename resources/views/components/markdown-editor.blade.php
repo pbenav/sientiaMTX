@@ -12,8 +12,12 @@
     mentionIndex: 0,
     mentionPos: { top: 0, left: 0 },
     cancelledAt: -1,
+    hasJustTypedAt: false,
     init() {
         this.fetchMentions();
+        if (this.content) {
+            this.cancelledAt = this.content.lastIndexOf('@');
+        }
         this.$watch('mentionQuery', value => {
             this.mentionIndex = 0;
         });
@@ -49,7 +53,7 @@
     updateMentionPosition() {
         const textarea = this.$refs.textarea;
         const cursor = textarea.selectionStart;
-        const textBefore = this.content.substring(0, cursor);
+        const textBefore = (this.content || '').substring(0, cursor);
         const lastAt = textBefore.lastIndexOf('@');
         
         if (lastAt === -1) return;
@@ -97,30 +101,44 @@
     },
 
     handleInput(e) {
+        if (!this.mentioning) return;
         const textarea = this.$refs.textarea;
-        const cursor = textarea.selectionStart;
-        const textBefore = this.content.substring(0, cursor);
+        if (!textarea) return;
         
-        if (e && e.data === '@') {
-            this.cancelledAt = -1;
-        }
-
+        const cursor = textarea.selectionStart;
+        const textBefore = (this.content || '').substring(0, cursor);
         const lastAt = textBefore.lastIndexOf('@');
-        if (lastAt !== -1 && lastAt !== this.cancelledAt && (lastAt === 0 || /\s/.test(textBefore[lastAt - 1]))) {
-            const query = textBefore.substring(lastAt + 1);
-            if (query.length <= 15 && !/\s/.test(query)) {
-                this.mentioning = true;
-                this.mentionQuery = query;
-                this.mentionIndex = 0;
-                this.updateMentionPosition();
-                if (this.mentions.length === 0) this.fetchMentions();
-                return;
-            }
+        
+        if (lastAt === -1) {
+            this.mentioning = false;
+            this.hasJustTypedAt = false;
+            return;
         }
-        this.mentioning = false;
+        
+        const query = textBefore.substring(lastAt + 1);
+        if (query.length > 15 || /\s/.test(query)) {
+            this.mentioning = false;
+            this.hasJustTypedAt = false;
+            return;
+        }
+        
+        this.mentionQuery = query;
+        this.updateMentionPosition();
     },
 
     handleKeyDown(e) {
+        if (e.key === '@') {
+            this.hasJustTypedAt = true;
+            this.mentioning = true;
+            this.mentionQuery = '';
+            this.mentionIndex = 0;
+            this.$nextTick(() => {
+                this.updateMentionPosition();
+                if (this.mentions.length === 0) this.fetchMentions();
+            });
+            return;
+        }
+
         if (this.mentioning && this.filteredMentions.length > 0) {
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -138,16 +156,17 @@
             }
         } else if (e.key === 'Escape') {
             this.mentioning = false;
+            this.hasJustTypedAt = false;
         }
     },
 
     cancelMention() {
-        if (!this.mentioning) return;
         this.mentioning = false;
+        this.hasJustTypedAt = false;
         const textarea = this.$refs.textarea;
         if (textarea) {
             const cursor = textarea.selectionStart;
-            const textBefore = this.content.substring(0, cursor);
+            const textBefore = (this.content || '').substring(0, cursor);
             this.cancelledAt = textBefore.lastIndexOf('@');
         }
     },
@@ -171,6 +190,7 @@
         
         this.content = before + mentionText + after;
         this.mentioning = false;
+        this.hasJustTypedAt = false;
         
         this.$nextTick(() => {
             const newPos = before.length + mentionText.length;
@@ -243,34 +263,34 @@
          :class="uploading ? 'opacity-70 pointer-events-none' : ''">
         
         <!-- Mention Dropdown (Now placed here to be relative to the entire component but absolute positioned) -->
-        <div x-show="mentioning && filteredMentions.length > 0" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             :style="`top: ${mentionPos.top}px; left: ${mentionPos.left}px;`"
-             @wheel.stop=""
-             class="absolute z-[1000] w-72 bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900/50 rounded-2xl shadow-2xl overflow-hidden"
-             x-cloak>
-            <div class="px-4 py-2 bg-violet-50 dark:bg-violet-900/20 border-b border-violet-100 dark:border-violet-900/30 flex items-center justify-between">
-                <span class="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Mencionar') }}</span>
-                <span class="text-[9px] text-violet-400 font-bold uppercase" x-text="'@' + mentionQuery"></span>
+        <template x-if="mentioning && hasJustTypedAt && filteredMentions.length > 0">
+            <div x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-4"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 :style="`top: ${mentionPos.top}px; left: ${mentionPos.left}px;`"
+                 @wheel.stop=""
+                 class="absolute z-[1000] w-72 bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900/50 rounded-2xl shadow-2xl overflow-hidden">
+                <div class="px-4 py-2 bg-violet-50 dark:bg-violet-900/20 border-b border-violet-100 dark:border-violet-900/30 flex items-center justify-between">
+                    <span class="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Mencionar') }}</span>
+                    <span class="text-[9px] text-violet-400 font-bold uppercase" x-text="'@' + mentionQuery"></span>
+                </div>
+                <div class="max-h-64 overflow-y-auto custom-scrollbar p-1" x-ref="mentionsList">
+                    <template x-for="(user, index) in filteredMentions" :key="user.id">
+                        <button type="button" 
+                            @click="selectMention(user)"
+                            @mouseenter="mentionIndex = index"
+                            :class="mentionIndex === index ? 'bg-violet-600 text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20'"
+                            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 text-left group">
+                            <img :src="user.avatar" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700 shadow-sm" :class="mentionIndex === index ? 'border-violet-400' : ''">
+                            <div class="flex flex-col">
+                                <span class="font-bold" x-text="user.name"></span>
+                                <span class="text-[10px] opacity-60 font-medium tracking-tight" :class="mentionIndex === index ? 'text-violet-100' : 'text-gray-500'">{{ __('Miembro del equipo') }}</span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
             </div>
-            <div class="max-h-64 overflow-y-auto custom-scrollbar p-1" x-ref="mentionsList">
-                <template x-for="(user, index) in filteredMentions" :key="user.id">
-                    <button type="button" 
-                        @click="selectMention(user)"
-                        @mouseenter="mentionIndex = index"
-                        :class="mentionIndex === index ? 'bg-violet-600 text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20'"
-                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 text-left group">
-                        <img :src="user.avatar" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700 shadow-sm" :class="mentionIndex === index ? 'border-violet-400' : ''">
-                        <div class="flex flex-col">
-                            <span class="font-bold" x-text="user.name"></span>
-                            <span class="text-[10px] opacity-60 font-medium tracking-tight" :class="mentionIndex === index ? 'text-violet-100' : 'text-gray-500'">{{ __('Miembro del equipo') }}</span>
-                        </div>
-                    </button>
-                </template>
-            </div>
-        </div>
+        </template>
 
         <!-- Uploading overlay -->
         <template x-if="uploading">
