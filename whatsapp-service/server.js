@@ -5,6 +5,17 @@ const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const { execSync, exec } = require('child_process');
+
+// --- LIMPIEZA INICIAL DE SEGURIDAD EN EL ARRANQUE ---
+try {
+    console.log('[Startup-Cleaner] Limpiando procesos antiguos de Chrome/Chromium para arrancar limpio...');
+    execSync('pkill -f "chrome" || true');
+    execSync('pkill -f "chromium" || true');
+    console.log('[Startup-Cleaner] Limpieza de inicio completada con éxito.');
+} catch (err) {
+    console.error('[Startup-Cleaner] Error durante la limpieza inicial:', err.message);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,6 +36,86 @@ app.use((req, res, next) => {
 
 // Mapa de clientes en memoria (Multi-sesión dinámica)
 const sessions = {};
+
+// Destrucción segura y forzada de procesos Puppeteer/Chrome asociados al cliente
+async function safelyDestroyClient(client) {
+    let pid = null;
+    if (client && client.pupBrowser) {
+        try {
+            const proc = client.pupBrowser.process();
+            if (proc && proc.pid) {
+                pid = proc.pid;
+            }
+        } catch (e) {
+            // Navegador no inicializado o ya cerrado
+        }
+    }
+
+    try {
+        console.log(`[Cleanup] Destruyendo cliente de forma limpia...`);
+        await client.destroy();
+    } catch (err) {
+        console.error('[Cleanup] Error destruyendo cliente con destroy():', err.message);
+    }
+
+    // Si persiste el PID del proceso de Chrome, lo forzamos a cerrarse tras 4 segundos de gracia
+    if (pid) {
+        setTimeout(() => {
+            try {
+                process.kill(pid, 0); // Comprobar si el proceso sigue activo
+                console.log(`[Cleanup] El proceso Chrome (PID: ${pid}) sigue activo tras destroy(). Forzando terminación...`);
+                process.kill(pid, 'SIGKILL');
+                try {
+                    process.kill(-pid, 'SIGKILL'); // Matar su grupo de procesos
+                } catch (gErr) {}
+            } catch (e) {
+                // El proceso ya se cerró limpiamente
+            }
+        }, 4000);
+    }
+}
+
+// Limpiador activo periódico de procesos Chrome huérfanos de este servidor Node
+function cleanOrphanedChromeProcesses() {
+    console.log('[Orphan-Cleaner] Analizando procesos hijo de Chrome...');
+    const activePids = [];
+    for (const id in sessions) {
+        const session = sessions[id];
+        if (session.client && session.client.pupBrowser) {
+            try {
+                const proc = session.client.pupBrowser.process();
+                if (proc && proc.pid) {
+                    activePids.push(proc.pid);
+                }
+            } catch (e) {}
+        }
+    }
+
+    // Buscamos procesos hijo directos de este proceso de Node que sean Chrome/Chromium
+    exec(`pgrep -P ${process.pid} -f "chrome|chromium"`, (err, stdout, stderr) => {
+        if (err) return; // Sin coincidencias o error, normal si todo está limpio
+
+        const childPids = stdout.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0)
+            .map(p => parseInt(p, 10));
+
+        childPids.forEach(pid => {
+            if (!activePids.includes(pid)) {
+                console.log(`[Orphan-Cleaner] Detectado proceso Chrome huérfano (PID: ${pid}). Eliminando...`);
+                try {
+                    process.kill(pid, 'SIGKILL');
+                    try {
+                        process.kill(-pid, 'SIGKILL');
+                    } catch (gErr) {}
+                } catch (kErr) {}
+            }
+        });
+    });
+}
+
+// Ejecutar limpieza periódica cada 10 minutos
+setInterval(cleanOrphanedChromeProcesses, 600000);
 
 // Obtiene o inicializa la sesión de un cliente específico con optimización de RAM estricta
 function getSession(sessionId = 'default') {
@@ -89,7 +180,7 @@ function getSession(sessionId = 'default') {
                 if (sessions[sessionId]) {
                     const clientToDestroy = sessions[sessionId].client;
                     delete sessions[sessionId];
-                    await clientToDestroy.destroy();
+                    await safelyDestroyClient(clientToDestroy);
                 }
             } catch (err) {
                 console.error(`[Auto-Sleep Error - ${sessionId}] Error al dormir la sesión:`, err.message);
@@ -287,7 +378,7 @@ app.post('/api/restart', async (req, res) => {
         session.ready = false;
         
         try {
-            await session.client.destroy();
+            await safelyDestroyClient(session.client);
         } catch(e) {
             console.log('Error al destruir cliente:', e.message);
         }
