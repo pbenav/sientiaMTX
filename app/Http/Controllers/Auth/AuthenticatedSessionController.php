@@ -30,6 +30,18 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Intercept login if Multi-Factor Authentication is enabled and confirmed
+        if ($user->two_factor_confirmed_at) {
+            $request->session()->put('login.id', $user->id);
+            $request->session()->put('login.remember', $request->boolean('remember'));
+            
+            Auth::guard('web')->logout();
+
+            return redirect()->route('login.two-factor');
+        }
+
         $request->session()->regenerate();
 
         // Prevent accidental redirection to AJAX/JSON background-polling endpoints or webhooks

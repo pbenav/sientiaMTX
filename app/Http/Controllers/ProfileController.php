@@ -304,6 +304,99 @@ class ProfileController extends Controller
     }
 
     /**
+     * Enable Two Factor Authentication (MFA) - Generate Secret & URI.
+     */
+    public function enableTwoFactor(Request $request, \App\Services\TotpService $totp): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+        
+        // Generate a new secret if not already set or unconfirmed
+        if (!$user->two_factor_confirmed_at || !$user->two_factor_secret) {
+            $secret = $totp->generateSecret();
+            $user->update([
+                'two_factor_secret' => $secret,
+                'two_factor_confirmed_at' => null // Mark as unconfirmed
+            ]);
+        } else {
+            $secret = $user->two_factor_secret;
+        }
+
+        $qrCodeUri = $totp->getQrCodeUri($user->email, $secret);
+
+        return response()->json([
+            'success' => true,
+            'secret' => $secret,
+            'qr_code_uri' => $qrCodeUri,
+        ]);
+    }
+
+    /**
+     * Confirm and finalize enabling Two Factor Authentication (MFA).
+     */
+    public function confirmTwoFactor(Request $request, \App\Services\TotpService $totp): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = $request->user();
+
+        if (!$user->two_factor_secret || !$totp->verifyCode($user->two_factor_secret, $request->code)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('El código de verificación introducido es incorrecto.')
+            ], 422);
+        }
+
+        $user->update([
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        \App\Models\SecurityLog::create([
+            'user_id' => $user->id,
+            'event' => 'auth.mfa.enabled',
+            'description' => 'El usuario ha activado y verificado correctamente la Autenticación Multifactor (MFA/TOTP).',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('¡Autenticación en dos pasos activada correctamente!')
+        ]);
+    }
+
+    /**
+     * Disable Two Factor Authentication (MFA).
+     */
+    public function disableTwoFactor(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'password' => 'required|string|current_password',
+        ]);
+
+        $user = $request->user();
+
+        $user->update([
+            'two_factor_secret' => null,
+            'two_factor_confirmed_at' => null,
+        ]);
+
+        \App\Models\SecurityLog::create([
+            'user_id' => $user->id,
+            'event' => 'auth.mfa.disabled',
+            'description' => 'El usuario ha desactivado la Autenticación Multifactor (MFA/TOTP).',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('La autenticación en dos pasos ha sido desactivada.')
+        ]);
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

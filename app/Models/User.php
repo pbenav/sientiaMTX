@@ -61,6 +61,8 @@ class User extends Authenticatable implements HasLocalePreference
         'work_end_time_1',
         'work_start_time_2',
         'work_end_time_2',
+        'two_factor_secret',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -73,6 +75,7 @@ class User extends Authenticatable implements HasLocalePreference
         'remember_token',
         'google_token',
         'google_refresh_token',
+        'two_factor_secret',
     ];
 
     /**
@@ -95,6 +98,8 @@ class User extends Authenticatable implements HasLocalePreference
             'energy_level' => 'integer',
             'last_login_at' => 'datetime',
             'last_activity_at' => 'datetime',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
