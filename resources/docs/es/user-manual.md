@@ -17,6 +17,16 @@ En el menú de usuario (esquina superior derecha) → **Perfil**:
 - **Zona horaria**: Importante para que las fechas de las tareas sean correctas.
 - **Idioma**: Cambia entre Español e Inglés; los manuales también cambiarán automaticamente.
 
+### 🔐 Seguridad Avanzada (MFA)
+Protege tu cuenta mediante Autenticación de Doble Factor (2FA):
+1. Ve a tu Perfil → Configuración de Seguridad.
+2. Activa el doble factor introduciendo tu contraseña actual.
+3. Escanea el código QR que aparece en pantalla mediante Google Authenticator o Authy.
+
+> [!NOTE]
+> **Privacidad Reforzada:** En SientiaMTX, la generación del código QR para la activación del 2FA se realiza de forma 100% local en tu navegador, sin enviar secretos a APIs externas, garantizando una seguridad offline absoluta.
+
+
 ---
 
 ## 📋 2. La Matriz de Eisenhower

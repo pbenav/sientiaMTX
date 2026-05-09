@@ -16,6 +16,7 @@ SientiaMTX utiliza una jerarquía de roles estricta para proteger la integridad 
 ### Auditoría de Seguridad Reciente
 Se han implementado estándares de seguridad de nivel empresarial:
 - **Protección de Perfiles**: Los coordinadores ya no pueden modificar el email de los miembros para evitar riesgos de suplantación.
+- **Autorización WhatsApp Premium**: Como administrador, puedes otorgar a usuarios específicos el permiso para vincular su WhatsApp personal desde el panel de edición de usuario, habilitándoles su propio canal privado de notificaciones y chat aislado.
 - **Integridad de Archivos**: Las subidas de archivos en Foros y Tareas están validadas por membresía de equipo y cuotas de disco.
 
 ---

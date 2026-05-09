@@ -17,6 +17,16 @@ In the user menu (top right corner) → **Profile**:
 - **Time zone**: Important for task deadlines to be correct.
 - **Language**: Switch between Spanish and English; manuals will also change automatically.
 
+### 🔐 Advanced Security (MFA)
+Protect your account using Two-Factor Authentication (2FA):
+1. Go to your Profile → Security Settings.
+2. Enable two-factor authentication by entering your current password.
+3. Scan the QR code that appears on the screen using Google Authenticator or Authy.
+
+> [!NOTE]
+> **Reinforced Privacy:** In SientiaMTX, the QR code generation for 2FA activation happens 100% locally within your browser, without sending secrets to external APIs, ensuring absolute offline security.
+
+
 ---
 
 ## 📋 2. The Eisenhower Matrix

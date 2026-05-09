@@ -16,6 +16,7 @@ SientiaMTX uses a strict role hierarchy to protect data integrity:
 ### Recent Security Audit
 Enterprise-level security standards have been implemented:
 - **Profile Protection**: Coordinators can no longer modify member emails to prevent spoofing risks.
+- **Premium WhatsApp Authorization**: As an administrator, you can grant specific users permission to link their personal WhatsApp from the user edit panel, enabling their own private notification channel and isolated chat session.
 - **File Integrity**: File uploads in Forums and Tasks are validated by team membership and disk quotas.
 
 ---
