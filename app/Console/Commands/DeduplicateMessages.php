@@ -48,47 +48,90 @@ class DeduplicateMessages extends Command
     }
 
     /**
-     * Deduplica la tabla de telegram_messages
+     * Deduplica la tabla de telegram_messages usando ventana deslizante de tiempo
      */
     protected function deduplicateTelegram($apply)
     {
         $this->line('');
         $this->info('🔹 1. Analizando mensajes de Telegram...');
 
-        // CASO A: Duplicados por id temporal 'sync_...' vs id real de Telegram (Mismo texto, mismo equipo, creado con < 45s de diferencia)
-        $syncDuplicates = TelegramMessage::where('telegram_message_id', 'like', 'sync_%')
+        // 1. Agrupar por team_id y text (ignorando tags html)
+        $textGroups = DB::table('telegram_messages')
+            ->select('team_id', 'text', DB::raw('COUNT(*) as total'))
+            ->whereNotNull('text')
+            ->where('text', '!=', '')
+            ->groupBy('team_id', 'text')
+            ->having('total', '>', 1)
             ->get();
 
-        $cleanedSyncCount = 0;
-        foreach ($syncDuplicates as $syncMsg) {
-            // Buscamos si existe un clon con id real (no sync_) para el mismo equipo y texto similar, creado al mismo tiempo (+/- 45s)
-            $realClon = TelegramMessage::where('team_id', $syncMsg->team_id)
-                ->where('telegram_message_id', 'not like', 'sync_%')
-                ->whereBetween('created_at', [
-                    $syncMsg->created_at->subSeconds(45),
-                    $syncMsg->created_at->addSeconds(45)
-                ])
-                ->get()
-                ->first(function ($msg) use ($syncMsg) {
-                    return trim(strip_tags($msg->text)) === trim(strip_tags($syncMsg->text))
-                        || str_contains($msg->text, $syncMsg->text)
-                        || str_contains($syncMsg->text, $msg->text);
-                });
+        $cleanedCount = 0;
+        foreach ($textGroups as $group) {
+            $clones = TelegramMessage::where('team_id', $group->team_id)
+                ->where('text', $group->text)
+                ->orderBy('created_at', 'asc')
+                ->get();
 
-            if ($realClon) {
-                $cleanedSyncCount++;
-                $this->warn("   [Clon Local] Encontrado registro sync '{$syncMsg->telegram_message_id}' duplicado con real '{$realClon->telegram_message_id}' (Equipo: {$syncMsg->team_id})");
-                $this->line("      Texto: '" . substr(strip_tags($syncMsg->text), 0, 50) . "...'");
-                
-                if ($apply) {
-                    // Borramos únicamente el registro local 'sync' de la DB (el real se queda intacto en local y en Telegram, por lo que no llamamos a Telegram API)
-                    $syncMsg->delete();
-                    $this->info("      -> Registro duplicado local 'sync_{$syncMsg->id}' borrado con éxito de la DB (Telegram intacto).");
+            $processedIds = [];
+            
+            for ($i = 0; $i < count($clones); $i++) {
+                $msg1 = $clones[$i];
+                if (in_array($msg1->id, $processedIds)) continue;
+
+                for ($j = $i + 1; $j < count($clones); $j++) {
+                    $msg2 = $clones[$j];
+                    if (in_array($msg2->id, $processedIds)) continue;
+
+                    $diff = abs($msg2->created_at->diffInSeconds($msg1->created_at));
+                    if ($diff <= 45) {
+                        $cleanedCount++;
+                        
+                        // Determinamos cuál de los dos conservar:
+                        // Preferimos conservar el que tenga ID real numérico (no sync_) y borrar el sync_
+                        $keep = $msg1;
+                        $delete = $msg2;
+
+                        if (str_starts_with($msg1->telegram_message_id ?? '', 'sync_') && !str_starts_with($msg2->telegram_message_id ?? '', 'sync_') && $msg2->telegram_message_id !== null) {
+                            $keep = $msg2;
+                            $delete = $msg1;
+                        }
+
+                        $this->error("   [Telegram Duplicado] Encontrado clon por tiempo (Diferencia: {$diff}s, Equipo: {$group->team_id})");
+                        $this->line("      - Conservar ID: {$keep->id} (MsgID: {$keep->telegram_message_id})");
+                        $this->line("      - Eliminar ID: {$delete->id} (MsgID: {$delete->telegram_message_id})");
+                        $this->line("      Texto: '" . substr(strip_tags($keep->text), 0, 60) . "...'");
+
+                        if ($apply) {
+                            $delete->delete();
+                            
+                            // Si el que borramos tiene un ID real numérico (no sync_) y es diferente al conservado, lo borramos de Telegram
+                            if ($delete->telegram_message_id && !str_starts_with($delete->telegram_message_id, 'sync_') && $delete->telegram_message_id !== $keep->telegram_message_id) {
+                                $token = config('services.telegram.bot_token');
+                                $chatId = $delete->team ? $delete->team->telegram_chat_id : null;
+                                if ($token && $chatId) {
+                                    try {
+                                        Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
+                                            'chat_id' => $chatId,
+                                            'message_id' => $delete->telegram_message_id,
+                                        ]);
+                                        $this->info("         -> Borrado clon duplicado en Telegram de forma remota.");
+                                    } catch (\Exception $e) {}
+                                }
+                            }
+                            $this->info("         -> Registro duplicado borrado de la base de datos.");
+                        }
+
+                        $processedIds[] = $delete->id;
+                        
+                        // Si borramos el original de este bucle ($msg1), salimos del bucle interno
+                        if ($delete->id === $msg1->id) {
+                            break;
+                        }
+                    }
                 }
             }
         }
 
-        // CASO B: Duplicados reales de ID (Mismo telegram_message_id y mismo team_id)
+        // 2. Duplicados exactos de ID real numérico (por si hay colisiones directas)
         $idDuplicates = DB::table('telegram_messages')
             ->select('team_id', 'telegram_message_id', DB::raw('COUNT(*) as total'))
             ->whereNotNull('telegram_message_id')
@@ -109,42 +152,38 @@ class DeduplicateMessages extends Command
 
             foreach ($clonesToDelete as $clone) {
                 $cleanedRealCount++;
-                $this->error("   [Duplicado Externo] Encontrado mensaje Telegram real duplicado (ID: {$clone->telegram_message_id}, Equipo: {$clone->team_id})");
+                $this->error("   [Telegram Duplicado ID] Encontrado ID duplicado (ID: {$clone->telegram_message_id}, Equipo: {$clone->team_id})");
                 
                 if ($apply) {
-                    // 1. Borrar en la DB local
                     $clone->delete();
-                    
-                    // 2. Borrar en la red social Telegram (como es un clon duplicado real en el grupo, borramos el clon en Telegram también para mantener coherencia)
                     $token = config('services.telegram.bot_token');
                     $chatId = $clone->team ? $clone->team->telegram_chat_id : null;
-                    if ($token && $chatId && $clone->telegram_message_id) {
+                    if ($token && $chatId) {
                         try {
                             Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
                                 'chat_id' => $chatId,
                                 'message_id' => $clone->telegram_message_id,
                             ]);
                             $this->info("      -> Borrado de Telegram de forma remota.");
-                        } catch (\Exception $e) {
-                            $this->error("      -> Error al borrar de Telegram: " . $e->getMessage());
-                        }
+                        } catch (\Exception $e) {}
                     }
+                    $this->info("      -> Registro duplicado de ID borrado localmente de la DB.");
                 }
             }
         }
 
-        $this->info("   📊 Resumen Telegram: {$cleanedSyncCount} duplicados locales de sincronización procesados, {$cleanedRealCount} duplicados externos reales saneados.");
+        $this->info("   📊 Resumen Telegram: {$cleanedCount} duplicados procesados por tiempo, {$cleanedRealCount} duplicados por ID real.");
     }
 
     /**
-     * Deduplica la tabla de whatsapp_messages
+     * Deduplica la tabla de whatsapp_messages usando ventana deslizante de tiempo
      */
     protected function deduplicateWhatsapp($apply)
     {
         $this->line('');
         $this->info('🔹 2. Analizando mensajes de WhatsApp...');
 
-        // CASO A: Duplicados reales de ID (Mismo message_id y mismo team_id)
+        // 1. Duplicados por ID de WhatsApp real
         $idDuplicates = DB::table('whatsapp_messages')
             ->select('team_id', 'message_id', DB::raw('COUNT(*) as total'))
             ->whereNotNull('message_id')
@@ -165,36 +204,23 @@ class DeduplicateMessages extends Command
 
             foreach ($clonesToDelete as $clone) {
                 $cleanedRealCount++;
-                $this->error("   [Duplicado Externo] Encontrado mensaje WhatsApp real duplicado (ID: {$clone->message_id}, Equipo: {$clone->team_id})");
+                $this->error("   [WhatsApp Duplicado ID] Encontrado ID duplicado (ID: {$clone->message_id}, Equipo: {$clone->team_id})");
 
                 if ($apply) {
-                    // 1. Borrar localmente de la DB
                     $clone->delete();
-
-                    // 2. Borrar de forma remota en WhatsApp para mantener coherencia
                     $session = $clone->team ? 'team_' . ($clone->team->slug ?: $clone->team->id) : 'default';
                     try {
-                        $response = Http::post('http://localhost:3001/api/delete', [
+                        Http::post('http://localhost:3001/api/delete', [
                             'session' => $session,
                             'message_id' => $clone->message_id,
                         ]);
-                        if ($response->successful()) {
-                            $this->info("      -> Borrado de WhatsApp de forma remota para la sesión '{$session}'.");
-                        } else {
-                            // Intentar con default
-                            Http::post('http://localhost:3001/api/delete', [
-                                'session' => 'default',
-                                'message_id' => $clone->message_id,
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        $this->error("      -> Error al borrar de WhatsApp: " . $e->getMessage());
-                    }
+                    } catch (\Exception $e) {}
+                    $this->info("      -> Registro duplicado de ID borrado localmente de la DB.");
                 }
             }
         }
 
-        // CASO B: Duplicados sin ID o creados por colisión de concurrencia (Mismo texto, mismo equipo, creado con < 15s de diferencia)
+        // 2. Duplicados por tiempo y texto (concurrencia o reenvío)
         $textDuplicates = DB::table('whatsapp_messages')
             ->select('team_id', 'text', DB::raw('COUNT(*) as total'))
             ->whereNotNull('text')
@@ -210,37 +236,61 @@ class DeduplicateMessages extends Command
                 ->orderBy('created_at', 'asc')
                 ->get();
 
-            $original = $clones->first();
-            $clonesToDelete = $clones->slice(1);
+            $processedIds = [];
 
-            foreach ($clonesToDelete as $clone) {
-                // Verificar si fueron creados con menos de 15s de diferencia
-                $diff = abs($clone->created_at->diffInSeconds($original->created_at));
-                if ($diff <= 15) {
-                    $cleanedTextCount++;
-                    $this->warn("   [Clon Local] Encontrado mensaje WhatsApp duplicado por tiempo de envío (Diferencia: {$diff}s, Equipo: {$clone->team_id})");
-                    $this->line("      Texto: '" . substr(strip_tags($clone->text), 0, 50) . "...'");
+            for ($i = 0; $i < count($clones); $i++) {
+                $msg1 = $clones[$i];
+                if (in_array($msg1->id, $processedIds)) continue;
 
-                    if ($apply) {
-                        $clone->delete();
-                        $this->info("      -> Registro duplicado de texto borrado localmente de la DB.");
-                        
-                        // Si tiene un ID real diferente, también lo borramos de WhatsApp remotamente
-                        if ($clone->message_id && $clone->message_id !== $original->message_id) {
-                            $session = $clone->team ? 'team_' . ($clone->team->slug ?: $clone->team->id) : 'default';
-                            try {
-                                Http::post('http://localhost:3001/api/delete', [
-                                    'session' => $session,
-                                    'message_id' => $clone->message_id,
-                                ]);
-                                $this->info("      -> Borrado clon duplicado en WhatsApp de forma remota.");
-                            } catch (\Exception $e) {}
+                for ($j = $i + 1; $j < count($clones); $j++) {
+                    $msg2 = $clones[$j];
+                    if (in_array($msg2->id, $processedIds)) continue;
+
+                    $diff = abs($msg2->created_at->diffInSeconds($msg1->created_at));
+                    if ($diff <= 15) {
+                        $cleanedTextCount++;
+
+                        // Conservamos el que tenga un ID real (no nulo/vacío)
+                        $keep = $msg1;
+                        $delete = $msg2;
+
+                        if (empty($msg1->message_id) && !empty($msg2->message_id)) {
+                            $keep = $msg2;
+                            $delete = $msg1;
+                        }
+
+                        $this->error("   [WhatsApp Duplicado] Encontrado clon por tiempo (Diferencia: {$diff}s, Equipo: {$dup->team_id})");
+                        $this->line("      - Conservar ID: {$keep->id} (MsgID: {$keep->message_id})");
+                        $this->line("      - Eliminar ID: {$delete->id} (MsgID: {$delete->message_id})");
+                        $this->line("      Texto: '" . substr(strip_tags($keep->text), 0, 60) . "...'");
+
+                        if ($apply) {
+                            $delete->delete();
+
+                            // Si tiene ID real de WhatsApp diferente, lo borramos de WhatsApp remotamente
+                            if ($delete->message_id && $delete->message_id !== $keep->message_id) {
+                                $session = $delete->team ? 'team_' . ($delete->team->slug ?: $delete->team->id) : 'default';
+                                try {
+                                    Http::post('http://localhost:3001/api/delete', [
+                                        'session' => $session,
+                                        'message_id' => $delete->message_id,
+                                    ]);
+                                    $this->info("         -> Borrado clon duplicado en WhatsApp de forma remota.");
+                                } catch (\Exception $e) {}
+                            }
+                            $this->info("         -> Registro duplicado borrado de la base de datos.");
+                        }
+
+                        $processedIds[] = $delete->id;
+
+                        if ($delete->id === $msg1->id) {
+                            break;
                         }
                     }
                 }
             }
         }
 
-        $this->info("   📊 Resumen WhatsApp: Saneados {$cleanedRealCount} duplicados de ID y {$cleanedTextCount} clones por tiempo.");
+        $this->info("   📊 Resumen WhatsApp: Saneados {$cleanedRealCount} duplicados de ID, {$cleanedTextCount} clones por tiempo.");
     }
 }
