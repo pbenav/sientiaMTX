@@ -63,6 +63,7 @@ class User extends Authenticatable implements HasLocalePreference
         'work_end_time_2',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'two_factor_method',
     ];
 
     /**

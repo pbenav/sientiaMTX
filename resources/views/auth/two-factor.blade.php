@@ -4,7 +4,11 @@
     </div>
 
     <div class="mb-4 text-xs text-gray-500">
-        {{ __('Por favor, introduzca el código de seguridad de 6 dígitos generado por su aplicación de autenticación (Google Authenticator, Microsoft Authenticator, Authy, etc.) para verificar su identidad.') }}
+        @if (isset($user) && $user->two_factor_method === 'email')
+            {{ __('Por favor, introduzca el código de seguridad de 6 dígitos que hemos enviado a su correo electrónico para verificar su identidad.') }}
+        @else
+            {{ __('Por favor, introduzca el código de seguridad de 6 dígitos generado por su aplicación de autenticación (Google Authenticator, Microsoft Authenticator, Authy, etc.) para verificar su identidad.') }}
+        @endif
     </div>
 
     <!-- Session Status -->

@@ -32,7 +32,28 @@ class TwoFactorLoginController extends Controller
             return redirect()->route('login');
         }
 
-        return view('auth.two-factor');
+        $userId = $request->session()->get('login.id');
+        $user = User::findOrFail($userId);
+
+        // If the method is email, generate and send the code on load if not already sent
+        if ($user->two_factor_method === 'email' && !$request->session()->has('login.email_code')) {
+            $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $request->session()->put('login.email_code', $code);
+            $request->session()->put('login.email_code_expires_at', now()->addMinutes(10));
+
+            try {
+                \Illuminate\Support\Facades\Mail::raw(
+                    "Tu código de acceso para iniciar sesión en Sientia es: {$code}. Este código expira en 10 minutos.",
+                    function ($message) use ($user) {
+                        $message->to($user->email)->subject('Código de Acceso Sientia - MFA');
+                    }
+                );
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Error sending mfa email: ' . $e->getMessage());
+            }
+        }
+
+        return view('auth.two-factor', compact('user'));
     }
 
     /**
@@ -53,16 +74,36 @@ class TwoFactorLoginController extends Controller
 
         $user = User::findOrFail($userId);
 
-        if (!$user->two_factor_secret || !$this->totp->verifyCode($user->two_factor_secret, $request->code)) {
-            SecurityLog::create([
-                'user_id' => $user->id,
-                'event' => 'auth.mfa.failed',
-                'description' => 'Intento fallido de autenticación multifactor (MFA/2FA).',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+        if ($user->two_factor_method === 'email') {
+            $sessCode = $request->session()->get('login.email_code');
+            $sessExpires = $request->session()->get('login.email_code_expires_at');
 
-            return back()->withErrors(['code' => __('El código introducido es incorrecto o ha caducado.')]);
+            if (!$sessCode || now()->greaterThan($sessExpires) || $sessCode !== $request->code) {
+                SecurityLog::create([
+                    'user_id' => $user->id,
+                    'event' => 'auth.mfa.failed',
+                    'description' => 'Intento fallido de autenticación multifactor vía EMAIL.',
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+
+                return back()->withErrors(['code' => __('El código introducido es incorrecto o ha caducado.')]);
+            }
+
+            $request->session()->forget(['login.email_code', 'login.email_code_expires_at']);
+        } else {
+            // TOTP flow
+            if (!$user->two_factor_secret || !$this->totp->verifyCode($user->two_factor_secret, $request->code)) {
+                SecurityLog::create([
+                    'user_id' => $user->id,
+                    'event' => 'auth.mfa.failed',
+                    'description' => 'Intento fallido de autenticación multifactor (MFA/TOTP).',
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+
+                return back()->withErrors(['code' => __('El código introducido es incorrecto o ha caducado.')]);
+            }
         }
 
         // Authenticate the user
@@ -78,7 +119,7 @@ class TwoFactorLoginController extends Controller
         SecurityLog::create([
             'user_id' => $user->id,
             'event' => 'auth.login.mfa',
-            'description' => 'Inicio de sesión exitoso con autenticación multifactor (MFA/TOTP).',
+            'description' => 'Inicio de sesión exitoso con autenticación multifactor vía ' . strtoupper($user->two_factor_method) . '.',
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);

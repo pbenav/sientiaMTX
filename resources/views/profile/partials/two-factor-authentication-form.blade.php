@@ -8,62 +8,76 @@
     errorMsg: '',
     successMsg: '',
     qrImageUrl: '',
+    method: 'totp',
+    isEmailMethod: false,
 
     initEnable() {
-        this.errorMsg = '';
-        this.successMsg = '';
+        const self = this;
+        self.errorMsg = '';
+        self.successMsg = '';
         fetch('{{ route('profile.two-factor.enable') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
+            },
+            body: JSON.stringify({ method: self.method })
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                this.secret = data.secret;
-                this.qrUri = data.qr_code_uri;
-                this.qrImageUrl = 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=' + encodeURIComponent(this.qrUri);
-                this.showQr = true;
+                if (data.method === 'email') {
+                    self.isEmailMethod = true;
+                    self.secret = '';
+                    self.qrUri = '';
+                    self.qrImageUrl = '';
+                } else {
+                    self.isEmailMethod = false;
+                    self.secret = data.secret;
+                    self.qrUri = data.qr_code_uri;
+                    self.qrImageUrl = 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=' + encodeURIComponent(self.qrUri);
+                }
+                self.showQr = true;
             } else {
-                this.errorMsg = 'Error al iniciar la autenticación de doble factor.';
+                self.errorMsg = data.message || 'Error al iniciar la autenticación de doble factor.';
             }
         })
         .catch(() => {
-            this.errorMsg = 'Error de red. Inténtelo de nuevo.';
+            self.errorMsg = 'Error de red. Inténtelo de nuevo.';
         });
     },
 
     confirmEnable() {
-        this.errorMsg = '';
+        const self = this;
+        self.errorMsg = '';
         fetch('{{ route('profile.two-factor.confirm') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ code: this.code })
+            body: JSON.stringify({ code: self.code })
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                this.mfaEnabled = true;
-                this.showQr = false;
-                this.code = '';
-                this.successMsg = '¡Autenticación en dos pasos activada con éxito!';
+                self.mfaEnabled = true;
+                self.showQr = false;
+                self.code = '';
+                self.successMsg = '¡Autenticación en dos pasos activada con éxito!';
             } else {
-                this.errorMsg = data.message || 'Código incorrecto. Inténtelo de nuevo.';
+                self.errorMsg = data.message || 'Código incorrecto. Inténtelo de nuevo.';
             }
         })
         .catch(() => {
-            this.errorMsg = 'Error al confirmar el código.';
+            self.errorMsg = 'Error al confirmar el código.';
         });
     },
 
     disableMfa() {
-        this.errorMsg = '';
-        this.successMsg = '';
+        const self = this;
+        self.errorMsg = '';
+        self.successMsg = '';
         if (!confirm('¿Está seguro de que desea desactivar la autenticación en dos pasos? Su cuenta estará menos protegida.')) {
             return;
         }
@@ -74,20 +88,20 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ password: this.password })
+            body: JSON.stringify({ password: self.password })
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                this.mfaEnabled = false;
-                this.password = '';
-                this.successMsg = 'La autenticación en dos pasos ha sido desactivada.';
+                self.mfaEnabled = false;
+                self.password = '';
+                self.successMsg = 'La autenticación en dos pasos ha sido desactivada.';
             } else {
-                this.errorMsg = data.message || 'Contraseña incorrecta.';
+                self.errorMsg = data.message || 'Contraseña incorrecta.';
             }
         })
         .catch(() => {
-            this.errorMsg = 'Error al desactivar la autenticación.';
+            self.errorMsg = 'Error al desactivar la autenticación.';
         });
     }
 }">
@@ -163,6 +177,28 @@
                 </div>
             </div>
 
+            <div class="p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-2xl space-y-3">
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Selecciona tu método de Doble Factor:') }}</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- TOTP option -->
+                    <label class="flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-violet-500 cursor-pointer transition-all" :class="method === 'totp' ? 'border-violet-500 bg-violet-500/5' : ''">
+                        <input type="radio" name="mfa_method" value="totp" x-model="method" class="mt-1 rounded-full text-violet-600 focus:ring-violet-500 border-gray-300 dark:border-gray-700">
+                        <div>
+                            <span class="font-bold text-sm text-gray-800 dark:text-gray-200 block">📱 {{ __('Aplicación de Autenticación') }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">{{ __('Escanea un código QR usando Google Authenticator, Microsoft Authenticator o Authy.') }}</span>
+                        </div>
+                    </label>
+                    <!-- Email option -->
+                    <label class="flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-violet-500 cursor-pointer transition-all" :class="method === 'email' ? 'border-violet-500 bg-violet-500/5' : ''">
+                        <input type="radio" name="mfa_method" value="email" x-model="method" class="mt-1 rounded-full text-violet-600 focus:ring-violet-500 border-gray-300 dark:border-gray-700">
+                        <div>
+                            <span class="font-bold text-sm text-gray-800 dark:text-gray-200 block">✉️ {{ __('Correo Electrónico') }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">{{ __('Recibe un código dinámico de un solo uso directamente en tu bandeja de correo en cada inicio de sesión.') }}</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <x-primary-button type="button" @click="initEnable()">
                 {{ __('Activar Verificación en Dos Pasos') }}
             </x-primary-button>
@@ -171,33 +207,48 @@
 
     <!-- MFA Flow: Scan QR & Confirm -->
     <div x-show="showQr" class="p-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl space-y-6" style="display: none;">
-        <div class="text-sm font-bold text-gray-800 dark:text-gray-200">
-            {{ __('Paso 1: Escanee este código QR con su aplicación de autenticación') }}
-        </div>
-
-        <div class="flex flex-col md:flex-row gap-6 items-center">
-            <div class="p-2 bg-white rounded-xl shadow-sm border border-gray-100">
-                <template x-if="qrImageUrl">
-                    <img :src="qrImageUrl" alt="MFA QR Code" class="w-48 h-48" />
-                </template>
-            </div>
-
-            <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
-                <p>
-                    {{ __('¿No puede escanear el código QR? Introduzca esta clave manualmente en su aplicación:') }}
-                </p>
-                <div class="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg font-mono text-center text-sm font-bold tracking-widest text-violet-600 dark:text-violet-400 select-all" x-text="secret"></div>
-                <p>
-                    {{ __('Compatible con Google Authenticator, Microsoft Authenticator, Authy, Bitwarden, etc.') }}
+        <!-- If Email Method -->
+        <template x-if="isEmailMethod">
+            <div class="space-y-4">
+                <div class="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    📧 {{ __('Paso 1: Introduce el código enviado a tu correo electrónico') }}
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ __('Hemos enviado un código de verificación de 6 dígitos a su dirección de correo electrónico registrada. Por favor, revise también su carpeta de correo no deseado (spam).') }}
                 </p>
             </div>
-        </div>
+        </template>
+
+        <!-- If TOTP Method -->
+        <template x-if="!isEmailMethod">
+            <div class="space-y-6">
+                <div class="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    📱 {{ __('Paso 1: Escanee este código QR con su aplicación de autenticación') }}
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="p-2 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center w-48 h-48">
+                        <img :src="qrImageUrl" x-show="qrImageUrl" alt="MFA QR Code" class="w-48 h-48" />
+                    </div>
+
+                    <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                        <p>
+                            {{ __('¿No puede escanear el código QR? Introduzca esta clave manualmente en su aplicación:') }}
+                        </p>
+                        <div class="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg font-mono text-center text-sm font-bold tracking-widest text-violet-600 dark:text-violet-400 select-all" x-text="secret"></div>
+                        <p>
+                            {{ __('Compatible con Google Authenticator, Microsoft Authenticator, Authy, Bitwarden, etc.') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </template>
 
         <hr class="border-gray-200 dark:border-gray-800" />
 
         <div class="space-y-3">
             <div class="text-sm font-bold text-gray-800 dark:text-gray-200">
-                {{ __('Paso 2: Introduzca el código de 6 dígitos generado por su app para confirmar:') }}
+                <span x-text="isEmailMethod ? '{{ __('Paso 2: Introduzca el código de verificación recibido por correo:') }}' : '{{ __('Paso 2: Introduzca el código de 6 dígitos generado por su app para confirmar:') }}'"></span>
             </div>
 
             <div class="flex gap-4 max-w-xs items-end">

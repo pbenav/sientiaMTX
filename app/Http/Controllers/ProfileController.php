@@ -304,30 +304,64 @@ class ProfileController extends Controller
     }
 
     /**
-     * Enable Two Factor Authentication (MFA) - Generate Secret & URI.
+     * Enable Two Factor Authentication (MFA) - Generate Secret & URI or send Email verification code.
      */
     public function enableTwoFactor(Request $request, \App\Services\TotpService $totp): \Illuminate\Http\JsonResponse
     {
         $user = $request->user();
-        
-        // Generate a new secret if not already set or unconfirmed
-        if (!$user->two_factor_confirmed_at || !$user->two_factor_secret) {
-            $secret = $totp->generateSecret();
-            $user->update([
-                'two_factor_secret' => $secret,
-                'two_factor_confirmed_at' => null // Mark as unconfirmed
+        $method = $request->input('method', 'totp');
+
+        $user->update([
+            'two_factor_method' => $method,
+        ]);
+
+        if ($method === 'email') {
+            // Generate a random 6-digit code for verification
+            $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $request->session()->put('profile.mfa_email_code', $code);
+            $request->session()->put('profile.mfa_email_expires_at', now()->addMinutes(10));
+
+            // Send the code via email
+            try {
+                \Illuminate\Support\Facades\Mail::raw(
+                    "Tu código de verificación para activar la Autenticación de Doble Factor en Sientia es: {$code}. Este código expira en 10 minutos.",
+                    function ($message) use ($user) {
+                        $message->to($user->email)->subject('Código de Verificación Sientia - MFA');
+                    }
+                );
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al enviar el correo: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'method' => 'email',
+                'message' => 'Código de verificación enviado a tu correo electrónico.'
             ]);
         } else {
-            $secret = $user->two_factor_secret;
+            // TOTP flow
+            if (!$user->two_factor_confirmed_at || !$user->two_factor_secret) {
+                $secret = $totp->generateSecret();
+                $user->update([
+                    'two_factor_secret' => $secret,
+                    'two_factor_confirmed_at' => null // Mark as unconfirmed
+                ]);
+            } else {
+                $secret = $user->two_factor_secret;
+            }
+
+            $qrCodeUri = $totp->getQrCodeUri($user->email, $secret);
+
+            return response()->json([
+                'success' => true,
+                'method' => 'totp',
+                'secret' => $secret,
+                'qr_code_uri' => $qrCodeUri,
+            ]);
         }
-
-        $qrCodeUri = $totp->getQrCodeUri($user->email, $secret);
-
-        return response()->json([
-            'success' => true,
-            'secret' => $secret,
-            'qr_code_uri' => $qrCodeUri,
-        ]);
     }
 
     /**
@@ -341,11 +375,26 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        if (!$user->two_factor_secret || !$totp->verifyCode($user->two_factor_secret, $request->code)) {
-            return response()->json([
-                'success' => false,
-                'message' => __('El código de verificación introducido es incorrecto.')
-            ], 422);
+        if ($user->two_factor_method === 'email') {
+            $sessCode = $request->session()->get('profile.mfa_email_code');
+            $sessExpires = $request->session()->get('profile.mfa_email_expires_at');
+
+            if (!$sessCode || now()->greaterThan($sessExpires) || $sessCode !== $request->code) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('El código de verificación introducido es incorrecto o ha expirado.')
+                ], 422);
+            }
+
+            $request->session()->forget(['profile.mfa_email_code', 'profile.mfa_email_expires_at']);
+        } else {
+            // TOTP flow
+            if (!$user->two_factor_secret || !$totp->verifyCode($user->two_factor_secret, $request->code)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('El código de verificación introducido es incorrecto.')
+                ], 422);
+            }
         }
 
         $user->update([
@@ -355,7 +404,7 @@ class ProfileController extends Controller
         \App\Models\SecurityLog::create([
             'user_id' => $user->id,
             'event' => 'auth.mfa.enabled',
-            'description' => 'El usuario ha activado y verificado correctamente la Autenticación Multifactor (MFA/TOTP).',
+            'description' => 'El usuario ha activado y verificado correctamente la Autenticación Multifactor vía ' . strtoupper($user->two_factor_method) . '.',
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
@@ -380,12 +429,13 @@ class ProfileController extends Controller
         $user->update([
             'two_factor_secret' => null,
             'two_factor_confirmed_at' => null,
+            'two_factor_method' => 'totp', // Reset to default
         ]);
 
         \App\Models\SecurityLog::create([
             'user_id' => $user->id,
             'event' => 'auth.mfa.disabled',
-            'description' => 'El usuario ha desactivado la Autenticación Multifactor (MFA/TOTP).',
+            'description' => 'El usuario ha desactivado la Autenticación Multifactor (MFA).',
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
