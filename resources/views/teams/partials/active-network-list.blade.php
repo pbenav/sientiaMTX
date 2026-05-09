@@ -1,4 +1,13 @@
-@foreach($members as $member)
+@php
+    $sortedMembers = $members->sortBy([
+        function ($m) {
+            $isActiveOrWorking = $m->last_login_at && ($m->isWorking() || ($m->last_activity_at && $m->last_activity_at->greaterThanOrEqualTo(now()->subMinutes(15))));
+            return $isActiveOrWorking ? 0 : 1;
+        },
+        'name'
+    ]);
+@endphp
+@foreach($sortedMembers as $member)
     <div class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300">
         @php
             $isWorking = $member->last_login_at ? $member->isWorking() : false;
