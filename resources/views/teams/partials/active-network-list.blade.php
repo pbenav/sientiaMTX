@@ -1,8 +1,8 @@
 @foreach($members as $member)
     <div class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300">
         @php
-            $isWorking = $member->isWorking();
-            $lastActivity = $member->last_activity_at;
+            $isWorking = $member->last_login_at ? $member->isWorking() : false;
+            $lastActivity = $member->last_login_at ? $member->last_activity_at : null;
             
             // Check online state (active in last 15 minutes)
             $isOnline = $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(15));

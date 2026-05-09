@@ -554,8 +554,8 @@ class TeamController extends Controller
                     'name' => $u->name,
                     'area' => $u->working_area_name,
                     'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
-                    'is_working' => $u->isWorking(),
-                    'is_active' => $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
+                    'is_working' => $u->last_login_at ? $u->isWorking() : false,
+                    'is_active' => $u->last_login_at && $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
                 ];
             })->values();
 
