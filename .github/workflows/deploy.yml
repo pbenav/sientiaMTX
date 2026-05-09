@@ -18,13 +18,9 @@ jobs:
           # Acceder al directorio del proyecto (definido de forma segura en GitHub Secrets como PROJECT_PATH)
           cd ${{ secrets.PROJECT_PATH }} || { echo "❌ No se pudo acceder al directorio del proyecto. Asegúrate de configurar PROJECT_PATH en GitHub Secrets."; exit 1; }
           
-          # Evitar el error de "posesión dudosa" de git cuando se ejecuta bajo un usuario distinto del dueño del repo
-          git config --global --add safe.directory ${{ secrets.PROJECT_PATH }}
-
-          # Asegurar que estamos en la rama correcta y traemos lo último
+          # Sincronización indestructible y alineada exactamente con lo último de GitHub (soporta resets y pushes con force)
           git fetch origin
-          git checkout main
-          git pull origin main
+          git reset --hard origin/main
           
           # Instalar dependencias de Composer sin dependencias de desarrollo
           composer install --no-dev --optimize-autoloader
