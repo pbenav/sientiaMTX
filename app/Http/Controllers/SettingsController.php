@@ -533,6 +533,26 @@ class SettingsController extends Controller
         return back()->with('success', __('Usuario aprobado y activado con éxito en Sientia.'));
     }
 
+    /**
+     * Show the security logs list.
+     */
+    public function securityLogs(Request $request)
+    {
+        $query = \App\Models\SecurityLog::with('user');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('event', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('ip_address', 'like', "%{$search}%");
+            });
+        }
+
+        $logs = $query->orderBy('created_at', 'desc')->paginate(30)->withQueryString();
+
+        return view('settings.security', compact('logs', 'search'));
+    }
+
     protected function updateEnv($key, $value)
     {
         $path = base_path('.env');

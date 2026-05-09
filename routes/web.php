@@ -215,9 +215,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/telegram/register', [\App\Http\Controllers\SettingsController::class, 'registerTelegramWebhook'])->name('settings.telegram.register');
         Route::get('/settings/whatsapp', [\App\Http\Controllers\WhatsappController::class, 'index'])->name('settings.whatsapp');
 
-        // Global Skills Management (Global scope only)
         Route::get('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'appearanceSettings'])->name('settings.appearance');
         Route::post('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'updateAppearanceSettings'])->name('settings.appearance.update');
+        Route::get('/settings/security', [\App\Http\Controllers\SettingsController::class, 'securityLogs'])->name('settings.security');
 
         Route::get('/settings/skills', [\App\Http\Controllers\SkillController::class, 'index'])->name('settings.skills');
         Route::post('/settings/skills', [\App\Http\Controllers\SkillController::class, 'store'])->name('settings.skills.store');
