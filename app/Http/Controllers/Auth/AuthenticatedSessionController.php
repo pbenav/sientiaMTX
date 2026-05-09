@@ -32,8 +32,8 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // Intercept login if Multi-Factor Authentication is enabled and confirmed
-        if ($user->two_factor_confirmed_at) {
+        // Intercept login if Multi-Factor Authentication is enabled globally and confirmed by user
+        if (\App\Models\Setting::get('mfa_enabled', false) && $user->two_factor_confirmed_at) {
             $request->session()->put('login.id', $user->id);
             $request->session()->put('login.remember', $request->boolean('remember'));
             

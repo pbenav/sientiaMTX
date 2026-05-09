@@ -44,6 +44,7 @@ class SettingsController extends Controller
                 'session_lifetime' => env('SESSION_LIFETIME', 120),
                 'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10),
                 'quick_notes_audio_max_duration' => \App\Models\Setting::get('quick_notes_audio_max_duration', 60),
+                'mfa_enabled' => \App\Models\Setting::get('mfa_enabled', false),
             ],
             'telegram' => [
                 'bot_token' => config('services.telegram.bot_token'),
@@ -291,6 +292,7 @@ class SettingsController extends Controller
             'update_existing_users' => 'sometimes|boolean',
             'site_timezone' => 'sometimes|nullable|timezone',
             'quick_notes_audio_max_duration' => 'sometimes|numeric|min:5|max:300',
+            'mfa_enabled' => 'sometimes|boolean',
         ]);
 
         try {
@@ -303,6 +305,12 @@ class SettingsController extends Controller
             if (isset($data['quick_notes_audio_max_duration'])) {
                 \App\Models\Setting::set('quick_notes_audio_max_duration', $data['quick_notes_audio_max_duration']);
                 unset($data['quick_notes_audio_max_duration']);
+            }
+
+            // mfa_enabled va a la tabla settings
+            \App\Models\Setting::set('mfa_enabled', $request->has('mfa_enabled'));
+            if (isset($data['mfa_enabled'])) {
+                unset($data['mfa_enabled']);
             }
 
             $updateExistingUsers = isset($data['update_existing_users']) || $request->has('update_existing_users');

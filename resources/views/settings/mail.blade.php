@@ -111,6 +111,20 @@
                                         {{ __('Update all existing users to this new quota') }}
                                     </label>
                                 </div>
+
+                                <div class="md:col-span-3 flex flex-col gap-1 border-t border-gray-100 dark:border-gray-800 pt-4">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="mfa_enabled" name="mfa_enabled" value="1"
+                                            {{ $limits['mfa_enabled'] ? 'checked' : '' }}
+                                            class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-violet-600 shadow-sm focus:ring-violet-500">
+                                        <label for="mfa_enabled" class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                            🛡️ {{ __('Habilitar Autenticación de Doble Factor (MFA / 2FA) Globalmente') }}
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
+                                        {{ __('Si se desactiva, los usuarios no podrán configurar el doble factor en su perfil ni se les solicitará código al iniciar sesión. Es opcional bajo las directrices del Esquema Nacional de Seguridad (ENS).') }}
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="flex items-center justify-end pt-6 border-t border-gray-100 dark:border-gray-800">

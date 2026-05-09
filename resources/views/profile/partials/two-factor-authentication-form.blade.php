@@ -138,21 +138,35 @@
 
     <!-- MFA Status: Inactive -->
     <div x-show="!mfaEnabled && !showQr" class="space-y-4" style="display: none;">
-        <div class="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
-            <span class="text-2xl">🔓</span>
-            <div>
-                <h3 class="font-bold text-amber-800 dark:text-amber-400 text-sm">
-                    {{ __('Autenticación en dos pasos inactiva') }}
-                </h3>
-                <p class="text-xs text-amber-700 dark:text-amber-500">
-                    {{ __('Le recomendamos encarecidamente activar la verificación en dos pasos para cumplir con los estándares ENS y blindar su acceso.') }}
-                </p>
+        @if (!\App\Models\Setting::get('mfa_enabled', false))
+            <div class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-2xl">
+                <span class="text-2xl">⚙️</span>
+                <div>
+                    <h3 class="font-bold text-gray-500 dark:text-gray-400 text-sm">
+                        {{ __('Doble factor inactivo y desactivado globalmente') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {{ __('El administrador de la aplicación ha desactivado el uso global del Doble Factor (MFA/2FA). No es posible activarlo en este momento.') }}
+                    </p>
+                </div>
             </div>
-        </div>
+        @else
+            <div class="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
+                <span class="text-2xl">🔓</span>
+                <div>
+                    <h3 class="font-bold text-amber-800 dark:text-amber-400 text-sm">
+                        {{ __('Autenticación en dos pasos inactiva') }}
+                    </h3>
+                    <p class="text-xs text-amber-700 dark:text-amber-500">
+                        {{ __('Le recomendamos encarecidamente activar la verificación en dos pasos para cumplir con los estándares ENS y blindar su acceso.') }}
+                    </p>
+                </div>
+            </div>
 
-        <x-primary-button type="button" @click="initEnable()">
-            {{ __('Activar Verificación en Dos Pasos') }}
-        </x-primary-button>
+            <x-primary-button type="button" @click="initEnable()">
+                {{ __('Activar Verificación en Dos Pasos') }}
+            </x-primary-button>
+        @endif
     </div>
 
     <!-- MFA Flow: Scan QR & Confirm -->
