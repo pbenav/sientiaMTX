@@ -1,3 +1,6 @@
+<!-- Generación Local de Códigos QR para cumplir directrices ENS (sin transferencias a servicios externos) -->
+<script src="{{ asset('js/qrcode.min.js') }}"></script>
+
 <section class="space-y-6" x-data="{
     mfaEnabled: {{ $user->two_factor_confirmed_at ? 'true' : 'false' }},
     showQr: false,
@@ -35,7 +38,21 @@
                     self.isEmailMethod = false;
                     self.secret = data.secret;
                     self.qrUri = data.qr_code_uri;
-                    self.qrImageUrl = 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=' + encodeURIComponent(self.qrUri);
+                    // Generar código QR localmente en el contenedor con $nextTick
+                    self.$nextTick(() => {
+                        const container = self.$refs.qrcode_canvas;
+                        if (container) {
+                            container.innerHTML = '';
+                            new QRCode(container, {
+                                text: self.qrUri,
+                                width: 192,
+                                height: 192,
+                                colorDark : '#000000',
+                                colorLight : '#ffffff',
+                                correctLevel : QRCode.CorrectLevel.M
+                            });
+                        }
+                    });
                 }
                 self.showQr = true;
             } else {
@@ -228,7 +245,7 @@
 
                 <div class="flex flex-col md:flex-row gap-6 items-center">
                     <div class="p-2 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center w-48 h-48">
-                        <img :src="qrImageUrl" x-show="qrImageUrl" alt="MFA QR Code" class="w-48 h-48" />
+                        <div x-ref="qrcode_canvas" class="flex items-center justify-center"></div>
                     </div>
 
                     <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
