@@ -524,7 +524,7 @@ class TeamController extends Controller
     /**
      * Get the active network member list partial for real-time updates.
      */
-    public function activeNetwork(Team $team)
+    public function activeNetwork(Team $team, \Illuminate\Http\Request $request)
     {
         $this->authorize('view', $team);
 
@@ -544,6 +544,26 @@ class TeamController extends Controller
             })
             ->orderBy('name')
             ->get();
+
+        if ($request->wantsJson() || $request->input('json')) {
+            $heatmapData = $members->whereNotNull('location_lat')->map(function($u) {
+                return [
+                    'lat' => (float)$u->location_lat,
+                    'lng' => (float)$u->location_lng,
+                    'count' => max(10, $u->experience_points / 2), // Intensity based on effort (min 10)
+                    'name' => $u->name,
+                    'area' => $u->working_area_name,
+                    'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
+                    'is_working' => $u->isWorking(),
+                    'is_active' => $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
+                ];
+            })->values();
+
+            return response()->json([
+                'html' => view('teams.partials.active-network-list', compact('members'))->render(),
+                'mapData' => $heatmapData
+            ]);
+        }
 
         return view('teams.partials.active-network-list', compact('members'));
     }

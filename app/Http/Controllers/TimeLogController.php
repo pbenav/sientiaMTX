@@ -165,7 +165,9 @@ class TimeLogController extends Controller
                 'count' => max(10, $u->experience_points / 2), // Intensity based on effort (min 10)
                 'name' => $u->name,
                 'area' => $u->working_area_name,
-                'radius' => (int)($u->impact_radius ?? 10) * 1000 // meters
+                'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
+                'is_working' => $u->isWorking(),
+                'is_active' => $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
             ];
         })->values();
             

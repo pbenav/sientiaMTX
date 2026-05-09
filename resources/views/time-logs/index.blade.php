@@ -426,11 +426,17 @@
                     <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar"
                          x-data="{ 
                             refresh() {
-                                fetch('{{ route('teams.active-network', $team) }}')
-                                    .then(res => res.text())
-                                    .then(html => {
-                                        $el.innerHTML = html;
-                                    });
+                                fetch('{{ route('teams.active-network', $team) }}?json=1', {
+                                    headers: { 'Accept': 'application/json' }
+                                })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        $el.innerHTML = data.html;
+                                        if (window.updateMapPoints && data.mapData) {
+                                            window.updateMapPoints(data.mapData);
+                                        }
+                                    })
+                                    .catch(err => console.error('Error refreshing active network:', err));
                             }
                          }"
                          x-init="
@@ -616,6 +622,23 @@
         .custom-div-icon { z-index: 10 !important; }
         .incidence-beacon { z-index: 999 !important; }
         .leaflet-popup { z-index: 1000 !important; }
+        
+        @keyframes marker-pulse-rose {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        @keyframes marker-pulse-emerald {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .pulse-rose {
+            animation: marker-pulse-rose 2s infinite;
+        }
+        .pulse-emerald {
+            animation: marker-pulse-emerald 2s infinite;
+        }
     </style>
     
     <script>
@@ -676,20 +699,48 @@
                     maxZoom: 16,
                     max: 1.0
                 }).addTo(map);
+            }
+
+            const userMarkersGroup = L.layerGroup().addTo(map);
+
+            window.updateMapPoints = function(points) {
+                userMarkersGroup.clearLayers();
                 
+                const validPoints = points.filter(p => {
+                    const lat = parseFloat(p.lat);
+                    const lng = parseFloat(p.lng);
+                    return !isNaN(lat) && !isNaN(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+                });
+
                 validPoints.forEach(p => {
-                    // Marcador 'Hito' elegante
+                    let markerBg = '#9ca3af'; // Gris por defecto (Inactivo)
+                    let pulseClass = '';
+                    let statusLabel = 'Inactivo';
+                    let labelColor = 'gray-500';
+
+                    if (p.is_working) {
+                        markerBg = '#f43f5e'; // Rosa (Trabajando)
+                        pulseClass = 'pulse-rose';
+                        statusLabel = 'Trabajando';
+                        labelColor = 'rose-500';
+                    } else if (p.is_active) {
+                        markerBg = '#10b981'; // Esmeralda (Activo)
+                        pulseClass = 'pulse-emerald';
+                        statusLabel = 'Activo';
+                        labelColor = 'emerald-500';
+                    }
+
                     const initial = p.name ? p.name.substring(0, 2).toUpperCase() : '📍';
                     const customIcon = L.divIcon({
                         className: 'custom-div-icon',
-                        html: `<div style="background-color: #059669; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); font-size: 10px; font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';">${initial}</div>`,
+                        html: `<div class="${pulseClass}" style="background-color: ${markerBg}; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); font-size: 10px; font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';">${initial}</div>`,
                         iconSize: [28, 28],
                         iconAnchor: [14, 14],
                         popupAnchor: [0, -14]
                     });
 
-                    L.marker([p.lat, p.lng], { icon: customIcon }).addTo(map)
-                     .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[10px] font-black uppercase text-emerald-600">${p.area || 'Zona Activa'}</span><br><b class="text-xs text-gray-900">${p.name}</b></div>`);
+                    L.marker([p.lat, p.lng], { icon: customIcon }).addTo(userMarkersGroup)
+                     .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}">${statusLabel} • ${p.area || 'Zona Activa'}</span><br><b class="text-xs text-gray-900">${p.name}</b></div>`);
 
                     // Círculo de impacto territorial
                     if (p.radius) {
@@ -700,16 +751,19 @@
                             fillOpacity: 0.05,
                             weight: 1,
                             dashArray: '5, 5'
-                        }).addTo(map);
+                        }).addTo(userMarkersGroup);
                     }
                 });
-                
+
                 // Si hay más de un punto, ajustar el mapa para que se vean todos
                 if (validPoints.length > 1) {
                     const bounds = L.latLngBounds(validPoints.map(p => [p.lat, p.lng]));
                     map.fitBounds(bounds, { padding: [50, 50] });
                 }
-            }
+            };
+
+            // Primer renderizado
+            window.updateMapPoints(heatmapPoints);
 
             // Señales de Incidencia Sentinel
             const incidencePoints = @json($incidencePoints ?? []);
