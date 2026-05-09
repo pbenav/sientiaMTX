@@ -312,7 +312,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('profile.chat-integrations.update') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4" 
+            <form method="POST" action="{{ route('profile.chat-integrations.update') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4" 
                   x-data="{ 
                       telegram: {{ ($notifSettings['telegram'] ?? false) ? 'true' : 'false' }}, 
                       whatsapp: {{ ($notifSettings['whatsapp'] ?? false) ? 'true' : 'false' }}, 
@@ -328,9 +328,15 @@
                 <input type="hidden" name="tab" value="integrations">
                 
                 <!-- Interruptor Telegram -->
-                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm gap-3">
-                    <div class="flex-1 min-w-0">
-                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight block">Activar módulo Telegram</span>
+                <label class="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-3xl cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 shadow-sm hover:shadow-md gap-4 group">
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center text-sky-500 shrink-0 group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-sm font-bold text-gray-800 dark:text-gray-200 leading-tight block">Telegram</span>
+                            <span class="text-[10px] text-gray-400 font-medium block mt-0.5">Alertas y Chats</span>
+                        </div>
                     </div>
                     <div class="relative inline-flex items-center flex-shrink-0">
                         <input type="hidden" name="telegram" value="0">
@@ -343,17 +349,20 @@
                 @php
                     $whatsappAllowed = $notifSettings['whatsapp_personal_allowed'] ?? false;
                 @endphp
-                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl transition-all shadow-sm gap-3 {{ $whatsappAllowed ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-60 cursor-not-allowed' }}">
-                    <div class="flex-1 min-w-0 flex flex-col">
-                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight">Activar módulo WhatsApp</span>
-                            @if(!$whatsappAllowed)
-                                <span class="flex-shrink-0 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full shadow-sm">Premium</span>
-                            @endif
+                <label class="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-3xl transition-all duration-300 shadow-sm hover:shadow-md gap-4 group {{ $whatsappAllowed ? 'cursor-pointer hover:bg-white dark:hover:bg-gray-800' : 'opacity-60 cursor-not-allowed' }}">
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-500 shrink-0 group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                         </div>
-                        @if(!$whatsappAllowed)
-                            <span class="text-[8px] text-gray-400 mt-0.5">Requiere cuenta de empresa autorizada</span>
-                        @endif
+                        <div class="flex-1 min-w-0 flex flex-col">
+                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                <span class="text-sm font-bold text-gray-800 dark:text-gray-200 leading-tight">WhatsApp</span>
+                                @if(!$whatsappAllowed)
+                                    <span class="flex-shrink-0 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[7px] font-black uppercase rounded-full shadow-sm">VIP</span>
+                                @endif
+                            </div>
+                            <span class="text-[10px] text-gray-400 font-medium truncate">Módulo Personal</span>
+                        </div>
                     </div>
                     <div class="relative inline-flex items-center flex-shrink-0">
                         <input type="hidden" name="whatsapp" value="0">
@@ -363,10 +372,16 @@
                 </label>
 
                 <!-- Interruptor Sincronizar Canales -->
-                <label class="flex items-center justify-between p-4 border rounded-2xl transition-all shadow-sm gap-3"
-                       :class="(!telegram || !whatsapp) ? 'opacity-40 bg-gray-100/50 dark:bg-gray-800/20 border-gray-100 dark:border-gray-800 cursor-not-allowed pointer-events-none' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'">
-                    <div class="flex-1 min-w-0">
-                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight block">Sincronizar canales</span>
+                <label class="flex items-center justify-between p-5 border rounded-3xl transition-all duration-300 shadow-sm hover:shadow-md gap-4 group"
+                       :class="(!telegram || !whatsapp) ? 'opacity-40 bg-gray-100/50 dark:bg-gray-800/20 border-gray-100 dark:border-gray-800 cursor-not-allowed pointer-events-none' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-white dark:hover:bg-gray-800'">
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shrink-0 group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-sm font-bold text-gray-800 dark:text-gray-200 leading-tight block">Sincronización</span>
+                            <span class="text-[10px] text-gray-400 font-medium block mt-0.5">Puente Unificado</span>
+                        </div>
                     </div>
                     <div class="relative inline-flex items-center flex-shrink-0">
                         <input type="hidden" name="sync_chats" value="0">

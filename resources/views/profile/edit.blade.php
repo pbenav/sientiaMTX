@@ -36,7 +36,7 @@
             <!-- TAB: Integrations -->
             <div x-show="activeTab === 'integrations'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="w-full">
                         @include('profile.partials.integrations-form')
                     </div>
                 </div>
@@ -45,7 +45,7 @@
             <!-- TAB: Notifications -->
             <div x-show="activeTab === 'notifications'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-all">
-                    <div class="max-w-xl">
+                    <div class="w-full">
                         @include('profile.partials.notification-settings-form')
                     </div>
                 </div>
