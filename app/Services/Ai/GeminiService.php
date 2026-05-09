@@ -295,12 +295,18 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "MODELO ACTIVO: {$this->targetModel}.\n";
         $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Si saludas o es charla trivial, usa texto plano.\n";
         $systemInstruction .= "REGLA DE ENLACES: NUNCA, bajo ningún concepto, uses 'undefined' o 'null' en una URL. Si un recurso (tarea, hilo, mensaje) no tiene un TEAM_ID asociado en los datos de referencia, utiliza SIEMPRE el TEAM_CONTEXT_ID: " . ($this->teamId ?? '0') . ".\n";
-        $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]. Mantén un tono profesional, entusiasta y premium. Evita frases genéricas como 'Tu referencia se ha actualizado'. Sé específico.\n\n";
+        $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD] (salvo charla trivial). Mantén un tono profesional, entusiasta y premium.\n\n";
         
-        $systemInstruction .= "INTENCIONES DE PAYLOAD:\n";
-        $systemInstruction .= "1. 'simple_text': Resúmenes, explicaciones, correcciones. Usa 'content' para el Markdown.\n";
-        $systemInstruction .= "2. 'search_results': ¡IMPORTANTE! Úsalo siempre que consultes herramientas de búsqueda. Asegúrate de que cada elemento del resultado incluya su 'team_id'.\n";
-        $systemInstruction .= "3. 'full_task': Solo para crear tareas nuevas. Requiere objeto 'task_data'.\n\n";
+        $systemInstruction .= "INTENCIONES DE PAYLOAD ADMITIDAS:\n";
+        $systemInstruction .= "1. 'simple_text': Para responder preguntas generales, análisis, resúmenes, explicaciones y traducciones. Estructura: {\"intent\": \"simple_text\", \"content\": \"Contenido en Markdown\"}.\n";
+        $systemInstruction .= "2. 'search_results': Para mostrar resultados de búsqueda.\n";
+        $systemInstruction .= "3. 'full_task': Para CREAR TAREAS nuevas (cuando el usuario lo pida, sugiera o cuando la tarea requiera ser registrada en el sistema). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título de la tarea\", \"description\": \"Resumen/Descripción breve\", \"observations\": \"Desarrollo paso a paso u observaciones detalladas\"}}.\n\n";
+        
+        $systemInstruction .= "ANÁLISIS DE DOCUMENTOS Y ARCHIVOS:\n";
+        $systemInstruction .= "- Si se te proporciona un archivo adjunto o directo (multimodal o texto), PRIORIZA su lectura exhaustiva. Extrae conclusiones clave, listas ordenadas, resúmenes organizados o responde con total precisión técnica sobre el contenido del documento usando la intención 'simple_text'.\n\n";
+        
+        $systemInstruction .= "CREACIÓN DE TAREAS:\n";
+        $systemInstruction .= "- Si el usuario te pide crear, programar, generar, registrar o planificar una tarea, debes utilizar la intención 'full_task' para que el sistema la cree automáticamente. No te limites por estar dentro de una tarea de edición; si se solicita una nueva tarea, créala.\n\n";
         
         $systemInstruction .= "SOBRE BÚSQUEDAS: Si no hay resultados, explica por qué y ofrece ayuda para refinar la búsqueda. No respondas con un payload vacío.\n";
         $systemInstruction .= "IMPORTANTE: Cierra siempre tus bloques con [/PAYLOAD].\n";
@@ -308,7 +314,7 @@ class GeminiService implements AiAssistantInterface
         $fullPrompt = $contextInfo . "\nINSTRUCCIÓN DEL USUARIO: " . $prompt;
 
         if ($this->taskContext) {
-            $systemInstruction .= "CONTEXTO: El usuario está editando la tarea '{$this->taskContext->title}'. Usa SIEMPRE intent: 'simple_text' a menos que exija crear múltiples tareas nuevas.\n\n";
+            $systemInstruction .= "CONTEXTO: El usuario está editando la tarea '{$this->taskContext->title}'. Usa la intención 'simple_text' para tus análisis habituales sobre esta tarea, pero si explícitamente te pide generar o crear otra tarea nueva, utiliza la intención 'full_task'.\n\n";
         }
 
         if ($contextInfo) {

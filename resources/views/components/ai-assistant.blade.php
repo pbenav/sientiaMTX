@@ -880,12 +880,22 @@
                 
                 const data = await response.json();
                 
-                // CLEAR INPUT ONLY ON SUCCESS
-                this.input = '';
-                this.pendingFile = null;
+                // Determine if the returned message is actually an error message
+                const msgLower = (data.message || '').toLowerCase();
+                const isError = msgLower.includes('lo siento') || 
+                                msgLower.includes('error') || 
+                                msgLower.includes('no está disponible') || 
+                                msgLower.includes('⚠️');
 
-                const isError = data.message.includes('Lo siento, ha ocurrido un error') || data.message.includes('⚠️');
-                
+                // CLEAR INPUT ONLY ON SUCCESS
+                if (!isError) {
+                    this.input = '';
+                    this.pendingFile = null;
+                } else {
+                    this.lastPrompt = userText;
+                    this.lastFile = fileToSend;
+                }
+
                 this.messages.push({ 
                     role: 'ai', 
                     content: data.message,
