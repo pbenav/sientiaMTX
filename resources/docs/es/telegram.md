@@ -38,6 +38,18 @@ Si eres el administrador del sistema o quieres configurar un bot nuevo para el s
 
 ---
 
+## 👥 3. Vinculación de Grupos de Telegram (Coordinadores de Equipo)
+
+Si deseas sincronizar un grupo de Telegram con el widget de chat de un equipo en SientiaMTX:
+* **Solo los Coordinadores de Equipo** tienen los permisos necesarios para realizar y ajustar esta configuración técnica.
+* **Pasos para vincular el grupo**:
+  1. Invita al bot de Telegram de tu equipo al grupo de Telegram correspondiente.
+  2. Escribe `/vincular` dentro del grupo de Telegram. El bot responderá devolviendo el **ID técnico del grupo** (un número largo que suele empezar por `-100`, ej: `-100123456789`).
+  3. En SientiaMTX, entra en la edición del equipo: **Equipos → Editar**.
+  4. Pega ese ID del grupo en la casilla **"Telegram Chat ID"** del equipo correspondiente y guarda los cambios.
+
+---
+
 ## 🔔 ¿Qué notificaciones recibiré?
 
 | Notificación | Cuándo ocurre |

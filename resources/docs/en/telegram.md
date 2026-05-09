@@ -38,6 +38,18 @@ If you are the system administrator or want to set up a new bot for the global s
 
 ---
 
+## 👥 3. Linking Telegram Groups (Team Coordinators)
+
+If you want to sync a Telegram group with the chat widget of a team in SientiaMTX:
+* **Only Team Coordinators** have the necessary permissions to perform and adjust this technical setting.
+* **Steps to link the group**:
+  1. Invite your team's Telegram bot to the corresponding Telegram group.
+  2. Write `/vincular` inside the Telegram group. The bot will reply with the **technical ID of the group** (a long number usually starting with `-100`, e.g., `-100123456789`).
+  3. In SientiaMTX, go to the team edition: **Teams → Edit**.
+  4. Paste that group ID into the **"Telegram Chat ID"** box of the corresponding team and save changes.
+
+---
+
 ## 🔔 What notifications will I receive?
 
 | Notification | When it happens |
