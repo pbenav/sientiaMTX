@@ -25,6 +25,11 @@ class GDPRController extends Controller
                 'locale' => $user->locale,
                 'timezone' => $user->timezone,
                 'created_at' => $user->created_at,
+                'gamification' => [
+                    'experience_points' => $user->experience_points,
+                    'resilience_points' => $user->resilience_points,
+                    'energy_level' => $user->energy_level,
+                ],
                 'gdpr' => [
                     'privacy_policy_accepted_at' => $user->privacy_policy_accepted_at,
                     'terms_accepted_at' => $user->terms_accepted_at,
@@ -49,10 +54,52 @@ class GDPRController extends Controller
                 'status' => $task->status,
                 'created_at' => $task->created_at,
             ]),
+            'time_logs' => $user->timeLogs()->get()->map(fn($log) => [
+                'type' => $log->type,
+                'task' => $log->task ? $log->task->title : null,
+                'start_at' => $log->start_at,
+                'end_at' => $log->end_at,
+                'note' => $log->note,
+            ]),
             'forum_messages' => \App\Models\ForumMessage::where('user_id', $user->id)->get()->map(fn($message) => [
                 'content' => $message->content,
                 'created_at' => $message->created_at,
                 'thread' => $message->thread->title,
+            ]),
+            'chat_messages' => \App\Models\ChatMessage::where(function($query) use ($user) {
+                    $query->where('sender_id', $user->id)
+                          ->orWhere('receiver_id', $user->id);
+                })
+                ->get()
+                ->map(fn($msg) => [
+                    'id' => $msg->id,
+                    'sender' => $msg->sender_id === $user->id ? 'me' : ($msg->sender ? $msg->sender->name : 'Unknown'),
+                    'receiver' => $msg->receiver_id === $user->id ? 'me' : ($msg->receiver ? $msg->receiver->name : 'Unknown'),
+                    'message' => $msg->message,
+                    'call_room' => $msg->call_room,
+                    'created_at' => $msg->created_at,
+                ]),
+            'quick_notes' => $user->quickNotes()->get()->map(fn($note) => [
+                'title' => $note->title,
+                'content' => $note->content,
+                'color' => $note->color,
+                'created_at' => $note->created_at,
+            ]),
+            'mood_logs' => $user->moodLogs()->get()->map(fn($log) => [
+                'energy_level' => $log->energy_level,
+                'mood_label' => $log->mood_label,
+                'notes' => $log->notes,
+                'created_at' => $log->created_at,
+            ]),
+            'kudos_received' => $user->receivedKudos()->get()->map(fn($kudo) => [
+                'from' => $kudo->fromUser ? $kudo->fromUser->name : 'Unknown',
+                'reason' => $kudo->reason,
+                'created_at' => $kudo->created_at,
+            ]),
+            'kudos_given' => $user->givenKudos()->get()->map(fn($kudo) => [
+                'to' => $kudo->toUser ? $kudo->toUser->name : 'Unknown',
+                'reason' => $kudo->reason,
+                'created_at' => $kudo->created_at,
             ]),
         ];
 
