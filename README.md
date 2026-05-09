@@ -70,12 +70,13 @@ Hemos preparado manuales detallados para cada perfil:
 *   🚀 [**Guía de Instalación**](resources/docs/es/installation.md)
 *   🤖 [**Configuración de Telegram**](resources/docs/es/telegram.md)
 
-## 🛡️ Seguridad
-Este proyecto ha pasado por una auditoría de seguridad rigurosa, implementando:
-*   Jerarquía de roles protegida.
-*   Gestión de cuotas de disco por equipo.
-*   Validación de membresía en todos los endpoints de archivos.
-*   Protección contra inyección y escalada de privilegios.
+## 🛡️ Seguridad y Cumplimiento (ENS)
+Este proyecto está alineado con las directrices del **Esquema Nacional de Seguridad (ENS)** de España (Real Decreto 311/2022) para niveles Medio/Alto, implementando:
+*   **Autenticación Multifactor (MFA/2FA) Dual**: Soporte nativo para TOTP (Google Authenticator, Authy, etc.) y Correo Electrónico.
+*   **Logs de Auditoría de Seguridad**: Registro unificado e inmutable de accesos y eventos críticos en la base de datos (`security_logs`).
+*   **Encriptación en Reposo**: Cifrado automático AES-256-CBC de credenciales de integración de IA y tokens mediante el motor nativo de Laravel.
+*   **Control de Roles y Cuotas**: Jerarquía de roles protegida y gestión estricta de cuotas de disco por equipo.
+*   **Validación de Membresía**: Protección de acceso a adjuntos de tareas y endpoints de archivos para evitar fugas de información.
 
 ## ⚖️ Licencia
 Distribuido bajo la licencia **GNU AGPL v3**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
