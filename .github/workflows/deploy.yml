@@ -1,0 +1,47 @@
+name: 🚀 Deploy SientiaMTX to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: ⚡ SSH Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Execute SSH Commands on Debian Container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            echo "🏁 Iniciando el despliegue automático en Debian Trixie..."
+            
+            # Navegar al directorio del proyecto
+            cd ${{ secrets.SSH_PROJECT_PATH }} || { echo "❌ No se pudo acceder al directorio del proyecto"; exit 1; }
+            
+            # Traer los últimos cambios
+            git pull origin main
+            
+            # Actualizar dependencias de PHP (Composer)
+            composer install --no-dev --optimize-autoloader
+            
+            # Ejecutar migraciones pendientes de forma segura
+            php artisan migrate --force
+            
+            # Limpiar y regenerar cachés de Laravel
+            php artisan optimize:clear
+            php artisan optimize
+            
+            # Actualizar dependencias de Node y compilar assets
+            npm install
+            npm run build
+            
+            echo "🚀 ¡Despliegue completado con éxito en producción!"
