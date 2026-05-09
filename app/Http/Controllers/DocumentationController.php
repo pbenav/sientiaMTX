@@ -46,6 +46,8 @@ class DocumentationController extends Controller
                 'user-manual' => 'Manual de Usuario',
                 'admin-manual' => 'Manual de Administrador',
                 'gamification' => 'Sistema de Gamificación',
+                'spdx' => 'Compatibilidad SPDX',
+                'ens' => 'Cumplimiento ENS',
             ],
             'en' => [
                 'installation' => 'Installation',
@@ -54,6 +56,8 @@ class DocumentationController extends Controller
                 'user-manual' => 'User Manual',
                 'admin-manual' => 'Admin Manual',
                 'gamification' => 'Gamification System',
+                'spdx' => 'SPDX Compatibility',
+                'ens' => 'ENS Compliance',
             ]
         ];
 
