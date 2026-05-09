@@ -157,8 +157,5 @@ class SendMorningSummary extends Command
                 Log::error("Error sending morning summary to " . ($user->name ?? 'Unknown') . ": " . $e->getMessage());
                 $this->error("Failed to notify {$user->name}: " . $e->getMessage());
             }
-        }
-
-        $this->info('Morning Summary delivery completed.');
     }
 }
