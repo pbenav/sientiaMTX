@@ -6,8 +6,29 @@ on:
       - main
 
 jobs:
+  security-audit:
+    name: 🛡️ Generar SBOM (SPDX)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Descargar código
+        uses: actions/checkout@v4
+
+      - name: 🔍 Escanear Dependencias con Syft (SBOM)
+        uses: anchore/sbom-action@v0
+        with:
+          format: 'spdx-json'
+          output-file: 'sientiamtx-sbom.spdx.json'
+          
+      - name: 📦 Guardar Reporte SPDX como Artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: sientiamtx-sbom
+          path: sientiamtx-sbom.spdx.json
+          retention-days: 30
+
   deploy:
     name: ⚡ Local Self-Hosted Deployment
+    needs: security-audit # Opcional: Asegura que la auditoría comienza antes/junto al deploy
     runs-on: self-hosted
 
     steps:
