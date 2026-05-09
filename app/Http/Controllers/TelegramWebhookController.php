@@ -131,7 +131,7 @@ class TelegramWebhookController extends Controller
                     $q->whereNull('telegram_message_id')
                       ->orWhere('telegram_message_id', 'like', 'sync_%');
                 })
-                ->where('created_at', '>=', now()->subSeconds(45))
+                ->where('created_at', '>=', now()->subHours(24))
                 ->get()
                 ->first(function ($msg) use ($text) {
                     $cleanTextMsg = trim(strip_tags($msg->text));
