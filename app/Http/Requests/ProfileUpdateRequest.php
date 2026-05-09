@@ -28,6 +28,8 @@ class ProfileUpdateRequest extends FormRequest
             'locale' => ['required', 'string', 'in:en,es'],
             'timezone' => ['required', 'string', 'timezone'],
             'show_welcome_messages' => ['nullable', 'boolean'],
+            'work_start_time' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
+            'work_end_time' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
         ];
     }
 }

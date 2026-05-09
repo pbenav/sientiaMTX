@@ -55,6 +55,8 @@ class User extends Authenticatable implements HasLocalePreference
         'location_lat',
         'location_lng',
         'impact_radius',
+        'work_start_time',
+        'work_end_time',
     ];
 
     /**

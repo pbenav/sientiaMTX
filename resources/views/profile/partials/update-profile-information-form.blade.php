@@ -124,6 +124,26 @@
             <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
         </div>
 
+        <!-- Horario de Trabajo Selection -->
+        <div class="p-5 bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl border border-gray-100 dark:border-gray-800/50 space-y-4">
+            <h3 class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Horario de Trabajo Diario</h3>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                Define tu horario diario habitual de inicio y fin. Si excedes este horario y tu contador de jornada sigue activo, la plataforma te mostrará un mensaje emergente dinámico para confirmar si sigues en tus labores o si olvidaste detener tu jornada.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <x-input-label for="work_start_time" value="Hora de Inicio" class="text-[9px] font-bold uppercase text-gray-400" />
+                    <x-text-input id="work_start_time" name="work_start_time" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_start_time', $user->work_start_time ?? '08:00')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('work_start_time')" />
+                </div>
+                <div>
+                    <x-input-label for="work_end_time" value="Hora de Cierre" class="text-[9px] font-bold uppercase text-gray-400" />
+                    <x-text-input id="work_end_time" name="work_end_time" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_end_time', $user->work_end_time ?? '17:00')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('work_end_time')" />
+                </div>
+            </div>
+        </div>
+
         <!-- Welcome Messages Toggle -->
         <div class="flex items-center gap-3 bg-violet-50/50 dark:bg-violet-900/10 p-4 rounded-2xl border border-violet-100 dark:border-violet-800 group hover:shadow-md transition-all duration-300">
             <div class="flex-1">

@@ -311,6 +311,7 @@
 
     <div id="app-root" class="min-h-screen flex flex-col">
         @include('partials.welcome-modal')
+        @include('partials.work-schedule-modal')
     @include('layouts.navigation-sidebar')
 
     <!-- Navigation -->
