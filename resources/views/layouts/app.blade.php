@@ -1238,6 +1238,565 @@
     
     @auth
         <x-quick-notes />
+        
+        <!-- Widget de Comunicación Premium en Vivo Global (Sientia Direct & Videollamadas) -->
+        <div x-data="sientiaChat">
+        <!-- Backdrop blur overlay -->
+        <div x-show="open" 
+             @click="close()" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/40 backdrop-blur-md z-[9998]"
+             style="display: none;">
+        </div>
+
+        <div @open-chat.window="openChat($event.detail)"
+             class="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[9999] w-full h-full md:w-[65%] md:h-[80%] md:max-w-5xl bg-white/95 dark:bg-gray-950/95 border border-gray-100 dark:border-gray-800 rounded-none md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden backdrop-blur-xl transform transition-all duration-300"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-12 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-y-12 scale-95"
+        style="display: none;"
+        >
+            <!-- Header -->
+            <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/50 shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-sm relative shrink-0">
+                        <img :src="member.photo" :alt="member.name" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="member.name"></p>
+                        <p class="text-[9px] text-emerald-500 font-bold truncate tracking-tight" x-text="member.status"></p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-1 shrink-0">
+                    <!-- Video Call Button (Sientia) -->
+                    <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="Iniciar Videollamada Sientia">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+                    </button>
+
+                    <!-- Video Call Button (Google Meet) -->
+                    <button @click="startGoogleMeet()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-sky-500 rounded-xl transition-colors" title="Crear Google Meet Rápido">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </button>
+                    
+                    <!-- Clear Chat Button -->
+                    <button @click="clearChat()" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-500 rounded-xl transition-colors" title="Limpiar Conversación 🧹">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                    
+                    <!-- Close Button -->
+                    <button @click="close()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div x-ref="chatContainer" class="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-gray-50/20 dark:bg-gray-900/10">
+                <template x-for="msg in messages" :key="msg.id">
+                    <div>
+                        <!-- System message -->
+                        <template x-if="msg.sender === 'system'">
+                            <div class="flex justify-center my-2">
+                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-black text-gray-400 uppercase rounded-lg" x-text="msg.text"></span>
+                            </div>
+                        </template>
+                        
+                        <!-- My message -->
+                        <template x-if="msg.sender === 'me'">
+                            <div class="flex justify-end">
+                                <div class="max-w-[75%] bg-emerald-600 text-white rounded-3xl rounded-tr-sm px-4 py-3 shadow-md relative">
+                                    <p class="text-xs font-semibold leading-relaxed" x-text="msg.text"></p>
+                                    <template x-if="msg.call_room">
+                                        <button @click="window.open('https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-white/20 hover:bg-white/30 text-white font-black text-[9px] uppercase rounded-xl transition-all">
+                                            Unirse a la videoconferencia 🎥
+                                        </button>
+                                    </template>
+                                    <span class="block text-[8px] opacity-60 text-right mt-1" x-text="msg.time"></span>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <!-- Their message -->
+                        <template x-if="msg.sender === 'them'">
+                            <div class="flex justify-start">
+                                <div class="max-w-[75%] bg-white dark:bg-gray-850 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
+                                    <p class="text-xs font-semibold leading-relaxed" x-text="msg.text"></p>
+                                    <template x-if="msg.call_room">
+                                        <button @click="window.open('https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase rounded-xl transition-all">
+                                            Aceptar y Unirse 🎥
+                                        </button>
+                                    </template>
+                                    <span class="block text-[8px] text-gray-400 text-right mt-1" x-text="msg.time"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                
+                <!-- Typing Indicator -->
+                <div x-show="isTyping" class="flex justify-start" style="display: none;">
+                    <div class="bg-white dark:bg-gray-850 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                        <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                        <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0 flex items-center gap-2">
+                <input x-ref="chatInput" type="text" x-model="message" @keydown.enter="sendMessage()" placeholder="Escribe un mensaje..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 text-xs font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none">
+                
+                <button @click="sendMessage()" class="p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 shrink-0">
+                    <svg class="w-4 h-4 transform rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+                </button>
+            </div>
+
+            <!-- Banner de Llamada Entrante Premium -->
+            <div x-show="incomingCall"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-12 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-12 scale-95"
+                 class="fixed bottom-6 right-6 z-[10000] w-[350px] bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-2xl p-5 flex flex-col gap-4"
+                 style="display: none;"
+            >
+                 <div class="flex items-center gap-3">
+                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-sm relative shrink-0">
+                         <img :src="incomingCall ? incomingCall.sender_photo : ''" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">
+                     </div>
+                     <div class="min-w-0">
+                         <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="incomingCall ? incomingCall.sender_name : ''"></p>
+                         <p class="text-[10px] text-emerald-500 font-bold animate-pulse">Te invita a una videoconferencia... 🎥</p>
+                     </div>
+                 </div>
+                 <div class="grid grid-cols-2 gap-3">
+                     <button @click="rejectCall()" class="py-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase transition-all">
+                         Rechazar ❌
+                     </button>
+                     <button @click="acceptCall()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-emerald-500/25 transition-all animate-pulse-subtle">
+                         Aceptar ✅
+                     </button>
+                 </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('chatStore', {
+                    unreadSenderIds: [],
+                    
+                    setUnread(ids) {
+                        this.unreadSenderIds = ids;
+                    },
+                    
+                    markAsRead(senderId) {
+                        this.unreadSenderIds = this.unreadSenderIds.filter(id => id !== senderId);
+                    },
+                    
+                    hasUnread(senderId) {
+                        return this.unreadSenderIds.includes(senderId);
+                    }
+                });
+
+                Alpine.data('sientiaChat', () => ({
+                    open: false,
+                    member: { id: null, name: '', photo: '', status: '', email: '', telegram: '' },
+                    message: '',
+                    messages: [],
+                    isTyping: false,
+                    activeCallRoom: null,
+                    incomingCall: null,
+                    pollInterval: null,
+                    titleInterval: null,
+                    originalTitle: '',
+                    lastNotifiedMsgId: null,
+                    
+                    init() {
+                        this.originalTitle = document.title;
+                        this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+                    },
+                    
+                    openChat(detail) {
+                        this.member = detail;
+                        this.open = true;
+                        this.activeCallRoom = null;
+                        this.incomingCall = null;
+                        Alpine.store('chatStore').markAsRead(detail.id);
+                        this.fetchMessages();
+                        this.$nextTick(() => {
+                            const input = this.$refs.chatInput;
+                            if (input) input.focus();
+                        });
+                    },
+                    
+                    close() {
+                        this.open = false;
+                        this.activeCallRoom = null;
+                    },
+                    
+                    fetchMessages() {
+                        if (!this.member.id) return;
+                        fetch('/chat/' + this.member.id + '?_=' + Date.now(), {
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        })
+                            .then(r => r.json())
+                            .then(data => {
+                                this.messages = data.messages;
+                                this.$nextTick(() => this.scrollToBottom());
+                            });
+                    },
+                    
+                    sendMessage() {
+                        if (!this.message.trim() || !this.member.id) return;
+                        const text = this.message.trim();
+                        this.message = '';
+                        
+                        this.messages.push({
+                            id: Date.now(),
+                            sender: 'me',
+                            text: text,
+                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        });
+                        this.$nextTick(() => this.scrollToBottom());
+
+                        if (this.member.id === {{ auth()->id() }}) {
+                            setTimeout(() => {
+                                this.messages.push({
+                                    id: Date.now() + 1,
+                                    sender: 'them',
+                                    text: 'Eco... Eco... 🗣️ (Por cierto, ¡te ves increíble hoy! 😉)',
+                                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                });
+                                this.$nextTick(() => this.scrollToBottom());
+                            }, 1000);
+                            return;
+                        }
+
+                        fetch('/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                            },
+                            body: JSON.stringify({
+                                receiver_id: this.member.id,
+                                message: text
+                            })
+                        }).then(() => this.fetchMessages());
+                    },
+                    
+                    startSientiaCall() {
+                        if (this.member.id === {{ auth()->id() }}) {
+                            this.messages.push({
+                                id: Date.now(),
+                                sender: 'system',
+                                text: '⚠️ ¡ALERTA ESPACIO-TEMPORAL! Intentas llamarte a ti mismo. Te recomendamos un espejo clásico para charlar contigo. 🪞🤪',
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            });
+                            this.$nextTick(() => this.scrollToBottom());
+                            return;
+                        }
+
+                        fetch('/chat/call', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                            },
+                            body: JSON.stringify({ receiver_id: this.member.id })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            window.open('https://meet.jit.si/' + data.room, '_blank');
+                            this.fetchMessages();
+                        });
+                    },
+                    
+                    startGoogleMeet() {
+                        if (this.member.id === {{ auth()->id() }}) {
+                            this.messages.push({
+                                id: Date.now(),
+                                sender: 'system',
+                                text: '🌐 ¡Casi creas un agujero negro! No puedes iniciar un Google Meet contigo mismo. ¡Valora tu tiempo! 😉',
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            });
+                            this.$nextTick(() => this.scrollToBottom());
+                            return;
+                        }
+
+                        window.open('https://meet.google.com/new', '_blank');
+                        
+                        Swal.fire({
+                             title: '🌐 GOOGLE MEET RÁPIDO',
+                             text: 'Hemos abierto Google Meet en una pestaña nueva para que crees la reunión. Cuando estés dentro, copia el enlace y pégalo aquí para invitarlos:',
+                             input: 'text',
+                             inputPlaceholder: 'https://meet.google.com/xxx-yyyy-zzz',
+                             showCancelButton: true,
+                             confirmButtonText: 'Enviar Invitación ✉️',
+                             cancelButtonText: 'Cancelar ❌',
+                             confirmButtonColor: '#0ea5e9',
+                             cancelButtonColor: '#4b5563',
+                             customClass: {
+                                 popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-950 dark:text-white',
+                                 confirmButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0',
+                                 cancelButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0'
+                             }
+                         }).then((result) => {
+                             if (result.isConfirmed && result.value) {
+                                 let meetUrl = result.value.trim();
+                                 if (!meetUrl.startsWith('http://') && !meetUrl.startsWith('https://')) {
+                                     if (meetUrl.includes('meet.google.com')) {
+                                         meetUrl = 'https://' + meetUrl;
+                                     } else {
+                                         meetUrl = 'https://meet.google.com/' + meetUrl;
+                                     }
+                                 }
+                                 fetch('/chat', {
+                                     method: 'POST',
+                                     headers: {
+                                         'Content-Type': 'application/json',
+                                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                     },
+                                     body: JSON.stringify({
+                                         receiver_id: this.member.id,
+                                         message: '🌐 Te invito a unirte a mi Google Meet rápido.',
+                                         call_room: meetUrl
+                                     })
+                                 }).then(() => this.fetchMessages());
+                             }
+                         });
+                    },
+                    
+                    acceptCall() {
+                        const url = this.incomingCall.room.startsWith('http')
+                            ? this.incomingCall.room
+                            : 'https://meet.jit.si/' + this.incomingCall.room;
+
+                        window.open(url, '_blank');
+                        
+                        // Automatically open the chat modal with the caller
+                        this.openChat({
+                            id: this.incomingCall.sender_id,
+                            name: this.incomingCall.sender_name,
+                            photo: this.incomingCall.sender_photo,
+                            status: 'ONLINE'
+                        });
+
+                        this.stopFlashAndSound();
+                        this.incomingCall = null;
+                    },
+                    
+                    rejectCall() {
+                        this.stopFlashAndSound();
+                        this.incomingCall = null;
+                    },
+                    
+                    checkNewMessages() {
+                        fetch('/chat/check?_=' + Date.now(), {
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.unread.length > 0) {
+                                    const ids = [...new Set(data.unread.map(m => m.sender_id))];
+                                    Alpine.store('chatStore').setUnread(ids);
+                                    
+                                    const lastMsg = data.unread[0];
+                                    
+                                    if (lastMsg.call_room && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== lastMsg.call_room)) {
+                                        this.incomingCall = {
+                                            room: lastMsg.call_room,
+                                            sender_id: lastMsg.sender_id,
+                                            sender_name: lastMsg.sender_name,
+                                            sender_photo: lastMsg.sender_photo
+                                        };
+                                        this.startFlashAndSound();
+
+                                        const isGoogleMeet = lastMsg.call_room.startsWith('http');
+                                        const title = isGoogleMeet ? '🌐 ¡REUNIÓN EN GOOGLE MEET!' : '🎥 ¡LLAMADA ENTRANTE!';
+                                        const subText = isGoogleMeet 
+                                            ? '¡te invita a unirte a una reunión de Google Meet!' 
+                                            : '¡te está llamando para una videoconferencia!';
+                                        const confirmText = isGoogleMeet ? 'Unirse a Meet 🚀' : 'Sí, contestar 👍';
+                                        const confirmColor = isGoogleMeet ? '#0ea5e9' : '#059669';
+
+                                        // Immersive SweetAlert2 Pop-up
+                                        Swal.fire({
+                                            title: title,
+                                            html: '<div class="flex flex-col items-center gap-4 py-2">' +
+                                                '<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-xl relative">' +
+                                                    '<img src="' + lastMsg.sender_photo + '" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">' +
+                                                '</div>' +
+                                                '<div class="text-center">' +
+                                                    '<p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">' + lastMsg.sender_name + '</p>' +
+                                                    '<p class="text-xs text-gray-700 dark:text-gray-300 font-bold mt-2">' + subText + '</p>' +
+                                                    '<p class="text-[10px] text-emerald-500 font-black uppercase tracking-wider mt-1 animate-pulse">¿Quieres contestar?</p>' +
+                                                '</div>' +
+                                            '</div>',
+                                            showCancelButton: true,
+                                            confirmButtonText: confirmText,
+                                            cancelButtonText: 'No, ahora no 👎',
+                                            confirmButtonColor: confirmColor,
+                                            cancelButtonColor: '#e11d48',
+                                            customClass: {
+                                                popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-950 dark:text-white',
+                                                confirmButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0',
+                                                cancelButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0'
+                                            }
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                this.acceptCall();
+                                            } else {
+                                                this.rejectCall();
+                                            }
+                                        });
+                                    } else if (!lastMsg.call_room && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
+                                        this.lastNotifiedMsgId = lastMsg.id;
+                                        
+                                        // Beautiful non-intrusive SweetAlert2 Toast for new text messages
+                                        const Toast = Swal.mixin({
+                                            toast: true,
+                                            position: 'top-end',
+                                            showConfirmButton: false,
+                                            timer: 4000,
+                                            timerProgressBar: true,
+                                            customClass: {
+                                                popup: 'rounded-2xl border-0 shadow-xl dark:bg-gray-950 dark:text-white'
+                                            }
+                                        });
+                                        Toast.fire({
+                                            icon: 'info',
+                                            html: '<div class="text-left py-1 pr-2">' +
+                                                '<p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">' + lastMsg.sender_name + '</p>' +
+                                                '<p class="text-xs text-gray-600 dark:text-gray-300 mt-0.5 truncate max-w-[200px]">' + lastMsg.text + '</p>' +
+                                                '<p class="text-[9px] text-emerald-500 font-bold animate-pulse mt-1 uppercase tracking-wider">💬 Haz clic para responder</p>' +
+                                            '</div>',
+                                            didOpen: (toast) => {
+                                                toast.style.cursor = 'pointer';
+                                                toast.addEventListener('click', () => {
+                                                    this.openChat({
+                                                        id: lastMsg.sender_id,
+                                                        name: lastMsg.sender_name,
+                                                        photo: lastMsg.sender_photo,
+                                                        status: 'ONLINE'
+                                                    });
+                                                });
+                                            }
+                                        });
+                                    }
+                                    
+                                    if (this.open && this.member.id === lastMsg.sender_id) {
+                                        this.fetchMessages();
+                                    }
+                                } else {
+                                    Alpine.store('chatStore').setUnread([]);
+                                }
+                            });
+                    },
+                    
+                    startFlashAndSound() {
+                        // Flash Tab Title
+                        if (this.titleInterval) clearInterval(this.titleInterval);
+                        this.titleInterval = setInterval(() => {
+                            document.title = document.title === this.originalTitle ? '📞 LLAMADA ENTRANTE...' : this.originalTitle;
+                        }, 1000);
+                        
+                        // Sound synthesis chime
+                        try {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 arpeggio
+                            notes.forEach((freq, idx) => {
+                                setTimeout(() => {
+                                    const osc = audioCtx.createOscillator();
+                                    const gain = audioCtx.createGain();
+                                    osc.connect(gain);
+                                    gain.connect(audioCtx.destination);
+                                    osc.type = 'sine';
+                                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+                                    osc.start();
+                                    osc.stop(audioCtx.currentTime + 0.6);
+                                }, idx * 150);
+                            });
+                        } catch (e) { console.warn('Audio chime failed', e); }
+                    },
+                    
+                    stopFlashAndSound() {
+                        if (this.titleInterval) {
+                            clearInterval(this.titleInterval);
+                            this.titleInterval = null;
+                        }
+                        document.title = this.originalTitle;
+                    },
+                    
+                    clearChat() {
+                        if (!this.member.id) return;
+                        
+                        Swal.fire({
+                            title: '🧹 ¿LIMPIAR CHAT?',
+                            text: 'Se eliminarán todos los mensajes de esta conversación de forma permanente.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, limpiar 🧹',
+                            cancelButtonText: 'Cancelar ❌',
+                            confirmButtonColor: '#e11d48',
+                            cancelButtonColor: '#4b5563',
+                            customClass: {
+                                popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-950 dark:text-white',
+                                confirmButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0',
+                                cancelButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                fetch('/chat/clear/' + this.member.id, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                    }
+                                }).then(() => {
+                                    this.messages = [];
+                                    Swal.fire({
+                                        title: '¡Limpiado! 🧹',
+                                        text: 'El historial de chat se ha borrado.',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false,
+                                        customClass: {
+                                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-950 dark:text-white'
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    },
+                    
+                    scrollToBottom() {
+                        const container = this.$refs.chatContainer;
+                        if (container) container.scrollTop = container.scrollHeight;
+                    }
+                }));
+            });
+        </script>
     @endauth
 </body>
 

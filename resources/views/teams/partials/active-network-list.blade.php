@@ -17,8 +17,7 @@
     $sortedMembers = $activeMembers->sortBy('name')->concat($inactiveMembers->sortBy('name'));
 @endphp
 @foreach($sortedMembers as $member)
-    <div class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300">
-        @php
+    @php
             $isWorking = $member->last_login_at ? $member->isWorking() : false;
             $lastActivity = $member->last_login_at ? $member->last_activity_at : null;
             
@@ -66,11 +65,21 @@
                 $statusLabel = 'Sin GPS • ' . $statusLabel;
             }
         @endphp
-        <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br {{ $gradientClass }} p-0.5 shadow-sm transition-transform group-hover:scale-105 shrink-0">
+        <div @click="$dispatch('open-chat', { id: {{ $member->id }}, name: '{{ addslashes($member->name) }}', photo: '{{ $member->profile_photo_url }}', status: '{{ addslashes($statusLabel) }}', email: '{{ $member->email }}', telegram: '{{ $member->telegram_chat_id ?? '' }}' })"
+             x-data
+             class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer hover:translate-x-1 duration-200 w-full">
+            <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br {{ $gradientClass }} p-0.5 shadow-sm transition-transform group-hover:scale-105 shrink-0 relative">
                 <img src="{{ $member->profile_photo_url }}" 
                     alt="{{ $member->name }}"
                     class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">
+                
+                <!-- Unread Message Badge -->
+                <template x-if="$store.chatStore.hasUnread({{ $member->id }})">
+                    <span class="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-black text-white ring-2 ring-white dark:ring-gray-900 shadow-lg animate-bounce">
+                        ✉️
+                    </span>
+                </template>
             </div>
             <div class="min-w-0">
                 <p class="text-[11px] font-black {{ ($isWorking || $isOnline || $isSleeping) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate tracking-tight">{{ $member->name }}</p>

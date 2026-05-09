@@ -340,6 +340,12 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('dashboard')->with('success', __('¡Pase VIP canjeado con éxito! Tu cuenta ha sido aprobada.'));
     })->name('waitlist.redeem');
 
+    // --- Internal Direct Chat and Video Conference ---
+    Route::get('/chat/check', [\App\Http\Controllers\ChatMessageController::class, 'check'])->name('chat.check');
+    Route::get('/chat/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('chat.index');
+    Route::post('/chat', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('chat.store');
+    Route::post('/chat/call', [\App\Http\Controllers\ChatMessageController::class, 'startCall'])->name('chat.call');
+    Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });
 
 require __DIR__.'/auth.php';
