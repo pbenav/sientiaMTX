@@ -32,9 +32,19 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Prevent accidental redirection to JSON webhooks or other non-HTML routes
-        if (session()->has('url.intended') && (str_contains(session('url.intended'), 'telegram') || str_contains(session('url.intended'), 'webhook'))) {
-            session()->forget('url.intended');
+        // Prevent accidental redirection to AJAX/JSON background-polling endpoints or webhooks
+        if (session()->has('url.intended')) {
+            $intended = session('url.intended');
+            $blacklist = [
+                'telegram', 'webhook', 'chat', 'status', 'active-network', 
+                'unread-count', 'messages', 'notifications', 'gantt/data', 'api'
+            ];
+            foreach ($blacklist as $item) {
+                if (str_contains(strtolower($intended), $item)) {
+                    session()->forget('url.intended');
+                    break;
+                }
+            }
         }
 
         $user = Auth::user();
