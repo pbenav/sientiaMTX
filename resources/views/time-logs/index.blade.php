@@ -426,8 +426,12 @@
                     <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar"
                          x-data="{ 
                             refresh() {
-                                fetch('{{ route('teams.active-network', $team) }}?json=1', {
-                                    headers: { 'Accept': 'application/json' }
+                                fetch('{{ route('teams.active-network', $team) }}?json=1&_=' + Date.now(), {
+                                    headers: { 
+                                        'Accept': 'application/json',
+                                        'Cache-Control': 'no-cache',
+                                        'Pragma': 'no-cache'
+                                    }
                                 })
                                     .then(res => res.json())
                                     .then(data => {
