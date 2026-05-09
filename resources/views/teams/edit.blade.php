@@ -118,6 +118,45 @@
                                 </div>
                             </div>
 
+                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Control de Inactividad</h3>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <x-input-label for="inactivity_logout_minutes" value="Tiempo para auto-cierre de sesión"
+                                            class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                        <select id="inactivity_logout_minutes" name="settings[inactivity_logout_minutes]"
+                                            class="block w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white outline-none transition-all shadow-sm">
+                                            <option value="0" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 0 ? 'selected' : '' }}>Desactivado (No cerrar sesión)</option>
+                                            <option value="15" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 15 ? 'selected' : '' }}>15 minutos</option>
+                                            <option value="30" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 30 ? 'selected' : '' }}>30 minutos</option>
+                                            <option value="60" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 60 ? 'selected' : '' }}>1 hora (Por defecto)</option>
+                                            <option value="120" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 120 ? 'selected' : '' }}>2 horas</option>
+                                            <option value="240" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 240 ? 'selected' : '' }}>4 horas</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
+                                        <div>
+                                            <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Mantener activo laborando</span>
+                                            <span class="text-[9px] text-gray-400 font-medium">Ignorar inactividad si hay contador en marcha</span>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="hidden" name="settings[keep_alive_during_work]" value="0">
+                                            <input type="checkbox" name="settings[keep_alive_during_work]" value="1" class="sr-only peer" {{ ($team->settings['keep_alive_during_work'] ?? true) ? 'checked' : '' }}>
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
                             @if(($team->settings['has_whatsapp'] ?? false) || auth()->user()->is_admin)
                             <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
                                 <div class="flex items-center gap-2 mb-5">

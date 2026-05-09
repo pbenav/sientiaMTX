@@ -18,17 +18,46 @@ class TrackUserActivity
             $user = Auth::user();
             $now = now();
 
-            // Auto-logout after 60 minutes of complete inactivity
-            if ($user->last_activity_at && $now->diffInMinutes($user->last_activity_at) >= 60) {
-                // Auto-stop any active time logs (workday and task) on auto-logout
-                $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
+            // Dynamic activity limits from team settings
+            $isWorking = $user->isWorking();
+            $teams = $user->teams;
+            $inactivityLimit = 60; // Default: 60 minutes
+            $keepAlive = true;     // Default: true
 
-                Auth::guard('web')->logout();
+            if ($teams->isNotEmpty()) {
+                $limits = $teams->map(function($team) {
+                    return isset($team->settings['inactivity_logout_minutes']) 
+                        ? (int)$team->settings['inactivity_logout_minutes'] 
+                        : 60;
+                });
 
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
+                if ($limits->contains(0)) {
+                    $inactivityLimit = 0; // Inactivity logout disabled for at least one team
+                } else {
+                    $inactivityLimit = $limits->max();
+                }
 
-                return redirect('/')->with('warning', 'Tu sesión se ha cerrado por inactividad.');
+                $keepAlive = $teams->contains(function($team) {
+                    return filter_var($team->settings['keep_alive_during_work'] ?? true, FILTER_VALIDATE_BOOLEAN);
+                });
+            }
+
+            // Perform auto-logout if inactivity limit is active and exceeded
+            if ($inactivityLimit > 0) {
+                if ($keepAlive && $isWorking) {
+                    // Keep the user active if they have active time logs (workday or task counters running)
+                    $user->last_activity_at = $now;
+                } elseif ($user->last_activity_at && $now->diffInMinutes($user->last_activity_at) >= $inactivityLimit) {
+                    // Auto-stop any active time logs (workday and task) on auto-logout
+                    $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
+
+                    Auth::guard('web')->logout();
+
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    return redirect('/')->with('warning', 'Tu sesión se ha cerrado por inactividad.');
+                }
             }
 
             // Update activity timestamp

@@ -167,6 +167,8 @@ class TeamController extends Controller
 
         // Proteger el estado Premium de WhatsApp para que solo un administrador global pueda modificarlo
         if (isset($validated['settings'])) {
+            $validated['settings'] = array_merge($team->settings ?? [], $validated['settings']);
+            
             if (!auth()->user()->is_admin) {
                 $validated['settings']['has_whatsapp'] = $team->settings['has_whatsapp'] ?? false;
             } else {
