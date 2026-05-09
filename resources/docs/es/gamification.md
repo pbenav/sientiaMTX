@@ -28,10 +28,22 @@ Para incentivar la agilidad en tareas compartidas o derivadas de un Plan Maestro
 
 ---
 
-## 3. Reto de Resiliencia
-Cuando un usuario completa una tarea que está **fuera de su árbol de habilidades**, el sistema lo reconoce como un "Reto de Resiliencia":
-- **Puntos de Resiliencia:** `20 * Multiplicador`
-- **Objetivo:** Premiar la adaptabilidad y el esfuerzo de salir de la zona de confort técnica.
+## 3. Puntos de Resiliencia (RP)
+
+Los **Resilience Points (RP)** miden la capacidad del usuario para adaptarse a entornos desconocidos, superar desafíos técnicos y apoyar la cohesión del equipo a través del compañerismo.
+
+A diferencia de la XP estándar, los RP se obtienen principalmente por dos vías específicas:
+
+### A) Retos de Resiliencia (Fuera de Zona de Confort)
+Cuando un usuario asume y completa una tarea que está marcada como **fuera de su árbol de habilidades**, el sistema lo premia por su versatilidad:
+- **Recompensa:** `20 * Multiplicador` de Carga Cognitiva.
+- **Objetivo:** Incentivar el aprendizaje transversal y evitar el estancamiento en tareas repetitivas.
+
+### B) Reconocimiento de Compañeros (Kudos)
+La resiliencia del equipo también se construye mediante el apoyo mutuo. Cada vez que otro miembro del equipo otorga un reconocimiento público o gratitud:
+- **Acción:** Recibir un Kudo.
+- **Recompensa:** `+5 RP` directos.
+- **Objetivo:** Fomentar una cultura corporativa de agradecimiento y visibilidad del esfuerzo conjunto.
 
 ---
 

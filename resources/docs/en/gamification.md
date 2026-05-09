@@ -28,10 +28,22 @@ To incentivize agility in shared tasks or those derived from a Master Plan, bonu
 
 ---
 
-## 3. Resilience Challenge
-When a user completes a task that is **outside their skill tree**, the system recognizes it as a "Resilience Challenge":
-- **Resilience Points:** `20 * Multiplier`
-- **Objective:** To reward adaptability and the effort of stepping out of the technical comfort zone.
+## 3. Resilience Points (RP)
+
+**Resilience Points (RP)** measure a user's capacity to adapt to unfamiliar environments, overcome technical challenges, and support team cohesion through camaraderie.
+
+Unlike standard XP, RPs are earned through two specific channels:
+
+### A) Resilience Challenges (Outside the Comfort Zone)
+When a user undertakes and completes a task marked as **outside their skill tree**, the system rewards versatility:
+- **Reward:** `20 * Multiplier` of Cognitive Load.
+- **Objective:** Incentivize cross-functional learning and prevent stagnation in repetitive tasks.
+
+### B) Colleague Recognition (Kudos)
+Team resilience is also built through mutual support. Every time another team member offers public recognition or gratitude:
+- **Action:** Receiving a Kudo.
+- **Reward:** `+5 direct RP`.
+- **Objective:** Foster a corporate culture of gratitude and visibility for joint effort.
 
 ---
 
