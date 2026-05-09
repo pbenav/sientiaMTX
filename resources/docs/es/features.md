@@ -1,4 +1,4 @@
-# Sientia MTX: Guía Maestra de Funcionalidades (v0.9.8.RC3)
+# Sientia MTX: Guía Maestra de Funcionalidades (v0.9.9.RC1)
 
 SientiaMTX es un ecosistema de productividad de alto rendimiento que fusiona la metodología de Eisenhower con Inteligencia Artificial avanzada.
 
@@ -21,7 +21,18 @@ El centro de mando donde converge el esfuerzo del equipo y el pulso de los servi
 
 ---
 
-## 💬 2. Comunicación Estructurada e IA
+## 💬 2. Comunicación en Tiempo Real e IA
+
+### 💬 Sientia Chat y Videoconferencia Integrada
+*   **Chat Instantáneo**: Sistema de mensajería instantánea directa entre colaboradores integrado en la barra lateral con diseño ultra-moderno *Glassmorphism* y scrollbars optimizados.
+*   **Limpieza de Historial 🧹**: Función avanzada de borrado seguro que elimina por completo el historial de conversación entre dos colaboradores con confirmación visual de SweetAlert2.
+*   **Suites de Videollamada de Un Clic**:
+    *   **Sientia Meet (Jitsi) 🎥**: Videoconferencias instantáneas ilimitadas sin necesidad de cuentas ni registros de ningún tipo, integradas al vuelo.
+    *   **Google Meet Rápido 🌐**: Apertura de salas con **saneamiento inteligente de enlaces** (permite pegar URLs, enlaces acortados o simples códigos de 10 letras y los expande automáticamente).
+*   **Alertas Inmersivas y Notificaciones Reactivas**:
+    *   **Llamadas en Foco**: Las llamadas entrantes despliegan un SweetAlert interactivo centrado en toda la pantalla con el avatar del emisor, tono de aviso sintetizado por audio-frecuencia y destellos de pestaña.
+    *   **Mensajes No Intrusivos**: Mensajes ordinarios notificados por Toasts interactivos con opción *"Haz clic para responder"*.
+    *   **Bouncing Badges de Pendientes ✉️**: Un almacén de estado global (`Alpine.store`) sincroniza mensajes sin leer y coloca sobres rojos dinámicos botando en los avatares de la "Red Activa" hasta que abres el chat.
 
 ### 🏛️ Foros Anidados (Threads)
 *   **Discusiones Profundas**: Soporte para hilos de conversación anidados, citas directas y menciones de usuarios.
@@ -37,9 +48,10 @@ El centro de mando donde converge el esfuerzo del equipo y el pulso de los servi
 ## 📋 3. Gestión de Tareas de Próxima Generación
 
 ### 🔘 Vistas Dinámicas
-*   **Kanban Reactivo**: Columnas personalizables con animaciones FLIP para un movimiento fluido de tareas.
-*   **Gantt Optimizado**: Roadmap visual con etiquetas de lectura directa en las barras, sin necesidad de hover.
-*   **Active Network**: Mapa y widget de disponibilidad en tiempo real para saber qué se está haciendo en cada rincón del equipo.
+*   **Kanban Reactivo**: Movimiento de tareas automatizado por porcentaje con transiciones suaves FLIP para eliminar recargas y ofrecer una experiencia SPA.
+*   **Gantt Optimizado**: Roadmap visual interactivo con **etiquetas de lectura directa en las barras** (sin hover necesario) para una visibilidad de plazos insuperable.
+*   **Red Activa (Active Network)**: Widget mejorado de presencia y mapa GPS que rastrea de forma inteligente y dinámica la actividad de cada colaborador (En Labor 🔴, Activo 🟢, Inactivo/Dormido 🟡).
+*   **Métricas de Equipos**: El panel de administración de equipos incluye un desglose con la cantidad total de tareas gestionadas por cada grupo.
 
 ### 🧩 Automatización y Planes Maestros
 *   **Tareas Recurrentes**: Autoprogramación con lógica de antelación.

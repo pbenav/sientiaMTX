@@ -1,4 +1,4 @@
-# Sientia MTX: Feature Master Guide (v0.9.8.RC3)
+# Sientia MTX: Feature Master Guide (v0.9.9.RC1)
 
 SientiaMTX is a high-performance productivity ecosystem that merges the Eisenhower methodology with advanced Artificial Intelligence.
 
@@ -21,7 +21,18 @@ The command center where team effort and service pulse converge.
 
 ---
 
-## 💬 2. Structured Communication and AI
+## 💬 2. Real-Time Communication and AI
+
+### 💬 Sientia Chat and Integrated Videoconferencing
+*   **Instant Chat**: Direct instant messaging system between collaborators integrated into the sidebar with an ultra-modern *Glassmorphism* design and optimized scrollbars.
+*   **History Clearing 🧹**: Advanced secure erase feature that completely wipes the conversation history between two collaborators with SweetAlert2 visual confirmation.
+*   **One-Click Videocall Suites**:
+    *   **Sientia Meet (Jitsi) 🎥**: Unlimited instant videoconferences without accounts or registrations of any kind, integrated on the fly.
+    *   **Rapid Google Meet 🌐**: Creation of rooms with **intelligent link sanitization** (allows pasting URLs, shortened links, or simple 10-letter codes and automatically expands them).
+*   **Immersive Alerts & Reactive Notifications**:
+    *   **In-Focus Calls**: Incoming calls display a centered, screen-wide interactive SweetAlert with the sender's avatar, audio-frequency synthesized chime, and blinking tab title.
+    *   **Non-Intrusive Messages**: Ordinary messages are notified via interactive Toasts with a click-to-reply *"Click to respond"* option.
+    *   **Pending Bouncing Badges ✉️**: A global state store (`Alpine.store`) synchronizes unread messages and displays dynamic red envelope badges bouncing on avatars in the "Active Network" list until the chat is opened.
 
 ### 🏛️ Nested Forums (Threads)
 *   **Deep Discussions**: Support for nested conversation threads, direct citations, and user mentions.
@@ -37,9 +48,10 @@ The command center where team effort and service pulse converge.
 ## 📋 3. Next-Generation Task Management
 
 ### 🔘 Dynamic Views
-*   **Reactive Kanban**: Customizable columns with FLIP animations for fluid task movement.
-*   **Optimized Gantt**: Visual roadmap with direct-reading labels on the bars, no hover required.
-*   **Active Network**: Real-time availability map and widget to know what is being done in every corner of the team.
+*   **Reactive Kanban**: Percentage-based automatic task card movement with smooth FLIP transitions to eliminate page reloads and offer a full SPA experience.
+*   **Optimized Gantt**: Interactive visual roadmap with **direct-reading labels on the bars** (no hover required) for unparalleled deadline visibility.
+*   **Active Network**: Enhanced presence widget and GPS map that dynamically tracks the activity of each collaborator (In Labor 🔴, Active 🟢, Inactive/Sleeping 🟡).
+*   **Team Metrics**: The team administration panel includes a breakdown displaying the total count of tasks managed by each group.
 
 ### 🧩 Automation and Master Plans
 *   **Recurring Tasks**: Self-scheduling with advance logic.
