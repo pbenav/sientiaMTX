@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: 🏁 Execute Local Deployment Commands
         run: |
-          echo "🏁 Iniciando el despliegue automático local en Debian..."
+          echo "🏁 Iniciando el despliegue automático local y seguro en Debian..."
           
           # Acceder al directorio del proyecto (definido de forma segura en GitHub Secrets como PROJECT_PATH)
           cd ${{ secrets.PROJECT_PATH }} || { echo "❌ No se pudo acceder al directorio del proyecto. Asegúrate de configurar PROJECT_PATH en GitHub Secrets."; exit 1; }
