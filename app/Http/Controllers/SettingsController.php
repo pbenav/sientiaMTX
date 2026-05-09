@@ -319,8 +319,10 @@ class SettingsController extends Controller
             // Update .env atomically in a single file-write operation
             $this->updateEnvMultiple($data);
 
-            // Clear config cache to apply changes
-            Artisan::call('config:clear');
+            // Clear config cache to apply changes only if it is currently cached (prevents connection resets in development)
+            if (app()->configurationIsCached()) {
+                Artisan::call('config:clear');
+            }
 
             // If requested, update all existing users (and teams if applicable) to the new values
             if ($updateExistingUsers) {
