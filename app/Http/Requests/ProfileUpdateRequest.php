@@ -30,6 +30,10 @@ class ProfileUpdateRequest extends FormRequest
             'show_welcome_messages' => ['nullable', 'boolean'],
             'work_start_time' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
             'work_end_time' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
+            'work_start_time_1' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
+            'work_end_time_1' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
+            'work_start_time_2' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
+            'work_end_time_2' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
         ];
     }
 }

@@ -125,21 +125,62 @@
         </div>
 
         <!-- Horario de Trabajo Selection -->
-        <div class="p-5 bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl border border-gray-100 dark:border-gray-800/50 space-y-4">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Horario de Trabajo Diario</h3>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                Define tu horario diario habitual de inicio y fin. Si excedes este horario y tu contador de jornada sigue activo, la plataforma te mostrará un mensaje emergente dinámico para confirmar si sigues en tus labores o si olvidaste detener tu jornada.
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-6 bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl border border-gray-100 dark:border-gray-800/50 space-y-5">
+            <div class="flex items-center gap-2">
+                <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </span>
                 <div>
-                    <x-input-label for="work_start_time" value="Hora de Inicio" class="text-[9px] font-bold uppercase text-gray-400" />
-                    <x-text-input id="work_start_time" name="work_start_time" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_start_time', $user->work_start_time ?? '08:00')" />
-                    <x-input-error class="mt-2" :messages="$errors->get('work_start_time')" />
+                    <h3 class="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Horario de Trabajo Diario</h3>
+                    <span class="text-[9px] text-gray-400 font-medium block uppercase tracking-wider mt-0.5">Soporta jornada continua y partida (dos turnos)</span>
                 </div>
-                <div>
-                    <x-input-label for="work_end_time" value="Hora de Cierre" class="text-[9px] font-bold uppercase text-gray-400" />
-                    <x-text-input id="work_end_time" name="work_end_time" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_end_time', $user->work_end_time ?? '17:00')" />
-                    <x-input-error class="mt-2" :messages="$errors->get('work_end_time')" />
+            </div>
+            
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                Define tus turnos diarios habituales de trabajo. Si excedes los horarios límite y tu contador de jornada sigue en marcha, se mostrará un mensaje interactivo para evitar olvidos al apagar tus contadores.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-800/50">
+                <!-- Turno 1 (Mañana) -->
+                <div class="space-y-3">
+                    <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                        Primer Turno / Mañana
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <x-input-label for="work_start_time_1" value="Hora de Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
+                            <x-text-input id="work_start_time_1" name="work_start_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_start_time_1', $user->work_start_time_1 ?? '08:00')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('work_start_time_1')" />
+                        </div>
+                        <div>
+                            <x-input-label for="work_end_time_1" value="Hora de Salida" class="text-[9px] font-bold uppercase text-gray-400" />
+                            <x-text-input id="work_end_time_1" name="work_end_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_end_time_1', $user->work_end_time_1 ?? '14:00')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('work_end_time_1')" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Turno 2 (Tarde) -->
+                <div class="space-y-3">
+                    <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                        Segundo Turno / Tarde (Opcional)
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <x-input-label for="work_start_time_2" value="Hora de Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
+                            <x-text-input id="work_start_time_2" name="work_start_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_start_time_2', $user->work_start_time_2 ?? '15:00')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('work_start_time_2')" />
+                        </div>
+                        <div>
+                            <x-input-label for="work_end_time_2" value="Hora de Salida" class="text-[9px] font-bold uppercase text-gray-400" />
+                            <x-text-input id="work_end_time_2" name="work_end_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_end_time_2', $user->work_end_time_2 ?? '18:00')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('work_end_time_2')" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

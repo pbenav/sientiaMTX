@@ -4,7 +4,10 @@
     open: false,
     countdown: 60,
     timer: null,
-    endTime: '{{ auth()->user()->work_end_time ?? '17:00' }}',
+    endTime1: '{{ auth()->user()->work_end_time_1 ?? '14:00' }}',
+    startTime2: '{{ auth()->user()->work_start_time_2 }}',
+    endTime2: '{{ auth()->user()->work_end_time_2 }}',
+    limitShown: '',
     checkInterval: null,
     
     init() {
@@ -21,14 +24,39 @@
             return;
         }
         
-        const [endH, endM] = this.endTime.split(':').map(Number);
+        const parseTime = (timeStr) => {
+            if (!timeStr) return null;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        };
+
         const now = new Date();
-        const nowH = now.getHours();
-        const nowM = now.getMinutes();
-        
-        const pastEndTime = (nowH > endH) || (nowH === endH && nowM >= endM);
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const end1 = parseTime(this.endTime1);
+        const start2 = parseTime(this.startTime2);
+        const end2 = parseTime(this.endTime2);
+
+        let pastEndTime = false;
+        let limitLabel = '';
+
+        if (end1 && currentMinutes >= end1) {
+            if (start2) {
+                if (currentMinutes < start2) {
+                    pastEndTime = true;
+                    limitLabel = this.endTime1;
+                } else if (end2 && currentMinutes >= end2) {
+                    pastEndTime = true;
+                    limitLabel = this.endTime2;
+                }
+            } else {
+                pastEndTime = true;
+                limitLabel = this.endTime1;
+            }
+        }
         
         if (pastEndTime) {
+            this.limitShown = limitLabel;
             this.open = true;
             this.startCountdown();
         }
@@ -94,7 +122,7 @@ class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gray-950/
             <div class="space-y-2">
                 <h3 class="text-lg font-black tracking-tight text-gray-900 dark:text-white uppercase">¿Sigues en tus labores?</h3>
                 <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Hemos detectado que tu horario habitual finalizó a las <span class="font-bold text-violet-600 dark:text-violet-400">{{ auth()->user()->work_end_time ?? '17:00' }}</span>, pero tus contadores de tiempo siguen activos.
+                    Hemos detectado que tu turno habitual finalizó a las <span class="font-bold text-violet-600 dark:text-violet-400" x-text="limitShown">14:00</span>, pero tus contadores de tiempo siguen activos.
                 </p>
                 <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed">
                     Si no respondes, el sistema detendrá automáticamente tu jornada y cerrará tu sesión para evitar registros erróneos.
