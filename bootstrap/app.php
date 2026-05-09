@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\EnsureLatestLegalConsent::class,
             \App\Http\Middleware\EnsureUserIsApproved::class,
+            \App\Http\Middleware\TrackUserActivity::class,
         ]);
 
         $middleware->encryptCookies(except: [

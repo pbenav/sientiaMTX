@@ -531,12 +531,7 @@ class TeamController extends Controller
         $members = $team->members()
             ->where(function($query) {
                 $query->whereNotNull('location_lat')
-                      ->orWhereExists(function ($q) {
-                          $q->select(\DB::raw(1))
-                            ->from('sessions')
-                            ->whereColumn('sessions.user_id', 'users.id')
-                            ->where('last_activity', '>', now()->subMinutes(15)->getTimestamp());
-                      })
+                      ->orWhere('last_activity_at', '>=', now()->subMinutes(60))
                       ->orWhereExists(function ($q) {
                           $q->select(\DB::raw(1))
                             ->from('time_logs')

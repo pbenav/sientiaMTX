@@ -38,6 +38,10 @@ class AuthenticatedSessionController extends Controller
         }
 
         $user = Auth::user();
+        $user->update([
+            'last_login_at' => now(),
+            'last_activity_at' => now()
+        ]);
 
         // Show welcome message if the user prefers it
         if ($user->show_welcome_messages) {

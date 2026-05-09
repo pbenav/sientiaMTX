@@ -87,7 +87,8 @@ class User extends Authenticatable implements HasLocalePreference
             'resilience_points' => 'integer',
             'experience_points' => 'integer',
             'energy_level' => 'integer',
-            'energy_level' => 'integer',
+            'last_login_at' => 'datetime',
+            'last_activity_at' => 'datetime',
         ];
     }
 
