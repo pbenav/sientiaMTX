@@ -188,7 +188,10 @@ class WhatsappController extends Controller
                 $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
                 $isSyncEnabled = $creator ? ($creatorSettings['sync_chats'] ?? false) : true;
 
-                if ($isSyncEnabled) {
+                $timestamp = $payload['timestamp'] ?? null;
+                $isTooOld = $timestamp && (time() - $timestamp) > 300;
+
+                if ($isSyncEnabled && !$isTooOld) {
                     $botToken = config('services.telegram.bot_token');
                     if ($botToken && $team->telegram_chat_id && !empty($body) && !str_contains($body, '🔵 [Telegram]')) {
                         $cleanBody = strip_tags($body);

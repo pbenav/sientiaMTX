@@ -195,7 +195,10 @@ class TelegramWebhookController extends Controller
                     $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
                     $isSyncEnabled = $creator ? ($creatorSettings['sync_chats'] ?? false) : true;
 
-                    if ($isSyncEnabled) {
+                    $messageDate = $message['date'] ?? null;
+                    $isTooOld = $messageDate && (time() - $messageDate) > 300;
+
+                    if ($isSyncEnabled && !$isTooOld) {
                         if ($team->whatsapp_chat_id && !empty($text) && !str_contains($text, '🟢 [WhatsApp]')) {
                             Log::info("Sincronización: Reenviando mensaje de Telegram a WhatsApp para el equipo {$team->name}");
                             $syncResponse = \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
