@@ -14,6 +14,11 @@ jobs:
       - name: 🏁 Execute Local Deployment Commands
         run: |
           echo "🏁 Iniciando el despliegue automático local y seguro en Debian..."
+
+          # Definir variables de entorno para Composer y NPM en el entorno de systemd
+          export HOME=/root
+          export COMPOSER_HOME=/root/.composer
+          export COMPOSER_ALLOW_SUPERUSER=1
           
           # Acceder al directorio del proyecto (definido de forma segura en GitHub Secrets como PROJECT_PATH)
           cd ${{ secrets.PROJECT_PATH }} || { echo "❌ No se pudo acceder al directorio del proyecto. Asegúrate de configurar PROJECT_PATH en GitHub Secrets."; exit 1; }
