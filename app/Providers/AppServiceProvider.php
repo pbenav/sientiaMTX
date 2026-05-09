@@ -40,5 +40,43 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin', function (\App\Models\User $user) {
             return (bool) $user->is_admin;
         });
+
+        // Listen to Auth Events under ENS Guidelines
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Login::class,
+            function ($event) {
+                \App\Models\SecurityLog::log(
+                    'auth.login',
+                    "Inicio de sesión correcto para el usuario: {$event->user->email}",
+                    $event->user->id
+                );
+            }
+        );
+
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Failed::class,
+            function ($event) {
+                $email = $event->credentials['email'] ?? 'desconocido';
+                \App\Models\SecurityLog::log(
+                    'auth.failed',
+                    "Intento fallido de inicio de sesión para el correo: {$email}",
+                    null,
+                    ['credentials' => array_keys($event->credentials)] // Do not log actual passwords!
+                );
+            }
+        );
+
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Logout::class,
+            function ($event) {
+                if ($event->user) {
+                    \App\Models\SecurityLog::log(
+                        'auth.logout',
+                        "Cierre de sesión para el usuario: {$event->user->email}",
+                        $event->user->id
+                    );
+                }
+            }
+        );
     }
 }

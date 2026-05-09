@@ -12,6 +12,18 @@ class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
 
+    protected static function booted()
+    {
+        static::saved(function ($setting) {
+            if (auth()->check()) {
+                \App\Models\SecurityLog::log(
+                    'setting.updated',
+                    "Configuración modificada: '{$setting->key}'"
+                );
+            }
+        });
+    }
+
     /**
      * Get a setting value by key.
      *

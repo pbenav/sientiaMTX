@@ -278,6 +278,11 @@ class TeamController extends Controller
 
         $team->members()->attach($user->id, ['role_id' => $validated['role_id']]);
 
+        \App\Models\SecurityLog::log(
+            'team.member_added',
+            "Usuario {$user->email} añadido al equipo {$team->name} con rol_id {$validated['role_id']}"
+        );
+
         return back()->with('success', __('teams.member_added'));
     }
 
@@ -298,6 +303,11 @@ class TeamController extends Controller
         }
 
         $team->members()->updateExistingPivot($user->id, ['role_id' => $validated['role_id']]);
+
+        \App\Models\SecurityLog::log(
+            'team.role_updated',
+            "Rol del usuario {$user->email} actualizado en el equipo {$team->name} a rol_id {$validated['role_id']}"
+        );
 
         return back()->with('success', __('teams.member_role_updated'));
     }
@@ -327,6 +337,11 @@ class TeamController extends Controller
         $this->authorize('manageMembers', $team);
 
         $team->members()->detach($user->id);
+
+        \App\Models\SecurityLog::log(
+            'team.member_removed',
+            "Usuario {$user->email} eliminado del equipo {$team->name}"
+        );
 
         return back()->with('success', __('teams.member_removed'));
     }
