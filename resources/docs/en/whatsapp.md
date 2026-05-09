@@ -4,11 +4,20 @@ SientiaMTX allows full bidirectional integration with WhatsApp through a bridge 
 
 ---
 
-## 📲 1. Device Linking (Users)
+## 📲 1. How does WhatsApp Participation Work? (User Flow)
 
-To start using WhatsApp, you must first link your personal (or business) account with the SientiaMTX server.
+In SientiaMTX, there are two ways to participate in WhatsApp chats depending on the account type and team settings:
 
-### Steps to connect:
+### 🟢 A. Standard Participation (No Setup Required)
+If your work team is already connected to a WhatsApp group (previously configured by the Administrator):
+* **You do not need to do anything to participate.** You do not need to scan any QR code or link your personal phone.
+* Simply open the team chat widget in SientiaMTX to read incoming messages and write responses in real-time.
+* The SientiaMTX server will channel all your messages through the team's primary WhatsApp account in a completely transparent way.
+
+### 👑 B. Custom Configuration (Premium Accounts)
+If you have a **Premium account** and want to connect your own private or business WhatsApp number to integrate it with your tasks and independent teams, you must link your device directly:
+
+#### Steps to connect your Premium/Private account:
 1. In SientiaMTX, go to your **Profile → Chat Integrations**.
 2. Scroll down to the **WhatsApp Bridge** section.
 3. You will see a **QR Code** that generates automatically (real-time polling).

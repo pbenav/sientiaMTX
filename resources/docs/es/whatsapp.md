@@ -4,11 +4,20 @@ SientiaMTX permite una integración bidireccional completa con WhatsApp a travé
 
 ---
 
-## 📲 1. Vinculación del Dispositivo (Usuarios)
+## 📲 1. ¿Cómo funciona la participación en WhatsApp? (Flujo de Usuarios)
 
-Para empezar a usar WhatsApp, primero debes vincular tu cuenta personal (o una de empresa) con el servidor de SientiaMTX.
+En SientiaMTX existen dos formas de participar en los chats de WhatsApp según el tipo de cuenta y configuración del equipo:
 
-### Pasos para conectar:
+### 🟢 A. Participación Estándar (Sin configurar nada)
+Si tu equipo de trabajo ya está conectado a un grupo de WhatsApp (configurado previamente por el Administrador):
+* **No necesitas hacer nada para participar.** No tienes que escanear ningún código QR ni vincular tu teléfono personal.
+* Simplemente abre el widget del chat del equipo en SientiaMTX para leer los mensajes entrantes y escribir respuestas en tiempo real. 
+* El servidor de SientiaMTX canalizará todos tus mensajes a través de la cuenta principal de WhatsApp del equipo de forma totalmente transparente.
+
+### 👑 B. Configuración Personalizada (Cuentas Premium)
+Si dispones de una **cuenta Premium** y deseas conectar tu propio número de WhatsApp particular o de empresa para integrarlo con tus tareas y equipos independientes, sí deberás realizar la vinculación directa de tu dispositivo:
+
+#### Pasos para conectar tu cuenta Premium/Particular:
 1. En SientiaMTX, ve a tu **Perfil → Integraciones de Chat**.
 2. Desplázate hasta la sección **Puente de WhatsApp**.
 3. Verás un **Código QR** que se genera automáticamente (polling en tiempo real).
