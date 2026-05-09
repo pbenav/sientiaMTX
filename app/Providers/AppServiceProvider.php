@@ -6,6 +6,7 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -78,5 +79,19 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         );
+
+        // Define high-security password defaults under ENS guidelines
+        Password::defaults(function () {
+            $rule = Password::min(12)
+                ->mixedCase()
+                ->letters()
+                ->numbers()
+                ->symbols();
+
+            // Only perform uncompromised check in production or if database/env is ready
+            return app()->isProduction() 
+                ? $rule->uncompromised() 
+                : $rule;
+        });
     }
 }
