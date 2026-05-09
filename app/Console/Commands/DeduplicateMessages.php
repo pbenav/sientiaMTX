@@ -138,12 +138,18 @@ class DeduplicateMessages extends Command
                                 $chatId = $delete->team ? $delete->team->telegram_chat_id : null;
                                 if ($token && $chatId) {
                                     try {
-                                        Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
+                                        $response = Http::post("https://api.telegram.org/bot{$token}/deleteMessage", [
                                             'chat_id' => $chatId,
                                             'message_id' => $delete->telegram_message_id,
                                         ]);
-                                        $this->info("         -> Borrado clon duplicado en Telegram de forma remota.");
-                                    } catch (\Exception $e) {}
+                                        if ($response->successful()) {
+                                            $this->info("         -> Borrado clon duplicado en Telegram de forma remota.");
+                                        } else {
+                                            $this->warn("         -> No se pudo borrar remotamente de Telegram (Código: " . $response->status() . ")");
+                                        }
+                                    } catch (\Exception $e) {
+                                        $this->warn("         -> Error de conexión con Telegram: " . $e->getMessage());
+                                    }
                                 }
                             }
                             $this->info("         -> Registro duplicado borrado de la base de datos.");
@@ -269,11 +275,18 @@ class DeduplicateMessages extends Command
                             if ($delete->message_id && !str_starts_with($delete->message_id, 'sync_') && $delete->message_id !== $keep->message_id) {
                                 $session = $delete->team ? 'team_' . ($delete->team->slug ?: $delete->team->id) : 'default';
                                 try {
-                                    Http::post('http://localhost:3001/api/delete', [
+                                    $response = Http::post('http://localhost:3001/api/delete', [
                                         'session' => $session,
                                         'message_id' => $delete->message_id,
                                     ]);
-                                } catch (\Exception $e) {}
+                                    if ($response->successful()) {
+                                        $this->info("         -> Borrado clon duplicado en WhatsApp de forma remota.");
+                                    } else {
+                                        $this->warn("         -> No se pudo borrar remotamente de WhatsApp (Código: " . $response->status() . ")");
+                                    }
+                                } catch (\Exception $e) {
+                                    $this->warn("         -> Error de conexión con el servicio de WhatsApp: " . $e->getMessage());
+                                }
                             }
                             $this->info("         -> Registro duplicado borrado de la base de datos.");
                         }
