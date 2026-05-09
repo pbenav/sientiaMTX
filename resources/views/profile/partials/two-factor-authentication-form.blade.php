@@ -13,6 +13,7 @@
     qrImageUrl: '',
     method: 'totp',
     isEmailMethod: false,
+    modalErrorMsg: '',
 
     initEnable() {
         const self = this;
@@ -95,9 +96,7 @@
         const self = this;
         self.errorMsg = '';
         self.successMsg = '';
-        if (!confirm('¿Está seguro de que desea desactivar la autenticación en dos pasos? Su cuenta estará menos protegida.')) {
-            return;
-        }
+        self.modalErrorMsg = ''; // Resetear error del modal
 
         fetch('{{ route('profile.two-factor.disable') }}', {
             method: 'POST',
@@ -113,12 +112,13 @@
                 self.mfaEnabled = false;
                 self.password = '';
                 self.successMsg = 'La autenticación en dos pasos ha sido desactivada.';
+                self.$dispatch('close-modal', 'confirm-mfa-disable'); // Cerrar el modal al tener éxito
             } else {
-                self.errorMsg = data.message || 'Contraseña incorrecta.';
+                self.modalErrorMsg = data.message || 'Contraseña incorrecta.';
             }
         })
         .catch(() => {
-            self.errorMsg = 'Error al desactivar la autenticación.';
+            self.modalErrorMsg = 'Error al desactivar la autenticación.';
         });
     }
 }">
@@ -156,14 +156,10 @@
             </div>
         </div>
 
-        <div class="mt-4 max-w-xl">
-            <x-input-label for="disable_password" :value="__('Para desactivar, introduzca su contraseña actual:')" />
-            <div class="flex gap-4 mt-1">
-                <x-text-input id="disable_password" type="password" class="block w-full" x-model="password" placeholder="Contraseña actual" />
-                <button type="button" @click="disableMfa()" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                    {{ __('Desactivar') }}
-                </button>
-            </div>
+        <div class="mt-4 flex justify-start">
+            <x-danger-button type="button" x-on:click="$dispatch('open-modal', 'confirm-mfa-disable'); modalErrorMsg = '';">
+                {{ __('Desactivar Autenticación de Doble Factor') }}
+            </x-danger-button>
         </div>
     </div>
 
@@ -284,4 +280,39 @@
             </button>
         </div>
     </div>
+
+    <!-- Modal de Confirmación Premium para Desactivar MFA (Cumplimiento ENS y Diseño Elite) -->
+    <x-modal name="confirm-mfa-disable" focusable>
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 heading">
+                ⚠️ {{ __('¿Está completamente seguro?') }}
+            </h2>
+
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                {{ __('Al desactivar la Autenticación de Doble Factor (MFA), su cuenta dejará de cumplir con los estándares del Esquema Nacional de Seguridad (ENS) y quedará significativamente menos protegida contra accesos no autorizados.') }}
+            </p>
+
+            <!-- Contenedor de error específico del modal -->
+            <div x-show="modalErrorMsg" class="mt-4 p-3 text-xs text-red-800 rounded-lg bg-red-50 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800 flex items-center gap-2" role="alert" style="display: none;">
+                <span>❌</span> <span x-text="modalErrorMsg"></span>
+            </div>
+
+            <div class="mt-6">
+                <x-input-label for="mfa_disable_password" value="{{ __('Para continuar, introduzca su contraseña actual:') }}" />
+                <x-text-input id="mfa_disable_password" type="password" class="mt-1 block w-full sm:w-3/4" 
+                              x-model="password" placeholder="{{ __('Contraseña actual') }}" 
+                              @keydown.enter="disableMfa()" />
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <x-secondary-button x-on:click="$dispatch('close-modal', 'confirm-mfa-disable')">
+                    {{ __('Cancelar') }}
+                </x-secondary-button>
+
+                <x-danger-button @click="disableMfa()">
+                    {{ __('Sí, Desactivar MFA') }}
+                </x-danger-button>
+            </div>
+        </div>
+    </x-modal>
 </section>
