@@ -124,6 +124,32 @@ class TelegramWebhookController extends Controller
                 return response()->json(['status' => 'success']);
             }
 
+            // Deduplicación inteligente: si un mensaje fue creado mediante sincronización web/espejo
+            // tendrá un ID temporal del tipo 'sync_...' o nulo. Lo asociamos a este ID real de Telegram.
+            $syncedMessage = \App\Models\TelegramMessage::where('team_id', $team->id)
+                ->where(function ($q) {
+                    $q->whereNull('telegram_message_id')
+                      ->orWhere('telegram_message_id', 'like', 'sync_%');
+                })
+                ->where('created_at', '>=', now()->subSeconds(45))
+                ->get()
+                ->first(function ($msg) use ($text) {
+                    $cleanTextMsg = trim(strip_tags($msg->text));
+                    $cleanIncomingText = trim(strip_tags($text));
+                    return $cleanTextMsg === $cleanIncomingText 
+                        || str_contains($cleanIncomingText, $cleanTextMsg) 
+                        || str_contains($cleanTextMsg, $cleanIncomingText);
+                });
+
+            if ($syncedMessage) {
+                Log::info("Telegram Webhook Deduplicación: Asociando mensaje sync '{$syncedMessage->telegram_message_id}' al ID real '{$messageId}'");
+                $syncedMessage->update([
+                    'telegram_message_id' => $messageId,
+                    'is_from_web' => false
+                ]);
+                return response()->json(['status' => 'success']);
+            }
+
             if (!$existing) {
                 try {
                     $fileSize = 0;

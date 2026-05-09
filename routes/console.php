@@ -22,3 +22,7 @@ Schedule::command('gamification:regenerate-energy')->hourly();
 
 // Fresh Start: Garantiza mínimo 80% al empezar el día — cada hora (comprueba el horario del usuario)
 Schedule::command('gamification:fresh-start')->hourly();
+
+// Saneamiento de mensajes duplicados en WhatsApp y Telegram — cada 15 minutos
+Schedule::command('messages:deduplicate --apply')->everyFifteenMinutes();
+

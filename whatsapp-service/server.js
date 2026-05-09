@@ -486,6 +486,38 @@ app.post('/api/sync', async (req, res) => {
     }
 });
 
+// 5. Eliminar un mensaje de WhatsApp para todos (para mantener coherencia de borrado)
+app.post('/api/delete', async (req, res) => {
+    const sessionId = req.body.session || req.query.session || 'default';
+    const messageId = req.body.message_id;
+
+    if (!messageId) {
+        return res.status(400).json({ success: false, error: 'Se requiere el message_id.' });
+    }
+
+    const session = sessions[sessionId];
+    if (!session) {
+        return res.status(503).json({ success: false, error: 'La sesión solicitada no está activa o inicializada.' });
+    }
+
+    if (!session.ready) {
+        return res.status(503).json({ success: false, error: 'El cliente de WhatsApp no está conectado todavía.' });
+    }
+
+    try {
+        console.log(`[Delete Message] Intentando eliminar mensaje ${messageId} en sesión ${sessionId}...`);
+        const msg = await session.client.getMessageById(messageId);
+        if (msg) {
+            await msg.delete(true); // true = borrar para todos
+            return res.json({ success: true });
+        }
+        return res.status(404).json({ success: false, error: 'Mensaje no encontrado o ya eliminado.' });
+    } catch (error) {
+        console.error(`Error eliminando mensaje en la sesión ${sessionId}:`, error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Arrancamos el servidor Express
 app.listen(PORT, () => {
     console.log(`Servidor puente de WhatsApp MULTI-SESIÓN OPTIMIZADO corriendo en el puerto ${PORT}`);
