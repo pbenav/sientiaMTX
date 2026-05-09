@@ -328,9 +328,11 @@
                 <input type="hidden" name="tab" value="integrations">
                 
                 <!-- Interruptor Telegram -->
-                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
-                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Activar módulo Telegram</span>
-                    <div class="relative inline-flex items-center">
+                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm gap-3">
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight block">Activar módulo Telegram</span>
+                    </div>
+                    <div class="relative inline-flex items-center flex-shrink-0">
                         <input type="hidden" name="telegram" value="0">
                         <input type="checkbox" name="telegram" value="1" x-model="telegram" class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-sky-300 dark:peer-focus:ring-sky-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-sky-500"></div>
@@ -341,19 +343,19 @@
                 @php
                     $whatsappAllowed = $notifSettings['whatsapp_personal_allowed'] ?? false;
                 @endphp
-                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl transition-all shadow-sm {{ $whatsappAllowed ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-60 cursor-not-allowed' }}">
-                    <div class="flex flex-col">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Activar módulo WhatsApp</span>
+                <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl transition-all shadow-sm gap-3 {{ $whatsappAllowed ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-60 cursor-not-allowed' }}">
+                    <div class="flex-1 min-w-0 flex flex-col">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight">Activar módulo WhatsApp</span>
                             @if(!$whatsappAllowed)
-                                <span class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full shadow-sm">Premium</span>
+                                <span class="flex-shrink-0 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full shadow-sm">Premium</span>
                             @endif
                         </div>
                         @if(!$whatsappAllowed)
                             <span class="text-[8px] text-gray-400 mt-0.5">Requiere cuenta de empresa autorizada</span>
                         @endif
                     </div>
-                    <div class="relative inline-flex items-center">
+                    <div class="relative inline-flex items-center flex-shrink-0">
                         <input type="hidden" name="whatsapp" value="0">
                         <input type="checkbox" name="whatsapp" value="1" x-model="whatsapp" {{ !$whatsappAllowed ? 'disabled' : '' }} class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
@@ -361,10 +363,12 @@
                 </label>
 
                 <!-- Interruptor Sincronizar Canales -->
-                <label class="flex items-center justify-between p-4 border rounded-2xl transition-all shadow-sm"
+                <label class="flex items-center justify-between p-4 border rounded-2xl transition-all shadow-sm gap-3"
                        :class="(!telegram || !whatsapp) ? 'opacity-40 bg-gray-100/50 dark:bg-gray-800/20 border-gray-100 dark:border-gray-800 cursor-not-allowed pointer-events-none' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'">
-                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Sincronizar canales</span>
-                    <div class="relative inline-flex items-center">
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight block">Sincronizar canales</span>
+                    </div>
+                    <div class="relative inline-flex items-center flex-shrink-0">
                         <input type="hidden" name="sync_chats" value="0">
                         <input type="checkbox" name="sync_chats" value="1" x-model="sync_chats" :disabled="!telegram || !whatsapp" class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
