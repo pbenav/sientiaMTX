@@ -139,14 +139,23 @@
     }
 
     .markdown-content pre, .prose pre {
-        background: #0f172a;
-        color: #f8fafc;
-        padding: 1.5rem;
-        border-radius: 1.25rem;
+        background: #000000 !important;
+        color: #e2e8f0 !important;
+        padding: 1.25rem;
+        border-radius: 0.5rem;
         margin-bottom: 2rem;
         overflow-x: auto;
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        border: 1px solid #27272a;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    }
+
+    .markdown-content pre code, .prose pre code {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        font-family: inherit !important;
     }
 
     .markdown-content img, .prose img {
