@@ -55,8 +55,7 @@ class DeduplicateMessages extends Command
         $text = strip_tags($text);
         
         // Eliminar prefijos de autor como "💬 *[Pablo]:*" o similares
-        $text = preg_replace('/💬\s*\*\[.*?\]\*:\s*/u', '', $text);
-        $text = preg_replace('/💬\s*\*\[.*?\]\*\s*/u', '', $text);
+        $text = preg_replace('/💬\s*\*\[.*?\]:?\*/iu', '', $text);
         
         $text = mb_strtolower($text, 'UTF-8');
         
