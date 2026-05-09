@@ -43,7 +43,7 @@ class ChatMessageController extends Controller
                     'sender' => $msg->sender_id === $userId ? 'me' : 'them',
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
-                    'time' => $msg->created_at->timezone(auth()->user()->timezone ?? 'Europe/Madrid')->format('H:i'),
+                    'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
                 ];
             })
         ]);
@@ -73,7 +73,7 @@ class ChatMessageController extends Controller
                 'sender' => 'me',
                 'text' => $msg->message,
                 'call_room' => $msg->call_room,
-                'time' => $msg->created_at->timezone(auth()->user()->timezone ?? 'Europe/Madrid')->format('H:i'),
+                'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
             ]
         ]);
     }
@@ -105,7 +105,7 @@ class ChatMessageController extends Controller
                 'sender' => 'me',
                 'text' => $msg->message,
                 'call_room' => $msg->call_room,
-                'time' => $msg->created_at->timezone($sender->timezone ?? 'Europe/Madrid')->format('H:i'),
+                'time' => $msg->created_at->timezone($sender->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
             ]
         ]);
     }
@@ -132,7 +132,7 @@ class ChatMessageController extends Controller
                     'sender_photo' => $msg->sender->profile_photo_url,
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
-                    'time' => $msg->created_at->timezone(auth()->user()->timezone ?? 'Europe/Madrid')->format('H:i'),
+                    'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
                 ];
             })
         ]);

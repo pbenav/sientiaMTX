@@ -268,6 +268,9 @@ class SettingsController extends Controller
     /**
      * Update the mail settings in the .env file.
      */
+    /**
+     * Update the mail settings in the .env file.
+     */
     public function updateMailSettings(Request $request)
     {
         $data = $request->validate([
@@ -302,15 +305,17 @@ class SettingsController extends Controller
                 unset($data['quick_notes_audio_max_duration']);
             }
 
-            foreach ($data as $key => $value) {
-                $this->updateEnv($key, $value);
-            }
+            $updateExistingUsers = isset($data['update_existing_users']) || $request->has('update_existing_users');
+            unset($data['update_existing_users']);
+
+            // Update .env atomically in a single file-write operation
+            $this->updateEnvMultiple($data);
 
             // Clear config cache to apply changes
             Artisan::call('config:clear');
 
             // If requested, update all existing users (and teams if applicable) to the new values
-            if ($request->has('update_existing_users')) {
+            if ($updateExistingUsers) {
                 $updateData = [];
 
                 if (isset($data['DEFAULT_DISK_QUOTA'])) {
@@ -324,9 +329,6 @@ class SettingsController extends Controller
                 if (!empty($updateData)) {
                     \App\Models\User::query()->update($updateData);
                 }
-
-                // Note: Teams in sientiaMTX currently do not have disk_quota or timezone fields,
-                // so we explicitly update the user fields which are the relevant ones here.
             }
 
             return back()->with('success', __('notifications.config_saved'));
@@ -553,26 +555,40 @@ class SettingsController extends Controller
         return view('settings.security', compact('logs', 'search'));
     }
 
-    protected function updateEnv($key, $value)
+    protected function updateEnvMultiple(array $data)
     {
         $path = base_path('.env');
 
         if (File::exists($path)) {
             $content = File::get($path);
-            
-            // Check if key exists
-            if (preg_match("/^{$key}=/m", $content)) {
-                // Special handling for passwords or values with special chars: wrap in quotes if needed
+
+            foreach ($data as $key => $value) {
+                if (is_null($value)) {
+                    $value = 'null';
+                }
+
+                // Wrap in quotes if special characters exist
                 if (preg_match('/\s/m', $value) || str_contains($value, '#') || str_contains($value, '$')) {
                     $value = '"' . str_replace('"', '\"', $value) . '"';
                 }
-                
-                $content = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $content);
-            } else {
-                $content .= "\n{$key}={$value}";
+
+                // Check if key exists
+                if (preg_match("/^{$key}=/m", $content)) {
+                    // Use callback to bypass backreference issues in preg_replace
+                    $content = preg_replace_callback("/^{$key}=.*/m", function() use ($key, $value) {
+                        return "{$key}={$value}";
+                    }, $content);
+                } else {
+                    $content .= "\n{$key}={$value}";
+                }
             }
 
             File::put($path, $content);
         }
+    }
+
+    protected function updateEnv($key, $value)
+    {
+        $this->updateEnvMultiple([$key => $value]);
     }
 }
