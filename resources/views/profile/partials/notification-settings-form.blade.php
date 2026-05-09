@@ -65,14 +65,27 @@
                 </div>
 
                 <!-- WhatsApp -->
-                <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 group hover:shadow-sm transition-all shadow-inner">
+                @php
+                    $whatsappAllowed = $settings['whatsapp_personal_allowed'] ?? false;
+                @endphp
+                <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 group transition-all shadow-inner {{ !$whatsappAllowed ? 'opacity-60' : 'hover:shadow-sm' }}">
                     <div class="flex-1">
-                        <label for="whatsapp" class="block text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
-                            {{ __('notifications.channel_whatsapp') }}
-                        </label>
+                        <div class="flex items-center gap-2">
+                            <label for="whatsapp" class="block text-sm font-bold text-gray-700 dark:text-gray-300 {{ $whatsappAllowed ? 'cursor-pointer' : 'cursor-not-allowed' }}">
+                                {{ __('notifications.channel_whatsapp') }}
+                            </label>
+                            @if(!$whatsappAllowed)
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full shadow-sm" title="{{ __('Requerido plan Premium o autorización del administrador') }}">Premium</span>
+                            @endif
+                        </div>
+                        @if(!$whatsappAllowed)
+                            <p class="text-[9px] text-gray-400 mt-0.5">{{ __('Contacta con el administrador para activar tu canal privado') }}</p>
+                        @endif
                     </div>
-                    <input type="checkbox" id="whatsapp" name="whatsapp" value="1" {{ ($settings['whatsapp'] ?? false) ? 'checked' : '' }}
-                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+                    <input type="checkbox" id="whatsapp" name="whatsapp" value="1" 
+                        {{ ($settings['whatsapp'] ?? false) && $whatsappAllowed ? 'checked' : '' }}
+                        {{ !$whatsappAllowed ? 'disabled' : '' }}
+                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all {{ $whatsappAllowed ? 'cursor-pointer' : 'cursor-not-allowed opacity-50 bg-gray-200 dark:bg-gray-800' }}">
                 </div>
             </div>
         </div>

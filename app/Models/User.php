@@ -116,6 +116,11 @@ class User extends Authenticatable implements HasLocalePreference
             return false;
         }
 
+        // Safeguard: Individual WhatsApp notifications strictly require authorized permission
+        if ($channel === 'whatsapp' && !($settings['whatsapp_personal_allowed'] ?? false)) {
+            return false;
+        }
+
         // Quiet hours check
         if ($this->isInQuietHours()) {
             return false;
