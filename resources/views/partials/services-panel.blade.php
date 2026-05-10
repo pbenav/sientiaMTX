@@ -311,7 +311,6 @@
                         button.title = 'Reportado con éxito';
                         
                         // 3. CRITICAL UX: Re-enable the OPPOSITE button so the user can immediately correct if needed!
-                        const otherForm = this.parentNode.querySelector(`.report-service-form:not([action="${this.action}"] input[value="${type === 'up' ? 'down' : 'up'}"])`);
                         // Simpler: just find the other button in the same grid parent
                         const siblingForms = this.closest('.grid').querySelectorAll('.report-service-form');
                         siblingForms.forEach(siblingForm => {
