@@ -1413,6 +1413,7 @@
 
                 Alpine.data('sientiaChat', () => ({
                     open: false,
+                    chatSoundsEnabled: {{ (auth()->check() && (auth()->user()->notification_settings['chat_sounds'] ?? true)) ? 'true' : 'false' }},
                     member: { id: null, name: '', photo: '', status: '', email: '', telegram: '' },
                     message: '',
                     messages: [],
@@ -1672,6 +1673,11 @@
                                     } else if (!lastMsg.call_room && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
                                         this.lastNotifiedMsgId = lastMsg.id;
                                         
+                                        // Play sound notification if enabled
+                                        if (this.chatSoundsEnabled) {
+                                            this.playMessageChime();
+                                        }
+
                                         // Beautiful non-intrusive SweetAlert2 Toast for new text messages
                                         const Toast = Swal.mixin({
                                             toast: true,
@@ -1710,6 +1716,10 @@
                                 } else {
                                     Alpine.store('chatStore').setUnread([]);
                                 }
+                            })
+                            .catch(e => {
+                                // Silently fail or debug log, preventing user-facing crashes
+                                console.warn('Chat check skip (probably network/session):', e);
                             });
                     },
                     
@@ -1747,6 +1757,27 @@
                             this.titleInterval = null;
                         }
                         document.title = this.originalTitle;
+                    },
+
+                    playMessageChime() {
+                        try {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const notes = [660, 880]; // Double ping chime
+                            notes.forEach((freq, idx) => {
+                                setTimeout(() => {
+                                    const osc = audioCtx.createOscillator();
+                                    const gain = audioCtx.createGain();
+                                    osc.connect(gain);
+                                    gain.connect(audioCtx.destination);
+                                    osc.type = 'sine';
+                                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                                    osc.start();
+                                    osc.stop(audioCtx.currentTime + 0.4);
+                                }, idx * 120);
+                            });
+                        } catch (e) { console.warn('Message chime failed', e); }
                     },
                     
                     clearChat() {

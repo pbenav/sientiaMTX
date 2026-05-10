@@ -125,6 +125,20 @@
                                         {{ __('Si se desactiva, los usuarios no podrán configurar el doble factor en su perfil ni se les solicitará código al iniciar sesión. Es opcional bajo las directrices del Esquema Nacional de Seguridad (ENS).') }}
                                     </p>
                                 </div>
+
+                                <div class="md:col-span-3 flex flex-col gap-1 border-t border-gray-100 dark:border-gray-800 pt-4">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="require_approval" name="require_approval" value="1"
+                                            {{ $limits['require_approval'] ? 'checked' : '' }}
+                                            class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-rose-600 shadow-sm focus:ring-rose-500">
+                                        <label for="require_approval" class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                            🎟️ {{ __('Requerir Aprobación / Pase VIP para Nuevos Usuarios') }}
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
+                                        {{ __('Si se activa, los usuarios que se registren se enviarán a una lista de espera hasta que un administrador los apruebe o canjeen un código VIP. Desactívalo para permitir acceso libre a toda la plataforma.') }}
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="flex items-center justify-end pt-6 border-t border-gray-100 dark:border-gray-800">

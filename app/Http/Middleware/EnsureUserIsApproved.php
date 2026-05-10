@@ -13,7 +13,9 @@ class EnsureUserIsApproved
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && !auth()->user()->is_approved) {
+        $requireApproval = \App\Models\Setting::get('require_approval', true);
+
+        if ($requireApproval && auth()->check() && !auth()->user()->is_approved) {
             $allowedRoutes = [
                 'waitlist',
                 'logout',

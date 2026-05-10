@@ -174,6 +174,8 @@ class User extends Authenticatable implements HasLocalePreference
             'notify_before_hours' => 2,
             'morning_summary' => true,
             'morning_summary_time' => '08:00',
+            'morning_summary_weekends' => true,
+            'chat_sounds' => true,
             'timezone' => $siteTimezone,
         ];
     }

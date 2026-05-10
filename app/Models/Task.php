@@ -100,6 +100,7 @@ class Task extends Model
         'metadata',
         'observations',
         'parent_id',
+        'expediente_id',
         'is_template',
         'assigned_user_id',
         'progress_percentage',
@@ -217,6 +218,11 @@ class Task extends Model
     }
 
     // Relationship: A task can have a parent task (dependency)
+    public function expediente(): BelongsTo
+    {
+        return $this->belongsTo(Expediente::class);
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Task::class, 'parent_id');

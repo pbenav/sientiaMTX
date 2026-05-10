@@ -116,6 +116,8 @@ class ProfileController extends Controller
             'telegram_chat_id' => 'string|nullable|max:255',
             'morning_summary' => 'boolean',
             'morning_summary_time' => 'string|nullable|regex:/^[0-9]{2}:[0-9]{2}$/',
+            'morning_summary_weekends' => 'boolean',
+            'chat_sounds' => 'boolean',
         ]);
 
         $user = $request->user();
@@ -134,6 +136,8 @@ class ProfileController extends Controller
             'notify_before_hours' => (int) ($validated['notify_before_hours'] ?? 2),
             'morning_summary' => $request->boolean('morning_summary'),
             'morning_summary_time' => $validated['morning_summary_time'] ?? '08:00',
+            'morning_summary_weekends' => $request->boolean('morning_summary_weekends'),
+            'chat_sounds' => $request->boolean('chat_sounds'),
         ]);
 
         if ($request->has('telegram_chat_id')) {

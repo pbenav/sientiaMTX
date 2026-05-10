@@ -14,7 +14,8 @@
     @endphp
 
     <form method="post" action="{{ route('profile.notifications.update') }}" class="mt-6 space-y-6" x-data="{ 
-        telegramEnabled: {{ ($settings['telegram'] ?? false) ? 'true' : 'false' }}
+        telegramEnabled: {{ ($settings['telegram'] ?? false) ? 'true' : 'false' }},
+        morningSummaryEnabled: {{ ($settings['morning_summary'] ?? false) ? 'true' : 'false' }}
     }">
         @csrf
         @method('patch')
@@ -121,6 +122,24 @@
             </div>
         </div>
 
+        <!-- Chat Alerts & Sounds -->
+        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">
+                        💬 {{ __('Alertas de Mensajería') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Reproducir sonido al recibir un nuevo mensaje de la Red Activa.') }}
+                    </p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="chat_sounds" name="chat_sounds" value="1" {{ ($settings['chat_sounds'] ?? true) ? 'checked' : '' }}
+                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+                </div>
+            </div>
+        </div>
+
         <!-- Morning Summary -->
         <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between">
@@ -134,14 +153,22 @@
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="morning_summary" name="morning_summary" value="1" {{ ($settings['morning_summary'] ?? false) ? 'checked' : '' }}
+                        x-model="morningSummaryEnabled"
                         class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
                 </div>
             </div>
 
-            <div x-show="document.getElementById('morning_summary').checked" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div x-show="morningSummaryEnabled" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
                 <div>
                     <x-input-label for="morning_summary_time" :value="__('Hora de envío')" />
                     <x-text-input id="morning_summary_time" name="morning_summary_time" type="time" class="mt-1 block w-full" :value="old('morning_summary_time', $settings['morning_summary_time'] ?? '08:00')" />
+                    <p class="text-[10px] text-gray-500 mt-1">{{ __('Elige la hora de la mañana a la que prefieres recibir tu resumen diario.') }}</p>
+                </div>
+                
+                <div class="flex items-center gap-3 h-full pt-6">
+                    <input type="checkbox" id="morning_summary_weekends" name="morning_summary_weekends" value="1" {{ ($settings['morning_summary_weekends'] ?? true) ? 'checked' : '' }}
+                        class="w-5 h-5 rounded-md border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm cursor-pointer">
+                    <x-input-label for="morning_summary_weekends" :value="__('Incluir Fines de Semana')" class="cursor-pointer" />
                 </div>
             </div>
         </div>

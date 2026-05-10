@@ -47,7 +47,7 @@ class RegisteredUserController extends Controller
         ]);
 
         $isFirstUser = User::count() === 0;
-        $isApproved = $isFirstUser;
+        $isApproved = $isFirstUser || !\App\Models\Setting::get('require_approval', true);
 
         // Comprobar código de invitación de forma flexible
         $invitation = null;

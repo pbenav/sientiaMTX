@@ -128,8 +128,8 @@ class ChatMessageController extends Controller
                 return [
                     'id' => $msg->id,
                     'sender_id' => $msg->sender_id,
-                    'sender_name' => $msg->sender->name,
-                    'sender_photo' => $msg->sender->profile_photo_url,
+                    'sender_name' => $msg->sender?->name ?? 'Usuario Desconocido',
+                    'sender_photo' => $msg->sender?->profile_photo_url ?? asset('img/default-avatar.png'),
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
                     'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),

@@ -142,6 +142,21 @@
                         </button>
                     @endif
 
+                    <!-- Fusionar Tarea -->
+                    @can('delete', $task)
+                    <button type="button" onclick="mergeTaskModal()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                        <div class="shrink-0 p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">Fusionar con Tarea</span>
+                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Fusionar esta tarea y sus datos en otra existente</span>
+                        </div>
+                    </button>
+                    @endcan
+
                     <!-- Exportar JSON -->
                     <div class="flex flex-col border-t border-gray-50 dark:border-gray-800 pt-1 mt-1">
                         <div class="px-5 py-2 text-[9px] font-black uppercase tracking-widest text-gray-400">Portabilidad (Outbound)</div>
@@ -331,6 +346,85 @@
                                     Swal.fire('Error', data.message, 'error');
                                 }
                             });
+                        }
+                    });
+                }
+
+                function mergeTaskModal() {
+                    Swal.fire({
+                        title: 'Cargando tareas...',
+                        didOpen: () => {
+                            Swal.showLoading();
+                            fetch("{{ route('teams.tasks.search', $team) }}?query=&exclude_id={{ $task->id }}")
+                                .then(res => res.json())
+                                .then(data => {
+                                    let options = '<option value="" disabled selected>Elige la tarea de destino...</option>';
+                                    data.forEach(t => {
+                                        options += `<option value="${t.id}">${t.text}</option>`;
+                                    });
+                                    
+                                    Swal.fire({
+                                        title: '¿Fusionar esta tarea?',
+                                        html: `
+                                            <div class="text-left mt-4 text-gray-600 dark:text-gray-300 text-xs mb-4 border-b border-gray-100 dark:border-gray-800 pb-4 leading-relaxed">
+                                                ⚠️ Esta acción moverá todos los <strong>comentarios, registros de tiempo, archivos y subtareas</strong> a la tarea que elijas a continuación. Esta tarea actual (#{{ $task->id }}) será <strong>eliminada permanentemente</strong> tras completarse.
+                                            </div>
+                                            <div class="text-left">
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Tarea Destino (Recientes)</label>
+                                                <select id="merge-target-select" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500/20 outline-none">
+                                                    ${options}
+                                                </select>
+                                                <p class="mt-4 text-[9px] text-gray-500 font-medium italic">* Solo se muestran las 25 tareas más recientes. La fusión es irreversible.</p>
+                                            </div>
+                                        `,
+                                        showCancelButton: true,
+                                        confirmButtonText: '🔥 Fusionar y Borrar',
+                                        cancelButtonText: 'Cancelar',
+                                        confirmButtonColor: '#e11d48',
+                                        background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                                        color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                                        customClass: {
+                                            popup: 'rounded-[2rem]',
+                                            confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
+                                            cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
+                                        },
+                                        preConfirm: () => {
+                                            const val = document.getElementById('merge-target-select').value;
+                                            if (!val) {
+                                                Swal.showValidationMessage('Por favor selecciona una tarea válida.');
+                                            }
+                                            return val;
+                                        }
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            Swal.fire({
+                                                title: 'Fusionando...',
+                                                text: 'Estamos migrando toda la información...',
+                                                allowOutsideClick: false,
+                                                didOpen: () => { Swal.showLoading(); }
+                                            });
+
+                                            const form = document.createElement('form');
+                                            form.method = 'POST';
+                                            form.action = "{{ route('teams.tasks.merge', [$team, $task]) }}";
+                                            
+                                            const token = document.createElement('input');
+                                            token.type = 'hidden';
+                                            token.name = '_token';
+                                            token.value = '{{ csrf_token() }}';
+                                            form.appendChild(token);
+
+                                            const target = document.createElement('input');
+                                            target.type = 'hidden';
+                                            target.name = 'target_task_id';
+                                            target.value = result.value;
+                                            form.appendChild(target);
+
+                                            document.body.appendChild(form);
+                                            form.submit();
+                                        }
+                                    });
+                                });
                         }
                     });
                 }

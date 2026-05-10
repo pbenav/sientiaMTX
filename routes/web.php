@@ -121,6 +121,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
     // Tasks routes
+    Route::get('/teams/{team}/tasks/search', [TaskController::class, 'search'])->name('teams.tasks.search');
+    Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');
+    Route::get('/teams/{team}/tasks/quadrant', [TaskController::class, 'byQuadrant'])->name('tasks.byQuadrant');
+    Route::post('/teams/{team}/tasks/import-json', [TaskController::class, 'importJson'])->name('teams.tasks.import-json');
     Route::patch('/teams/{team}/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('teams.tasks.bulk-update');
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
     Route::post('/teams/{team}/tasks/purge-trash', [TaskController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
@@ -170,9 +174,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
     Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
     Route::get('/teams/{team}/tasks/{task}/export-json', [TaskController::class, 'exportJson'])->name('teams.tasks.export-json');
-    Route::post('/teams/{team}/tasks/import-json', [TaskController::class, 'importJson'])->name('teams.tasks.import-json');
-    Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');
-    Route::get('/teams/{team}/tasks/quadrant', [TaskController::class, 'byQuadrant'])->name('tasks.byQuadrant');
+    Route::post('/teams/{team}/tasks/{task}/merge', [TaskController::class, 'merge'])->name('teams.tasks.merge');
     Route::get('/teams/{team}/gantt', [\App\Http\Controllers\GanttController::class, 'index'])->name('teams.gantt');
     Route::get('/teams/{team}/gantt/data', [\App\Http\Controllers\GanttController::class, 'data'])->name('teams.gantt.data');
     

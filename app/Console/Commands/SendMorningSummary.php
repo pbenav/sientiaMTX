@@ -54,6 +54,14 @@ class SendMorningSummary extends Command
                     continue;
                 }
 
+                // Check weekend logic (ignore if testing specific user)
+                if (!$targetUserId && empty($settings['morning_summary_weekends'])) {
+                    $userTz = $user->timezone ?? config('app.timezone', 'UTC');
+                    if (now($userTz)->isWeekend()) {
+                        continue;
+                    }
+                }
+
                 // Check time (ignore if testing specific user)
                 if (!$targetUserId) {
                     $preferredTime = $settings['morning_summary_time'] ?? '08:00';

@@ -351,7 +351,13 @@
                         const dd = String(d.getDate()).padStart(2, '0');
                         return `${yy}-${mm}-${dd}`;
                     };
-                    const payload = { scheduled_date: fmt(start), due_date: fmt(end) };
+                    // Compensa la asimetría de DST de Frappe Gantt (v0.6.1).
+                    // El cálculo inverso de horas puede resultar en 23:00 del día anterior.
+                    // Adelantamos 2h el inicio para recuperar el día objetivo de forma robusta.
+                    const correctedStart = new Date(start);
+                    correctedStart.setHours(correctedStart.getHours() + 2);
+
+                    const payload = { scheduled_date: fmt(correctedStart), due_date: fmt(end) };
                     fetch(`{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}/move`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify(payload)

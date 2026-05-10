@@ -120,6 +120,7 @@ class TimeLogController extends Controller
             'is_working' => (bool)$user->activeWorkdayLog(),
             'active_task_id' => $activeTaskLog?->task_id,
             'active_task_title' => $activeTaskLog?->task?->title,
+            'active_task_team_id' => $activeTaskLog?->task?->team_id,
             'workday_elapsed' => $user->activeWorkdayLog() ? $user->activeWorkdayLog()->start_at->diffInSeconds(now()) : 0,
             'task_elapsed' => $activeTaskLog ? $activeTaskLog->start_at->diffInSeconds(now()) : 0,
         ]);
