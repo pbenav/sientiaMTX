@@ -15,17 +15,23 @@ class CustomGenerateRegistrationOptions extends BaseGenerateRegistrationOptions
      */
     public function authenticatorSelection(): AuthenticatorSelectionCriteria
     {
-        // Forces option to use external/mobile devices, which enables QR code flow on restricted OSes
-        $crossPlatform = AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
+        $ua = strtolower(request()->userAgent() ?? '');
+        $isMobile = str_contains($ua, 'android') || str_contains($ua, 'iphone') || str_contains($ua, 'ipad');
+
+        // If we are ON a mobile device, allow the browser to prefer its internal sensor (Platform).
+        // Otherwise (on Desktop Linux/Windows), keep forcing Cross-Platform to encourage the QR/Mobile hybrid flow.
+        $attachment = $isMobile 
+            ? AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_NO_PREFERENCE 
+            : AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
 
         // Require a discoverable credential
         $residentKey = AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED;
 
-        // Downgrade from REQUIRED to PREFERRED to prevent strict OS blockers on Linux without native PIN management
+        // Keep as PREFERRED to prevent strict OS blockers on systems without deep hardware management
         $userVerification = AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED;
 
         return AuthenticatorSelectionCriteria::create(
-            authenticatorAttachment: $crossPlatform,
+            authenticatorAttachment: $attachment,
             userVerification: $userVerification,
             residentKey: $residentKey,
         );
