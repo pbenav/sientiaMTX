@@ -121,8 +121,18 @@
                         } catch (e) {
                             console.error('Passkey login fail:', e);
                             // Ignore cancel errors, alert others
-                            if (e.name !== 'UserCancelledError' && e.name !== 'NotAllowedError') {
-                                alert('No se pudo iniciar sesión con Passkey. Inténtalo usando tu email/contraseña habitual.');
+                            if (e.name !== 'UserCancelledError' && e.name !== 'NotAllowedError' && !(e.message && e.message.includes('cancelled'))) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '¡Vaya!',
+                                    text: 'No se pudo iniciar sesión con Passkey. Inténtalo usando tu email y contraseña habitual.',
+                                    footer: '<code class="text-[10px] text-gray-400">' + (e.name || 'Error') + ': ' + (e.message || 'Sesión fallida') + '</code>',
+                                    confirmButtonColor: '#4F46E5',
+                                    customClass: {
+                                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                                        confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-xs focus:ring-0',
+                                    }
+                                });
                             }
                         } finally {
                             this.loading = false;
