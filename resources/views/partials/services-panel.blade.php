@@ -307,10 +307,25 @@
                             badge.classList.remove('hidden');
                         }
                         
-                        // Keep it disabled since they just reported it
+                        // 2. Provide visual Success feedback on button
                         button.title = 'Reportado con éxito';
                         
-                        // 2. Update dynamic visual elements for service status across the card
+                        // 3. CRITICAL UX: Re-enable the OPPOSITE button so the user can immediately correct if needed!
+                        const otherForm = this.parentNode.querySelector(`.report-service-form:not([action="${this.action}"] input[value="${type === 'up' ? 'down' : 'up'}"])`);
+                        // Simpler: just find the other button in the same grid parent
+                        const siblingForms = this.closest('.grid').querySelectorAll('.report-service-form');
+                        siblingForms.forEach(siblingForm => {
+                            if (siblingForm !== this) {
+                                const siblingBtn = siblingForm.querySelector('button[type="submit"]');
+                                if (siblingBtn) {
+                                    siblingBtn.disabled = false;
+                                    siblingBtn.classList.remove('opacity-50', 'opacity-30');
+                                    siblingBtn.title = '';
+                                }
+                            }
+                        });
+
+                        // 4. Update dynamic visual elements for service status across the card
                         const card = this.closest('.service-card');
                         const serviceId = card.getAttribute('data-id');
                         

@@ -45,7 +45,7 @@ class ServiceController extends Controller
         $exists = ServiceReport::where('service_id', $service->id)
             ->where('user_id', auth()->id())
             ->where('type', $validated['type'])
-            ->where('created_at', '>=', now()->subHour())
+            ->where('created_at', '>=', now()->subMinutes(5))
             ->exists();
 
         if ($exists) {
@@ -74,7 +74,7 @@ class ServiceController extends Controller
 
             $recentUp = ServiceReport::where('service_id', $service->id)
                 ->where('type', 'up')
-                ->where('created_at', '>=', now()->subHour())
+                ->where('created_at', '>=', now()->subMinutes(15))
                 ->count();
 
             $oldStatus = $service->status;

@@ -64,7 +64,7 @@ class Service extends Model
     {
         $query = $this->reports()
             ->where('user_id', $userId)
-            ->where('created_at', '>=', now()->subHour());
+            ->where('created_at', '>=', now()->subMinutes(5));
 
         if ($type) {
             $query->where('type', $type);
@@ -77,7 +77,7 @@ class Service extends Model
     {
         return $this->reports()
             ->where('type', 'up')
-            ->where('created_at', '>=', now()->subHour())
+            ->where('created_at', '>=', now()->subMinutes(15))
             ->count();
     }
 
