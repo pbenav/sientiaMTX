@@ -35,17 +35,30 @@ class PurgeGhostSessionsCommand extends Command
         $cutoff = $now->copy()->subMinutes($threshold);
 
         $this->info("--- Starting Session Purge Utility ---");
+
+        // CRITICAL INTERVENTION: If specific user is specified, destroy ALL their sessions first!
+        if ($userId) {
+            $this->warn("ATTENTION: Executing NUCLEAR PURGE for user ID: {$userId}");
+            DB::table('sessions')->where('user_id', $userId)->delete();
+            $target = User::find($userId);
+            if ($target) {
+                $target->remember_token = null;
+                $target->last_activity_at = null;
+                $target->last_login_at = null;
+                $target->save();
+                $this->error("TARGET TERMINATED: All sessions wiped and RememberMe revoked for {$target->name}.");
+            }
+            $this->info("--- Purge Complete ---");
+            return Command::SUCCESS;
+        }
+
         $this->info("Threshold: {$threshold} minutes (Cutoff: {$cutoff->toDateTimeString()})");
 
         // 1. Purge physical entries from database sessions table
-        $sessionQuery = DB::table('sessions')
-            ->where('last_activity', '<', $cutoff->getTimestamp());
-
-        if ($userId) {
-            $sessionQuery->where('user_id', $userId);
-        }
-
-        $deletedSessions = $sessionQuery->delete();
+        $deletedSessions = DB::table('sessions')
+            ->where('last_activity', '<', $cutoff->getTimestamp())
+            ->delete();
+            
         $this->comment("Successfully cleared {$deletedSessions} expired session records from database.");
 
         // 2. Reset Users activity timestamps if they don't have active sessions
@@ -78,9 +91,11 @@ class PurgeGhostSessionsCommand extends Command
                 if ($user->last_activity_at !== null || $user->last_login_at !== null) {
                     $user->last_activity_at = null;
                     $user->last_login_at = null;
+                    // NUCLEAR FIX: Invalidate their Remember Token so their browser stops auto-logging them back in!
+                    $user->remember_token = null; 
                     $user->save();
                     $resetCount++;
-                    $this->line("<info>[CLEARED]</info> User ID: {$user->id} ({$user->name}) - Force set to Offline.");
+                    $this->line("<info>[CLEARED]</info> User ID: {$user->id} ({$user->name}) - Force set to Offline & Revoked RememberMe token.");
                 }
             }
         }
