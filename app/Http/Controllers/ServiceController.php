@@ -80,27 +80,18 @@ class ServiceController extends Controller
             $oldStatus = $service->status;
 
             if ($validated['type'] === 'down') {
-                if ($recentDown >= 3) {
+                // Immediate fall: human report dictates the state immediately
+                if ($recentDown >= 1) {
                     $service->update(['status' => 'down', 'status_updated_at' => now()]);
                     
-                    // Gamification: First reporter gets a bonus if verified
-                    if ($recentDown === 3) {
-                        $firstReport = ServiceReport::where('service_id', $service->id)
-                            ->where('type', 'down')
-                            ->where('created_at', '>=', now()->subHours(2))
-                            ->orderBy('created_at', 'asc')
-                            ->first();
-                        
-                        if ($firstReport && $firstReport->user) {
-                            $this->awardServiceReportingPoints(
-                                $firstReport->user, 
-                                $team->id, 
-                                __('Bono Centinela: Reporte de caída verificado en :service', ['service' => $service->name])
-                            );
-                        }
+                    // Gamification logic...
+                    if ($recentDown === 1) {
+                        $this->awardServiceReportingPoints(
+                            auth()->user(), 
+                            $team->id, 
+                            __('Bono Centinela: Reporte de caída verificado en :service', ['service' => $service->name])
+                        );
                     }
-                } else {
-                    $service->update(['status' => 'unstable', 'status_updated_at' => now()]);
                 }
             } else {
                 // Immediate recovery: if anyone says 'up', we promote back to active immediately

@@ -341,15 +341,45 @@
                                 label.className = `text-[8px] font-black uppercase tracking-wider text-${data.new_status_color}-600`;
                             }
                         }
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: data.message || 'Reportado con éxito',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
+                            });
+                        }
                     } else {
-                        // If the response is error, inform and re-enable
-                        alert(data.message || 'Error al enviar el reporte.');
+                        // If the response is error, inform using standard Swals
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: data.message || 'Límite de tiempo',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
+                            });
+                        } else {
+                            alert(data.message || 'Límite de tiempo.');
+                        }
                         button.disabled = false;
                         button.classList.remove('opacity-50');
                     }
                 })
                 .catch(error => {
                     console.error('Sentinel error:', error);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Error de conexión', toast: true, position: 'top-end', timer: 3000 });
+                    }
                     button.disabled = false;
                     button.classList.remove('opacity-50');
                 });
