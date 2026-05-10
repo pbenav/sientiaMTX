@@ -110,14 +110,14 @@ class CheckSentinelServicesCommand extends Command
         ]);
 
         // DECISION ENGINE: 
-        // We follow logic: 
-        // - If Robot confirms failure, downgrade state.
-        // - If Robot confirms recovery, respect if humans haven't vetoed it.
-        $recentHumanKo = $service->reports()
+        // We evaluate the LATEST active human report to see current sentiment.
+        $latestHumanReport = $service->reports()
             ->whereNotNull('user_id')
-            ->where('type', 'down')
             ->where('created_at', '>=', now()->subHour())
-            ->exists();
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $recentHumanKo = ($latestHumanReport && $latestHumanReport->type === 'down');
 
         $newServiceStatus = $status;
 
