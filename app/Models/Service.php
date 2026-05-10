@@ -91,21 +91,30 @@ class Service extends Model
 
     public function getIncidentHistory(): array
     {
-        $tenDaysAgo = now()->subDays(10)->startOfDay();
+        // Fetch reports from the last 3 hours (180 minutes)
+        $threeHoursAgo = now()->subHours(3);
+        
+        // Get IDs of all report categories during this window to identify down periods
         $reports = $this->reports()
             ->where('type', 'down')
-            ->where('created_at', '>=', $tenDaysAgo)
-            ->selectRaw('DATE(created_at) as date, count(*) as count')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->pluck('count', 'date');
+            ->where('created_at', '>=', $threeHoursAgo)
+            ->get();
 
         $history = [];
-        for ($i = 9; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $history[] = $reports->get($date, 0);
+        $slices = 18; // 18 slices of 10 minutes = 3 hours
+        
+        for ($i = $slices - 1; $i >= 0; $i--) {
+            $sliceStart = now()->subMinutes(($i + 1) * 10);
+            $sliceEnd = now()->subMinutes($i * 10);
+            
+            // Check if there was ANY 'down' event recorded during this 10 minute slice
+            $count = $reports->filter(function($report) use ($sliceStart, $sliceEnd) {
+                return $report->created_at >= $sliceStart && $report->created_at < $sliceEnd;
+            })->count();
+
+            $history[] = $count;
         }
+        
         return $history;
     }
 }

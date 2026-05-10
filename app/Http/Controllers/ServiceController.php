@@ -103,8 +103,8 @@ class ServiceController extends Controller
                     $service->update(['status' => 'unstable', 'status_updated_at' => now()]);
                 }
             } else {
-                // To restore status to 'up', we need at least 2 confirmations of 'up'
-                if ($recentUp >= 2) {
+                // Immediate recovery: if anyone says 'up', we promote back to active immediately
+                if ($recentUp >= 1) {
                     $service->update(['status' => 'up', 'status_updated_at' => now()]);
                 }
             }

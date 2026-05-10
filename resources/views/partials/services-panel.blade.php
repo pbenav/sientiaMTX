@@ -69,8 +69,8 @@
                                 @endforeach
                             </div>
                             <div class="flex justify-between mt-1 text-[6px] font-black uppercase tracking-tighter text-gray-300 dark:text-gray-600 border-t border-gray-50 dark:border-gray-800/30 pt-0.5">
-                                <span>-10d</span>
-                                <span>Hoy</span>
+                                <span>Hace 3h</span>
+                                <span>Ahora</span>
                             </div>
                         </div>
 
