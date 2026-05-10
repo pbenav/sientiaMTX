@@ -35,8 +35,8 @@
                                 <div class="pointer-events-none">
                                     <h5 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $service->name }}</h5>
                                     <div class="flex items-center gap-1.5 mt-0.5">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-{{ $color }}-500 {{ $service->status === 'down' ? 'animate-ping' : '' }}"></div>
-                                        <span class="text-[8px] font-black uppercase tracking-wider text-{{ $color }}-600">{{ $service->getStatusLabel() }}</span>
+                                        <div data-service-dot="{{ $service->id }}" class="w-1.5 h-1.5 rounded-full bg-{{ $color }}-500 {{ $service->status === 'down' ? 'animate-ping' : '' }}"></div>
+                                        <span data-service-label="{{ $service->id }}" class="text-[8px] font-black uppercase tracking-wider text-{{ $color }}-600">{{ $service->getStatusLabel() }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -82,7 +82,7 @@
                         @endphp
                         <div class="grid grid-cols-2 gap-2 mt-auto pt-2 border-t border-gray-100/50 dark:border-gray-800/50 z-10 relative">
                             <!-- Botón OK (Recuperación/Activo) -->
-                            <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1">
+                            <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1 report-service-form">
                                 @csrf
                                 <input type="hidden" name="type" value="up">
                                 <button type="submit" 
@@ -91,15 +91,16 @@
                                     <div class="flex items-center justify-center gap-1.5">
                                         <div class="w-1.5 h-1.5 rounded-full {{ $service->status === 'up' ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600' }} {{ !$userReportedUp ? 'group-hover:animate-pulse' : '' }}"></div>
                                         <span>OK</span>
-                                        @if($upCount > 0)
-                                            <span class="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[7px] font-black rounded-md">{{ $upCount }}</span>
-                                        @endif
+                                        
+                                        <span class="report-count px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[7px] font-black rounded-md {{ $upCount > 0 ? '' : 'hidden' }}">
+                                            {{ $upCount }}
+                                        </span>
                                     </div>
                                 </button>
                             </form>
 
                             <!-- Botón KO (Caída/Inestable) -->
-                            <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1">
+                            <form action="{{ route('teams.services.report', [$team, $service]) }}" method="POST" class="flex-1 report-service-form">
                                 @csrf
                                 <input type="hidden" name="type" value="down">
                                 <button type="submit" 
@@ -108,9 +109,10 @@
                                     <div class="flex items-center justify-center gap-1.5">
                                         <div class="w-1.5 h-1.5 rounded-full {{ $service->status !== 'up' ? 'bg-red-500 animate-ping' : 'bg-gray-300 dark:bg-gray-600' }} {{ !$userReportedDown ? 'group-hover:animate-bounce' : '' }}"></div>
                                         <span>KO</span>
-                                        @if($downCount > 0)
-                                            <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[7px] font-black rounded-md">{{ $downCount }}</span>
-                                        @endif
+                                        
+                                        <span class="report-count px-1.5 py-0.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[7px] font-black rounded-md {{ $downCount > 0 ? '' : 'hidden' }}">
+                                            {{ $downCount }}
+                                        </span>
                                     </div>
                                 </button>
                             </form>
@@ -268,6 +270,76 @@
                 }
             });
         }
+        
+        // Handle async report forms for OK/KO buttons
+        document.querySelectorAll('.report-service-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const button = this.querySelector('button[type="submit"]');
+                if (!button || button.disabled) return;
+                
+                // Disable interaction immediately to prevent double click
+                button.disabled = true;
+                button.classList.add('opacity-50');
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        // 1. Update the count badge inside the current form
+                        const badge = this.querySelector('.report-count');
+                        if (badge) {
+                            let count = parseInt(badge.innerText.trim()) || 0;
+                            count++;
+                            badge.innerText = count;
+                            badge.classList.remove('hidden');
+                        }
+                        
+                        // Keep it disabled since they just reported it
+                        button.title = 'Reportado con éxito';
+                        
+                        // 2. Update dynamic visual elements for service status across the card
+                        const card = this.closest('.service-card');
+                        const serviceId = card.getAttribute('data-id');
+                        
+                        if (data.new_status_color && data.new_status_label) {
+                            const dot = document.querySelector(`[data-service-dot="${serviceId}"]`);
+                            const label = document.querySelector(`[data-service-label="${serviceId}"]`);
+                            
+                            if (dot) {
+                                dot.className = `w-1.5 h-1.5 rounded-full bg-${data.new_status_color}-500 ${data.new_status === 'down' ? 'animate-ping' : ''}`;
+                            }
+                            if (label) {
+                                label.innerText = data.new_status_label;
+                                label.className = `text-[8px] font-black uppercase tracking-wider text-${data.new_status_color}-600`;
+                            }
+                        }
+                    } else {
+                        // If the response is error, inform and re-enable
+                        alert(data.message || 'Error al enviar el reporte.');
+                        button.disabled = false;
+                        button.classList.remove('opacity-50');
+                    }
+                })
+                .catch(error => {
+                    console.error('Sentinel error:', error);
+                    button.disabled = false;
+                    button.classList.remove('opacity-50');
+                });
+            });
+        });
     });
 </script>
 @endpush

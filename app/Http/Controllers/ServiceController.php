@@ -49,6 +49,12 @@ class ServiceController extends Controller
             ->exists();
 
         if ($exists) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Ya has reportado este estado recientemente.')
+                ], 422);
+            }
             return back()->with('error', __('Ya has reportado este estado recientemente.'));
         }
 
@@ -103,6 +109,16 @@ class ServiceController extends Controller
                 }
             }
         });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('Estado reportado.¡Gracias por colaborar!'),
+                'new_status' => $service->fresh()->status,
+                'new_status_label' => $service->fresh()->getStatusLabel(),
+                'new_status_color' => $service->fresh()->getStatusColor()
+            ]);
+        }
 
         return back()->with('success', __('Estado reportado.¡Gracias por colaborar!'));
     }
