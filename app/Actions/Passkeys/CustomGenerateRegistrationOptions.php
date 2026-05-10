@@ -15,14 +15,9 @@ class CustomGenerateRegistrationOptions extends BaseGenerateRegistrationOptions
      */
     public function authenticatorSelection(): AuthenticatorSelectionCriteria
     {
-        $ua = strtolower(request()->userAgent() ?? '');
-        $isMobile = str_contains($ua, 'android') || str_contains($ua, 'iphone') || str_contains($ua, 'ipad');
-
-        // If we are ON a mobile device, allow the browser to prefer its internal sensor (Platform).
-        // Otherwise (on Desktop Linux/Windows), keep forcing Cross-Platform to encourage the QR/Mobile hybrid flow.
-        $attachment = $isMobile 
-            ? AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_NO_PREFERENCE 
-            : AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
+        // Set to NO_PREFERENCE universally to allow the browser to decide.
+        // This presents BOTH internal sensors (if available) AND external devices/QR flow seamlessly.
+        $attachment = AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_NO_PREFERENCE;
 
         // Require a discoverable credential
         $residentKey = AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED;
