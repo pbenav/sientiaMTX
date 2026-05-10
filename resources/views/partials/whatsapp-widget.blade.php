@@ -472,7 +472,11 @@
                     }, 1000);
                 } catch (err) {
                     console.error("No se pudo acceder al micrófono:", err);
-                    alert("Error: No se pudo acceder al micrófono.");
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: '¡Atención!', text: 'No se pudo acceder al micrófono. Comprueba los permisos del navegador.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+                    } else {
+                        alert("Error: No se pudo acceder al micrófono.");
+                    }
                 }
             },
 
@@ -803,7 +807,24 @@
                 }
             },
             async deleteMsg(msgId) {
-                if (!confirm('¿Borrar mensaje? Se eliminará de WhatsApp y del historial.')) return;
+                let confirmDel = false;
+                if (typeof Swal !== 'undefined') {
+                    const result = await Swal.fire({
+                        title: '¿Borrar mensaje?',
+                        text: "Se eliminará de WhatsApp y del historial.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    });
+                    confirmDel = result.isConfirmed;
+                } else {
+                    confirmDel = confirm('¿Borrar mensaje? Se eliminará de WhatsApp y del historial.');
+                }
+
+                if (!confirmDel) return;
                 
                 try {
                     const url = '{{ route("whatsapp.chat.delete", ":id") }}'.replace(':id', msgId);
@@ -819,7 +840,12 @@
                         this.messages = this.messages.filter(m => m.id !== msgId);
                     } else {
                         const error = await response.json();
-                        alert('Error: ' + (error.error || 'No se pudo borrar'));
+                        const msg = error.error || 'No se pudo borrar';
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'error', title: 'Error', text: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        } else {
+                            alert('Error: ' + msg);
+                        }
                     }
                 } catch (e) {
                     console.error('Error deleting message:', e);
@@ -853,7 +879,12 @@
                         }
                     } else {
                         const err = await response.json();
-                        alert('Aviso: ' + (err.error || 'No se pudo sincronizar en este momento.'));
+                        const text = err.error || 'No se pudo sincronizar en este momento.';
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'warning', title: 'Aviso', text: text, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+                        } else {
+                            alert('Aviso: ' + text);
+                        }
                     }
                 } catch (e) {
                     console.error('Error sincronizando:', e);

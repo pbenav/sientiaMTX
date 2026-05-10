@@ -359,12 +359,22 @@
                     if (data.success) {
                         location.reload();
                     } else {
-                        alert('Error del servidor: ' + (data.message || 'Desconocido'));
+                        const msg = 'Error del servidor: ' + (data.message || 'Desconocido');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'error', title: 'Error', text: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        } else {
+                            alert(msg);
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
-                    alert('Error de conexión al guardar el color: ' + error.message);
+                    const err = 'Error de conexión al guardar el color: ' + error.message;
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Error de conexión', text: err, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+                    } else {
+                        alert(err);
+                    }
                 });
             }
 

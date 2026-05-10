@@ -162,8 +162,15 @@
                     });
 
                     const data = await response.json();
-                    if (data.success) window.location.reload();
-                    else alert('Error: ' + data.message);
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'error', title: 'Error', text: data.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    }
                 } catch (error) {
                     console.error('Error attaching from Drive:', error);
                 } finally {

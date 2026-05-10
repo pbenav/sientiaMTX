@@ -496,7 +496,11 @@
                         .catch(error => {
                             console.error('Error uploading image', error);
                             textarea.value = textarea.value.replace(placeholder, '');
-                            alert('Hubo un error al subir la imagen.');
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al subir la imagen.', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                            } else {
+                                alert('Hubo un error al subir la imagen.');
+                            }
                         });
                     }
                 }

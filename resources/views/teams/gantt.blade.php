@@ -173,15 +173,37 @@
                         <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-1">Onda de Resiliencia Colectiva</h4>
                         <span class="text-lg font-black text-gray-900 dark:text-white">{{ now()->translatedFormat('F Y') }}</span>
                     </div>
+                    
+                    @php
+                        $maxWeight = collect($actionHeat)->max('weight') ?: 1;
+                        $maxUserWeight = collect($actionHeat)->max('user_weight') ?: 1;
+                        $scaleFactor = ($maxUserWeight > 0 && $maxWeight > $maxUserWeight) ? round($maxWeight / $maxUserWeight, 1) : 1;
+                    @endphp
+                    
+                    <div class="flex flex-wrap items-center gap-4 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
+                        <div class="flex items-center gap-2 px-2 py-1 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5">
+                            <div class="w-2 h-2 rounded bg-violet-500/30 border border-violet-500/50"></div>
+                            <span class="text-gray-500 dark:text-gray-400">Equipo</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-2 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100/50 dark:border-emerald-900/20">
+                            <div class="w-2 h-0.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.8)]"></div>
+                            <span class="text-emerald-600 dark:text-emerald-400">Propia</span>
+                            <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black {{ $scaleFactor > 1.2 ? 'inline-block' : 'hidden' }}">
+                                x{{$scaleFactor}}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 @php
                     $maxWeight = collect($actionHeat)->max('weight') ?: 1;
+                    $maxUserWeight = collect($actionHeat)->max('user_weight') ?: 1;
                     $width = 100 / ($daysInMonth - 1);
                     $pts = []; $upts = [];
                     foreach($actionHeat as $day => $d) {
                         $h = ($d['weight'] / $maxWeight) * 100;
-                        $uh = ($d['user_weight'] / $maxWeight) * 100;
+                        // Normalización optimizada (90% max height for aesthetics)
+                        $uh = ($d['user_weight'] / $maxUserWeight) * 90;
                         $pts[] = ($day-1)*$width . ',' . (100-$h);
                         $upts[] = ($day-1)*$width . ',' . (100-$uh);
                     }
@@ -426,11 +448,17 @@
                 };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
+            const uMax = Math.max(...heat.filter(h=>h).map(h=>h.uweight)) || 1;
+            
             const wFact = 100/(days-1);
             let pts = [], upts = [];
             for(let i=1; i<=days; i++) {
-                const x = (i-1)*wFact, h = (heat[i].weight/max)*100, uh = (heat[i].uweight/max)*100;
-                pts.push(`${x},${100-h}`); upts.push(`${x},${100-uh}`);
+                const x = (i-1)*wFact;
+                const h = (heat[i].weight/max)*100;
+                const uh = (heat[i].uweight/uMax)*90;
+                
+                pts.push(`${x},${100-h}`); 
+                upts.push(`${x},${100-uh}`);
 
                 // Real-time update of tooltip pillars
                 const pillar = document.querySelector(`.wave-pillar[data-day="${i}"]`);
@@ -453,6 +481,20 @@
             }
             document.getElementById('wave-team-path')?.setAttribute('d', `M0,100 L${pts.join(' L')} L100,100 Z`);
             document.getElementById('wave-user-line')?.setAttribute('d', `M${upts.join(' L')}`);
+            
+            // Dynamically update dynamic scaling visual indicator in legend
+            const scaleBadge = document.getElementById('user-scale-badge');
+            if (scaleBadge) {
+                const factor = (uMax > 0 && max > uMax) ? (max / uMax).toFixed(1) : 1;
+                if (factor > 1.2) {
+                    scaleBadge.innerText = 'x' + factor;
+                    scaleBadge.classList.remove('hidden');
+                    scaleBadge.classList.add('inline-block');
+                } else {
+                    scaleBadge.classList.add('hidden');
+                    scaleBadge.classList.remove('inline-block');
+                }
+            }
         }
 
         function setupCustomInteractions() {

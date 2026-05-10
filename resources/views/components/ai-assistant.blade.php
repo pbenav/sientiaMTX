@@ -732,7 +732,11 @@
 
                 } catch (err) {
                     console.error('Error al acceder al micrófono:', err);
-                    alert('No se pudo acceder al micrófono. Por favor, revisa los permisos.');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Micrófono bloqueado', text: 'No se pudo acceder al micrófono. Por favor, revisa los permisos en tu navegador.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+                    } else {
+                        alert('No se pudo acceder al micrófono. Por favor, revisa los permisos.');
+                    }
                 }
             },
 
@@ -1208,7 +1212,11 @@
                         this.messages.push({ role: 'system', content: '🔄 ' + data.message });
                         setTimeout(() => window.location.reload(), 1000);
                     } else {
-                        alert(data.message);
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'error', title: 'Error', text: data.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        } else {
+                            alert(data.message);
+                        }
                     }
                 } catch (e) {
                     console.error('Error undoing action:', e);
