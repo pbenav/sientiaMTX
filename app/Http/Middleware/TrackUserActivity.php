@@ -15,6 +15,12 @@ class TrackUserActivity
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
+            // CRITICAL FIX: Do not update user activity on AJAX heartbeat polls
+            // otherwise background polling prevents the user from ever timing out naturally!
+            if ($request->ajax() || $request->isXmlHttpRequest() || str_contains($request->path(), 'active-network')) {
+                return $next($request);
+            }
+
             $user = Auth::user();
             $now = now();
 
