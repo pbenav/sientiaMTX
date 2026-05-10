@@ -185,6 +185,7 @@
                             icon: 'error',
                             title: 'Oops...',
                             text: 'No pudimos registrar la llave. Inténtalo de nuevo.',
+                            footer: '<code class="text-[10px] text-gray-400">' + errName + ': ' + errMsg + '</code>',
                             customClass: { popup: 'rounded-[2.5rem]' }
                         });
                     } finally {
