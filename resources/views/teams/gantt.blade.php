@@ -324,7 +324,7 @@
         }
 
         function refreshGanttDisplay() {
-            const display = allTasks.filter(t => !t.dependencies || !collapsedTasks.has(t.dependencies))
+            const display = allTasks.filter(t => !t.parent_id || !collapsedTasks.has(t.parent_id))
                 .map(t => {
                     const obj = {...t};
                     if(obj.has_children) obj.name = (collapsedTasks.has(obj.id)?'▶ ':'▼ ') + obj.name.replace(/^[▶▼] /,'');
@@ -345,7 +345,12 @@
                         refreshGanttDisplay();
                         return;
                     }
-                    const fmt = (d) => d.toISOString().split('T')[0];
+                    const fmt = (d) => {
+                        const yy = d.getFullYear();
+                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                        const dd = String(d.getDate()).padStart(2, '0');
+                        return `${yy}-${mm}-${dd}`;
+                    };
                     const payload = { scheduled_date: fmt(start), due_date: fmt(end) };
                     fetch(`{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}/move`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
