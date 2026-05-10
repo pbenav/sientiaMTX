@@ -68,7 +68,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <div class="flex justify-between mt-1 text-[6px] font-black uppercase tracking-tighter text-gray-300 dark:text-gray-600 border-t border-gray-50 dark:border-gray-800/30 pt-0.5">
+                            <div class="flex justify-between mt-1 text-[8px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800/50 pt-1">
                                 <span>Hace 3h</span>
                                 <span>Ahora</span>
                             </div>
