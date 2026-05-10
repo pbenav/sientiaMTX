@@ -7,7 +7,7 @@
         $lastActivity = $m->last_login_at ? $m->last_activity_at : null;
         $isOnline = $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(15));
         
-        if ($isWorking || $isOnline) {
+        if (($isWorking || $isOnline) && $m->last_login_at) {
             $activeMembers->push($m);
         } else {
             $inactiveMembers->push($m);
@@ -21,10 +21,10 @@
             $isWorking = $member->last_login_at ? $member->isWorking() : false;
             $lastActivity = $member->last_login_at ? $member->last_activity_at : null;
             
-            // Check online state (active in last 15 minutes)
+            // Check online state (active in last 15 minutes) - REQUIRES lastActivity
             $isOnline = $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(15));
             
-            // Check sleeping state (active between 15 and 60 minutes ago)
+            // Check sleeping state (active between 15 and 60 minutes ago) - REQUIRES lastActivity
             $isSleeping = !$isOnline && $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(60));
             
             $hasLocation = !empty($member->location_lat);
@@ -37,9 +37,9 @@
             // Format times nicely
             $timezone = auth()->user()->timezone ?? 'Europe/Madrid';
             $loginTime = $member->last_login_at ? $member->last_login_at->timezone($timezone)->format('H:i') : 'Desconocido';
-            $activityDiff = $lastActivity ? $lastActivity->diffForHumans(null, true) : 'ahora';
+            $activityDiff = $lastActivity ? $lastActivity->diffForHumans(null, true) : 'N/A';
 
-            if ($isWorking) {
+            if ($isWorking && $member->last_login_at) {
                 $statusColorClass = 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]';
                 $gradientClass = 'from-rose-400 to-red-600 animate-pulse-subtle';
                 $textClass = 'text-rose-600 font-bold';

@@ -562,6 +562,9 @@ class TeamController extends Controller
 
         if ($request->wantsJson() || $request->input('json')) {
             $heatmapData = $members->whereNotNull('location_lat')->map(function($u) {
+                $isRealWorking = $u->last_login_at ? $u->isWorking() : false;
+                $isRealActive = $u->last_login_at && $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15));
+
                 return [
                     'lat' => (float)$u->location_lat,
                     'lng' => (float)$u->location_lng,
@@ -569,8 +572,8 @@ class TeamController extends Controller
                     'name' => $u->name,
                     'area' => $u->working_area_name,
                     'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
-                    'is_working' => $u->last_login_at ? $u->isWorking() : false,
-                    'is_active' => $u->last_login_at && $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
+                    'is_working' => $isRealWorking,
+                    'is_active' => $isRealActive
                 ];
             })->values();
 
