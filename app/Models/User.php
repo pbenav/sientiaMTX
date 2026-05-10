@@ -16,10 +16,13 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 
-class User extends Authenticatable implements HasLocalePreference
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
+
+class User extends Authenticatable implements HasLocalePreference, PasskeyUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasPushSubscriptions;
+    use HasFactory, Notifiable, HasPushSubscriptions, PasskeyAuthenticatable;
 
     /**
      * The attributes that are mass assignable.

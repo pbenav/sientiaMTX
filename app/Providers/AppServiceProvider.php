@@ -16,6 +16,16 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(\App\Contracts\AiAssistantInterface::class, \App\Services\Ai\GeminiService::class);
+
+        // Override Laravel Passkeys configuration generation to support Linux/Mobile QR hybrid flow
+        $this->app->bind(
+            \Laravel\Passkeys\Actions\GenerateRegistrationOptions::class,
+            \App\Actions\Passkeys\CustomGenerateRegistrationOptions::class
+        );
+        $this->app->bind(
+            \Laravel\Passkeys\Actions\GenerateVerificationOptions::class,
+            \App\Actions\Passkeys\CustomGenerateVerificationOptions::class
+        );
     }
 
     /**

@@ -28,6 +28,8 @@
     allPrefs: {{ $prefs->toJson() }},
     apiKey: '',
     aiModel: '',
+    moodTrackingEnabled: false,
+    smartMatchingOptIn: false,
     openSelector: false,
     availableModels: [],
     loadingModels: false,
@@ -42,6 +44,8 @@
         const p = this.allPrefs[this.context || 'global'] || {};
         this.apiKey = p.api_key || '';
         this.aiModel = p.ai_model || '';
+        this.moodTrackingEnabled = !!p.mood_tracking_enabled;
+        this.smartMatchingOptIn = !!p.smart_matching_opt_in;
         this.fetchModels();
     },
 
@@ -277,11 +281,11 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4 border-t border-gray-50 dark:border-gray-800">
                     <div class="flex gap-6">
                         <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="allPrefs[context || 'global']?.mood_tracking_enabled" class="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
+                            <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="moodTrackingEnabled" class="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
                             <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="allPrefs[context || 'global']?.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
+                            <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="smartMatchingOptIn" class="w-5 h-5 rounded-lg border-none bg-gray-100 dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
                             <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
