@@ -55,7 +55,8 @@ class SendMorningSummary extends Command
                 }
 
                 // Check weekend logic (ignore if testing specific user)
-                if (!$targetUserId && empty($settings['morning_summary_weekends'])) {
+                $includeWeekends = $settings['morning_summary_weekends'] ?? true;
+                if (!$targetUserId && !$includeWeekends) {
                     $userTz = $user->timezone ?? config('app.timezone', 'UTC');
                     if (now($userTz)->isWeekend()) {
                         continue;

@@ -19,6 +19,9 @@ class AppLayout extends Component
      */
     public function render(): View
     {
+        if (request()->query('embed')) {
+            return view('layouts.embed');
+        }
         return view('layouts.app');
     }
 }

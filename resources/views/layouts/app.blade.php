@@ -1237,6 +1237,7 @@
     @endif
     
     @auth
+        <x-task-quick-view-modal />
         <x-quick-notes />
         
         <!-- Widget de Comunicación Premium en Vivo Global (Sientia Direct & Videollamadas) -->

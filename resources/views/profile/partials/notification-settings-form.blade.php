@@ -158,7 +158,7 @@
                 </div>
             </div>
 
-            <div x-show="morningSummaryEnabled" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
+            <div :class="morningSummaryEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale-[0.5]'" class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
                 <div>
                     <x-input-label for="morning_summary_time" :value="__('Hora de envío')" />
                     <x-text-input id="morning_summary_time" name="morning_summary_time" type="time" class="mt-1 block w-full" :value="old('morning_summary_time', $settings['morning_summary_time'] ?? '08:00')" />

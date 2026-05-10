@@ -119,7 +119,7 @@
                 },
                 
                 async registerNew() {
-                    if (!this.isSupported) return;
+                    if (!this.isSupported || this.loading) return;
                     
                     const { value: keyName } = await Swal.fire({
                         title: '🛡️ Nueva Llave de Acceso',
@@ -160,17 +160,33 @@
                     } catch (e) {
                         console.error('Passkey registration error:', e);
                         
-                        // The library throws standard error names when cancelled
-                        if (e.name === 'UserCancelledError' || e.name === 'NotAllowedError') {
-                            // User cancelled OS popup, do nothing invasive
-                        } else {
+                        const errName = e.name || '';
+                        const errMsg = e.message || '';
+                        
+                        // 1. Check for cancellation (silently ignore)
+                        if (errName === 'UserCancelledError' || errName === 'NotAllowedError' || errMsg.includes('cancelled')) {
+                            // User cancelled, do nothing.
+                            return;
+                        } 
+                        
+                        // 2. Check if already exists (User-friendly warning)
+                        if (errName === 'PasskeyExistsError' || errMsg.includes('already registered')) {
                             Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: 'No pudimos registrar la llave. Inténtalo de nuevo.',
+                                icon: 'warning',
+                                title: 'Dispositivo ya registrado',
+                                text: 'Esta llave de acceso ya está vinculada a tu cuenta.',
                                 customClass: { popup: 'rounded-[2.5rem]' }
                             });
+                            return;
                         }
+
+                        // 3. Generic fallback
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'No pudimos registrar la llave. Inténtalo de nuevo.',
+                            customClass: { popup: 'rounded-[2.5rem]' }
+                        });
                     } finally {
                         this.loading = false;
                     }
