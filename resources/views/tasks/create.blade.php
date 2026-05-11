@@ -97,7 +97,7 @@
                     </div>
 
                     <!-- Primary: Expediente (Pre-eminent) -->
-                    <div class="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl p-4 shadow-sm border-l-4 border-l-violet-500">
+                    <div>
                         <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
                             {{ __('Expediente Vinculado') }}
                         </label>
@@ -908,6 +908,7 @@
                     allowEmptyOption: true,
                     render: {
                         option: function(data, escape) {
+                            if (!data.value) return '<div class="text-gray-400 italic py-1 px-2 text-sm">' + escape(data.text) + '</div>';
                             const p = data.text.split('—');
                             const code = p[0].trim();
                             const title = p.length > 1 ? p.slice(1).join('—').trim() : code;
@@ -917,6 +918,7 @@
                             '</div>';
                         },
                         item: function(data, escape) {
+                            if (!data.value) return '<div class="text-gray-500 font-bold text-sm">' + escape(data.text) + '</div>';
                             const p = data.text.split('—');
                             const code = p[0].trim();
                             const title = p.length > 1 ? p.slice(1).join('—').trim() : code;
