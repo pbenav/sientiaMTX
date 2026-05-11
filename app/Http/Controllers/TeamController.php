@@ -554,7 +554,8 @@ class TeamController extends Controller
                             ->from('time_logs')
                             ->whereColumn('time_logs.user_id', 'users.id')
                             ->whereIn('type', ['workday', 'task'])
-                            ->whereNull('end_at');
+                            ->whereNull('end_at')
+                            ->where('start_at', '>=', now()->startOfDay());
                       });
             })
             ->orderBy('name')
