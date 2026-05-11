@@ -221,6 +221,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/users/{user}/edit', [\App\Http\Controllers\SettingsController::class, 'editUser'])->name('settings.users.edit');
         Route::put('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'updateUser'])->name('settings.users.update');
         Route::delete('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'destroyUser'])->name('settings.users.destroy');
+        Route::post('/settings/users/{user}/force-logout', [\App\Http\Controllers\SettingsController::class, 'forceLogoutUser'])->name('settings.users.force-logout');
         Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\SettingsController::class, 'acceptUserInvitation'])->name('settings.users.accept-invitation');
         Route::post('/settings/users/{user}/approve', [\App\Http\Controllers\SettingsController::class, 'approveUser'])->name('settings.users.approve');
         

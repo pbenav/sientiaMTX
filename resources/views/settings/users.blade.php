@@ -106,6 +106,7 @@
                                         </a>
                                     </th>
                                 @endforeach
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Sesión & IP') }}</th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
@@ -160,8 +161,46 @@
                                         @endif
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            @php
+                                                $activeSessions = $user->sessions->filter(function($s) {
+                                                    return $s->last_activity > now()->subMinutes(15)->getTimestamp();
+                                                });
+                                                $hasActive = $activeSessions->isNotEmpty();
+                                                $uniqueIps = $user->sessions->pluck('ip_address')->unique()->implode(', ');
+                                            @endphp
+
+                                            @if($hasActive)
+                                                <div class="relative flex h-2.5 w-2.5">
+                                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                                </div>
+                                                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ __('Online') }}</span>
+                                                <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400" title="{{ $uniqueIps ?: 'Sin IP detectada' }}">{{ $user->last_ip ?: 'N/A' }}</span>
+                                            @else
+                                                <span class="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                                                <span class="text-xs text-gray-400">{{ __('Offline') }}</span>
+                                                @if($user->last_ip)
+                                                    <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500/70 dark:text-gray-500/70" title="Última conocida">{{ $user->last_ip }}</span>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="flex items-center justify-end gap-2">
+                                        
+                                        @if($user->sessions->count() > 0 && $user->id !== auth()->id())
+                                            <form action="{{ route('settings.users.force-logout', $user) }}" method="POST" class="inline" onsubmit="return confirm('¿Cerrar todas las sesiones de {{ $user->name }}?');">
+                                                @csrf
+                                                <button type="submit" class="group relative flex items-center justify-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90" title="Forzar Cierre de Sesión">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @endif
+
                                         @if (!$user->is_approved)
                                             <form action="{{ route('settings.users.approve', $user) }}" method="POST">
                                                 @csrf
@@ -177,11 +216,11 @@
                                                 <button type="button" 
                                                     onclick="confirmToggle({{ $user->id }}, '{{ $user->is_admin ? __('Remove administrator privileges from :name?', ['name' => $user->name]) : __('Grant administrator privileges to :name?', ['name' => $user->name]) }}')"
                                                     class="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all {{ $user->is_admin ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20' }}">
-                                                    {{ $user->is_admin ? __('Revoke Admin') : __('Make Admin') }}
+                                                    {{ $user->is_admin ? __('Revoke') : __('Make Admin') }}
                                                 </button>
                                             </form>
                                         @else
-                                            <span class="text-xs text-gray-400 italic">{{ __('Current User') }}</span>
+                                            <span class="text-xs text-gray-400 italic">{{ __('You') }}</span>
                                         @endif
                                         </div>
                                     </td>

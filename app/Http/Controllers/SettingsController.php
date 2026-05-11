@@ -80,7 +80,7 @@ class SettingsController extends Controller
      */
     public function users(Request $request)
     {
-        $query = User::withCount('invitations');
+        $query = User::withCount('invitations')->with('sessions');
 
         // Sorting
         $sort = $request->get('sort', 'name');
@@ -248,6 +248,28 @@ class SettingsController extends Controller
         $user->delete();
 
         return redirect()->route('settings.users')->with('success', __('User deleted successfully.'));
+    }
+
+    /**
+     * Forcefully log out ALL sessions for a specific user.
+     */
+    public function forceLogoutUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', __('Use the standard logout mechanism for your own session.'));
+        }
+
+        $user->sessions()->delete();
+
+        \App\Models\SecurityLog::create([
+            'user_id' => auth()->id(),
+            'event' => 'admin.user.force_logout',
+            'description' => "Admin requested force logout of user ID: {$user->id} ({$user->email}). All sessions purged.",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return back()->with('success', __("Successfully terminated all active sessions for :name.", ['name' => $user->name]));
     }
 
     /**

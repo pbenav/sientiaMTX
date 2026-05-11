@@ -235,6 +235,11 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         return $this->hasMany(TeamInvitation::class, 'email', 'email');
     }
 
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(Session::class);
+    }
+
     /**
      * Get the user's preferred locale.
      */
