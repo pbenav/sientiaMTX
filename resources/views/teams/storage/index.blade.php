@@ -45,7 +45,7 @@
                                 // Formatear cuota para mostrar
                                 $quotaGB = round($team->disk_quota / 1024 / 1024 / 1024, 1);
                                 $percentage = $team->disk_usage_percentage;
-                                $barColor = $percentage > 90 ? 'from-rose-500 to-red-600' : ($percentage > 70 ? 'from-amber-500 to-orange-600' : 'from-blue-500 via-indigo-500 to-purple-500');
+                                $barColor = $percentage > 90 ? 'from-rose-500 to-red-600' : ($percentage > 70 ? 'from-amber-500 to-orange-600' : 'from-blue-500 via-violet-500 to-purple-500');
                             @endphp
 
                             <div class="flex items-baseline gap-2 mb-6">
@@ -68,7 +68,7 @@
                     </div>
 
                     <!-- Desglose por carpetas -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                         <!-- Telegram -->
                         <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 shadow-xl border border-gray-100 dark:border-gray-700 relative group transition-all hover:scale-[1.02]">
                             <div class="flex items-center justify-between mb-6">
@@ -94,10 +94,10 @@
                         <!-- Tareas -->
                         <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 shadow-xl border border-gray-100 dark:border-gray-700 relative group transition-all hover:scale-[1.02]">
                             <div class="flex items-center justify-between mb-6">
-                                <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500 shadow-inner">
+                                <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shadow-inner">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </div>
-                                <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Tareas</span>
+                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Tareas</span>
                             </div>
                             <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Tareas</h4>
                             <p class="text-sm text-gray-500 mb-6">Adjuntos locales en tareas</p>
@@ -135,8 +135,30 @@
                             </div>
                         </div>
 
+                        <!-- Expedientes -->
+                        <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 shadow-xl border border-gray-100 dark:border-gray-700 relative group transition-all hover:scale-[1.02]">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shadow-inner">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                                </div>
+                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Expedientes</span>
+                            </div>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Expedientes</h4>
+                            <p class="text-sm text-gray-500 mb-6">Adjuntos locales en expedientes</p>
+                            <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
+                                <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
+                                    <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['expedientes']['count'] }}</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
+                                </div>
+                                <div class="text-center flex-1">
+                                    <span class="block text-lg font-black text-blue-500">{{ $stats['expedientes']['readable_size'] }}</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Google Drive -->
-                        <div class="md:col-span-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2.5rem] p-6 shadow-sm border border-blue-100 dark:border-blue-900/20 relative group transition-all hover:scale-[1.01] flex items-center justify-between gap-8">
+                        <div class="xl:col-span-4 md:col-span-2 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2.5rem] p-6 shadow-sm border border-blue-100 dark:border-blue-900/20 relative group transition-all hover:scale-[1.01] flex items-center justify-between gap-8">
                             <div class="flex items-center gap-6">
                                 <div class="w-16 h-16 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center text-blue-500 shadow-md">
                                     <svg class="w-10 h-10" viewBox="0 0 48 48">
@@ -201,7 +223,7 @@
                                         <label class="flex items-center gap-3 p-3 rounded-2xl border border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer group">
                                             <input type="checkbox" name="types[]" value="attachments" class="w-5 h-5 rounded-lg text-rose-500 focus:ring-rose-500 border-gray-300">
                                             <div>
-                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">Documentación (Tareas y Foro)</span>
+                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">Documentación (Tareas, Foro y Expedientes)</span>
                                                 <span class="text-[10px] text-gray-400 font-medium italic">Solo archivos locales. No afecta a Drive.</span>
                                             </div>
                                         </label>

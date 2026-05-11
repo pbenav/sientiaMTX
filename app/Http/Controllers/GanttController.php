@@ -26,6 +26,7 @@ class GanttController extends Controller
         }
         $members = $team->members()->get();
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
+        $expedientes = $team->expedientes()->orderBy('created_at', 'desc')->get();
 
         // Get the exact task set that would be visible in the Gantt chart with current filters
         $tasks = $this->getTaskSet($request, $team);
@@ -43,7 +44,7 @@ class GanttController extends Controller
         $leafTasks = $tasks->filter(fn($t) => !$parentIds->contains($t->id));
 
         $filters = $this->getPersistentFilters($request, 'tasks', [
-            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search'
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id'
         ]);
 
         for ($i = 1; $i <= $daysInMonth; $i++) {
@@ -67,7 +68,7 @@ class GanttController extends Controller
             ];
         }
 
-        return view('teams.gantt', compact('team', 'members', 'skills', 'actionHeat', 'daysInMonth', 'filters'));
+        return view('teams.gantt', compact('team', 'members', 'skills', 'expedientes', 'actionHeat', 'daysInMonth', 'filters'));
     }
 
     public function data(Request $request, Team $team)
@@ -266,7 +267,7 @@ class GanttController extends Controller
 
         // Step 3: Filters
         $filters = $this->getPersistentFilters($request, 'tasks', [
-            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search'
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id'
         ]);
 
         $query = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
@@ -294,7 +295,8 @@ class GanttController extends Controller
                 } elseif ($type === 'plain') {
                     $q->where('is_template', false)->whereNull('parent_id');
                 }
-            });
+            })
+            ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId));
 
         // Apply Time Range Filter and ensure we keep parents of matching tasks to avoid dependency crashes
         $range = $request->get('time_range', '3');

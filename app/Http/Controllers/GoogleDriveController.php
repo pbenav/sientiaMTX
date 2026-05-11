@@ -51,6 +51,10 @@ class GoogleDriveController extends Controller
             return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
         }
 
+        if ($attachment->attachable_type === \App\Models\Expediente::class && $attachment->attachable->team_id !== $team->id) {
+            return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
+        }
+
         $user = auth()->user();
 
         if ($attachment->attachable_type === Task::class && $user->cannot('view', $attachment->attachable)) {
@@ -58,6 +62,10 @@ class GoogleDriveController extends Controller
         }
 
         if ($attachment->attachable_type === \App\Models\ForumMessage::class && $user->cannot('view', $attachment->attachable->thread->team)) {
+            return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+        }
+
+        if ($attachment->attachable_type === \App\Models\Expediente::class && $user->cannot('view', $attachment->attachable->team)) {
             return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
         }
 
@@ -209,6 +217,13 @@ class GoogleDriveController extends Controller
             if ($message->thread->team_id !== $team->id || $user->cannot('view', $team)) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para este equipo.'], 403);
             }
+        } elseif ($request->attachable_type === \App\Models\Expediente::class || $request->attachable_type === 'App\\Models\\Expediente') {
+            $expediente = \App\Models\Expediente::where('team_id', $team->id)->findOrFail($request->attachable_id);
+            if ($user->cannot('view', $team)) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para este equipo.'], 403);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Tipo de adjunto no soportado.'], 400);
         }
 
         try {

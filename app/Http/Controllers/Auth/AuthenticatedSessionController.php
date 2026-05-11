@@ -62,7 +62,8 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         $user->update([
             'last_login_at' => now(),
-            'last_activity_at' => now()
+            'last_activity_at' => now(),
+            'last_ip' => $request->ip()
         ]);
 
         // Show welcome message if the user prefers it

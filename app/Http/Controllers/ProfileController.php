@@ -36,10 +36,26 @@ class ProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $sessions = collect(\Illuminate\Support\Facades\DB::table('sessions')
+            ->where('user_id', $request->user()->getAuthIdentifier())
+            ->orderBy('last_activity', 'desc')
+            ->get())->map(function ($session) use ($request) {
+                $agent = $this->createAgent($session->user_agent);
+
+                return (object) [
+                    'id' => $session->id,
+                    'agent' => $agent,
+                    'ip_address' => $session->ip_address,
+                    'is_current_device' => $session->id === $request->session()->getId(),
+                    'last_active' => \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+                ];
+            });
+
         return view('profile.edit', [
             'user' => $request->user(),
             'whatsappStatus' => $whatsappStatus,
             'invitationsList' => $invitationsList,
+            'sessions' => $sessions,
         ]);
     }
 
@@ -487,5 +503,46 @@ class ProfileController extends Controller
         ]);
 
         return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('status', 'invitation-generated');
+    }
+
+    /**
+     * Log out a specific session remotely.
+     */
+    public function logoutSession(Request $request, $sessionId): RedirectResponse
+    {
+        \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('id', $sessionId)
+            ->where('user_id', $request->user()->getAuthIdentifier())
+            ->delete();
+
+        return Redirect::route('profile.edit', ['tab' => $request->input('tab', 'security')])->with('status', 'session-logged-out');
+    }
+
+    /**
+     * Parse a generic UserAgent string into simple readable platform info.
+     */
+    protected function createAgent($userAgent)
+    {
+        $os = 'Desconocido';
+        if (stripos($userAgent, 'windows') !== false) $os = 'Windows';
+        elseif (stripos($userAgent, 'macintosh') !== false || stripos($userAgent, 'mac os x') !== false) $os = 'macOS';
+        elseif (stripos($userAgent, 'linux') !== false) $os = 'Linux';
+        elseif (stripos($userAgent, 'android') !== false) $os = 'Android';
+        elseif (stripos($userAgent, 'iphone') !== false || stripos($userAgent, 'ipad') !== false) $os = 'iOS';
+
+        $browser = 'Desconocido';
+        if (stripos($userAgent, 'edge') !== false || stripos($userAgent, 'edg') !== false) $browser = 'Edge';
+        elseif (stripos($userAgent, 'chrome') !== false) $browser = 'Chrome';
+        elseif (stripos($userAgent, 'firefox') !== false) $browser = 'Firefox';
+        elseif (stripos($userAgent, 'safari') !== false) $browser = 'Safari';
+        elseif (stripos($userAgent, 'opera') !== false || stripos($userAgent, 'opr') !== false) $browser = 'Opera';
+
+        $isDesktop = !preg_match('/mobile|android|iphone|ipad|ipod/i', (string)$userAgent);
+
+        return (object) [
+            'isDesktop' => $isDesktop,
+            'platform' => $os,
+            'browser' => $browser,
+        ];
     }
 }

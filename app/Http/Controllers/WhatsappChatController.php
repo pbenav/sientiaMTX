@@ -80,8 +80,9 @@ class WhatsappChatController extends Controller
                 'reply_to_text' => $request->reply_to_id ? WhatsappMessage::find($request->reply_to_id)?->text : null,
             ]);
 
-            // Formateamos el pie del mensaje
-            $caption = "💬 *[{$user->name}]:*\n{$text}";
+            // Formateamos el pie del mensaje (silenciamos el prefijo si es el propio creador/puente el que escribe)
+            $isCreator = $team->created_by_id === $user->id;
+            $caption = $isCreator ? $text : "💬 *[{$user->name}]:*\n{$text}";
             
             $params = [
                 'session' => 'team_' . ($team->slug ?: $team->id),

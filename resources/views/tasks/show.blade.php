@@ -1,4 +1,6 @@
 <x-app-layout>
+    <!-- Dynamic Task Context Beacon -->
+    <div id="sientia-active-task-beacon" data-task-id="{{ $task->id }}" style="display: none;"></div>
     @section('title', $task->title)    @php
         // 1. Identify the personal execution instance
         $isAssigned = $task->assigned_user_id === auth()->id() || $task->assignedTo->contains(auth()->id());
@@ -79,7 +81,7 @@
                     <form action="{{ route('teams.tasks.sync-to-children', [$team, $task]) }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                             <span class="hidden sm:inline">{{ __('tasks.sync_members') }}</span>
@@ -113,7 +115,7 @@
 
                     <!-- Imprimir Ficha -->
                     <button type="button" onclick="printFullTask()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
-                        <div class="shrink-0 p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl group-hover:scale-110 transition-transform shadow-sm">
+                        <div class="shrink-0 p-2 bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 rounded-xl group-hover:scale-110 transition-transform shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
@@ -240,7 +242,7 @@
                             <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
-                                    <div class="shrink-0 p-2 {{ $task->google_task_id ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }} rounded-xl group-hover:scale-110 transition-transform">
+                                    <div class="shrink-0 p-2 {{ $task->google_task_id ? 'bg-violet-50 text-violet-600' : 'bg-amber-50 text-amber-600' }} rounded-xl group-hover:scale-110 transition-transform">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                         </svg>
@@ -557,7 +559,7 @@
                         <div class="flex items-center gap-2">
                             @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
                             <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'description' })" 
-                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
+                                    class="p-2 bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-violet-100 dark:border-violet-800/50"
                                     title="Mejorar Resumen con IA">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -566,7 +568,7 @@
                             </button>
                             @endif
                             <button onclick="printSection('Descripción', 'description-content')" 
-                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
                                     title="Imprimir descripción">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -592,7 +594,7 @@
                         <div class="flex items-center gap-2">
                             @if($team->isCoordinator(auth()->user()) || auth()->id() === $task->assigned_user_id)
                             <button @click="$dispatch('ai:analyze-task', { taskId: {{ $task->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($task->title) }}', section: 'observaciones' })" 
-                                    class="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50"
+                                    class="p-2 bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 rounded-xl transition-all shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border border-violet-100 dark:border-violet-800/50"
                                     title="Desarrollar contenido con IA">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -601,7 +603,7 @@
                             </button>
                             @endif
                             <button onclick="printSection('Observaciones', 'observations-content')" 
-                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+                                    class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
                                     title="Imprimir observaciones">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -696,7 +698,7 @@
                                     @endif
                                 </div>
                                 <div class="w-24 bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden ml-auto">
-                                    <div class="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full transition-all duration-700 ease-out js-global-progress-bar"
+                                    <div class="bg-gradient-to-r from-violet-500 to-violet-500 h-full rounded-full transition-all duration-700 ease-out js-global-progress-bar"
                                         style="width: {{ $prog }}%">
                                     </div>
                                 </div>
@@ -706,7 +708,7 @@
 
                     <div
                         class="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
-                        <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20 js-global-progress-bar"
+                        <div class="h-full bg-gradient-to-r from-violet-500 to-violet-600 shadow-lg shadow-violet-500/20 js-global-progress-bar"
                              style="width: {{ $prog }}%; transition: none !important;"></div>
                     </div>
 
@@ -924,7 +926,7 @@
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                        <div id="inst-progress-bar-{{ $isSimulated ? $task->id . '-' . $inst->user_id : $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300 js-member-progress-bar" style="width: {{ $inst->progress }}%"></div>
+                                                        <div id="inst-progress-bar-{{ $isSimulated ? $task->id . '-' . $inst->user_id : $inst->id }}" class="h-full bg-gradient-to-r from-violet-500 to-violet-500 transition-all duration-300 js-member-progress-bar" style="width: {{ $inst->progress }}%"></div>
                                                     </div>
                                                     <span id="inst-progress-val-{{ $isSimulated ? $task->id . '-' . $inst->user_id : $inst->id }}" class="text-[9px] text-gray-400 font-bold w-5 tabular-nums js-member-progress-val">{{ $inst->progress }}%</span>
                                                 </div>
@@ -972,7 +974,7 @@
                             </p>
                             <div class="flex flex-wrap gap-1.5">
                                 @foreach ($task->assignedGroups as $g)
-                                    <span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[9px] px-2 py-1 rounded-lg font-bold uppercase tracking-wider border border-indigo-100 dark:border-indigo-800/50 shadow-sm">
+                                    <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[9px] px-2 py-1 rounded-lg font-bold uppercase tracking-wider border border-violet-100 dark:border-violet-800/50 shadow-sm">
                                         {{ $g->name }}
                                     </span>
                                 @endforeach
@@ -1488,10 +1490,10 @@
                                 $isFromChild = $isTaskType && $attachment->attachable_id !== $task->id && $attachment->attachable_id !== $task->parent_id;
                             @endphp
                             <div
-                                class="group flex items-center justify-between p-3 {{ $isFromParent ? 'bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-100/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50' }} border rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
+                                class="group flex items-center justify-between p-3 {{ $isFromParent ? 'bg-violet-50/30 dark:bg-violet-900/10 border-violet-100/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50' }} border rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div
-                                        class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm border shrink-0 {{ $attachment->storage_provider === 'google' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : ($isFromParent ? 'bg-indigo-50 dark:bg-gray-800 text-indigo-500 border-gray-100 dark:border-gray-700' : 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 border-gray-100 dark:border-gray-700') }}">
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm border shrink-0 {{ $attachment->storage_provider === 'google' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : ($isFromParent ? 'bg-violet-50 dark:bg-gray-800 text-violet-500 border-gray-100 dark:border-gray-700' : 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 border-gray-100 dark:border-gray-700') }}">
                                         @if(!$attachment->exists)
                                             <div class="text-red-500/50">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1543,7 +1545,7 @@
                                             @endif
                                             •
                                             @if($isFromParent) 
-                                                <span class="text-indigo-500 font-bold uppercase tracking-tighter">{{ __('tasks.shared') ?? 'Plan' }}</span>
+                                                <span class="text-violet-500 font-bold uppercase tracking-tighter">{{ __('tasks.shared') ?? 'Plan' }}</span>
                                             @elseif($isFromChild)
                                                 <span class="text-amber-500 font-bold uppercase tracking-tighter">{{ $attachment->attachable->assignedUser?->name ?? 'Equipo' }}</span>
                                             @else
@@ -1586,7 +1588,7 @@
                                             teamId: {{ $team->id }},
                                             autoSubmit: false 
                                         })"
-                                        class="p-1.5 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                                        class="p-1.5 text-violet-500 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
                                         title="Preguntar a la IA sobre este archivo">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1696,18 +1698,18 @@
                     </div>
                 </div>
             @elseif ($task->isInstance())
-                <div class="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-4 space-y-3 shadow-sm">
+                <div class="bg-violet-50/50 dark:bg-violet-500/5 border border-violet-100 dark:border-violet-500/10 rounded-2xl p-4 space-y-3 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm border border-indigo-50 dark:border-indigo-500/10">
+                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 shadow-sm border border-violet-50 dark:border-violet-500/10">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-[10px] font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-widest">{{ __('Plan Maestro Relacionado') }}</p>
+                            <p class="text-[10px] font-black text-violet-700 dark:text-violet-400 uppercase tracking-widest">{{ __('Plan Maestro Relacionado') }}</p>
                             @if ($team->isCoordinator(auth()->user()))
                                 <div class="mt-1">
-                                    <select onchange="reassignTask({{ $task->id }}, this.value)" class="w-full text-[10px] bg-white dark:bg-indigo-900 border border-indigo-100 dark:border-indigo-800 rounded-lg px-2 py-1 shadow-sm font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer">
+                                    <select onchange="reassignTask({{ $task->id }}, this.value)" class="w-full text-[10px] bg-white dark:bg-violet-900 border border-violet-100 dark:border-violet-800 rounded-lg px-2 py-1 shadow-sm font-bold text-violet-700 dark:text-violet-300 cursor-pointer">
                                         <option value="" disabled {{ !$task->assigned_user_id ? 'selected' : '' }}>{{ __('Reasignar a...') }}</option>
                                         <option value="unassign">-- {{ __('Pendiente') }} --</option>
                                         @foreach($team->members()->orderBy('name')->get() as $member)
@@ -1716,11 +1718,11 @@
                                     </select>
                                 </div>
                             @else
-                                <p class="text-[11px] font-bold text-indigo-900 dark:text-indigo-200 truncate">{{ $task->assignedUser?->name ?? __('Sin asignar') }}</p>
+                                <p class="text-[11px] font-bold text-violet-900 dark:text-violet-200 truncate">{{ $task->assignedUser?->name ?? __('Sin asignar') }}</p>
                             @endif
                         </div>
                     </div>
-                    <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="block w-full text-center text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 py-2 bg-white dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20 transition-all">
+                    <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="block w-full text-center text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-300 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-500 py-2 bg-white dark:bg-violet-500/10 rounded-xl border border-violet-100 dark:border-violet-500/20 transition-all">
                         {{ __('VER PLAN MAESTRO') }}
                     </a>
                 </div>
@@ -1728,8 +1730,8 @@
 
             <!-- 2. TU EJECUCIÓN Card -->
             @if ($personalInstance)
-                <div class="bg-indigo-50/40 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-800/50 rounded-2xl p-5 space-y-5 shadow-sm transition-colors relative overflow-hidden">
-                    <p class="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-widest font-black flex items-center gap-2">
+                <div class="bg-violet-50/40 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-5 space-y-5 shadow-sm transition-colors relative overflow-hidden">
+                    <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-black flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -1739,7 +1741,7 @@
                     <div class="space-y-2.5">
                         @if ($personalInstance->status !== 'completed')
                             <button onclick="updateTaskStatus('completed', {{ $personalInstance->id }})"
-                                class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-md shadow-indigo-600/20 active:scale-[0.98]">
+                                class="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-md shadow-violet-600/20 active:scale-[0.98]">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
@@ -1747,7 +1749,7 @@
                             </button>
                         @else
                             <button onclick="updateTaskStatus('pending', {{ $personalInstance->id }})"
-                                class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-xs font-bold py-3.5 rounded-xl transition-all border border-indigo-200 dark:border-indigo-700 shadow-sm active:scale-[0.98]">
+                                class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/50 text-xs font-bold py-3.5 rounded-xl transition-all border border-violet-200 dark:border-violet-700 shadow-sm active:scale-[0.98]">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
@@ -1766,17 +1768,17 @@
                         @endif
                     </div>
 
-                    <div class="relative pt-4 border-t border-indigo-100/30 dark:border-indigo-800/30">
-                        <label class="flex items-center justify-between text-[9px] text-indigo-400/80 dark:text-indigo-500/50 uppercase tracking-widest font-black mb-3">
+                    <div class="relative pt-4 border-t border-violet-100/30 dark:border-violet-800/30">
+                        <label class="flex items-center justify-between text-[9px] text-violet-400/80 dark:text-violet-500/50 uppercase tracking-widest font-black mb-3">
                             <span>{{ __('TU PROGRESO') }}</span>
                             <div class="flex items-center gap-1 min-w-[3rem] justify-end font-bold">
-                                <span id="personal-progress-val" class="text-indigo-600 dark:text-indigo-400 tabular-nums text-sm">{{ $personalInstance->progress_percentage }}</span>
-                                <span class="text-indigo-400 text-[10px]">%</span>
+                                <span id="personal-progress-val" class="text-violet-600 dark:text-violet-400 tabular-nums text-sm">{{ $personalInstance->progress_percentage }}</span>
+                                <span class="text-violet-400 text-[10px]">%</span>
                             </div>
                         </label>
                         <div class="flex items-center gap-3">
                             <input type="range" min="0" max="100" value="{{ $personalInstance->progress_percentage }}"
-                                class="flex-1 h-1 bg-indigo-100 dark:bg-indigo-900/50 rounded-full appearance-none cursor-pointer accent-indigo-600 js-member-progress-slider"
+                                class="flex-1 h-1 bg-violet-100 dark:bg-violet-900/50 rounded-full appearance-none cursor-pointer accent-violet-600 js-member-progress-slider"
                                 oninput="document.getElementById('personal-progress-val').innerText = this.value"
                                 onchange="updateTaskProgress(this.value, {{ $personalInstance->id }}, '{{ $personalInstance->status }}')">
                         </div>
@@ -1888,6 +1890,36 @@
                 </div>
             </div>
 
+            <!-- Expediente Card -->
+            @if ($task->expediente)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('Expediente') }}</h4>
+                            <p class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $task->expediente->code }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('teams.expedientes.show', [$team, $task->expediente]) }}" class="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/30 py-2 border border-violet-100 dark:border-violet-800/50 rounded-xl transition-all shadow-sm">
+                        {{ __('Ver Expediente') }}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            @elseif (auth()->user()->can('update', $task))
+                <div class="bg-gray-50 dark:bg-gray-900/50 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-4 text-center shadow-sm">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-2">{{ __('Sin Expediente') }}</p>
+                    <a href="{{ route('teams.tasks.edit', [$team, $task]) }}" class="text-[9px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 hover:underline">
+                        {{ __('Vincular uno ahora') }}
+                    </a>
+                </div>
+            @endif
+
             <!-- 8. Fechas Card -->
             @if ($task->due_date || $task->scheduled_date)
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
@@ -1974,7 +2006,7 @@
                                     class="w-7 h-7 rounded-lg object-cover shadow-sm border border-gray-100 dark:border-gray-700">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $log->user?->name ?? 'Sistema' }}</span>
-                                    <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-800/50">
+                                    <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-100/50 dark:border-violet-800/50">
                                         {{ $log->action_label ?? 'UPDATED' }}
                                     </span>
                                 </div>
@@ -2661,7 +2693,7 @@
                         'download': 'bg-blue-500',
                         'view': 'bg-violet-500',
                         'rename': 'bg-amber-500',
-                        'move_to_drive': 'bg-indigo-500',
+                        'move_to_drive': 'bg-violet-500',
                         'delete': 'bg-red-500'
                     };
                     

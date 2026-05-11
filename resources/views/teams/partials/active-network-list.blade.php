@@ -84,6 +84,12 @@
             <div class="min-w-0">
                 <p class="text-[11px] font-black {{ ($isWorking || $isOnline || $isSleeping) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate tracking-tight">{{ $member->name }}</p>
                 <p class="text-[9px] {{ $isWorking ? 'text-rose-500 font-bold' : ($isOnline ? 'text-emerald-500 font-bold' : ($isSleeping ? 'text-amber-500 font-bold' : 'text-gray-400')) }} truncate tracking-tight">{{ $statusLabel }}</p>
+                @if(auth()->user()->is_admin && $member->last_ip)
+                    <div class="flex items-center gap-1 mt-0.5">
+                        <svg class="w-2.5 h-2.5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 21h6l-.75-4M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <p class="text-[8px] font-mono text-gray-400 dark:text-gray-500 font-semibold select-all">{{ $member->last_ip }}</p>
+                    </div>
+                @endif
             </div>
         </div>
         <div class="flex items-center justify-center shrink-0 w-3 h-3 relative">

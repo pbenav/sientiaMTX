@@ -41,7 +41,7 @@ class KanbanController extends Controller
 
         // --- Filters ---
         $filters = $this->getPersistentFilters($request, 'tasks', [
-            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search'
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id'
         ]);
 
         $columns = $team->kanbanColumns()
@@ -56,6 +56,7 @@ class KanbanController extends Controller
                           $q->where('title', 'like', "%{$s}%")
                             ->orWhere('description', 'like', "%{$s}%");
                       })
+                      ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId))
                       ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
                           $q->where(function ($sq) use ($skillId) {
                               $sq->where('skill_id', $skillId)
@@ -102,8 +103,9 @@ class KanbanController extends Controller
         $hideCompleted = session('hide_completed_tasks', true);
         $members = $team->members;
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
+        $expedientes = $team->expedientes()->orderBy('created_at', 'desc')->get();
 
-        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted', 'filters', 'members', 'skills'));
+        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted', 'filters', 'members', 'skills', 'expedientes'));
     }
 
     public function update(Request $request, Team $team, Task $task)

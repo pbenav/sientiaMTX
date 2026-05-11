@@ -162,6 +162,7 @@ class TaskController extends Controller
                 'tags', 
                 'creator', 
                 'parent', 
+                'expediente',
                 'children' => function($q) use ($user, $isManager) {
                     $q->visibleTo($user, $isManager);
                 }
@@ -291,7 +292,10 @@ class TaskController extends Controller
         }
         $backUrl = session("back_url_task_create_{$team->id}", route('teams.dashboard', $team));
 
-        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills', 'services'));
+        $expedientes = $team->expedientes()->orderBy('code', 'desc')->get();
+        $selectedExpedienteId = request('expediente_id');
+
+        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills', 'services', 'expedientes', 'selectedExpedienteId'));
     }
 
     /**
@@ -324,7 +328,16 @@ class TaskController extends Controller
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
             'assignment_mode' => 'nullable|string|in:shared,distributed',
+            'expediente_id' => 'nullable|exists:expedientes,id',
         ]);
+
+        // Force validation: Dossier must belong to this team
+        if (!empty($validated['expediente_id'])) {
+            $existsInTeam = \DB::table('expedientes')->where('id', $validated['expediente_id'])->where('team_id', $team->id)->exists();
+            if (!$existsInTeam) {
+                $validated['expediente_id'] = null;
+            }
+        }
 
         $hasAssignments = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
         $assignmentMode = $request->input('assignment_mode', 'shared');
@@ -369,6 +382,7 @@ class TaskController extends Controller
             'cognitive_load' => $request->input('cognitive_load', 1),
             'is_backstage' => $request->boolean('is_backstage'),
             'service_id' => $validated['service_id'] ?? null,
+            'expediente_id' => $validated['expediente_id'] ?? null,
         ]);
 
         \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
@@ -498,6 +512,7 @@ class TaskController extends Controller
                     'parent_id' => $task->id,
                     'is_template' => false,
                     'assigned_user_id' => $userId,
+                    'expediente_id' => $task->expediente_id,
                     'visibility' => 'private',
                     'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
                     'service_id' => $task->service_id,
@@ -621,7 +636,9 @@ class TaskController extends Controller
         $backUrl = session("back_url_task_edit_{$task->id}", route('teams.tasks.show', [$team, $task]));
 
         $services = $team->services()->orderBy('name')->get();
-        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl', 'skills', 'services'));
+        $expedientes = $team->expedientes()->orderBy('code', 'desc')->get();
+
+        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl', 'skills', 'services', 'expedientes'));
     }
 
     /**
@@ -656,7 +673,16 @@ class TaskController extends Controller
             'skill_id' => 'nullable|integer|exists:skills,id',
             'service_id' => 'nullable|integer|exists:services,id',
             'assignment_mode' => 'nullable|string|in:shared,distributed',
+            'expediente_id' => 'nullable|exists:expedientes,id',
         ]);
+
+        // Force validation: Dossier must belong to this team
+        if (!empty($validated['expediente_id'])) {
+            $existsInTeam = \DB::table('expedientes')->where('id', $validated['expediente_id'])->where('team_id', $team->id)->exists();
+            if (!$existsInTeam) {
+                $validated['expediente_id'] = null;
+            }
+        }
 
         // Store old values for history
         $oldValues = $task->getAttributes();
@@ -709,6 +735,9 @@ class TaskController extends Controller
             'is_backstage' => $request->boolean('is_backstage'),
             'skill_id' => array_key_exists('skill_id', $validated) ? $validated['skill_id'] : $task->skill_id,
             'service_id' => array_key_exists('service_id', $validated) ? $validated['service_id'] : $task->service_id,
+            'expediente_id' => ($task->parent_id && !$task->is_template) 
+                ? $task->expediente_id 
+                : (array_key_exists('expediente_id', $validated) ? $validated['expediente_id'] : $task->expediente_id),
         ]);
 
 
@@ -777,6 +806,7 @@ class TaskController extends Controller
                 'urgency' => $task->urgency,
                 'due_date' => $task->due_date,
                 'original_due_date' => $task->due_date,
+                'expediente_id' => $task->expediente_id, // Synchronize expediente too
             ]);
         }
 
@@ -880,10 +910,12 @@ class TaskController extends Controller
                             'parent_id'          => $task->id,
                             'is_template'        => false,
                             'assigned_user_id'   => $userId,
+                            'expediente_id'      => $task->expediente_id,
                             'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
                             'cognitive_load'     => $task->cognitive_load,
                             'is_backstage'       => $task->is_backstage,
                             'skill_id'           => $task->skill_id,
+                            'service_id'         => $task->service_id, // Add service_id as well just in case
                             'visibility'         => 'private',
                         ]);
 

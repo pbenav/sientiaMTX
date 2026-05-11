@@ -100,6 +100,11 @@ class Team extends Model
         return $this->hasMany(Service::class);
     }
 
+    public function expedientes(): HasMany
+    {
+        return $this->hasMany(Expediente::class);
+    }
+
     // Get creator of the team
     public function creator()
     {
@@ -242,7 +247,14 @@ class Team extends Model
             ->where('storage_provider', '!=', 'google')
             ->sum('file_size');
 
-        // 3. Calculate telegram media size
+        // 3. Calculate expediente attachments size (excluding Google Drive)
+        $expedienteIds = $this->expedientes()->pluck('id');
+        $expedienteSize = TaskAttachment::where('attachable_type', Expediente::class)
+            ->whereIn('attachable_id', $expedienteIds)
+            ->where('storage_provider', '!=', 'google')
+            ->sum('file_size');
+
+        // 4. Calculate telegram media size
         $telegramSize = TelegramMessage::where('team_id', $this->id)
             ->get()
             ->sum(function($msg) {
@@ -259,7 +271,7 @@ class Team extends Model
                 return 0;
             });
 
-        $this->update(['disk_used' => (int)($taskSize + $forumSize + $telegramSize)]);
+        $this->update(['disk_used' => (int)($taskSize + $forumSize + $expedienteSize + $telegramSize)]);
         
         $this->checkStorageAlerts();
     }

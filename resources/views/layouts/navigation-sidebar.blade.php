@@ -83,6 +83,7 @@
                                 request()->routeIs('teams.gantt') ||
                                 request()->routeIs('teams.kanban') ||
                                 request()->routeIs('teams.forum.*') ||
+                                request()->routeIs('teams.expedientes.*') ||
                                 request()->routeIs('teams.members') ||
                                 request()->routeIs('teams.edit');
                         @endphp
@@ -124,6 +125,15 @@
                                                 d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                                         </svg>
                                         <span class="truncate">{{ __('forum.title') ?? 'Foro' }}</span>
+                                    </a>
+                                    <a href="{{ route('teams.expedientes.index', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.expedientes.*') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                        </svg>
+                                        <span class="truncate">Expedientes</span>
                                     </a>
                                     <a href="{{ route('teams.tasks.index', $currentTeamId) }}"
                                         class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">

@@ -19,7 +19,7 @@ class GeminiService implements AiAssistantInterface
     protected ?string $cachedFileMime = null;
     protected ?string $cachedFileName = null;
     protected string $apiKey = '';
-    protected string $targetModel = ''; 
+    protected string $targetModel = 'gemini-1.5-flash'; 
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1';
     protected array $userStats = [];
     protected $tasksContext = [];
@@ -30,7 +30,7 @@ class GeminiService implements AiAssistantInterface
     public function __construct()
     {
         // By default, use the app config key if available
-        $this->apiKey = config('services.gemini.key') ?? env('GEMINI_API_KEY') ?? '';
+        $this->apiKey = config('services.gemini.key') ?? '';
         $this->searchService = new AiSearchService();
     }
 

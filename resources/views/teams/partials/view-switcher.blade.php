@@ -25,6 +25,12 @@
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />',
             ],
             [
+                'name' => 'Expedientes',
+                'route' => route('teams.expedientes.index', $teamId),
+                'active' => request()->routeIs('teams.expedientes.*'),
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />',
+            ],
+            [
                 'name' => __('navigation.task_list'),
                 'route' => route('teams.tasks.index', $teamId),
                 'active' => $isTaskList,
@@ -90,11 +96,13 @@
                 </a>
             @endforeach
             {{-- Divider + toggle --}}
-            <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
-            <div class="flex items-center gap-1 shrink-0 ml-1">
-                @include('teams.partials.hide-completed-toggle')
-                @include('teams.partials.subtasks-visibility-toggle')
-            </div>
+            @if($isTaskList || $isKanban || $isGantt || $isMatrix)
+                <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
+                <div class="flex items-center gap-1 shrink-0 ml-1">
+                    @include('teams.partials.hide-completed-toggle')
+                    @include('teams.partials.subtasks-visibility-toggle')
+                </div>
+            @endif
         </div>
     </div>
 

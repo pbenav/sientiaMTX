@@ -107,6 +107,40 @@ class TelegramChatController extends Controller
                 $data = $response->json();
                 $localMsg->update(['telegram_message_id' => $data['result']['message_id']]);
 
+                // [NUEVO]: Reenvío automático Inter-Bridge a WhatsApp desde mensajes Web-Telegram
+                try {
+                    $creator = $team->creator;
+                    $creatorSettings = $creator ? ($creator->notification_settings ?? $creator->defaultNotificationSettings()) : null;
+                    $isSyncEnabled = $creator ? ($creatorSettings['sync_chats'] ?? false) : true;
+
+                    if ($isSyncEnabled && $team->whatsapp_chat_id && !empty($text)) {
+                        Log::info("Sincronización Web-Telegram: Reenviando a WhatsApp para el equipo {$team->name}");
+                        $whatsappSession = 'team_' . ($team->slug ?: $team->id);
+                        
+                        $isCreator = $team->created_by_id === $user->id;
+                        $formattedSyncMsg = $isCreator 
+                            ? strip_tags($text) 
+                            : "🔵 [Telegram] {$user->name}:\n" . strip_tags($text);
+
+                        $syncPayload = [
+                            'phone' => $team->whatsapp_chat_id,
+                            'message' => $formattedSyncMsg,
+                            'webhook_url' => route('whatsapp.webhook'),
+                            'session' => $whatsappSession
+                        ];
+
+                        $syncResponse = Http::timeout(5)->post("http://localhost:3001/api/send", $syncPayload);
+                        
+                        if (!$syncResponse->successful()) {
+                            // Fallback a la sesión default
+                            $syncPayload['session'] = 'default';
+                            Http::timeout(5)->post("http://localhost:3001/api/send", $syncPayload);
+                        }
+                    }
+                } catch (\Exception $eSync) {
+                    Log::warning("Error en reenvío espejo a WhatsApp: " . $eSync->getMessage());
+                }
+
                 return response()->json([
                     'success' => true,
                     'message' => [

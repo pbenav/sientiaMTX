@@ -199,21 +199,47 @@ class TelegramWebhookController extends Controller
                     $isTooOld = $messageDate && (time() - $messageDate) > 300;
 
                     if ($isSyncEnabled && !$isTooOld) {
-                        if ($team->whatsapp_chat_id && !empty($text) && !str_contains($text, '🟢 [WhatsApp]')) {
+                        if ($team->whatsapp_chat_id && (!empty($text) || $photoPath || $voicePath || $stickerPath) && !str_contains($text, '🟢 [WhatsApp]')) {
                             Log::info("Sincronización: Reenviando mensaje de Telegram a WhatsApp para el equipo {$team->name}");
-                            $syncResponse = \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
+                            
+                            // 1. Determinar si el emisor de Telegram es el propio creador de la sala (para omitir prefijo redundante)
+                            $creatorTelegramId = (string) ($creator->telegram_chat_id ?? '');
+                            $incomingTelegramId = (string) ($from['id'] ?? '');
+                            $isOwner = !empty($creatorTelegramId) && ($creatorTelegramId === $incomingTelegramId);
+
+                            $cleanText = trim(strip_tags($text));
+                            // Si hay imagen pero no texto, enviamos vacío, de lo contrario formateamos
+                            $whatsappBody = $isOwner ? $cleanText : "🔵 [Telegram] {$authorName}:" . (!empty($cleanText) ? "\n{$cleanText}" : "");
+
+                            $payload = [
                                 'phone' => $team->whatsapp_chat_id,
-                                'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
+                                'message' => $whatsappBody,
                                 'webhook_url' => route('whatsapp.webhook'),
                                 'session' => 'team_' . ($team->slug ?: $team->id)
-                            ]);
+                            ];
+
+                            // 2. Enriquecer payload con Multimedia Base64 si existe
+                            $activeMedia = $photoPath ?: ($voicePath ?: $stickerPath);
+                            if ($activeMedia) {
+                                try {
+                                    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+                                    if ($disk->exists($activeMedia)) {
+                                        $payload['mediaBase64'] = base64_encode($disk->get($activeMedia));
+                                        $payload['mediaMimetype'] = $disk->mimeType($activeMedia) ?: 'application/octet-stream';
+                                        $payload['mediaFilename'] = basename($activeMedia);
+                                    }
+                                } catch (\Exception $eMedia) {
+                                    Log::warning("TelegramWebhook: Error leyendo multimedia para WhatsApp sync: " . $eMedia->getMessage());
+                                }
+                            }
+
+                            // 3. Realizar la petición al bridge
+                            $syncResponse = \Illuminate\Support\Facades\Http::timeout(10)->post("http://localhost:3001/api/send", $payload);
+                            
                             if (!$syncResponse->successful()) {
-                                \Illuminate\Support\Facades\Http::timeout(5)->post("http://localhost:3001/api/send", [
-                                    'phone' => $team->whatsapp_chat_id,
-                                    'message' => "🔵 [Telegram] {$authorName}:\n" . strip_tags($text),
-                                    'webhook_url' => route('whatsapp.webhook'),
-                                    'session' => 'default'
-                                ]);
+                                Log::warning("Fallo envío WhatsApp primario. Reintentando con fallback default...");
+                                $payload['session'] = 'default';
+                                \Illuminate\Support\Facades\Http::timeout(10)->post("http://localhost:3001/api/send", $payload);
                             }
                         }
                     } else {

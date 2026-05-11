@@ -417,7 +417,7 @@ class TeamController extends Controller
         ];
 
         $hideCompleted = session('hide_completed_tasks', true);
-        $completedLimit = (int) env('KANBAN_COMPLETED_LIMIT', 10);
+        $completedLimit = (int) config('settings.kanban_completed_limit', 10);
 
         foreach ($allTasks as $task) {
             $isCompleted = in_array($task->status, ['completed', 'cancelled']);

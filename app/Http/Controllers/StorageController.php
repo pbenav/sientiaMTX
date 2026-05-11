@@ -81,8 +81,22 @@ class StorageController extends Controller
             }
         }
 
+        // Expediente attachments scoped to this team (Local only)
+        $expedienteIds = $team->expedientes()->pluck('id');
+        $expedienteAttachments = TaskAttachment::whereIn('attachable_id', $expedienteIds)
+            ->where('attachable_type', \App\Models\Expediente::class)
+            ->where('storage_provider', 'local')
+            ->get();
+
+        $expedienteBytes = 0;
+        foreach ($expedienteAttachments as $att) {
+            if ($att->file_path && Storage::disk('public')->exists($att->file_path)) {
+                $expedienteBytes += Storage::disk('public')->size($att->file_path);
+            }
+        }
+
         // Google Drive Attachments (Just for info)
-        $googleDriveCount = TaskAttachment::where(function($q) use ($teamTaskIds, $team) {
+        $googleDriveCount = TaskAttachment::where(function($q) use ($teamTaskIds, $team, $expedienteIds) {
                 $q->whereIn('attachable_id', $teamTaskIds)->where('attachable_type', \App\Models\Task::class);
             })
             ->orWhere(function($q) use ($team) {
@@ -93,10 +107,13 @@ class StorageController extends Controller
                       });
                   });
             })
+            ->orWhere(function($q) use ($expedienteIds) {
+                $q->whereIn('attachable_id', $expedienteIds)->where('attachable_type', \App\Models\Expediente::class);
+            })
             ->where('storage_provider', 'google')
             ->count();
 
-        $totalBytes = $telegramBytes + $taskBytes + $forumBytes;
+        $totalBytes = $telegramBytes + $taskBytes + $forumBytes + $expedienteBytes;
 
         $stats = [
             'telegram' => [
@@ -113,6 +130,11 @@ class StorageController extends Controller
                 'count' => $forumAttachments->count(),
                 'size'  => $forumBytes,
                 'readable_size' => $this->formatBytes($forumBytes),
+            ],
+            'expedientes' => [
+                'count' => $expedienteAttachments->count(),
+                'size'  => $expedienteBytes,
+                'readable_size' => $this->formatBytes($expedienteBytes),
             ],
             'google' => [
                 'count' => $googleDriveCount,
@@ -213,7 +235,15 @@ class StorageController extends Controller
                 ->where('created_at', '<', $dateLimit)
                 ->get();
 
-            $allAttachments = $taskAttachments->concat($forumAttachments);
+            // Adjuntos de Expedientes
+            $expedienteIds = $team->expedientes()->pluck('id');
+            $expedienteAttachments = TaskAttachment::where('attachable_type', \App\Models\Expediente::class)
+                ->whereIn('attachable_id', $expedienteIds)
+                ->where('storage_provider', 'local')
+                ->where('created_at', '<', $dateLimit)
+                ->get();
+
+            $allAttachments = $taskAttachments->concat($forumAttachments)->concat($expedienteAttachments);
 
             foreach ($allAttachments as $att) {
                 $freedSpace += $this->deleteFile($att->file_path);

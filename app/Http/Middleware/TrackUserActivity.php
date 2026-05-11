@@ -9,20 +9,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TrackUserActivity
 {
-    /**
-     * Handle an incoming request.
-     */
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            // CRITICAL FIX: Do not update user activity on AJAX heartbeat polls
-            // otherwise background polling prevents the user from ever timing out naturally!
-            if ($request->ajax() || $request->isXmlHttpRequest() || str_contains($request->path(), 'active-network')) {
-                return $next($request);
-            }
-
             $user = Auth::user();
             $now = now();
+
+            // Detect background automated requests (polls, heartbeats, widget refreshes)
+            $isPollRequest = $request->ajax() || 
+                             $request->isXmlHttpRequest() || 
+                             $request->headers->get('X-Requested-With') === 'XMLHttpRequest' ||
+                             str_contains($request->path(), 'active-network');
 
             // Dynamic activity limits from team settings
             $isWorking = $user->isWorking();
@@ -50,10 +47,10 @@ class TrackUserActivity
 
             // Perform auto-logout if inactivity limit is active and exceeded
             if ($inactivityLimit > 0) {
-                if ($keepAlive && $isWorking) {
-                    // Keep the user active if they have active time logs (workday or task counters running)
-                    $user->last_activity_at = $now;
-                } elseif ($user->last_activity_at && $now->diffInMinutes($user->last_activity_at) >= $inactivityLimit) {
+                $hasTimedOut = $user->last_activity_at && $now->diffInMinutes($user->last_activity_at) >= $inactivityLimit;
+                $shouldKeepAlive = $keepAlive && $isWorking;
+
+                if (!$shouldKeepAlive && $hasTimedOut) {
                     // Auto-stop any active time logs (workday and task) on auto-logout
                     $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
 
@@ -62,19 +59,36 @@ class TrackUserActivity
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 
+                    // If this is an automated poll, return explicit 401 to signal front-end stop
+                    if ($isPollRequest) {
+                        return response()->json(['message' => 'Session closed due to inactivity'], 401);
+                    }
+
                     return redirect('/')->with('warning', 'Tu sesión se ha cerrado por inactividad.');
                 }
             }
 
-            // Update activity timestamp
-            $user->last_activity_at = $now;
+            // CRITICAL LOGIC: 
+            // 1. Update timestamp ALWAYS on non-poll requests (explicit human activity)
+            // 2. Update timestamp on Polls ONLY if currently actively working (KeepAlive protocol)
+            $shouldExtendLife = !$isPollRequest || ($keepAlive && $isWorking);
 
-            // Initialize last_login_at if it was null
-            if (!$user->last_login_at) {
-                $user->last_login_at = $now;
+            if ($shouldExtendLife) {
+                $user->last_activity_at = $now;
+                $user->last_ip = $request->ip();
+
+                // AUTO-RESET DE AVISO DE PURGA: Si el usuario accede y tenía un aviso de eliminación pendiente, lo cancelamos.
+                if ($user->inactive_warning_sent_at) {
+                    $user->inactive_warning_sent_at = null;
+                }
+
+                // Initialize last_login_at if it was null
+                if (!$user->last_login_at) {
+                    $user->last_login_at = $now;
+                }
+
+                $user->save();
             }
-
-            $user->save();
         }
 
         return $next($request);

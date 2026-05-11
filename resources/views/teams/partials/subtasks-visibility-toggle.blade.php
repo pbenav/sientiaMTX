@@ -9,7 +9,7 @@
 @if($isVisibleView)
     <button onclick="toggleGlobalSubtasks()" 
         title="{{ $showSubtasks ? 'Ocultar todos los desgloses' : 'Mostrar todos los desgloses' }}"
-        class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 {{ $showSubtasks ? 'text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+        class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 {{ $showSubtasks ? 'text-violet-600 dark:text-violet-400 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
         <div class="flex items-center justify-center h-4 sm:h-5 w-4 sm:w-5 shrink-0">
             @if($showSubtasks)
                 {{-- Icon: Folders or Multi-line open --}}

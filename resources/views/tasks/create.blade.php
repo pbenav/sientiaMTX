@@ -69,8 +69,8 @@
                         </div>
                         <div class="relative flex">
                             <input type="radio" id="mode_distributed" name="assignment_mode" value="distributed" class="peer sr-only" {{ old('assignment_mode') === 'distributed' ? 'checked' : '' }}>
-                            <label for="mode_distributed" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/30 transition-all flex gap-3 hover:border-indigo-300 dark:hover:border-indigo-700/50 group">
-                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-indigo-400 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center shrink-0 transition-all">
+                            <label for="mode_distributed" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex gap-3 hover:border-violet-300 dark:hover:border-violet-700/50 group">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
                                     <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
                                 </div>
                                 <div class="flex flex-col">
@@ -78,6 +78,77 @@
                                     <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.distributed_hint') ?? 'Crea un contenedor de solo-lectura y genera una copia (instancia) independiente para cada miembro.' }}</span>
                                 </div>
                             </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contexto y Vinculaciones Card -->
+                <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 mb-8 space-y-6 transition-all shadow-sm">
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 shadow-sm border border-violet-200 dark:border-violet-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">{{ __('Contexto y Vinculaciones') }}</h3>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ __('Asocia esta tarea a un expediente, dependencias o servicios.') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Primary: Expediente (Pre-eminent) -->
+                    <div class="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-2xl p-4 shadow-sm border-l-4 border-l-violet-500">
+                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
+                            {{ __('Expediente Vinculado') }}
+                        </label>
+                        <select name="expediente_id" id="expediente_id_select"
+                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
+                            <option value="">{{ __('(Ningún expediente)') }}</option>
+                            @foreach ($expedientes as $exp)
+                                <option value="{{ $exp->id }}" 
+                                    data-code="{{ $exp->code }}"
+                                    {{ (old('expediente_id', $selectedExpedienteId) == $exp->id) ? 'selected' : '' }}>
+                                    {{ $exp->code }} — {{ $exp->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Secondary grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <!-- Tarea Padre -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
+                                {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
+                            </label>
+                            <select name="parent_id" id="parent_id_select"
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
+                                @foreach ($tasks as $t)
+                                    <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
+                                        data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
+                                        {{ $t->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Servicio -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
+                                {{ __('Dependencia de Servicio') }}
+                            </label>
+                            <select name="service_id" 
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                <option value="">{{ __('Sin dependencia externa') }}</option>
+                                @foreach ($services as $service)
+                                    <option value="{{ $service->id }}" 
+                                        {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                        {{ $service->icon }} {{ $service->name }} 
+                                        ({{ $service->getStatusLabel() }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -148,26 +219,7 @@
                     <span class="text-gray-400 ml-1" id="qp-desc"></span>
                 </div>
 
-                <!-- Service Dependency -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                        {{ __('Dependencia de Servicio') }}
-                    </label>
-                    <select name="service_id" 
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                        <option value="">{{ __('Sin dependencia externa') }}</option>
-                        @foreach ($services as $service)
-                            <option value="{{ $service->id }}" 
-                                {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                {{ $service->icon }} {{ $service->name }} 
-                                ({{ $service->getStatusLabel() }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1.5 text-[10px] text-gray-500 italic">
-                        {{ __('Si el servicio asociado cae, la tarea se marcará automáticamente como bloqueada.') }}
-                    </p>
-                </div>
+
 
                 <!-- Dates -->
                 <div class="grid grid-cols-2 gap-4 font-mono">
@@ -185,22 +237,6 @@
                     </div>
                 </div>
 
-                <!-- Dependency -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                        {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
-                    </label>
-                    <select name="parent_id" id="parent_id_select" style="display: none;"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                        <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
-                        @foreach ($tasks as $t)
-                            <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
-                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
-                                {{ $t->title }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
 
                 <!-- Visibility -->
                 <div>
@@ -535,7 +571,7 @@
                     @if ($groups->count() > 0)
                         <div class="space-y-3">
                             <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
                                 {{ __('tasks.assign_groups') }}
@@ -547,7 +583,7 @@
                                             data-members="{{ json_encode($group->users->pluck('id')) }}"
                                             onchange="window.syncGroupMembers(this)"
                                             {{ in_array($group->id, old('assigned_groups', [])) ? 'checked' : '' }}
-                                            class="group-checkbox accent-indigo-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-indigo-500/20 transition-all">
+                                            class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
                                         <div class="flex flex-col min-w-0">
                                             <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $group->name }}</span>
                                             <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
@@ -620,18 +656,84 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <style>
-        .ts-control { border-radius: 0.75rem !important; border-color: #e5e7eb !important; background-color: #f9fafb !important; padding: 0.625rem 1rem !important; transition: all 0.2s; }
-        .dark .ts-control { background-color: #1f2937 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
-        .ts-control:focus { border-color: #7c3aed !important; ring-color: rgba(124, 58, 237, 0.2) !important; }
-        .ts-dropdown { border-radius: 1.25rem !important; border-color: #e5e7eb !important; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; margin-top: 8px !important; padding: 0.5rem !important; }
-        .dark .ts-dropdown { background-color: #0f172a !important; border-color: #1e293b !important; color: #f3f4f6 !important; }
-        .ts-dropdown .active { background-color: #f5f3ff !important; color: #4f46e5 !important; border-radius: 0.75rem !important; }
-        .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
-        .ts-dropdown .option { padding: 0.75rem 1rem !important; border-radius: 0.75rem !important; margin-bottom: 2px !important; border-left: 0 solid transparent !important; transition: all 0.2s !important; }
-        .ts-dropdown .active.option { border-left: 4px solid #4f46e5 !important; padding-left: calc(1rem - 4px) !important; }
+        /* Bulletproof Modern TomSelect Wrapper */
+        .ts-control {
+            border-radius: 0.75rem !important;
+            border-width: 1px !important;
+            background-color: #f9fafb !important;
+            border-color: #e5e7eb !important;
+            padding: 0.625rem 1rem !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            min-height: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .ts-control input { 
+            font-size: 14px !important; 
+            padding: 0 !important; 
+            margin: 0 !important; 
+            background: transparent !important; 
+            border: none !important; 
+            outline: none !important; 
+            box-shadow: none !important;
+            line-height: 1 !important;
+            height: auto !important;
+        }
+        .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
         
-        /* Ocultar el select original para evitar duplicidad if TomSelect tarda un instante */
-        #parent_id_select { display: none; }
+        .dark .ts-control {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+        
+        .ts-wrapper.focus .ts-control {
+            border-color: #7c3aed !important;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
+        }
+        
+        /* Clear Button Esthetic */
+        .ts-wrapper .clear-button { 
+            right: 1rem !important; 
+            top: 50% !important; 
+            transform: translateY(-50%) !important; 
+            font-size: 1.25rem !important;
+            color: #9ca3af !important;
+            opacity: 0.7 !important;
+            transition: all 0.2s ease !important;
+        }
+        .ts-wrapper .clear-button:hover { opacity: 1 !important; color: #ef4444 !important; }
+        .ts-wrapper .ts-control { padding-right: 2.5rem !important; }
+        
+        .ts-dropdown { 
+            border-radius: 1rem !important; 
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
+            margin-top: 6px !important; 
+            padding: 0.5rem !important; 
+            z-index: 9999 !important;
+        }
+        .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
+        
+        .ts-dropdown .option { 
+            padding: 0.625rem 0.75rem !important; 
+            border-radius: 0.6rem !important; 
+            margin-bottom: 2px !important; 
+            transition: all 0.15s ease !important;
+            color: #374151 !important;
+        }
+        .dark .ts-dropdown .option { color: #e5e7eb !important; }
+        
+        .ts-dropdown .active { 
+            background-color: #f5f3ff !important; 
+            color: #4f46e5 !important; 
+        }
+        .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
+        
+        /* Ocultar el select original para evitar duplicidad si TomSelect tarda un instante */
+        #parent_id_select, #expediente_id_select { display: none; }
     </style>
 
     <script>
@@ -794,6 +896,38 @@
             priorityEl?.addEventListener('change', updatePreview);
             urgencyEl?.addEventListener('change', updatePreview);
             updatePreview();
+
+            // --- TomSelect for Expedientes ---
+            const expedSelectEl = document.getElementById('expediente_id_select');
+            if (expedSelectEl) {
+                new TomSelect("#expediente_id_select", {
+                    plugins: ['clear_button'],
+                    create: false,
+                    sortField: { field: "text", direction: "asc" },
+                    placeholder: 'Buscar expediente...',
+                    allowEmptyOption: true,
+                    render: {
+                        option: function(data, escape) {
+                            const p = data.text.split('—');
+                            const code = p[0].trim();
+                            const title = p.length > 1 ? p.slice(1).join('—').trim() : code;
+                            return '<div style="display:flex; align-items:center; gap:12px; padding:2px 4px;">' +
+                                '<div style="flex-shrink:0; min-width:85px; height:24px; display:flex; align-items:center; justify-content:center; background:rgba(79,70,229,0.08); border:1px solid rgba(79,70,229,0.15); border-radius:6px; font-size:9px; font-weight:900; font-family:monospace; color:#4f46e5;">' + escape(code) + '</div>' +
+                                '<div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + escape(title) + '</div>' +
+                            '</div>';
+                        },
+                        item: function(data, escape) {
+                            const p = data.text.split('—');
+                            const code = p[0].trim();
+                            const title = p.length > 1 ? p.slice(1).join('—').trim() : code;
+                            return '<div style="display:flex; align-items:center; gap:8px;">' +
+                                '<span style="flex-shrink:0; display:inline-flex; align-items:center; height:18px; padding:0 6px; background:rgba(79,70,229,0.1); color:#4f46e5; border-radius:4px; font-size:9px; font-weight:900; font-family:monospace;">' + escape(code) + '</span>' +
+                                '<span style="font-size:13px; font-weight:700;">' + escape(title) + '</span>' +
+                            '</div>';
+                        }
+                    }
+                });
+            }
 
             // --- TomSelect for Searchable Dependencies ---
             const parenSelectEl = document.getElementById('parent_id_select');

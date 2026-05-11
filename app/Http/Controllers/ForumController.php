@@ -359,7 +359,43 @@ class ForumController extends Controller
             'title' => 'sometimes|string|max:255',
             'is_pinned' => 'sometimes|boolean',
             'is_locked' => 'sometimes|boolean',
+            'task_id' => 'nullable|exists:tasks,id',
         ]);
+
+        if ($request->has('task_id') && $validated['task_id'] != $thread->task_id) {
+            if (empty($validated['task_id'])) {
+                $validated['task_id'] = null;
+            } else {
+                $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
+
+                // Privacy check for the task before linking
+                $isCoordinator = $team->isCoordinator(auth()->user());
+                $userId = auth()->id();
+                if (!$isCoordinator) {
+                    $hasAccess = $task->visibility === 'public' ||
+                                 $task->created_by_id === $userId ||
+                                 $task->assigned_user_id === $userId ||
+                                 $task->assignedTo->contains($userId) ||
+                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
+                    
+                    if (!$hasAccess) {
+                        abort(403, 'No tienes acceso a esa tarea privada.');
+                    }
+                }
+
+                // Force link to root task
+                while ($task->parent_id && $task->parent) {
+                    $task = $task->parent;
+                }
+                
+                // If that root task already has another thread, block it.
+                if ($task->forumThread && $task->forumThread->id !== $thread->id) {
+                    return back()->with('error', 'Esa tarea ya está vinculada a otro hilo de discusión.');
+                }
+                
+                $validated['task_id'] = $task->id;
+            }
+        }
 
         $thread->update($validated);
 

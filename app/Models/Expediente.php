@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Expediente extends Model
 {
@@ -20,6 +21,7 @@ class Expediente extends Model
         'description',
         'status',
         'priority',
+        'visibility',
         'start_date',
         'end_date',
         'metadata',
@@ -49,6 +51,16 @@ class Expediente extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');
+    }
+
+    // --- Relational Engine ---
+    
+    /**
+     * Linked dossiers (Expedientes Relacionados)
+     */
+    public function relatedExpedientes(): BelongsToMany
+    {
+        return $this->belongsToMany(Expediente::class, 'expediente_related', 'expediente_id', 'related_id')->withTimestamps();
     }
     
     /**

@@ -31,7 +31,7 @@
         </div>
 
         <!-- Action Buttons Row -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
             <div class="flex items-center gap-3 shrink-0">
                 <button type="button" x-data=""
                     x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
@@ -75,30 +75,30 @@
                 $orphanCount = $team->forumThreads()->orphaned()->count();
             @endphp
             @if($orphanCount > 0)
-                <div class="mb-8 p-6 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/40 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in shadow-sm">
+                <div class="mb-8 p-6 bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800/40 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in shadow-sm">
                     <div class="flex items-center gap-4">
-                        <div class="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                        <div class="p-2.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-bold text-indigo-900 dark:text-indigo-200">{{ __('forum.orphaned_maintenance') }}</h4>
-                            <p class="text-xs text-indigo-700 dark:text-indigo-400">{{ __('forum.orphaned_desc', ['count' => $orphanCount]) }}</p>
+                            <h4 class="text-sm font-bold text-violet-900 dark:text-violet-200">{{ __('forum.orphaned_maintenance') }}</h4>
+                            <p class="text-xs text-violet-700 dark:text-violet-400">{{ __('forum.orphaned_desc', ['count' => $orphanCount]) }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         @if($filters['orphaned'] ?? null)
                             <a href="{{ route('teams.forum.index', $team) }}" class="text-xs font-bold text-gray-500 hover:text-gray-700 px-4 py-2 transition-colors">{{ __('forum.back_to_forum') }}</a>
                         @else
-                            <a href="{{ route('teams.forum.index', [$team, 'orphaned' => 1]) }}" class="text-xs font-black uppercase tracking-tighter text-indigo-700 hover:text-indigo-800 px-4 py-2 transition-colors">{{ __('forum.view_orphans') }}</a>
+                            <a href="{{ route('teams.forum.index', [$team, 'orphaned' => 1]) }}" class="text-xs font-black uppercase tracking-tighter text-violet-700 hover:text-violet-800 px-4 py-2 transition-colors">{{ __('forum.view_orphans') }}</a>
                         @endif
                         
                         <form action="{{ route('teams.forum.cleanup', $team) }}" method="POST" id="cleanup-form">
                             @csrf
                             <button type="button" 
                                     onclick="confirmCleanup()"
-                                    class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20 active:scale-95">{{ __('forum.cleanup_stale') }}</button>
+                                    class="bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md shadow-violet-600/20 active:scale-95">{{ __('forum.cleanup_stale') }}</button>
                         </form>
                     </div>
                 </div>
@@ -138,7 +138,7 @@
                     </a>
                 @else
                     <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
-                        class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-500/25">
+                        class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-500/25">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -434,11 +434,11 @@
                     cancelButtonText: '{{ __('forum.cancel') }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
-                        title: 'text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-tight pt-4 text-lg',
+                        title: 'text-violet-600 dark:text-violet-400 font-black uppercase tracking-tight pt-4 text-lg',
                         htmlContainer: 'text-[13px] font-medium text-slate-500 dark:text-slate-400 px-6 pb-6 leading-relaxed',
-                        confirmButton: 'rounded-2xl px-6 py-2.5 shadow-lg shadow-indigo-500/20 uppercase tracking-widest font-black text-[9px] mx-1',
+                        confirmButton: 'rounded-2xl px-6 py-2.5 shadow-lg shadow-violet-500/20 uppercase tracking-widest font-black text-[9px] mx-1',
                         cancelButton: 'rounded-2xl px-6 py-2.5 uppercase tracking-widest font-black text-[9px] mx-1',
-                        icon: 'scale-75 mb-0 mt-4 border-indigo-200 text-indigo-400'
+                        icon: 'scale-75 mb-0 mt-4 border-violet-200 text-violet-400'
                     },
                     buttonsStyling: true
                 }).then((result) => {

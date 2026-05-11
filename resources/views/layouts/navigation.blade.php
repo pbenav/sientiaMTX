@@ -35,6 +35,7 @@
                                 request()->routeIs('teams.tasks.*') ||
                                 request()->routeIs('teams.gantt') ||
                                 request()->routeIs('teams.forum.*') ||
+                                request()->routeIs('teams.expedientes.*') ||
                                 request()->routeIs('teams.members') ||
                                 request()->routeIs('teams.edit');
                         @endphp
@@ -67,6 +68,9 @@
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.tasks.index', $currentTeamId)">
                                             {{ __('navigation.task_list') ?? 'Tareas' }}
+                                        </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.expedientes.index', $currentTeamId)">
+                                            {{ __('Expedientes') }}
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.dashboard', $currentTeamId)">
                                             {{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}
@@ -202,6 +206,7 @@
                         request()->routeIs('teams.gantt') ||
                         request()->routeIs('teams.kanban') ||
                         request()->routeIs('teams.forum.*') ||
+                        request()->routeIs('teams.expedientes.*') ||
                         request()->routeIs('teams.members') ||
                         request()->routeIs('teams.edit');
                 @endphp
@@ -221,6 +226,9 @@
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.tasks.index', $currentTeamId)" :active="request()->routeIs('teams.tasks.*')" class="text-sm">
                             {{ __('navigation.task_list') ?? 'Tareas' }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.expedientes.index', $currentTeamId)" :active="request()->routeIs('teams.expedientes.*')" class="text-sm">
+                            {{ __('Expedientes') }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.dashboard', $currentTeamId)" :active="request()->routeIs('teams.dashboard')" class="text-sm">
                             {{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}

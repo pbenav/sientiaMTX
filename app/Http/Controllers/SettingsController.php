@@ -25,27 +25,30 @@ class SettingsController extends Controller
     {
         return view('settings.mail', [
             'config' => [
-                'mailer' => env('MAIL_MAILER', 'smtp'),
-                'host' => env('MAIL_HOST'),
-                'port' => env('MAIL_PORT'),
-                'username' => env('MAIL_USERNAME'),
-                'password' => env('MAIL_PASSWORD'),
-                'encryption' => env('MAIL_ENCRYPTION'),
-                'from_address' => env('MAIL_FROM_ADDRESS'),
-                'from_name' => env('MAIL_FROM_NAME'),
+                'mailer' => config('mail.default', 'smtp'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'username' => config('mail.mailers.smtp.username'),
+                'password' => config('mail.mailers.smtp.password'),
+                'encryption' => config('mail.mailers.smtp.encryption'),
+                'from_address' => config('mail.from.address'),
+                'from_name' => config('mail.from.name'),
             ],
             'google' => [
-                'client_id' => env('GOOGLE_CLIENT_ID'),
-                'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-                'redirect_uri' => env('GOOGLE_REDIRECT_URI', route('google.callback')),
+                'client_id' => config('services.google.client_id'),
+                'client_secret' => config('services.google.client_secret'),
+                'redirect_uri' => config('services.google.redirect_uri') ?? route('google.callback'),
             ],
             'limits' => [
-                'default_disk_quota' => env('DEFAULT_DISK_QUOTA', 100),
-                'session_lifetime' => env('SESSION_LIFETIME', 120),
-                'kanban_completed_limit' => env('KANBAN_COMPLETED_LIMIT', 10),
+                'default_disk_quota' => config('settings.default_disk_quota', 100),
+                'session_lifetime' => config('session.lifetime', 120),
+                'kanban_completed_limit' => config('settings.kanban_completed_limit', 10),
                 'quick_notes_audio_max_duration' => \App\Models\Setting::get('quick_notes_audio_max_duration', 60),
                 'mfa_enabled' => \App\Models\Setting::get('mfa_enabled', false),
                 'require_approval' => \App\Models\Setting::get('require_approval', true),
+                'purge_inactive_enabled' => \App\Models\Setting::get('purge_inactive_enabled', false),
+                'purge_inactive_days' => \App\Models\Setting::get('purge_inactive_days', 30),
+                'purge_warning_days' => \App\Models\Setting::get('purge_warning_days', 5),
             ],
             'telegram' => [
                 'bot_token' => config('services.telegram.bot_token'),
@@ -164,7 +167,7 @@ class SettingsController extends Controller
             'password' => Hash::make($validated['password']),
             'locale' => $validated['locale'],
             'timezone' => $validated['timezone'] ?? $siteTimezone,
-            'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
+            'disk_quota' => config('settings.default_disk_quota', 100) * 1024 * 1024,
         ]);
 
         return redirect()->route('settings.users')
@@ -295,6 +298,9 @@ class SettingsController extends Controller
             'quick_notes_audio_max_duration' => 'sometimes|numeric|min:5|max:300',
             'mfa_enabled' => 'sometimes|boolean',
             'require_approval' => 'sometimes|boolean',
+            'purge_inactive_enabled' => 'sometimes|boolean',
+            'purge_inactive_days' => 'sometimes|numeric|min:1',
+            'purge_warning_days' => 'sometimes|numeric|min:1',
         ]);
 
         try {
@@ -319,6 +325,20 @@ class SettingsController extends Controller
             \App\Models\Setting::set('require_approval', $request->has('require_approval'));
             if (isset($data['require_approval'])) {
                 unset($data['require_approval']);
+            }
+
+            // Ajustes de Purga de Cuentas inactivas
+            \App\Models\Setting::set('purge_inactive_enabled', $request->has('purge_inactive_enabled'));
+            if (isset($data['purge_inactive_enabled'])) unset($data['purge_inactive_enabled']);
+
+            if (isset($data['purge_inactive_days'])) {
+                \App\Models\Setting::set('purge_inactive_days', $data['purge_inactive_days']);
+                unset($data['purge_inactive_days']);
+            }
+
+            if (isset($data['purge_warning_days'])) {
+                \App\Models\Setting::set('purge_warning_days', $data['purge_warning_days']);
+                unset($data['purge_warning_days']);
             }
 
             $updateExistingUsers = isset($data['update_existing_users']) || $request->has('update_existing_users');

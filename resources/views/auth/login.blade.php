@@ -120,6 +120,15 @@
                             }
                         } catch (e) {
                             console.error('Passkey login fail:', e);
+                            
+                            // Ultra-defensive fallback: If by any edge case a 419 / Session Expiry still occurs, 
+                            // automatically force a soft page reload to give user a fresh login canvas.
+                            const errStr = String(e.message || '').toLowerCase();
+                            if (errStr.includes('expira') || errStr.includes('419') || errStr.includes('csrf')) {
+                                window.location.reload();
+                                return;
+                            }
+
                             // Ignore cancel errors, alert others
                             if (e.name !== 'UserCancelledError' && e.name !== 'NotAllowedError' && !(e.message && e.message.includes('cancelled'))) {
                                 Swal.fire({

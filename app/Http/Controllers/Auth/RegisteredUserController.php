@@ -73,7 +73,7 @@ class RegisteredUserController extends Controller
             'is_admin' => $isFirstUser,
             'is_approved' => $isApproved,
             'invitations_left' => 5,
-            'disk_quota' => env('DEFAULT_DISK_QUOTA', 100) * 1024 * 1024,
+            'disk_quota' => config('settings.default_disk_quota', 100) * 1024 * 1024,
             'privacy_policy_accepted_at' => now(),
             'terms_accepted_at' => now(),
             'marketing_accepted_at' => $request->has('marketing') ? now() : null,

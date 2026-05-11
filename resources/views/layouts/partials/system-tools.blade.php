@@ -6,6 +6,7 @@
 <div class="flex items-center gap-1">
     @include('layouts.partials.theme-toggle')
     @include('layouts.partials.layout-toggle')
+    @include('layouts.partials.clean-mode-toggle')
     @include('layouts.partials.zoom-controls')
     @include('layouts.partials.language-toggle')
 </div>

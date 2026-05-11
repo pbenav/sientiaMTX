@@ -139,6 +139,14 @@
                     @endforeach
                 </select>
 
+                <!-- Expediente Filter -->
+                <select name="expediente_id" onchange="this.form.submit()" class="w-40 {{ ($filters['expediente_id'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('Expediente') }}</option>
+                    @foreach($expedientes as $exp)
+                        <option value="{{ $exp->id }}" {{ ($filters['expediente_id'] ?? null) == $exp->id ? 'selected' : '' }}>{{ $exp->code }}</option>
+                    @endforeach
+                </select>
+
                 <!-- Skill Filter -->
                 <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ $filters['skill_id'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
                     <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
@@ -265,6 +273,11 @@
                                                         {{ __('tasks.your_execution') }}
                                                     </span>
                                                 @endif
+                                                @if ($task->expediente)
+                                                    <a href="{{ route('teams.expedientes.show', [$team, $task->expediente]) }}" onclick="event.stopPropagation()" class="px-1.5 py-0.5 rounded-md bg-violet-100/60 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 text-[8px] font-black uppercase tracking-tighter border border-violet-200/50 dark:border-violet-800/50 shadow-sm hover:ring-1 hover:ring-violet-500 transition-all">
+                                                        {{ $task->expediente->code }}
+                                                    </a>
+                                                @endif
                                             </div>
                                         </div>
                                         <div class="shrink-0 flex flex-col items-end gap-1.5">
@@ -380,7 +393,7 @@
                                     {{ $task->title }}
                                 </span>
                                 <button onclick="unarchiveTask({{ $task->id }})" 
-                                        class="p-1 rounded-lg opacity-60 group-hover:opacity-100 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-gray-400 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200"
+                                        class="p-1 rounded-lg opacity-60 group-hover:opacity-100 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-gray-400 hover:text-violet-600 transition-all border border-transparent hover:border-violet-200"
                                         title="{{ __('tasks.restore') ?? 'Desarchivar' }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

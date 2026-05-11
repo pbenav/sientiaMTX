@@ -1,10 +1,16 @@
 @auth
 @if(auth()->user()->isWorking())
+@php
+    // Obtenemos la fecha más antigua de inicio de los contadores activos
+    $oldestActiveLog = auth()->user()->timeLogs()->whereNull('end_at')->orderBy('start_at', 'asc')->first();
+    $startedAtDate = $oldestActiveLog && $oldestActiveLog->start_at ? $oldestActiveLog->start_at->toDateString() : now()->toDateString();
+@endphp
 <div x-data="{
+    startedAtDate: '{{ $startedAtDate }}',
     open: false,
     countdown: 60,
     timer: null,
-    endTime1: '{{ auth()->user()->work_end_time_1 ?? '14:00' }}',
+    endTime1: '{{ auth()->user()->work_end_time_1 }}',
     startTime2: '{{ auth()->user()->work_start_time_2 }}',
     endTime2: '{{ auth()->user()->work_end_time_2 }}',
     limitShown: '',
@@ -19,19 +25,31 @@
     checkSchedule() {
         if (this.open) return;
         
-        const today = new Date().toISOString().slice(0, 10);
-        if (localStorage.getItem('schedule_check_ack_' + today) === 'true') {
+        const nowObj = new Date();
+        const Y = nowObj.getFullYear();
+        const M = String(nowObj.getMonth() + 1).padStart(2, '0');
+        const D = String(nowObj.getDate()).padStart(2, '0');
+        const todayStr = `${Y}-${M}-${D}`;
+
+        if (localStorage.getItem('schedule_check_ack_' + todayStr) === 'true') {
             return;
+        }
+
+        // CONTROL ABSOLUTO 1: ¿El registro de tiempo empezó ayer o antes? (Cambio de Día)
+        if (this.startedAtDate && this.startedAtDate < todayStr) {
+             this.limitShown = 'Cambio de Día';
+             this.open = true;
+             this.startCountdown();
+             return;
         }
         
         const parseTime = (timeStr) => {
-            if (!timeStr) return null;
-            const [h, m] = timeStr.split(':').map(Number);
-            return h * 60 + m;
+            if (!timeStr || timeStr.trim() === '') return null;
+            const parts = timeStr.split(':');
+            return Number(parts[0]) * 60 + Number(parts[1]);
         };
 
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const currentMinutes = nowObj.getHours() * 60 + nowObj.getMinutes();
 
         const end1 = parseTime(this.endTime1);
         const start2 = parseTime(this.startTime2);
@@ -40,19 +58,31 @@
         let pastEndTime = false;
         let limitLabel = '';
 
-        if (end1 && currentMinutes >= end1) {
-            if (start2) {
-                if (currentMinutes < start2) {
-                    pastEndTime = true;
-                    limitLabel = this.endTime1;
-                } else if (end2 && currentMinutes >= end2) {
-                    pastEndTime = true;
-                    limitLabel = this.endTime2;
+        // 1. EVALUAR HORARIO DEFINIDO
+        if (end1 || end2) {
+            if (end1 && currentMinutes >= end1) {
+                if (start2) {
+                    if (currentMinutes < start2) {
+                        pastEndTime = true;
+                        limitLabel = this.endTime1;
+                    } else if (end2 && currentMinutes >= end2) {
+                        pastEndTime = true;
+                        limitLabel = this.endTime2;
+                    }
+                } else {
+                            pastEndTime = true;
+                            limitLabel = this.endTime1;
                 }
-            } else {
+            } else if (!end1 && end2 && currentMinutes >= end2) {
                 pastEndTime = true;
-                limitLabel = this.endTime1;
+                limitLabel = this.endTime2;
             }
+        }
+        
+        // 2. CONTROL ABSOLUTO 2: Si no hay horario (o incluso si lo hay), el límite HARD diario es 23:55.
+        if (!pastEndTime && currentMinutes >= 1435) { 
+            pastEndTime = true;
+            limitLabel = 'Medianoche';
         }
         
         if (pastEndTime) {

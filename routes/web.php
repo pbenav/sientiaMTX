@@ -63,6 +63,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile/sessions/{sessionId}', [ProfileController::class, 'logoutSession'])->name('profile.sessions.logout');
     
     // Multi-Factor Authentication (MFA / 2FA) Routes under ENS Guidelines
     Route::post('/profile/two-factor/enable', [ProfileController::class, 'enableTwoFactor'])->name('profile.two-factor.enable');
@@ -137,6 +138,13 @@ Route::middleware('auth')->group(function () {
         Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('teams.tasks.update')->withTrashed()->withoutScopedBindings();
         Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('teams.tasks.destroy')->withTrashed()->withoutScopedBindings();
     });
+
+    // Expedientes routes
+    Route::resource('teams.expedientes', \App\Http\Controllers\ExpedienteController::class);
+    Route::post('teams/{team}/expedientes/{expediente}/attachments', [\App\Http\Controllers\ExpedienteController::class, 'uploadAttachment'])->name('teams.expedientes.attachments.upload');
+    Route::post('teams/{team}/expedientes/{expediente}/link-tasks', [\App\Http\Controllers\ExpedienteController::class, 'linkTasks'])->name('teams.expedientes.link-tasks');
+    Route::post('teams/{team}/expedientes/{expediente}/link-related', [\App\Http\Controllers\ExpedienteController::class, 'linkRelated'])->name('teams.expedientes.link-related');
+    Route::post('teams/{team}/expedientes/{expediente}/unlink-task/{task}', [\App\Http\Controllers\ExpedienteController::class, 'unlinkTask'])->name('teams.expedientes.unlink-task');
 
     // Forum routes inside team
     Route::get('/teams/{team}/forum', [ForumController::class, 'index'])->name('teams.forum.index');

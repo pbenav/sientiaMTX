@@ -414,21 +414,7 @@
             init() {
                 this.loadHistory();
                 
-                // Auto-detect context from URL if missing
-                if (!this.teamId || !this.taskId) {
-                    const path = window.location.pathname;
-                    const teamMatch = path.match(/\/teams\/(\d+)/);
-                    const taskMatch = path.match(/\/tasks\/(\d+)/);
-                    const forumMatch = path.match(/\/forum\/(\d+)/);
-
-                    if (teamMatch && !this.teamId) this.teamId = teamMatch[1];
-                    if (taskMatch && !this.taskId) this.taskId = taskMatch[1];
-                    if (forumMatch && !this.threadId) this.threadId = forumMatch[1];
-                    
-                    if (this.teamId || this.taskId) {
-                        console.log(`Ax.ia: Contexto auto-detectado (Team: ${this.teamId}, Task: ${this.taskId})`);
-                    }
-                }
+                this.syncContext();
 
                 this.lastFocusedEl = null;
                 window.addEventListener('focusin', (e) => {
@@ -479,7 +465,7 @@
                 
                 // Focus and SELECT the input
                 this.$nextTick(() => {
-                    const input = this.$el.querySelector('input[type="text"]');
+                    const input = this.$refs.aiInput;
                     if (input) {
                         input.focus();
                         input.select();
@@ -498,11 +484,10 @@
                 
                 this.$nextTick(() => {
                     this.scrollToBottom();
-                    const input = this.$el.querySelector('input[type="text"]');
+                    const input = this.$refs.aiInput;
                     if (input) {
                         input.focus();
-                        // Seleccionamos el final para que el usuario pueda escribir su petición
-                        input.setSelectionRange(input.value.length, input.value.length);
+                        input.select();
                     }
                 });
             },
@@ -537,7 +522,7 @@
                 } else {
                     // Focus and SELECT the input
                     this.$nextTick(() => {
-                        const input = this.$el.querySelector('input[type="text"]');
+                        const input = this.$refs.aiInput;
                         if (input) {
                             input.focus();
                             input.select();
@@ -568,7 +553,7 @@
                 
                 // Focus and SELECT the input
                 this.$nextTick(() => {
-                    const input = this.$el.querySelector('input[type="text"]');
+                    const input = this.$refs.aiInput;
                     if (input) {
                         input.focus();
                         input.select();
@@ -657,11 +642,12 @@
                 this.open = !this.open;
                 
                 if (this.open) {
+                    this.syncContext();
                     this.hasUnread = false;
                     localStorage.setItem('ai_assistant_open', '1');
                     this.$nextTick(() => {
                         this.scrollToBottom();
-                        const input = this.$el.querySelector('input[type="text"]');
+                        const input = this.$refs.aiInput;
                         if (input) input.focus();
                     });
                 } else {
@@ -776,6 +762,12 @@
                         
                         if (this.input.trim() === '') {
                             this.input = blob.type.startsWith('image/') ? 'Analiza esta imagen...' : 'Analiza este archivo...';
+                            this.$nextTick(() => {
+                                if (this.$refs.aiInput) {
+                                    this.$refs.aiInput.focus();
+                                    this.$refs.aiInput.select();
+                                }
+                            });
                         }
                         found = true;
                     }
@@ -796,6 +788,12 @@
                         file_type: file.type
                     });
                     this.input = `Analiza este archivo...`;
+                    this.$nextTick(() => {
+                        if (this.$refs.aiInput) {
+                            this.$refs.aiInput.focus();
+                            this.$refs.aiInput.select();
+                        }
+                    });
                 }
             },
 
@@ -822,11 +820,13 @@
                         textarea.style.height = 'auto';
                         textarea.style.height = textarea.scrollHeight + 'px';
                         textarea.focus();
+                        textarea.select();
                     }
                 });
             },
 
             async sendMessage() {
+                this.syncContext(); // Safe final verify before dispatch
                 if (this.input.trim() === '' && !this.pendingFile) return;
                 
                 const userText = this.input.trim();
@@ -930,6 +930,24 @@
                 this.scrollToBottom();
             }
         },
+
+            syncContext() {
+                // 1. Ultimate Source: Explicit DOM beacon (Highest reliability)
+                const beacon = document.getElementById('sientia-active-task-beacon');
+                if (beacon && beacon.dataset.taskId) {
+                    this.taskId = beacon.dataset.taskId;
+                }
+                
+                // 2. Secondary: Realtime Path Auditing (For auxiliary pages like edit/dashboard/forum)
+                const path = window.location.pathname;
+                const teamMatch = path.match(/\/teams\/(\d+)/);
+                const taskMatch = path.match(/\/tasks\/(\d+)/);
+                const forumMatch = path.match(/\/forum\/(\d+)/);
+
+                if (teamMatch) this.teamId = teamMatch[1];
+                if (taskMatch) this.taskId = taskMatch[1];
+                if (forumMatch) this.threadId = forumMatch[1];
+            },
 
             scrollToBottom() {
                 setTimeout(() => {

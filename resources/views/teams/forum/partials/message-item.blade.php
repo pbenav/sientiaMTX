@@ -67,7 +67,7 @@
                     <!-- Quote -->
                     <button type="button"
                         onclick="quoteMessage({{ json_encode($message->user->name) }}, {{ json_encode($message->content) }})"
-                        class="p-1 text-gray-400 hover:text-indigo-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
+                        class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                         title="Citar">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -93,7 +93,7 @@
                             teamId: {{ $team->id }},
                             threadId: {{ $thread->id }}
                         })"
-                        class="p-1 text-gray-400 hover:text-indigo-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
+                        class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                         title="Preguntar a Ax.ia">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -123,7 +123,7 @@
         <div class="relative group w-full">
             <!-- View Mode -->
             <div id="message-view-{{ $message->id }}"
-                class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/10 dark:border-indigo-800/50 rounded-tr-none text-indigo-900 dark:text-indigo-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }} {{ !$isRoot ? 'py-3' : '' }}">
+                class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-violet-50 border-violet-100 dark:bg-violet-900/10 dark:border-violet-800/50 rounded-tr-none text-violet-900 dark:text-violet-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }} {{ !$isRoot ? 'py-3' : '' }}">
                 <div class="text-sm markdown-content leading-relaxed">
                     @php
                         $decoded = json_decode($message->content, true);

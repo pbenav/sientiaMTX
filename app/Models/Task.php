@@ -787,6 +787,7 @@ class Task extends Model
                 'parent_id' => $occurrence->id,
                 'is_template' => false,
                 'assigned_user_id' => $userId,
+                'expediente_id' => $occurrence->expediente_id,
                 'visibility' => 'private',
             ]);
         }

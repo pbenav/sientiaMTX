@@ -139,6 +139,40 @@
                                         {{ __('Si se activa, los usuarios que se registren se enviarán a una lista de espera hasta que un administrador los apruebe o canjeen un código VIP. Desactívalo para permitir acceso libre a toda la plataforma.') }}
                                     </p>
                                 </div>
+
+                                <!-- Purga Automática de Usuarios -->
+                                <div class="md:col-span-3 flex flex-col gap-3 border-t border-gray-100 dark:border-gray-800 pt-6" 
+                                     x-data="{ isPurgeOn: {{ $limits['purge_inactive_enabled'] ? 'true' : 'false' }} }">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="purge_inactive_enabled" name="purge_inactive_enabled" value="1"
+                                            @change="isPurgeOn = $event.target.checked"
+                                            {{ $limits['purge_inactive_enabled'] ? 'checked' : '' }}
+                                            class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-orange-600 shadow-sm focus:ring-orange-500">
+                                        <label for="purge_inactive_enabled" class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                            🧹 {{ __('Activar Purga Automática de Usuarios Inactivos') }}
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
+                                        {{ __('Detecta usuarios obsoletos, envía un correo de aviso de X días y, si no reaccionan, elimina la cuenta de forma permanente. Por seguridad, NUNCA afecta a administradores.') }}
+                                    </p>
+                                    
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pl-6 pt-2" x-show="isPurgeOn" x-transition x-cloak>
+                                        <div>
+                                            <x-input-label for="purge_inactive_days" value="Umbral de Inactividad (Días)" />
+                                            <x-text-input id="purge_inactive_days" name="purge_inactive_days" type="number"
+                                                class="mt-1 block w-full bg-orange-50/30 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/50 text-sm" 
+                                                :value="old('purge_inactive_days', $limits['purge_inactive_days'])" min="1" />
+                                            <p class="text-[10px] text-gray-400 mt-1">Pasados estos días sin acceso, se enviará el aviso por email.</p>
+                                        </div>
+                                        <div>
+                                            <x-input-label for="purge_warning_days" value="Plazo de Aviso / Gracia (Días)" />
+                                            <x-text-input id="purge_warning_days" name="purge_warning_days" type="number"
+                                                class="mt-1 block w-full bg-orange-50/30 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/50 text-sm" 
+                                                :value="old('purge_warning_days', $limits['purge_warning_days'])" min="1" />
+                                            <p class="text-[10px] text-gray-400 mt-1">Días extra para responder antes de la purga definitiva.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex items-center justify-end pt-6 border-t border-gray-100 dark:border-gray-800">

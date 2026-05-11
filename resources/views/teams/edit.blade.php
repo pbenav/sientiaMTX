@@ -258,7 +258,7 @@
 
                         <form id="transfer-ownership-form" method="POST"
                             action="{{ route('teams.transfer-ownership', $team) }}"
-                            onsubmit="event.preventDefault(); if(confirm('{{ __('teams.transfer_ownership_confirm') }}')) this.submit();">
+                            onsubmit="event.preventDefault(); confirmAction('transfer-ownership-form', '{{ __('teams.transfer_ownership_confirm') }}', 'warning');">
                             @csrf
                             <div class="space-y-4">
                                 <div>
@@ -511,7 +511,29 @@
                         await this.checkStatus();
                     },
                     async restartSession() {
-                        if (!confirm('¿Deseas desvincular o reiniciar la cuenta de WhatsApp corporativa de este Equipo?')) return;
+                        let confirmed = false;
+                        const textMsg = '¿Deseas desvincular o reiniciar la cuenta de WhatsApp corporativa de este Equipo?';
+                        if (typeof Swal !== 'undefined') {
+                            const result = await Swal.fire({
+                                title: '¿Desvincular Cuenta?',
+                                text: textMsg,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#ef4444',
+                                cancelButtonColor: '#6b7280',
+                                confirmButtonText: 'Sí, desvincular',
+                                cancelButtonText: 'Cancelar',
+                                customClass: {
+                                    popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                                    confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                                    cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                                }
+                            });
+                            confirmed = result.isConfirmed;
+                        } else {
+                            confirmed = confirm(textMsg);
+                        }
+                        if (!confirmed) return;
                         try {
                             await fetch('{{ route('whatsapp.team-restart') }}', {
                                 method: 'POST',
@@ -523,8 +545,9 @@
                             });
                             this.ready = false;
                             this.qr = null;
-                            this.initSession = true;
-                            this.startPolling();
+                            this.authenticated = false; // Reset status visually immediately
+                            this.initSession = false; // No auto-restart after explicit disconnect
+                            this.stopPolling(); // Stop continuous loading
                         } catch (e) {
                             console.error('Error al reiniciar sesión de equipo:', e);
                         }
@@ -544,7 +567,7 @@
                         <div>
                             <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <span>WhatsApp Corporativo de Equipo</span>
-                                <span class="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-[8px] font-black uppercase rounded-full">Canal de Equipo</span>
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-violet-500 text-white text-[8px] font-black uppercase rounded-full">Canal de Equipo</span>
                             </h4>
                             <p class="text-[10px] text-gray-400 font-medium">Vincula un número de teléfono móvil corporativo exclusivo para el equipo <strong>{{ $team->name }}</strong></p>
                         </div>
@@ -574,7 +597,7 @@
                         
                         <div class="flex gap-3 pt-2">
                             <!-- Botón de Conexión Pasiva -->
-                            <template x-if="!ready && !qr && !initSession">
+                            <template x-if="!ready && !qr && !initSession && !authenticated">
                                 <button @click="startConnection()" type="button" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-[10px] font-black uppercase rounded-xl transition-all shadow-md shadow-emerald-500/10">
                                     Vincular WhatsApp de Equipo
                                 </button>
@@ -641,10 +664,37 @@
 
     @push('scripts')
         <script>
-            function confirmDelete(formId, message) {
-                if (confirm(message)) {
-                    document.getElementById(formId).submit();
+            function confirmAction(formId, message, type = 'danger') {
+                const color = type === 'warning' ? '#f59e0b' : '#ef4444';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: message,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: color,
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                            cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(formId).submit();
+                        }
+                    });
+                } else {
+                    if (confirm(message)) {
+                        document.getElementById(formId).submit();
+                    }
                 }
+            }
+
+            function confirmDelete(formId, message) {
+                confirmAction(formId, message, 'danger');
             }
         </script>
     @endpush

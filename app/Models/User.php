@@ -67,6 +67,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         'two_factor_secret',
         'two_factor_confirmed_at',
         'two_factor_method',
+        'last_ip',
     ];
 
     /**
@@ -102,6 +103,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             'energy_level' => 'integer',
             'last_login_at' => 'datetime',
             'last_activity_at' => 'datetime',
+            'inactive_warning_sent_at' => 'datetime',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
         ];

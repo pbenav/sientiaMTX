@@ -26,3 +26,9 @@ Schedule::command('gamification:fresh-start')->hourly();
 // Saneamiento de mensajes duplicados en WhatsApp y Telegram — cada 15 minutos
 Schedule::command('messages:deduplicate --apply')->everyFifteenMinutes();
 
+// Limpieza automática de sesiones fantasma y usuarios inactivos — cada 30 minutos
+Schedule::command('app:purge-ghost-sessions --threshold=60')->everyThirtyMinutes();
+
+// Purga automática de cuentas inactivas (Aviso y Eliminación) — Cada día a las 03:00
+Schedule::command('app:purge-inactive-accounts')->dailyAt('03:00');
+

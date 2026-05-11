@@ -12,6 +12,13 @@ try {
     console.log('[Startup-Cleaner] Limpiando procesos antiguos de Chrome/Chromium para arrancar limpio...');
     execSync('pkill -f "chrome" || true');
     execSync('pkill -f "chromium" || true');
+    
+    const cacheDir = path.join(__dirname, '.wwebjs_cache');
+    if (fs.existsSync(cacheDir)) {
+        console.log('[Startup-Cleaner] Eliminando caché antigua .wwebjs_cache...');
+        fs.rmSync(cacheDir, { recursive: true, force: true });
+    }
+
     console.log('[Startup-Cleaner] Limpieza de inicio completada con éxito.');
 } catch (err) {
     console.error('[Startup-Cleaner] Error durante la limpieza inicial:', err.message);
@@ -52,27 +59,35 @@ async function safelyDestroyClient(client) {
     }
 
     try {
-        console.log(`[Cleanup] Destruyendo cliente de forma limpia...`);
-        await client.destroy();
+        console.log(`[Cleanup] Destruyendo cliente de forma limpia (con timeout de 5s)...`);
+        // Promise.race para evitar que destroy() se quede colgado indefinidamente
+        await Promise.race([
+            client.destroy(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout en destroy()')), 5000))
+        ]);
     } catch (err) {
-        console.error('[Cleanup] Error destruyendo cliente con destroy():', err.message);
+        console.error('[Cleanup] Advertencia durante destroy():', err.message);
     }
 
-    // Si persiste el PID del proceso de Chrome, lo forzamos a cerrarse tras 4 segundos de gracia
+    // Devolver una promesa que espere hasta 2 segundos para garantizar liberación de archivos si había un PID
     if (pid) {
-        setTimeout(() => {
-            try {
-                process.kill(pid, 0); // Comprobar si el proceso sigue activo
-                console.log(`[Cleanup] El proceso Chrome (PID: ${pid}) sigue activo tras destroy(). Forzando terminación...`);
-                process.kill(pid, 'SIGKILL');
+        return new Promise((resolve) => {
+            setTimeout(() => {
                 try {
-                    process.kill(-pid, 'SIGKILL'); // Matar su grupo de procesos
-                } catch (gErr) {}
-            } catch (e) {
-                // El proceso ya se cerró limpiamente
-            }
-        }, 4000);
+                    process.kill(pid, 0); // Comprobar si el proceso sigue activo
+                    console.log(`[Cleanup] El proceso Chrome (PID: ${pid}) sigue activo tras destroy(). Forzando terminación...`);
+                    process.kill(pid, 'SIGKILL');
+                    try {
+                        process.kill(-pid, 'SIGKILL'); // Matar su grupo de procesos
+                    } catch (gErr) {}
+                } catch (e) {
+                    // El proceso ya se cerró limpiamente
+                }
+                resolve();
+            }, 2000); // Reducimos a 2 segundos pero esperando de forma asíncrona real
+        });
     }
+    return Promise.resolve();
 }
 
 // Limpiador activo periódico de procesos Chrome huérfanos de este servidor Node
@@ -131,7 +146,7 @@ function getSession(sessionId = 'default') {
         }),
         webVersionCache: {
             type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1017577156-alpha.html'
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1039201455-alpha.html'
         },
         puppeteer: {
             headless: true,
@@ -154,7 +169,7 @@ function getSession(sessionId = 'default') {
                 '--aggressive-cache-discard',
                 '--disable-ipc-flooding-protection',
                 '--js-flags="--max-old-space-size=256"', // Reduce a 256MB el límite para cada pestaña, ideal para servidores con poca RAM
-                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
             ],
             timeout: 60000,
             protocolTimeout: 300000
@@ -163,9 +178,11 @@ function getSession(sessionId = 'default') {
 
     const sessionState = {
         client: client,
-        qr: null,
         ready: false,
-        authenticated: false
+        authenticated: false,
+        qr: null,
+        connecting: true,
+        isRestarting: false // Bandera de control para evitar falsos positivos de disco
     };
 
     // Temporizador de auto-sleep por inactividad
@@ -193,6 +210,7 @@ function getSession(sessionId = 'default') {
 
     client.on('qr', async (qr) => {
         resetInactivityTimer();
+        sessionState.isRestarting = false; // En cuanto llega el QR, salimos del modo reinicio
         console.log(`[Multi-Sesión QR - ${sessionId}] Generado nuevo código QR.`);
         try {
             sessionState.qr = await qrcode.toDataURL(qr);
@@ -204,6 +222,7 @@ function getSession(sessionId = 'default') {
 
     client.on('authenticated', () => {
         resetInactivityTimer();
+        sessionState.isRestarting = false; // Limpiamos también al autenticar
         console.log(`[Multi-Sesión - ${sessionId}] Autenticado con éxito.`);
         sessionState.authenticated = true;
         sessionState.qr = null;
@@ -229,7 +248,8 @@ function getSession(sessionId = 'default') {
         resetInactivityTimer();
         if (!message.from) return;
         
-        console.log(`[Multi-Sesión Msg - ${sessionId}] De: ${message.from} (Mío: ${message.fromMe}): ${message.body}`);
+        
+        console.log(`[Multi-Sesión Msg - ${sessionId}] Procesando mensaje (Mío: ${message.fromMe}).`);
         
         try {
             let authorName = 'Usuario';
@@ -285,8 +305,14 @@ function getSession(sessionId = 'default') {
     return sessionState;
 }
 
-// Inicializar la sesión por defecto (retrocompatibilidad con el equipo de siempre)
-getSession('default');
+// Inicializar la sesión por defecto SOLO si existen credenciales físicas guardadas
+const defaultSessionDir = path.join(__dirname, '.wwebjs_auth', 'session-sientia-mtx-default');
+if (fs.existsSync(defaultSessionDir)) {
+    console.log('[Startup] Detectada sesión previa para "default". Levantando en segundo plano...');
+    getSession('default');
+} else {
+    console.log('[Startup] La sesión "default" está limpia. Se levantará bajo demanda.');
+}
 
 // --- API REST PARA LARAVEL ---
 
@@ -299,7 +325,7 @@ app.get('/api/status', (req, res) => {
     const sessionDir = path.join(__dirname, '.wwebjs_auth', `session-sientia-mtx-${sessionId}`);
     const hasSavedSession = fs.existsSync(sessionDir);
 
-    if (!sessions[sessionId] && sessionId !== 'default') {
+    if (!sessions[sessionId]) {
         // Si no está en memoria pero existe en disco, ¡la levantamos automáticamente en segundo plano de forma transparente!
         if (hasSavedSession) {
             console.log(`[Auto-Reconexión] Detectadas credenciales en disco para sesión: ${sessionId}. Reconectando en segundo plano...`);
@@ -324,9 +350,14 @@ app.get('/api/status', (req, res) => {
     }
 
     const session = getSession(sessionId);
+    
+    // Forzamos false si el sistema está en fase de reinicio explícito
+    const hasValidSessionSaved = session.isRestarting ? false : hasSavedSession;
+
     res.json({
         ready: session.ready,
-        authenticated: session.authenticated || hasSavedSession || false,
+        // Validar que (memoria O disco) sea true Y que no exista un QR en curso
+        authenticated: (session.authenticated || hasValidSessionSaved || false) && !session.qr,
         qr: session.qr
     });
 });
@@ -334,7 +365,29 @@ app.get('/api/status', (req, res) => {
 // 2. Enviar un mensaje desde Laravel hacia WhatsApp usando una sesión específica
 app.post('/api/send', async (req, res) => {
     const sessionId = req.body.session || req.query.session || 'default';
-    const session = getSession(sessionId);
+    
+    // Comprobar si la sesión ya está en memoria
+    let session = sessions[sessionId];
+
+    if (!session) {
+        // Si no está en memoria, comprobar si existen credenciales físicas en disco
+        const sessionDir = path.join(__dirname, '.wwebjs_auth', `session-sientia-mtx-${sessionId}`);
+        const hasSavedSession = fs.existsSync(sessionDir);
+
+        if (!hasSavedSession) {
+            // NO inicializar la sesión desde cero para enviar un mensaje si no está vinculada, 
+            // de lo contrario generaría infinitos códigos QR innecesarios.
+            console.log(`[Block-Send] Se intentó enviar un mensaje a través de una sesión no inicializada ni vinculada: ${sessionId}. Ignorando...`);
+            return res.status(401).json({ 
+                success: false, 
+                error: 'La sesión no está configurada ni vinculada en este momento. Vincúlala primero a través del panel de ajustes.' 
+            });
+        }
+
+        // Si existe en disco pero no en memoria, procedemos a levantarla (Auto-Reconexión lazy)
+        console.log(`[Auto-Reconexión Lazy] Levantando sesión ${sessionId} desde disco para procesar envío de mensaje.`);
+        session = getSession(sessionId);
+    }
 
     if (!session.ready) {
         return res.status(503).json({ success: false, error: 'El cliente de WhatsApp no está conectado todavía.' });
@@ -394,9 +447,10 @@ app.post('/api/restart', async (req, res) => {
             console.error('Error borrando sesión física:', err.message);
         }
         
-        // Volvemos a inicializarlo de inmediato
+        // Volvemos a inicializarlo de inmediato marcándolo como reiniciando
         delete sessions[sessionId];
-        getSession(sessionId);
+        const newSession = getSession(sessionId);
+        newSession.isRestarting = true; // ACTIVAR PROTECCIÓN ANTI-FALSO POSITIVO
         
         res.json({ success: true, message: 'Cliente reiniciando, esperando nuevo QR...' });
     } catch (error) {

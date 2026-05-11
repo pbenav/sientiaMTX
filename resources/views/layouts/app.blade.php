@@ -271,6 +271,11 @@
     layout: '{{ $layout }}',
     sidebarOpen: false,
     mounted: false,
+    cleanMode: localStorage.getItem('cleanMode') === 'true',
+    toggleCleanMode() {
+        this.cleanMode = !this.cleanMode;
+        localStorage.setItem('cleanMode', this.cleanMode);
+    },
     init() {
         this.$nextTick(() => { 
             this.mounted = true; 
@@ -465,6 +470,7 @@
                                  @auth @include('layouts.partials.workday-timer') @endauth
                                  @include('layouts.partials.theme-toggle')
                                  @include('layouts.partials.layout-toggle')
+                                 @include('layouts.partials.clean-mode-toggle')
                                  @include('layouts.partials.language-toggle')
                                  @include('layouts.partials.zoom-controls')
                              </div>
@@ -581,6 +587,7 @@
                                     @auth @include('layouts.partials.workday-timer') @endauth
                                     @include('layouts.partials.theme-toggle')
                                     @include('layouts.partials.layout-toggle')
+                                    @include('layouts.partials.clean-mode-toggle')
                                     @include('layouts.partials.language-toggle')
                                 </div>
 
@@ -735,6 +742,7 @@
                         $drawerViews = [
                             ['name' => 'Escritorio', 'route' => route('teams.time-reports', $drawerTeamId), 'active' => request()->routeIs('teams.time-reports')],
                             ['name' => __('forum.title') ?? 'Foro', 'route' => route('teams.forum.index', $drawerTeamId), 'active' => request()->routeIs('teams.forum.*')],
+                            ['name' => 'Expedientes', 'route' => route('teams.expedientes.index', $drawerTeamId), 'active' => request()->routeIs('teams.expedientes.*')],
                             ['name' => __('navigation.task_list'), 'route' => route('teams.tasks.index', $drawerTeamId), 'active' => request()->routeIs('teams.tasks.*')],
                             ['name' => __('teams.eisenhower_matrix'), 'route' => route('teams.dashboard', $drawerTeamId), 'active' => request()->routeIs('teams.dashboard')],
                             ['name' => __('navigation.gantt'), 'route' => route('teams.gantt', $drawerTeamId), 'active' => request()->routeIs('teams.gantt')],
@@ -773,6 +781,7 @@
                         @auth @include('layouts.partials.workday-timer') @endauth
                         @include('layouts.partials.theme-toggle')
                         @include('layouts.partials.layout-toggle')
+                        @include('layouts.partials.clean-mode-toggle')
                         @include('layouts.partials/language-toggle')
                     </div>
                 </div>
@@ -971,29 +980,19 @@
     @auth
         @php
             $notifSettings = auth()->user()->notification_settings ?? auth()->user()->defaultNotificationSettings();
-        @endphp
-        @if($notifSettings['telegram'] ?? false)
-            @include('partials.telegram-widget')
-        @endif
-        @php
+            
             $layoutTeam = $team ?? null;
             if (!$layoutTeam && request()->route('team')) {
                 $routeTeam = request()->route('team');
                 $layoutTeam = is_object($routeTeam) ? $routeTeam : \App\Models\Team::find($routeTeam);
             }
-        @endphp
-        @if(($notifSettings['whatsapp'] ?? false) || ($layoutTeam && ($layoutTeam->settings['has_whatsapp'] ?? false)))
-            @include('partials.whatsapp-widget')
-        @endif
 
-        @php
             $currTeam = request()->route('team') ?? $team ?? null;
             $currTeamId = $currTeam ? (is_object($currTeam) ? $currTeam->id : $currTeam) : null;
             
             $currTask = request()->route('task') ?? $task ?? null;
             $currTaskId = $currTask ? (is_object($currTask) ? $currTask->id : $currTask) : null;
             
-            // Si tenemos tarea pero no equipo, sacarlo de la tarea
             if (!$currTeamId && $currTask && is_object($currTask)) {
                 $currTeamId = $currTask->team_id;
             }
@@ -1001,7 +1000,6 @@
             $currThread = request()->route('thread') ?? $thread ?? null;
             $currThreadId = $currThread ? (is_object($currThread) ? $currThread->id : $currThread) : null;
             
-            // Si hay tarea pero no hilo, ver si la tarea tiene uno
             if (!$currThreadId && $currTask && is_object($currTask) && $currTask->forumThread) {
                 $currThreadId = $currTask->forumThread->id;
             }
@@ -1009,7 +1007,15 @@
             $currMessage = request()->route('message') ?? $message ?? null;
             $currMessageId = $currMessage ? (is_object($currMessage) ? $currMessage->id : $currMessage) : null;
         @endphp
-        <x-ai-assistant :team-id="$currTeamId" :task-id="$currTaskId" :thread-id="$currThreadId" :message-id="$currMessageId" />
+        <div x-show="!cleanMode" x-transition class="contents">
+            @if($notifSettings['telegram'] ?? false)
+                @include('partials.telegram-widget')
+            @endif
+            @if(($notifSettings['whatsapp'] ?? false) || ($layoutTeam && ($layoutTeam->settings['has_whatsapp'] ?? false)))
+                @include('partials.whatsapp-widget')
+            @endif
+            <x-ai-assistant :team-id="$currTeamId" :task-id="$currTaskId" :thread-id="$currThreadId" :message-id="$currMessageId" />
+        </div>
     @endauth
 
     {{-- ============================================================
@@ -1238,7 +1244,9 @@
     
     @auth
         <x-task-quick-view-modal />
-        <x-quick-notes />
+        <div x-show="!cleanMode" x-transition class="contents">
+            <x-quick-notes />
+        </div>
         
         <!-- Widget de Comunicación Premium en Vivo Global (Sientia Direct & Videollamadas) -->
         <div x-data="sientiaChat">
@@ -1425,6 +1433,7 @@
                     titleInterval: null,
                     originalTitle: '',
                     lastNotifiedMsgId: null,
+                    callRingInterval: null,
                     
                     init() {
                         this.originalTitle = document.title;
@@ -1679,6 +1688,9 @@
                                             this.playMessageChime();
                                         }
 
+                                        // Flash window title
+                                        this.startMessageFlash();
+
                                         // Beautiful non-intrusive SweetAlert2 Toast for new text messages
                                         const Toast = Swal.mixin({
                                             toast: true,
@@ -1725,34 +1737,49 @@
                     },
                     
                     startFlashAndSound() {
-                        // Flash Tab Title
+                        // Flash Tab Title Continuously for Calls
                         if (this.titleInterval) clearInterval(this.titleInterval);
                         this.titleInterval = setInterval(() => {
                             document.title = document.title === this.originalTitle ? '📞 LLAMADA ENTRANTE...' : this.originalTitle;
                         }, 1000);
                         
-                        // Sound synthesis chime
-                        try {
-                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 arpeggio
-                            notes.forEach((freq, idx) => {
-                                setTimeout(() => {
-                                    const osc = audioCtx.createOscillator();
-                                    const gain = audioCtx.createGain();
-                                    osc.connect(gain);
-                                    gain.connect(audioCtx.destination);
-                                    osc.type = 'sine';
-                                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-                                    osc.start();
-                                    osc.stop(audioCtx.currentTime + 0.6);
-                                }, idx * 150);
-                            });
-                        } catch (e) { console.warn('Audio chime failed', e); }
+                        // Continuous Call Ring (Every 2s)
+                        this.stopCallSound(); // Clear any existing
+                        const ring = () => {
+                            try {
+                                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                // Higher gain for distinct ringing
+                                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                                notes.forEach((freq, idx) => {
+                                    setTimeout(() => {
+                                        if (!this.callRingInterval) return; // Stopped during sequence
+                                        const osc = audioCtx.createOscillator();
+                                        const gain = audioCtx.createGain();
+                                        osc.connect(gain);
+                                        gain.connect(audioCtx.destination);
+                                        osc.type = 'sine';
+                                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                                        gain.gain.setValueAtTime(0.3, audioCtx.currentTime); // LOUDER
+                                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+                                        osc.start();
+                                        osc.stop(audioCtx.currentTime + 0.6);
+                                    }, idx * 150);
+                                });
+                            } catch (e) {}
+                        };
+                        ring(); // Play first
+                        this.callRingInterval = setInterval(ring, 2000);
+                    },
+
+                    stopCallSound() {
+                        if (this.callRingInterval) {
+                            clearInterval(this.callRingInterval);
+                            this.callRingInterval = null;
+                        }
                     },
                     
                     stopFlashAndSound() {
+                        this.stopCallSound();
                         if (this.titleInterval) {
                             clearInterval(this.titleInterval);
                             this.titleInterval = null;
@@ -1760,10 +1787,27 @@
                         document.title = this.originalTitle;
                     },
 
+                    startMessageFlash() {
+                        if (this.titleInterval) clearInterval(this.titleInterval);
+                        this.titleInterval = setInterval(() => {
+                            document.title = document.title === this.originalTitle ? '💬 MENSAJE NUEVO...' : this.originalTitle;
+                        }, 1200);
+
+                        // Add one-shot auto-clearing on window focus
+                        const stopOnFocus = () => {
+                            this.stopFlashAndSound();
+                            window.removeEventListener('focus', stopOnFocus);
+                            window.removeEventListener('mousemove', stopOnFocus);
+                            window.removeEventListener('keydown', stopOnFocus);
+                        };
+                        window.addEventListener('focus', stopOnFocus, {once: true});
+                        window.addEventListener('mousemove', stopOnFocus, {once: true});
+                    },
+
                     playMessageChime() {
                         try {
                             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                            const notes = [660, 880]; // Double ping chime
+                            const notes = [660, 880]; // Double high ping chime
                             notes.forEach((freq, idx) => {
                                 setTimeout(() => {
                                     const osc = audioCtx.createOscillator();
@@ -1772,10 +1816,10 @@
                                     gain.connect(audioCtx.destination);
                                     osc.type = 'sine';
                                     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime); // RAISED GAIN from 0.05 to 0.4
+                                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
                                     osc.start();
-                                    osc.stop(audioCtx.currentTime + 0.4);
+                                    osc.stop(audioCtx.currentTime + 0.5);
                                 }, idx * 120);
                             });
                         } catch (e) { console.warn('Message chime failed', e); }

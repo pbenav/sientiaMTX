@@ -120,6 +120,14 @@
                     @endforeach
                 </select>
 
+                <!-- Expediente Filter -->
+                <select name="expediente_id" onchange="this.form.submit()" class="w-40 {{ ($filters['expediente_id'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                    <option value="">{{ __('Expediente') }}</option>
+                    @foreach($expedientes as $exp)
+                        <option value="{{ $exp->id }}" {{ ($filters['expediente_id'] ?? null) == $exp->id ? 'selected' : '' }}>{{ $exp->code }}</option>
+                    @endforeach
+                </select>
+
                 <!-- Skill Filter -->
                 <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ ($filters['skill_id'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
                     <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
@@ -558,7 +566,7 @@
                     if (task.user_initials === '??') {
                         avatarEl.className = 'w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[8px] font-black text-gray-500 dark:text-gray-400 shadow-inner ring-1 ring-black/5';
                     } else {
-                        avatarEl.className = 'w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm ring-1 ring-white/20';
+                        avatarEl.className = 'w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm ring-1 ring-white/20';
                     }
                 }
 
@@ -612,7 +620,7 @@
                         task.members_progress.forEach(member => {
                             membersList.innerHTML += `
                                 <div class="flex items-center gap-2">
-                                    <div class="w-4 h-4 rounded-full bg-indigo-600 flex shrink-0 items-center justify-center text-[6px] font-black text-white shadow-sm">${member.initials}</div>
+                                    <div class="w-4 h-4 rounded-full bg-violet-600 flex shrink-0 items-center justify-center text-[6px] font-black text-white shadow-sm">${member.initials}</div>
                                     <span class="text-[9px] font-bold text-gray-700 dark:text-gray-300 flex-1 truncate">${member.name}</span>
                                     ${member.progress !== null ? `
                                         <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 w-6 text-right">${member.progress}%</span>
@@ -792,7 +800,7 @@
             </div>
         </div>
         <div class="grid grid-cols-2 gap-x-6 gap-y-3 py-3 border-y border-gray-100 dark:border-white/5">
-            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Responsable</span><div class="flex items-center gap-2"><div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm">??</div><span id="drag-user-name" class="text-[10px] font-extrabold truncate text-gray-700 dark:text-gray-200">Asignado</span></div></div>
+            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Responsable</span><div class="flex items-center gap-2"><div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm">??</div><span id="drag-user-name" class="text-[10px] font-extrabold truncate text-gray-700 dark:text-gray-200">Asignado</span></div></div>
             <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Estado</span><span id="drag-task-status" class="text-[10px] font-black uppercase tracking-wide text-gray-800 dark:text-gray-100">PENDIENTE</span></div>
             <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Habilidades</span><div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div></div>
             <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Progreso Total</span><span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-600 dark:text-emerald-400">0%</span></div>

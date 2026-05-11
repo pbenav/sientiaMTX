@@ -316,6 +316,17 @@
                                                 title="{{ $task->title }}">
                                                 {{ $task->title }}
                                             </a>
+                                            @if ($task->expediente)
+                                                <a href="{{ route('teams.expedientes.show', [$team, $task->expediente]) }}" 
+                                                   class="mr-2 px-1.5 py-0.5 text-[9px] font-black font-mono uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-500/20 mb-1"
+                                                   title="{{ __('Expediente') }}: {{ $task->expediente->title }}"
+                                                   onclick="event.stopPropagation();">
+                                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                                   </svg>
+                                                   {{ $task->expediente->code }}
+                                                </a>
+                                            @endif
                                             @if ($task->visibility === 'private')
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded shadow-sm inline-flex items-center"
@@ -364,7 +375,7 @@
                                             @elseif ($task->isInstance())
                                                 <div class="flex items-center gap-1.5 mt-1">
                                                     <span
-                                                        class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 rounded-md shadow-sm">
+                                                        class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-100 dark:border-violet-500/20 rounded-md shadow-sm">
                                                         ↳ {{ __('tasks.subtask') }}
                                                     </span>
                                                     @if ($task->parent)
@@ -429,7 +440,7 @@
                                     <div class="flex items-center gap-2">
                                         <div
                                             class="flex-1 w-20 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
-                                            <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-sm"
+                                            <div class="h-full bg-gradient-to-r from-violet-500 to-violet-600 shadow-sm"
                                                 style="width: {{ $task->progress }}%"></div>
                                         </div>
                                         <span
@@ -526,7 +537,7 @@
                                         <div class="flex items-center gap-2">
                                             <div
                                                 class="flex-1 w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700">
-                                                <div class="h-full bg-gradient-to-r from-violet-500 to-indigo-600 shadow-sm"
+                                                <div class="h-full bg-gradient-to-r from-violet-500 to-violet-600 shadow-sm"
                                                     style="width: {{ $subtask->progress }}%"></div>
                                             </div>
                                             <span

@@ -26,9 +26,11 @@
                             {{ __('forum.title') ?? 'Foro' }}
                         </a>
                     </div>
-                    <div class="flex items-center gap-3" x-data="{ editingTitle: false }">
+                    <div class="flex items-start gap-3" 
+                         x-data="{ editingTitle: false }"
+                         x-effect="if(editingTitle) { $nextTick(() => window.initForumTaskSelect($refs.taskSelect)) }">
                         @if ($thread->is_pinned)
-                            <span class="text-violet-500 shrink-0"><svg xmlns="http://www.w3.org/2000/svg"
+                            <span x-show="!editingTitle" class="text-violet-500 shrink-0 mt-1.5"><svg xmlns="http://www.w3.org/2000/svg"
                                     class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                                     <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
                                 </svg></span>
@@ -49,6 +51,34 @@
                                     <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-600/20 transition-all active:scale-95">Guardar</button>
                                     <button type="button" @click="editingTitle = false" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-bold transition-all">Cancelar</button>
                                 </div>
+                                
+                                <!-- Edit Task Association -->
+                                <div class="flex flex-col gap-1.5 -ml-1">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/></svg>
+                                        Vincular a Tarea
+                                    </label>
+                                    @php
+                                        $availableTasks = \App\Models\Task::where('team_id', $team->id)
+                                            ->whereNull('parent_id')
+                                            ->where(function($q) use ($thread) {
+                                                $q->whereDoesntHave('forumThread')
+                                                  ->orWhere('id', $thread->task_id);
+                                            })
+                                            ->orderBy('title')
+                                            ->get();
+                                    @endphp
+                                    <select x-ref="taskSelect" name="task_id" class="task-selector-tom w-full max-w-md">
+                                        <option value="">{{ __('forum.none') ?? '-- Ninguna (Biblioteca de Conocimiento) --' }}</option>
+                                        @foreach ($availableTasks as $t)
+                                            <option value="{{ $t->id }}" {{ $thread->task_id == $t->id ? 'selected' : '' }}
+                                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : ($t->assignedTo->count() > 0 ? $t->assignedTo->first()->name : 'Sin asignar') }}">
+                                                [{{ __('tasks.statuses.' . $t->status) }}] {{ $t->title }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
                                 <!-- Quick Emoji Picker -->
                                 <div class="flex items-center gap-1.5 flex-wrap -ml-1">
                                     @foreach(['🚀', '💡', '🐞', '🚨', '📅', '📂', '💬', '✅', '❌', '🤔', '📈', '🔒'] as $emoji)
@@ -257,7 +287,7 @@
             <!-- Reply Box -->
             @if (!$thread->is_locked)
                 <div id="reply-box-container" class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm relative overflow-hidden scroll-mt-24">
-                    <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-indigo-600"></div>
+                    <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-violet-600"></div>
                     
                     <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST" enctype="multipart/form-data"
                           onsubmit="return window.validateForumForm(this)">
@@ -370,7 +400,76 @@
     @endpush
 
     @push('scripts')
-        <script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <style>
+        /* Bulletproof Modern TomSelect Wrapper */
+        .ts-control {
+            border-radius: 0.75rem !important;
+            border-width: 1px !important;
+            background-color: #f9fafb !important;
+            border-color: #e5e7eb !important;
+            padding: 0.625rem 1rem !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .ts-control input { 
+            font-size: 12px !important; 
+            padding: 0 !important; 
+            margin: 0 !important; 
+            background: transparent !important; 
+            border: none !important; 
+            outline: none !important; 
+            box-shadow: none !important;
+            line-height: 1 !important;
+            height: auto !important;
+            color: inherit !important;
+        }
+        .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
+        
+        .dark .ts-control {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+        
+        .ts-wrapper.focus .ts-control {
+            border-color: #7c3aed !important;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
+        }
+        
+        .ts-dropdown { 
+            border-radius: 1rem !important; 
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
+            margin-top: 6px !important; 
+            padding: 0.5rem !important; 
+            z-index: 9999 !important;
+        }
+        .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
+        
+        .ts-dropdown .option { 
+            padding: 0.625rem 0.75rem !important; 
+            border-radius: 0.6rem !important; 
+            margin-bottom: 2px !important; 
+            transition: all 0.15s ease !important;
+            color: #374151 !important;
+        }
+        .dark .ts-dropdown .option { color: #e5e7eb !important; }
+        
+        .ts-dropdown .active { 
+            background-color: #f5f3ff !important; 
+            color: #4f46e5 !important; 
+        }
+        .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
+        
+        select.task-selector-tom { display: none !important; }
+    </style>
+    <script>
             function quoteMessage(name, content) {
                 const textarea = document.getElementById('reply-content');
                 if (textarea) {
@@ -652,6 +751,46 @@
                     button.disabled = false;
                 });
             }
+            window.initForumTaskSelect = function(el) {
+                if (el && window.TomSelect && !el.tomselect) {
+                    new TomSelect(el, {
+                        create: false,
+                        sortField: { field: 'text', direction: 'asc' },
+                        placeholder: 'Buscar tarea...',
+                        allowEmptyOption: true,
+                        render: {
+                            option: function(data, escape) {
+                                // TomSelect maps data-assignee from native <option> to data.assignee
+                                const usr = data.assignee || 'Sin asignar';
+                                return `<div class="flex items-center gap-3 py-0.5">
+                                    <div class="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 border border-gray-200/50 dark:border-gray-700/50">
+                                        <span class="text-[8px] font-mono font-black">#${escape(data.value)}</span>
+                                    </div>
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="font-bold text-gray-900 dark:text-white truncate text-xs">${escape(data.text)}</span>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">@${escape(usr)}</span>
+                                    </div>
+                                </div>`;
+                            },
+                            item: function(data, escape) {
+                                return `<div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1 py-0.5 rounded border border-violet-100/50 dark:border-violet-800/50">#${escape(data.value)}</span>
+                                    <span class="font-bold text-xs text-gray-900 dark:text-white truncate max-w-[200px]">${escape(data.text)}</span>
+                                </div>`;
+                            }
+                        }
+                    });
+                }
+            };
+<<<<<<< HEAD
+=======
+            // Re-attempt init once fully loaded in case it missed the window
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.task-selector-tom').forEach(select => {
+                    window.initForumTaskSelect(select);
+                });
+            });
+>>>>>>> dev
         </script>
     @endpush
 </x-app-layout>

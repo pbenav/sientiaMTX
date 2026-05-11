@@ -84,6 +84,10 @@ class TaskAttachment extends Model
             return $attachable->thread?->team;
         }
 
+        if ($this->attachable_type === \App\Models\Expediente::class || $this->attachable_type === 'App\Models\Expediente') {
+            return $attachable->team;
+        }
+
         return null;
     }
 
@@ -157,6 +161,11 @@ class TaskAttachment extends Model
             }
 
             return true;
+        }
+
+        if ($this->attachable_type === \App\Models\Expediente::class || $this->attachable_type === 'App\Models\Expediente') {
+            if ($attachable->team_id !== $team->id) return false;
+            return $team->members()->where('users.id', $user->id)->exists();
         }
 
         return false;

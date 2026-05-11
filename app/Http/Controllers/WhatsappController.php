@@ -40,7 +40,8 @@ class WhatsappController extends Controller
     {
         $payload = $request->all();
         
-        Log::info('WhatsApp Webhook recibido:', $payload);
+        // Log de depuración desactivado por privacidad (Hotfix Production)
+        // Log::info('WhatsApp Webhook recibido:', $payload);
         
         $from = $payload['from'] ?? null;
         $to = $payload['to'] ?? null;
@@ -193,13 +194,50 @@ class WhatsappController extends Controller
 
                 if ($isSyncEnabled && !$isTooOld) {
                     $botToken = config('services.telegram.bot_token');
-                    if ($botToken && $team->telegram_chat_id && !empty($body) && !str_contains($body, '🔵 [Telegram]')) {
+                    $hasBody = !empty($body) && !str_contains($body, '🔵 [Telegram]');
+                    $hasMedia = $photoPath || $voicePath || $stickerPath;
+
+                    if ($botToken && $team->telegram_chat_id && ($hasBody || $hasMedia)) {
                         $cleanBody = strip_tags($body);
-                        Log::info("Sincronización: Reenviando mensaje de WhatsApp a Telegram para el equipo {$team->name}");
-                        \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
-                            'chat_id' => $team->telegram_chat_id,
-                            'text' => "🟢 [WhatsApp] {$author}:\n{$cleanBody}",
-                        ]);
+                        $caption = "🟢 [WhatsApp] {$author}:" . (!empty($cleanBody) ? "\n{$cleanBody}" : "");
+                        Log::info("Sincronización WA->TG: Reenviando evento para el equipo {$team->name}");
+                        
+                        try {
+                            $disk = \Illuminate\Support\Facades\Storage::disk('public');
+                            
+                            if ($photoPath && $disk->exists($photoPath)) {
+                                \Illuminate\Support\Facades\Http::attach(
+                                    'photo', $disk->get($photoPath), basename($photoPath)
+                                )->post("https://api.telegram.org/bot{$botToken}/sendPhoto", [
+                                    'chat_id' => $team->telegram_chat_id,
+                                    'caption' => $caption
+                                ]);
+                            } elseif ($voicePath && $disk->exists($voicePath)) {
+                                \Illuminate\Support\Facades\Http::attach(
+                                    'voice', $disk->get($voicePath), basename($voicePath)
+                                )->post("https://api.telegram.org/bot{$botToken}/sendVoice", [
+                                    'chat_id' => $team->telegram_chat_id,
+                                    'caption' => $caption
+                                ]);
+                            } elseif ($stickerPath && $disk->exists($stickerPath)) {
+                                \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                                    'chat_id' => $team->telegram_chat_id,
+                                    'text' => $caption
+                                ]);
+                                \Illuminate\Support\Facades\Http::attach(
+                                    'sticker', $disk->get($stickerPath), basename($stickerPath)
+                                )->post("https://api.telegram.org/bot{$botToken}/sendSticker", [
+                                    'chat_id' => $team->telegram_chat_id
+                                ]);
+                            } elseif ($hasBody) {
+                                \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                                    'chat_id' => $team->telegram_chat_id,
+                                    'text' => $caption,
+                                ]);
+                            }
+                        } catch (\Exception $eRelay) {
+                            Log::warning("Error en Relevo Espejo WA->TG: " . $eRelay->getMessage());
+                        }
 
                         // Crear registro espejo de Telegram para que aparezca en el widget de la web de inmediato
                         \App\Models\TelegramMessage::create([
