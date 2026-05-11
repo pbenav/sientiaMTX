@@ -170,4 +170,23 @@ class TaskAttachment extends Model
 
         return false;
     }
+
+    /**
+     * Check if attachment is compatible with OnlyOffice editor.
+     */
+    public function getIsOfficeCompatibleAttribute(): bool
+    {
+        if ($this->storage_provider === 'google') return false;
+        
+        $ext = strtolower(pathinfo($this->file_name, PATHINFO_EXTENSION));
+        $map = config('onlyoffice.extensions', []);
+        
+        $allExtensions = array_merge(
+            $map['word'] ?? [],
+            $map['cell'] ?? [],
+            $map['slide'] ?? []
+        );
+        
+        return in_array($ext, $allExtensions);
+    }
 }

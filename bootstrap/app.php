@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '/telegram/webhook',
             '/whatsapp/webhook',
             '/passkeys/login', // Cryptographically secure, resilient to session swaps
+            '/onlyoffice/callback/*',
         ]);
 
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy

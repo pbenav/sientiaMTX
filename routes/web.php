@@ -366,3 +366,11 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// OnlyOffice Integration Routes
+use App\Http\Controllers\OnlyOfficeController;
+Route::middleware(['auth'])->group(function () {
+    Route::get('/attachments/{attachment}/edit', [OnlyOfficeController::class, 'edit'])->name('onlyoffice.edit');
+});
+Route::get('/onlyoffice/download/{attachment}', [OnlyOfficeController::class, 'downloadFile'])->name('onlyoffice.download');
+Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');

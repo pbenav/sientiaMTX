@@ -1,0 +1,205 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\TaskAttachment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Firebase\JWT\JWT;
+use Illuminate\Support\Str;
+
+class OnlyOfficeController extends Controller
+{
+    /**
+     * Display the document editor.
+     */
+    public function edit(TaskAttachment $attachment)
+    {
+        // Ensure the file exists locally
+        if ($attachment->storage_provider === 'google') {
+            return back()->with('error', 'La edición en OnlyOffice no soporta archivos en Google Drive.');
+        }
+
+        // Ensure the user can access it
+        // For absolute security, check team membership
+        $team = $attachment->getTeam();
+        if (!$team || !$attachment->canBeAccessedBy(auth()->user(), $team)) {
+            abort(403, 'No autorizado.');
+        }
+
+        // Define supported extensions and resolve document type
+        $ext = strtolower(pathinfo($attachment->file_name, PATHINFO_EXTENSION));
+        $docType = $this->getDocumentType($ext);
+
+        if (!$docType) {
+            return back()->with('error', 'Este tipo de archivo no es compatible con el editor online.');
+        }
+
+        $configUrl = config('onlyoffice.url');
+        $apiUrl = rtrim($configUrl, '/') . '/web-apps/apps/api/documents/api.js';
+
+        // Generate a persistent Key for tracking collaborative revisions
+        // Using a combination of attachment ID and its updated_at makes sure 
+        // if the file changes externally, a new session starts.
+        $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
+
+        // Define URLs for OnlyOffice interaction
+        // Important: OnlyOffice server will make calls BACK to these URLs.
+        // They must be accessible from the OnlyOffice network.
+        $downloadUrl = URL::temporarySignedRoute('onlyoffice.download', now()->addHours(12), ['attachment' => $attachment->id]);
+        $callbackUrl = route('onlyoffice.callback', ['attachment' => $attachment->id]);
+
+        $config = [
+            'document' => [
+                'fileType' => $ext,
+                'key' => $key,
+                'title' => $attachment->file_name,
+                'url' => $downloadUrl,
+                'permissions' => [
+                    'comment' => true,
+                    'download' => true,
+                    'edit' => true,
+                    'print' => true,
+                    'review' => true,
+                ],
+            ],
+            'documentType' => $docType,
+            'editorConfig' => [
+                'callbackUrl' => $callbackUrl,
+                'lang' => 'es',
+                'mode' => 'edit',
+                'user' => [
+                    'id' => (string)auth()->id(),
+                    'name' => auth()->user()->name,
+                ],
+                'customization' => [
+                    'autosave' => true,
+                    'chat' => true,
+                    'comments' => true,
+                    'forcesave' => false, // set to true if you want explicit save button triggered sync
+                    'logo' => [
+                        'image' => asset('img/logo.png'), // optional
+                        'url' => config('app.url'),
+                    ],
+                ]
+            ],
+        ];
+
+        // Sign with JWT if Secret exists (RECOMMENDED)
+        $secret = config('onlyoffice.secret');
+        $token = null;
+        if (!empty($secret)) {
+            $token = JWT::encode($config, $secret, 'HS256');
+            // In newer versions, the token MUST also be inside the object if explicitly passed
+            $config['token'] = $token;
+        }
+
+        return view('onlyoffice.editor', compact('apiUrl', 'config', 'attachment', 'token'));
+    }
+
+    /**
+     * Secured endpoint for OnlyOffice Server to download the raw file.
+     */
+    public function downloadFile(Request $request, TaskAttachment $attachment)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(403, 'Firma no válida.');
+        }
+
+        if (!Storage::disk('public')->exists($attachment->file_path)) {
+            abort(404, 'Archivo no encontrado en disco.');
+        }
+
+        return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+    }
+
+    /**
+     * Callback receiver for OnlyOffice saving cycles.
+     */
+    public function callback(Request $request, TaskAttachment $attachment)
+    {
+        // Read request payload (Sent as application/json body)
+        $body = $request->json()->all();
+
+        // Check JWT Signature if configured (Crucial for security!)
+        $secret = config('onlyoffice.secret');
+        if (!empty($secret)) {
+            // OnlyOffice sends token in either Body 'token' or 'X-CDES-JWT' Header
+            $token = $body['token'] ?? $request->header('X-CDES-JWT');
+            
+            if (!$token) {
+                Log::warning("[OnlyOffice] Invalid callback received: No token provided.");
+                return response()->json(['error' => 1, 'message' => 'Authentication required']);
+            }
+
+            try {
+                // Decode and strip "Bearer " if sent in header
+                $jwtStr = Str::startsWith($token, 'Bearer ') ? substr($token, 7) : $token;
+                $decoded = (array) JWT::decode($jwtStr, new \Firebase\JWT\Key($secret, 'HS256'));
+                // The actual body might be nested in $decoded['payload'] depending on OnlyOffice settings
+                // but standard behavior overrides body if correct.
+            } catch (\Exception $e) {
+                Log::error("[OnlyOffice] JWT Decoded fail: " . $e->getMessage());
+                return response()->json(['error' => 1, 'message' => 'Invalid token signature']);
+            }
+        }
+
+        // Check status
+        // 2 = Ready for saving
+        // 6 = Editing ended, being saved automatically
+        $status = (int) ($body['status'] ?? 0);
+
+        if ($status === 2 || $status === 6) {
+            $downloadUri = $body['url'] ?? null;
+            if (!$downloadUri) {
+                Log::error("[OnlyOffice] Status 2 but no download URL received for Attachment {$attachment->id}");
+                return response()->json(['error' => 1, 'message' => 'No download URL provided by editor']);
+            }
+
+            try {
+                // Download the modified file from OnlyOffice server temporary storage
+                $newFileContent = file_get_contents($downloadUri);
+                if ($newFileContent === false) {
+                    throw new \Exception("Could not retrieve file from {$downloadUri}");
+                }
+
+                // Update existing file in our Storage
+                Storage::disk('public')->put($attachment->file_path, $newFileContent);
+                
+                // Update metadata: file size
+                $attachment->update([
+                    'file_size' => strlen($newFileContent),
+                    'updated_at' => now()
+                ]);
+
+                Log::info("[OnlyOffice] Attachment ID {$attachment->id} ({$attachment->file_name}) updated and saved successfully via callback.");
+                
+                // Trigger audit log if module exists
+                \App\Models\AttachmentLog::create([
+                    'attachment_id' => $attachment->id,
+                    'user_id' => $body['users'][0] ?? null, // Could use current editor ID if passed
+                    'action' => 'edited',
+                    'details' => 'Edición completada mediante OnlyOffice.',
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error("[OnlyOffice] Error updating file for Attachment {$attachment->id}: " . $e->getMessage());
+                return response()->json(['error' => 1, 'message' => 'Internal write failure']);
+            }
+        }
+
+        // Always return {"error": 0} to tell OnlyOffice to keep calm.
+        return response()->json(['error' => 0]);
+    }
+
+    private function getDocumentType($ext): ?string
+    {
+        $map = config('onlyoffice.extensions');
+        if (in_array($ext, $map['word'])) return 'word';
+        if (in_array($ext, $map['cell'])) return 'cell';
+        if (in_array($ext, $map['slide'])) return 'slide';
+        return null;
+    }
+}
