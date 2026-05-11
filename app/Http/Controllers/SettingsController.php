@@ -119,6 +119,19 @@ class SettingsController extends Controller
             }
         }
 
+        if ($request->filled('status')) {
+            $threshold = now()->subMinutes(15)->getTimestamp();
+            if ($request->get('status') === 'online') {
+                $query->whereHas('sessions', function($q) use ($threshold) {
+                    $q->where('last_activity', '>', $threshold);
+                });
+            } elseif ($request->get('status') === 'offline') {
+                $query->whereDoesntHave('sessions', function($q) use ($threshold) {
+                    $q->where('last_activity', '>', $threshold);
+                });
+            }
+        }
+
         $perPage = $request->get('per_page', 25);
         if ($perPage === 'all') {
             $perPage = $query->count() ?: 1;
@@ -132,6 +145,7 @@ class SettingsController extends Controller
             'role' => $request->get('role', ''),
             'premium' => $request->get('premium', ''),
             'approved' => $request->get('approved', ''),
+            'status' => $request->get('status', ''),
             'sort' => $sort,
             'direction' => $direction,
         ]);
