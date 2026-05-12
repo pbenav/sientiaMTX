@@ -45,19 +45,20 @@ class OnlyOfficeController extends Controller
         // if the file changes externally, a new session starts.
         $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
 
-        // Define URLs for OnlyOffice interaction
-        // Important: OnlyOffice server will make calls BACK to these URLs.
-        // They must be accessible from the OnlyOffice network.
+        // OPTIMIZACIÓN PARA RED INTERNA:
+        // Si configuramos una IP interna, forzamos que Laravel genere y FIRME las rutas con esa IP base.
+        $internalAppUrl = env('ONLYOFFICE_INTERNAL_APP_URL'); // Ej: http://192.168.10.151
+        if (!empty($internalAppUrl)) {
+            URL::forceRootUrl($internalAppUrl);
+        }
+
+        // Generar las rutas firmadas (incluye la IP interna en la firma si está activada)
         $downloadUrl = URL::temporarySignedRoute('onlyoffice.download', now()->addHours(12), ['attachment' => $attachment->id]);
         $callbackUrl = route('onlyoffice.callback', ['attachment' => $attachment->id]);
 
-        // OPTIMIZACIÓN PARA RED INTERNA:
-        // Si configuramos una IP interna en el .env del servidor, OnlyOffice la usará para descargar el archivo más rápido.
-        $internalAppUrl = env('ONLYOFFICE_INTERNAL_APP_URL'); // Ej: http://192.168.10.151
+        // Restaurar inmediatamente la URL original para no romper nada más
         if (!empty($internalAppUrl)) {
-            $publicAppUrl = rtrim(config('app.url'), '/');
-            $downloadUrl = str_replace($publicAppUrl, rtrim($internalAppUrl, '/'), $downloadUrl);
-            $callbackUrl = str_replace($publicAppUrl, rtrim($internalAppUrl, '/'), $callbackUrl);
+            URL::forceRootUrl(config('app.url'));
         }
 
         $config = [
