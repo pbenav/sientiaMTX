@@ -19,6 +19,7 @@ class ChatMessage extends Model
         'file_size',
         'storage_provider',
         'web_view_link',
+        'parent_id',
     ];
 
     protected $appends = ['file_url'];
@@ -37,5 +38,10 @@ class ChatMessage extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'receiver_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(ChatMessage::class, 'parent_id');
     }
 }

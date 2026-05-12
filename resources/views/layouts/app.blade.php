@@ -1363,8 +1363,20 @@
                         
                         <!-- My message -->
                         <template x-if="msg.sender === 'me'">
-                            <div class="flex justify-end">
+                            <div class="flex justify-end group relative my-1">
+                                <!-- Reply Button Me -->
+                                <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="opacity-0 group-hover:opacity-100 mr-2 my-auto p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Responder">
+                                    <svg class="w-4 h-4 transform -scale-x-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                </button>
+
                                 <div class="max-w-[75%] bg-emerald-600 text-white rounded-3xl rounded-tr-sm px-4 py-3 shadow-md relative">
+                                    <!-- Quoted Context -->
+                                    <template x-if="msg.parent_id">
+                                        <div class="mb-2 px-2.5 py-1.5 bg-black/10 dark:bg-black/20 rounded-xl border-l-4 border-emerald-300 text-white/90 text-[10px] font-medium flex flex-col opacity-90 backdrop-blur-sm mb-3 border-b border-r border-emerald-700/20">
+                                            <span class="font-black uppercase text-[8px] text-emerald-100 opacity-80" x-text="msg.parent_sender_name || 'Mensaje'"></span>
+                                            <span class="truncate mt-0.5 italic" x-text="msg.parent_text"></span>
+                                        </div>
+                                    </template>
                                     <!-- Media Renderer -->
                                     <template x-if="msg.file_type === 'image'">
                                         <div class="mb-2 -mx-2 first:-mt-1">
@@ -1412,8 +1424,15 @@
                         
                         <!-- Their message -->
                         <template x-if="msg.sender === 'them'">
-                            <div class="flex justify-start">
+                            <div class="flex justify-start group relative my-1">
                                 <div class="max-w-[75%] bg-white dark:bg-gray-850 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
+                                    <!-- Quoted Context -->
+                                    <template x-if="msg.parent_id">
+                                        <div class="mb-2 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-xl border-l-4 border-emerald-500 text-gray-600 dark:text-gray-300 text-[10px] font-medium flex flex-col opacity-90 border border-gray-100 dark:border-gray-800 shadow-inner mb-3">
+                                            <span class="font-black uppercase text-[8px] text-emerald-600 dark:text-emerald-400" x-text="msg.parent_sender_name || 'Mensaje'"></span>
+                                            <span class="truncate mt-0.5 font-bold italic" x-text="msg.parent_text"></span>
+                                        </div>
+                                    </template>
                                     <!-- Media Renderer -->
                                     <template x-if="msg.file_type === 'image'">
                                         <div class="mb-2 -mx-2 first:-mt-1">
@@ -1456,6 +1475,10 @@
                                     </template>
                                     <span class="block text-[8px] text-gray-400 text-right mt-1" x-text="msg.time"></span>
                                 </div>
+                                <!-- Reply Button Them -->
+                                <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="opacity-0 group-hover:opacity-100 ml-2 my-auto p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Responder">
+                                    <svg class="w-4 h-4 transform -scale-x-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -1542,7 +1565,15 @@
                     </div>
 
                     <!-- Textarea container -->
-                    <div class="flex-1 min-h-[44px] relative bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all overflow-hidden">
+                    <div class="flex-1 min-h-[44px] relative bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all overflow-hidden flex flex-col">
+                        <!-- Reply Preview Widget -->
+                        <div x-show="replyingTo" class="bg-gray-200/40 dark:bg-gray-800/40 p-2.5 px-3 flex justify-between items-center border-b border-gray-200/50 dark:border-gray-700/50 backdrop-blur-md" style="display:none;">
+                             <div class="flex-1 min-w-0 pl-2 border-l-4 border-emerald-500">
+                                 <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wide" x-text="'Respondiendo a ' + (replyingTo?.sender === 'me' ? 'Tú' : member.name)"></p>
+                                 <p class="text-[10px] text-gray-600 dark:text-gray-300 truncate font-bold mt-0.5" x-text="replyingTo?.text || (replyingTo?.file_name ? '📎 ' + replyingTo.file_name : '...')"></p>
+                             </div>
+                             <button @click="replyingTo = null" class="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                        </div>
                         <textarea x-ref="chatInput" 
                                x-model="message" 
                                @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()" 
@@ -1636,6 +1667,7 @@
                     pendingDriveFile: null,
                     previewUrl: null,
                     isUploading: false,
+                    replyingTo: null,
                     
                     init() {
                         this.originalTitle = document.title;
@@ -1647,6 +1679,7 @@
                         this.open = true;
                         this.activeCallRoom = null;
                         this.incomingCall = null;
+                        this.replyingTo = null;
                         this.clearPendingAttachments(); // Reset attachments on window open
                         Alpine.store('chatStore').markAsRead(detail.id);
                         this.fetchMessages();
@@ -1696,8 +1729,14 @@
                             file_url: this.previewUrl, 
                             storage_provider: this.pendingDriveFile ? 'google' : 'local',
                             web_view_link: this.pendingDriveFile ? this.pendingDriveFile.webViewLink : null,
-                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            parent_id: this.replyingTo ? this.replyingTo.id : null,
+                            parent_text: this.replyingTo ? (this.replyingTo.text || (this.replyingTo.file_name ? '📎 ' + this.replyingTo.file_name : '...')) : null,
+                            parent_sender_name: this.replyingTo ? (this.replyingTo.sender === 'me' ? 'Tú' : this.member.name) : null
                         });
+                        
+                        const replyToId = this.replyingTo ? this.replyingTo.id : null;
+                        this.replyingTo = null; // Clear after capture
                         
                         const fileToUpload = this.pendingFile;
                         const driveFileToUpload = this.pendingDriveFile;
@@ -1723,6 +1762,7 @@
                         if (text) formData.append('message', text);
                         if (fileToUpload) formData.append('file', fileToUpload);
                         if (driveFileToUpload) formData.append('drive_file', JSON.stringify(driveFileToUpload));
+                        if (replyToId) formData.append('parent_id', replyToId);
 
                         fetch('/chat', {
                             method: 'POST',

@@ -33,6 +33,7 @@ class ChatMessageController extends Controller
                 $query->where('sender_id', $receiverId)
                       ->where('receiver_id', $userId);
             })
+            ->with(['parent.sender'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -49,6 +50,9 @@ class ChatMessageController extends Controller
                     'storage_provider' => $msg->storage_provider,
                     'web_view_link' => $msg->web_view_link,
                     'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
+                    'parent_id' => $msg->parent_id,
+                    'parent_text' => $msg->parent?->message ?? ($msg->parent?->file_name ? '📎 '. $msg->parent->file_name : null),
+                    'parent_sender_name' => $msg->parent?->sender?->name,
                 ];
             })
         ]);
@@ -65,6 +69,7 @@ class ChatMessageController extends Controller
             'call_room' => 'nullable|string',
             'file' => 'nullable|file|max:10240', // Max 10MB
             'drive_file' => 'nullable|string', // JSON string
+            'parent_id' => 'nullable|exists:chat_messages,id',
         ]);
 
         $fileName = null;
@@ -113,7 +118,10 @@ class ChatMessageController extends Controller
             'file_size' => $fileSize,
             'storage_provider' => $storageProvider,
             'web_view_link' => $webViewLink,
+            'parent_id' => $request->parent_id,
         ]);
+
+        $msg->load('parent.sender');
 
         return response()->json([
             'message' => [
@@ -127,6 +135,9 @@ class ChatMessageController extends Controller
                 'storage_provider' => $msg->storage_provider,
                 'web_view_link' => $msg->web_view_link,
                 'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
+                'parent_id' => $msg->parent_id,
+                'parent_text' => $msg->parent?->message ?? ($msg->parent?->file_name ? '📎 '. $msg->parent->file_name : null),
+                'parent_sender_name' => $msg->parent?->sender?->name,
             ]
         ]);
     }
@@ -173,6 +184,7 @@ class ChatMessageController extends Controller
         // Find unread messages
         $unread = ChatMessage::where('receiver_id', $userId)
             ->where('is_read', false)
+            ->with('parent.sender')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -191,6 +203,9 @@ class ChatMessageController extends Controller
                     'storage_provider' => $msg->storage_provider,
                     'web_view_link' => $msg->web_view_link,
                     'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
+                    'parent_id' => $msg->parent_id,
+                    'parent_text' => $msg->parent?->message ?? ($msg->parent?->file_name ? '📎 '. $msg->parent->file_name : null),
+                    'parent_sender_name' => $msg->parent?->sender?->name,
                 ];
             })
         ]);

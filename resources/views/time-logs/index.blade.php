@@ -800,6 +800,9 @@
         searchQuery: '',
         isSearching: false,
         searchResults: [],
+        miniMap: null,
+        pickerMarker: null,
+        
         async searchLocation() {
             if (!this.searchQuery.trim()) return;
             this.isSearching = true;
@@ -818,8 +821,70 @@
             this.$refs.lngInput.value = res.lon;
             this.searchResults = [];
             this.searchQuery = res.display_name;
+            this.syncMap();
+        },
+        getUserLocation() {
+            if (!navigator.geolocation) {
+                alert('Tu navegador no soporta geolocalización directa.');
+                return;
+            }
+            this.isSearching = true;
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    this.$refs.latInput.value = pos.coords.latitude;
+                    this.$refs.lngInput.value = pos.coords.longitude;
+                    this.isSearching = false;
+                    this.searchQuery = 'Ubicación actual capturada 🛰️';
+                    this.syncMap();
+                },
+                (err) => {
+                    this.isSearching = false;
+                    alert('No se pudo obtener la ubicación. Asegúrate de dar permisos.');
+                },
+                { enableHighAccuracy: true }
+            );
+        },
+        initMap() {
+            this.$nextTick(() => {
+                const lat = parseFloat(this.$refs.latInput.value) || 37.17;
+                const lng = parseFloat(this.$refs.lngInput.value) || -3.60;
+                
+                if (this.miniMap) {
+                    setTimeout(() => {
+                        this.miniMap.invalidateSize();
+                        this.syncMap();
+                    }, 200);
+                    return;
+                }
+                
+                this.miniMap = L.map('mini-picker-map', { zoomControl: true }).setView([lat, lng], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.miniMap);
+                
+                this.pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(this.miniMap);
+                
+                const updateInputs = (ll) => {
+                    this.$refs.latInput.value = parseFloat(ll.lat).toFixed(7);
+                    this.$refs.lngInput.value = parseFloat(ll.lng).toFixed(7);
+                };
+                
+                this.pickerMarker.on('dragend', (e) => updateInputs(e.target.getLatLng()));
+                this.miniMap.on('click', (e) => {
+                    this.pickerMarker.setLatLng(e.latlng);
+                    updateInputs(e.latlng);
+                });
+                
+                setTimeout(() => this.miniMap.invalidateSize(), 200);
+            });
+        },
+        syncMap() {
+            const lat = parseFloat(this.$refs.latInput.value);
+            const lng = parseFloat(this.$refs.lngInput.value);
+            if (this.miniMap && this.pickerMarker && !isNaN(lat) && !isNaN(lng)) {
+                this.pickerMarker.setLatLng([lat, lng]);
+                this.miniMap.flyTo([lat, lng], 15);
+            }
         }
-    }" @open-zone-modal.window="open = true" x-cloak>
+    }" x-init="$watch('open', v => v && initMap())" @open-zone-modal.window="open = true" x-cloak>
         <div x-show="open" 
              class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
              style="display: none;">
@@ -865,10 +930,28 @@
                             </template>
                         </div>
                     </div>
+                    <div class="flex items-center justify-between gap-3 px-1">
+                        <div class="h-px bg-gray-100 dark:bg-gray-800 flex-1"></div>
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Ó también</span>
+                        <div class="h-px bg-gray-100 dark:bg-gray-800 flex-1"></div>
+                    </div>
+
+                    <button type="button" @click="getUserLocation()" class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-emerald-200 dark:border-emerald-900/50 rounded-2xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 transition-all text-xs font-black uppercase tracking-wider">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Autodetectar Mi GPS 📡
+                    </button>
 
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Nombre de tu territorio</label>
                         <input type="text" name="working_area_name" value="{{ auth()->user()->working_area_name }}" placeholder="Ej: Zafarraya Central" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">O ajusta arrastrando el pin 🗺️</label>
+                        <div id="mini-picker-map" class="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-inner overflow-hidden relative z-10"></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
