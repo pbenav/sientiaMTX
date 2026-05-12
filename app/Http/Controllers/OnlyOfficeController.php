@@ -46,8 +46,9 @@ class OnlyOfficeController extends Controller
         $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
 
         // Construir las URLs que OnlyOffice usará para descargar y hacer callback.
-        // Si hay IP interna configurada, OnlyOffice se conecta directamente por LAN (sin proxy).
-        $baseUrl = rtrim(env('ONLYOFFICE_INTERNAL_APP_URL', config('app.url')), '/');
+        // Usa la IP interna si está configurada para que OnlyOffice conecte directamente por LAN.
+        // IMPORTANTE: Usa config() no env() para que funcione con config:cache activo.
+        $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
         $downloadUrl = $baseUrl . '/onlyoffice/download/' . $attachment->id;
         $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
 
