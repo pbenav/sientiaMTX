@@ -97,7 +97,8 @@ Route::middleware('auth')->group(function () {
     // Teams routes
     Route::resource('teams', TeamController::class);
     Route::post('/teams/{team}/transfer-ownership', [TeamController::class, 'transferOwnership'])->name('teams.transfer-ownership');
-    Route::get('/teams/{team}/dashboard', [TeamController::class, 'dashboard'])->name('teams.dashboard');
+    Route::get('/teams/{team}/dashboard', [\App\Http\Controllers\TimeLogController::class, 'index'])->name('teams.dashboard');
+    Route::get('/teams/{team}/eisenhower', [TeamController::class, 'dashboard'])->name('teams.eisenhower');
     Route::get('/teams/{team}/active-network', [TeamController::class, 'activeNetwork'])->name('teams.active-network');
     Route::patch('/teams/{team}/quadrants/color', [TeamController::class, 'updateQuadrantColor'])->name('teams.quadrants.color');
     Route::get('/teams/{team}/members', [TeamController::class, 'members'])->name('teams.members');
@@ -108,6 +109,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamController::class, 'removeInvitation'])->name('teams.invitations.destroy');
     Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');
     Route::get('/teams/{team}/mentions', [TeamController::class, 'mentionUsers'])->name('teams.mentions');
+    Route::post('/teams/{team}/favorite', [TeamController::class, 'toggleFavorite'])->name('teams.toggle-favorite');
 
     // Storage Management
     Route::get('/teams/{team}/storage', [\App\Http\Controllers\StorageController::class, 'index'])->name('teams.storage.index');

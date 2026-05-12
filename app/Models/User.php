@@ -30,6 +30,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
      * @var list<string>
      */
     protected $fillable = [
+        'favorite_team_id',
         'name',
         'email',
         'profile_photo_path',
@@ -187,6 +188,11 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     // Relationships
+    public function favoriteTeam()
+    {
+        return $this->belongsTo(Team::class, 'favorite_team_id');
+    }
+
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_user')

@@ -43,7 +43,7 @@
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Filters -->
         <div class="mb-8">
-            <form action="{{ route('teams.dashboard', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
+            <form action="{{ route('teams.eisenhower', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
                 <!-- Skill Filter -->
                 <div class="w-48">
                     <select name="skill_id" onchange="this.form.submit()"
@@ -56,7 +56,7 @@
                 </div>
 
                 @if (request()->filled('skill_id'))
-                    <a href="{{ route('teams.dashboard', $team) }}"
+                    <a href="{{ route('teams.eisenhower', $team) }}"
                         class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
                         {{ __('tasks.clear_filters') ?? 'Limpiar' }}
                     </a>

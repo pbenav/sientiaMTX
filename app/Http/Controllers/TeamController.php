@@ -607,4 +607,21 @@ class TeamController extends Controller
 
         return response()->json($members);
     }
+
+    public function toggleFavorite(Team $team)
+    {
+        $this->authorize('view', $team);
+        $user = auth()->user();
+        
+        $isCurrentFavorite = $user->favorite_team_id === $team->id;
+        
+        $user->update([
+            'favorite_team_id' => $isCurrentFavorite ? null : $team->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'is_favorite' => !$isCurrentFavorite
+        ]);
+    }
 }
