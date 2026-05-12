@@ -352,7 +352,7 @@
         </div>
 
         <!-- Editor Container -->
-        <div class="relative min-h-[150px] overflow-hidden rounded-b-[2rem]">
+        <div class="relative min-h-[150px] rounded-b-[2rem]">
             <div x-show="tab === 'write'" class="h-full">
                 <textarea 
                     x-ref="textarea"
