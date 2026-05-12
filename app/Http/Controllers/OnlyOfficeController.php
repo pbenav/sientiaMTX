@@ -52,10 +52,7 @@ class OnlyOfficeController extends Controller
         $downloadUrl = $baseUrl . '/onlyoffice/download/' . $attachment->id;
         $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
 
-        \Log::info("[OnlyOffice-Debug] URLs generadas para el editor.", [
-            'download' => $downloadUrl,
-            'callback' => $callbackUrl,
-        ]);
+
 
         $config = [
             'document' => [
@@ -110,35 +107,21 @@ class OnlyOfficeController extends Controller
      */
     public function downloadFile(Request $request, TaskAttachment $attachment)
     {
-        // VALIDACIÓN: Aceptar descarga desde la IP de OnlyOffice o con firma válida
+        // Validar que la petición viene de la IP de OnlyOffice o tiene firma válida.
         $onlyOfficeIp = parse_url(config('onlyoffice.internal_server_url', ''), PHP_URL_HOST);
         $clientIp = $request->ip();
-        $hasValidSig = $request->hasValidSignature();
 
-        \Log::info("[OnlyOffice-Debug] Intento de descarga detectado.", [
-            'ip_cliente' => $clientIp,
-            'onlyoffice_ip' => $onlyOfficeIp,
-            'has_valid_signature' => $hasValidSig ? 'SI' : 'NO',
-        ]);
-
-        // Aceptar si: la firma es válida, O si viene de la IP de OnlyOffice
-        $isAuthorized = $hasValidSig || ($onlyOfficeIp && $clientIp === $onlyOfficeIp);
+        $isAuthorized = $request->hasValidSignature() || ($onlyOfficeIp && $clientIp === $onlyOfficeIp);
 
         if (!$isAuthorized) {
-            \Log::error("[OnlyOffice-Debug] Acceso denegado a la descarga.", [
-                'ip' => $clientIp, 'onlyoffice_ip_esperada' => $onlyOfficeIp
-            ]);
+            Log::warning("[OnlyOffice] Acceso denegado a descarga. IP: {$clientIp}, esperada: {$onlyOfficeIp}");
             abort(403, 'No autorizado.');
         }
 
         if (!Storage::disk('public')->exists($attachment->file_path)) {
-            \Log::error("[OnlyOffice-Debug] El archivo físico no existe en storage/public.", [
-                'path' => $attachment->file_path
-            ]);
             abort(404, 'Archivo no encontrado en disco.');
         }
 
-        \Log::info("[OnlyOffice-Debug] Descarga validada y autorizada. Enviando archivo...");
         return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 
@@ -147,13 +130,6 @@ class OnlyOfficeController extends Controller
      */
     public function callback(Request $request, TaskAttachment $attachment)
     {
-        // LOG DIAGNÓSTICO INICIAL:
-        \Log::info("[OnlyOffice-Debug] Petición de CALLBACK recibida en el controlador.", [
-            'ip' => $request->ip(),
-            'url' => $request->fullUrl(),
-            'method' => $request->method()
-        ]);
-
         // Read request payload (Sent as application/json body)
         $body = $request->json()->all();
 
