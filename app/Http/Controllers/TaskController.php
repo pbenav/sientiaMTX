@@ -827,13 +827,13 @@ class TaskController extends Controller
         $isCoordinator = $team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id;
 
         if ($request->has('title') && $isCoordinator) {
-            $task->assignments()->delete();
-            
+            // Track previously assigned users to avoid double notifications in shared mode
+            $previousUserIds = $task->assignedTo()->pluck('users.id')->toArray();
+
             $assignedTo = array_filter((array) $request->input('assigned_to', []), fn($v) => !is_null($v) && $v !== '');
             $assignedGroups = array_filter((array) $request->input('assigned_groups', []), fn($v) => !is_null($v) && $v !== '');
 
-            // Track previously assigned users to avoid double notifications in shared mode
-            $previousUserIds = $task->assignedTo()->pluck('users.id')->toArray();
+            $task->assignments()->delete();
 
             foreach ($assignedTo as $userId) {
                 $task->assignments()->create([
