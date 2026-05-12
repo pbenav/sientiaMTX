@@ -114,14 +114,29 @@ class OnlyOfficeController extends Controller
      */
     public function downloadFile(Request $request, TaskAttachment $attachment)
     {
+        // LOG DE DIAGNÓSTICO:
+        \Log::info("[OnlyOffice-Debug] Intento de descarga detectado.", [
+            'ip_cliente' => $request->ip(),
+            'url_completa' => $request->fullUrl(),
+            'has_valid_signature' => $request->hasValidSignature() ? 'SI' : 'NO',
+            'method' => $request->method()
+        ]);
+
         if (!$request->hasValidSignature()) {
+            \Log::error("[OnlyOffice-Debug] Firma no válida o caducada para la descarga.", [
+                'request_url' => $request->fullUrl()
+            ]);
             abort(403, 'Firma no válida.');
         }
 
         if (!Storage::disk('public')->exists($attachment->file_path)) {
+            \Log::error("[OnlyOffice-Debug] El archivo físico no existe en storage/public.", [
+                'path' => $attachment->file_path
+            ]);
             abort(404, 'Archivo no encontrado en disco.');
         }
 
+        \Log::info("[OnlyOffice-Debug] Descarga validada y autorizada. Enviando archivo...");
         return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
 
