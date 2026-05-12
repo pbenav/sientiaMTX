@@ -43,8 +43,11 @@ class ChatMessageController extends Controller
                     'sender' => $msg->sender_id === $userId ? 'me' : 'them',
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
+                    'file_name' => $msg->file_name,
                     'file_type' => $msg->file_type,
                     'file_url' => $msg->file_url,
+                    'storage_provider' => $msg->storage_provider,
+                    'web_view_link' => $msg->web_view_link,
                     'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
                 ];
             })
@@ -58,18 +61,23 @@ class ChatMessageController extends Controller
     {
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'message' => 'required_without_all:call_room,file|string|nullable',
+            'message' => 'required_without_all:call_room,file,drive_file|string|nullable',
             'call_room' => 'nullable|string',
             'file' => 'nullable|file|max:10240', // Max 10MB
+            'drive_file' => 'nullable|string', // JSON string
         ]);
 
+        $fileName = null;
         $filePath = null;
         $fileType = null;
         $fileSize = null;
+        $storageProvider = 'local';
+        $webViewLink = null;
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $mime = $file->getMimeType();
+            $fileName = $file->getClientOriginalName();
             
             if (str_contains($mime, 'image/')) {
                 $fileType = 'image';
@@ -81,6 +89,17 @@ class ChatMessageController extends Controller
 
             $filePath = $file->store('chat/attachments', 'public');
             $fileSize = $file->getSize();
+        } 
+        elseif ($request->filled('drive_file')) {
+            $driveData = json_decode($request->drive_file, true);
+            if ($driveData) {
+                $fileName = $driveData['name'] ?? 'Archivo Drive';
+                $filePath = 'google_drive/' . ($driveData['id'] ?? time());
+                $fileType = 'file';
+                $fileSize = $driveData['size'] ?? 0;
+                $storageProvider = 'google';
+                $webViewLink = $driveData['webViewLink'] ?? '#';
+            }
         }
 
         $msg = ChatMessage::create([
@@ -88,9 +107,12 @@ class ChatMessageController extends Controller
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
             'call_room' => $request->call_room,
+            'file_name' => $fileName,
             'file_path' => $filePath,
             'file_type' => $fileType,
             'file_size' => $fileSize,
+            'storage_provider' => $storageProvider,
+            'web_view_link' => $webViewLink,
         ]);
 
         return response()->json([
@@ -99,8 +121,11 @@ class ChatMessageController extends Controller
                 'sender' => 'me',
                 'text' => $msg->message,
                 'call_room' => $msg->call_room,
+                'file_name' => $msg->file_name,
                 'file_type' => $msg->file_type,
                 'file_url' => $msg->file_url,
+                'storage_provider' => $msg->storage_provider,
+                'web_view_link' => $msg->web_view_link,
                 'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
             ]
         ]);
@@ -160,8 +185,11 @@ class ChatMessageController extends Controller
                     'sender_photo' => $msg->sender?->profile_photo_url ?? asset('img/default-avatar.png'),
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
+                    'file_name' => $msg->file_name,
                     'file_type' => $msg->file_type,
                     'file_url' => $msg->file_url,
+                    'storage_provider' => $msg->storage_provider,
+                    'web_view_link' => $msg->web_view_link,
                     'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
                 ];
             })

@@ -5,6 +5,19 @@
         $maxWidth = 'max-w-' . $maxWidth;
     }
     $maxWidth = $maxWidth ?? 'max-w-7xl';
+    
+    // Get global team context for background tools like chat or drive
+    $currentTeamContext = request()->route('team');
+    if (!$currentTeamContext && auth()->check()) {
+        $currentTeamContext = auth()->user()->teams()->first();
+    }
+    if ($currentTeamContext && !is_object($currentTeamContext)) {
+        $currentTeamContext = \App\Models\Team::find($currentTeamContext);
+    }
+    $hasGoogleLinked = false;
+    if (auth()->check() && $currentTeamContext) {
+        $hasGoogleLinked = auth()->user()->teams()->where('team_id', $currentTeamContext->id)->wherePivotNotNull('google_token')->exists();
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
@@ -1324,17 +1337,37 @@
                         <template x-if="msg.sender === 'me'">
                             <div class="flex justify-end">
                                 <div class="max-w-[75%] bg-emerald-600 text-white rounded-3xl rounded-tr-sm px-4 py-3 shadow-md relative">
+                                    <!-- Media Renderer -->
                                     <template x-if="msg.file_type === 'image'">
                                         <div class="mb-2 -mx-2 first:-mt-1">
                                             <img :src="msg.file_url" class="w-full max-h-64 object-contain rounded-2xl shadow-lg cursor-pointer" @click="window.open(msg.file_url, '_blank')" @load="$nextTick(() => scrollToBottom())">
                                         </div>
                                     </template>
-                                    <template x-if="msg.file_type === 'file'">
+
+                                    <!-- Local File -->
+                                    <template x-if="msg.file_type === 'file' && msg.storage_provider === 'local'">
                                         <a :href="msg.file_url" target="_blank" class="mb-2 flex items-center gap-2 p-2 bg-emerald-700/30 hover:bg-emerald-700/50 border border-white/10 rounded-xl text-xs font-bold text-white truncate transition-all group">
                                             <div class="p-1.5 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                             </div>
-                                            <span class="truncate">Descargar Archivo</span>
+                                            <span class="truncate" x-text="msg.file_name || 'Descargar Archivo'"></span>
+                                        </a>
+                                    </template>
+
+                                    <!-- Google Drive File -->
+                                    <template x-if="msg.storage_provider === 'google'">
+                                        <a :href="msg.web_view_link" target="_blank" class="mb-2 flex items-center gap-2 p-2 bg-emerald-700/30 hover:bg-emerald-700/50 border border-white/10 rounded-xl text-xs font-bold text-white truncate transition-all group">
+                                            <div class="p-1 bg-white rounded-lg shrink-0">
+                                                <svg class="w-4 h-4" viewBox="0 0 48 48">
+                                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="truncate">
+                                                <p class="truncate" x-text="msg.file_name || 'Google Drive'"></p>
+                                                <p class="text-[8px] text-white/70">Google Drive</p>
+                                            </div>
                                         </a>
                                     </template>
 
@@ -1353,17 +1386,37 @@
                         <template x-if="msg.sender === 'them'">
                             <div class="flex justify-start">
                                 <div class="max-w-[75%] bg-white dark:bg-gray-850 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
+                                    <!-- Media Renderer -->
                                     <template x-if="msg.file_type === 'image'">
                                         <div class="mb-2 -mx-2 first:-mt-1">
                                             <img :src="msg.file_url" class="w-full max-h-64 object-contain rounded-2xl shadow-lg cursor-pointer" @click="window.open(msg.file_url, '_blank')" @load="$nextTick(() => scrollToBottom())">
                                         </div>
                                     </template>
-                                    <template x-if="msg.file_type === 'file'">
+
+                                    <!-- Local File -->
+                                    <template x-if="msg.file_type === 'file' && msg.storage_provider === 'local'">
                                         <a :href="msg.file_url" target="_blank" class="mb-2 flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 border border-gray-100 dark:border-gray-700 rounded-xl text-xs font-bold text-emerald-600 truncate transition-all group">
                                             <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg group-hover:scale-110 transition-transform">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                             </div>
-                                            <span class="truncate">Descargar Archivo</span>
+                                            <span class="truncate" x-text="msg.file_name || 'Descargar Archivo'"></span>
+                                        </a>
+                                    </template>
+
+                                    <!-- Google Drive -->
+                                    <template x-if="msg.storage_provider === 'google'">
+                                        <a :href="msg.web_view_link" target="_blank" class="mb-2 flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-100 dark:border-blue-800 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 truncate transition-all group">
+                                            <div class="p-1 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-900/50 shrink-0">
+                                                <svg class="w-4 h-4" viewBox="0 0 48 48">
+                                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                    <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                    <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="truncate">
+                                                <p class="truncate" x-text="msg.file_name || 'Google Drive'"></p>
+                                                <p class="text-[8px] text-gray-500 font-medium">Google Drive</p>
+                                            </div>
                                         </a>
                                     </template>
                                     
@@ -1392,60 +1445,88 @@
             
             <!-- Input Area -->
             <!-- Area de vista previa de adjuntos -->
-            <div x-show="previewUrl" class="p-2 px-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 animate-in slide-in-from-bottom-4" style="display:none;">
-                <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-white dark:border-gray-800 shadow-md bg-white dark:bg-gray-800 flex items-center justify-center">
+            <!-- Area de vista previa de adjuntos -->
+            <div x-show="previewUrl || pendingDriveFile" class="p-2 px-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 animate-in slide-in-from-bottom-4" style="display:none;">
+                <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-white dark:border-gray-800 shadow-md bg-white dark:bg-gray-800 flex items-center justify-center shrink-0">
+                    <!-- Local Image -->
                     <template x-if="pendingFile && pendingFile.type.startsWith('image/')">
                         <img :src="previewUrl" class="w-full h-full object-cover">
                     </template>
+                    <!-- Local File Generic -->
                     <template x-if="pendingFile && !pendingFile.type.startsWith('image/')">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </template>
+                    <!-- Drive File Icon -->
+                    <template x-if="pendingDriveFile">
+                        <svg class="w-8 h-8" viewBox="0 0 48 48">
+                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                            <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                            <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                        </svg>
                     </template>
                     
-                    <button @click="removePendingFile()" class="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-lg shadow hover:bg-red-600 transition-colors">
+                    <button @click="clearPendingAttachments()" class="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-lg shadow hover:bg-red-600 transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-[10px] font-black text-gray-900 dark:text-white truncate" x-text="pendingFile ? pendingFile.name : ''"></p>
-                    <p class="text-[9px] text-gray-500 font-mono" x-text="pendingFile ? Math.round(pendingFile.size / 1024) + ' KB' : ''"></p>
+                    <p class="text-[10px] font-black text-gray-900 dark:text-white truncate" x-text="pendingDriveFile ? pendingDriveFile.name : (pendingFile ? pendingFile.name : '')"></p>
+                    <p class="text-[9px] text-emerald-600 font-bold uppercase tracking-wider" x-text="pendingDriveFile ? 'Google Drive' : (pendingFile ? Math.round(pendingFile.size / 1024) + ' KB' : '')"></p>
                 </div>
             </div>
 
-            <!-- Input Area -->
-            <div class="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0">
-                <div class="flex items-end gap-2">
-                    <div class="relative">
-                        <button @click="showEmojis = !showEmojis" class="p-2.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </button>
-                        
-                        <!-- Emoji Box -->
-                        <div x-show="showEmojis" @click.away="showEmojis = false" class="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 w-64 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2" style="display: none;">
-                            <div class="p-2 grid grid-cols-7 gap-1">
-                                <template x-for="emoji in ['😀','😂','😅','😍','🤔','🙄','😎','👋','👍','👎','❤️','🔥','🚀','💡','🎉','⚠️','✅','📅','📊','📞','🏠']">
-                                    <button @click="insertEmoji(emoji)" class="text-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" x-text="emoji"></button>
-                                </template>
+            <!-- Input Area Enhanced -->
+            <div class="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0" 
+                 @drive-file-selected.window="if (open) { pendingDriveFile = $event.detail.file; pendingFile = null; previewUrl = null; $nextTick(() => $refs.chatInput.focus()); }">
+                <div class="flex items-end gap-3">
+                    
+                    <!-- Tools Column: Grouped for max visibility & aesthetics -->
+                    <div class="flex items-center gap-1 mb-1 px-1">
+                        <div class="relative">
+                            <button @click="showEmojis = !showEmojis" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="Emoticonos">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </button>
+                            
+                            <!-- Emoji Box WITH ZERO PADDING REQ BY USER AND FIXED HEIGHT SCROLL -->
+                            <div x-show="showEmojis" @click.away="showEmojis = false" class="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-60 max-h-64 overflow-y-auto custom-scrollbar z-50 animate-in fade-in slide-in-from-bottom-2" style="display: none;">
+                                <div class="grid grid-cols-8 gap-0 p-0 border-collapse">
+                                    <template x-for="emoji in ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','😘','🥰','😗','😙','😚','☺️','🙂','🤗','🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥','😮','🤐','😯','😪','😫','🥱','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹️','🙁','😖','😞','😟','😤','😢','😭','😦','😧','😨','😩','🤯','😬','😰','😱','🥵','🥶','😳','🤪','😵','🥴','😠','😡','🤬','😷','🤒','🤕','🤢','🤮','🤧','😇','🥳','🥺','🤠','🤡','🤥','🤫','🤭','🧐','🤓','😈','👿','👹','👺','💀','👻','👽','🤖','💩','😺','😸','😹','😻','😼','😽','🙀','😿','😾','🙈','🙉','🙊','💋','💌','💘','💝','💖','💗','💓','💞','💕','💟','❣️','💔','❤️','🧡','💛','💚','💙','💜','🤎','🖤','🤍','💯','💢','💥','💫','💦','💨','🕳️','💣','💬','🗨️','🗯️','💭','💤','👋','🤚','🖐️','✋','🖖','👌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦵','🦿','🦶','👂','🦻','👃','🧠','🦷','🦴','👀','👁️','👅','👄']">
+                                        <button @click="insertEmoji(emoji)" class="w-full h-8 flex items-center justify-center text-lg m-0 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors border-0 bg-transparent" x-text="emoji"></button>
+                                    </template>
+                                </div>
                             </div>
                         </div>
+
+                        <input type="file" x-ref="fileInput" class="hidden" @change="handleFileSelect($event)">
+                        <button @click="$refs.fileInput.click()" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="Adjuntar archivo local">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                        </button>
+
+                        @if ($currentTeamContext)
+                        <button @click="$dispatch('open-drive-picker', { mode: 'collect' })" class="p-2 text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all relative group" title="Vincular Google Drive">
+                            <svg class="w-5 h-5" viewBox="0 0 48 48">
+                                <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                            </svg>
+                        </button>
+                        @endif
                     </div>
 
-                    <input type="file" x-ref="fileInput" class="hidden" @change="handleFileSelect($event)">
-                    <button @click="$refs.fileInput.click()" class="p-2.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                    </button>
-
-                    <div class="flex-1 min-h-[44px] relative bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all overflow-hidden">
+                    <!-- Textarea container -->
+                    <div class="flex-1 min-h-[44px] relative bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all overflow-hidden">
                         <textarea x-ref="chatInput" 
                                x-model="message" 
                                @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()" 
                                @paste="handlePaste($event)"
                                rows="3"
-                               placeholder="Escribe un mensaje... (Shift+Intro para línea nueva, o pega imagen)" 
-                               class="w-full bg-transparent border-0 px-4 py-3 text-xs font-bold text-gray-900 dark:text-white focus:ring-0 resize-none custom-scrollbar"></textarea>
+                               placeholder="Escribe un mensaje... (Shift+Intro para línea nueva)" 
+                               class="w-full bg-transparent border-0 px-4 py-3 text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-0 resize-none custom-scrollbar"></textarea>
                     </div>
                     
+                    <!-- Send Button -->
                     <button @click="sendMessage()" 
-                            :disabled="isUploading || (!message.trim() && !pendingFile)"
+                            :disabled="isUploading || (!message.trim() && !pendingFile && !pendingDriveFile)"
                             class="p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 mb-1">
                         <template x-if="!isUploading">
                             <svg class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -1524,6 +1605,7 @@
                     // Expanded features
                     showEmojis: false,
                     pendingFile: null,
+                    pendingDriveFile: null,
                     previewUrl: null,
                     isUploading: false,
                     
@@ -1537,6 +1619,7 @@
                         this.open = true;
                         this.activeCallRoom = null;
                         this.incomingCall = null;
+                        this.clearPendingAttachments(); // Reset attachments on window open
                         Alpine.store('chatStore').markAsRead(detail.id);
                         this.fetchMessages();
                         this.$nextTick(() => {
@@ -1568,28 +1651,32 @@
                     sendMessage() {
                         if (this.isUploading) return;
                         const text = this.message.trim();
-                        if (!text && !this.pendingFile) return;
+                        if (!text && !this.pendingFile && !this.pendingDriveFile) return;
                         if (!this.member.id) return;
                         
                         this.isUploading = true;
                         this.message = '';
                         this.showEmojis = false;
                         
-                        // Optimistic update simple
+                        // Optimistic update
                         this.messages.push({
                             id: Date.now(),
                             sender: 'me',
                             text: text,
-                            file_type: this.pendingFile ? (this.pendingFile.type.startsWith('image/') ? 'image' : 'file') : null,
-                            file_url: this.previewUrl, // Local preview for zero lag UI
+                            file_name: this.pendingDriveFile ? this.pendingDriveFile.name : (this.pendingFile ? this.pendingFile.name : null),
+                            file_type: this.pendingDriveFile ? 'file' : (this.pendingFile ? (this.pendingFile.type.startsWith('image/') ? 'image' : 'file') : null),
+                            file_url: this.previewUrl, 
+                            storage_provider: this.pendingDriveFile ? 'google' : 'local',
+                            web_view_link: this.pendingDriveFile ? this.pendingDriveFile.webViewLink : null,
                             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         });
                         
                         const fileToUpload = this.pendingFile;
-                        this.removePendingFile();
+                        const driveFileToUpload = this.pendingDriveFile;
+                        this.clearPendingAttachments();
                         this.$nextTick(() => this.scrollToBottom());
 
-                        if (this.member.id === {{ auth()->id() }} && !fileToUpload) {
+                        if (this.member.id === {{ auth()->id() }} && !fileToUpload && !driveFileToUpload) {
                             setTimeout(() => {
                                 this.messages.push({
                                     id: Date.now() + 1,
@@ -1607,6 +1694,7 @@
                         formData.append('receiver_id', this.member.id);
                         if (text) formData.append('message', text);
                         if (fileToUpload) formData.append('file', fileToUpload);
+                        if (driveFileToUpload) formData.append('drive_file', JSON.stringify(driveFileToUpload));
 
                         fetch('/chat', {
                             method: 'POST',
@@ -1623,6 +1711,15 @@
                         .finally(() => {
                             this.isUploading = false;
                         });
+                    },
+
+                    clearPendingAttachments() {
+                        if (this.previewUrl && this.previewUrl.startsWith('blob:')) {
+                            URL.revokeObjectURL(this.previewUrl);
+                        }
+                        this.pendingFile = null;
+                        this.previewUrl = null;
+                        this.pendingDriveFile = null;
                     },
 
                     handleFileSelect(e) {
@@ -2036,6 +2133,10 @@
                 }));
             });
         </script>
+
+        @if ($currentTeamContext)
+            <x-google-drive-picker :team="$currentTeamContext" />
+        @endif
     @endauth
 </body>
 

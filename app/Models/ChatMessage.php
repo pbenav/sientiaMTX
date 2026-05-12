@@ -13,9 +13,12 @@ class ChatMessage extends Model
         'message',
         'is_read',
         'call_room',
+        'file_name',
         'file_path',
         'file_type',
         'file_size',
+        'storage_provider',
+        'web_view_link',
     ];
 
     protected $appends = ['file_url'];

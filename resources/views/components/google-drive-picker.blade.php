@@ -1,7 +1,7 @@
 <div x-data="drivePicker()" 
      @open-drive-picker.window="openModal($event.detail)" 
      x-show="isOpen" 
-     class="fixed inset-0 z-[100] overflow-y-auto" 
+     class="fixed inset-0 z-[10001] overflow-y-auto" 
      x-cloak>
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div x-show="isOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 transition-opacity" aria-hidden="true">

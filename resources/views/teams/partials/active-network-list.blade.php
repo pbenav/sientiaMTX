@@ -65,9 +65,17 @@
                 $statusLabel = 'Sin GPS • ' . $statusLabel;
             }
         @endphp
-        <div @click="$dispatch('open-chat', { id: {{ $member->id }}, name: '{{ addslashes($member->name) }}', photo: '{{ $member->profile_photo_url }}', status: '{{ addslashes($statusLabel) }}', email: '{{ $member->email }}', telegram: '{{ $member->telegram_chat_id ?? '' }}' })"
+        @php
+            $isSelf = $member->id === auth()->id();
+            $clickAction = $isSelf ? '' : '@click="$dispatch(\'open-chat\', { id: ' . $member->id . ', name: \'' . addslashes($member->name) . '\', photo: \'' . $member->profile_photo_url . '\', status: \'' . addslashes($statusLabel) . '\', email: \'' . $member->email . '\', telegram: \'' . ($member->telegram_chat_id ?? '') . '\' })"';
+            $itemClasses = $isSelf 
+                ? 'flex items-center justify-between group p-2 rounded-2xl opacity-80 transition-all duration-300 cursor-default w-full'
+                : 'flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer hover:translate-x-1 w-full';
+        @endphp
+
+        <div {!! $clickAction !!}
              x-data
-             class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer hover:translate-x-1 duration-200 w-full">
+             class="{{ $itemClasses }}">
             <div class="flex items-center gap-3 min-w-0">
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-br {{ $gradientClass }} p-0.5 shadow-sm transition-transform group-hover:scale-105 shrink-0 relative">
                 <img src="{{ $member->profile_photo_url }}" 
@@ -82,7 +90,9 @@
                 </template>
             </div>
             <div class="min-w-0">
-                <p class="text-[11px] font-black {{ ($isWorking || $isOnline || $isSleeping) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate tracking-tight">{{ $member->name }}</p>
+                <p class="text-[11px] font-black {{ ($isWorking || $isOnline || $isSleeping) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate tracking-tight">
+                    {{ $member->name }} @if($isSelf) <span class="text-indigo-500 dark:text-indigo-400 lowercase italic">(tú)</span> @endif
+                </p>
                 <p class="text-[9px] {{ $isWorking ? 'text-rose-500 font-bold' : ($isOnline ? 'text-emerald-500 font-bold' : ($isSleeping ? 'text-amber-500 font-bold' : 'text-gray-400')) }} truncate tracking-tight">{{ $statusLabel }}</p>
                 @if(auth()->user()->is_admin && $member->last_ip)
                     <div class="flex items-center gap-1 mt-0.5">
