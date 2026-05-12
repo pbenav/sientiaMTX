@@ -1661,6 +1661,94 @@
         <!-- Sidebar -->
         <div class="space-y-4">
 
+            <!-- Quality Rating Widget -->
+            @php
+                $canRate = $task->assignedTo()->where('users.id', auth()->id())->exists() || $task->assigned_user_id === auth()->id() || $team->isManager(auth()->user());
+                $userRating = $task->ratings()->where('user_id', auth()->id())->first();
+                $currentVal = $userRating ? $userRating->score : 0;
+            @endphp
+
+            @if($canRate || $task->avg_quality_score > 0)
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-all hover:shadow-md relative overflow-hidden group/rating">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 dark:bg-amber-400/5 rounded-full -mr-10 -mt-10 blur-2xl transition-all group-hover/rating:scale-150 duration-700 pointer-events-none"></div>
+                
+                <div class="flex items-center justify-between mb-4 relative">
+                    <div>
+                        <h3 class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5 flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                            {{ __('Calidad de Gestión') }}
+                        </h3>
+                        <p class="text-xs text-gray-500 font-medium">{{ __('¿Es relevante y clara?') }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-lg font-black text-gray-900 dark:text-white leading-none" id="avg-rating-display">{{ $task->avg_quality_score > 0 ? number_format($task->avg_quality_score, 1) : '0.0' }}</span>
+                        <span class="text-[10px] text-gray-400 font-bold">/ 5</span>
+                    </div>
+                </div>
+
+                @if($canRate)
+                <div x-data="{ 
+                    rating: {{ $currentVal }}, 
+                    hover: 0,
+                    submitting: false,
+                    async submitRating(val) {
+                        if(this.submitting) return;
+                        this.rating = val;
+                        this.submitting = true;
+                        try {
+                            const res = await fetch('{{ route('teams.tasks.rate', [$team, $task]) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ score: val })
+                            });
+                            const data = await res.json();
+                            if(data.success) {
+                                const el = document.getElementById('avg-rating-display');
+                                if(el) el.innerText = parseFloat(data.avg_score).toFixed(1);
+                                if(window.toastr) window.toastr.success(data.message);
+                            } else {
+                                if(window.toastr) window.toastr.warning(data.message);
+                            }
+                        } catch(e) {
+                            if(window.toastr) window.toastr.error('Error de red al guardar valoración');
+                        } finally {
+                            this.submitting = false;
+                        }
+                    }
+                }" class="flex items-center justify-center gap-2 py-2.5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50 relative z-10">
+                    <template x-for="i in [1,2,3,4,5]">
+                        <button type="button" 
+                            @mouseenter="hover = i" 
+                            @mouseleave="hover = 0"
+                            @click="submitRating(i)"
+                            class="focus:outline-none transition-all transform hover:scale-125 active:scale-95"
+                            :class="submitting ? 'opacity-50 cursor-wait' : 'cursor-pointer'">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-colors duration-150" 
+                                :class="(hover || rating) >= i ? 'text-amber-400 fill-current' : 'text-gray-300 dark:text-gray-600 fill-none stroke-current stroke-2'"
+                                viewBox="0 0 24 24">
+                                <path stroke-linejoin="round" stroke-linecap="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                        </button>
+                    </template>
+                </div>
+                @else
+                <div class="flex items-center gap-1 justify-center py-2 opacity-70">
+                    @for($i = 1; $i <= 5; $i++)
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ $i <= round($task->avg_quality_score) ? 'text-amber-400 fill-current' : 'text-gray-300 dark:text-gray-600 fill-current' }}" viewBox="0 0 24 24">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    @endfor
+                </div>
+                @endif
+            </div>
+            @endif
+
 
 
             <!-- 1. Plan Maestro Related (Only if template/child) -->

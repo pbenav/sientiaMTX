@@ -179,6 +179,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/teams/{team}/tasks/{task}/nudge', [TaskController::class, 'nudge'])->name('teams.tasks.nudge');
+    Route::post('/teams/{team}/tasks/{task}/rate', [TaskController::class, 'rate'])->name('teams.tasks.rate');
     Route::post('/teams/{team}/tasks/bulk-nudge', [TaskController::class, 'bulkNudge'])->name('teams.tasks.bulk-nudge');
     Route::post('/teams/{team}/tasks/{task}/move', [TaskController::class, 'move'])->name('teams.tasks.move');
     Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');

@@ -32,3 +32,6 @@ Schedule::command('app:purge-ghost-sessions --threshold=60')->everyThirtyMinutes
 // Purga automática de cuentas inactivas (Aviso y Eliminación) — Cada día a las 03:00
 Schedule::command('app:purge-inactive-accounts')->dailyAt('03:00');
 
+// Recompensa de XP por la calidad de tareas vencidas — cada hora
+Schedule::command('task:reward-quality')->hourly();
+

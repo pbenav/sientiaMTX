@@ -1836,4 +1836,50 @@ class TaskController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Store a user's rating for the quality of this task.
+     */
+    public function rate(Request $request, Team $team, Task $task)
+    {
+        if ($task->team_id !== $team->id) abort(404);
+
+        $user = auth()->user();
+        
+        $isAssigned = $task->assignedTo()->where('users.id', $user->id)->exists() 
+                   || $task->assigned_user_id === $user->id;
+                   
+        if (!$isAssigned && !$team->isManager($user)) {
+            return response()->json(['message' => 'Solo los usuarios asignados pueden valorar esta tarea.'], 403);
+        }
+
+        $request->validate([
+            'score' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:255'
+        ]);
+
+        $rating = $task->ratings()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'score' => $request->score,
+                'comment' => $request->comment
+            ]
+        );
+
+        $task->updateQualityCache();
+
+        if ($rating->score >= 4 && $task->creator && $task->creator->id !== $user->id) {
+             try {
+                 $task->creator->notify(new \App\Notifications\TaskQualityVotedNotification($task, $user, $rating->score));
+             } catch (\Exception $e) {
+                 \Log::error("Failed sending task quality notification: " . $e->getMessage());
+             }
+        }
+
+        return response()->json([
+            'success' => true,
+            'avg_score' => $task->avg_quality_score,
+            'message' => __('¡Valoración registrada con éxito!')
+        ]);
+    }
 }

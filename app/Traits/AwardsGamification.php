@@ -173,4 +173,37 @@ trait AwardsGamification
 
         Log::info("Gamificación: Otorgados {$xp} XP a {$user->name} por reporte de servicio verificado.");
     }
+
+    /**
+     * Award XP to the task creator based on high peer ratings when cycle ends.
+     */
+    protected function awardTaskQualityBonus(Task $task, $avgScore)
+    {
+        $creator = $task->creator;
+        if (!$creator) return;
+
+        // XP Calculation logic
+        $bonusXp = 0;
+        if ($avgScore >= 4.5) {
+            $bonusXp = 50; // Outstanding management
+        } elseif ($avgScore >= 3.5) {
+            $bonusXp = 25; // Solid management
+        }
+
+        if ($bonusXp > 0) {
+            $creator->increment('experience_points', $bonusXp);
+
+            GamificationLog::create([
+                'user_id' => $creator->id,
+                'team_id' => $task->team_id,
+                'points' => $bonusXp,
+                'type' => 'management_quality',
+                'source_type' => 'App\Models\Task',
+                'source_id' => $task->id,
+                'description' => "Bonificación por gestión: Tarea \"{$task->title}\" valorada con una media de " . number_format($avgScore, 1) . "/5 estrellas.",
+            ]);
+
+            Log::info("Gamificación: Otorgado bono de calidad de {$bonusXp} XP al creador {$creator->name} por tarea #{$task->id}.");
+        }
+    }
 }

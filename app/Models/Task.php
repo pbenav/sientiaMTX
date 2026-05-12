@@ -990,4 +990,20 @@ class Task extends Model
             }
         }
     }
+    /**
+     * Get the ratings for the task.
+     */
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(TaskRating::class);
+    }
+
+    /**
+     * Recompute and cache the average quality score based on votes.
+     */
+    public function updateQualityCache(): void
+    {
+        $this->avg_quality_score = $this->ratings()->avg('score') ?: 0;
+        $this->saveQuietly();
+    }
 }
