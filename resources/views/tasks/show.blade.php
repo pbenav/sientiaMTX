@@ -1448,6 +1448,69 @@
                             </svg>
                             {{ __('tasks.add_attachment') }}
                         </button>
+
+                        {{-- ── Nuevo Documento OnlyOffice ── --}}
+                        @can('update', $task)
+                        <div x-data="{ open: false }" class="relative mt-1">
+                            <button type="button" @click="open = !open" @click.outside="open = false"
+                                class="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                {{ __('Nuevo documento') }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+
+                            <div x-show="open" x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-cloak
+                                class="absolute right-0 mt-1.5 w-52 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
+
+                                {{-- Formularios ocultos para cada tipo --}}
+                                <form id="create-docx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}">
+                                    @csrf
+                                    <input type="hidden" name="type" value="docx">
+                                </form>
+                                <form id="create-xlsx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}">
+                                    @csrf
+                                    <input type="hidden" name="type" value="xlsx">
+                                </form>
+                                <form id="create-pptx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}">
+                                    @csrf
+                                    <input type="hidden" name="type" value="pptx">
+                                </form>
+
+                                <button type="button" onclick="document.getElementById('create-docx-form').submit()"
+                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400 transition-colors border-b border-gray-100 dark:border-gray-800">
+                                    <span class="text-lg">📄</span>
+                                    <div class="text-left">
+                                        <div class="font-bold text-xs">Documento de texto</div>
+                                        <div class="text-[10px] text-gray-400">.docx — Word / Writer</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="document.getElementById('create-xlsx-form').submit()"
+                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors border-b border-gray-100 dark:border-gray-800">
+                                    <span class="text-lg">📊</span>
+                                    <div class="text-left">
+                                        <div class="font-bold text-xs">Hoja de cálculo</div>
+                                        <div class="text-[10px] text-gray-400">.xlsx — Excel / Calc</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="document.getElementById('create-pptx-form').submit()"
+                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:hover:text-orange-400 transition-colors">
+                                    <span class="text-lg">🖼️</span>
+                                    <div class="text-left">
+                                        <div class="font-bold text-xs">Presentación</div>
+                                        <div class="text-[10px] text-gray-400">.pptx — PowerPoint / Impress</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                        @endcan
+
                         @php 
                             $isTeamLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
                         @endphp

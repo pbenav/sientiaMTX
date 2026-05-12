@@ -375,6 +375,9 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\OnlyOfficeController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/attachments/{attachment}/edit', [OnlyOfficeController::class, 'edit'])->name('onlyoffice.edit');
+    // Crear un documento nuevo vacío directamente desde una tarea y abrir el editor
+    Route::post('/teams/{team}/tasks/{task}/documents/create', [OnlyOfficeController::class, 'createDocument'])->name('onlyoffice.create');
 });
 Route::get('/onlyoffice/download/{attachment}', [OnlyOfficeController::class, 'downloadFile'])->name('onlyoffice.download');
 Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');
+
