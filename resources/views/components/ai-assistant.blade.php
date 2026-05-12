@@ -1010,7 +1010,8 @@
 
             generatePayloadCard(content) {
                 try {
-                    const data = JSON.parse(this.cleanJson(content));
+                    const sanitizedContent = this.cleanJson(content);
+                    const data = JSON.parse(sanitizedContent);
                     
                     // 3. SPECIAL: SEARCH RESULTS CARD
                     if (data.intent === 'search_results') {
