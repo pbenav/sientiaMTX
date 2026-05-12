@@ -51,6 +51,15 @@ class OnlyOfficeController extends Controller
         $downloadUrl = URL::temporarySignedRoute('onlyoffice.download', now()->addHours(12), ['attachment' => $attachment->id]);
         $callbackUrl = route('onlyoffice.callback', ['attachment' => $attachment->id]);
 
+        // OPTIMIZACIÓN PARA RED INTERNA:
+        // Si configuramos una IP interna en el .env del servidor, OnlyOffice la usará para descargar el archivo más rápido.
+        $internalAppUrl = env('ONLYOFFICE_INTERNAL_APP_URL'); // Ej: http://192.168.10.151
+        if (!empty($internalAppUrl)) {
+            $publicAppUrl = rtrim(config('app.url'), '/');
+            $downloadUrl = str_replace($publicAppUrl, rtrim($internalAppUrl, '/'), $downloadUrl);
+            $callbackUrl = str_replace($publicAppUrl, rtrim($internalAppUrl, '/'), $callbackUrl);
+        }
+
         $config = [
             'document' => [
                 'fileType' => $ext,
@@ -159,6 +168,14 @@ class OnlyOfficeController extends Controller
             }
 
             try {
+                // OPTIMIZACIÓN PARA RED INTERNA:
+                // Si Laravel también debe conectar internamente a OnlyOffice para guardar cambios
+                $internalServerUrl = env('ONLYOFFICE_INTERNAL_SERVER_URL'); // Ej: http://192.168.10.152
+                if (!empty($internalServerUrl)) {
+                    $publicServerUrl = rtrim(config('onlyoffice.url'), '/');
+                    $downloadUri = str_replace($publicServerUrl, rtrim($internalServerUrl, '/'), $downloadUri);
+                }
+
                 // Download the modified file from OnlyOffice server temporary storage
                 $newFileContent = file_get_contents($downloadUri);
                 if ($newFileContent === false) {
