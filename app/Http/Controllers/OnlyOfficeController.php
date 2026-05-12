@@ -151,8 +151,8 @@ class OnlyOfficeController extends Controller
         // Check JWT Signature if configured (Crucial for security!)
         $secret = config('onlyoffice.secret');
         if (!empty($secret)) {
-            // OnlyOffice sends token in either Body 'token' or 'X-CDES-JWT' Header
-            $token = $body['token'] ?? $request->header('X-CDES-JWT');
+            // OnlyOffice envía el token en el Body 'token', en la cabecera configurada (Authorization) o en 'X-CDES-JWT'
+            $token = $body['token'] ?? $request->header('Authorization') ?? $request->header('X-CDES-JWT');
             
             if (!$token) {
                 Log::warning("[OnlyOffice] Invalid callback received: No token provided.");
