@@ -1470,15 +1470,15 @@
                                 class="absolute right-0 mt-1.5 w-52 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
 
                                 {{-- Formularios ocultos para cada tipo --}}
-                                <form id="create-docx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}">
+                                <form id="create-docx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}" target="_blank">
                                     @csrf
                                     <input type="hidden" name="type" value="docx">
                                 </form>
-                                <form id="create-xlsx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}">
+                                <form id="create-xlsx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}" target="_blank">
                                     @csrf
                                     <input type="hidden" name="type" value="xlsx">
                                 </form>
-                                <form id="create-pptx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}">
+                                <form id="create-pptx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $task]) }}" target="_blank">
                                     @csrf
                                     <input type="hidden" name="type" value="pptx">
                                 </form>
