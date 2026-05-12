@@ -45,21 +45,16 @@ class OnlyOfficeController extends Controller
         // if the file changes externally, a new session starts.
         $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
 
-        // OPTIMIZACIÓN PARA RED INTERNA:
-        // Si configuramos una IP interna, forzamos que Laravel genere y FIRME las rutas con esa IP base.
-        $internalAppUrl = config('onlyoffice.internal_app_url'); // Ej: http://192.168.10.151
-        if (!empty($internalAppUrl)) {
-            URL::forceRootUrl($internalAppUrl);
-        }
+        // Construir las URLs que OnlyOffice usará para descargar y hacer callback.
+        // Si hay IP interna configurada, OnlyOffice se conecta directamente por LAN (sin proxy).
+        $baseUrl = rtrim(env('ONLYOFFICE_INTERNAL_APP_URL', config('app.url')), '/');
+        $downloadUrl = $baseUrl . '/onlyoffice/download/' . $attachment->id;
+        $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
 
-        // Generar las rutas firmadas (incluye la IP interna en la firma si está activada)
-        $downloadUrl = URL::temporarySignedRoute('onlyoffice.download', now()->addHours(12), ['attachment' => $attachment->id]);
-        $callbackUrl = route('onlyoffice.callback', ['attachment' => $attachment->id]);
-
-        // Restaurar inmediatamente la URL original para no romper nada más
-        if (!empty($internalAppUrl)) {
-            URL::forceRootUrl(config('app.url'));
-        }
+        \Log::info("[OnlyOffice-Debug] URLs generadas para el editor.", [
+            'download' => $downloadUrl,
+            'callback' => $callbackUrl,
+        ]);
 
         $config = [
             'document' => [
