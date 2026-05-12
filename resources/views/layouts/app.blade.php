@@ -521,6 +521,39 @@
                     <!-- Mobile: just notifications bell + hamburger -->
                     <div class="flex items-center sm:hidden gap-2 ml-auto">
                         @auth
+                        <!-- Chat Notification: Mobile -->
+                        <div class="relative inline-flex items-center sm:hidden" x-data="{ open: false }">
+                             <button @click="open = !open" @click.outside="open = false"
+                                     class="relative p-2 text-gray-400"
+                                     title="{{ __('Chat Interno') }}">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                 </svg>
+                                 <template x-if="$store.chatStore.totalCount > 0">
+                                      <span class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-emerald-500 text-[9px] font-bold text-white flex items-center justify-center"
+                                            x-text="$store.chatStore.totalCount > 9 ? '9+' : $store.chatStore.totalCount">
+                                      </span>
+                                 </template>
+                             </button>
+                             <!-- Dropdown -->
+                             <div x-show="open" x-transition x-cloak style="display: none"
+                                  class="absolute right-0 mt-12 top-0 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-[100] overflow-hidden">
+                                  <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                      <template x-if="$store.chatStore.totalCount === 0">
+                                          <div class="p-4 text-center text-gray-400 text-xs">Sin chats pendientes</div>
+                                      </template>
+                                      <template x-for="conv in $store.chatStore.unreadConversations" :key="conv.id">
+                                          <button @click="open = false; $dispatch('open-chat', conv)" class="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 border-b last:border-0 text-left dark:border-gray-800">
+                                              <img :src="conv.photo" class="w-8 h-8 rounded-lg object-cover">
+                                              <div class="min-w-0 flex-1">
+                                                  <h6 class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="conv.name"></h6>
+                                              </div>
+                                          </button>
+                                      </template>
+                                  </div>
+                             </div>
+                        </div>
+
                         <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-400" x-data>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -544,6 +577,47 @@
 
 
                     @auth
+                        <!-- Chat Notification Dropdown: Desktop -->
+                        <div class="hidden sm:inline-flex relative items-center" x-data="{ open: false }">
+                             <button @click="open = !open" @click.outside="open = false"
+                                     class="relative p-2 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                                     title="{{ __('Chat Interno') }}">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                 </svg>
+                                 <template x-if="$store.chatStore.totalCount > 0">
+                                     <span class="absolute top-1 right-1 flex h-4 w-4">
+                                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                         <span class="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 text-[10px] text-white font-bold items-center justify-center"
+                                               x-text="$store.chatStore.totalCount > 9 ? '9+' : $store.chatStore.totalCount">
+                                         </span>
+                                     </span>
+                                 </template>
+                             </button>
+                             
+                             <!-- Dropdown with unread -->
+                             <div x-show="open" x-transition x-cloak style="display: none"
+                                  class="absolute right-0 mt-12 top-0 w-72 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] overflow-hidden transform origin-top-right">
+                                  <div class="p-3 border-b border-gray-50 dark:border-gray-800 bg-emerald-50/30 dark:bg-emerald-900/20">
+                                      <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Chats sin leer</p>
+                                  </div>
+                                  <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                      <template x-if="$store.chatStore.totalCount === 0">
+                                          <div class="p-6 text-center text-gray-400 italic text-xs">¡Estás al día! 🎉</div>
+                                      </template>
+                                      <template x-for="conv in $store.chatStore.unreadConversations" :key="conv.id">
+                                          <button @click="open = false; $dispatch('open-chat', conv)" class="w-full p-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-0 text-left">
+                                              <img :src="conv.photo" class="w-9 h-9 rounded-xl object-cover shadow-sm border border-white dark:border-gray-700 shrink-0">
+                                              <div class="min-w-0 flex-1">
+                                                  <h6 class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="conv.name"></h6>
+                                                  <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate font-medium mt-0.5" x-text="conv.text"></p>
+                                              </div>
+                                          </button>
+                                      </template>
+                                  </div>
+                             </div>
+                        </div>
+
                         <!-- Notifications Bell: hidden on mobile (in mobile block above) -->
                         <a href="{{ route('notifications.index') }}" 
                            class="hidden sm:inline-flex relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10" 
@@ -1631,18 +1705,22 @@
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.store('chatStore', {
-                    unreadSenderIds: [],
+                    unreadConversations: [],
                     
-                    setUnread(ids) {
-                        this.unreadSenderIds = ids;
+                    setUnread(list) {
+                        this.unreadConversations = list;
                     },
                     
                     markAsRead(senderId) {
-                        this.unreadSenderIds = this.unreadSenderIds.filter(id => id !== senderId);
+                        this.unreadConversations = this.unreadConversations.filter(c => parseInt(c.id) !== parseInt(senderId));
                     },
                     
                     hasUnread(senderId) {
-                        return this.unreadSenderIds.includes(senderId);
+                        return this.unreadConversations.some(c => parseInt(c.id) === parseInt(senderId));
+                    },
+
+                    get totalCount() {
+                        return this.unreadConversations.length;
                     }
                 });
 
@@ -1956,8 +2034,18 @@
                             .then(r => r.json())
                             .then(data => {
                                 if (data.unread.length > 0) {
-                                    const ids = [...new Set(data.unread.map(m => m.sender_id))];
-                                    Alpine.store('chatStore').setUnread(ids);
+                                    const uniqueMap = {};
+                                    data.unread.forEach(m => {
+                                        if (!uniqueMap[m.sender_id]) {
+                                            uniqueMap[m.sender_id] = {
+                                                id: m.sender_id,
+                                                name: m.sender_name,
+                                                photo: m.sender_photo,
+                                                text: m.text || (m.file_name ? '📎 Adjunto' : '...')
+                                            };
+                                        }
+                                    });
+                                    Alpine.store('chatStore').setUnread(Object.values(uniqueMap));
                                     
                                     const lastMsg = data.unread[0];
                                     
