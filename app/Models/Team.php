@@ -105,6 +105,11 @@ class Team extends Model
         return $this->hasMany(Expediente::class);
     }
 
+    public function telegramGroupMembers(): HasMany
+    {
+        return $this->hasMany(TelegramGroupMember::class);
+    }
+
     // Get creator of the team
     public function creator()
     {

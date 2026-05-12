@@ -289,9 +289,50 @@
                 </div>
 
                 <div class="relative flex-1">
+                    <!-- Mention Suggestion List -->
+                    <div x-show="showMentions && filteredMentions.length > 0" 
+                         class="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] overflow-hidden max-h-60 flex flex-col animate-in fade-in slide-in-from-bottom-2"
+                         style="display: none;"
+                         @click.outside="showMentions = false">
+                        <div class="px-3 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Mencionar miembro</span>
+                        </div>
+                        <div class="overflow-y-auto custom-scrollbar">
+                            <template x-for="(u, index) in filteredMentions" :key="u.source + '-' + u.id">
+                                <button type="button" 
+                                        class="w-full px-4 py-2 flex items-center gap-3 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                        :class="{'bg-blue-50 dark:bg-blue-900/20': index === mentionIndex}"
+                                        @click="selectMention(u)"
+                                        @mouseenter="mentionIndex = index">
+                                    
+                                    <template x-if="u.photo">
+                                        <img :src="u.photo" class="w-6 h-6 rounded-full object-cover border border-gray-100 shadow-sm">
+                                    </template>
+                                    <template x-if="!u.photo">
+                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center border border-white dark:border-gray-800 shadow-sm shrink-0">
+                                            <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400" x-text="u.name.charAt(0)"></span>
+                                        </div>
+                                    </template>
+
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="u.name"></p>
+                                        <p class="text-[10px] text-blue-500 font-mono truncate" x-text="'@' + (u.username || u.name.toLowerCase().replace(/ /g,''))"></p>
+                                    </div>
+                                    <span class="text-[8px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-black uppercase shrink-0" 
+                                          x-text="u.source === 'system' ? 'Red' : 'TG'"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
                     <textarea x-ref="chatInput" x-model="newMessage" 
+                           @input="handleInput($event)"
+                           @click="checkMentionContext()"
+                           @keydown.arrow-down.prevent="if(showMentions) { mentionIndex = (mentionIndex + 1) % filteredMentions.length }"
+                           @keydown.arrow-up.prevent="if(showMentions) { mentionIndex = (mentionIndex - 1 + filteredMentions.length) % filteredMentions.length }"
+                           @keydown.enter.prevent="if(showMentions && filteredMentions.length > 0) { selectMention(filteredMentions[mentionIndex]); } else if(!$event.shiftKey) { send(); }"
+                           @keydown.escape.prevent="if(showMentions) { showMentions = false; } else { cancelEdit(); }"
                            @paste="handlePaste($event)"
-                           @keydown.enter.prevent="if(!$event.shiftKey) send()"
                            rows="2"
                            :placeholder="isRecording ? 'Grabando audio...' : (editingId ? 'Editando mensaje...' : 'Escribe un mensaje...')"
                            :disabled="!teamId || isRecording"
@@ -396,6 +437,14 @@
             newMessage: '',
             teamId: {{ $routeTeamId ?: 'null' }},
             messages: [],
+            
+            // Mentions system
+            mentionUsers: [],
+            filteredMentions: [],
+            showMentions: false,
+            mentionIndex: 0,
+            mentionQuery: '',
+            mentionStartPos: -1,
             lastMessageId: 0,
             firstMessageId: 0,
             canLoadMore: true,
@@ -572,7 +621,77 @@
                 }
                 
                 this.refreshMessages(true);
+                this.loadMentions();
                 setInterval(() => this.refreshMessages(), 12000); // Polling cada 12s
+            },
+
+            async loadMentions() {
+                try {
+                    const r = await fetch(`{{ route('telegram.chat.mentions') }}?team_id=${this.teamId}`);
+                    const data = await r.json();
+                    this.mentionUsers = data.users || [];
+                } catch(e) {
+                    console.warn('Error loading mentions:', e);
+                }
+            },
+
+            handleInput(e) {
+                const cursor = e.target.selectionStart;
+                const text = this.newMessage;
+                
+                // Encontrar el último '@' antes del cursor
+                const lastAt = text.lastIndexOf('@', cursor - 1);
+                
+                if (lastAt !== -1) {
+                    // Verificar si hay un espacio entre el @ y el cursor (cancelaría la mención)
+                    const between = text.slice(lastAt + 1, cursor);
+                    
+                    if (!between.includes(' ')) {
+                        this.mentionStartPos = lastAt;
+                        this.mentionQuery = between.toLowerCase();
+                        this.filterMentions();
+                        this.showMentions = this.filteredMentions.length > 0;
+                        this.mentionIndex = 0;
+                        return;
+                    }
+                }
+                
+                this.showMentions = false;
+            },
+
+            checkMentionContext() {
+                // Repetir la comprobación al hacer click o mover el cursor manualmente
+                const input = this.$refs.chatInput;
+                if (!input) return;
+                this.handleInput({ target: input });
+            },
+
+            filterMentions() {
+                const q = this.mentionQuery;
+                this.filteredMentions = this.mentionUsers.filter(u => {
+                    const nameMatch = u.name.toLowerCase().includes(q);
+                    const userMatch = u.username ? u.username.toLowerCase().includes(q) : false;
+                    return nameMatch || userMatch;
+                }).slice(0, 8); // Máximo 8 sugerencias para no saturar
+            },
+
+            selectMention(user) {
+                const input = this.$refs.chatInput;
+                const before = this.newMessage.slice(0, this.mentionStartPos);
+                const after = this.newMessage.slice(input.selectionStart);
+                
+                const handle = user.username || user.name.toLowerCase().replace(/ /g, '');
+                const replacement = `@${handle} `;
+                
+                this.newMessage = before + replacement + after;
+                this.showMentions = false;
+                
+                // Devolver el foco y posicionar el cursor después de la mención insertada
+                this.$nextTick(() => {
+                    input.focus();
+                    const newCursor = before.length + replacement.length;
+                    input.setSelectionRange(newCursor, newCursor);
+                });
             },
             async refreshMessages(initial = false) {
                 if (document.hidden && !initial) return;

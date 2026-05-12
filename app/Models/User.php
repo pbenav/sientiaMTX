@@ -51,6 +51,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         'marketing_accepted_at',
         'notification_settings',
         'telegram_chat_id',
+        'telegram_username',
         'resilience_points',
         'experience_points',
         'energy_level',

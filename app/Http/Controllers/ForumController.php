@@ -293,7 +293,7 @@ class ForumController extends Controller
                     $hasAccess = $task->visibility === 'public' ||
                                  $task->created_by_id === $userId ||
                                  $task->assigned_user_id === $userId ||
-                                 $task->assignedTo()->withTrashed()->where('users.id', $userId)->exists() ||
+                                 $task->assignedTo()->where('users.id', $userId)->exists() ||
                                  $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
 
                     if (!$hasAccess) {

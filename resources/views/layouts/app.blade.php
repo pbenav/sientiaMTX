@@ -1324,7 +1324,21 @@
                         <template x-if="msg.sender === 'me'">
                             <div class="flex justify-end">
                                 <div class="max-w-[75%] bg-emerald-600 text-white rounded-3xl rounded-tr-sm px-4 py-3 shadow-md relative">
-                                    <p class="text-xs font-semibold leading-relaxed" x-text="msg.text"></p>
+                                    <template x-if="msg.file_type === 'image'">
+                                        <div class="mb-2 -mx-2 first:-mt-1">
+                                            <img :src="msg.file_url" class="w-full max-h-64 object-contain rounded-2xl shadow-lg cursor-pointer" @click="window.open(msg.file_url, '_blank')" @load="$nextTick(() => scrollToBottom())">
+                                        </div>
+                                    </template>
+                                    <template x-if="msg.file_type === 'file'">
+                                        <a :href="msg.file_url" target="_blank" class="mb-2 flex items-center gap-2 p-2 bg-emerald-700/30 hover:bg-emerald-700/50 border border-white/10 rounded-xl text-xs font-bold text-white truncate transition-all group">
+                                            <div class="p-1.5 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            </div>
+                                            <span class="truncate">Descargar Archivo</span>
+                                        </a>
+                                    </template>
+
+                                    <p class="text-xs font-semibold leading-relaxed whitespace-pre-wrap" x-show="msg.text" x-text="msg.text"></p>
                                     <template x-if="msg.call_room">
                                         <button @click="window.open('https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-white/20 hover:bg-white/30 text-white font-black text-[9px] uppercase rounded-xl transition-all">
                                             Unirse a la videoconferencia 🎥
@@ -1339,7 +1353,21 @@
                         <template x-if="msg.sender === 'them'">
                             <div class="flex justify-start">
                                 <div class="max-w-[75%] bg-white dark:bg-gray-850 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
-                                    <p class="text-xs font-semibold leading-relaxed" x-text="msg.text"></p>
+                                    <template x-if="msg.file_type === 'image'">
+                                        <div class="mb-2 -mx-2 first:-mt-1">
+                                            <img :src="msg.file_url" class="w-full max-h-64 object-contain rounded-2xl shadow-lg cursor-pointer" @click="window.open(msg.file_url, '_blank')" @load="$nextTick(() => scrollToBottom())">
+                                        </div>
+                                    </template>
+                                    <template x-if="msg.file_type === 'file'">
+                                        <a :href="msg.file_url" target="_blank" class="mb-2 flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 border border-gray-100 dark:border-gray-700 rounded-xl text-xs font-bold text-emerald-600 truncate transition-all group">
+                                            <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg group-hover:scale-110 transition-transform">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            </div>
+                                            <span class="truncate">Descargar Archivo</span>
+                                        </a>
+                                    </template>
+                                    
+                                    <p class="text-xs font-semibold leading-relaxed whitespace-pre-wrap" x-show="msg.text" x-text="msg.text"></p>
                                     <template x-if="msg.call_room">
                                         <button @click="window.open('https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase rounded-xl transition-all">
                                             Aceptar y Unirse 🎥
@@ -1363,12 +1391,70 @@
             </div>
             
             <!-- Input Area -->
-            <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0 flex items-center gap-2">
-                <input x-ref="chatInput" type="text" x-model="message" @keydown.enter="sendMessage()" placeholder="Escribe un mensaje..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 text-xs font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none">
-                
-                <button @click="sendMessage()" class="p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 shrink-0">
-                    <svg class="w-4 h-4 transform rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-                </button>
+            <!-- Area de vista previa de adjuntos -->
+            <div x-show="previewUrl" class="p-2 px-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 animate-in slide-in-from-bottom-4" style="display:none;">
+                <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-white dark:border-gray-800 shadow-md bg-white dark:bg-gray-800 flex items-center justify-center">
+                    <template x-if="pendingFile && pendingFile.type.startsWith('image/')">
+                        <img :src="previewUrl" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="pendingFile && !pendingFile.type.startsWith('image/')">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </template>
+                    
+                    <button @click="removePendingFile()" class="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-lg shadow hover:bg-red-600 transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[10px] font-black text-gray-900 dark:text-white truncate" x-text="pendingFile ? pendingFile.name : ''"></p>
+                    <p class="text-[9px] text-gray-500 font-mono" x-text="pendingFile ? Math.round(pendingFile.size / 1024) + ' KB' : ''"></p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0">
+                <div class="flex items-end gap-2">
+                    <div class="relative">
+                        <button @click="showEmojis = !showEmojis" class="p-2.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                        
+                        <!-- Emoji Box -->
+                        <div x-show="showEmojis" @click.away="showEmojis = false" class="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 w-64 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2" style="display: none;">
+                            <div class="p-2 grid grid-cols-7 gap-1">
+                                <template x-for="emoji in ['😀','😂','😅','😍','🤔','🙄','😎','👋','👍','👎','❤️','🔥','🚀','💡','🎉','⚠️','✅','📅','📊','📞','🏠']">
+                                    <button @click="insertEmoji(emoji)" class="text-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" x-text="emoji"></button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="file" x-ref="fileInput" class="hidden" @change="handleFileSelect($event)">
+                    <button @click="$refs.fileInput.click()" class="p-2.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                    </button>
+
+                    <div class="flex-1 min-h-[44px] relative bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all overflow-hidden">
+                        <textarea x-ref="chatInput" 
+                               x-model="message" 
+                               @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()" 
+                               @paste="handlePaste($event)"
+                               rows="3"
+                               placeholder="Escribe un mensaje... (Shift+Intro para línea nueva, o pega imagen)" 
+                               class="w-full bg-transparent border-0 px-4 py-3 text-xs font-bold text-gray-900 dark:text-white focus:ring-0 resize-none custom-scrollbar"></textarea>
+                    </div>
+                    
+                    <button @click="sendMessage()" 
+                            :disabled="isUploading || (!message.trim() && !pendingFile)"
+                            class="p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 mb-1">
+                        <template x-if="!isUploading">
+                            <svg class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+                        </template>
+                        <template x-if="isUploading">
+                            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </template>
+                    </button>
+                </div>
             </div>
 
             <!-- Banner de Llamada Entrante Premium -->
@@ -1434,6 +1520,12 @@
                     originalTitle: '',
                     lastNotifiedMsgId: null,
                     callRingInterval: null,
+
+                    // Expanded features
+                    showEmojis: false,
+                    pendingFile: null,
+                    previewUrl: null,
+                    isUploading: false,
                     
                     init() {
                         this.originalTitle = document.title;
@@ -1474,19 +1566,30 @@
                     },
                     
                     sendMessage() {
-                        if (!this.message.trim() || !this.member.id) return;
+                        if (this.isUploading) return;
                         const text = this.message.trim();
-                        this.message = '';
+                        if (!text && !this.pendingFile) return;
+                        if (!this.member.id) return;
                         
+                        this.isUploading = true;
+                        this.message = '';
+                        this.showEmojis = false;
+                        
+                        // Optimistic update simple
                         this.messages.push({
                             id: Date.now(),
                             sender: 'me',
                             text: text,
+                            file_type: this.pendingFile ? (this.pendingFile.type.startsWith('image/') ? 'image' : 'file') : null,
+                            file_url: this.previewUrl, // Local preview for zero lag UI
                             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         });
+                        
+                        const fileToUpload = this.pendingFile;
+                        this.removePendingFile();
                         this.$nextTick(() => this.scrollToBottom());
 
-                        if (this.member.id === {{ auth()->id() }}) {
+                        if (this.member.id === {{ auth()->id() }} && !fileToUpload) {
                             setTimeout(() => {
                                 this.messages.push({
                                     id: Date.now() + 1,
@@ -1496,20 +1599,80 @@
                                 });
                                 this.$nextTick(() => this.scrollToBottom());
                             }, 1000);
+                            this.isUploading = false;
                             return;
                         }
+
+                        const formData = new FormData();
+                        formData.append('receiver_id', this.member.id);
+                        if (text) formData.append('message', text);
+                        if (fileToUpload) formData.append('file', fileToUpload);
 
                         fetch('/chat', {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
                             },
-                            body: JSON.stringify({
-                                receiver_id: this.member.id,
-                                message: text
-                            })
-                        }).then(() => this.fetchMessages());
+                            body: formData
+                        })
+                        .then(r => r.json())
+                        .then(() => {
+                            this.fetchMessages();
+                        })
+                        .catch(err => console.error('Error enviando mensaje:', err))
+                        .finally(() => {
+                            this.isUploading = false;
+                        });
+                    },
+
+                    handleFileSelect(e) {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        this.processFile(file);
+                        e.target.value = ''; // Limpiar input para poder re-seleccionar el mismo
+                    },
+
+                    processFile(file) {
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('⚠️ El archivo excede el límite de 10MB.');
+                            return;
+                        }
+                        this.pendingFile = file;
+                        this.previewUrl = URL.createObjectURL(file);
+                        this.$nextTick(() => this.$refs.chatInput.focus());
+                    },
+
+                    removePendingFile() {
+                        if (this.previewUrl && this.previewUrl.startsWith('blob:')) {
+                            URL.revokeObjectURL(this.previewUrl);
+                        }
+                        this.pendingFile = null;
+                        this.previewUrl = null;
+                    },
+
+                    handlePaste(e) {
+                        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                        for (let index in items) {
+                            const item = items[index];
+                            if (item.kind === 'file') {
+                                const blob = item.getAsFile();
+                                // Crear un nombre fake para evitar nulls
+                                const finalFile = new File([blob], `imagen_pegada_${Date.now()}.png`, { type: blob.type });
+                                this.processFile(finalFile);
+                            }
+                        }
+                    },
+
+                    insertEmoji(emoji) {
+                        const input = this.$refs.chatInput;
+                        const start = input.selectionStart;
+                        const end = input.selectionEnd;
+                        this.message = this.message.substring(0, start) + emoji + this.message.substring(end);
+                        this.$nextTick(() => {
+                            input.focus();
+                            const newPos = start + emoji.length;
+                            input.setSelectionRange(newPos, newPos);
+                        });
                     },
                     
                     startSientiaCall() {

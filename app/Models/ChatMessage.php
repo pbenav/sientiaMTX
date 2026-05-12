@@ -13,7 +13,18 @@ class ChatMessage extends Model
         'message',
         'is_read',
         'call_room',
+        'file_path',
+        'file_type',
+        'file_size',
     ];
+
+    protected $appends = ['file_url'];
+
+    public function getFileUrlAttribute(): ?string
+    {
+        if (!$this->file_path) return null;
+        return \Illuminate\Support\Facades\Storage::url($this->file_path);
+    }
 
     public function sender(): BelongsTo
     {

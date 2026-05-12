@@ -216,6 +216,63 @@ class TelegramChatController extends Controller
     }
 
     /**
+     * Obtener miembros del equipo y miembros del grupo de Telegram para menciones.
+     */
+    public function getMentions(Request $request)
+    {
+        $teamId = $request->query('team_id');
+        if (!$teamId) {
+            return response()->json(['users' => []]);
+        }
+
+        $team = Team::findOrFail($teamId);
+        
+        // 1. Usuarios del sistema en este equipo (Miembros oficiales)
+        $systemUsers = $team->members()->select('users.id', 'name', 'telegram_username', 'profile_photo_path')->get()->map(function($u) {
+            return [
+                'source' => 'system',
+                'id' => $u->id,
+                'name' => $u->name,
+                'username' => $u->telegram_username ?? str_replace(' ', '', strtolower($u->name)),
+                'photo' => $u->profile_photo_url
+            ];
+        });
+
+        // 2. Miembros del grupo detectados en Telegram
+        $telegramMembers = $team->telegramGroupMembers()->orderBy('last_seen_at', 'desc')->get()->map(function($tm) {
+            return [
+                'source' => 'telegram',
+                'id' => $tm->telegram_user_id,
+                'name' => $tm->full_name ?: $tm->username ?: 'Usuario Telegram',
+                'username' => $tm->username ?: null,
+                'photo' => null // Not easy to cache telegram photos instantly without high overhead
+            ];
+        });
+
+        // Fusionar y limpiar duplicados si el username existe en ambos (priorizar sistema)
+        $seenUsernames = [];
+        $combined = [];
+
+        foreach ($systemUsers as $u) {
+            $combined[] = $u;
+            if ($u['username']) {
+                $seenUsernames[strtolower($u['username'])] = true;
+            }
+        }
+
+        foreach ($telegramMembers as $tm) {
+            $uname = strtolower($tm['username'] ?? '');
+            // Evitar duplicar si el username ya está en system users y coincide
+            if ($uname && isset($seenUsernames[$uname])) {
+                continue;
+            }
+            $combined[] = $tm;
+        }
+
+        return response()->json(['users' => $combined]);
+    }
+
+    /**
      * Editar un mensaje tanto localmente como en Telegram.
      */
     public function update(Request $request, TelegramMessage $message)

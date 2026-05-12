@@ -102,6 +102,22 @@ class TelegramWebhookController extends Controller
             Log::warning("Telegram Webhook: No se encontró equipo para el chat_id '{$chatId}'");
             return response()->json(['status' => 'success']);
         }
+        // 4. Registrar/Actualizar el usuario en el directorio local de miembros de Telegram del equipo
+        try {
+            if (!empty($from['id'])) {
+                \App\Models\TelegramGroupMember::updateOrCreate(
+                    ['team_id' => $team->id, 'telegram_user_id' => (string)$from['id']],
+                    [
+                        'username' => $from['username'] ?? null,
+                        'first_name' => $from['first_name'] ?? $from['title'] ?? null,
+                        'last_name' => $from['last_name'] ?? null,
+                        'last_seen_at' => now()
+                    ]
+                );
+            }
+        } catch (\Exception $eMem) {
+            Log::warning("No se pudo actualizar el miembro de Telegram: " . $eMem->getMessage());
+        }
 
         // Deactivate backend processing if the team creator has disabled the Telegram module
         $creator = $team->creator;
