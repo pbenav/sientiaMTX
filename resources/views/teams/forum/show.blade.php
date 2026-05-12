@@ -782,15 +782,12 @@
                     });
                 }
             };
-<<<<<<< HEAD
-=======
             // Re-attempt init once fully loaded in case it missed the window
             document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.task-selector-tom').forEach(select => {
                     window.initForumTaskSelect(select);
                 });
             });
->>>>>>> dev
         </script>
     @endpush
 </x-app-layout>
