@@ -1131,7 +1131,7 @@
                         </div>
                     </div>`;
                 } catch (e) {
-                    console.error("Error parsing AI Payload:", e);
+                    // Silenciado para mantener la consola limpia, ya se maneja visualmente
                     return `<div class="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl text-xs border border-red-100">Error en Payload Inteligente: ${e.message}</div>`;
                 }
             },
