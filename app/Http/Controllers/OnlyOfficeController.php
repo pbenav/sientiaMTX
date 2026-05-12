@@ -114,32 +114,25 @@ class OnlyOfficeController extends Controller
      */
     public function downloadFile(Request $request, TaskAttachment $attachment)
     {
-        // LOG DE DIAGNÓSTICO:
+        // VALIDACIÓN: Aceptar descarga desde la IP de OnlyOffice o con firma válida
+        $onlyOfficeIp = parse_url(config('onlyoffice.internal_server_url', ''), PHP_URL_HOST);
+        $clientIp = $request->ip();
+        $hasValidSig = $request->hasValidSignature();
+
         \Log::info("[OnlyOffice-Debug] Intento de descarga detectado.", [
-            'ip_cliente' => $request->ip(),
-            'url_completa' => $request->fullUrl(),
-            'has_valid_signature' => $request->hasValidSignature() ? 'SI' : 'NO',
-            'method' => $request->method()
+            'ip_cliente' => $clientIp,
+            'onlyoffice_ip' => $onlyOfficeIp,
+            'has_valid_signature' => $hasValidSig ? 'SI' : 'NO',
         ]);
 
-        // RELAJAR FIRMA SI ES CONEXIÓN INTERNA:
-        // Como OnlyOffice conecta desde el mismo servidor y Laravel confunde protocolos http/https,
-        // si la petición viene de la LAN o de la red configurada, la aceptamos directamente.
-        $isValidSignature = $request->hasValidSignature();
-        
-        if (!$isValidSignature) {
-            // Si el internalAppUrl está configurado y la petición entró por ahí, se valida.
-            $internalAppUrl = config('onlyoffice.internal_app_url');
-            if (!empty($internalAppUrl) && str_contains($request->fullUrl(), '192.168')) {
-                $isValidSignature = true; // Forzado para salvar el loopback proxy
-            }
-        }
+        // Aceptar si: la firma es válida, O si viene de la IP de OnlyOffice
+        $isAuthorized = $hasValidSig || ($onlyOfficeIp && $clientIp === $onlyOfficeIp);
 
-        if (!$isValidSignature) {
-            \Log::error("[OnlyOffice-Debug] Firma no válida o caducada para la descarga.", [
-                'request_url' => $request->fullUrl()
+        if (!$isAuthorized) {
+            \Log::error("[OnlyOffice-Debug] Acceso denegado a la descarga.", [
+                'ip' => $clientIp, 'onlyoffice_ip_esperada' => $onlyOfficeIp
             ]);
-            abort(403, 'Firma no válida.');
+            abort(403, 'No autorizado.');
         }
 
         if (!Storage::disk('public')->exists($attachment->file_path)) {
