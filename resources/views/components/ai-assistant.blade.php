@@ -411,6 +411,18 @@
             recordingInterval: null,
             pendingFile: null,
 
+            cleanJson(content) {
+                if (!content) return '';
+                let sanitized = content.trim();
+                // Fix 1: Bad backslashes
+                sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
+                // Fix 2: Bad control characters (newlines/tabs) INSIDE string literals
+                sanitized = sanitized.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, function(match) {
+                    return match.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+                });
+                return sanitized;
+            },
+
             init() {
                 this.loadHistory();
                 
@@ -964,9 +976,7 @@
                 let cleanText = text.trim();
                 if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
                     try {
-                        let sanitized = cleanText;
-                        sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
-                        const parsed = JSON.parse(sanitized);
+                        const parsed = JSON.parse(this.cleanJson(cleanText));
                         if (parsed.content) cleanText = parsed.content;
                     } catch (e) {}
                 }
@@ -1000,14 +1010,7 @@
 
             generatePayloadCard(content) {
                 try {
-                    // Pre-procesamiento de seguridad para JSON mal formado (caracteres de escape inválidos comunes en LLMs)
-                    let sanitizedContent = content.trim();
-                    
-                    // Escapar backslashes que NO son seguidos por caracteres de escape válidos en JSON
-                    // Los válidos son: " \ / b f n r t u
-                    sanitizedContent = sanitizedContent.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
-
-                    const data = JSON.parse(sanitizedContent);
+                    const data = JSON.parse(this.cleanJson(content));
                     
                     // 3. SPECIAL: SEARCH RESULTS CARD
                     if (data.intent === 'search_results') {
@@ -1147,9 +1150,7 @@
                 // Si parece JSON, lo ponemos bonito
                 if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
                     try {
-                        let sanitized = content.trim();
-                        sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
-                        const obj = JSON.parse(sanitized);
+                        const obj = JSON.parse(this.cleanJson(content));
                         if (obj.content && obj.intent) {
                             return highlightPatterns(marked.parse(obj.content));
                         }
@@ -1260,9 +1261,7 @@
                 let textToInject = rawPayload; 
 
                 try {
-                    let sanitized = rawPayload.trim();
-                    sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
-                    payloadData = JSON.parse(sanitized);
+                    payloadData = JSON.parse(this.cleanJson(rawPayload));
                     if (typeof payloadData === 'object' && payloadData !== null) {
                         // Normalize the new intent format into the flat format expected by the frontend UI
                         if (payloadData.intent === 'full_task' && payloadData.task_data) {
