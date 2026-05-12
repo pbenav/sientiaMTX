@@ -158,6 +158,13 @@ class OnlyOfficeController extends Controller
      */
     public function callback(Request $request, TaskAttachment $attachment)
     {
+        // LOG DIAGNÓSTICO INICIAL:
+        \Log::info("[OnlyOffice-Debug] Petición de CALLBACK recibida en el controlador.", [
+            'ip' => $request->ip(),
+            'url' => $request->fullUrl(),
+            'method' => $request->method()
+        ]);
+
         // Read request payload (Sent as application/json body)
         $body = $request->json()->all();
 
