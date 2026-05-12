@@ -216,6 +216,58 @@ class AiChatController extends Controller
         
         $response = $aiAssistant->generateText($prompt);
         
+        // --- RUTINA DE AUTO-CORRECCIÓN DE PAYLOADS CORRUPTOS ---
+        // Si detectamos que la IA devolvió un bloque [PAYLOAD] pero tiene sintaxis JSON rota, 
+        // re-preguntamos silenciosamente para intentar sanarlo antes de que el usuario lo vea.
+        if (str_contains($response, '[PAYLOAD]')) {
+            preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $response, $matches);
+            $rawPayload = isset($matches[1]) ? trim($matches[1]) : '';
+            $rawPayload = preg_replace('/^```\w*\n/', '', $rawPayload);
+            $rawPayload = preg_replace('/```$/', '', trim($rawPayload));
+            
+            // Sanidad previa para control-chars (simulando lo que hace el front)
+            $safeRaw = preg_replace_callback('/"([^"\\\\]*(\\\\.[^"\\\\]*)*)"/s', function($m) {
+                return str_replace(["\n", "\r", "\t"], ["\\n", "\\r", "\\t"], $m[0]);
+            }, $rawPayload);
+            
+            json_decode($safeRaw);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                \Illuminate\Support\Facades\Log::warning("Ax.ia [{$user->email}] emitió un JSON corrupto (" . json_last_error_msg() . "). Iniciando ciclo de auto-sanación...");
+                
+                $repairPrompt = "IMPORTANTE: El bloque de datos [PAYLOAD] anterior contiene errores de sintaxis JSON. " .
+                               "Por favor, genera AHORA MISMO ese mismo bloque JSON de nuevo pero asegúrate de que sea 100% VÁLIDO, cerrando todas las llaves, " .
+                               "escapando comillas dobles internas y completando cualquier campo cortado. Devuelve SOLO el bloque [PAYLOAD] corregido.";
+                
+                try {
+                    $repairResult = $aiAssistant->generateText($repairPrompt);
+                    
+                    // Si el modelo no envolvió en [PAYLOAD] la respuesta forzada, lo envolvemos nosotros
+                    $healedChunk = str_contains($repairResult, '[PAYLOAD]') ? $repairResult : "[PAYLOAD]{$repairResult}[/PAYLOAD]";
+                    
+                    preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $healedChunk, $hMatches);
+                    $healedRaw = isset($hMatches[1]) ? trim($hMatches[1]) : '';
+                    $healedRaw = preg_replace('/^```\w*\n/', '', $healedRaw);
+                    $healedRaw = preg_replace('/```$/', '', trim($healedRaw));
+                    
+                    $safeHealed = preg_replace_callback('/"([^"\\\\]*(\\\\.[^"\\\\]*)*)"/s', function($m) {
+                        return str_replace(["\n", "\r", "\t"], ["\\n", "\\r", "\\t"], $m[0]);
+                    }, $healedRaw);
+                    
+                    json_decode($safeHealed);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        // ¡Éxito rotundo! Reemplazamos la parte rota en la respuesta original con la versión reparada
+                        $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', "[PAYLOAD]\n{$healedRaw}\n[/PAYLOAD]", $response);
+                        \Illuminate\Support\Facades\Log::info("Ax.ia: Auto-sanación de JSON completada con éxito.");
+                    } else {
+                        \Illuminate\Support\Facades\Log::warning("Ax.ia: El intento de auto-sanación también ha fallado. Se servirá el error visual.");
+                    }
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Error en rutina de sanación de IA: " . $e->getMessage());
+                }
+            }
+        }
+        // ------------------------------------------------------
+        
         // Human Recharge Logic
         if (str_contains($response, '[RECHARGE]')) {
             $user->increment('energy_level', 20);
