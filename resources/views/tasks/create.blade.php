@@ -657,6 +657,13 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <style>
         /* Bulletproof Modern TomSelect Wrapper */
+        /* Prevenir que el wrapper herede los estilos de Tailwind del select original causando doble caja */
+        .ts-wrapper {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
         .ts-control {
             border-radius: 0.75rem !important;
             border-width: 1px !important;

@@ -277,6 +277,14 @@
         @media (min-width: 768px) { .md\:hidden { display: none !important; } }
         @media (min-width: 1024px) { .lg\:hidden { display: none !important; } }
         @media (min-width: 1280px) { .xl\:hidden { display: none !important; } }
+
+        /* GLOBAL TOMSELECT FIX: Prevenir que el wrapper herede estilos de Tailwind del select original */
+        .ts-wrapper {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
     </style>
 </head>
 
