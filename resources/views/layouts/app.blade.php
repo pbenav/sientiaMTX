@@ -2385,11 +2385,11 @@
 
                 const watermarkHtml = withHeaders ? `<div class="logo-watermark">Sientia.</div>` : '';
 
-                printWin.document.write(\`
+                printWin.document.write(`
                     <!DOCTYPE html>
                     <html>
                         <head>
-                            <title>\${title}</title>
+                            <title>${title}</title>
                             <meta charset="utf-8">
                             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
                             <style>
@@ -2469,18 +2469,18 @@
                             </style>
                         </head>
                         <body>
-                            \${headerHtml}
-                            <div class="content">\${htmlContent}</div>
-                            \${watermarkHtml}
+                            ${headerHtml}
+                            <div class="content">${htmlContent}</div>
+                            ${watermarkHtml}
                             <script>
                                 window.onload = function() {
                                     window.print();
                                     setTimeout(function() { window.close(); }, 500);
                                 };
-                            <\/script>
+                            </script>
                         </body>
                     </html>
-                \`);
+                `);
                 printWin.document.close();
             },
 
