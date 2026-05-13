@@ -1897,6 +1897,14 @@
                                 </svg>
                                 {{ __('Informar bloqueo') }}
                             </button>
+                        @else
+                            <button onclick="updateTaskStatus('in_progress')"
+                                class="w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-3 rounded-xl transition-all border border-emerald-100 dark:border-emerald-900/30 shadow-sm active:scale-[0.98]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                </svg>
+                                {{ __('Quitar bloqueo') }}
+                            </button>
                         @endif
                     </div>
 
@@ -1977,6 +1985,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                                 {{ __('Informar un bloqueo') }}
+                            </button>
+                        @else
+                            <button onclick="updateTaskStatus('in_progress', {{ $personalInstance->id }})"
+                                class="w-full flex items-center justify-center gap-2 bg-emerald-50/80 hover:bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-3.5 rounded-xl transition-all border border-emerald-100/50 dark:border-emerald-900/30 active:scale-[0.98] shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                </svg>
+                                {{ __('Quitar bloqueo') }}
                             </button>
                         @endif
                     </div>
