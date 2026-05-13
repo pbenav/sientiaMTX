@@ -2302,6 +2302,41 @@
             <x-google-drive-picker :team="$currentTeamContext" />
         @endif
     @endauth
+
+    <!-- 💫 Sientia Premium UX: Intelligent Scroll & State Preserver 💫 -->
+    <script>
+        (function() {
+            // Clave única por ruta para evitar conflictos de scroll entre distintas páginas
+            const scrollKey = "sientia_scroll_pos_" + window.location.pathname;
+
+            // 1. RESTAURACIÓN INSTANTÁNEA
+            document.addEventListener("DOMContentLoaded", function() {
+                const savedScroll = sessionStorage.getItem(scrollKey);
+                if (savedScroll !== null) {
+                    // Un micro-retardo de 30ms garantiza que el layout de Tailwind/Alpine ya se haya estabilizado
+                    setTimeout(function() {
+                        window.scrollTo({
+                            top: parseInt(savedScroll, 10),
+                            behavior: 'instant' // Evita la animación de scroll fluido al recargar para dar sensación de inmediatez
+                        });
+                        // Una vez restaurado, limpiamos la sesión para no forzar el scroll en visitas posteriores no deseadas
+                        sessionStorage.removeItem(scrollKey);
+                    }, 30);
+                }
+            });
+
+            // 2. CAPTURA AL ABANDONAR LA VISTA (Refresco, Enlaces de acción, etc.)
+            window.addEventListener("beforeunload", function() {
+                sessionStorage.setItem(scrollKey, window.scrollY);
+            });
+
+            // 3. BLINDAJE EXTRA PARA FORMULARIOS
+            // Salvaguarda ante submits que bloquean temporalmente antes de iniciar la recarga
+            document.addEventListener("submit", function() {
+                sessionStorage.setItem(scrollKey, window.scrollY);
+            });
+        })();
+    </script>
 </body>
 
 </html>
