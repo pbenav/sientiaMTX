@@ -1733,7 +1733,7 @@
                                         </svg>
                                     </a>
                                     @if($isTaskType && $attachment->attachable_id === $task->id)
-                                        @can('update', $task)
+                                        @can('delete', $attachment)
                                             <button type="button"
                                                 onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
                                                 class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"

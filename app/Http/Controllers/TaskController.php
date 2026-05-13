@@ -1802,6 +1802,8 @@ class TaskController extends Controller
 
     public function updateAttachment(Request $request, Team $team, TaskAttachment $attachment)
     {
+        $this->authorize('update', $attachment);
+
         $validated = $request->validate([
             'file_name' => 'required|string|max:255',
         ]);
@@ -1827,10 +1829,7 @@ class TaskController extends Controller
 
     public function destroyAttachment(Team $team, TaskAttachment $attachment)
     {
-        // Authorization: Only owner or team manager can delete
-        if (auth()->id() !== $attachment->user_id && !$team->isManager(auth()->user())) {
-            abort(403);
-        }
+        $this->authorize('delete', $attachment);
 
         // Log deletion BEFORE deleting the attachment record (due to cascade)
         AttachmentLog::create([
