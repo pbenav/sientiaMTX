@@ -820,7 +820,9 @@
                         </div>
                     </div>
 
-                    @if ($task->attachments->isEmpty())
+                    @php $allAttachments = $task->all_attachments; @endphp
+
+                    @if ($allAttachments->isEmpty())
                         <div
                             class="flex flex-col items-center justify-center py-10 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl group hover:border-violet-200 transition-colors">
                             <div
@@ -831,7 +833,7 @@
                         </div>
                     @else
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            @foreach ($task->attachments as $attachment)
+                            @foreach ($allAttachments as $attachment)
                                 <div
                                     class="group flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100/50 dark:border-gray-700/50 rounded-2xl hover:border-violet-200 dark:hover:border-violet-500 transition-all shadow-sm">
                                     <div class="flex items-center gap-4 min-w-0">
@@ -869,9 +871,9 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-all duration-200">
                                         <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
-                                            class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 transition-all shadow-sm"
+                                            class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:text-violet-400 dark:hover:bg-violet-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 transition-all shadow-sm"
                                             title="{{ __('tasks.download') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
@@ -880,29 +882,44 @@
                                                     d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                             </svg>
                                         </a>
-                                        @can('update', $task)
-                                            <button type="button"
-                                                onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
-                                                class="p-2 text-gray-400 hover:text-blue-600 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
-                                                title="{{ __('tasks.edit') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-                                            <button type="button"
-                                                onclick="confirmAttachmentDelete({{ $attachment->id }})"
-                                                class="p-2 text-gray-400 hover:text-red-500 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-red-100 dark:hover:border-red-900/40 transition-all shadow-sm"
-                                                title="{{ __('tasks.delete') }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                        @if($attachment->attachable_id === $task->id)
+                                            @can('delete', $attachment)
+                                                <button type="button"
+                                                    onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
+                                                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
+                                                    title="{{ __('tasks.edit') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    onclick="confirmAttachmentDelete({{ $attachment->id }})"
+                                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-red-100 dark:hover:border-red-900/40 transition-all shadow-sm"
+                                                    title="{{ __('tasks.delete') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2.5"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            @endcan
+                                        @else
+                                            @php 
+                                                $isFromParent = $task->parent_id && $attachment->attachable_id === $task->parent_id;
+                                            @endphp
+                                            <span class="p-2 text-gray-300 dark:text-gray-600 cursor-help"
+                                                title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe gestionarse allí.' : 'Este archivo pertenece a una subtarea.' }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2.5"
+                                                        stroke-width="2"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
-                                            </button>
-                                        @endcan
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -940,7 +957,7 @@
         </form>
 
         {{-- Hidden Forms for Attachment Deletion (Outside Main Form) --}}
-        @foreach ($task->attachments as $attachment)
+        @foreach ($allAttachments as $attachment)
             <form id="delete-attachment-{{ $attachment->id }}" method="POST"
                 action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" class="hidden">
                 @csrf @method('DELETE')
