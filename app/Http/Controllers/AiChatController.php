@@ -234,12 +234,19 @@ class AiChatController extends Controller
             if (json_last_error() !== JSON_ERROR_NONE) {
                 \Illuminate\Support\Facades\Log::warning("Ax.ia [{$user->email}] emitió un JSON corrupto (" . json_last_error_msg() . "). Iniciando ciclo de auto-sanación...");
                 
-                $repairPrompt = "IMPORTANTE: El bloque de datos [PAYLOAD] anterior contiene errores de sintaxis JSON. " .
-                               "Por favor, genera AHORA MISMO ese mismo bloque JSON de nuevo pero asegúrate de que sea 100% VÁLIDO, cerrando todas las llaves, " .
-                               "escapando comillas dobles internas y completando cualquier campo cortado. Devuelve SOLO el bloque [PAYLOAD] corregido.";
+                // Para la rutina de sanación incluimos explícitamente el JSON corrupto en el prompt.
+                // Así la IA no necesita adivinar el contexto previo y tiene los datos reales.
+                $repairPrompt = "A continuación te presento un bloque JSON que está corrupto, incompleto o mal cerrado.\n" .
+                               "Por favor, corrígelo y complétalo para que sea un JSON 100% VÁLIDO, cerrando todas las llaves y comillas.\n" .
+                               "Devuelve ÚNICAMENTE el bloque JSON corregido envuelto en etiquetas [PAYLOAD] y [/PAYLOAD].\n\n" .
+                               "JSON CORRUPTO A REPARAR:\n" . $rawPayload;
                 
                 try {
-                    $repairResult = $aiAssistant->generateText($repairPrompt);
+                    // IMPORTANTE: Creamos una instancia LIMPIA del asistente de IA para la sanación.
+                    // De lo contrario, el asistente original volvería a subir el archivo PDF y sus contextos pesados 
+                    // en esta segunda llamada, provocando lentitud extrema y detonando el Error 504 Gateway Timeout del servidor.
+                    $cleanAssistant = app(\App\Contracts\AiAssistantInterface::class)->forUser($user, $request->team_id);
+                    $repairResult = $cleanAssistant->generateText($repairPrompt);
                     
                     // Si el modelo no envolvió en [PAYLOAD] la respuesta forzada, lo envolvemos nosotros
                     $healedChunk = str_contains($repairResult, '[PAYLOAD]') ? $repairResult : "[PAYLOAD]{$repairResult}[/PAYLOAD]";
@@ -257,7 +264,7 @@ class AiChatController extends Controller
                     if (json_last_error() === JSON_ERROR_NONE) {
                         // ¡Éxito rotundo! Reemplazamos la parte rota en la respuesta original con la versión reparada
                         $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', "[PAYLOAD]\n{$healedRaw}\n[/PAYLOAD]", $response);
-                        \Illuminate\Support\Facades\Log::info("Ax.ia: Auto-sanación de JSON completada con éxito.");
+                        \Illuminate\Support\Facades\Log::info("Ax.ia: Auto-sanación de JSON completada con éxito y de forma optimizada.");
                     } else {
                         \Illuminate\Support\Facades\Log::warning("Ax.ia: El intento de auto-sanación también ha fallado. Se servirá el error visual.");
                     }
