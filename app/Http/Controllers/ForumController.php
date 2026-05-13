@@ -31,10 +31,12 @@ class ForumController extends Controller
         $isCoordinator = $team->isCoordinator(auth()->user());
 
         $filters = $this->getPersistentFilters($request, 'forum', [
-            'search'
+            'search', 'sort', 'limit'
         ]);
         
         $search = $filters['search'] ?? null;
+        $sort = $filters['sort'] ?? 'updated_at_desc';
+        $limit = (int)($filters['limit'] ?? 15);
         $showOrphaned = $request->get('orphaned') ?? null;
         $filters['orphaned'] = $showOrphaned;
 
@@ -51,22 +53,20 @@ class ForumController extends Controller
                 $query->orphaned();
             })
             ->with(['user', 'task', 'messages' => function ($query) {
-                // Get the latest message for each thread
                 $query->latest()->limit(1);
             }])
             ->where(function($query) use ($userId, $isCoordinator, $showOrphaned) {
                 if ($isCoordinator) {
-                    return $query; // Coordinators see everything in the team
+                    return $query;
                 }
                 
-                // If filtering by orphans, non-coordinators can see them (Knowledge Library)
                 if ($showOrphaned) {
                     return $query->whereNull('task_id');
                 }
 
                 $query->whereNull('task_id')
                       ->orWhereHas('task', function($q) use ($userId) {
-                          $q->withTrashed() // Include soft-deleted tasks to enforce original privacy
+                          $q->withTrashed()
                             ->where(function($sq) use ($userId) {
                                 $sq->where('visibility', 'public')
                                   ->orWhere('created_by_id', $userId)
@@ -82,8 +82,12 @@ class ForumController extends Controller
             })
             ->withCount('messages')
             ->orderBy('is_pinned', 'desc')
-            ->orderBy('updated_at', 'desc')
-            ->paginate(15)
+            ->when($sort === 'updated_at_desc', fn($q) => $q->orderBy('updated_at', 'desc'))
+            ->when($sort === 'updated_at_asc', fn($q) => $q->orderBy('updated_at', 'asc'))
+            ->when($sort === 'views_desc', fn($q) => $q->orderBy('views', 'desc'))
+            ->when($sort === 'messages_desc', fn($q) => $q->orderBy('messages_count', 'desc'))
+            ->when($sort === 'title_asc', fn($q) => $q->orderBy('title', 'asc'))
+            ->paginate(in_array($limit, [15, 30, 50, 100]) ? $limit : 15)
             ->withQueryString();
 
         return view('teams.forum.index', compact('team', 'threads', 'filters'));

@@ -45,19 +45,40 @@
                 @include('teams.partials.header-actions')
             </div>
 
-            <!-- Search Bar -->
-            <form action="{{ route('teams.forum.index', $team) }}" method="GET" class="relative flex-1 max-w-md">
-                <div class="relative group">
+            <!-- Filters & Search -->
+            <form action="{{ route('teams.forum.index', $team) }}" method="GET" class="flex flex-col sm:flex-row items-center gap-3 flex-1 justify-end">
+                @if($filters['orphaned'] ?? null)
+                    <input type="hidden" name="orphaned" value="1">
+                @endif
+                
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <select name="sort" onchange="this.form.submit()" class="flex-1 sm:flex-none bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 transition-all cursor-pointer">
+                        <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>Nuevos</option>
+                        <option value="updated_at_asc" {{ ($filters['sort'] ?? '') === 'updated_at_asc' ? 'selected' : '' }}>Antiguos</option>
+                        <option value="messages_desc" {{ ($filters['sort'] ?? '') === 'messages_desc' ? 'selected' : '' }}>Con más respuestas</option>
+                        <option value="views_desc" {{ ($filters['sort'] ?? '') === 'views_desc' ? 'selected' : '' }}>Más vistos</option>
+                        <option value="title_asc" {{ ($filters['sort'] ?? '') === 'title_asc' ? 'selected' : '' }}>Alfabético</option>
+                    </select>
+
+                    <select name="limit" onchange="this.form.submit()" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 transition-all cursor-pointer">
+                        <option value="15" {{ ($filters['limit'] ?? 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="30" {{ ($filters['limit'] ?? 15) == 30 ? 'selected' : '' }}>30</option>
+                        <option value="50" {{ ($filters['limit'] ?? 15) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ ($filters['limit'] ?? 15) == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </div>
+                
+                <div class="relative group w-full sm:w-auto min-w-[250px]">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <input type="text" name="search" value="{{ $filters['search'] }}" 
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
                            placeholder="{{ __('forum.search_threads') ?? 'Buscar en el foro...' }}"
-                           class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-gray-400 dark:text-gray-300">
+                           class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-gray-400 dark:text-gray-300">
                     
-                    @if($filters['search'])
+                    @if(!empty($filters['search']))
                         <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 transition-colors">
                             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />

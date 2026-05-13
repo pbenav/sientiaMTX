@@ -481,22 +481,13 @@
                 }
             }
 
-            function replyTo(messageId, name, content = null) {
+            function replyTo(messageId, name) {
                 const container = document.getElementById('reply-box-container');
                 if (container) {
                     const outerData = Alpine.$data(document.querySelector('[x-data*="replyingToId"]'));
                     if (outerData) {
                         outerData.replyingToId = messageId;
                         outerData.replyingToName = name;
-                        
-                        if (content) {
-                            const textarea = document.getElementById('reply-content');
-                            if (textarea) {
-                                const quote = `> **${name}**: ${content}\n\n`;
-                                textarea.value = quote;
-                                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                            }
-                        }
                     }
                     
                     const textarea = document.getElementById('reply-content');

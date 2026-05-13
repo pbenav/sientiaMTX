@@ -175,28 +175,38 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            @php
-                                                $activeSessions = $user->sessions->filter(function($s) {
-                                                    return $s->last_activity > now()->subMinutes(15)->getTimestamp();
-                                                });
-                                                $hasActive = $activeSessions->isNotEmpty();
-                                                $uniqueIps = $user->sessions->pluck('ip_address')->unique()->implode(', ');
-                                            @endphp
+                                        <div class="flex flex-col gap-1">
+                                            <div class="flex items-center gap-2">
+                                                @php
+                                                    $activeSessions = $user->sessions->filter(function($s) {
+                                                        return $s->last_activity > now()->subMinutes(15)->getTimestamp();
+                                                    });
+                                                    $hasActive = $activeSessions->isNotEmpty();
+                                                    $uniqueIps = $user->sessions->pluck('ip_address')->unique()->implode(', ');
+                                                    $latestSession = $user->sessions->sortByDesc('last_activity')->first();
+                                                @endphp
 
-                                            @if($hasActive)
-                                                <div class="relative flex h-2.5 w-2.5">
-                                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                                                </div>
-                                                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ __('Online') }}</span>
-                                                <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400" title="{{ $uniqueIps ?: 'Sin IP detectada' }}">{{ $user->last_ip ?: 'N/A' }}</span>
-                                            @else
-                                                <span class="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-                                                <span class="text-xs text-gray-400">{{ __('Offline') }}</span>
-                                                @if($user->last_ip)
-                                                    <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500/70 dark:text-gray-500/70" title="Última conocida">{{ $user->last_ip }}</span>
+                                                @if($hasActive)
+                                                    <div class="relative flex h-2.5 w-2.5">
+                                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                                    </div>
+                                                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ __('Online') }}</span>
+                                                    <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400" title="{{ $uniqueIps ?: 'Sin IP detectada' }}">{{ $user->last_ip ?: 'N/A' }}</span>
+                                                @else
+                                                    <span class="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                                                    <span class="text-xs text-gray-400">{{ __('Offline') }}</span>
+                                                    @if($user->last_ip)
+                                                        <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500/70 dark:text-gray-500/70" title="Última conocida">{{ $user->last_ip }}</span>
+                                                    @endif
                                                 @endif
+                                            </div>
+                                            @if($latestSession)
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 pl-4" title="{{ \Carbon\Carbon::createFromTimestamp($latestSession->last_activity)->format('d/m/Y H:i:s') }}">
+                                                    Últ. vez: {{ \Carbon\Carbon::createFromTimestamp($latestSession->last_activity)->diffForHumans() }}
+                                                </span>
+                                            @else
+                                                <span class="text-[10px] text-gray-400/50 pl-4 italic">Nunca ha entrado</span>
                                             @endif
                                         </div>
                                     </td>

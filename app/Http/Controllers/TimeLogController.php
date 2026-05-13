@@ -161,15 +161,21 @@ class TimeLogController extends Controller
         
         $heatmapData = $team->members->whereNotNull('location_lat')->map(function($u) {
             return [
+                'user_id' => $u->id,
+                'photo' => $u->profile_photo_url,
                 'lat' => (float)$u->location_lat,
                 'lng' => (float)$u->location_lng,
                 'count' => max(10, $u->experience_points / 2), // Intensity based on effort (min 10)
                 'name' => $u->name,
                 'area' => $u->working_area_name,
                 'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
-                'is_working' => $u->last_login_at ? $u->isWorking() : false,
-                'is_active' => $u->last_login_at && $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
+                'is_working' => clone $u, // Hack to use isWorking correctly
+                'is_active' => $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
             ];
+        })->map(function($data) {
+            $u = $data['is_working'];
+            $data['is_working'] = $u->last_login_at ? $u->isWorking() : false;
+            return $data;
         })->values();
             
         $services = $team->services()

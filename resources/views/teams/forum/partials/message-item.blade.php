@@ -56,7 +56,7 @@
 
                     <!-- Reply Button -->
                     <button type="button"
-                        onclick="replyTo({{ $message->id }}, {{ json_encode($message->user->name) }}, {{ json_encode($message->content) }})"
+                        onclick="replyTo({{ $message->id }}, {{ json_encode($message->user->name) }})"
                         class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                         title="Responder a este mensaje">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">

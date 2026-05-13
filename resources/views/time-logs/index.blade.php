@@ -743,8 +743,23 @@
                         popupAnchor: [0, -14]
                     });
 
-                    L.marker([p.lat, p.lng], { icon: customIcon }).addTo(userMarkersGroup)
+                    const marker = L.marker([p.lat, p.lng], { icon: customIcon }).addTo(userMarkersGroup)
                      .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}">${statusLabel} • ${p.area || 'Zona Activa'}</span><br><b class="text-xs text-gray-900">${p.name}</b></div>`);
+
+                    marker.on('mouseover', function (e) { this.openPopup(); });
+                    marker.on('mouseout', function (e) { this.closePopup(); });
+                    
+                    marker.on('click', function(e) {
+                        if (p.user_id && p.user_id !== {{ auth()->id() }}) {
+                            window.dispatchEvent(new CustomEvent('open-chat', {
+                                detail: {
+                                    id: p.user_id,
+                                    name: p.name,
+                                    photo: p.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&color=7F9CF5&background=EBF4FF`
+                                }
+                            }));
+                        }
+                    });
 
                     // Círculo de impacto territorial
                     if (p.radius) {

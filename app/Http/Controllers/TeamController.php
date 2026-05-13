@@ -563,19 +563,22 @@ class TeamController extends Controller
 
         if ($request->wantsJson() || $request->input('json')) {
             $heatmapData = $members->whereNotNull('location_lat')->map(function($u) {
-                $isRealWorking = $u->last_login_at ? $u->isWorking() : false;
-                $isRealActive = $u->last_login_at && $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15));
-
                 return [
+                    'user_id' => $u->id,
+                    'photo' => $u->profile_photo_url,
                     'lat' => (float)$u->location_lat,
                     'lng' => (float)$u->location_lng,
-                    'count' => max(10, $u->experience_points / 2), // Intensity based on effort (min 10)
+                    'count' => max(10, $u->experience_points / 2),
                     'name' => $u->name,
                     'area' => $u->working_area_name,
-                    'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
-                    'is_working' => $isRealWorking,
-                    'is_active' => $isRealActive
+                    'radius' => (int)($u->impact_radius ?? 10) * 1000,
+                    'is_working' => clone $u, // Hack to use isWorking correctly
+                    'is_active' => $u->last_activity_at && $u->last_activity_at->gt(now()->subMinutes(15))
                 ];
+            })->map(function($data) {
+                $u = $data['is_working'];
+                $data['is_working'] = $u->last_login_at ? $u->isWorking() : false;
+                return $data;
             })->values();
 
             return response()->json([
