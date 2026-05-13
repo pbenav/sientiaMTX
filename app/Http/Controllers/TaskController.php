@@ -1231,6 +1231,139 @@ class TaskController extends Controller
     }
 
     /**
+     * Merge multiple selected tasks into a single target task (bulk operation).
+     */
+    public function bulkMerge(Request $request, Team $team)
+    {
+        $request->validate([
+            'task_ids'       => 'required|array|min:2',
+            'task_ids.*'     => 'exists:tasks,id',
+            'target_task_id' => 'required|exists:tasks,id',
+        ]);
+
+        $targetTask = Task::findOrFail($request->input('target_task_id'));
+
+        if ($targetTask->team_id !== $team->id) {
+            return back()->with('warning', 'La tarea de destino debe pertenecer al mismo equipo.');
+        }
+
+        if (auth()->user()->cannot('update', $targetTask)) {
+            return back()->with('warning', 'No tienes permisos para editar la tarea de destino.');
+        }
+
+        $sourceIds = collect($request->task_ids)->filter(fn($id) => (int)$id !== $targetTask->id);
+        $sourceTasks = Task::whereIn('id', $sourceIds)->where('team_id', $team->id)->get();
+
+        $merged = 0;
+        $skipped = 0;
+
+        foreach ($sourceTasks as $task) {
+            if (auth()->user()->cannot('delete', $task)) {
+                $skipped++;
+                continue;
+            }
+
+            \DB::transaction(function () use ($task, $targetTask) {
+                // 1. Combine content additively
+                $cleanSourceDesc = trim(strip_tags($task->description ?? ''));
+                $cleanTargetDesc = trim(strip_tags($targetTask->description ?? ''));
+                if ($cleanSourceDesc !== '' && strpos($cleanTargetDesc, $cleanSourceDesc) === false) {
+                    $targetTask->description = ($targetTask->description ?? '') . "\n\n--- [Fusionado desde: {$task->title}] ---\n\n" . $task->description;
+                }
+
+                $cleanSourceObs = trim(strip_tags($task->observations ?? ''));
+                $cleanTargetObs = trim(strip_tags($targetTask->observations ?? ''));
+                if ($cleanSourceObs !== '' && strpos($cleanTargetObs, $cleanSourceObs) === false) {
+                    $targetTask->observations = ($targetTask->observations ?? '') . "\n\n--- [Fusionado desde: {$task->title}] ---\n\n" . $task->observations;
+                }
+                $targetTask->save();
+
+                // 2. Subtasks → target
+                $task->children()->update(['parent_id' => $targetTask->id]);
+
+                // 3. Time Logs
+                $task->timeLogs()->update(['task_id' => $targetTask->id]);
+
+                // 4. Attachments
+                \App\Models\TaskAttachment::where('attachable_type', Task::class)
+                    ->where('attachable_id', $task->id)
+                    ->update(['attachable_id' => $targetTask->id]);
+                \App\Models\TaskAttachment::where('attachable_type', 'App\Models\Task')
+                    ->where('attachable_id', $task->id)
+                    ->update(['attachable_id' => $targetTask->id]);
+
+                // 5. Private Notes
+                $task->privateNotes()->update(['task_id' => $targetTask->id]);
+
+                // 6. Kudos
+                \App\Models\Kudo::where('task_id', $task->id)->update(['task_id' => $targetTask->id]);
+
+                // 7. History
+                $task->histories()->update(['task_id' => $targetTask->id]);
+
+                // 8. Tags (no duplicates)
+                foreach ($task->tags as $tag) {
+                    if (!$targetTask->tags()->where('tag', $tag->tag)->exists()) {
+                        $tag->update(['task_id' => $targetTask->id]);
+                    }
+                }
+
+                // 9. Assignments (no duplicates)
+                foreach ($task->assignments as $assignment) {
+                    $existsQuery = $targetTask->assignments();
+                    $assignment->user_id
+                        ? $existsQuery->where('user_id', $assignment->user_id)
+                        : $existsQuery->where('group_id', $assignment->group_id);
+                    if (!$existsQuery->exists()) {
+                        $assignment->update(['task_id' => $targetTask->id]);
+                    }
+                }
+
+                // 10. Forum Thread
+                $sourceThread = $task->forumThread;
+                if ($sourceThread) {
+                    $targetThread = $targetTask->forumThread;
+                    if ($targetThread) {
+                        $sourceThread->messages()->update(['forum_thread_id' => $targetThread->id]);
+                        $sourceThread->delete();
+                    } else {
+                        $sourceThread->update(['task_id' => $targetTask->id]);
+                    }
+                }
+
+                // 11. Calendar Event
+                $sourceCal = $task->calendarEvent;
+                if ($sourceCal) {
+                    if (!$targetTask->calendarEvent()->exists()) {
+                        $sourceCal->update(['task_id' => $targetTask->id]);
+                    } else {
+                        $sourceCal->delete();
+                    }
+                }
+
+                // 12. History trail on target + delete source
+                $targetTask->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action'  => 'task_merged',
+                    'notes'   => "Tarea ID #{$task->id} ('{$task->title}') fusionada en bloque en esta tarea.",
+                ]);
+
+                $task->delete();
+            });
+
+            $merged++;
+        }
+
+        $msg = "Fusión completada: {$merged} tarea(s) fusionadas en «{$targetTask->title}»";
+        if ($skipped > 0) {
+            $msg .= " ({$skipped} omitidas por falta de permisos)";
+        }
+
+        return redirect()->route('teams.tasks.show', [$team, $targetTask])
+            ->with('success', $msg . '.');
+    }
+
+    /**
      * Permanently remove all trashed tasks for this team.
      */
     public function purgeTrash(Request $request, Team $team)

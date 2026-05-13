@@ -212,7 +212,19 @@
                     </div>
                 </div>
 
-                <div class="flex items-center w-full xl:w-auto shrink-0 mt-2 xl:mt-0">
+                <div class="flex items-center w-full xl:w-auto shrink-0 mt-2 xl:mt-0 gap-2">
+                    {{-- Fusionar selección --}}
+                    @can('update', \App\Models\Task::class)
+                    <button type="button" onclick="openBulkMergeModal()"
+                        class="w-full xl:w-auto px-5 py-2.5 bg-amber-50 hover:bg-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-600 text-amber-600 dark:text-amber-400 hover:text-white dark:hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 border border-amber-100 dark:border-amber-900/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        Fusionar
+                    </button>
+                    @endcan
+
+                    {{-- Eliminar selección --}}
                     <button type="button" onclick="confirmBulkDelete()"
                         class="w-full xl:w-auto px-5 py-2.5 bg-red-50 hover:bg-red-500 dark:bg-red-500/10 dark:hover:bg-red-600 text-red-600 dark:text-red-400 hover:text-white dark:hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 border border-red-100 dark:border-red-900/30">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -727,6 +739,106 @@
                     toggleAll(document.getElementById('selectAllCheckbox'));
                 }
 
+                // ── Bulk Merge ──────────────────────────────────────────
+                // Mapa de IDs → títulos generado desde Blade para usarlo en el modal
+                const taskTitles = {};
+                @foreach($tasks as $t)
+                    taskTitles[{{ $t->id }}] = @json($t->title);
+                    @foreach($t->children as $sub)
+                        taskTitles[{{ $sub->id }}] = @json($sub->title);
+                    @endforeach
+                @endforeach
+
+                function openBulkMergeModal() {
+                    const selected = [...document.querySelectorAll('.task-checkbox:checked')];
+                    if (selected.length < 2) {
+                        Swal.fire({ title: 'Selección insuficiente', text: 'Debes seleccionar al menos 2 tareas para fusionarlas.', icon: 'info',
+                            background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                            color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827' });
+                        return;
+                    }
+
+                    const list = document.getElementById('mergeTaskList');
+                    list.innerHTML = '';
+
+                    selected.forEach((cb, i) => {
+                        const id = cb.value;
+                        const title = taskTitles[id] ?? `Tarea #${id}`;
+                        const div = document.createElement('label');
+                        div.className = 'flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 cursor-pointer transition-all group';
+                        div.innerHTML = `
+                            <input type="radio" name="merge_target" value="${id}" ${ i === 0 ? 'checked' : '' }
+                                class="text-amber-500 focus:ring-amber-400 dark:bg-gray-800 cursor-pointer">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-gray-800 dark:text-white truncate">${title}</p>
+                                <p class="text-[10px] text-gray-400 font-medium">ID #${id}</p>
+                            </div>
+                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" id="target-badge-${id}">Destino</span>
+                        `;
+                        // Show badge only on checked radio
+                        div.querySelector('input').addEventListener('change', () => {
+                            document.querySelectorAll('[id^="target-badge-"]').forEach(b => b.classList.add('opacity-0'));
+                            document.getElementById(`target-badge-${id}`).classList.remove('opacity-0');
+                        });
+                        list.appendChild(div);
+                    });
+
+                    // Show badge on first item immediately
+                    const first = list.querySelector('[id^="target-badge-"]');
+                    if (first) first.classList.remove('opacity-0');
+
+                    document.getElementById('bulkMergeModal').classList.remove('hidden');
+                }
+
+                function closeBulkMergeModal() {
+                    document.getElementById('bulkMergeModal').classList.add('hidden');
+                }
+
+                function confirmBulkMerge() {
+                    const targetId = document.querySelector('#mergeTaskList input[name="merge_target"]:checked')?.value;
+                    if (!targetId) return;
+
+                    const selected = [...document.querySelectorAll('.task-checkbox:checked')];
+                    const targetTitle = taskTitles[targetId] ?? `Tarea #${targetId}`;
+
+                    closeBulkMergeModal();
+
+                    Swal.fire({
+                        title: '¿Confirmas la fusión?',
+                        html: `<p class="text-sm">Se fusionarán <strong>${selected.length} tareas</strong> en:</p><p class="mt-2 font-bold text-amber-600">«${targetTitle}»</p><p class="text-xs text-gray-500 mt-1">Las demás tareas serán eliminadas tras migrar su contenido.</p>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, fusionar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#f59e0b',
+                        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
+                    }).then(result => {
+                        if (!result.isConfirmed) return;
+
+                        const container = document.getElementById('bulkMergeInputs');
+                        container.innerHTML = '';
+
+                        // target_task_id
+                        const targetInput = document.createElement('input');
+                        targetInput.type = 'hidden';
+                        targetInput.name = 'target_task_id';
+                        targetInput.value = targetId;
+                        container.appendChild(targetInput);
+
+                        // task_ids[]
+                        selected.forEach(cb => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'task_ids[]';
+                            input.value = cb.value;
+                            container.appendChild(input);
+                        });
+
+                        document.getElementById('bulkMergeForm').submit();
+                    });
+                }
+
                 function confirmDeleteTask(taskId, taskTitle) {
                     Swal.fire({
                         title: '¿Eliminar tarea?',
@@ -830,4 +942,57 @@
         <form id="purgeTrashForm" action="{{ route('teams.tasks.purge-trash', $team) }}" method="POST" class="hidden">
             @csrf
         </form>
+        {{-- Formulario de fusión masiva --}}
+        <form id="bulkMergeForm" action="{{ route('teams.tasks.bulk-merge', $team) }}" method="POST" class="hidden">
+            @csrf
+            <div id="bulkMergeInputs"></div>
+        </form>
+
+        {{-- Modal de selección de tarea destino para fusión masiva --}}
+        <div id="bulkMergeModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBulkMergeModal()"></div>
+            <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
+                {{-- Header --}}
+                <div class="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Fusión masiva de tareas</h3>
+                            <p class="text-[11px] text-gray-400">Elige cuál será la tarea principal (destino)</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeBulkMergeModal()" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Info banner --}}
+                <div class="mx-5 mt-4 px-3 py-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
+                    <p class="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-snug">
+                        <strong>Todas las tareas</strong> se fusionarán en la que marques como destino. Sus contenidos, adjuntos, tiempo, notas y asignaciones se migrarán. Las demás serán eliminadas.
+                    </p>
+                </div>
+
+                {{-- Lista de tareas seleccionadas con radio --}}
+                <div class="flex-1 overflow-y-auto p-5 space-y-2" id="mergeTaskList"></div>
+
+                {{-- Footer --}}
+                <div class="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-3">
+                    <button type="button" onclick="closeBulkMergeModal()"
+                        class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="confirmBulkMerge()"
+                        class="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-amber-500/20 active:scale-95">
+                        Fusionar ahora
+                    </button>
+                </div>
+            </div>
+        </div>
 </x-app-layout>

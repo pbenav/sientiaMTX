@@ -130,6 +130,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/import-json', [TaskController::class, 'importJson'])->name('teams.tasks.import-json');
     Route::patch('/teams/{team}/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('teams.tasks.bulk-update');
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
+    Route::post('/teams/{team}/tasks/bulk-merge', [TaskController::class, 'bulkMerge'])->name('teams.tasks.bulk-merge');
     Route::post('/teams/{team}/tasks/purge-trash', [TaskController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
     Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit', 'update', 'destroy']);
 
