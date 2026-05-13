@@ -173,7 +173,53 @@ class SettingsController extends Controller
             'body' => 'required|string',
         ]);
 
-        return back()->with('info', '¡La interfaz ha capturado los datos perfectamente! En la Fase 2 configuraremos el motor de colas y el generador de tokens para empezar a disparar correos.');
+        $extractEmails = function($string) {
+            if (empty($string)) return [];
+            preg_match_all('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $string, $matches);
+            return array_values(array_unique(array_map('strtolower', $matches[0])));
+        };
+
+        $toEmails = $extractEmails($request->to);
+        $ccEmails = $extractEmails($request->cc);
+        $bccEmails = $extractEmails($request->bcc);
+
+        if (empty($toEmails)) {
+            return back()->with('error', __('No se encontraron correos válidos en la lista de destinatarios.'));
+        }
+
+        $isInvitation = $request->boolean('is_invitation');
+        $batchSize = $request->input('batch_size', 25);
+        $delayMinutes = $request->input('delay_minutes', 5);
+
+        if ($isInvitation) {
+            $request->validate([
+                'team_id' => 'required|exists:teams,id',
+                'role_id' => 'required|exists:team_roles,id',
+            ], [
+                'team_id.required' => 'Debes seleccionar un equipo para enviar invitaciones.',
+                'role_id.required' => 'Debes asignar un rol válido a los invitados.',
+            ]);
+        }
+
+        $chunks = array_chunk($toEmails, $batchSize);
+        $totalLotes = count($chunks);
+
+        foreach ($chunks as $index => $chunk) {
+            $delay = now()->addMinutes($index * $delayMinutes);
+            
+            \App\Jobs\SendBulkEmailJob::dispatch(
+                $chunk,
+                $request->subject,
+                $request->body,
+                $ccEmails,
+                $bccEmails,
+                $isInvitation,
+                $request->team_id,
+                $request->role_id
+            )->delay($delay);
+        }
+
+        return back()->with('success', __('¡El motor de envío ha arrancado! Se enviarán ' . count($toEmails) . ' correos divididos en ' . $totalLotes . ' lote(s).'));
     }
 
     /**
