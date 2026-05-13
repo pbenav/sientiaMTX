@@ -200,6 +200,7 @@
                         :label="__('tasks.description')"
                         rows="4"
                         :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
                     />
                 </div>
 
@@ -212,6 +213,7 @@
                         :label="__('tasks.observations')"
                         rows="4"
                         :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
                     />
                 </div>
 
