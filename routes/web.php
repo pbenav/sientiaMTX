@@ -219,6 +219,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'updateMailSettings'])->name('settings.mail.update');
         Route::post('/settings/mail/test', [\App\Http\Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');
         Route::get('/settings/users', [\App\Http\Controllers\SettingsController::class, 'users'])->name('settings.users');
+        Route::get('/settings/users/bulk-email', [\App\Http\Controllers\SettingsController::class, 'bulkEmailComposer'])->name('settings.users.bulk-email');
+        Route::post('/settings/users/bulk-email', [\App\Http\Controllers\SettingsController::class, 'sendBulkEmail'])->name('settings.users.bulk-email.send');
         Route::get('/settings/users/create', [\App\Http\Controllers\SettingsController::class, 'createUser'])->name('settings.users.create');
         Route::post('/settings/users', [\App\Http\Controllers\SettingsController::class, 'storeUser'])->name('settings.users.store');
         Route::post('/settings/users/{user}/toggle-admin', [\App\Http\Controllers\SettingsController::class, 'toggleAdmin'])->name('settings.users.toggle-admin');

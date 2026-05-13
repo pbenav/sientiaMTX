@@ -59,7 +59,9 @@ class AiChatController extends Controller
             'attachment_id' => 'nullable|integer|exists:task_attachments,id',
             'forum_thread_id' => 'nullable|integer|exists:forum_threads,id',
             'forum_message_id' => 'nullable|integer|exists:forum_messages,id',
-            'file' => 'nullable|file|max:20480' // 20MB limit
+            'file' => 'nullable|file|max:20480', // 20MB limit
+            'reuse_file_path' => 'nullable|string|max:500',
+            'reuse_file_name' => 'nullable|string|max:255',
         ]);
 
         set_time_limit(300); // 5 minutos para procesar archivos grandes
@@ -93,11 +95,11 @@ class AiChatController extends Controller
         }
         $prompt = $request->prompt;
 
-        if (!$prompt && !$request->hasFile('file')) {
+        if (!$prompt && !$request->hasFile('file') && !$request->reuse_file_path) {
             return response()->json(['message' => '¿En qué puedo ayudarte?'], 422);
         }
 
-        if (!$prompt && $request->hasFile('file')) {
+        if (!$prompt && ($request->hasFile('file') || $request->reuse_file_path)) {
             $prompt = 'Hola Ax.ia, he adjuntado un archivo. Por favor, analízalo y dime lo más relevante o responde a lo que contenga si es una instrucción.';
         }
 
@@ -121,6 +123,28 @@ class AiChatController extends Controller
             $filePath = $path;
             
             $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
+        } elseif ($request->reuse_file_path) {
+            $rawPath = $request->reuse_file_path;
+            // Verificación de seguridad: Asegurar que el archivo pertenece a un mensaje previo del mismo usuario
+            $exists = AiChatMessage::where('user_id', $user->id)->where('file_path', $rawPath)->exists();
+            if ($exists) {
+                $fullPath = storage_path('app/public/' . $rawPath);
+                if (file_exists($fullPath)) {
+                    $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath);
+                    $name = $request->reuse_file_name ?: basename($fullPath);
+                    
+                    $mockFile = new \Illuminate\Http\UploadedFile($fullPath, $name, $mimeType, null, true);
+                    $aiAssistant->withFile($mockFile);
+                    
+                    $filePath = $rawPath;
+                    $fileName = $name;
+                    $fileType = $mimeType;
+                    
+                    if (!str_starts_with($prompt, "📁 [Archivo:")) {
+                        $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
+                    }
+                }
+            }
         }
 
         AiChatMessage::create([

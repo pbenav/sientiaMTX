@@ -224,11 +224,11 @@
 
                                         <template x-if="msg.is_error">
                                             <div class="flex space-x-2">
-                                                <button @click="retryLastRequest()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 text-white shadow-xl shadow-red-500/40 hover:bg-red-700 transition-all text-[10px] font-black uppercase tracking-tight" title="Reintentar ahora">
+                                                <button @click="retryMessage(index)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 text-white shadow-xl shadow-red-500/40 hover:bg-red-700 transition-all text-[10px] font-black uppercase tracking-tight" title="Reintentar ahora">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                     <span>Reintentar</span>
                                                 </button>
-                                                <button @click="recoverPrompt()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-white shadow-xl shadow-amber-500/40 hover:bg-amber-600 transition-all text-[10px] font-black uppercase tracking-tight" title="Rescatar mi texto">
+                                                <button @click="recoverMessage(index)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-white shadow-xl shadow-amber-500/40 hover:bg-amber-600 transition-all text-[10px] font-black uppercase tracking-tight" title="Rescatar mi texto">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
                                                     <span>Rescatar</span>
                                                 </button>
@@ -410,6 +410,8 @@
             maxRecordingTime: {{ (int)\App\Models\Setting::get('quick_notes_audio_max_duration', 30) }},
             recordingInterval: null,
             pendingFile: null,
+            pendingReuseFilePath: null,
+            pendingReuseFileName: null,
 
             cleanJson(content) {
                 if (!content) return '';
@@ -448,7 +450,19 @@
                     const data = await response.json();
                     if (data.messages && data.messages.length > 0) {
                         console.log(`Ax.ia: Recuperados ${data.messages.length} mensajes del historial.`);
-                        this.messages = data.messages;
+                        
+                        // Re-evaluar is_error en tiempo de ejecución al cargar el historial
+                        this.messages = data.messages.map(msg => {
+                            if (msg.role === 'ai') {
+                                const msgLower = (msg.content || '').toLowerCase();
+                                msg.is_error = msgLower.includes('lo siento') || 
+                                               msgLower.includes('error') || 
+                                               msgLower.includes('no está disponible') || 
+                                               msgLower.includes('⚠️');
+                            }
+                            return msg;
+                        });
+
                         if (data.current_model) this.currentModel = data.current_model;
                         this.$nextTick(() => this.scrollToBottom());
                     } else {
@@ -809,22 +823,18 @@
                 }
             },
 
-            retryLastRequest() {
-                if (!this.lastPrompt && !this.lastFile) {
-                    this.messages.push({ role: 'system', content: '❌ No hay nada que reintentar.' });
-                    return;
-                }
-                this.input = this.lastPrompt;
-                this.pendingFile = this.lastFile;
-                this.sendMessage();
-            },
+            recoverMessage(index) {
+                if (index <= 0) return;
+                const prevMsg = this.messages[index - 1];
+                if (!prevMsg || prevMsg.role !== 'user') return;
 
-            recoverPrompt() {
-                if (!this.lastPrompt && !this.lastFile) {
-                    return;
-                }
-                this.input = this.lastPrompt;
-                this.pendingFile = this.lastFile;
+                let plainText = prevMsg.content || '';
+                plainText = plainText.replace(/^📁 \[Archivo:.*?\]\n\n/, '');
+                
+                this.input = plainText;
+                this.pendingFile = null;
+                this.pendingReuseFilePath = null;
+                this.pendingReuseFileName = null;
                 
                 this.$nextTick(() => {
                     const textarea = this.$refs.aiInput;
@@ -837,12 +847,30 @@
                 });
             },
 
+            retryMessage(index) {
+                if (index <= 0) return;
+                const prevMsg = this.messages[index - 1];
+                if (!prevMsg || prevMsg.role !== 'user') return;
+
+                let plainText = prevMsg.content || '';
+                plainText = plainText.replace(/^📁 \[Archivo:.*?\]\n\n/, '');
+
+                this.input = plainText;
+                this.pendingFile = null;
+                this.pendingReuseFilePath = prevMsg.file_path || null;
+                this.pendingReuseFileName = prevMsg.file_name || null;
+                
+                this.sendMessage();
+            },
+
             async sendMessage() {
                 this.syncContext(); // Safe final verify before dispatch
-                if (this.input.trim() === '' && !this.pendingFile) return;
+                if (this.input.trim() === '' && !this.pendingFile && !this.pendingReuseFilePath) return;
                 
                 const userText = this.input.trim();
                 const fileToSend = this.pendingFile;
+                const reuseFilePathToSend = this.pendingReuseFilePath;
+                const reuseFileNameToSend = this.pendingReuseFileName;
 
                 // SAVE FOR RETRY
                 this.lastPrompt = userText;
@@ -856,61 +884,73 @@
                         content: userText || (isAudio ? '🎤 [Grabación de audio]' : `📎 [Archivo: ${fileToSend.name}]`),
                         file_url: localUrl,
                         file_name: fileToSend.name,
-                    file_type: fileToSend.type,
-                    is_local: true
-                });
-            } else if (userText) {
-                this.messages.push({ role: 'user', content: userText });
-            }
-
-            this.loading = true;
-            this.isSendingFile = !!fileToSend;
-            this.scrollToBottom();
-
-            try {
-                const formData = new FormData();
-                formData.append('prompt', userText);
-                formData.append('team_id', this.teamId || '');
-                formData.append('task_id', this.taskId || '');
-                formData.append('attachment_id', this.attachmentId || '');
-                formData.append('forum_thread_id', this.threadId || '');
-                formData.append('forum_message_id', this.messageId || '');
-                
-                if (fileToSend) {
-                    formData.append('file', fileToSend);
+                        file_type: fileToSend.type,
+                        is_local: true
+                    });
+                } else if (reuseFilePathToSend) {
+                    this.messages.push({
+                        role: 'user',
+                        content: `📁 [Archivo: ${reuseFileNameToSend || 'Reutilizado'}]\n\n` + userText,
+                        file_name: reuseFileNameToSend,
+                        file_path: reuseFilePathToSend
+                    });
+                } else if (userText) {
+                    this.messages.push({ role: 'user', content: userText });
                 }
 
-                const response = await fetch('{{ route('ai.ask') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Error del servidor (${response.status})`);
-                }
-                
-                const data = await response.json();
-                
-                // Determine if the returned message is actually an error message
-                const msgLower = (data.message || '').toLowerCase();
-                const isError = msgLower.includes('lo siento') || 
-                                msgLower.includes('error') || 
-                                msgLower.includes('no está disponible') || 
-                                msgLower.includes('⚠️');
+                this.loading = true;
+                this.isSendingFile = !!fileToSend || !!reuseFilePathToSend;
+                this.scrollToBottom();
 
-                // CLEAR INPUT ONLY ON SUCCESS
-                if (!isError) {
-                    this.input = '';
-                    this.pendingFile = null;
-                } else {
-                    this.lastPrompt = userText;
-                    this.lastFile = fileToSend;
-                }
+                try {
+                    const formData = new FormData();
+                    formData.append('prompt', userText);
+                    formData.append('team_id', this.teamId || '');
+                    formData.append('task_id', this.taskId || '');
+                    formData.append('attachment_id', this.attachmentId || '');
+                    formData.append('forum_thread_id', this.threadId || '');
+                    formData.append('forum_message_id', this.messageId || '');
+                    
+                    if (fileToSend) {
+                        formData.append('file', fileToSend);
+                    } else if (reuseFilePathToSend) {
+                        formData.append('reuse_file_path', reuseFilePathToSend);
+                        formData.append('reuse_file_name', reuseFileNameToSend || '');
+                    }
+
+                    const response = await fetch('{{ route('ai.ask') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || `Error del servidor (${response.status})`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Determine if the returned message is actually an error message
+                    const msgLower = (data.message || '').toLowerCase();
+                    const isError = msgLower.includes('lo siento') || 
+                                    msgLower.includes('error') || 
+                                    msgLower.includes('no está disponible') || 
+                                    msgLower.includes('⚠️');
+
+                    // CLEAR INPUT ONLY ON SUCCESS
+                    if (!isError) {
+                        this.input = '';
+                        this.pendingFile = null;
+                        this.pendingReuseFilePath = null;
+                        this.pendingReuseFileName = null;
+                    } else {
+                        this.lastPrompt = userText;
+                        this.lastFile = fileToSend;
+                    }
 
                 this.messages.push({ 
                     role: 'ai', 
@@ -1281,43 +1321,56 @@
                 let targetEl = null;
                 
                 if (isDirect) {
-                    targetEl = this.lastFocusedEl;
-                    
-                    if (!targetEl || !document.body.contains(targetEl)) {
-                        targetEl = document.activeElement;
+                    // Priority 1: Explicit target passed from Swal / UI interactive choice
+                    if (typeof detail === 'object' && detail.targetId) {
+                        const explicit = document.getElementById(detail.targetId);
+                        if (explicit) {
+                            targetEl = explicit;
+                            console.log('[Ax.ia] Objetivo explícito seleccionado por el usuario:', detail.targetId);
+                        }
                     }
 
-                    if (targetEl && (targetEl.closest('.ai-assistant-container') || targetEl.closest('.swal2-container'))) {
-                        targetEl = null;
+                    // Priority 2: Focus tracking (Active element / Last focused element)
+                    if (!targetEl) {
+                        let tracked = this.lastFocusedEl;
+                        if (!tracked || !document.body.contains(tracked)) {
+                            tracked = document.activeElement;
+                        }
+                        if (tracked && (tracked.closest('.ai-assistant-container') || tracked.closest('.swal2-container'))) {
+                            tracked = null;
+                        }
+                        if (tracked && (tracked.tagName === 'TEXTAREA' || tracked.tagName === 'INPUT')) {
+                            targetEl = tracked;
+                            console.log('[Ax.ia] Usando elemento con el foco activo real:', targetEl.id || targetEl.name || 'sin ID');
+                        }
                     }
-                    
-                    // Priority 2: Look for our preferred IDs
-                    // If we are in a Task Detail view, Private Notes should be high priority
-                    let searchOrder = ['reply-content-private', 'reply-content', 'description', 'observations', 'private_note'];
-                    
-                    if (payloadData.private_note) {
-                        searchOrder = ['reply-content-private', 'private_note', 'description', 'observations'];
-                    } else if (payloadData.description && !payloadData.observations) {
-                        searchOrder = ['description', 'observations', 'reply-content-private', 'reply-content'];
-                    }
-                    
-                    console.log('[Ax.ia] Buscando objetivo de inyección en orden:', searchOrder);
 
-                    for (const id of searchOrder) {
-                        const el = document.getElementById(id);
-                        if (el && (el.offsetParent !== null || el.closest('[x-data]'))) { 
-                            targetEl = el;
-                            console.log('[Ax.ia] Objetivo encontrado por ID:', id);
-                            break;
+                    // Priority 3: Preferred fallback IDs scanning
+                    if (!targetEl) {
+                        let searchOrder = ['reply-content-private', 'reply-content', 'description', 'observations', 'private_note'];
+                        if (payloadData.private_note) {
+                            searchOrder = ['reply-content-private', 'private_note', 'description', 'observations'];
+                        } else if (payloadData.description && !payloadData.observations) {
+                            searchOrder = ['description', 'observations', 'reply-content-private', 'reply-content'];
+                        }
+                        
+                        console.log('[Ax.ia] Ningún foco detectado. Buscando por ID predeterminado:', searchOrder);
+                        for (const id of searchOrder) {
+                            const el = document.getElementById(id);
+                            if (el && (el.offsetParent !== null || el.closest('[x-data]'))) { 
+                                targetEl = el;
+                                console.log('[Ax.ia] Objetivo de respaldo encontrado:', id);
+                                break;
+                            }
                         }
                     }
                     
-                    // Priority 3: Fallback to any visible Sientia editor
-                    if (!targetEl || targetEl === document.activeElement || targetEl.tagName === 'BODY') {
+                    // Priority 4: Final fallback to generic editors
+                    if (!targetEl) {
                         const anyEditor = document.querySelector('[id*="reply-content"], [id*="textarea"]');
                         if (anyEditor) {
                             targetEl = anyEditor;
-                            console.log('[Ax.ia] Objetivo encontrado por selector general:', anyEditor.id);
+                            console.log('[Ax.ia] Objetivo encontrado por selector de respaldo general:', anyEditor.id);
                         }
                     }
 
@@ -1543,7 +1596,16 @@
             });
 
                     if (secondLevelSelection) {
-                        this.submitServerTransfer(secondLevelSelection, rawPayload);
+                        // Inteligente: Si el usuario está editando la tarea y el campo está presente en el DOM actual,
+                        // inyectamos directamente sobre el editor/input en pantalla en lugar de guardarlo directamente en base de datos.
+                        const targetField = document.getElementById(secondLevelSelection);
+                        if (targetField && (targetField.offsetParent !== null || targetField.closest('[x-data]'))) {
+                            console.log(`[Ax.ia] Inyectando directamente en el campo presente en el DOM: ${secondLevelSelection}`);
+                            this.transferToTask({ content: rawPayload, direct: true, silent: false, targetId: secondLevelSelection });
+                        } else {
+                            console.log(`[Ax.ia] Campo ${secondLevelSelection} no detectado en DOM visible. Ejecutando persistencia en servidor.`);
+                            this.submitServerTransfer(secondLevelSelection, rawPayload);
+                        }
                     }
                 }
             },

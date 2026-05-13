@@ -285,6 +285,29 @@
             padding: 0 !important;
             box-shadow: none !important;
         }
+        /* Sientia Global Print Overrides */
+        @media print {
+            body.print-clean-mode nav,
+            body.print-clean-mode header,
+            body.print-clean-mode footer,
+            body.print-clean-mode aside,
+            body.print-clean-mode #sidebar,
+            body.print-clean-mode .app-header,
+            body.print-clean-mode button,
+            body.print-clean-mode .no-print,
+            body.print-clean-mode #docs-sidebar,
+            body.print-clean-mode #docs-mobile-toggle {
+                display: none !important;
+            }
+            body.print-clean-mode main,
+            body.print-clean-mode .flex-1 {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 100% !important;
+            }
+        }
     </style>
 </head>
 
@@ -2302,6 +2325,220 @@
             <x-google-drive-picker :team="$currentTeamContext" />
         @endif
     @endauth
+
+    <!-- 🖨️ Sientia MTX Global Premium Print Utility 🖨️ -->
+    <script>
+        window.SientiaPrint = {
+            async print(title, htmlContent, options = {}) {
+                const isDark = document.documentElement.classList.contains('dark');
+                
+                const result = await Swal.fire({
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Formato de Impresión</span>',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color: isDark ? '#f3f4f6' : '#1f2937',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    customClass: {
+                        popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                    },
+                    html: `
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                            ¿Deseas incluir las cabeceras corporativas y la marca de agua de MTX?
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                            <button type="button" id="print-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial MTX</div>
+                            </button>
+                            <button type="button" id="print-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                                <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Contenido limpio</div>
+                            </button>
+                        </div>
+                    `,
+                    didOpen: (el) => {
+                        el.querySelector('#print-btn-with').onclick = () => Swal.close({ value: 'with' });
+                        el.querySelector('#print-btn-without').onclick = () => Swal.close({ value: 'without' });
+                    }
+                });
+
+                if (!result || !result.value) return;
+                const withHeaders = result.value === 'with';
+
+                const printWin = window.open('', '_blank', 'width=850,height=900');
+                const brandLabel = options.brand || 'Sientia MTX';
+                const headerHtml = withHeaders ? `
+                    <div class="print-header">
+                        <div class="title-container">
+                            <span class="brand">${brandLabel}</span>
+                            <h1 class="title">${title}</h1>
+                            <div class="meta">Generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}</div>
+                        </div>
+                    </div>
+                ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${title}</h1>`;
+
+                const watermarkHtml = withHeaders ? `<div class="logo-watermark">Sientia.</div>` : '';
+
+                printWin.document.write(\`
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>\${title}</title>
+                            <meta charset="utf-8">
+                            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+                            <style>
+                                body { 
+                                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+                                    padding: 40px 60px; 
+                                    color: #1e293b; 
+                                    line-height: 1.6;
+                                    background-color: #fff;
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                }
+                                .print-header { 
+                                    border-bottom: 4px solid #4f46e5; 
+                                    margin-bottom: 40px; 
+                                    padding-bottom: 20px; 
+                                }
+                                .brand { 
+                                    font-weight: 900; 
+                                    font-size: 10px; 
+                                    text-transform: uppercase; 
+                                    letter-spacing: 0.3em; 
+                                    color: #6366f1; 
+                                    margin-bottom: 8px;
+                                    display: block;
+                                }
+                                .title { 
+                                    font-size: 26px; 
+                                    font-weight: 900; 
+                                    color: #0f172a; 
+                                    margin: 0; 
+                                    line-height: 1.2;
+                                    letter-spacing: -0.02em;
+                                }
+                                .meta { 
+                                    font-size: 10px; 
+                                    color: #94a3b8; 
+                                    font-weight: 700; 
+                                    text-transform: uppercase;
+                                    margin-top: 10px;
+                                }
+                                .content { 
+                                    font-size: 14px; 
+                                    color: #334155;
+                                    word-wrap: break-word;
+                                }
+                                .content h1 { font-size: 18px; font-weight: 800; margin-top: 24px; color: #0f172a; margin-bottom: 12px; }
+                                .content h2 { font-size: 16px; font-weight: 700; margin-top: 20px; color: #1e293b; margin-bottom: 10px; }
+                                .content h3 { font-size: 14px; font-weight: 700; margin-top: 16px; color: #334155; }
+                                .content p { margin-bottom: 12px; }
+                                .content ul, .content ol { padding-left: 20px; margin-bottom: 15px; }
+                                .content li { margin-bottom: 4px; }
+                                .content img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
+                                .content blockquote { border-left: 4px solid #e2e8f0; padding-left: 16px; color: #64748b; font-style: italic; margin: 15px 0; }
+                                .content code { font-family: Consolas, Monaco, monospace; background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-size: 12px; }
+                                .content pre { background-color: #f8fafc; padding: 12px; border-radius: 8px; overflow-x: auto; border: 1px solid #e2e8f0; margin: 15px 0; font-size: 12px; }
+                                .content table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+                                .content th, .content td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; font-size: 12px; }
+                                .content th { background-color: #f8fafc; font-weight: 700; color: #1e293b; }
+                                .logo-watermark {
+                                    position: fixed;
+                                    bottom: 30px;
+                                    right: 30px;
+                                    opacity: 0.06;
+                                    font-weight: 900;
+                                    font-size: 20px;
+                                    letter-spacing: -0.05em;
+                                    color: #4f46e5;
+                                    pointer-events: none;
+                                }
+                                @media print {
+                                    body { padding: 0; color: #000; }
+                                    .print-header { border-color: #000; }
+                                    .brand { color: #000; }
+                                    .content a { text-decoration: none; color: #000; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            \${headerHtml}
+                            <div class="content">\${htmlContent}</div>
+                            \${watermarkHtml}
+                            <script>
+                                window.onload = function() {
+                                    window.print();
+                                    setTimeout(function() { window.close(); }, 500);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                \`);
+                printWin.document.close();
+            },
+
+            async printPage() {
+                const isDark = document.documentElement.classList.contains('dark');
+                
+                const result = await Swal.fire({
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Página</span>',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color: isDark ? '#f3f4f6' : '#1f2937',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    customClass: {
+                        popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                    },
+                    html: `
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                            ¿Deseas imprimir la página actual manteniendo la cabecera y navegación corporativa?
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                            <button type="button" id="print-page-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Mantener marca</div>
+                            </button>
+                            <button type="button" id="print-page-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                                <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ocultar menús</div>
+                            </button>
+                        </div>
+                    `,
+                    didOpen: (el) => {
+                        el.querySelector('#print-page-btn-with').onclick = () => Swal.close({ value: 'with' });
+                        el.querySelector('#print-page-btn-without').onclick = () => Swal.close({ value: 'without' });
+                    }
+                });
+
+                if (!result || !result.value) return;
+                const withHeaders = result.value === 'with';
+
+                if (!withHeaders) {
+                    document.body.classList.add('print-clean-mode');
+                }
+                
+                setTimeout(() => {
+                    window.print();
+                    setTimeout(() => {
+                        document.body.classList.remove('print-clean-mode');
+                    }, 1000);
+                }, 200);
+            }
+        };
+    </script>
 
     <!-- 💫 Sientia Premium UX: Intelligent Scroll & State Preserver 💫 -->
     <script>

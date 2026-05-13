@@ -152,6 +152,31 @@ class SettingsController extends Controller
     }
 
     /**
+     * Show the bulk email and team invitation composer.
+     */
+    public function bulkEmailComposer()
+    {
+        $teams = \App\Models\Team::orderBy('name')->get();
+        $roles = \App\Models\TeamRole::all();
+        return view('settings.bulk-email', compact('teams', 'roles'));
+    }
+
+    /**
+     * Handle queued sending of bulk emails/invitations.
+     */
+    public function sendBulkEmail(Request $request)
+    {
+        // Para la Fase 1 validamos campos y devolvemos un mensaje ilustrativo.
+        $request->validate([
+            'to' => 'required|string',
+            'subject' => 'required|string|max:255',
+            'body' => 'required|string',
+        ]);
+
+        return back()->with('info', '¡La interfaz ha capturado los datos perfectamente! En la Fase 2 configuraremos el motor de colas y el generador de tokens para empezar a disparar correos.');
+    }
+
+    /**
      * Show the form for creating a new user.
      */
     public function createUser()

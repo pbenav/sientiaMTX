@@ -1033,155 +1033,59 @@
                 function printSection(sectionLabel, contentId) {
                     const content = document.getElementById(contentId).innerHTML;
                     const taskTitle = @json($task->title);
-                    
-                    const printWin = window.open('', '_blank', 'width=800,height=900');
-                        printWin.document.write(`
-                            <html>
-                                <head>
-                                    <title>Imprimir ${sectionLabel} - ${taskTitle}</title>
-                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-                                    <style>
-                                        body { 
-                                            font-family: 'Inter', -apple-system, sans-serif; 
-                                            padding: 50px; 
-                                            color: #1e293b; 
-                                            line-height: 1.6;
-                                            background-color: #fff;
-                                        }
-                                        .header { 
-                                            border-bottom: 4px solid #4f46e5; 
-                                            margin-bottom: 40px; 
-                                            padding-bottom: 20px; 
-                                            display: flex;
-                                            justify-content: space-between;
-                                            align-items: flex-end;
-                                        }
-                                        .title-container { flex: 1; }
-                                        .brand { 
-                                            font-weight: 900; 
-                                            font-size: 10px; 
-                                            text-transform: uppercase; 
-                                            letter-spacing: 0.3em; 
-                                            color: #6366f1; 
-                                            margin-bottom: 8px;
-                                            display: block;
-                                        }
-                                        .title { 
-                                            font-size: 28px; 
-                                            font-weight: 900; 
-                                            color: #0f172a; 
-                                            margin: 0; 
-                                            line-height: 1.1;
-                                            letter-spacing: -0.02em;
-                                        }
-                                        .meta { 
-                                            font-size: 10px; 
-                                            color: #94a3b8; 
-                                            font-weight: 700; 
-                                            text-transform: uppercase;
-                                            margin-top: 10px;
-                                        }
-                                        .content { 
-                                            font-size: 15px; 
-                                            color: #334155;
-                                        }
-                                        .content h1 { font-size: 20px; margin-top: 30px; }
-                                        .content h2 { font-size: 18px; margin-top: 25px; }
-                                        .content p { margin-bottom: 15px; }
-                                        .content ul, .content ol { padding-left: 20px; margin-bottom: 15px; }
-                                        .logo-watermark {
-                                            position: fixed;
-                                            bottom: 40px;
-                                            right: 40px;
-                                            opacity: 0.1;
-                                            font-weight: 900;
-                                            font-size: 24px;
-                                            letter-spacing: -0.05em;
-                                            color: #4f46e5;
-                                        }
-                                        @media print {
-                                            body { padding: 0; }
-                                            .header { border-color: #000; }
-                                        }
-                                    </style>
-                                </head>
-                                <body>
-                                    <div class="header">
-                                        <div class="title-container">
-                                            <span class="brand">Sientia MTX &bull; ${sectionLabel}</span>
-                                            <h1 class="title">${taskTitle}</h1>
-                                            <div class="meta">Documento generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}</div>
+                    SientiaPrint.print(taskTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
+                }
+
+                function printPrivateNotes() {
+                    const editor = document.getElementById('reply-content-private');
+                    let rawContent = editor ? editor.value : '';
+                    const taskTitle = @json($task->title);
+                    let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
+                    SientiaPrint.print(taskTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
+                }
+
+                    async function printFullTask() {
+                        const isDark = document.documentElement.classList.contains('dark');
+                        
+                        const result = await Swal.fire({
+                            title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
+                            background: isDark ? '#0f172a' : '#ffffff',
+                            color: isDark ? '#f3f4f6' : '#1f2937',
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            customClass: {
+                                popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                            },
+                            html: `
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                                    ¿Deseas imprimir la ficha técnica completa incluyendo el membrete e identidad de Sientia MTX?
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                                    <button type="button" id="print-full-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                                        <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         </div>
-                                    </div>
-                                    <div class="content">${content}</div>
-                                    <div class="logo-watermark">Sientia.</div>
-                                    <script>
-                                        window.onload = function() {
-                                            window.print();
-                                            setTimeout(() => window.close(), 500);
-                                        };
-                                    <\/script>
-                                </body>
-                            </html>
-                        `);
-                        printWin.document.close();
-                    }
+                                        <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                                        <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
+                                    </button>
+                                    <button type="button" id="print-full-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                                        <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                        </div>
+                                        <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                                        <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
+                                    </button>
+                                </div>
+                            `,
+                            didOpen: (el) => {
+                                el.querySelector('#print-full-btn-with').onclick = () => Swal.close({ value: 'with' });
+                                el.querySelector('#print-full-btn-without').onclick = () => Swal.close({ value: 'without' });
+                            }
+                        });
 
-                    function printPrivateNotes() {
-                        // Get current editor content
-                        const editor = document.getElementById('reply-content-private');
-                        let rawContent = editor ? editor.value : '';
-                        
-                        // If there is no EasyMDE instance yet, or we want to render the current markdown:
-                        // In SientiaMTX, we use a custom markdown renderer or a simple replacement for printing
-                        // But since we want it to look nice, we'll use a hidden div to render it if possible, 
-                        // or just send the raw text if it's simpler. 
-                        // However, EasyMDE has a .markdown() method but we don't have direct access here easily.
-                        
-                        // Better: If the user is printing "Private Notes", they likely want to print what they SEE.
-                        // But since it's an editor, let's just use the current value and wrap it in a pre or simple renderer.
-                        
-                        // Actually, I'll use a temporary hidden div to render markdown using the same logic as the backend if possible, 
-                        // or just use a simple converter. 
-                        
-                        // For now, let's just print it. If it's markdown, it might look a bit raw.
-                        // I'll add a simple marked.js-like logic or just a fallback.
-                        
-                        const taskTitle = @json($task->title);
-                        const printWin = window.open('', '_blank', 'width=800,height=900');
-                        
-                        // Usamos marked.parse para renderizar el markdown correctamente si está disponible
-                        let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
+                        if (!result || !result.value) return;
+                        const withHeaders = result.value === 'with';
 
-                        printWin.document.write(`
-                            <html>
-                                <head>
-                                    <title>Mis Notas Privadas - ${taskTitle}</title>
-                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-                                    <style>
-                                        body { font-family: 'Inter', sans-serif; padding: 50px; color: #1e293b; line-height: 1.6; }
-                                        .header { border-bottom: 4px solid #d97706; margin-bottom: 40px; padding-bottom: 20px; }
-                                        .brand { font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; color: #d97706; }
-                                        .title { font-size: 28px; font-weight: 900; color: #0f172a; margin: 5px 0; }
-                                        .content { font-size: 15px; white-space: pre-wrap; }
-                                        @media print { body { padding: 0; } }
-                                    </style>
-                                </head>
-                                <body>
-                                    <div class="header">
-                                        <span class="brand">Sientia MTX &bull; Notas Privadas (Confidencial)</span>
-                                        <h1 class="title">${taskTitle}</h1>
-                                        <div style="font-size: 10px; color: #94a3b8; font-weight: 700; margin-top: 10px;">GENERADO EL ${new Date().toLocaleDateString()} - SOLO PARA USO PERSONAL</div>
-                                    </div>
-                                    <div class="content">${htmlContent}</div>
-                                    <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
-                                </body>
-                            </html>
-                        `);
-                        printWin.document.close();
-                    }
-
-                    function printFullTask() {
                         const taskTitle = @json($task->title);
                         const taskId = @json($task->id);
                         const taskUuid = @json($task->uuid);
@@ -1209,6 +1113,7 @@
                                     <title>Ficha Técnica - ${taskTitle}</title>
                                     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
                                     <style>
+                                        ${!withHeaders ? '.header, .side-accent { display: none !important; }' : ''}
                                         @page { size: A4; margin: 0; }
                                         body { 
                                             font-family: 'Outfit', sans-serif; 
