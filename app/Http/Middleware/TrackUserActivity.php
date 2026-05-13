@@ -16,10 +16,22 @@ class TrackUserActivity
             $now = now();
 
             // Detect background automated requests (polls, heartbeats, widget refreshes)
+            // We explicitly check keywords because modern fetch() API calls often don't send 'X-Requested-With' headers.
+            $backgroundKeywords = [
+                'active-network',
+                'chat/check',
+                'telegram-chat',
+                'whatsapp-chat',
+                'notifications/unread-count',
+                'time-logs/status',
+                'whatsapp/status',
+                'whatsapp/personal-status'
+            ];
+
             $isPollRequest = $request->ajax() || 
                              $request->isXmlHttpRequest() || 
                              $request->headers->get('X-Requested-With') === 'XMLHttpRequest' ||
-                             str_contains($request->path(), 'active-network');
+                             \Illuminate\Support\Str::contains($request->path(), $backgroundKeywords);
 
             // Dynamic activity limits from team settings
             $isWorking = $user->isWorking();
