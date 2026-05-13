@@ -204,9 +204,9 @@
                                         <div class="flex items-center justify-end gap-2">
                                         
                                         @if($user->sessions->count() > 0 && $user->id !== auth()->id())
-                                            <form action="{{ route('settings.users.force-logout', $user) }}" method="POST" class="inline" onsubmit="return confirm('¿Cerrar todas las sesiones de {{ $user->name }}?');">
+                                            <form action="{{ route('settings.users.force-logout', $user) }}" method="POST" class="inline" id="force-logout-{{ $user->id }}">
                                                 @csrf
-                                                <button type="submit" class="group relative flex items-center justify-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90" title="Forzar Cierre de Sesión">
+                                                <button type="button" onclick="confirmForceLogout({{ $user->id }}, '{{ addslashes($user->name) }}')" class="group relative flex items-center justify-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90" title="Forzar Cierre de Sesión">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                                     </svg>
@@ -253,6 +253,25 @@
 
     @push('scripts')
     <script>
+        function confirmForceLogout(userId, userName) {
+            Swal.fire({
+                title: 'Forzar Cierre de Sesión',
+                text: '¿Cerrar todas las sesiones de ' + userName + '?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, cerrar sesiones',
+                cancelButtonText: '{{ __('teams.confirm_cancel') }}',
+                background: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('force-logout-' + userId).submit();
+                }
+            });
+        }
+
         function confirmToggle(userId, message) {
             Swal.fire({
                 title: '{{ __('Manage Roles') }}',
