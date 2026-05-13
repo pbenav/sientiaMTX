@@ -118,13 +118,20 @@ class CheckSentinelServicesCommand extends Command
             ->first();
 
         $recentHumanKo = ($latestHumanReport && $latestHumanReport->type === 'down');
+        $recentHumanOk = ($latestHumanReport && $latestHumanReport->type === 'up');
 
         $newServiceStatus = $status;
 
-        // HUMAN VETO Logic: If a human recently reported down, we stay 'unstable' at best until humans say OK, even if robot likes it
+        // HUMAN VETO Logic (DOWN): If a human recently reported down, we stay 'unstable' at best until humans say OK, even if robot likes it
         if ($newServiceStatus === 'up' && $recentHumanKo) {
             $newServiceStatus = 'unstable'; 
-            $this->line("   -> <comment>Upgraded to UP by bot, but RESTRICTED to Unstable by recent HUMAN VETO.</comment>");
+            $this->line("   -> <comment>Upgraded to UP by bot, but RESTRICTED to Unstable by recent HUMAN VETO (Down).</comment>");
+        }
+
+        // HUMAN VETO Logic (UP): If a human recently reported UP, we respect it and ignore bot's 'down' (prevents false negatives)
+        if ($newServiceStatus !== 'up' && $recentHumanOk) {
+            $newServiceStatus = 'up';
+            $this->line("   -> <comment>Downgraded by bot, but OVERRIDDEN to UP by recent HUMAN VETO (Ok).</comment>");
         }
 
         if ($service->status !== $newServiceStatus) {

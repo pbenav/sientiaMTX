@@ -75,17 +75,31 @@ class Service extends Model
 
     public function getRecentUpReportsCount(): int
     {
+        $lastDown = $this->reports()->where('type', 'down')->latest()->first();
+        $since = now()->subMinutes(15);
+
+        if ($lastDown && $lastDown->created_at > $since) {
+            $since = $lastDown->created_at;
+        }
+
         return $this->reports()
             ->where('type', 'up')
-            ->where('created_at', '>=', now()->subMinutes(15))
+            ->where('created_at', '>=', $since)
             ->count();
     }
 
     public function getRecentDownReportsCount(): int
     {
+        $lastUp = $this->reports()->where('type', 'up')->latest()->first();
+        $since = now()->subHours(2);
+
+        if ($lastUp && $lastUp->created_at > $since) {
+            $since = $lastUp->created_at;
+        }
+
         return $this->reports()
             ->where('type', 'down')
-            ->where('created_at', '>=', now()->subHours(2))
+            ->where('created_at', '>=', $since)
             ->count();
     }
 
