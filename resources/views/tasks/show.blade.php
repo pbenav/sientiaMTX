@@ -1511,7 +1511,7 @@
                                 <div class="px-3 pt-3 pb-1.5">
                                     <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Crear con OnlyOffice</p>
                                 </div>
-                                <button type="button" onclick="document.getElementById('create-docx-form').submit()"
+                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('create-docx-form').submit()"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group/item">
                                     <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover/item:scale-110 transition-transform">
                                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM9 13h6v1H9v-1zm0 2h6v1H9v-1zm0 2h4v1H9v-1z"/></svg>
@@ -1521,7 +1521,7 @@
                                         <div class="text-[10px] text-gray-400 font-medium">.docx · Word / Writer</div>
                                     </div>
                                 </button>
-                                <button type="button" onclick="document.getElementById('create-xlsx-form').submit()"
+                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('create-xlsx-form').submit()"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group/item">
                                     <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover/item:scale-110 transition-transform">
                                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 12h2v1H8v-1zm0 2h2v1H8v-1zm0 2h2v1H8v-1zm3-4h5v1h-5v-1zm0 2h5v1h-5v-1zm0 2h5v1h-5v-1z"/></svg>
@@ -1531,7 +1531,7 @@
                                         <div class="text-[10px] text-gray-400 font-medium">.xlsx · Excel / Calc</div>
                                     </div>
                                 </button>
-                                <button type="button" onclick="document.getElementById('create-pptx-form').submit()"
+                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('create-pptx-form').submit()"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors group/item">
                                     <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0 group-hover/item:scale-110 transition-transform">
                                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 3l-2 3h4l-2-3zm2.5 3.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
@@ -1669,7 +1669,7 @@
                                     </div>
                                 </div>
                                 <div
-                                    class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                    class="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-all duration-200">
                                     @if($attachment->storage_provider === 'local' && auth()->user()->google_token)
                                         <form action="{{ route('teams.attachments.to-drive', [$team, $attachment]) }}" method="POST" class="inline">
                                             @csrf
@@ -1712,6 +1712,7 @@
                                     @if($attachment->is_office_compatible)
                                         <a href="{{ route('onlyoffice.edit', $attachment) }}"
                                             target="_blank" rel="noopener noreferrer"
+                                            onclick="sessionStorage.setItem('needs_office_reload', '1')"
                                             class="p-1.5 text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors"
                                             title="{{ __('Editar con Office') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1735,7 +1736,7 @@
                                         @can('update', $task)
                                             <button type="button"
                                                 onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
-                                                class="p-1.5 text-gray-500 hover:text-blue-600 transition-colors"
+                                                class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
                                                 title="{{ __('tasks.edit') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1752,7 +1753,7 @@
                                                 @method('DELETE')
                                                 <button type="button"
                                                     onclick="confirmAttachmentDelete({{ $attachment->id }}, '{{ $attachment->storage_provider }}')"
-                                                    class="p-1.5 text-gray-500 hover:text-red-600 transition-colors"
+                                                    class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                                                     title="{{ __('tasks.delete') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1763,6 +1764,17 @@
                                                 </button>
                                             </form>
                                         @endcan
+                                    @else
+                                        {{-- Informativo para compartidos --}}
+                                        <span class="p-1.5 text-gray-300 dark:text-gray-600 cursor-help"
+                                            title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe eliminarse desde allí.' : 'Este archivo pertenece a una subtarea.' }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </span>
                                     @endif
                                 </div>
                             </div>
@@ -2718,6 +2730,14 @@
                     default: return value;
                 }
             }
+
+            // Inteligencia Premium: Recarga automática al volver de editar un documento en OnlyOffice
+            window.addEventListener('focus', function() {
+                if (sessionStorage.getItem('needs_office_reload')) {
+                    sessionStorage.removeItem('needs_office_reload');
+                    window.location.reload();
+                }
+            });
         </script>
 
 
