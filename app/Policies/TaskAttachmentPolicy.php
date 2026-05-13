@@ -21,7 +21,12 @@ class TaskAttachmentPolicy
      */
     public function delete(User $user, TaskAttachment $attachment): bool
     {
-        // 1. Propietario original del archivo adjunto siempre puede gestionarlo
+        // 1. Administradores Globales de la Plataforma (Pase directo)
+        if ($user->is_admin) {
+            return true;
+        }
+
+        // 2. Propietario original del archivo adjunto siempre puede gestionarlo
         if ($user->id === $attachment->user_id) {
             return true;
         }
@@ -32,12 +37,17 @@ class TaskAttachmentPolicy
             return false;
         }
 
-        // 2. Coordinadores y Managers del equipo (Filosofía A - Jerarquía y Seguridad)
+        // 3. Creador / Dueño Supremo del Equipo
+        if ($task->team && $task->team->created_by_id === $user->id) {
+            return true;
+        }
+
+        // 4. Coordinadores y Managers del equipo (Filosofía A - Jerarquía y Seguridad)
         if ($task->team && ($task->team->isCoordinator($user) || $task->team->isManager($user))) {
             return true;
         }
 
-        // 3. El creador de la Tarea / Plan Maestro (Dueño del contenedor)
+        // 5. El creador de la Tarea / Plan Maestro (Dueño del contenedor)
         if ($user->id === $task->created_by_id) {
             return true;
         }

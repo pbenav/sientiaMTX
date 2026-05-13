@@ -882,44 +882,44 @@
                                                     d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                             </svg>
                                         </a>
-                                        @if($attachment->attachable_id === $task->id)
-                                            @can('delete', $attachment)
-                                                <button type="button"
-                                                    onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
-                                                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
-                                                    title="{{ __('tasks.edit') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </button>
-                                                <button type="button"
-                                                    onclick="confirmAttachmentDelete({{ $attachment->id }})"
-                                                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-red-100 dark:hover:border-red-900/40 transition-all shadow-sm"
-                                                    title="{{ __('tasks.delete') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2.5"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            @endcan
-                                        @else
-                                            @php 
-                                                $isFromParent = $task->parent_id && $attachment->attachable_id === $task->parent_id;
-                                            @endphp
-                                            <span class="p-2 text-gray-300 dark:text-gray-600 cursor-help"
-                                                title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe gestionarse allí.' : 'Este archivo pertenece a una subtarea.' }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        @can('delete', $attachment)
+                                            <button type="button"
+                                                onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
+                                                class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
+                                                title="{{ __('tasks.edit') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            <button type="button"
+                                                onclick="confirmAttachmentDelete({{ $attachment->id }})"
+                                                class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-red-100 dark:hover:border-red-900/40 transition-all shadow-sm"
+                                                title="{{ __('tasks.delete') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
+                                                        stroke-width="2.5"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
-                                            </span>
-                                        @endif
+                                            </button>
+                                        @else
+                                            @if($attachment->attachable_id !== $task->id)
+                                                @php 
+                                                    $isFromParent = $task->parent_id && $attachment->attachable_id === $task->parent_id;
+                                                @endphp
+                                                <span class="p-2 text-gray-300 dark:text-gray-600 cursor-help"
+                                                    title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe gestionarse allí.' : 'Este archivo pertenece a una subtarea.' }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </span>
+                                            @endif
+                                        @endcan
                                     </div>
                                 </div>
                             @endforeach
