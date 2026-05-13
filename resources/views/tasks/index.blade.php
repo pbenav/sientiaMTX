@@ -214,7 +214,6 @@
 
                 <div class="flex items-center w-full xl:w-auto shrink-0 mt-2 xl:mt-0 gap-2">
                     {{-- Fusionar selección --}}
-                    @can('update', \App\Models\Task::class)
                     <button type="button" onclick="openBulkMergeModal()"
                         class="w-full xl:w-auto px-5 py-2.5 bg-amber-50 hover:bg-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-600 text-amber-600 dark:text-amber-400 hover:text-white dark:hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 border border-amber-100 dark:border-amber-900/30">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -222,7 +221,6 @@
                         </svg>
                         Fusionar
                     </button>
-                    @endcan
 
                     {{-- Eliminar selección --}}
                     <button type="button" onclick="confirmBulkDelete()"
