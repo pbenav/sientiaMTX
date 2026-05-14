@@ -384,7 +384,10 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
+                const card = this.closest('.service-card');
+                const serviceId = card.getAttribute('data-id');
                 const button = this.querySelector('button[type="submit"]');
+                
                 if (!button || button.disabled) return;
                 
                 // Disable interaction immediately to prevent double click
@@ -416,9 +419,6 @@
                         }
 
                         // 1.b Refresh the incidents modal if it's open or about to be
-                        const card = this.closest('.service-card');
-                        const serviceId = card.getAttribute('data-id');
-
                         window.dispatchEvent(new CustomEvent('refresh-service-incidents', { 
                             detail: { id: serviceId } 
                         }));
@@ -428,7 +428,7 @@
                         
                         // 3. CRITICAL UX: Re-enable the OPPOSITE button so the user can immediately correct if needed!
                         // Simpler: just find the other button in the same grid parent
-                        const siblingForms = this.closest('.grid').querySelectorAll('.report-service-form');
+                        const siblingForms = card.querySelectorAll('.report-service-form');
                         siblingForms.forEach(siblingForm => {
                             if (siblingForm !== this) {
                                 const siblingBtn = siblingForm.querySelector('button[type="submit"]');
