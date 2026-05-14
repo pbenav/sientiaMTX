@@ -38,8 +38,11 @@ class GoogleDriveService
         if (empty($tokenData)) return null;
 
         // Ensure tokenData is an array (handle legacy cases or if casting failed)
-        if (is_string($tokenData) && str_starts_with($tokenData, '{')) {
-            $tokenData = json_decode($tokenData, true);
+        if (is_string($tokenData)) {
+            $decoded = json_decode($tokenData, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $tokenData = $decoded;
+            }
         }
 
         $accessToken = is_array($tokenData) ? ($tokenData['access_token'] ?? null) : $tokenData;

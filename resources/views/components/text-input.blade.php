@@ -1,4 +1,4 @@
-@props(['disabled' => false, 'emoji' => true, 'type' => 'text'])
+@props(['disabled' => false, 'emoji' => false, 'type' => 'text'])
 
 <div class="relative group w-full" x-data="{ 
     showEmoji: false, 

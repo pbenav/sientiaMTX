@@ -131,4 +131,12 @@ class Service extends Model
         
         return $history;
     }
+    public function getLatestIncidents(int $limit = 10)
+    {
+        return $this->reports()
+            ->with('user')
+            ->latest()
+            ->limit($limit)
+            ->get();
+    }
 }

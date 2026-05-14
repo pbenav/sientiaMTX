@@ -35,3 +35,6 @@ Schedule::command('app:purge-inactive-accounts')->dailyAt('03:00');
 // Recompensa de XP por la calidad de tareas vencidas — cada hora
 Schedule::command('task:reward-quality')->hourly();
 
+// Monitorización automática Sentinel — cada 5 minutos
+Schedule::command('sentinel:check')->everyFiveMinutes();
+

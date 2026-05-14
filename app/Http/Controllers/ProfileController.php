@@ -36,10 +36,15 @@ class ProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $sessions = collect(\Illuminate\Support\Facades\DB::table('sessions')
-            ->where('user_id', $request->user()->getAuthIdentifier())
-            ->orderBy('last_activity', 'desc')
-            ->get())->map(function ($session) use ($request) {
+        $sessions = collect([]);
+        if (config('session.driver') === 'database') {
+            $sessions = collect(\Illuminate\Support\Facades\DB::table('sessions')
+                ->where('user_id', $request->user()->getAuthIdentifier())
+                ->orderBy('last_activity', 'desc')
+                ->get());
+        }
+
+        $sessions = $sessions->map(function ($session) use ($request) {
                 $agent = $this->createAgent($session->user_agent);
 
                 return (object) [
@@ -51,11 +56,17 @@ class ProfileController extends Controller
                 ];
             });
 
+        $manageableTeams = $request->user()->teams()
+            ->wherePivotIn('role_id', function ($query) {
+                $query->select('id')->from('team_roles')->whereIn('name', ['coordinator', 'moderator']);
+            })->get();
+
         return view('profile.edit', [
             'user' => $request->user(),
             'whatsappStatus' => $whatsappStatus,
             'invitationsList' => $invitationsList,
             'sessions' => $sessions,
+            'manageableTeams' => $manageableTeams,
         ]);
     }
 
@@ -190,7 +201,7 @@ class ProfileController extends Controller
         
         $current['telegram'] = $request->boolean('telegram');
         $current['whatsapp'] = $request->boolean('whatsapp');
-        $current['sync_chats'] = $request->boolean('sync_chats');
+        $current['sync_chats'] = $request->boolean('sync_chats') && $current['telegram'] && $current['whatsapp'];
         
         $user->notification_settings = $current;
         $user->save();
@@ -222,12 +233,17 @@ class ProfileController extends Controller
         
         if ($applyToAll) {
             // Update all preferences for this user to match this new config
-            $user->aiPreferences()->update([
-                'api_key' => $apiKey,
-                'ai_model' => $aiModel,
-                'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
-                'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
-            ]);
+            \App\Models\UserAiPreference::where('user_id', $user->id)
+                ->where(function($q) use ($validated) {
+                    $q->whereNull('team_id')
+                      ->orWhere('team_id', $validated['team_id']);
+                })
+                ->update([
+                    'api_key' => $apiKey,
+                    'ai_model' => $aiModel,
+                    'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
+                    'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
+                ]);
             
             // Also ensure the "Global" or "Specific" one exists if not yet created
             $user->aiPreferences()->updateOrCreate(
@@ -497,8 +513,13 @@ class ProfileController extends Controller
             return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('error', 'No te quedan invitaciones disponibles.');
         }
 
+        $validated = $request->validate([
+            'team_id' => 'nullable|exists:teams,id',
+        ]);
+
         \App\Models\Invitation::create([
             'user_id' => $user->id,
+            'team_id' => $validated['team_id'] ?? null,
             'code' => 'VIP-' . strtoupper(\Illuminate\Support\Str::random(8)),
         ]);
 

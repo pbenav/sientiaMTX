@@ -160,4 +160,29 @@ class ServiceController extends Controller
 
         return back()->with('success', __('Servicio eliminado.'));
     }
+
+    public function incidents(Team $team, Service $service)
+    {
+        if ($service->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $incidents = $service->getLatestIncidents(20);
+
+        return response()->json([
+            'success' => true,
+            'incidents' => $incidents->map(function($i) {
+                return [
+                    'type' => $i->type,
+                    'type_label' => $i->type === 'up' ? __('Activo') : __('Incidencia'),
+                    'type_color' => $i->type === 'up' ? 'emerald' : 'red',
+                    'reporter' => $i->user ? $i->user->name : __('Sientia Sentinel (Automatizado)'),
+                    'reporter_type' => $i->user ? 'human' : 'system',
+                    'date' => $i->created_at->translatedFormat('d M, H:i'),
+                    'diff' => $i->created_at->diffForHumans(),
+                    'details' => $i->details
+                ];
+            })
+        ]);
+    }
 }

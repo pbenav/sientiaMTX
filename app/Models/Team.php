@@ -98,13 +98,32 @@ class Team extends Model
                     $msg->delete();
                 }
 
-                // 5. Surveys, Groups, Skills, Kanban, Invitations, Events
-                $team->surveys()->delete();
+                // 5. Surveys, Groups, Skills, Kanban, Invitations, Events, Services, TimeLogs
+                foreach ($team->surveys as $survey) {
+                    // Deep delete survey relations if not handled by database cascade
+                    foreach ($survey->questions as $question) {
+                        $question->options()->delete();
+                        $question->votes()->delete();
+                        $question->delete();
+                    }
+                    $survey->delete();
+                }
+
                 $team->groups()->delete();
                 $team->skills()->delete();
                 $team->kanbanColumns()->delete();
                 $team->invitations()->delete();
                 $team->calendarEvents()->delete();
+                $team->telegramGroupMembers()->delete();
+                
+                // Purge Services and their reports
+                foreach ($team->services as $service) {
+                    $service->reports()->delete();
+                    $service->delete();
+                }
+
+                // Purge Time Logs associated with the team's tasks
+                \App\Models\TimeLog::whereIn('task_id', $team->tasks()->withTrashed()->pluck('id'))->delete();
 
                 // 6. Detach members
                 $team->members()->detach();

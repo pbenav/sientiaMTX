@@ -96,7 +96,10 @@ class OnlyOfficeController extends Controller
         $secret = config('onlyoffice.secret');
         $token = null;
         if (!empty($secret)) {
-            $token = JWT::encode($config, $secret, 'HS256');
+            $payload = $config;
+            $payload['iat'] = time();
+            $payload['exp'] = time() + (60 * 60); // 1 hour
+            $token = JWT::encode($payload, $secret, 'HS256');
             // In newer versions, the token MUST also be inside the object if explicitly passed
             $config['token'] = $token;
         }

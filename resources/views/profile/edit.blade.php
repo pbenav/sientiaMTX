@@ -20,7 +20,7 @@
             <!-- TAB: General -->
             <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.update-profile-information-form')
                     </div>
                 </div>
@@ -28,7 +28,7 @@
             <!-- TAB: Invitaciones VIP -->
             <div x-show="activeTab === 'invitations_vip'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.invitations-vip-form')
                     </div>
                 </div>
@@ -54,19 +54,19 @@
             <!-- TAB: Security -->
             <div x-show="activeTab === 'security'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.update-password-form')
                     </div>
                 </div>
 
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.manage-passkeys-form')
                     </div>
                 </div>
 
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.two-factor-authentication-form')
                     </div>
                 </div>
@@ -78,13 +78,13 @@
                 </div>
 
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.gdpr-data-form')
                     </div>
                 </div>
 
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
-                    <div class="max-w-xl">
+                    <div class="max-w-4xl">
                         @include('profile.partials.delete-user-form')
                     </div>
                 </div>

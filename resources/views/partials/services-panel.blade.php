@@ -33,7 +33,13 @@
                                     {{ $service->icon ?: '🌐' }}
                                 </div>
                                 <div class="pointer-events-none">
-                                    <h5 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $service->name }}</h5>
+                                    <button type="button" @click="$dispatch('open-service-incidents', { id: {{ $service->id }}, name: '{{ addslashes($service->name) }}' })" 
+                                        class="text-left hover:text-violet-600 transition-colors pointer-events-auto group/name">
+                                        <h5 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight flex items-center gap-1.5">
+                                            {{ $service->name }}
+                                            <svg class="w-2.5 h-2.5 opacity-0 group-hover/name:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </h5>
+                                    </button>
                                     <div class="flex items-center gap-1.5 mt-0.5">
                                         <div data-service-dot="{{ $service->id }}" class="w-1.5 h-1.5 rounded-full bg-{{ $color }}-500 {{ $service->status === 'down' ? 'animate-ping' : '' }}"></div>
                                         <span data-service-label="{{ $service->id }}" class="text-[8px] font-black uppercase tracking-wider text-{{ $color }}-600">{{ $service->getStatusLabel() }}</span>
@@ -236,6 +242,95 @@
                         </div>
                     @endforeach
             </div>
+        </div>
+    </div>
+</x-modal>
+
+<!-- Modal Historial Sentinel -->
+<x-modal name="service-incidents-modal" focusable>
+    <div class="p-6" x-data="{ 
+        loading: true, 
+        serviceName: '', 
+        incidents: [],
+        async loadIncidents(serviceId, name) {
+            this.loading = true;
+            this.serviceName = name;
+            this.incidents = [];
+            try {
+                const response = await fetch(`/teams/{{ $team->id }}/services/${serviceId}/incidents`);
+                const data = await response.json();
+                this.incidents = data.incidents || [];
+            } catch (e) {
+                console.error('Error cargando incidencias:', e);
+            } finally {
+                this.loading = false;
+            }
+        }
+    }" x-on:open-service-incidents.window="loadIncidents($event.detail.id, $event.detail.name); $dispatch('open-modal', 'service-incidents-modal')">
+        
+        <div class="flex items-center justify-between mb-6 border-b border-gray-50 dark:border-gray-800 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-500/10 rounded-xl text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">
+                    Historial: <span x-text="serviceName" class="text-violet-600"></span>
+                </h2>
+            </div>
+            <button @click="$dispatch('close-modal', 'service-incidents-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <template x-if="loading">
+                <div class="py-12 flex flex-col items-center justify-center space-y-4">
+                    <svg class="animate-spin h-8 w-8 text-violet-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <p class="text-[10px] font-black uppercase text-gray-400 tracking-widest animate-pulse">Consultando Sentinel...</p>
+                </div>
+            </template>
+
+            <template x-if="!loading && incidents.length === 0">
+                <div class="py-12 text-center text-gray-500 italic text-xs bg-gray-50/50 dark:bg-gray-800/30 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
+                    No se han registrado incidencias recientemente.
+                </div>
+            </template>
+
+            <template x-for="incident in incidents" :key="incident.date + incident.reporter">
+                <div class="p-4 bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl flex items-start justify-between gap-4 hover:shadow-lg hover:shadow-violet-500/5 transition-all">
+                    <div class="flex items-start gap-4">
+                        <div :class="incident.type === 'down' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'" class="p-2 rounded-xl shrink-0">
+                            <template x-if="incident.type === 'down'">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            </template>
+                            <template x-if="incident.type === 'up'">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                            </template>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[10px] font-black uppercase tracking-tight" :class="incident.type === 'down' ? 'text-red-600' : 'text-emerald-600'" x-text="incident.type_label"></span>
+                                <span class="text-[9px] text-gray-400 font-bold" x-text="incident.date"></span>
+                            </div>
+                            <p class="text-xs font-bold text-gray-700 dark:text-gray-300 mt-1 truncate" :title="incident.details" x-text="incident.details || 'Verificación rutinaria de estado'"></p>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <span class="text-[9px] font-black uppercase tracking-widest" :class="incident.reporter_type === 'system' ? 'text-violet-600' : 'text-gray-500'" x-text="incident.reporter"></span>
+                            <template x-if="incident.reporter_type === 'human'">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            </template>
+                            <template x-if="incident.reporter_type === 'system'">
+                                <svg class="w-3.5 h-3.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            </template>
+                        </div>
+                        <span class="text-[8px] text-gray-400 font-medium italic block mt-0.5" x-text="incident.diff"></span>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </x-modal>

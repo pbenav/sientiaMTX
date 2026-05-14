@@ -84,6 +84,12 @@ class RegisteredUserController extends Controller
             if ($invitation->user_id) {
                 $invitation->user()->decrement('invitations_left');
             }
+
+            // AUTO-ENROLL in team if linked to the VIP invitation
+            if ($invitation->team_id) {
+                $role = \App\Models\TeamRole::where('name', 'user')->first();
+                $invitation->team->members()->syncWithoutDetaching([$user->id => ['role_id' => $role->id ?? 3]]);
+            }
         }
 
         // Process pending invitations

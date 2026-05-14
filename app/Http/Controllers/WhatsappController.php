@@ -114,18 +114,20 @@ class WhatsappController extends Controller
                             $botToken = config('services.telegram.bot_token');
                             if ($botToken && $team->telegram_chat_id && !empty($body)) {
                                 $cleanBody = strip_tags($body);
-                                Log::info("Sincronización Web: Reenviando mensaje enviado desde la web a Telegram");
-                                \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                                $tgResponse = \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
                                     'chat_id' => $team->telegram_chat_id,
                                     'text' => "🟢 [WhatsApp] {$author}:\n{$cleanBody}",
                                 ]);
+                                
+                                $realTgId = $tgResponse->successful() ? $tgResponse->json('result.message_id') : ('sync_' . uniqid());
+
                                 // Crear registro espejo de Telegram para que aparezca en el widget de la web de inmediato
                                 \App\Models\TelegramMessage::create([
                                     'team_id' => $team->id,
                                     'author_name' => "🟢 [WhatsApp] {$author}",
                                     'text' => $cleanBody,
                                     'file_type' => 'text',
-                                    'telegram_message_id' => 'sync_' . uniqid(),
+                                    'telegram_message_id' => $realTgId,
                                     'is_from_web' => true,
                                     'file_size' => 0,
                                 ]);
@@ -202,18 +204,20 @@ class WhatsappController extends Controller
                         $caption = "🟢 [WhatsApp] {$author}:" . (!empty($cleanBody) ? "\n{$cleanBody}" : "");
                         Log::info("Sincronización WA->TG: Reenviando evento para el equipo {$team->name}");
                         
+                        $tgRealId = 'sync_' . uniqid();
                         try {
                             $disk = \Illuminate\Support\Facades\Storage::disk('public');
-                            
+                            $tgResponse = null;
+
                             if ($photoPath && $disk->exists($photoPath)) {
-                                \Illuminate\Support\Facades\Http::attach(
+                                $tgResponse = \Illuminate\Support\Facades\Http::attach(
                                     'photo', $disk->get($photoPath), basename($photoPath)
                                 )->post("https://api.telegram.org/bot{$botToken}/sendPhoto", [
                                     'chat_id' => $team->telegram_chat_id,
                                     'caption' => $caption
                                 ]);
                             } elseif ($voicePath && $disk->exists($voicePath)) {
-                                \Illuminate\Support\Facades\Http::attach(
+                                $tgResponse = \Illuminate\Support\Facades\Http::attach(
                                     'voice', $disk->get($voicePath), basename($voicePath)
                                 )->post("https://api.telegram.org/bot{$botToken}/sendVoice", [
                                     'chat_id' => $team->telegram_chat_id,
@@ -224,16 +228,20 @@ class WhatsappController extends Controller
                                     'chat_id' => $team->telegram_chat_id,
                                     'text' => $caption
                                 ]);
-                                \Illuminate\Support\Facades\Http::attach(
+                                $tgResponse = \Illuminate\Support\Facades\Http::attach(
                                     'sticker', $disk->get($stickerPath), basename($stickerPath)
                                 )->post("https://api.telegram.org/bot{$botToken}/sendSticker", [
                                     'chat_id' => $team->telegram_chat_id
                                 ]);
                             } elseif ($hasBody) {
-                                \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                                $tgResponse = \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
                                     'chat_id' => $team->telegram_chat_id,
                                     'text' => $caption,
                                 ]);
+                            }
+
+                            if ($tgResponse && $tgResponse->successful()) {
+                                $tgRealId = $tgResponse->json('result.message_id');
                             }
                         } catch (\Exception $eRelay) {
                             Log::warning("Error en Relevo Espejo WA->TG: " . $eRelay->getMessage());
@@ -248,7 +256,7 @@ class WhatsappController extends Controller
                             'photo_path' => $photoPath,
                             'voice_path' => $voicePath,
                             'sticker_path' => $stickerPath,
-                            'telegram_message_id' => 'sync_' . uniqid(),
+                            'telegram_message_id' => $tgRealId,
                             'is_from_web' => true,
                             'file_size' => $fileSize,
                         ]);

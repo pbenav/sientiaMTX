@@ -21,11 +21,26 @@
             </div>
         </div>
         
-        <form method="POST" action="{{ route('profile.invitations.generate') }}">
+        <form method="POST" action="{{ route('profile.invitations.generate') }}" class="flex flex-col sm:flex-row items-end gap-3">
             @csrf
+            
+            @if($manageableTeams->count() > 0)
+                <div class="w-full sm:w-80">
+                    <label for="team_id" class="block text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1 px-1">
+                        {{ __('Vincular a Equipo (Opcional)') }}
+                    </label>
+                    <select name="team_id" id="team_id" class="w-full text-xs font-bold bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 rounded-xl focus:ring-violet-500 focus:border-violet-500">
+                        <option value="">{{ __('Sin equipo (Solo registro)') }}</option>
+                        @foreach($manageableTeams as $team)
+                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
             <button type="submit" 
                 @if(auth()->user()->invitations_left <= 0) disabled @endif
-                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]">
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] whitespace-nowrap">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
                 </svg>
@@ -59,6 +74,12 @@
                                 <span class="font-mono text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-100/50 dark:bg-violet-950/30 px-2 py-0.5 rounded-md">
                                     {{ $invitation->code }}
                                 </span>
+                                @if($invitation->team)
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        {{ $invitation->team->name }}
+                                    </span>
+                                @endif
                                 @if($invitation->used_at)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                                         {{ __('Consumido') }}

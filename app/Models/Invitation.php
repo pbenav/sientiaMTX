@@ -12,6 +12,7 @@ class Invitation extends Model
 
     protected $fillable = [
         'user_id',
+        'team_id',
         'email',
         'code',
         'used_at',
@@ -27,5 +28,13 @@ class Invitation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the team this invitation belongs to.
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
     }
 }

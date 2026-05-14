@@ -326,7 +326,7 @@ class TaskController extends Controller
             'skill_id' => 'nullable|integer|exists:skills,id', // Legacy
             'service_id' => 'nullable|integer|exists:services,id',
             'attachments' => 'nullable|array',
-            'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
+            'attachments.*' => 'file|max:' . (\Illuminate\Http\UploadedFile::getMaxFilesize() / 1024),
             'assignment_mode' => 'nullable|string|in:shared,distributed',
             'expediente_id' => 'nullable|exists:expedientes,id',
         ]);

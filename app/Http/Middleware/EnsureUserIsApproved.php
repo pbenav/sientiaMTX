@@ -23,6 +23,9 @@ class EnsureUserIsApproved
                 'terms',
                 'cookies',
                 'locale.switch',
+                'google.*',
+                'profile.edit',
+                'team.*',
             ];
 
             if (!$request->routeIs($allowedRoutes)) {

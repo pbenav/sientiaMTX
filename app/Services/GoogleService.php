@@ -98,8 +98,14 @@ class GoogleService
                     return false;
                 }
 
-                $source->google_token = $newToken;
-                $source->save();
+                if ($source instanceof \App\Models\TeamUser) {
+                    $user->teams()->updateExistingPivot($teamId, [
+                        'google_token' => $newToken,
+                    ]);
+                } else {
+                    $source->google_token = $newToken;
+                    $source->save();
+                }
                 
                 $this->client->setAccessToken($newToken);
             } else {

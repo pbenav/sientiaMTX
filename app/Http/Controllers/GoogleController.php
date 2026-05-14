@@ -110,8 +110,7 @@ class GoogleController extends Controller
                 Log::info("Google Callback: UPDATED PIVOT for team: $teamId");
             }
 
-            $user->save(); 
-            $user->refresh(); 
+            // Redundant save and refresh removed (Fix #9)
 
             if ($isPopup) {
                 Log::info("Google Callback: Closing Popup Window");
