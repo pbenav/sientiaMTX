@@ -416,6 +416,9 @@
                         }
 
                         // 1.b Refresh the incidents modal if it's open or about to be
+                        const card = this.closest('.service-card');
+                        const serviceId = card.getAttribute('data-id');
+
                         window.dispatchEvent(new CustomEvent('refresh-service-incidents', { 
                             detail: { id: serviceId } 
                         }));
@@ -438,9 +441,6 @@
                         });
 
                         // 4. Update dynamic visual elements for service status across the card
-                        const card = this.closest('.service-card');
-                        const serviceId = card.getAttribute('data-id');
-                        
                         if (data.new_status_color && data.new_status_label) {
                             const dot = document.querySelector(`[data-service-dot="${serviceId}"]`);
                             const label = document.querySelector(`[data-service-label="${serviceId}"]`);
