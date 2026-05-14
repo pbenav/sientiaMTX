@@ -2614,6 +2614,64 @@
             });
         })();
     </script>
+
+    <!-- 🔗 Sientia Global Link Security & Navigation Flow 🔗 -->
+    <script>
+        (function() {
+            /**
+             * Processes all links within markdown-rendered containers to ensure external links
+             * open in a new tab, preserving the application's SPA-like navigation flow.
+             */
+            const processMarkdownLinks = (container) => {
+                if (!container || typeof container.querySelectorAll !== 'function') return;
+                
+                const markdownContainers = container.querySelectorAll('.prose, .markdown-content');
+                
+                markdownContainers.forEach(mc => {
+                    const links = mc.querySelectorAll('a');
+                    links.forEach(link => {
+                        // Check if it's an external link
+                        const href = link.getAttribute('href');
+                        if (!href) return;
+
+                        const isExternal = (href.startsWith('http') || href.startsWith('//')) && 
+                                         !href.includes(window.location.hostname) && 
+                                         !link.hasAttribute('target');
+
+                        if (isExternal) {
+                            link.setAttribute('target', '_blank');
+                            link.setAttribute('rel', 'noopener noreferrer');
+                        }
+                    });
+                });
+            };
+
+            // 1. Initial process on load
+            document.addEventListener("DOMContentLoaded", () => {
+                processMarkdownLinks(document);
+                
+                // 2. Observer for dynamic content (AI Assistant, Quick Notes, Livewire)
+                const observer = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        mutation.addedNodes.forEach(node => {
+                            if (node.nodeType === 1) { // Element node
+                                if (node.matches('.prose, .markdown-content') || node.querySelector('.prose, .markdown-content')) {
+                                    processMarkdownLinks(node);
+                                }
+                            }
+                        });
+                    });
+                });
+
+                observer.observe(document.body, { childList: true, subtree: true });
+            });
+            
+            // 3. Hook into specific app events that might re-render markdown
+            window.addEventListener('quicknote-state-changed', () => {
+                setTimeout(() => processMarkdownLinks(document), 150);
+            });
+        })();
+    </script>
 </body>
 
 </html>
