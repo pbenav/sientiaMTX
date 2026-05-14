@@ -24,11 +24,21 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-90 translate-y-10"
-        style="display:none; resize: both; overflow: hidden; min-width: 280px; min-height: 400px;"
-        class="mb-4 w-[calc(100vw-2rem)] sm:w-[420px] h-[580px] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto"
+        :style="`width: ${dimensions.width}px; height: ${dimensions.height}px; display: ${open ? 'flex' : 'none'} !important;`"
+        class="mb-4 max-w-[90vw] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto relative"
     >
+        <!-- Tirador de redimensionamiento -->
+        <div class="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize z-50 p-2 flex items-end justify-end opacity-30 hover:opacity-100 transition-opacity"
+             @mousedown.stop.prevent="startResize($event)"
+             @touchstart.stop.prevent="startResize($event)">
+            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="18" y1="13" x2="13" y2="18" />
+            </svg>
+        </div>
+
         <!-- Header -->
-        <div class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center cursor-default shrink-0 shadow-lg relative z-30">
+        <div @mousedown="startDrag($event)" @touchstart="startDrag($event)" class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center cursor-grab active:cursor-grabbing shrink-0 shadow-lg relative z-30">
             <div class="flex items-center space-x-3">
                 <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,8 +319,22 @@
         </div>
     </div>
 
-        <!-- Floating Actions for Quick Notes (when visible) -->
-        <div class="flex flex-col gap-3 mb-3 pointer-events-auto items-center">
+    <!-- Actions Row (Horizontal) -->
+    <div class="flex items-center gap-3 mb-3 pointer-events-auto">
+        <!-- Close Button (Always visible when open) -->
+        <button 
+            x-show="open"
+            @click="toggle($event)"
+            class="w-12 h-12 sm:w-14 sm:h-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-2xl transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95"
+            style="display:none;"
+        >
+            <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Quick Notes Controls (when visible) -->
+        <div x-show="open" class="flex items-center gap-3" style="display:none;">
             <button type="button" 
                 @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
                 class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger"
@@ -332,34 +356,33 @@
             </button>
         </div>
 
-    <button 
-        @mousedown="startDrag($event)" 
-        @touchstart="startDrag($event)" 
-        @click="toggle($event)"
-        class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative"
-        :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'"
-        style="touch-action: none;"
-    >
-        <div x-show="!open" class="relative flex items-center justify-center">
-            <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            <!-- Loading Indicator on Button -->
-            <div x-show="loading" class="absolute -inset-2">
-                <svg class="animate-spin w-16 h-16 sm:w-20 sm:h-20 text-indigo-400 opacity-40" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <!-- Main Toggle Button (When closed) -->
+        <button 
+            x-show="!open"
+            @mousedown="startDrag($event)" 
+            @touchstart="startDrag($event)" 
+            @click="toggle($event)"
+            class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative"
+            :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'"
+            style="touch-action: none;"
+        >
+            <div class="relative flex items-center justify-center">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
+                <!-- Loading Indicator on Button -->
+                <div x-show="loading" class="absolute -inset-2">
+                    <svg class="animate-spin w-16 h-16 sm:w-20 sm:h-20 text-indigo-400 opacity-40" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
             </div>
-        </div>
-        
-        <svg x-show="open" style="display:none;" class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
+            <!-- Unread Indicator -->
+            <div x-show="hasUnread" style="display:none;" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white dark:border-gray-950 rounded-full animate-bounce"></div>
+        </button>
+    </div>
 
-        <!-- Unread Indicator -->
-        <div x-show="!open && hasUnread" style="display:none;" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white dark:border-gray-950 rounded-full animate-bounce"></div>
-    </button>
 </div>
 
 <script>
@@ -386,6 +409,10 @@
             messageId: @json($messageId ?? null),
             quickNotesVisible: false,
             attachmentId: null,
+
+            dimensions: { width: 420, height: 580 },
+            isResizing: false,
+
 
             currentModel: 'Sincronizando...',
             canUndo: false,
@@ -631,7 +658,6 @@
             startY: 0,
 
             startDrag(e) {
-                if (this.open) return;
                 this.isDragging = true;
                 this.wasDragged = false;
                 const event = e.type.includes('touch') ? e.touches[0] : e;
@@ -639,25 +665,77 @@
                 this.startY = event.clientY - this.pos.y;
             },
             drag(e) {
-                if (!this.isDragging) return;
+                if (!this.isDragging && !this.isResizing) return;
                 if (e.type.includes('touch') && e.cancelable) {
                     e.preventDefault();
                 }
                 
                 const event = e.type.includes('touch') ? e.touches[0] : e;
-                const newX = event.clientX - this.startX;
-                const newY = event.clientY - this.startY;
                 
-                if (Math.abs(newX - this.pos.x) > 3 || Math.abs(newY - this.pos.y) > 3) {
-                    this.wasDragged = true;
+                if (this.isDragging) {
+                    const newX = event.clientX - this.startX;
+                    const newY = event.clientY - this.startY;
+                    
+                    if (Math.abs(newX - this.pos.x) > 3 || Math.abs(newY - this.pos.y) > 3) {
+                        this.wasDragged = true;
+                    }
+                    
+                    this.pos.x = newX;
+                    this.pos.y = newY;
                 }
-                
-                this.pos.x = newX;
-                this.pos.y = newY;
             },
             stopDrag() {
-                setTimeout(() => { this.isDragging = false; }, 50);
+                setTimeout(() => { 
+                    this.isDragging = false; 
+                    this.isResizing = false;
+                }, 50);
             },
+
+            startResize(e) {
+                this.isResizing = true;
+                const event = e.type.includes('touch') ? e.touches[0] : e;
+                const initialX = event.clientX;
+                const initialY = event.clientY;
+                const initialWidth = this.dimensions.width;
+                const initialHeight = this.dimensions.height;
+                const initialPosY = this.pos.y;
+                
+                const onMouseMove = (moveEvent) => {
+                    if (!this.isResizing) return;
+                    const mevent = moveEvent.type.includes('touch') ? moveEvent.touches[0] : moveEvent;
+                    
+                    const deltaX = mevent.clientX - initialX;
+                    const deltaY = mevent.clientY - initialY;
+
+                    this.dimensions.width = initialWidth + deltaX;
+                    this.dimensions.height = initialHeight + deltaY;
+                    
+                    // CRITICAL: Al estar anclado al bottom, si aumentamos height crece hacia arriba.
+                    // Para que crezca hacia abajo, desplazamos la posición Y el mismo delta.
+                    this.pos.y = initialPosY + deltaY;
+                    
+                    // Límites
+                    if (this.dimensions.width < 320) this.dimensions.width = 320;
+                    if (this.dimensions.height < 400) {
+                        this.dimensions.height = 400;
+                        this.pos.y = initialPosY + (400 - initialHeight);
+                    }
+                };
+                
+                const onMouseUp = () => {
+                    this.isResizing = false;
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                    window.removeEventListener('touchmove', onMouseMove);
+                    window.removeEventListener('touchend', onMouseUp);
+                };
+                
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', onMouseUp);
+                window.addEventListener('touchmove', onMouseMove, { passive: false });
+                window.addEventListener('touchend', onMouseUp);
+            },
+
             
             toggle(e) {
                 if (this.wasDragged) {

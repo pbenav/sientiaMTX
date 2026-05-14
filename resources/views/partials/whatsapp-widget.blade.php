@@ -42,7 +42,7 @@
         </div>
 
         <!-- Cabecera -->
-        <div class="px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-between shadow-lg shrink-0"
+        <div @mousedown="startDrag($event)" @touchstart="startDrag($event)" class="px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-between shadow-lg shrink-0 cursor-grab active:cursor-grabbing"
              style="background: linear-gradient(135deg, #10b981, #16a34a);">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
@@ -501,21 +501,36 @@
                 const initialY = event.clientY;
                 const initialWidth = this.dimensions.width;
                 const initialHeight = this.dimensions.height;
+                const initialPosY = this.pos.y;
                 
                 const onMouseMove = (moveEvent) => {
                     if (!this.isResizing) return;
                     const mevent = moveEvent.type.includes('touch') ? moveEvent.touches[0] : moveEvent;
                     
+                    const deltaX = initialX - mevent.clientX;
+                    const deltaY = mevent.clientY - initialY;
+
                     // Al estar anclado a la derecha, para crecer a la izquierda sumamos el delta invertido del ratón
-                    this.dimensions.width = initialWidth + (initialX - mevent.clientX);
-                    this.dimensions.height = initialHeight + (mevent.clientY - initialY);
+                    this.dimensions.width = initialWidth + deltaX;
+                    this.dimensions.height = initialHeight + deltaY;
+
+                    // CRITICAL: Ajustar pos.y para que crezca hacia abajo
+                    this.pos.y = initialPosY + deltaY;
                     
                     // Límites
                     if (this.dimensions.width < 320) this.dimensions.width = 320;
                     if (this.dimensions.width > window.innerWidth * 0.9) this.dimensions.width = window.innerWidth * 0.9;
-                    if (this.dimensions.height < 400) this.dimensions.height = 400;
-                    if (this.dimensions.height > window.innerHeight * 0.85) this.dimensions.height = window.innerHeight * 0.85;
+                    if (this.dimensions.height < 400) {
+                        this.dimensions.height = 400;
+                        this.pos.y = initialPosY + (400 - initialHeight);
+                    }
+                    if (this.dimensions.height > window.innerHeight * 0.85) {
+                        const maxHeight = window.innerHeight * 0.85;
+                        this.dimensions.height = maxHeight;
+                        this.pos.y = initialPosY + (maxHeight - initialHeight);
+                    }
                 };
+
                 
                 const onMouseUp = () => {
                     this.isResizing = false;
@@ -532,7 +547,6 @@
             },
             
             startDrag(e) {
-                if (this.open) return;
                 this.isDragging = true;
                 this.wasDragged = false;
                 const event = e.type.includes('touch') ? e.touches[0] : e;
