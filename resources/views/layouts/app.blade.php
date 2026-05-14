@@ -1840,19 +1840,28 @@
                     
                     fetchMessages() {
                         if (!this.member.id) return;
+                        console.log('Fetching messages for member:', this.member.id);
                         fetch('/chat/' + this.member.id + '?_=' + Date.now(), {
                             headers: {
                                 'Cache-Control': 'no-cache',
-                                'Pragma': 'no-cache'
+                                'Pragma': 'no-cache',
+                                'Accept': 'application/json'
                             }
                         })
-                            .then(r => r.json())
+                            .then(r => {
+                                if (!r.ok) throw new Error('Chat server error: ' + r.status);
+                                return r.json();
+                            })
                             .then(data => {
                                 if (data.member) {
                                     this.member = { ...this.member, ...data.member };
                                 }
-                                this.messages = data.messages;
+                                this.messages = data.messages || [];
                                 this.$nextTick(() => this.scrollToBottom());
+                            })
+                            .catch(err => {
+                                console.error('Error fetching chat messages:', err);
+                                // Optional: notify user via toast if needed
                             });
                     },
                     
@@ -1914,15 +1923,31 @@
                         fetch('/chat', {
                             method: 'POST',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                'Accept': 'application/json'
                             },
                             body: formData
                         })
-                        .then(r => r.json())
+                        .then(r => {
+                            if (!r.ok) throw new Error('Failed to send message: ' + r.status);
+                            return r.json();
+                        })
                         .then(() => {
+                            console.log('Message sent successfully');
                             this.fetchMessages();
                         })
-                        .catch(err => console.error('Error enviando mensaje:', err))
+                        .catch(err => {
+                            console.error('Error sending message:', err);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error al enviar',
+                                text: 'No se pudo enviar el mensaje. Comprueba tu conexión.',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        })
                         .finally(() => {
                             this.isUploading = false;
                         });
@@ -2097,10 +2122,14 @@
                         fetch('/chat/check?_=' + Date.now(), {
                             headers: {
                                 'Cache-Control': 'no-cache',
-                                'Pragma': 'no-cache'
+                                'Pragma': 'no-cache',
+                                'Accept': 'application/json'
                             }
                         })
-                            .then(r => r.json())
+                            .then(r => {
+                                if (!r.ok) throw new Error('Poll error: ' + r.status);
+                                return r.json();
+                            })
                             .then(data => {
                                 if (data.unread.length > 0) {
                                     const uniqueMap = {};
@@ -2117,18 +2146,20 @@
                                     });
                                     Alpine.store('chatStore').setUnread(Object.values(uniqueMap));
                                     
-                                    const lastMsg = data.unread[0];
+                                    // 🚀 Sientia Call Logic: Find if ANY unread message is a call invitation
+                                    const callMsg = data.unread.find(m => m.call_room);
+                                    const lastMsg = data.unread[0]; // For text notification fallback
                                     
-                                    if (lastMsg.call_room && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== lastMsg.call_room)) {
+                                    if (callMsg && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== callMsg.call_room)) {
                                         this.incomingCall = {
-                                            room: lastMsg.call_room,
-                                            sender_id: lastMsg.sender_id,
-                                            sender_name: lastMsg.sender_name,
-                                            sender_photo: lastMsg.sender_photo
+                                            room: callMsg.call_room,
+                                            sender_id: callMsg.sender_id,
+                                            sender_name: callMsg.sender_name,
+                                            sender_photo: callMsg.sender_photo
                                         };
                                         this.startFlashAndSound();
 
-                                        const isGoogleMeet = lastMsg.call_room.startsWith('http');
+                                        const isGoogleMeet = callMsg.call_room.startsWith('http');
                                         const title = isGoogleMeet ? '🌐 ¡REUNIÓN EN GOOGLE MEET!' : '🎥 ¡LLAMADA ENTRANTE!';
                                         const subText = isGoogleMeet 
                                             ? '¡te invita a unirte a una reunión de Google Meet!' 
@@ -2141,10 +2172,10 @@
                                             title: title,
                                             html: '<div class="flex flex-col items-center gap-4 py-2">' +
                                                 '<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-xl relative">' +
-                                                    '<img src="' + lastMsg.sender_photo + '" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">' +
+                                                    '<img src="' + callMsg.sender_photo + '" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">' +
                                                 '</div>' +
                                                 '<div class="text-center">' +
-                                                    '<p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">' + lastMsg.sender_name + '</p>' +
+                                                    '<p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">' + callMsg.sender_name + '</p>' +
                                                     '<p class="text-xs text-gray-700 dark:text-gray-300 font-bold mt-2">' + subText + '</p>' +
                                                     '<p class="text-[10px] text-emerald-500 font-black uppercase tracking-wider mt-1 animate-pulse">¿Quieres contestar?</p>' +
                                                 '</div>' +
@@ -2166,7 +2197,7 @@
                                                 this.rejectCall();
                                             }
                                         });
-                                    } else if (!lastMsg.call_room && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
+                                    } else if (!callMsg && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
                                         this.lastNotifiedMsgId = lastMsg.id;
                                         
                                         // Play sound notification if enabled

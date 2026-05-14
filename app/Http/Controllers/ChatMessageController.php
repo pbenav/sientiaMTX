@@ -33,7 +33,7 @@ class ChatMessageController extends Controller
                 $query->where('sender_id', $receiverId)
                       ->where('receiver_id', $userId);
             })
-            ->with(['parent.sender'])
+            ->with(['sender', 'parent.sender'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -196,15 +196,15 @@ class ChatMessageController extends Controller
         // Find unread messages
         $unread = ChatMessage::where('receiver_id', $userId)
             ->where('is_read', false)
-            ->with('parent.sender')
+            ->with(['sender', 'parent.sender'])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json([
             'unread' => $unread->map(function ($msg) use ($userId) {
-                $commonTeam = $msg->sender->teams()->whereHas('users', function($q) use ($userId) {
+                $commonTeam = $msg->sender ? $msg->sender->teams()->whereHas('users', function($q) use ($userId) {
                     $q->where('user_id', $userId);
-                })->first();
+                })->first() : null;
 
                 return [
                     'id' => $msg->id,
