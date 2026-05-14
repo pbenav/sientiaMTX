@@ -185,7 +185,7 @@
                 },
 
                 checkNewMessages() {
-                    fetch('/chat/check?_=' + Date.now(), {
+                    fetch('/comms/heartbeat?_=' + Date.now(), {
                         headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
                     })
                     .then(r => r.json())

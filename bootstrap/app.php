@@ -44,7 +44,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('gamification:regenerate-energy')->hourly();
         $schedule->command('gamification:fresh-start')->hourly();
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        // TokenMismatchException is handled by HandleSessionExpiration middleware
-        // (withExceptions callbacks receive it already converted to HttpException, so they can't redirect)
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
     })->create();
