@@ -99,11 +99,15 @@ class ChatMessageController extends Controller
 
             $data = $unread->map(function ($msg) {
                 return [
-                    'id' => $msg->id,
-                    'sender_id' => $msg->sender_id,
-                    'sender_name' => $msg->sender?->name ?? 'Usuario',
-                    'text' => $msg->message,
-                    'time' => $msg->created_at ? $msg->created_at->timezone(auth()->user()->timezone ?? 'Europe/Madrid')->format('H:i') : now()->format('H:i'),
+                    'id'           => $msg->id,
+                    'sender_id'    => $msg->sender_id,
+                    'sender_name'  => $msg->sender?->name ?? 'Usuario',
+                    'sender_photo' => $msg->sender?->profile_photo_url,
+                    'sender_team'  => null,
+                    'text'         => $msg->message,
+                    'file_name'    => $msg->file_name,
+                    'call_room'    => $msg->call_room,
+                    'time'         => $msg->created_at ? $msg->created_at->timezone(auth()->user()->timezone ?? 'Europe/Madrid')->format('H:i') : now()->format('H:i'),
                 ];
             });
 
@@ -166,13 +170,36 @@ class ChatMessageController extends Controller
                 'storage_provider' => $msg->storage_provider,
                 'web_view_link' => $msg->web_view_link,
                 'parent_id' => $msg->parent_id,
+                'call_room' => $msg->call_room,
             ]
         ]);
     }
 
     public function startCall(Request $request): JsonResponse
     {
-        return response()->json(['success' => false, 'message' => 'Not implemented in debug mode']);
+        $request->validate([
+            'receiver_id' => 'required|exists:users,id',
+        ]);
+
+        try {
+            // Generate a unique Jitsi room name
+            $room = 'sientia-' . auth()->id() . '-' . $request->receiver_id . '-' . now()->timestamp;
+
+            // Persist the call invitation as a chat message so the receiver's heartbeat detects it
+            $msg = ChatMessage::create([
+                'sender_id'   => auth()->id(),
+                'receiver_id' => $request->receiver_id,
+                'message'     => '📞 Te está llamando por Jitsi Meet',
+                'call_room'   => $room,
+            ]);
+
+            Log::info('startCall: room created', ['room' => $room, 'msg_id' => $msg->id]);
+
+            return response()->json(['success' => true, 'room' => $room]);
+        } catch (\Throwable $e) {
+            Log::error('startCall error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al crear la sala'], 500);
+        }
     }
 
     public function clear(int $receiverId): JsonResponse

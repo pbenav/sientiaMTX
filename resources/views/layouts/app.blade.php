@@ -214,7 +214,7 @@
                             const lastMsg = data.unread[0];
                             
                             if (callMsg && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== callMsg.call_room)) {
-                                this.incomingCall = { room: callMsg.room || callMsg.call_room, sender_id: callMsg.sender_id, sender_name: callMsg.sender_name, sender_photo: callMsg.sender_photo };
+                                this.incomingCall = { room: callMsg.call_room, sender_id: callMsg.sender_id, sender_name: callMsg.sender_name, sender_photo: callMsg.sender_photo };
                                 this.startFlashAndSound();
                                 const isGoogleMeet = callMsg.call_room.startsWith('http');
                                 Swal.fire({
@@ -322,8 +322,46 @@
                 processFile(f) { if (f.size > 10 * 1024 * 1024) { alert('⚠️ Límite 10MB'); return; } this.pendingFile = f; this.previewUrl = URL.createObjectURL(f); this.$nextTick(() => this.$refs.chatInput.focus()); },
                 handlePaste(e) { const items = (e.clipboardData || e.originalEvent.clipboardData).items; for (let i in items) { if (items[i].kind === 'file') { const b = items[i].getAsFile(); const f = new File([b], `img_${Date.now()}.png`, { type: b.type }); this.processFile(f); } } },
                 insertEmoji(e) { const i = this.$refs.chatInput; const s = i.selectionStart; const en = i.selectionEnd; this.message = this.message.substring(0, s) + e + this.message.substring(en); this.$nextTick(() => { i.focus(); const n = s + e.length; i.setSelectionRange(n, n); }); },
-                startSientiaCall() { if (this.member.id === {{ auth()->id() }}) return; fetch('/chat/call', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ receiver_id: this.member.id }) }).then(r => r.json()).then(d => { window.open('https://meet.jit.si/' + d.room, '_blank'); this.fetchMessages(); }); },
-                startGoogleMeet() { if (this.member.id === {{ auth()->id() }}) return; window.open('https://meet.google.com/new', '_blank'); Swal.fire({ title: '🌐 MEET', text: 'Pega el enlace:', input: 'text', showCancelButton: true }).then((r) => { if (r.isConfirmed && r.value) { let url = r.value.trim(); fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ receiver_id: this.member.id, message: '🌐 Reunión Google Meet', call_room: url }) }).then(() => this.fetchMessages()); } }); }
+                startSientiaCall() {
+                    if (this.member.id === {{ auth()->id() }}) return;
+                    fetch('/chat/call', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                        body: JSON.stringify({ receiver_id: this.member.id })
+                    })
+                    .then(r => r.json())
+                    .then(d => {
+                        if (!d.success || !d.room) {
+                            Swal.fire({ icon: 'error', title: 'Error', text: d.message || 'No se pudo iniciar la llamada.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                            return;
+                        }
+                        window.open('https://meet.jit.si/' + d.room, '_blank');
+                        this.fetchMessages();
+                    })
+                    .catch(() => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                },
+                startGoogleMeet() {
+                    if (this.member.id === {{ auth()->id() }}) return;
+                    window.open('https://meet.google.com/new', '_blank');
+                    Swal.fire({ title: '🌐 MEET', text: 'Pega el enlace de Google Meet:', input: 'text', inputPlaceholder: 'https://meet.google.com/xxx-yyyy-zzz', showCancelButton: true, confirmButtonText: 'Enviar enlace', cancelButtonText: 'Cancelar' }).then((r) => {
+                        if (r.isConfirmed && r.value) {
+                            let url = r.value.trim();
+                            if (!url.startsWith('http')) url = 'https://' + url;
+                            const formData = new FormData();
+                            formData.append('receiver_id', this.member.id);
+                            formData.append('message', '🌐 Reunión Google Meet');
+                            formData.append('call_room', url);
+                            fetch('/chat', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                                body: formData
+                            })
+                            .then(r => r.ok ? r.json() : Promise.reject(r))
+                            .then(() => this.fetchMessages())
+                            .catch(() => Swal.fire({ icon: 'error', title: 'Error al enviar el enlace', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                        }
+                    });
+                }
             }));
         });
     </script>
@@ -1825,8 +1863,8 @@
 
                                     <p class="text-xs font-semibold leading-relaxed whitespace-pre-wrap" x-show="msg.text" x-text="msg.text"></p>
                                     <template x-if="msg.call_room">
-                                        <button @click="window.open('https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-white/20 hover:bg-white/30 text-white font-black text-[9px] uppercase rounded-xl transition-all">
-                                            Unirse a la videoconferencia 🎥
+                                        <button @click="window.open(msg.call_room.startsWith('http') ? msg.call_room : 'https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-white/20 hover:bg-white/30 text-white font-black text-[9px] uppercase rounded-xl transition-all">
+                                            <span x-text="msg.call_room.startsWith('http') ? '🌐 Abrir Google Meet' : '🎥 Unirse a la videoconferencia'"></span>
                                         </button>
                                     </template>
                                     <span class="block text-[8px] opacity-60 text-right mt-1" x-text="msg.time"></span>
@@ -1881,8 +1919,8 @@
                                     
                                     <p class="text-xs font-semibold leading-relaxed whitespace-pre-wrap" x-show="msg.text" x-text="msg.text"></p>
                                     <template x-if="msg.call_room">
-                                        <button @click="window.open('https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase rounded-xl transition-all">
-                                            Aceptar y Unirse 🎥
+                                        <button @click="window.open(msg.call_room.startsWith('http') ? msg.call_room : 'https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase rounded-xl transition-all">
+                                            <span x-text="msg.call_room.startsWith('http') ? '🌐 Unirse a Google Meet' : '🎥 Aceptar y Unirse'"></span>
                                         </button>
                                     </template>
                                     <span class="block text-[8px] text-gray-400 text-right mt-1" x-text="msg.time"></span>
