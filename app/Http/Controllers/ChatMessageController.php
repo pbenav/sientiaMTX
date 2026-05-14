@@ -15,59 +15,73 @@ class ChatMessageController extends Controller
     /**
      * Fetch messages between authenticated user and another user.
      */
-    public function index(int $receiverId): JsonResponse
+    public function index($receiverId): JsonResponse
     {
-        $userId = auth()->id();
+        \Log::info('ChatMessageController@index starting for user: ' . auth()->id() . ' with receiver: ' . $receiverId);
+        try {
+            $userId = auth()->id();
+            $receiverId = (int) $receiverId;
 
-        // Mark incoming messages as read
-        ChatMessage::where('sender_id', $receiverId)
-            ->where('receiver_id', $userId)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            // Mark incoming messages as read
+            ChatMessage::where('sender_id', $receiverId)
+                ->where('receiver_id', $userId)
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
 
-        $messages = ChatMessage::where(function ($query) use ($userId, $receiverId) {
-                $query->where('sender_id', $userId)
-                      ->where('receiver_id', $receiverId);
-            })
-            ->orWhere(function ($query) use ($userId, $receiverId) {
-                $query->where('sender_id', $receiverId)
-                      ->where('receiver_id', $userId);
-            })
-            ->with(['sender', 'parent.sender'])
-            ->orderBy('created_at', 'asc')
-            ->get();
+            $messages = ChatMessage::where(function ($query) use ($userId, $receiverId) {
+                    $query->where('sender_id', $userId)
+                          ->where('receiver_id', $receiverId);
+                })
+                ->orWhere(function ($query) use ($userId, $receiverId) {
+                    $query->where('sender_id', $receiverId)
+                          ->where('receiver_id', $userId);
+                })
+                ->with(['sender', 'parent.sender'])
+                ->orderBy('created_at', 'asc')
+                ->get();
 
-        $otherUser = User::find($receiverId);
-        $commonTeam = $otherUser ? $otherUser->teams()->whereHas('users', function($q) use ($userId) {
-            $q->where('user_id', $userId);
-        })->first() : null;
+            $otherUser = User::find($receiverId);
+            $commonTeam = $otherUser ? $otherUser->teams()->whereHas('users', function($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })->first() : null;
 
-        return response()->json([
-            'member' => $otherUser ? [
-                'id' => $otherUser->id,
-                'name' => $otherUser->name,
-                'photo' => $otherUser->profile_photo_url,
-                'team' => $commonTeam ? $commonTeam->name : null,
-                'status' => $otherUser->isOnline() ? 'ONLINE' : 'OFFLINE',
-            ] : null,
-            'messages' => $messages->map(function ($msg) use ($userId) {
-                return [
-                    'id' => $msg->id,
-                    'sender' => $msg->sender_id === $userId ? 'me' : 'them',
-                    'text' => $msg->message,
-                    'call_room' => $msg->call_room,
-                    'file_name' => $msg->file_name,
-                    'file_type' => $msg->file_type,
-                    'file_url' => $msg->file_url,
-                    'storage_provider' => $msg->storage_provider,
-                    'web_view_link' => $msg->web_view_link,
-                    'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
-                    'parent_id' => $msg->parent_id,
-                    'parent_text' => $msg->parent?->message ?? ($msg->parent?->file_name ? '📎 '. $msg->parent->file_name : null),
-                    'parent_sender_name' => $msg->parent?->sender?->name,
-                ];
-            })
-        ]);
+            $data = [
+                'member' => $otherUser ? [
+                    'id' => $otherUser->id,
+                    'name' => $otherUser->name,
+                    'photo' => $otherUser->profile_photo_url,
+                    'team' => $commonTeam ? $commonTeam->name : null,
+                    'status' => $otherUser->getStatusInfo()['label'],
+                ] : null,
+                'messages' => $messages->map(function ($msg) use ($userId) {
+                    return [
+                        'id' => $msg->id,
+                        'sender' => $msg->sender_id === $userId ? 'me' : 'them',
+                        'text' => $msg->message,
+                        'call_room' => $msg->call_room,
+                        'file_name' => $msg->file_name,
+                        'file_type' => $msg->file_type,
+                        'file_url' => $msg->file_url,
+                        'storage_provider' => $msg->storage_provider,
+                        'web_view_link' => $msg->web_view_link,
+                        'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
+                        'parent_id' => $msg->parent_id,
+                        'parent_text' => $msg->parent?->message ?? ($msg->parent?->file_name ? '📎 '. $msg->parent->file_name : null),
+                        'parent_sender_name' => $msg->parent?->sender?->name,
+                    ];
+                })
+            ];
+
+            \Log::info('ChatMessageController@index success for user: ' . $userId);
+            return response()->json($data);
+        } catch (\Throwable $e) {
+            \Log::error('ChatMessageController@index error: ' . $e->getMessage(), [
+                'userId' => auth()->id(),
+                'receiverId' => $receiverId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
