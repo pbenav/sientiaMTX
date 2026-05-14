@@ -73,7 +73,7 @@
                                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Use the editor below to customize your privacy statement.') }}</p>
                                     </div>
                                     <button type="button"
-                                        onclick="loadLegalDefault('privacy', 'legal_privacy')"
+                                        onclick="loadLegalDefault(this, 'privacy', 'legal_privacy')"
                                         class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                         Cargar contenido por defecto
@@ -91,7 +91,7 @@
                                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Define your terms and conditions for all users.') }}</p>
                                     </div>
                                     <button type="button"
-                                        onclick="loadLegalDefault('terms', 'legal_terms')"
+                                        onclick="loadLegalDefault(this, 'terms', 'legal_terms')"
                                         class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                         Cargar contenido por defecto
@@ -109,7 +109,7 @@
                                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Explain how you use cookies and tracking technologies.') }}</p>
                                     </div>
                                     <button type="button"
-                                        onclick="loadLegalDefault('cookies', 'legal_cookies')"
+                                        onclick="loadLegalDefault(this, 'cookies', 'legal_cookies')"
                                         class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                         Cargar contenido por defecto
@@ -162,30 +162,42 @@
 <script>
 /**
  * Load the default legal content template into a Trix editor.
+ * @param {HTMLElement} btn   - The button element (pass `this` from onclick)
  * @param {string} type       - 'privacy' | 'terms' | 'cookies'
  * @param {string} inputId    - ID of the hidden <input> bound to Trix
  */
-async function loadLegalDefault(type, inputId) {
+async function loadLegalDefault(btn, type, inputId) {
     const trixEditor = document.querySelector(`trix-editor[input="${inputId}"]`);
     const hiddenInput = document.getElementById(inputId);
 
     if (!trixEditor || !hiddenInput) return;
 
-    // Warn if already has content
+    // Warn if already has content — use Swal instead of browser confirm()
     const hasContent = hiddenInput.value && hiddenInput.value.trim().length > 10;
     if (hasContent) {
-        const confirmed = confirm(
-            '⚠️ El editor ya tiene contenido.\n\n¿Deseas reemplazarlo con el contenido por defecto?\n\nEsta acción no se puede deshacer hasta que guardes.'
-        );
-        if (!confirmed) return;
+        const result = await Swal.fire({
+            title: '¿Reemplazar contenido?',
+            text: 'El editor ya tiene contenido. ¿Deseas reemplazarlo con la plantilla por defecto? Puedes editarla antes de guardar.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cargar plantilla',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#7c3aed',
+        });
+        if (!result.isConfirmed) return;
     }
+
+    // Loading state
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Cargando...';
 
     try {
         const response = await fetch(`/legal/default/${type}`, {
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
 
-        if (!response.ok) throw new Error('Error al obtener el contenido por defecto.');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
         const html = data.html ?? '';
@@ -194,18 +206,26 @@ async function loadLegalDefault(type, inputId) {
         trixEditor.editor.loadHTML(html);
         hiddenInput.value = html;
 
-        // Visual feedback
-        const btn = event.currentTarget;
-        const original = btn.innerHTML;
+        // Success feedback
         btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> ¡Cargado!';
-        btn.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+        btn.classList.add('bg-green-50', 'border-green-400', 'text-green-700');
+        btn.classList.remove('text-violet-700', 'border-violet-300', 'bg-violet-50');
         setTimeout(() => {
-            btn.innerHTML = original;
-            btn.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-50', 'border-green-400', 'text-green-700');
+            btn.classList.add('text-violet-700', 'border-violet-300', 'bg-violet-50');
+            btn.disabled = false;
         }, 2500);
 
     } catch (err) {
-        alert('Error al cargar el contenido: ' + err.message);
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        Swal.fire({
+            title: 'Error al cargar',
+            text: 'No se pudo obtener la plantilla por defecto: ' + err.message,
+            icon: 'error',
+            confirmButtonColor: '#7c3aed',
+        });
     }
 }
 </script>
