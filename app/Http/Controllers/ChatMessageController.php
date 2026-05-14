@@ -191,27 +191,35 @@ class ChatMessageController extends Controller
      */
     public function check(): JsonResponse
     {
-        $userId = auth()->id();
+        \Log::info('ChatMessageController@check starting for user: ' . auth()->id());
+        try {
+            $userId = auth()->id();
+            $user = auth()->user();
 
-        // Find unread messages
-        $unread = ChatMessage::where('receiver_id', $userId)
-            ->where('is_read', false)
-            ->with(['sender', 'parent.sender'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $unread = ChatMessage::where('receiver_id', $userId)
+                ->where('is_read', false)
+                ->with(['sender', 'parent.sender'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return response()->json([
-            'unread' => $unread->map(function ($msg) use ($userId) {
-                $commonTeam = $msg->sender ? $msg->sender->teams()->whereHas('users', function($q) use ($userId) {
-                    $q->where('user_id', $userId);
-                })->first() : null;
+            $data = $unread->map(function ($msg) use ($userId, $user) {
+                // Safe team lookup
+                $commonTeam = null;
+                if ($msg->sender) {
+                    $commonTeam = $msg->sender->teams()
+                        ->whereHas('users', function($q) use ($userId) {
+                            $q->where('user_id', $userId);
+                        })->first();
+                }
+
+                $tz = $user->timezone ?? config('app.timezone', 'Europe/Madrid');
 
                 return [
                     'id' => $msg->id,
                     'sender_id' => $msg->sender_id,
-                    'sender_name' => $msg->sender?->name ?? 'Usuario Desconocido',
+                    'sender_name' => $msg->sender?->name ?? 'Usuario',
                     'sender_photo' => $msg->sender?->profile_photo_url ?? asset('img/default-avatar.png'),
-                    'sender_team' => $commonTeam ? $commonTeam->name : null,
+                    'sender_team' => $commonTeam?->name,
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
                     'file_name' => $msg->file_name,
@@ -219,13 +227,28 @@ class ChatMessageController extends Controller
                     'file_url' => $msg->file_url,
                     'storage_provider' => $msg->storage_provider,
                     'web_view_link' => $msg->web_view_link,
-                    'time' => $msg->created_at->timezone(auth()->user()->timezone ?? config('app.timezone', 'Europe/Madrid'))->format('H:i'),
+                    'time' => $msg->created_at ? $msg->created_at->timezone($tz)->format('H:i') : now()->format('H:i'),
                     'parent_id' => $msg->parent_id,
                     'parent_text' => $msg->parent?->message ?? ($msg->parent?->file_name ? '📎 '. $msg->parent->file_name : null),
                     'parent_sender_name' => $msg->parent?->sender?->name,
                 ];
-            })
-        ]);
+            });
+
+            \Log::info('ChatMessageController@check success for user: ' . $userId . ' (Count: ' . $unread->count() . ')');
+
+            return response()->json([
+                'unread' => $data
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('ChatMessageController@check error: ' . $e->getMessage(), [
+                'userId' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'unread' => [],
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
