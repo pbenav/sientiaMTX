@@ -18,6 +18,7 @@ class SurveyQuestion extends Model
         'survey_id',
         'title',
         'description',
+        'instructions',
         'type',
         'order',
         'is_required',

@@ -272,6 +272,23 @@ Route::middleware('auth')->group(function () {
         Route::post('/surveys/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('surveys.reactivate');
         Route::delete('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('surveys.destroy');
         Route::get('/surveys/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('surveys.results');
+        Route::post('/surveys/{survey}/duplicate', [\App\Http\Controllers\SurveyController::class, 'duplicate'])->name('surveys.duplicate');
+    });
+
+    // Global Surveys routes
+    Route::prefix('global-surveys')->name('global-surveys.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SurveyController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\SurveyController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\SurveyController::class, 'store'])->name('store');
+        Route::get('/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])->name('show');
+        Route::get('/{survey}/edit', [\App\Http\Controllers\SurveyController::class, 'edit'])->name('edit');
+        Route::patch('/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])->name('update');
+        Route::post('/{survey}/vote', [\App\Http\Controllers\SurveyController::class, 'vote'])->name('vote');
+        Route::post('/{survey}/close', [\App\Http\Controllers\SurveyController::class, 'close'])->name('close');
+        Route::post('/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('reactivate');
+        Route::delete('/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('destroy');
+        Route::get('/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('results');
+        Route::post('/{survey}/duplicate', [\App\Http\Controllers\SurveyController::class, 'duplicate'])->name('duplicate');
     });
 
     // Google Services
@@ -337,6 +354,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/attachments/{attachment}/to-drive', [GoogleDriveController::class, 'uploadToDrive'])->name('teams.attachments.to-drive');
     Route::post('/google/drive/save-response', [GoogleDriveController::class, 'saveAiResponse'])->name('google.drive.save-response');
     Route::get('/google/drive/list', [GoogleDriveController::class, 'listContents'])->name('google.drive.list');
+    Route::get('/teams/{team}/google/drive/download-content', [GoogleDriveController::class, 'downloadContent'])->name('google.drive.download-content');
     Route::post('/teams/{team}/attachments/from-drive', [GoogleDriveController::class, 'attachFromDrive'])->name('teams.attachments.from-drive');
 
     // QuickNotes Routes

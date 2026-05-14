@@ -165,6 +165,33 @@ class GoogleDriveController extends Controller
     }
 
     /**
+     * Get content of a Drive file as JSON (AJAX)
+     */
+    public function downloadContent(Team $team, Request $request)
+    {
+        $request->validate([
+            'file_id' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+        if (!$this->isTeamLinked($user, $team)) {
+            return response()->json(['success' => false, 'message' => 'Equipo no vinculado'], 403);
+        }
+
+        $result = $this->driveService->getFileContent($user, $request->file_id, $team->id);
+
+        if ($result) {
+            return response()->json([
+                'success' => true,
+                'content' => $result['content'],
+                'mimeType' => $result['mimeType']
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'No se pudo obtener el contenido del archivo'], 500);
+    }
+
+    /**
      * List Google Drive contents (AJAX)
      */
     public function listContents(Request $request)

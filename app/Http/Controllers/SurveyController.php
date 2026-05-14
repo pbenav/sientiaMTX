@@ -20,9 +20,13 @@ class SurveyController extends Controller
     /**
      * Display a listing of surveys for a team.
      */
-    public function index(Team $team)
+    public function index(?Team $team = null)
     {
-        $surveys = $team->surveys()
+        $query = $team 
+            ? $team->surveys()
+            : Survey::whereNull('team_id');
+
+        $surveys = $query
             ->with(['creator', 'questions'])
             ->withCount('votes')
             ->orderByDesc('published_at')
@@ -34,16 +38,23 @@ class SurveyController extends Controller
     /**
      * Show the form for creating a new survey.
      */
-    public function create(Team $team)
+    public function create(?Team $team = null)
     {
+        if (!$team && !Auth::user()->is_admin) {
+            abort(403);
+        }
         return view('surveys.create', compact('team'));
     }
 
     /**
      * Store a newly created survey.
      */
-    public function store(Request $request, Team $team)
+    public function store(Request $request, ?Team $team = null)
     {
+        if (!$team && !Auth::user()->is_admin) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -53,14 +64,18 @@ class SurveyController extends Controller
             'expires_at' => 'nullable|date|after:now',
             'questions' => 'required|array|min:1',
             'questions.*.title' => 'required|string|max:255',
+            'questions.*.description' => 'nullable|string',
+            'questions.*.instructions' => 'nullable|string',
             'questions.*.type' => 'required|in:single_choice,multiple_choice,rating,text',
             'questions.*.options' => 'required_if:questions.*.type,single_choice,multiple_choice|array',
-            'questions.*.options.*' => 'nullable|string|max:255',
+            'questions.*.options.*.id' => 'nullable', 
+            'questions.*.options.*.label' => 'nullable|string|max:255',
             'questions.*.is_required' => 'boolean',
         ]);
 
         return DB::transaction(function () use ($team, $validated) {
-            $survey = $team->surveys()->create([
+            $data = [
+                'team_id' => $team ? $team->id : null,
                 'created_by_id' => Auth::id(),
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
@@ -69,21 +84,26 @@ class SurveyController extends Controller
                 'show_results_before_voting' => $validated['show_results_before_voting'] ?? false,
                 'expires_at' => $validated['expires_at'] ?? null,
                 'published_at' => now(),
-            ]);
+            ];
+
+            $survey = Survey::create($data);
 
             foreach ($validated['questions'] as $index => $qData) {
                 $question = $survey->questions()->create([
                     'title' => $qData['title'],
+                    'description' => $qData['description'] ?? null,
+                    'instructions' => $qData['instructions'] ?? null,
                     'type' => $qData['type'],
                     'order' => $index,
                     'is_required' => $qData['is_required'] ?? true,
                 ]);
 
                 if (in_array($qData['type'], ['single_choice', 'multiple_choice']) && !empty($qData['options'])) {
-                    foreach ($qData['options'] as $oIndex => $oLabel) {
-                        if ($oLabel && trim($oLabel) !== '') {
+                    foreach ($qData['options'] as $oIndex => $oData) {
+                        $label = is_array($oData) ? ($oData['label'] ?? '') : $oData;
+                        if ($label && trim($label) !== '') {
                             $question->options()->create([
-                                'label' => trim($oLabel),
+                                'label' => trim($label),
                                 'order' => $oIndex,
                             ]);
                         }
@@ -98,7 +118,10 @@ class SurveyController extends Controller
                 }
             }
 
-            return redirect()->route('teams.surveys.show', [$team, $survey])
+            $redirectRoute = $team ? 'teams.surveys.show' : 'global-surveys.show';
+            $params = $team ? [$team, $survey] : [$survey];
+
+            return redirect()->route($redirectRoute, $params)
                 ->with('success', __('Encuesta creada con éxito.'));
         });
     }
@@ -106,7 +129,7 @@ class SurveyController extends Controller
     /**
      * Display a survey.
      */
-    public function show(Team $team, Survey $survey)
+    public function show(?Team $team = null, Survey $survey)
     {
         $survey->load(['creator', 'questions.options' => function($q) {
             $q->withCount('votes');
@@ -137,17 +160,34 @@ class SurveyController extends Controller
     /**
      * Show the form for editing a survey.
      */
-    public function edit(Team $team, Survey $survey)
+    public function edit(?Team $team = null, Survey $survey)
     {
         $this->authorize('update', $survey);
+        
         $survey->load('questions.options');
-        return view('surveys.edit', compact('team', 'survey'));
+        
+        $questions = $survey->questions->map(function($q) {
+            return [
+                'id' => $q->id . '_' . time(), 
+                'db_id' => $q->id,
+                'title' => $q->title,
+                'description' => $q->description ?? '',
+                'instructions' => $q->instructions ?? '',
+                'type' => $q->type,
+                'is_required' => (bool)$q->is_required,
+                'options' => $q->options->map(function($o) {
+                    return ['db_id' => $o->id, 'label' => $o->label];
+                })->toArray() ?: [['db_id' => null, 'label' => ''], ['db_id' => null, 'label' => '']]
+            ];
+        });
+
+        return view('surveys.edit', compact('team', 'survey', 'questions'));
     }
 
     /**
      * Update a survey.
      */
-    public function update(Request $request, Team $team, Survey $survey)
+    public function update(Request $request, ?Team $team = null, Survey $survey)
     {
         $this->authorize('update', $survey);
 
@@ -155,20 +195,122 @@ class SurveyController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
+            'allow_multiple_votes' => 'boolean',
             'show_results_before_voting' => 'boolean',
-            'expires_at' => 'nullable|date|after:now',
+            'expires_at' => 'nullable|date',
+            'questions' => 'required|array|min:1',
+            'questions.*.id' => 'nullable|exists:survey_questions,id',
+            'questions.*.title' => 'required|string|max:255',
+            'questions.*.description' => 'nullable|string',
+            'questions.*.instructions' => 'nullable|string',
+            'questions.*.type' => 'required|in:single_choice,multiple_choice,rating,text',
+            'questions.*.options' => 'required_if:questions.*.type,single_choice,multiple_choice|array',
+            'questions.*.options.*.id' => 'nullable|exists:survey_options,id',
+            'questions.*.options.*.label' => 'nullable|string|max:255',
+            'questions.*.is_required' => 'boolean',
         ]);
 
-        $survey->update($validated);
+        return DB::transaction(function () use ($team, $survey, $validated) {
+            $survey->update([
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'is_active' => $validated['is_active'] ?? true,
+                'allow_multiple_votes' => $validated['allow_multiple_votes'] ?? false,
+                'show_results_before_voting' => $validated['show_results_before_voting'] ?? false,
+                'expires_at' => $validated['expires_at'] ?? null,
+            ]);
 
-        return redirect()->route('teams.surveys.show', [$team, $survey])
-            ->with('success', __('Encuesta actualizada.'));
+            $keepQuestionIds = [];
+
+            foreach ($validated['questions'] as $index => $qData) {
+                $questionData = [
+                    'title' => $qData['title'],
+                    'description' => $qData['description'] ?? null,
+                    'instructions' => $qData['instructions'] ?? null,
+                    'type' => $qData['type'],
+                    'order' => $index,
+                    'is_required' => $qData['is_required'] ?? true,
+                ];
+
+                if (isset($qData['id'])) {
+                    $question = $survey->questions()->find($qData['id']);
+                    $question->update($questionData);
+                } else {
+                    $question = $survey->questions()->create($questionData);
+                }
+                
+                $keepQuestionIds[] = $question->id;
+
+                // Sync Options for Choice Questions
+                if (in_array($qData['type'], ['single_choice', 'multiple_choice'])) {
+                    $requestedOptions = $qData['options'] ?? [];
+                    $keepOptionIds = [];
+
+                    foreach ($requestedOptions as $oIndex => $oData) {
+                        $label = is_array($oData) ? ($oData['label'] ?? '') : $oData;
+                        $optionId = is_array($oData) ? ($oData['id'] ?? null) : null;
+
+                        if (trim($label) === '') continue;
+
+                        if ($optionId) {
+                            $option = $question->options()->find($optionId);
+                            if ($option) {
+                                $option->update([
+                                    'label' => trim($label),
+                                    'order' => $oIndex
+                                ]);
+                                $keepOptionIds[] = $option->id;
+                            } else {
+                                // ID provided but not found for this question? Create it.
+                                $newOption = $question->options()->create([
+                                    'label' => trim($label),
+                                    'order' => $oIndex
+                                ]);
+                                $keepOptionIds[] = $newOption->id;
+                            }
+                        } else {
+                            $newOption = $question->options()->create([
+                                'label' => trim($label),
+                                'order' => $oIndex
+                            ]);
+                            $keepOptionIds[] = $newOption->id;
+                        }
+                    }
+
+                    // Delete removed options
+                    $question->options()->whereNotIn('id', $keepOptionIds)->delete();
+                } elseif ($qData['type'] === 'rating') {
+                    // Standardize rating options (1-5)
+                    if ($question->options()->count() !== 5) {
+                        $question->options()->delete();
+                        for ($i = 1; $i <= 5; $i++) {
+                            $question->options()->create([
+                                'label' => (string)$i,
+                                'order' => $i,
+                            ]);
+                        }
+                    }
+                } else {
+                    // For 'text' type, clean up any existing options
+                    $question->options()->delete();
+                }
+            }
+
+            // Remove questions that are no longer in the list
+            $survey->questions()->whereNotIn('id', $keepQuestionIds)->delete();
+
+            $redirectRoute = $team ? 'teams.surveys.show' : 'global-surveys.show';
+            $params = $team ? [$team, $survey] : [$survey];
+
+            return redirect()->route($redirectRoute, $params)
+                ->with('success', __('Encuesta actualizada con éxito.'));
+        });
     }
 
     /**
      * Vote on a survey.
      */
-    public function vote(Request $request, Team $team, Survey $survey)
+    public function vote(Request $request, ?Team $team = null, Survey $survey)
     {
         $this->authorize('view', $survey);
 
@@ -244,7 +386,7 @@ class SurveyController extends Controller
     /**
      * Close a survey.
      */
-    public function close(Team $team, Survey $survey)
+    public function close(?Team $team = null, Survey $survey)
     {
         $this->authorize('update', $survey);
         $survey->update(['closed_at' => now()]);
@@ -254,7 +396,7 @@ class SurveyController extends Controller
     /**
      * Reactivate a survey.
      */
-    public function reactivate(Team $team, Survey $survey)
+    public function reactivate(?Team $team = null, Survey $survey)
     {
         $this->authorize('update', $survey);
         $survey->update(['closed_at' => null]);
@@ -264,10 +406,57 @@ class SurveyController extends Controller
     /**
      * Remove a survey.
      */
-    public function destroy(Team $team, Survey $survey)
+    public function destroy(?Team $team = null, Survey $survey)
     {
         $this->authorize('delete', $survey);
         $survey->delete();
-        return redirect()->route('teams.surveys.index', $team)->with('success', __('Encuesta eliminada.'));
+        
+        $redirectRoute = $team ? 'teams.surveys.index' : 'global-surveys.index';
+        $params = $team ? [$team] : [];
+
+        return redirect()->route($redirectRoute, $params)->with('success', __('Encuesta eliminada.'));
+    }
+
+    /**
+     * Duplicate a survey to a different context.
+     */
+    public function duplicate(Request $request, ?Team $team = null, Survey $survey)
+    {
+        $this->authorize('duplicate', $survey);
+
+        // For global promotion, only admin
+        $targetTeamId = $request->input('target_team_id'); // If null, it's global
+        
+        if ($targetTeamId === null && !Auth::user()->is_admin) {
+            abort(403);
+        }
+
+        return DB::transaction(function () use ($survey, $targetTeamId) {
+            $newSurvey = $survey->replicate([
+                'team_id', 'created_by_id', 'uuid', 'published_at', 'closed_at'
+            ]);
+            
+            $newSurvey->team_id = $targetTeamId;
+            $newSurvey->created_by_id = Auth::id();
+            $newSurvey->title = $survey->title . ' (' . __('Copia') . ')';
+            $newSurvey->published_at = now();
+            $newSurvey->save();
+
+            foreach ($survey->questions as $question) {
+                $newQuestion = $question->replicate(['survey_id']);
+                $newSurvey->questions()->save($newQuestion);
+
+                foreach ($question->options as $option) {
+                    $newOption = $option->replicate(['question_id']);
+                    $newQuestion->options()->save($newOption);
+                }
+            }
+
+            $redirectRoute = $targetTeamId ? 'teams.surveys.edit' : 'global-surveys.edit';
+            $params = $targetTeamId ? [$targetTeamId, $newSurvey] : [$newSurvey];
+
+            return redirect()->route($redirectRoute, $params)
+                ->with('success', __('Encuesta duplicada con éxito. Ahora puedes ajustarla.'));
+        });
     }
 }

@@ -3,11 +3,9 @@
     $inactiveMembers = collect();
 
     foreach ($members as $m) {
-        $isWorking = $m->last_login_at ? $m->isWorking() : false;
-        $lastActivity = $m->last_login_at ? $m->last_activity_at : null;
-        $isOnline = $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(15));
+        $status = $m->getStatusInfo();
         
-        if (($isWorking || $isOnline) && $m->last_login_at) {
+        if ($status['status'] !== 'offline' && $m->last_login_at) {
             $activeMembers->push($m);
         } else {
             $inactiveMembers->push($m);
@@ -18,52 +16,36 @@
 @endphp
 @foreach($sortedMembers as $member)
     @php
-            $isWorking = $member->last_login_at ? $member->isWorking() : false;
-            $lastActivity = $member->last_login_at ? $member->last_activity_at : null;
-            
-            // Check online state (active in last 15 minutes) - REQUIRES lastActivity
-            $isOnline = $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(15));
-            
-            // Check sleeping state (active between 15 and 60 minutes ago) - REQUIRES lastActivity
-            $isSleeping = !$isOnline && $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(60));
-            
+            $status = $member->getStatusInfo();
             $hasLocation = !empty($member->location_lat);
             
-            $statusColorClass = 'bg-gray-300 dark:bg-gray-700';
-            $gradientClass = 'from-gray-200 to-gray-400 opacity-40';
-            $textClass = 'text-gray-400';
-            $animateClass = '';
-            
-            // Format times nicely
+            $statusColorClass = $status['dot_class'];
+            $textClass = 'text-' . $status['color'];
+            $animateClass = $status['animate'];
+            $statusLabel = $status['label'];
+
+            // Additional activity details
             $timezone = auth()->user()->timezone ?? 'Europe/Madrid';
             $loginTime = $member->last_login_at ? $member->last_login_at->timezone($timezone)->format('H:i') : 'Desconocido';
+            $lastActivity = $member->last_login_at ? $member->last_activity_at : null;
             $activityDiff = $lastActivity ? $lastActivity->diffForHumans(null, true) : 'N/A';
-
-            if ($isWorking && $member->last_login_at) {
-                $statusColorClass = 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]';
-                $gradientClass = 'from-rose-400 to-red-600 animate-pulse-subtle';
-                $textClass = 'text-rose-600 font-bold';
-                $animateClass = 'animate-pulse';
-                $statusLabel = 'En labor • Logado: ' . $loginTime;
-            } elseif ($isOnline) {
-                $statusColorClass = 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]';
-                $gradientClass = 'from-emerald-400 to-teal-600';
-                $textClass = 'text-emerald-600 font-bold';
-                $animateClass = 'animate-ping';
-                $statusLabel = 'Activo hace ' . $activityDiff . ' • Logado: ' . $loginTime;
-            } elseif ($isSleeping) {
-                $statusColorClass = 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]';
-                $gradientClass = 'from-amber-400 to-yellow-500 opacity-80';
-                $textClass = 'text-amber-600 font-bold';
-                $animateClass = 'animate-pulse';
-                $statusLabel = '😴 Dormido hace ' . $activityDiff . ' • Logado: ' . $loginTime;
-            } else {
-                $statusLabel = 'Desconectado • Logado: ' . $loginTime;
+            
+            if ($status['status'] !== 'offline') {
+                $statusLabel .= ' hace ' . $activityDiff;
             }
+            $statusLabel .= ' • Logado: ' . $loginTime;
 
-            if (!$hasLocation && ($isWorking || $isOnline)) {
+            if (!$hasLocation && ($status['status'] === 'working' || $status['status'] === 'online')) {
                 $statusLabel = 'Sin GPS • ' . $statusLabel;
             }
+
+            // Custom gradient for avatar border
+            $gradientClass = match($status['status']) {
+                'working' => 'from-rose-400 to-red-600 animate-pulse-subtle',
+                'online' => 'from-emerald-400 to-teal-600',
+                'sleeping' => 'from-amber-400 to-yellow-500 opacity-80',
+                default => 'from-gray-200 to-gray-400 opacity-40',
+            };
         @endphp
         @php
             $isSelf = $member->id === auth()->id();
@@ -90,10 +72,10 @@
                 </template>
             </div>
             <div class="min-w-0">
-                <p class="text-[11px] font-black {{ ($isWorking || $isOnline || $isSleeping) ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate tracking-tight">
+                <p class="text-[11px] font-black {{ ($status['status'] !== 'offline') ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase truncate tracking-tight">
                     {{ $member->name }} @if($isSelf) <span class="text-indigo-500 dark:text-indigo-400 lowercase italic">(tú)</span> @endif
                 </p>
-                <p class="text-[9px] {{ $isWorking ? 'text-rose-500 font-bold' : ($isOnline ? 'text-emerald-500 font-bold' : ($isSleeping ? 'text-amber-500 font-bold' : 'text-gray-400')) }} truncate tracking-tight">{{ $statusLabel }}</p>
+                <p class="text-[9px] {{ $textClass }} truncate tracking-tight">{{ $statusLabel }}</p>
                 @if(auth()->user()->is_admin && $member->last_ip)
                     <div class="flex items-center gap-1 mt-0.5">
                         <svg class="w-2.5 h-2.5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 21h6l-.75-4M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>

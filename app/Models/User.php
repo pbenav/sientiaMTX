@@ -380,6 +380,55 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->exists();
     }
 
+    /**
+     * Get user status info for UI indicators.
+     */
+    public function getStatusInfo(): array
+    {
+        $lastActivity = $this->last_login_at ? $this->last_activity_at : null;
+        $isWorking = $this->last_login_at ? $this->isWorking() : false;
+        $isOnline = $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(15));
+        $isSleeping = !$isOnline && $lastActivity && $lastActivity->greaterThanOrEqualTo(now()->subMinutes(60));
+
+        if ($isWorking && $this->last_login_at) {
+            return [
+                'status' => 'working',
+                'label' => __('En labor'),
+                'color' => 'rose-500',
+                'animate' => 'animate-pulse',
+                'dot_class' => 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]'
+            ];
+        }
+
+        if ($isOnline) {
+            return [
+                'status' => 'online',
+                'label' => __('Activo'),
+                'color' => 'emerald-500',
+                'animate' => 'animate-ping',
+                'dot_class' => 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+            ];
+        }
+
+        if ($isSleeping) {
+            return [
+                'status' => 'sleeping',
+                'label' => __('Dormido'),
+                'color' => 'amber-500',
+                'animate' => 'animate-pulse',
+                'dot_class' => 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
+            ];
+        }
+
+        return [
+            'status' => 'offline',
+            'label' => __('Desconectado'),
+            'color' => 'gray-400',
+            'animate' => '',
+            'dot_class' => 'bg-gray-300 dark:bg-gray-700'
+        ];
+    }
+
     // Gamification Relationships
     public function skills(): BelongsToMany
     {

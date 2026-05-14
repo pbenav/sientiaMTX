@@ -37,7 +37,19 @@ class ChatMessageController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        $otherUser = User::find($receiverId);
+        $commonTeam = $otherUser ? $otherUser->teams()->whereHas('users', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })->first() : null;
+
         return response()->json([
+            'member' => $otherUser ? [
+                'id' => $otherUser->id,
+                'name' => $otherUser->name,
+                'photo' => $otherUser->profile_photo_url,
+                'team' => $commonTeam ? $commonTeam->name : null,
+                'status' => $otherUser->isOnline() ? 'ONLINE' : 'OFFLINE',
+            ] : null,
             'messages' => $messages->map(function ($msg) use ($userId) {
                 return [
                     'id' => $msg->id,
@@ -189,12 +201,17 @@ class ChatMessageController extends Controller
             ->get();
 
         return response()->json([
-            'unread' => $unread->map(function ($msg) {
+            'unread' => $unread->map(function ($msg) use ($userId) {
+                $commonTeam = $msg->sender->teams()->whereHas('users', function($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })->first();
+
                 return [
                     'id' => $msg->id,
                     'sender_id' => $msg->sender_id,
                     'sender_name' => $msg->sender?->name ?? 'Usuario Desconocido',
                     'sender_photo' => $msg->sender?->profile_photo_url ?? asset('img/default-avatar.png'),
+                    'sender_team' => $commonTeam ? $commonTeam->name : null,
                     'text' => $msg->message,
                     'call_room' => $msg->call_room,
                     'file_name' => $msg->file_name,

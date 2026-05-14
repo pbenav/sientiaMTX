@@ -1,0 +1,20 @@
+                                                <div class="flex-grow space-y-4">
+                                                     <input type="text" :name="`questions[${qIndex}][title]`" x-model="question.title" required
+                                                            class="w-full bg-transparent border-b-2 border-gray-100 dark:border-gray-800 focus:border-indigo-500 px-0 py-2 text-xl font-black text-gray-900 dark:text-white placeholder-gray-300 transition-all"
+                                                            placeholder="{{ __('Escribe tu pregunta aquí...') }}">
+                                                     
+                                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                         <div>
+                                                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Descripción (Opcional)') }}</label>
+                                                             <textarea :name="`questions[${qIndex}][description]`" x-model="question.description" rows="1"
+                                                                       class="w-full bg-gray-50 dark:bg-gray-800/30 border-2 border-transparent focus:border-indigo-500/30 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all"
+                                                                       placeholder="{{ __('Añade contexto adicional...') }}"></textarea>
+                                                         </div>
+                                                         <div>
+                                                             <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600/50 mb-2 ml-1">{{ __('Instrucciones (Internas/Guía)') }}</label>
+                                                             <textarea :name="`questions[${qIndex}][instructions]`" x-model="question.instructions" rows="1"
+                                                                       class="w-full bg-gray-50 dark:bg-gray-800/30 border-2 border-transparent focus:border-indigo-500/30 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all"
+                                                                       placeholder="{{ __('Instrucciones sobre cómo responder...') }}"></textarea>
+                                                         </div>
+                                                     </div>
+                                                 </div>

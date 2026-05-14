@@ -216,7 +216,9 @@
                                 </div>
                                 Escuadra: {{ $team->name }}
                             </h3>
-                            <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">{{ $team->members->count() }} Miembros activos en red</p>
+                            <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">
+                                {{ $teamMembers->filter(fn($m) => $m->getStatusInfo()['status'] !== 'offline')->count() }} Miembros activos en red
+                            </p>
                         </div>
                         <button @click="teamModalOpen = false" class="p-3 bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white rounded-2xl transition-all hover:rotate-90">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -230,13 +232,33 @@
                                 <div class="group/member bg-white dark:bg-gray-800/40 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700/50 hover:border-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/5 relative overflow-hidden">
                                     <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover/member:bg-emerald-500/10 transition-colors"></div>
                                     <div class="flex items-center gap-4 relative z-10">
+                                        @php $status = $member->getStatusInfo(); @endphp
                                         <div class="relative">
                                             <img src="{{ $member->profile_photo_url }}" alt="{{ $member->name }}" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-lg border-2 border-white dark:border-gray-700 transition-transform group-hover/member:scale-110">
-                                            <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-white dark:border-gray-800 {{ $member->energy_level >= 50 ? 'bg-emerald-500' : ($member->energy_level >= 20 ? 'bg-amber-500' : 'bg-rose-500') }}" title="Energía: {{ $member->energy_level }}%"></div>
+                                            <!-- Status Indicator -->
+                                            <div class="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full border-4 border-white dark:border-gray-800 {{ $status['dot_class'] }}" title="{{ $status['label'] }}">
+                                                @if($status['animate'] === 'animate-ping')
+                                                    <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full {{ $status['dot_class'] }} opacity-75"></span>
+                                                @endif
+                                            </div>
                                         </div>
-                                        <div class="min-w-0">
+                                        <div class="min-w-0 flex-1">
                                             <h4 class="text-base font-black text-gray-900 dark:text-white truncate leading-tight">{{ $member->name }}</h4>
-                                            <span class="inline-block px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mt-1 tracking-tighter">{{ __('teams.' . ($member->getRole($team) ?? 'user')) }}</span>
+                                            <div class="flex items-center gap-1.5 mt-1">
+                                                <span class="inline-block px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-[9px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-tighter">{{ __('teams.' . ($member->getRole($team) ?? 'user')) }}</span>
+                                                <span class="text-[8px] font-black uppercase {{ 'text-'.$status['color'] }} tracking-widest">{{ $status['label'] }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Energy Level Bar -->
+                                    <div class="mt-4 px-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-[8px] font-black text-gray-400 uppercase tracking-widest">Energía</span>
+                                            <span class="text-[8px] font-black text-gray-500">{{ $member->energy_level }}%</span>
+                                        </div>
+                                        <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                            <div class="h-full {{ $member->energy_level >= 50 ? 'bg-emerald-500' : ($member->energy_level >= 20 ? 'bg-amber-500' : 'bg-rose-500') }}" style="width: {{ $member->energy_level }}%"></div>
                                         </div>
                                     </div>
                                     <div class="mt-5 grid grid-cols-2 gap-3 relative z-10">

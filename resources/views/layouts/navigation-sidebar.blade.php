@@ -192,6 +192,7 @@
                         @endif
                     @endif
 
+
                     <div class="pt-4 pb-2 px-3">
                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('GESTIÓN') }}</span>
                     </div>

@@ -86,8 +86,8 @@
     <div class="flex-1 min-w-0">
         <div class="flex items-center gap-0.5">
             @foreach ($views as $index => $view)
-                @if ($index === 6)
-                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
+                @if ($index === 4 || $index === 8)
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 mx-1 shrink-0"></div>
                 @endif
                 <a href="{{ $view['route'] }}"
                     class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max

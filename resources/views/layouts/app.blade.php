@@ -425,6 +425,18 @@
                             @endif
                         </a>
 
+                        <!-- Global Surveys -->
+                        <a href="{{ route('global-surveys.index') }}"
+                            class="flex flex-col items-center justify-center min-w-[3rem] lg:min-w-[4rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10 relative group {{ request()->routeIs('global-surveys.*') ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : '' }}"
+                            title="{{ __('Encuestas Globales') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span class="hidden lg:block text-[9px] font-bold uppercase tracking-tight leading-none text-center px-1">Globales</span>
+                        </a>
+
                         <!-- Disk Usage -->
                         <a href="{{ route('media.index') }}"
                             class="flex flex-col items-center justify-center min-w-[3rem] lg:min-w-[4rem] px-2 h-14 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all rounded-xl hover:bg-blue-50 dark:hover:bg-blue-500/10 {{ request()->routeIs('media.index') ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : '' }}"
@@ -506,6 +518,10 @@
                                  <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                  <span class="font-bold">{{ __('navigation.my_teams') }}</span>
                              </a>
+                             <a href="{{ route('global-surveys.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                 <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                                 <span class="font-bold">Encuestas Globales</span>
+                             </a>
                              <a href="{{ route('media.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                  <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
                                  <span class="font-bold">{{ __('tasks.disk_quota') }}</span>
@@ -578,6 +594,10 @@
                                               <img :src="conv.photo" class="w-8 h-8 rounded-lg object-cover">
                                               <div class="min-w-0 flex-1">
                                                   <h6 class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="conv.name"></h6>
+                                                  <template x-if="conv.team">
+                                                      <p class="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider truncate" x-text="conv.team"></p>
+                                                  </template>
+                                                  <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate font-medium mt-0.5" x-text="conv.text"></p>
                                               </div>
                                           </button>
                                       </template>
@@ -852,6 +872,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     {{ __('navigation.my_teams') }}
+                </a>
+                <a href="{{ route('global-surveys.index') }}" @click="open = false"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                          {{ request()->routeIs('global-surveys.*') ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    Encuestas Globales
                 </a>
                 <a href="{{ route('notifications.index') }}" @click="open = false"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
@@ -1429,7 +1457,12 @@
                         <img :src="member.photo" :alt="member.name" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="member.name"></p>
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="member.name"></p>
+                            <template x-if="member.team">
+                                <p class="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider truncate" x-text="member.team"></p>
+                            </template>
+                        </div>
                         <p class="text-[9px] text-emerald-500 font-bold truncate tracking-tight" x-text="member.status"></p>
                     </div>
                 </div>
@@ -1760,7 +1793,7 @@
                 Alpine.data('sientiaChat', () => ({
                     open: false,
                     chatSoundsEnabled: {{ (auth()->check() && (auth()->user()->notification_settings['chat_sounds'] ?? true)) ? 'true' : 'false' }},
-                    member: { id: null, name: '', photo: '', status: '', email: '', telegram: '' },
+                    member: { id: null, name: '', photo: '', status: '', email: '', telegram: '', team: '' },
                     message: '',
                     messages: [],
                     isTyping: false,
@@ -1815,6 +1848,9 @@
                         })
                             .then(r => r.json())
                             .then(data => {
+                                if (data.member) {
+                                    this.member = { ...this.member, ...data.member };
+                                }
                                 this.messages = data.messages;
                                 this.$nextTick(() => this.scrollToBottom());
                             });
@@ -2074,6 +2110,7 @@
                                                 id: m.sender_id,
                                                 name: m.sender_name,
                                                 photo: m.sender_photo,
+                                                team: m.sender_team,
                                                 text: m.text || (m.file_name ? '📎 Adjunto' : '...')
                                             };
                                         }
@@ -2165,6 +2202,7 @@
                                                         id: lastMsg.sender_id,
                                                         name: lastMsg.sender_name,
                                                         photo: lastMsg.sender_photo,
+                                                        team: lastMsg.sender_team,
                                                         status: 'ONLINE'
                                                     });
                                                 });

@@ -1,25 +1,34 @@
 <x-app-layout>
+    @php
+        $routePrefix = $team ? 'teams.surveys.' : 'global-surveys.';
+        $isGlobal = !$team;
+    @endphp
+
     <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen">
         <div class="max-w-7xl mx-auto">
             <!-- Header Section with Premium Look -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                 <div>
                     <h1 class="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-                        {{ __('Encuestas') }}
+                        {{ $isGlobal ? __('Encuestas Globales') : __('Encuestas') }}
                     </h1>
                     <p class="text-gray-500 dark:text-gray-400 font-medium">
-                        {{ __('Consulta la opinión del equipo y toma decisiones basadas en datos.') }}
+                        {{ $isGlobal 
+                            ? __('Consulta la opinión de toda la organización y participa en la toma de decisiones.') 
+                            : __('Consulta la opinión del equipo y toma decisiones basadas en datos.') }}
                     </p>
                 </div>
                 
                 @can('create', App\Models\Survey::class)
-                <a href="{{ route('teams.surveys.create', $team) }}" 
+                @if(!$isGlobal || auth()->user()->is_admin)
+                <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}" 
                    class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95 group">
                     <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                     </svg>
                     {{ __('Nueva Encuesta') }}
                 </a>
+                @endif
                 @endcan
             </div>
 
@@ -41,11 +50,17 @@
                         </svg>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ __('No hay encuestas activas') }}</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">{{ __('Sé el primero en proponer algo al equipo creando una encuesta ahora mismo.') }}</p>
+                    <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                        {{ $isGlobal 
+                            ? __('Pronto habrá nuevas consultas para toda la comunidad.') 
+                            : __('Sé el primero en proponer algo al equipo creando una encuesta ahora mismo.') }}
+                    </p>
                     @can('create', App\Models\Survey::class)
-                    <a href="{{ route('teams.surveys.create', $team) }}" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+                    @if(!$isGlobal || auth()->user()->is_admin)
+                    <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
                         {{ __('Crear mi primera encuesta') }} &rarr;
                     </a>
+                    @endif
                     @endcan
                 </div>
             @else
@@ -78,7 +93,7 @@
                                     
                                     <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         @can('update', $survey)
-                                            <a href="{{ route('teams.surveys.edit', [$team, $survey]) }}" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors">
+                                            <a href="{{ route($routePrefix . 'edit', $team ? [$team, $survey] : [$survey]) }}" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                             </a>
                                         @endcan
@@ -86,7 +101,7 @@
                                 </div>
 
                                 <!-- Title & Description -->
-                                <a href="{{ route('teams.surveys.show', [$team, $survey]) }}" class="flex-grow">
+                                <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}" class="flex-grow">
                                     <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                                         {{ $survey->title }}
                                     </h3>
@@ -118,7 +133,7 @@
                                         @endif
                                     </div>
 
-                                    <a href="{{ route('teams.surveys.show', [$team, $survey]) }}" 
+                                    <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}" 
                                        class="block w-full text-center py-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:text-gray-300 rounded-2xl font-bold text-sm transition-all duration-300">
                                         {{ $survey->hasVoted(auth()->user()) ? __('Ver Resultados') : __('Votar Ahora') }}
                                     </a>
