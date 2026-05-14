@@ -30,6 +30,7 @@ class GoogleService
         $this->client->addScope(Calendar::CALENDAR);
         $this->client->addScope(Tasks::TASKS); // Read/Write
         $this->client->addScope('https://www.googleapis.com/auth/drive'); // Full Drive access
+        $this->client->addScope('https://www.googleapis.com/auth/meetings.space.created'); // Google Meet
         $this->client->addScope('profile');
         $this->client->addScope('email');
         
@@ -261,6 +262,30 @@ class GoogleService
         } catch (\Exception $e) {
             Log::error('Error deleting Google Calendar event: ' . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Create an instant Google Meet space and return its meeting URI.
+     * Requires scope: https://www.googleapis.com/auth/meetings.space.created
+     */
+    public function createMeetSpace(): ?string
+    {
+        try {
+            $http = $this->client->authorize();
+            $response = $http->post('https://meet.googleapis.com/v2/spaces', [
+                'json' => new \stdClass(), // empty body — Meet API creates the space
+                'headers' => ['Content-Type' => 'application/json'],
+            ]);
+
+            $body = json_decode((string) $response->getBody(), true);
+            $meetUri = $body['meetingUri'] ?? null;
+
+            Log::info('GoogleService@createMeetSpace: space created', ['uri' => $meetUri]);
+            return $meetUri;
+        } catch (\Exception $e) {
+            Log::error('GoogleService@createMeetSpace error: ' . $e->getMessage());
+            return null;
         }
     }
 }

@@ -408,6 +408,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('chat.index')->where('receiverId', '[0-9]+');
     Route::post('/chat', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('chat.store');
     Route::post('/chat/call', [\App\Http\Controllers\ChatMessageController::class, 'startCall'])->name('chat.call');
+    Route::post('/chat/meet', [\App\Http\Controllers\ChatMessageController::class, 'startGoogleMeet'])->name('chat.meet');
     Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });
 

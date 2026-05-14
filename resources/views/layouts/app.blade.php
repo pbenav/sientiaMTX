@@ -342,24 +342,48 @@
                 },
                 startGoogleMeet() {
                     if (this.member.id === {{ auth()->id() }}) return;
-                    window.open('https://meet.google.com/new', '_blank');
-                    Swal.fire({ title: '🌐 MEET', text: 'Pega el enlace de Google Meet:', input: 'text', inputPlaceholder: 'https://meet.google.com/xxx-yyyy-zzz', showCancelButton: true, confirmButtonText: 'Enviar enlace', cancelButtonText: 'Cancelar' }).then((r) => {
-                        if (r.isConfirmed && r.value) {
-                            let url = r.value.trim();
-                            if (!url.startsWith('http')) url = 'https://' + url;
-                            const formData = new FormData();
-                            formData.append('receiver_id', this.member.id);
-                            formData.append('message', '🌐 Reunión Google Meet');
-                            formData.append('call_room', url);
-                            fetch('/chat', {
-                                method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
-                                body: formData
-                            })
-                            .then(r => r.ok ? r.json() : Promise.reject(r))
-                            .then(() => this.fetchMessages())
-                            .catch(() => Swal.fire({ icon: 'error', title: 'Error al enviar el enlace', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+
+                    // Show spinner while creating the Meet space
+                    Swal.fire({
+                        title: '🌐 Creando sala Meet...',
+                        text: 'Conectando con Google Meet',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => Swal.showLoading(),
+                    });
+
+                    fetch('/chat/meet', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ receiver_id: this.member.id }),
+                    })
+                    .then(r => r.json())
+                    .then(d => {
+                        Swal.close();
+                        if (!d.success) {
+                            const linkToProfile = d.needs_auth
+                                ? '<br><a href="/profile?tab=integrations" class="underline text-sky-400 text-xs" target="_blank">Conectar cuenta Google →</a>'
+                                : '';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'No se pudo crear la sala',
+                                html: (d.message || 'Error desconocido') + linkToProfile,
+                                customClass: { popup: 'rounded-[2rem] dark:bg-gray-950 dark:text-white' },
+                            });
+                            return;
                         }
+                        // Open the Meet URL for the caller immediately
+                        window.open(d.meet_url, '_blank');
+                        // Refresh chat so the invitation bubble appears
+                        this.fetchMessages();
+                    })
+                    .catch(() => {
+                        Swal.close();
+                        Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo conectar con el servidor.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                     });
                 }
             }));

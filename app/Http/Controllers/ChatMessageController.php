@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatMessage;
 use App\Models\User;
+use App\Services\GoogleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -205,5 +206,56 @@ class ChatMessageController extends Controller
     public function clear(int $receiverId): JsonResponse
     {
         return response()->json(['success' => true]);
+    }
+
+    public function startGoogleMeet(Request $request): JsonResponse
+    {
+        $request->validate([
+            'receiver_id' => 'required|exists:users,id',
+        ]);
+
+        $user = auth()->user();
+
+        // Find a team shared with the receiver to get the Google token
+        $receiver = User::find($request->receiver_id);
+        $sharedTeam = $receiver->teams()->whereHas('members', fn($q) => $q->where('user_id', $user->id))->first();
+        $teamId = $sharedTeam?->id;
+
+        $googleService = app(GoogleService::class);
+
+        if (!$googleService->setTokenForUser($user, $teamId)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes Google vinculado. Conecta tu cuenta en Perfil → Integraciones.',
+                'needs_auth' => true,
+            ], 403);
+        }
+
+        try {
+            $meetUri = $googleService->createMeetSpace();
+
+            if (!$meetUri) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo crear la sala de Meet. Reconecta tu cuenta de Google para autorizar el nuevo permiso.',
+                    'needs_auth' => true,
+                ], 503);
+            }
+
+            // Save message with the Meet URL as call_room so receiver is notified
+            $msg = ChatMessage::create([
+                'sender_id'   => $user->id,
+                'receiver_id' => $request->receiver_id,
+                'message'     => '🌐 Te invita a una reunión de Google Meet',
+                'call_room'   => $meetUri,
+            ]);
+
+            Log::info('startGoogleMeet: Meet space created', ['uri' => $meetUri, 'msg_id' => $msg->id]);
+
+            return response()->json(['success' => true, 'meet_url' => $meetUri]);
+        } catch (\Throwable $e) {
+            Log::error('startGoogleMeet error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al crear la sala de Meet'], 500);
+        }
     }
 }
