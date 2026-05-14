@@ -470,17 +470,7 @@
                             window.addEventListener('task-started', () => refresh());
                             window.addEventListener('workday-toggled', () => refresh());
                          ">
-                        @include('teams.partials.active-network-list', ['members' => $team->members()->where(function($query) {
-                            $query->whereNotNull('location_lat')
-                                  ->orWhere('last_activity_at', '>=', now()->subMinutes(60))
-                                  ->orWhereExists(function ($q) {
-                                      $q->select(DB::raw(1))
-                                        ->from('time_logs')
-                                        ->whereColumn('time_logs.user_id', 'users.id')
-                                        ->whereIn('type', ['workday', 'task'])
-                                        ->whereNull('end_at');
-                                  });
-                        })->orderBy('name')->get()])
+                        @include('teams.partials.active-network-list', ['members' => $team->getActiveMembers()])
                     </div>
                     <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
                         <div class="flex items-center justify-center gap-4">

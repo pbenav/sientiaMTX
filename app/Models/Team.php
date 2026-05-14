@@ -387,4 +387,28 @@ class Team extends Model
             }
         }
     }
+    /**
+     * Scope to get members that are considered "active" in the team.
+     */
+    public function getActiveMembers()
+    {
+        return $this->members()
+            ->with(['timeLogs' => function($q) {
+                $q->whereNull('end_at')
+                  ->where('start_at', '>=', now()->startOfDay());
+            }])
+            ->where(function($query) {
+                $query->where('last_activity_at', '>=', now()->subMinutes(60))
+                      ->orWhereExists(function ($q) {
+                          $q->select(\DB::raw(1))
+                            ->from('time_logs')
+                            ->whereColumn('time_logs.user_id', 'users.id')
+                            ->whereIn('type', ['workday', 'task'])
+                            ->whereNull('end_at')
+                            ->where('start_at', '>=', now()->startOfDay());
+                      });
+            })
+            ->orderBy('name')
+            ->get();
+    }
 }

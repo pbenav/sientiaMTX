@@ -608,23 +608,7 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
 
-        // Obtenemos miembros que tienen ubicación 
-        // O que han tenido actividad reciente (sesión o logs)
-        $members = $team->members()
-            ->where(function($query) {
-                $query->whereNotNull('location_lat')
-                      ->orWhere('last_activity_at', '>=', now()->subMinutes(60))
-                      ->orWhereExists(function ($q) {
-                          $q->select(\DB::raw(1))
-                            ->from('time_logs')
-                            ->whereColumn('time_logs.user_id', 'users.id')
-                            ->whereIn('type', ['workday', 'task'])
-                            ->whereNull('end_at')
-                            ->where('start_at', '>=', now()->startOfDay());
-                      });
-            })
-            ->orderBy('name')
-            ->get();
+        $members = $team->getActiveMembers();
 
         if ($request->wantsJson() || $request->input('json')) {
             $heatmapData = $members->whereNotNull('location_lat')->map(function($u) {
