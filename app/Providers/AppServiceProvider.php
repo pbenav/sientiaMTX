@@ -26,6 +26,19 @@ class AppServiceProvider extends ServiceProvider
             \Laravel\Passkeys\Actions\GenerateVerificationOptions::class,
             \App\Actions\Passkeys\CustomGenerateVerificationOptions::class
         );
+
+        // Register Survey policy
+        $this->registerPolicies();
+    }
+
+    /**
+     * Register the application's policies.
+     */
+    private function registerPolicies(): void
+    {
+        $this->policies([
+            \App\Models\Survey::class => \App\Policies\SurveyPolicy::class,
+        ]);
     }
 
     /**

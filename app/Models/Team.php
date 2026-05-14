@@ -110,6 +110,11 @@ class Team extends Model
         return $this->hasMany(TelegramGroupMember::class);
     }
 
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(Survey::class);
+    }
+
     // Get creator of the team
     public function creator()
     {
