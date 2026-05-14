@@ -257,6 +257,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/skills/inherit', [\App\Http\Controllers\SkillController::class, 'inherit'])->name('skills.inherit');
     });
 
+    // Surveys routes
+    Route::prefix('teams/{team}')->name('teams.')->group(function () {
+        Route::get('/surveys', [\App\Http\Controllers\SurveyController::class, 'index'])->name('surveys.index');
+        Route::get('/surveys/create', [\App\Http\Controllers\SurveyController::class, 'create'])->name('surveys.create');
+        Route::post('/surveys', [\App\Http\Controllers\SurveyController::class, 'store'])->name('surveys.store');
+        Route::get('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])->name('surveys.show');
+        Route::get('/surveys/{survey}/edit', [\App\Http\Controllers\SurveyController::class, 'edit'])->name('surveys.edit');
+        Route::patch('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])->name('surveys.update');
+        Route::post('/surveys/{survey}/vote', [\App\Http\Controllers\SurveyController::class, 'vote'])->name('surveys.vote');
+        Route::post('/surveys/{survey}/close', [\App\Http\Controllers\SurveyController::class, 'close'])->name('surveys.close');
+        Route::post('/surveys/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('surveys.reactivate');
+        Route::delete('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('surveys.destroy');
+        Route::get('/surveys/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('surveys.results');
+    });
+
     // Google Services
     Route::get('/auth/google', [\App\Http\Controllers\GoogleController::class, 'redirect'])->name('google.auth');
     Route::get('/google/callback', [\App\Http\Controllers\GoogleController::class, 'callback'])->name('google.callback');

@@ -18,6 +18,8 @@
     <!-- Chat Window -->
     <div 
         x-show="open" 
+        x-cloak
+        style="display: none;"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-90 translate-y-10"
         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -319,58 +321,32 @@
         </div>
     </div>
 
-    <!-- Actions Row (Horizontal) -->
-    <div class="flex items-center gap-3 mb-3 pointer-events-auto">
-        <!-- Close Button (Always visible when open) -->
+    <!-- Actions Row (Dynamic Layout: Vertical when closed, Horizontal when open) -->
+    <div class="flex flex-col-reverse items-center gap-2 mb-3 pointer-events-auto transition-all duration-500"
+         :class="open ? 'flex-row items-center gap-3' : 'flex-col-reverse items-center gap-2'">
+        
+        <!-- Main Toggle / Close Button -->
         <button 
-            x-show="open"
-            @click="toggle($event)"
-            class="w-12 h-12 sm:w-14 sm:h-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-2xl transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95"
-            style="display:none;"
-        >
-            <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-
-        <!-- Quick Notes Controls (when visible) -->
-        <div x-show="open" class="flex items-center gap-3" style="display:none;">
-            <button type="button" 
-                @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
-                class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger"
-                :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
-                :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Mostrar notas rápidas'">
-                <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <svg x-show="!quickNotesVisible" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                </svg>
-            </button>
-            <button 
-                @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
-                class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 quick-notes-trigger"
-                title="Nueva Nota Rápida (Post-it)">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
-            </button>
-        </div>
-
-        <!-- Main Toggle Button (When closed) -->
-        <button 
-            x-show="!open"
             @mousedown="startDrag($event)" 
             @touchstart="startDrag($event)" 
             @click="toggle($event)"
-            class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative"
-            :class="isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'"
+            class="w-12 h-12 sm:w-14 sm:h-14 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative"
+            :class="[
+                open ? 'bg-red-500 hover:bg-red-600 rotate-0' : 'bg-indigo-600 hover:bg-indigo-700 rotate-0',
+                isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'
+            ]"
             style="touch-action: none;"
         >
             <div class="relative flex items-center justify-center">
-                <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Icono Cerrar (cuando está abierto) -->
+                <svg x-show="open" x-cloak class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <!-- Icono IA (cuando está cerrado) -->
+                <svg x-show="!open" x-cloak class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
-                <!-- Loading Indicator on Button -->
+                <!-- Loading Indicator -->
                 <div x-show="loading" class="absolute -inset-2">
                     <svg class="animate-spin w-16 h-16 sm:w-20 sm:h-20 text-indigo-400 opacity-40" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
@@ -379,8 +355,37 @@
                 </div>
             </div>
             <!-- Unread Indicator -->
-            <div x-show="hasUnread" style="display:none;" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white dark:border-gray-950 rounded-full animate-bounce"></div>
+            <div x-show="hasUnread && !open" style="display:none;" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white dark:border-gray-950 rounded-full animate-bounce"></div>
         </button>
+
+        <!-- Quick Notes Controls (Visible in both states) -->
+        <div class="flex transition-all duration-500" :class="open ? 'flex-row items-center gap-3' : 'flex-col items-center gap-2'">
+            <!-- Toggle All Notes Button -->
+            <button type="button" 
+                @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
+                class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger pointer-events-auto"
+                :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
+                :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Ver todas las notas'">
+                <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg x-show="!quickNotesVisible" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                </svg>
+            </button>
+            
+            <!-- Create New Note Button -->
+            <button type="button"
+                @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
+                class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 pointer-events-auto"
+                title="Nueva Nota Rápida (Post-it)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+        </div>
+        </div>
     </div>
 
 </div>
@@ -710,8 +715,7 @@
                     this.dimensions.width = initialWidth + deltaX;
                     this.dimensions.height = initialHeight + deltaY;
                     
-                    // CRITICAL: Al estar anclado al bottom, si aumentamos height crece hacia arriba.
-                    // Para que crezca hacia abajo, desplazamos la posición Y el mismo delta.
+                    // CRITICAL: Ajustar pos.y para que crezca hacia abajo
                     this.pos.y = initialPosY + deltaY;
                     
                     // Límites

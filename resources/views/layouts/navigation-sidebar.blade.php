@@ -85,6 +85,7 @@
                                 request()->routeIs('teams.forum.*') ||
                                 request()->routeIs('teams.expedientes.*') ||
                                 request()->routeIs('teams.members') ||
+                                request()->routeIs('teams.surveys.*') ||
                                 request()->routeIs('teams.edit');
                         @endphp
                         @if ($isTeamRoute)
@@ -145,6 +146,15 @@
                                         <span
                                             class="truncate">{{ __('navigation.task_list') ?? 'Tareas' }}</span>
                                     </a>
+                                    <a href="{{ route('teams.surveys.index', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.surveys.*') ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                        </svg>
+                                        <span class="truncate">Encuestas</span>
+                                    </a>
                                     <a href="{{ route('teams.dashboard', $currentTeamId) }}"
                                         class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.dashboard') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
@@ -152,35 +162,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                         </svg>
-                                        <span
-                                            class="truncate">{{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}</span>
-                                    </a>
-                                    <a href="{{ route('teams.gantt', $currentTeamId) }}"
-                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.gantt') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 012 2h2a2 2 0 012-2V7a2 2 0 01-2-2h-2a2 2 0 01-2 2" />
-                                        </svg>
-                                        <span class="truncate">{{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}</span>
-                                    </a>
-                                    <a href="{{ route('teams.kanban', $currentTeamId) }}"
-                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.kanban') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                                        </svg>
-                                        <span class="truncate">{{ __('navigation.kanban') ?? 'Tablero Kanban' }}</span>
-                                    </a>
-                                    <a href="{{ route('teams.members', $currentTeamId) }}"
-                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.members') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <span class="truncate">{{ __('teams.members') }}</span>
+                                        <span class="truncate">{{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}</span>
                                     </a>
                                     @if ($currentTeam = \App\Models\Team::find($currentTeamId))
                                         @can('update', $currentTeam)

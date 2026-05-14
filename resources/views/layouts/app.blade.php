@@ -894,7 +894,9 @@
                             ['name' => __('navigation.gantt'), 'route' => route('teams.gantt', $drawerTeamId), 'active' => request()->routeIs('teams.gantt')],
                             ['name' => __('navigation.kanban'), 'route' => route('teams.kanban', $drawerTeamId), 'active' => request()->routeIs('teams.kanban')],
                             ['name' => __('teams.view_members'), 'route' => route('teams.members', $drawerTeamId), 'active' => request()->routeIs('teams.members')],
+                            ['name' => __('Encuestas'), 'route' => route('teams.surveys.index', $drawerTeamId), 'active' => request()->routeIs('teams.surveys.*')],
                         ];
+
                     @endphp
                     @foreach($drawerViews as $dv)
                         <a href="{{ $dv['route'] }}" @click="open = false"

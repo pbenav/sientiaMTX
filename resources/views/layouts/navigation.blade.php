@@ -69,19 +69,14 @@
                                         <x-dropdown-link :href="route('teams.tasks.index', $currentTeamId)">
                                             {{ __('navigation.task_list') ?? 'Tareas' }}
                                         </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.surveys.index', $currentTeamId)">
+                                            Encuestas
+                                        </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.expedientes.index', $currentTeamId)">
                                             {{ __('Expedientes') }}
                                         </x-dropdown-link>
-                                        <x-dropdown-link :href="route('teams.dashboard', $currentTeamId)">
-                                            {{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}
-                                        </x-dropdown-link>
-                                        <x-dropdown-link :href="route('teams.gantt', $currentTeamId)">
-                                            {{ __('navigation.gantt') ?? 'Diagrama de Gantt' }}
-                                        </x-dropdown-link>
-                                        <x-dropdown-link :href="route('teams.kanban', $currentTeamId)">
-                                            {{ __('navigation.kanban') ?? 'Tablero Kanban' }}
-                                        </x-dropdown-link>
                                     </x-slot>
+
                                 </x-dropdown>
                             </div>
                         @endif
@@ -227,6 +222,9 @@
                         <x-responsive-nav-link :href="route('teams.tasks.index', $currentTeamId)" :active="request()->routeIs('teams.tasks.*')" class="text-sm">
                             {{ __('navigation.task_list') ?? 'Tareas' }}
                         </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.surveys.index', $currentTeamId)" :active="request()->routeIs('teams.surveys.*')" class="text-sm">
+                            Encuestas
+                        </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.expedientes.index', $currentTeamId)" :active="request()->routeIs('teams.expedientes.*')" class="text-sm">
                             {{ __('Expedientes') }}
                         </x-responsive-nav-link>
@@ -240,6 +238,7 @@
                             {{ __('navigation.kanban') ?? 'Tablero Kanban' }}
                         </x-responsive-nav-link>
                     </div>
+
                 @endif
             @endif
 
