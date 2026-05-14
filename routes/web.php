@@ -32,6 +32,7 @@ Route::get('/', function () {
 Route::get('/privacy-policy', [LegalController::class, 'privacy'])->name('privacy');
 Route::get('/terms-of-service', [LegalController::class, 'terms'])->name('terms');
 Route::get('/cookie-policy', [LegalController::class, 'cookies'])->name('cookies');
+Route::get('/legal/default/{type}', [LegalController::class, 'defaultContent'])->name('legal.default')->middleware('auth');
 
 // Legal Re-consent
 Route::middleware('auth')->group(function () {
