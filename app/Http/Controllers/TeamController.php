@@ -287,6 +287,71 @@ class TeamController extends Controller
     }
 
     /**
+     * Add multiple members to the team in bulk
+     */
+        public function bulkAddMembers(Request $request, Team $team)
+    {
+        $this->authorize('manageMembers', $team);
+
+        // EXTRA SECURITY: Only global admins can use the bulk tool
+        if (!auth()->user()->is_admin) {
+            abort(403, 'Solo los administradores del sistema pueden realizar invitaciones masivas.');
+        }
+
+        $validated = $request->validate([
+            'emails_block' => 'required|string',
+            'role_id' => 'required|exists:team_roles,id',
+        ]);
+
+        // Extract emails using a robust regex
+        preg_match_all('/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/i', $validated['emails_block'], $matches);
+        $emails = array_unique(array_map('strtolower', $matches[0]));
+
+        if (empty($emails)) {
+            return back()->with('error', 'No se han encontrado direcciones de correo válidas en el texto proporcionado.');
+        }
+
+        $added = 0;
+        $invited = 0;
+        $alreadyMembers = 0;
+
+        foreach ($emails as $email) {
+            $user = User::where('email', $email)->first();
+
+            if ($user) {
+                // If user exists, check if already in team
+                if (!$team->members()->where('user_id', $user->id)->exists()) {
+                    $team->members()->attach($user->id, ['role_id' => $validated['role_id']]);
+                    $added++;
+                } else {
+                    $alreadyMembers++;
+                }
+            } else {
+                // If user doesn't exist, check if already invited
+                if (!$team->invitations()->where('email', $email)->exists()) {
+                    $invitation = $team->invitations()->create([
+                        'email' => $email,
+                        'role_id' => $validated['role_id'],
+                        'token' => Str::random(40),
+                    ]);
+
+                    Notification::route('mail', $email)
+                        ->notify(new InvitationNotification($invitation));
+                    $invited++;
+                }
+            }
+        }
+
+        $message = "Procesado completado: ";
+        if ($added > 0) $message .= "{$added} usuarios añadidos directamente. ";
+        if ($invited > 0) $message .= "{$invited} invitaciones enviadas. ";
+        if ($alreadyMembers > 0) $message .= "({$alreadyMembers} ya eran miembros).";
+        if ($added === 0 && $invited === 0) $message = "No se han realizado cambios (los usuarios ya estaban en el equipo o invitados).";
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Update member role
      */
     public function updateMemberRole(Request $request, Team $team, User $user)

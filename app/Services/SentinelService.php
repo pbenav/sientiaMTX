@@ -33,6 +33,7 @@ class SentinelService
         try {
             $startTime = microtime(true);
             $response = Http::timeout(10)
+                ->withoutVerifying()
                 ->withHeaders([
                     'User-Agent' => 'Sientia Sentinel/1.0 (Health Checker)'
                 ])
@@ -44,8 +45,6 @@ class SentinelService
             if ($response->successful()) {
                 $this->handleResult($service, 'up', "Respuesta exitosa ({$status}) en " . round($duration * 1000) . "ms");
             } elseif ($status === 403 || $status === 401) {
-                // El servicio está vivo pero restringido. Lo marcamos como UP pero con aviso en detalles si fuera necesario.
-                // En muchos casos 403 es el comportamiento esperado para una API o área protegida.
                 $this->handleResult($service, 'up', "Acceso restringido ({$status}), pero el servidor responde.");
             } else {
                 $this->handleResult($service, 'down', "Error HTTP {$status} detectado automáticamente.");

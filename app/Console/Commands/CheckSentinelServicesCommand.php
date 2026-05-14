@@ -59,13 +59,14 @@ class CheckSentinelServicesCommand extends Command
         $details = null;
 
         try {
-            // Set a timeout explicitly so it doesn't hang the scheduler
+            // Disable SSL verification to avoid false positives
             $response = Http::timeout(10)
                             ->connectTimeout(5)
+                            ->withoutVerifying()
                             ->get($service->url);
             
             $endTime = microtime(true);
-            $latency = (int)(($endTime - $startTime) * 1000); // Convert to milliseconds
+            $latency = (int)(($endTime - $startTime) * 1000); 
 
             if ($response->successful()) {
                 $status = 'up';

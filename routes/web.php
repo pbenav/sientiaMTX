@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/quadrants/color', [TeamController::class, 'updateQuadrantColor'])->name('teams.quadrants.color');
     Route::get('/teams/{team}/members', [TeamController::class, 'members'])->name('teams.members');
     Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.addMember');
+    Route::post('/teams/{team}/members/bulk', [TeamController::class, 'bulkAddMembers'])->name('teams.addMembersBulk');
     Route::patch('/teams/{team}/members/{user}/role', [TeamController::class, 'updateMemberRole'])->name('teams.updateMemberRole');
     Route::patch('/teams/{team}/members/{user}/info', [TeamController::class, 'updateMemberInfo'])->name('teams.updateMemberInfo');
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.removeMember');

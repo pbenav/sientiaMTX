@@ -26,15 +26,18 @@
                     @php
                         $color = $service->getStatusColor();
                     @endphp
-                    <div data-id="{{ $service->id }}" class="service-card bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5 hover:border-violet-500/30 transition-all duration-300 transform-gpu {{ $team->isCoordinator(auth()->user()) ? 'cursor-move' : '' }}">
+                    <div data-id="{{ $service->id }}" class="service-card bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5 hover:border-violet-500/30 transition-all duration-300 {{ $team->isCoordinator(auth()->user()) ? 'cursor-move' : '' }}">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center text-lg border border-gray-100 dark:border-gray-700 shadow-sm pointer-events-none">
                                     {{ $service->icon ?: '🌐' }}
                                 </div>
-                                <div class="pointer-events-none">
-                                    <button type="button" @click="$dispatch('open-service-incidents', { id: {{ $service->id }}, name: '{{ addslashes($service->name) }}' })" 
-                                        class="text-left hover:text-violet-600 transition-colors pointer-events-auto group/name">
+                                <div>
+                                    <button type="button" 
+                                        data-id="{{ $service->id }}" 
+                                        data-name="{{ $service->name }}"
+                                        @click="$dispatch('open-service-incidents', { id: $el.dataset.id, name: $el.dataset.name }); $dispatch('open-modal', 'service-incidents-modal')" 
+                                        class="text-left hover:text-violet-600 transition-colors group/name">
                                         <h5 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight flex items-center gap-1.5">
                                             {{ $service->name }}
                                             <svg class="w-2.5 h-2.5 opacity-0 group-hover/name:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -223,7 +226,10 @@
                                 <span class="text-xs font-black text-gray-900 dark:text-white uppercase">{{ $s->name }}</span>
                             </div>
                             <div class="flex items-center gap-1">
-                                <button type="button" @click="startEdit({{ json_encode($s) }})" class="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all">
+                                <button type="button" 
+                                    data-service="{{ json_encode($s) }}"
+                                    @click="startEdit(JSON.parse($el.dataset.service))" 
+                                    class="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464l2.828-2.828" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -246,27 +252,35 @@
     </div>
 </x-modal>
 
+@push('modals')
 <!-- Modal Historial Sentinel -->
 <x-modal name="service-incidents-modal" focusable>
     <div class="p-6" x-data="{ 
         loading: true, 
+        serviceId: null,
         serviceName: '', 
         incidents: [],
-        async loadIncidents(serviceId, name) {
+        async loadIncidents(id, name = null) {
+            if (!id) return;
+            this.serviceId = id;
+            if (name) this.serviceName = name;
+            
+            console.log('Sentinel: Loading incidents for ID:', this.serviceId);
             this.loading = true;
-            this.serviceName = name;
-            this.incidents = [];
             try {
-                const response = await fetch(`/teams/{{ $team->id }}/services/${serviceId}/incidents`);
+                const response = await fetch(`/teams/{{ $team->id }}/services/${this.serviceId}/incidents`);
                 const data = await response.json();
                 this.incidents = data.incidents || [];
+                console.log('Sentinel: Data loaded', this.incidents.length);
             } catch (e) {
-                console.error('Error cargando incidencias:', e);
+                console.error('Sentinel: Error loading incidents:', e);
             } finally {
                 this.loading = false;
             }
         }
-    }" x-on:open-service-incidents.window="loadIncidents($event.detail.id, $event.detail.name); $dispatch('open-modal', 'service-incidents-modal')">
+    }" 
+    x-on:open-service-incidents.window="loadIncidents($event.detail.id, $event.detail.name); $dispatch('open-modal', 'service-incidents-modal')"
+    x-on:refresh-service-incidents.window="if ($event.detail.id == serviceId) loadIncidents(serviceId)">
         
         <div class="flex items-center justify-between mb-6 border-b border-gray-50 dark:border-gray-800 pb-4">
             <div class="flex items-center gap-3">
@@ -292,13 +306,11 @@
                 </div>
             </template>
 
-            <template x-if="!loading && incidents.length === 0">
-                <div class="py-12 text-center text-gray-500 italic text-xs bg-gray-50/50 dark:bg-gray-800/30 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
-                    No se han registrado incidencias recientemente.
-                </div>
-            </template>
+            <div x-show="!loading && incidents.length === 0" class="py-12 text-center text-gray-500 italic text-xs bg-gray-50/50 dark:bg-gray-800/30 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
+                No se han registrado incidencias recientemente.
+            </div>
 
-            <template x-for="incident in incidents" :key="incident.date + incident.reporter">
+            <template x-for="(incident, index) in incidents" :key="'inc-' + index">
                 <div class="p-4 bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl flex items-start justify-between gap-4 hover:shadow-lg hover:shadow-violet-500/5 transition-all">
                     <div class="flex items-start gap-4">
                         <div :class="incident.type === 'down' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'" class="p-2 rounded-xl shrink-0">
@@ -314,7 +326,7 @@
                                 <span class="text-[10px] font-black uppercase tracking-tight" :class="incident.type === 'down' ? 'text-red-600' : 'text-emerald-600'" x-text="incident.type_label"></span>
                                 <span class="text-[9px] text-gray-400 font-bold" x-text="incident.date"></span>
                             </div>
-                            <p class="text-xs font-bold text-gray-700 dark:text-gray-300 mt-1 truncate" :title="incident.details" x-text="incident.details || 'Verificación rutinaria de estado'"></p>
+                            <p class="text-xs font-bold text-gray-700 dark:text-gray-300 mt-1 break-words whitespace-normal" :title="incident.details" x-text="incident.details || 'Verificación rutinaria de estado'"></p>
                         </div>
                     </div>
                     <div class="text-right shrink-0">
@@ -334,6 +346,7 @@
         </div>
     </div>
 </x-modal>
+@endpush
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -401,6 +414,11 @@
                             badge.innerText = count;
                             badge.classList.remove('hidden');
                         }
+
+                        // 1.b Refresh the incidents modal if it's open or about to be
+                        window.dispatchEvent(new CustomEvent('refresh-service-incidents', { 
+                            detail: { id: serviceId } 
+                        }));
                         
                         // 2. Provide visual Success feedback on button
                         button.title = 'Reportado con éxito';

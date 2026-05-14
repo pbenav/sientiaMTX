@@ -259,44 +259,90 @@
                 @endif
             </div>
 
-            <!-- Add member form -->
-            @can('manageMembers', $team)
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none h-fit transition-colors">
-                    <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading mb-6">
-                        {{ __('teams.add_member') }}</h3>
-                    <form method="POST" action="{{ route('teams.addMember', $team) }}" class="space-y-5">
-                        @csrf
-                        <div>
-                            <label
-                                class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.email') }}</label>
-                            <input type="email" name="email" required
-                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400"
-                                placeholder="user@example.com">
-                            @error('email')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
+            <!-- Sidebar Actions Column -->
+            <div class="space-y-6">
+                <!-- Add member form -->
+                @can('manageMembers', $team)
+                    <div
+                        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none h-fit transition-colors">
+                        <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading mb-6">
+                            {{ __('teams.add_member') }}</h3>
+                        <form method="POST" action="{{ route('teams.addMember', $team) }}" class="space-y-5">
+                            @csrf
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.email') }}</label>
+                                <input type="email" name="email" required
+                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400"
+                                    placeholder="user@example.com">
+                                @error('email')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.role') }}</label>
+                                <select name="role_id" required
+                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}"
+                                            {{ old('role_id', $roles->where('name', 'user')->first()?->id) == $role->id ? 'selected' : '' }}>
+                                            {{ __('teams.' . $role->name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
+                                {{ __('teams.add_member') }}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Bulk Invitation Card (Admins Only) -->
+                    @if(auth()->user()->is_admin)
+                    <div
+                        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none h-fit transition-colors">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="p-1.5 bg-violet-500/10 rounded-lg text-violet-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
+                                Invitación Masiva</h3>
                         </div>
-                        <div>
-                            <label
-                                class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.role') }}</label>
-                            <select name="role_id" required
-                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}"
-                                        {{ old('role_id', $roles->where('name', 'user')->first()?->id) == $role->id ? 'selected' : '' }}>
-                                        {{ __('teams.' . $role->name) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button type="submit"
-                            class="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
-                            {{ __('teams.add_member') }}
-                        </button>
-                    </form>
-                </div>
-            @endcan
+                        
+                        <form method="POST" action="{{ route('teams.addMembersBulk', $team) }}" class="space-y-5">
+                            @csrf
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Lista de Emails</label>
+                                <textarea name="emails_block" required rows="6"
+                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400 font-mono"
+                                    placeholder="Pega aquí los emails separados por comas, espacios o saltos de línea..."></textarea>
+                                <p class="mt-2 text-[9px] text-gray-400 italic">El sistema extraerá automáticamente los correos válidos del texto.</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Rol para todos</label>
+                                <select name="role_id" required
+                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}"
+                                            {{ old('role_id', $roles->where('name', 'user')->first()?->id) == $role->id ? 'selected' : '' }}>
+                                            {{ __('teams.' . $role->name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-violet-600 dark:hover:bg-violet-500 hover:text-white text-sm font-bold uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
+                                Procesar Lista
+                            </button>
+                        </form>
+                    </div>
+                    @endif
+                @endcan
+            </div>
         </div>
 
         <div x-show="activeTab === 'groups'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
