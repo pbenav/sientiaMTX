@@ -97,6 +97,17 @@
                     this.originalTitle = document.title;
                     console.log('✅ SientiaChat Component: Initialized');
                     this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+
+                    // Unlock AudioContext on first user interaction (Brave/Firefox fix)
+                    const unlockAudio = () => {
+                        if (window.sientiaAudioCtx && window.sientiaAudioCtx.state === 'suspended') {
+                            window.sientiaAudioCtx.resume();
+                        }
+                        document.removeEventListener('click', unlockAudio);
+                        document.removeEventListener('keydown', unlockAudio);
+                    };
+                    document.addEventListener('click', unlockAudio);
+                    document.addEventListener('keydown', unlockAudio);
                 },
                 
                 openChat(detail) {
@@ -247,7 +258,32 @@
                     if (this.titleInterval) clearInterval(this.titleInterval);
                     this.titleInterval = setInterval(() => { document.title = document.title === this.originalTitle ? '📞 LLAMADA...' : this.originalTitle; }, 1000);
                     this.stopCallSound();
-                    const ring = () => { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const notes = [523.25, 659.25, 783.99, 1046.50]; notes.forEach((f, i) => setTimeout(() => { if (!this.callRingInterval) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(f, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6); osc.start(); osc.stop(audioCtx.currentTime + 0.6); }, i * 150)); } catch (e) {} };
+                    const ring = () => {
+                        try {
+                            if (!window.sientiaAudioCtx) {
+                                window.sientiaAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            }
+                            const ctx = window.sientiaAudioCtx;
+                            if (ctx.state === 'suspended') ctx.resume();
+
+                            const notes = [523.25, 659.25, 783.99, 1046.50];
+                            notes.forEach((f, i) => {
+                                setTimeout(() => {
+                                    if (!this.callRingInterval) return;
+                                    const osc = ctx.createOscillator();
+                                    const gain = ctx.createGain();
+                                    osc.connect(gain);
+                                    gain.connect(ctx.destination);
+                                    osc.type = 'sine';
+                                    osc.frequency.setValueAtTime(f, ctx.currentTime);
+                                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+                                    osc.start();
+                                    osc.stop(ctx.currentTime + 0.6);
+                                }, i * 150);
+                            });
+                        } catch (e) { console.warn('Call ring failed:', e); }
+                    };
                     ring();
                     this.callRingInterval = setInterval(ring, 2000);
                 },
@@ -255,7 +291,31 @@
                 stopCallSound() { if (this.callRingInterval) { clearInterval(this.callRingInterval); this.callRingInterval = null; } },
                 stopFlashAndSound() { this.stopCallSound(); if (this.titleInterval) { clearInterval(this.titleInterval); this.titleInterval = null; } document.title = this.originalTitle; },
                 startMessageFlash() { if (this.titleInterval) clearInterval(this.titleInterval); this.titleInterval = setInterval(() => { document.title = document.title === this.originalTitle ? '💬 MENSAJE...' : this.originalTitle; }, 1200); const stop = () => { this.stopFlashAndSound(); window.removeEventListener('focus', stop); }; window.addEventListener('focus', stop, {once: true}); },
-                playMessageChime() { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const notes = [660, 880]; notes.forEach((f, i) => setTimeout(() => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(f, audioCtx.currentTime); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }, i * 120)); } catch (e) {} },
+                playMessageChime() {
+                    try {
+                        if (!window.sientiaAudioCtx) {
+                            window.sientiaAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        }
+                        const ctx = window.sientiaAudioCtx;
+                        if (ctx.state === 'suspended') ctx.resume();
+
+                        const notes = [660, 880];
+                        notes.forEach((f, i) => {
+                            setTimeout(() => {
+                                const osc = ctx.createOscillator();
+                                const gain = ctx.createGain();
+                                osc.connect(gain);
+                                gain.connect(ctx.destination);
+                                osc.type = 'sine';
+                                osc.frequency.setValueAtTime(f, ctx.currentTime);
+                                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                                osc.start();
+                                osc.stop(ctx.currentTime + 0.5);
+                            }, i * 120);
+                        });
+                    } catch (e) { console.warn('Audio chime failed:', e); }
+                },
                 scrollToBottom() { const c = this.$refs.chatContainer; if (c) c.scrollTop = c.scrollHeight; },
                 clearPendingAttachments() { if (this.previewUrl && this.previewUrl.startsWith('blob:')) URL.revokeObjectURL(this.previewUrl); this.pendingFile = null; this.previewUrl = null; this.pendingDriveFile = null; },
                 handleFileSelect(e) { const f = e.target.files[0]; if (f) this.processFile(f); e.target.value = ''; },
