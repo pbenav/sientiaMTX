@@ -104,17 +104,28 @@
             <div class="bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden mb-12">
                 <!-- Status Banner -->
                 <div class="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
-                            <span class="w-3 h-3 block rounded-full {{ $survey->is_closed ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></span>
+                    <div class="flex items-center gap-6">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
+                                <span class="w-2.5 h-2.5 block rounded-full {{ $survey->is_closed ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></span>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                                {{ $survey->is_closed ? __('Finalizada') : __('Activa') }}
+                            </span>
                         </div>
-                        <span class="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                            {{ $survey->is_closed ? __('Encuesta Finalizada') : __('Encuesta en Curso') }}
-                        </span>
+                        
+                        <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block"></div>
+
+                        <div class="flex items-center gap-2">
+                            <img src="{{ $survey->creator->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-800 shadow-sm">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Por') }}</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ $survey->creator->name }}</span>
+                        </div>
                     </div>
+
                     @if($survey->expires_at)
-                        <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             {{ $survey->is_expired ? __('Expiró') : __('Finaliza') }} {{ $survey->expires_at->diffForHumans() }}
                         </div>
                     @endif
@@ -131,15 +142,18 @@
                     @endif
 
                     @if($showResults)
-                        <div class="mb-24">
+                        <div class="mb-12">
                             <div class="flex items-center justify-between mb-16">
-                                <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                                    {{ __('Tendencia Actual') }}
-                                </h2>
-                                <div class="flex items-center gap-2 px-6 py-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-full border border-indigo-100 dark:border-indigo-500/20 shadow-inner">
-                                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                                    <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest pl-2">
-                                        {{ $totalVotes }} {{ trans_choice('miembro ha participado|miembros han participado', $totalVotes) }}
+                                <div class="flex flex-col gap-1">
+                                    <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                                        {{ __('Resultados en Vivo') }}
+                                    </h2>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Visualización de datos en tiempo real') }}</p>
+                                </div>
+                                <div class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                    <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">{{ $totalVotes }}</span>
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        {{ trans_choice('Voto|Votos', $totalVotes) }}
                                     </span>
                                 </div>
                             </div>
@@ -354,16 +368,6 @@
                 </div>
             </div>
 
-            <!-- Creator Footer Info -->
-            <div class="flex items-center justify-center gap-4 text-gray-400 mb-20">
-                <div class="h-px w-12 bg-gray-200 dark:bg-gray-800"></div>
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em]">{{ __('Creada por') }}</span>
-                    <img src="{{ $survey->creator->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-900 shadow-sm">
-                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ $survey->creator->name }}</span>
-                </div>
-                <div class="h-px w-12 bg-gray-200 dark:bg-gray-800"></div>
-            </div>
         </div>
     </div>
 
