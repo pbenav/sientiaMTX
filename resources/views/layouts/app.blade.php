@@ -59,290 +59,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Sientia Direct Chat & Video Call Engine -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            console.log('🚀 SientiaChat Engine: Initializing stores...');
-            
-            Alpine.store('chatStore', {
-                unreadConversations: [],
-                
-                setUnread(list) {
-                    this.unreadConversations = list;
-                },
-                
-                markAsRead(senderId) {
-                    this.unreadConversations = this.unreadConversations.filter(c => parseInt(c.id) !== parseInt(senderId));
-                },
-                
-                hasUnread(senderId) {
-                    return this.unreadConversations.some(c => parseInt(c.id) === parseInt(senderId));
-                },
 
-                get totalCount() {
-                    return this.unreadConversations.length;
-                }
-            });
-
-            Alpine.data('sientiaChat', () => ({
-                open: false,
-                messages: [],
-                message: '',
-                member: { id: null, name: '', photo: '', status: '', email: '', telegram: '' },
-                isTyping: false,
-                chatSoundsEnabled: {{ (auth()->check() && (auth()->user()->notification_settings['chat_sounds'] ?? true)) ? 'true' : 'false' }},
-                activeCallRoom: null,
-                incomingCall: null,
-                pollInterval: null,
-                titleInterval: null,
-                originalTitle: '',
-                lastNotifiedMsgId: null,
-                callRingInterval: null,
-                showEmojis: false,
-                pendingFile: null,
-                pendingDriveFile: null,
-                previewUrl: null,
-                isUploading: false,
-                replyingTo: null,
-                
-                init() {
-                    this.originalTitle = document.title;
-                    console.log('✅ SientiaChat Component: Initialized and Polling started');
-                    this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
-                },
-                
-                openChat(detail) {
-                    console.log('📂 Opening Chat for:', detail.name);
-                    this.member = detail;
-                    this.open = true;
-                    this.activeCallRoom = null;
-                    this.incomingCall = null;
-                    this.replyingTo = null;
-                    this.clearPendingAttachments();
-                    Alpine.store('chatStore').markAsRead(detail.id);
-                    this.fetchMessages();
-                    this.$nextTick(() => {
-                        const input = this.$refs.chatInput;
-                        if (input) input.focus();
-                    });
-                },
-                
-                close() {
-                    this.open = false;
-                    this.activeCallRoom = null;
-                    this.stopFlashAndSound();
-                },
-                
-                fetchMessages() {
-                    if (!this.member.id) return;
-                    fetch('/chat/' + this.member.id + '?_=' + Date.now(), {
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache',
-                            'Accept': 'application/json'
-                        }
-                    })
-                        .then(r => {
-                            if (!r.ok) throw new Error('Chat server error: ' + r.status);
-                            return r.json();
-                        })
-                        .then(data => {
-                            if (data.member) {
-                                this.member = { ...this.member, ...data.member };
-                            }
-                            this.messages = data.messages || [];
-                            this.$nextTick(() => this.scrollToBottom());
-                        })
-                        .catch(err => console.error('Error fetching chat messages:', err));
-                },
-                
-                sendMessage() {
-                    if (this.isUploading) return;
-                    const text = this.message.trim();
-                    if (!text && !this.pendingFile && !this.pendingDriveFile) return;
-                    if (!this.member.id) return;
-                    
-                    this.isUploading = true;
-                    this.message = '';
-                    this.showEmojis = false;
-                    
-                    const optimisticMsg = {
-                        id: Date.now(),
-                        sender: 'me',
-                        text: text,
-                        file_name: this.pendingDriveFile ? this.pendingDriveFile.name : (this.pendingFile ? this.pendingFile.name : null),
-                        file_type: this.pendingDriveFile ? 'file' : (this.pendingFile ? (this.pendingFile.type.startsWith('image/') ? 'image' : 'file') : null),
-                        file_url: this.previewUrl, 
-                        storage_provider: this.pendingDriveFile ? 'google' : 'local',
-                        web_view_link: this.pendingDriveFile ? this.pendingDriveFile.webViewLink : null,
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        parent_id: this.replyingTo ? this.replyingTo.id : null,
-                        parent_text: this.replyingTo ? (this.replyingTo.text || (this.replyingTo.file_name ? '📎 ' + this.replyingTo.file_name : '...')) : null,
-                        parent_sender_name: this.replyingTo ? (this.replyingTo.sender === 'me' ? 'Tú' : this.member.name) : null
-                    };
-                    
-                    this.messages.push(optimisticMsg);
-                    
-                    const replyToId = this.replyingTo ? this.replyingTo.id : null;
-                    this.replyingTo = null;
-                    
-                    const fileToUpload = this.pendingFile;
-                    const driveFileToUpload = this.pendingDriveFile;
-                    this.clearPendingAttachments();
-                    this.$nextTick(() => this.scrollToBottom());
-
-                    const formData = new FormData();
-                    formData.append('receiver_id', this.member.id);
-                    if (text) formData.append('message', text);
-                    if (fileToUpload) formData.append('file', fileToUpload);
-                    if (driveFileToUpload) formData.append('drive_file', JSON.stringify(driveFileToUpload));
-                    if (replyToId) formData.append('parent_id', replyToId);
-
-                    fetch('/chat', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: formData
-                    })
-                    .then(r => {
-                        if (!r.ok) throw new Error('Failed to send message: ' + r.status);
-                        return r.json();
-                    })
-                    .then(() => {
-                        this.fetchMessages();
-                    })
-                    .catch(err => {
-                        console.error('Error sending message:', err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error al enviar',
-                            text: 'No se pudo enviar el mensaje. Comprueba tu conexión.',
-                            toast: true,
-                            position: 'top-end',
-                            timer: 3000,
-                            showConfirmButton: false
-                        });
-                    })
-                    .finally(() => {
-                        this.isUploading = false;
-                    });
-                },
-
-                checkNewMessages() {
-                    fetch('/chat/check?_=' + Date.now(), {
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache',
-                            'Accept': 'application/json'
-                        }
-                    })
-                        .then(r => {
-                            if (!r.ok) throw new Error('Poll error: ' + r.status);
-                            return r.json();
-                        })
-                        .then(data => {
-                            if (data.unread.length > 0) {
-                                const uniqueMap = {};
-                                data.unread.forEach(m => {
-                                    if (!uniqueMap[m.sender_id]) {
-                                        uniqueMap[m.sender_id] = {
-                                            id: m.sender_id,
-                                            name: m.sender_name,
-                                            photo: m.sender_photo,
-                                            team: m.sender_team,
-                                            text: m.text || (m.file_name ? '📎 Adjunto' : '...')
-                                        };
-                                    }
-                                });
-                                Alpine.store('chatStore').setUnread(Object.values(uniqueMap));
-                                
-                                const callMsg = data.unread.find(m => m.call_room);
-                                const lastMsg = data.unread[0];
-                                
-                                if (callMsg && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== callMsg.call_room)) {
-                                    this.incomingCall = {
-                                        room: callMsg.room || callMsg.call_room,
-                                        sender_id: callMsg.sender_id,
-                                        sender_name: callMsg.sender_name,
-                                        sender_photo: callMsg.sender_photo
-                                    };
-                                    this.startFlashAndSound();
-
-                                    const isGoogleMeet = callMsg.call_room.startsWith('http');
-                                    const title = isGoogleMeet ? '🌐 ¡REUNIÓN EN GOOGLE MEET!' : '🎥 ¡LLAMADA ENTRANTE!';
-                                    const subText = isGoogleMeet ? '¡te invita a una reunión!' : '¡te está llamando para una videoconferencia!';
-
-                                    Swal.fire({
-                                        title: title,
-                                        html: `<div class="flex flex-col items-center gap-4 py-2"><div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-xl relative"><img src="${callMsg.sender_photo}" class="w-full h-full rounded-[14px] object-cover"></div><div><p class="text-xs font-black uppercase">${callMsg.sender_name}</p><p class="text-xs font-bold mt-2">${subText}</p></div></div>`,
-                                        showCancelButton: true,
-                                        confirmButtonText: isGoogleMeet ? 'Unirse 🚀' : 'Contestar 👍',
-                                        confirmButtonColor: isGoogleMeet ? '#0ea5e9' : '#059669',
-                                        cancelButtonText: 'Ahora no 👎',
-                                        customClass: { popup: 'rounded-[2.5rem] dark:bg-gray-950 dark:text-white' }
-                                    }).then((result) => {
-                                        if (result.isConfirmed) this.acceptCall();
-                                        else this.rejectCall();
-                                    });
-                                } else if (!callMsg && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
-                                    this.lastNotifiedMsgId = lastMsg.id;
-                                    if (this.chatSoundsEnabled) this.playMessageChime();
-                                    this.startMessageFlash();
-                                    
-                                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
-                                    Toast.fire({
-                                        icon: 'info',
-                                        html: `<div class="text-left py-1 pr-2"><p class="text-xs font-black uppercase">${lastMsg.sender_name}</p><p class="text-xs text-gray-600 dark:text-gray-300 truncate">${lastMsg.text}</p></div>`,
-                                        didOpen: (t) => { t.style.cursor = 'pointer'; t.onclick = () => this.openChat(lastMsg); }
-                                    });
-                                }
-                                
-                                if (this.open && this.member.id === lastMsg.sender_id) this.fetchMessages();
-                            } else {
-                                Alpine.store('chatStore').setUnread([]);
-                            }
-                        })
-                        .catch(e => console.warn('Chat poll skip:', e));
-                },
-
-                acceptCall() {
-                    const url = this.incomingCall.room.startsWith('http') ? this.incomingCall.room : 'https://meet.jit.si/' + this.incomingCall.room;
-                    window.open(url, '_blank');
-                    this.openChat({ id: this.incomingCall.sender_id, name: this.incomingCall.sender_name, photo: this.incomingCall.sender_photo });
-                    this.stopFlashAndSound();
-                    this.incomingCall = null;
-                },
-
-                rejectCall() {
-                    this.stopFlashAndSound();
-                    this.incomingCall = null;
-                },
-
-                startFlashAndSound() {
-                    if (this.titleInterval) clearInterval(this.titleInterval);
-                    this.titleInterval = setInterval(() => { document.title = document.title === this.originalTitle ? '📞 LLAMADA...' : this.originalTitle; }, 1000);
-                    this.stopCallSound();
-                    const ring = () => { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const notes = [523.25, 659.25, 783.99, 1046.50]; notes.forEach((f, i) => setTimeout(() => { if (!this.callRingInterval) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(f, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6); osc.start(); osc.stop(audioCtx.currentTime + 0.6); }, i * 150)); } catch (e) {} };
-                    ring();
-                    this.callRingInterval = setInterval(ring, 2000);
-                },
-
-                stopCallSound() { if (this.callRingInterval) { clearInterval(this.callRingInterval); this.callRingInterval = null; } },
-                stopFlashAndSound() { this.stopCallSound(); if (this.titleInterval) { clearInterval(this.titleInterval); this.titleInterval = null; } document.title = this.originalTitle; },
-                startMessageFlash() { if (this.titleInterval) clearInterval(this.titleInterval); this.titleInterval = setInterval(() => { document.title = document.title === this.originalTitle ? '💬 MENSAJE...' : this.originalTitle; }, 1200); const stop = () => { this.stopFlashAndSound(); window.removeEventListener('focus', stop); }; window.addEventListener('focus', stop, {once: true}); },
-                playMessageChime() { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const notes = [660, 880]; notes.forEach((f, i) => setTimeout(() => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(f, audioCtx.currentTime); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }, i * 120)); } catch (e) {} },
-                scrollToBottom() { const c = this.$refs.chatContainer; if (c) c.scrollTop = c.scrollHeight; },
-                clearPendingAttachments() { if (this.previewUrl && this.previewUrl.startsWith('blob:')) URL.revokeObjectURL(this.previewUrl); this.pendingFile = null; this.previewUrl = null; this.pendingDriveFile = null; },
-                handleFileSelect(e) { const f = e.target.files[0]; if (f) this.processFile(f); e.target.value = ''; },
-                processFile(f) { if (f.size > 10 * 1024 * 1024) { alert('⚠️ Límite 10MB'); return; } this.pendingFile = f; this.previewUrl = URL.createObjectURL(f); this.$nextTick(() => this.$refs.chatInput.focus()); },
-                handlePaste(e) { const items = (e.clipboardData || e.originalEvent.clipboardData).items; for (let i in items) { if (items[i].kind === 'file') { const b = items[i].getAsFile(); const f = new File([b], `img_${Date.now()}.png`, { type: b.type }); this.processFile(f); } } },
-                insertEmoji(e) { const i = this.$refs.chatInput; const s = i.selectionStart; const en = i.selectionEnd; this.message = this.message.substring(0, s) + e + this.message.substring(en); this.$nextTick(() => { i.focus(); const n = s + e.length; i.setSelectionRange(n, n); }); },
-                startSientiaCall() { if (this.member.id === {{ auth()->id() }}) return; fetch('/chat/call', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ receiver_id: this.member.id }) }).then(r => r.json()).then(d => { window.open('https://meet.jit.si/' + d.room, '_blank'); this.fetchMessages(); }); },
-                startGoogleMeet() { if (this.member.id === {{ auth()->id() }}) return; window.open('https://meet.google.com/new', '_blank'); Swal.fire({ title: '🌐 MEET', text: 'Pega el enlace:', input: 'text', showCancelButton: true }).then((r) => { if (r.isConfirmed && r.value) { let url = r.value.trim(); fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ receiver_id: this.member.id, message: '🌐 Reunión Google Meet', call_room: url }) }).then(() => this.fetchMessages()); } }); }
-            }));
-        });
-    </script>
 
     <!-- Marked.js (Markdown Rendering) -->
     <x-markdown-styles :team="request()->route('team') && is_object(request()->route('team')) ? request()->route('team') : (request()->route('team') ? \App\Models\Team::find(request()->route('team')) : null)" />
@@ -2365,6 +2082,230 @@
                 setTimeout(() => processMarkdownLinks(document), 150);
             });
         })();
+
+        @auth
+        <!-- Sientia Direct Chat & Video Call Engine -->
+        <script>
+            (function() {
+                const initSientiaChat = () => {
+                    if (!window.Alpine) {
+                        setTimeout(initSientiaChat, 50);
+                        return;
+                    }
+
+                    console.log('🚀 SientiaChat Engine: Initializing stores...');
+                    
+                    Alpine.store('chatStore', {
+                        unreadConversations: [],
+                        setUnread(list) { this.unreadConversations = list; },
+                        markAsRead(senderId) { this.unreadConversations = this.unreadConversations.filter(c => parseInt(c.id) !== parseInt(senderId)); },
+                        hasUnread(senderId) { return this.unreadConversations.some(c => parseInt(c.id) === parseInt(senderId)); },
+                        get totalCount() { return this.unreadConversations.length; }
+                    });
+
+                    Alpine.data('sientiaChat', () => ({
+                        open: false,
+                        messages: [],
+                        message: '',
+                        member: { id: null, name: '', photo: '', status: '', email: '', telegram: '' },
+                        isTyping: false,
+                        chatSoundsEnabled: {{ (auth()->check() && (auth()->user()->notification_settings['chat_sounds'] ?? true)) ? 'true' : 'false' }},
+                        activeCallRoom: null,
+                        incomingCall: null,
+                        pollInterval: null,
+                        titleInterval: null,
+                        originalTitle: '',
+                        lastNotifiedMsgId: null,
+                        callRingInterval: null,
+                        showEmojis: false,
+                        pendingFile: null,
+                        pendingDriveFile: null,
+                        previewUrl: null,
+                        isUploading: false,
+                        replyingTo: null,
+                        
+                        init() {
+                            this.originalTitle = document.title;
+                            console.log('✅ SientiaChat Component: Initialized and Polling started');
+                            this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+                        },
+                        
+                        openChat(detail) {
+                            console.log('📂 Opening Chat for:', detail.name);
+                            this.member = detail;
+                            this.open = true;
+                            this.activeCallRoom = null;
+                            this.incomingCall = null;
+                            this.replyingTo = null;
+                            this.clearPendingAttachments();
+                            Alpine.store('chatStore').markAsRead(detail.id);
+                            this.fetchMessages();
+                            this.$nextTick(() => {
+                                const input = this.$refs.chatInput;
+                                if (input) input.focus();
+                            });
+                        },
+                        
+                        close() {
+                            this.open = false;
+                            this.activeCallRoom = null;
+                            this.stopFlashAndSound();
+                        },
+                        
+                        fetchMessages() {
+                            if (!this.member.id) return;
+                            fetch('/chat/' + this.member.id + '?_=' + Date.now(), {
+                                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.member) this.member = { ...this.member, ...data.member };
+                                this.messages = data.messages || [];
+                                this.$nextTick(() => this.scrollToBottom());
+                            })
+                            .catch(err => console.error('Error fetching chat messages:', err));
+                        },
+                        
+                        sendMessage() {
+                            if (this.isUploading) return;
+                            const text = this.message.trim();
+                            if (!text && !this.pendingFile && !this.pendingDriveFile) return;
+                            if (!this.member.id) return;
+                            
+                            this.isUploading = true;
+                            this.message = '';
+                            this.showEmojis = false;
+                            
+                            const optimisticMsg = {
+                                id: Date.now(),
+                                sender: 'me',
+                                text: text,
+                                file_name: this.pendingDriveFile ? this.pendingDriveFile.name : (this.pendingFile ? this.pendingFile.name : null),
+                                file_type: this.pendingDriveFile ? 'file' : (this.pendingFile ? (this.pendingFile.type.startsWith('image/') ? 'image' : 'file') : null),
+                                file_url: this.previewUrl, 
+                                storage_provider: this.pendingDriveFile ? 'google' : 'local',
+                                web_view_link: this.pendingDriveFile ? this.pendingDriveFile.webViewLink : null,
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                parent_id: this.replyingTo ? this.replyingTo.id : null,
+                                parent_text: this.replyingTo ? (this.replyingTo.text || (this.replyingTo.file_name ? '📎 ' + this.replyingTo.file_name : '...')) : null,
+                                parent_sender_name: this.replyingTo ? (this.replyingTo.sender === 'me' ? 'Tú' : this.member.name) : null
+                            };
+                            
+                            this.messages.push(optimisticMsg);
+                            const replyToId = this.replyingTo ? this.replyingTo.id : null;
+                            this.replyingTo = null;
+                            const fileToUpload = this.pendingFile;
+                            const driveFileToUpload = this.pendingDriveFile;
+                            this.clearPendingAttachments();
+                            this.$nextTick(() => this.scrollToBottom());
+
+                            const formData = new FormData();
+                            formData.append('receiver_id', this.member.id);
+                            if (text) formData.append('message', text);
+                            if (fileToUpload) formData.append('file', fileToUpload);
+                            if (driveFileToUpload) formData.append('drive_file', JSON.stringify(driveFileToUpload));
+                            if (replyToId) formData.append('parent_id', replyToId);
+
+                            fetch('/chat', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                                body: formData
+                            })
+                            .then(r => r.ok ? r.json() : Promise.reject(r))
+                            .then(() => this.fetchMessages())
+                            .catch(err => {
+                                console.error('Error sending message:', err);
+                                Swal.fire({ icon: 'error', title: 'Error al enviar', text: 'No se pudo enviar el mensaje.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                            })
+                            .finally(() => this.isUploading = false);
+                        },
+
+                        checkNewMessages() {
+                            fetch('/chat/check?_=' + Date.now(), {
+                                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.unread.length > 0) {
+                                    const uniqueMap = {};
+                                    data.unread.forEach(m => {
+                                        if (!uniqueMap[m.sender_id]) {
+                                            uniqueMap[m.sender_id] = { id: m.sender_id, name: m.sender_name, photo: m.sender_photo, team: m.sender_team, text: m.text || (m.file_name ? '📎 Adjunto' : '...') };
+                                        }
+                                    });
+                                    Alpine.store('chatStore').setUnread(Object.values(uniqueMap));
+                                    
+                                    const callMsg = data.unread.find(m => m.call_room);
+                                    const lastMsg = data.unread[0];
+                                    
+                                    if (callMsg && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== callMsg.call_room)) {
+                                        this.incomingCall = { room: callMsg.room || callMsg.call_room, sender_id: callMsg.sender_id, sender_name: callMsg.sender_name, sender_photo: callMsg.sender_photo };
+                                        this.startFlashAndSound();
+                                        const isGoogleMeet = callMsg.call_room.startsWith('http');
+                                        Swal.fire({
+                                            title: isGoogleMeet ? '🌐 GOOGLE MEET' : '🎥 LLAMADA ENTRANTE',
+                                            html: `<div class="flex flex-col items-center gap-4 py-2"><div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-xl relative"><img src="${callMsg.sender_photo}" class="w-full h-full rounded-[14px] object-cover"></div><div><p class="text-xs font-black uppercase">${callMsg.sender_name}</p><p class="text-xs font-bold mt-2">${isGoogleMeet ? '¡te invita a una reunión!' : '¡te está llamando!'}</p></div></div>`,
+                                            showCancelButton: true,
+                                            confirmButtonText: isGoogleMeet ? 'Unirse 🚀' : 'Contestar 👍',
+                                            confirmButtonColor: isGoogleMeet ? '#0ea5e9' : '#059669',
+                                            cancelButtonText: 'Ahora no 👎',
+                                            customClass: { popup: 'rounded-[2.5rem] dark:bg-gray-950 dark:text-white' }
+                                        }).then((result) => {
+                                            if (result.isConfirmed) this.acceptCall();
+                                            else this.rejectCall();
+                                        });
+                                    } else if (!callMsg && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
+                                        this.lastNotifiedMsgId = lastMsg.id;
+                                        if (this.chatSoundsEnabled) this.playMessageChime();
+                                        this.startMessageFlash();
+                                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+                                        Toast.fire({ icon: 'info', html: `<div class="text-left py-1 pr-2"><p class="text-xs font-black uppercase">${lastMsg.sender_name}</p><p class="text-xs text-gray-600 dark:text-gray-300 truncate">${lastMsg.text}</p></div>`, didOpen: (t) => { t.style.cursor = 'pointer'; t.onclick = () => this.openChat(lastMsg); } });
+                                    }
+                                    if (this.open && this.member.id === lastMsg.sender_id) this.fetchMessages();
+                                } else {
+                                    Alpine.store('chatStore').setUnread([]);
+                                }
+                            })
+                            .catch(e => console.warn('Chat poll skip:', e));
+                        },
+
+                        acceptCall() {
+                            const url = this.incomingCall.room.startsWith('http') ? this.incomingCall.room : 'https://meet.jit.si/' + this.incomingCall.room;
+                            window.open(url, '_blank');
+                            this.openChat({ id: this.incomingCall.sender_id, name: this.incomingCall.sender_name, photo: this.incomingCall.sender_photo });
+                            this.stopFlashAndSound();
+                            this.incomingCall = null;
+                        },
+
+                        rejectCall() { this.stopFlashAndSound(); this.incomingCall = null; },
+
+                        startFlashAndSound() {
+                            if (this.titleInterval) clearInterval(this.titleInterval);
+                            this.titleInterval = setInterval(() => { document.title = document.title === this.originalTitle ? '📞 LLAMADA...' : this.originalTitle; }, 1000);
+                            this.stopCallSound();
+                            const ring = () => { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const notes = [523.25, 659.25, 783.99, 1046.50]; notes.forEach((f, i) => setTimeout(() => { if (!this.callRingInterval) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(f, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6); osc.start(); osc.stop(audioCtx.currentTime + 0.6); }, i * 150)); } catch (e) {} };
+                            ring();
+                            this.callRingInterval = setInterval(ring, 2000);
+                        },
+
+                        stopCallSound() { if (this.callRingInterval) { clearInterval(this.callRingInterval); this.callRingInterval = null; } },
+                        stopFlashAndSound() { this.stopCallSound(); if (this.titleInterval) { clearInterval(this.titleInterval); this.titleInterval = null; } document.title = this.originalTitle; },
+                        startMessageFlash() { if (this.titleInterval) clearInterval(this.titleInterval); this.titleInterval = setInterval(() => { document.title = document.title === this.originalTitle ? '💬 MENSAJE...' : this.originalTitle; }, 1200); const stop = () => { this.stopFlashAndSound(); window.removeEventListener('focus', stop); }; window.addEventListener('focus', stop, {once: true}); },
+                        playMessageChime() { try { const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const notes = [660, 880]; notes.forEach((f, i) => setTimeout(() => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(f, audioCtx.currentTime); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }, i * 120)); } catch (e) {} },
+                        scrollToBottom() { const c = this.$refs.chatContainer; if (c) c.scrollTop = c.scrollHeight; },
+                        clearPendingAttachments() { if (this.previewUrl && this.previewUrl.startsWith('blob:')) URL.revokeObjectURL(this.previewUrl); this.pendingFile = null; this.previewUrl = null; this.pendingDriveFile = null; },
+                        handleFileSelect(e) { const f = e.target.files[0]; if (f) this.processFile(f); e.target.value = ''; },
+                        processFile(f) { if (f.size > 10 * 1024 * 1024) { alert('⚠️ Límite 10MB'); return; } this.pendingFile = f; this.previewUrl = URL.createObjectURL(f); this.$nextTick(() => this.$refs.chatInput.focus()); },
+                        handlePaste(e) { const items = (e.clipboardData || e.originalEvent.clipboardData).items; for (let i in items) { if (items[i].kind === 'file') { const b = items[i].getAsFile(); const f = new File([b], `img_${Date.now()}.png`, { type: b.type }); this.processFile(f); } } },
+                        insertEmoji(e) { const i = this.$refs.chatInput; const s = i.selectionStart; const en = i.selectionEnd; this.message = this.message.substring(0, s) + e + this.message.substring(en); this.$nextTick(() => { i.focus(); const n = s + e.length; i.setSelectionRange(n, n); }); },
+                        startSientiaCall() { if (this.member.id === {{ auth()->id() }}) return; fetch('/chat/call', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ receiver_id: this.member.id }) }).then(r => r.json()).then(d => { window.open('https://meet.jit.si/' + d.room, '_blank'); this.fetchMessages(); }); },
+                        startGoogleMeet() { if (this.member.id === {{ auth()->id() }}) return; window.open('https://meet.google.com/new', '_blank'); Swal.fire({ title: '🌐 MEET', text: 'Pega el enlace:', input: 'text', showCancelButton: true }).then((r) => { if (r.isConfirmed && r.value) { let url = r.value.trim(); fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ receiver_id: this.member.id, message: '🌐 Reunión Google Meet', call_room: url }) }).then(() => this.fetchMessages()); } }); }
+                    }));
+                };
+                initSientiaChat();
+            })();
+        </script>
+        @endauth
     </script>
 </body>
 
