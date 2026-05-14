@@ -21,13 +21,37 @@
                 
                 @can('create', App\Models\Survey::class)
                 @if(!$isGlobal || auth()->user()->is_admin)
-                <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}" 
-                   class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95 group">
-                    <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    {{ __('Nueva Encuesta') }}
-                </a>
+                <div class="flex items-center gap-3">
+                    <!-- Import Button -->
+                    <div x-data="{ uploading: false }">
+                        <form action="{{ route($team ? 'teams.surveys.import-json' : 'global-surveys.import-json', $team ? [$team] : []) }}" 
+                              method="POST" enctype="multipart/form-data" id="import-form">
+                            @csrf
+                            <input type="file" name="json_file" id="json_file" class="hidden" accept=".json,.txt" 
+                                   @change="if($event.target.files.length > 0) { uploading = true; $el.form.submit(); }">
+                            <button type="button" @click="document.getElementById('json_file').click()" 
+                                    :disabled="uploading"
+                                    class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-bold rounded-2xl border-2 border-indigo-100 dark:border-indigo-800 shadow-sm transition-all hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-50 group">
+                                <svg x-show="!uploading" class="w-5 h-5 mr-2 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                </svg>
+                                <svg x-show="uploading" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="uploading ? '{{ __('Importando...') }}' : '{{ __('Importar JSON') }}'"></span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95 group">
+                        <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        {{ __('Nueva Encuesta') }}
+                    </a>
+                </div>
                 @endif
                 @endcan
             </div>

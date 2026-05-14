@@ -272,6 +272,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/surveys/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('surveys.reactivate');
         Route::delete('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('surveys.destroy');
         Route::get('/surveys/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('surveys.results');
+        Route::get('/surveys/{survey}/export-json', [\App\Http\Controllers\SurveyController::class, 'exportJson'])->name('surveys.export-json');
+        Route::post('/surveys/import-json', [\App\Http\Controllers\SurveyController::class, 'importJson'])->name('surveys.import-json');
         Route::post('/surveys/{survey}/duplicate', [\App\Http\Controllers\SurveyController::class, 'duplicate'])->name('surveys.duplicate');
     });
 
@@ -288,6 +290,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('reactivate');
         Route::delete('/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('destroy');
         Route::get('/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('results');
+        Route::get('/{survey}/export-json', [\App\Http\Controllers\SurveyController::class, 'exportJson'])->name('export-json');
+        Route::post('/import-json', [\App\Http\Controllers\SurveyController::class, 'importJson'])->name('import-json');
         Route::post('/{survey}/duplicate', [\App\Http\Controllers\SurveyController::class, 'duplicate'])->name('duplicate');
     });
 

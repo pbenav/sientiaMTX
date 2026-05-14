@@ -87,6 +87,12 @@
                             @can('delete', $survey)
                             <div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
 
+                            <a href="{{ route($team ? 'teams.surveys.export-json' : 'global-surveys.export-json', $team ? [$team, $survey] : [$survey]) }}" 
+                               class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                {{ __('Exportar JSON') }}
+                            </a>
+
                             <form action="{{ route($routePrefix . 'destroy', $team ? [$team, $survey] : [$survey]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta encuesta?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
