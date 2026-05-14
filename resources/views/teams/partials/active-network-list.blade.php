@@ -1,22 +1,27 @@
 @php
-    $activeMembers = collect();
-    $inactiveMembers = collect();
+    // Define status priority for sorting
+    $statusPriority = [
+        'working' => 1,
+        'online' => 2,
+        'sleeping' => 3,
+        'offline' => 4
+    ];
 
-    foreach ($members as $m) {
-        $status = $m->getStatusInfo();
-        
-        if ($status['status'] !== 'offline' && $m->last_login_at) {
-            $activeMembers->push($m);
-        } else {
-            $inactiveMembers->push($m);
+    $sortedMembers = $members->map(function($m) use ($statusPriority) {
+        $statusInfo = $m->getStatusInfo();
+        $m->status_info = $statusInfo;
+        $m->status_priority = $statusPriority[$statusInfo['status']] ?? 99;
+        return $m;
+    })->sort(function($a, $b) {
+        if ($a->status_priority === $b->status_priority) {
+            return strcasecmp($a->name, $b->name);
         }
-    }
-
-    $sortedMembers = $activeMembers->sortBy('name')->concat($inactiveMembers->sortBy('name'));
+        return $a->status_priority <=> $b->status_priority;
+    });
 @endphp
 @foreach($sortedMembers as $member)
     @php
-            $status = $member->getStatusInfo();
+            $status = $member->status_info;
             $hasLocation = !empty($member->location_lat);
             
             $statusColorClass = $status['dot_class'];

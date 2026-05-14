@@ -442,7 +442,7 @@
                     <div class="px-5 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent">
                         <h4 class="font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest text-[10px] flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            Red Activa
+                            {{ __('Red Activa | Chat Interno') }}
                         </h4>
                     </div>
                     <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar"
