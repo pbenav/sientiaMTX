@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('chat_messages', function (Blueprint $table) {
-            $table->string('file_name')->nullable()->after('message');
-            $table->string('storage_provider')->default('local')->after('file_size'); // 'local', 'google'
-            $table->text('web_view_link')->nullable()->after('storage_provider');
+            if (!Schema::hasColumn('chat_messages', 'file_name')) {
+                $table->string('file_name')->nullable()->after('message');
+            }
+            if (!Schema::hasColumn('chat_messages', 'storage_provider')) {
+                $table->string('storage_provider')->default('local')->after('file_size'); // 'local', 'google'
+            }
+            if (!Schema::hasColumn('chat_messages', 'web_view_link')) {
+                $table->text('web_view_link')->nullable()->after('storage_provider');
+            }
         });
     }
 

@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('expediente_related', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('expediente_id')->constrained('expedientes')->onDelete('cascade');
-            $table->foreignId('related_id')->constrained('expedientes')->onDelete('cascade');
-            $table->unique(['expediente_id', 'related_id']);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('expediente_related')) {
+            Schema::create('expediente_related', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('expediente_id')->constrained('expedientes')->onDelete('cascade');
+                $table->foreignId('related_id')->constrained('expedientes')->onDelete('cascade');
+                $table->unique(['expediente_id', 'related_id']);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

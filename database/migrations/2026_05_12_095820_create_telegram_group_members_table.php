@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telegram_group_members', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('team_id')->constrained()->onDelete('cascade');
-            $table->string('telegram_user_id');
-            $table->string('username')->nullable();
-            $table->string('first_name')->nullable();
-            $table->string('last_name')->nullable();
-            $table->timestamp('last_seen_at')->useCurrent();
-            $table->timestamps();
+        if (!Schema::hasTable('telegram_group_members')) {
+            Schema::create('telegram_group_members', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('team_id')->constrained()->onDelete('cascade');
+                $table->string('telegram_user_id');
+                $table->string('username')->nullable();
+                $table->string('first_name')->nullable();
+                $table->string('last_name')->nullable();
+                $table->timestamp('last_seen_at')->useCurrent();
+                $table->timestamps();
 
-            // Asegurar unicidad de un usuario por equipo
-            $table->unique(['team_id', 'telegram_user_id'], 'telegram_member_team_unique');
-        });
+                // Asegurar unicidad de un usuario por equipo
+                $table->unique(['team_id', 'telegram_user_id'], 'telegram_member_team_unique');
+            });
+        }
     }
 
     /**

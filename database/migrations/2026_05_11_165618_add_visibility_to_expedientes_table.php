@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('expedientes', function (Blueprint $table) {
-            $table->enum('visibility', ['public', 'private'])->default('public')->after('priority');
+            if (!Schema::hasColumn('expedientes', 'visibility')) {
+                $table->enum('visibility', ['public', 'private'])->default('public')->after('priority');
+            }
         });
     }
 

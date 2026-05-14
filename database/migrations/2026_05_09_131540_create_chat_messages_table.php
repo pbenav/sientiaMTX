@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chat_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->text('message')->nullable();
-            $table->boolean('is_read')->default(false);
-            $table->string('call_room')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('chat_messages')) {
+            Schema::create('chat_messages', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+                $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
+                $table->text('message')->nullable();
+                $table->boolean('is_read')->default(false);
+                $table->string('call_room')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

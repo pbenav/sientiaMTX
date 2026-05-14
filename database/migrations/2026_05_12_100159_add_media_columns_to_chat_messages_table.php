@@ -13,9 +13,16 @@ return new class extends Migration
     {
         Schema::table('chat_messages', function (Blueprint $table) {
             $table->text('message')->nullable()->change(); // Permite que el mensaje sea nulo si se envían solo adjuntos
-            $table->string('file_path')->nullable()->after('message');
-            $table->string('file_type')->nullable()->after('file_path'); // 'image', 'file', 'audio'
-            $table->bigInteger('file_size')->nullable()->after('file_type');
+            
+            if (!Schema::hasColumn('chat_messages', 'file_path')) {
+                $table->string('file_path')->nullable()->after('message');
+            }
+            if (!Schema::hasColumn('chat_messages', 'file_type')) {
+                $table->string('file_type')->nullable()->after('file_path'); // 'image', 'file', 'audio'
+            }
+            if (!Schema::hasColumn('chat_messages', 'file_size')) {
+                $table->bigInteger('file_size')->nullable()->after('file_type');
+            }
         });
     }
 

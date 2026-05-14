@@ -101,9 +101,19 @@
                                                 'team.member_removed' => 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
                                                 default => 'bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
                                             };
+                                            $eventLabel = match($log->event) {
+                                                'auth.login' => 'Inicio de Sesión',
+                                                'auth.failed' => 'Intento Fallido',
+                                                'auth.logout' => 'Cierre de Sesión',
+                                                'setting.updated' => 'Ajustes Modificados',
+                                                'team.member_added' => 'Miembro Añadido',
+                                                'team.role_updated' => 'Rol Actualizado',
+                                                'team.member_removed' => 'Miembro Eliminado',
+                                                default => $log->event
+                                            };
                                         @endphp
                                         <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {{ $badgeClasses }}">
-                                            {{ $log->event }}
+                                            {{ $eventLabel }}
                                         </span>
                                     </td>
                                     <td class="p-4 text-xs text-gray-700 dark:text-gray-300">

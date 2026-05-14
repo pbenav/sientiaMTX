@@ -12,10 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('work_start_time_1')->nullable()->default('08:00');
-            $table->string('work_end_time_1')->nullable()->default('14:00');
-            $table->string('work_start_time_2')->nullable()->default('15:00');
-            $table->string('work_end_time_2')->nullable()->default('18:00');
+            if (!Schema::hasColumn('users', 'work_start_time_1')) {
+                $table->string('work_start_time_1')->nullable()->default('08:00');
+            }
+            if (!Schema::hasColumn('users', 'work_end_time_1')) {
+                $table->string('work_end_time_1')->nullable()->default('14:00');
+            }
+            if (!Schema::hasColumn('users', 'work_start_time_2')) {
+                $table->string('work_start_time_2')->nullable()->default('15:00');
+            }
+            if (!Schema::hasColumn('users', 'work_end_time_2')) {
+                $table->string('work_end_time_2')->nullable()->default('18:00');
+            }
         });
 
         // Migrate existing values if any
