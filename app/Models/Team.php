@@ -388,7 +388,7 @@ class Team extends Model
         }
     }
     /**
-     * Scope to get members that are considered "active" in the team.
+     * Get all members of the team with their current activity status info.
      */
     public function getActiveMembers()
     {
@@ -397,17 +397,6 @@ class Team extends Model
                 $q->whereNull('end_at')
                   ->where('start_at', '>=', now()->startOfDay());
             }])
-            ->where(function($query) {
-                $query->where('last_activity_at', '>=', now()->subMinutes(60))
-                      ->orWhereExists(function ($q) {
-                          $q->select(\DB::raw(1))
-                            ->from('time_logs')
-                            ->whereColumn('time_logs.user_id', 'users.id')
-                            ->whereIn('type', ['workday', 'task'])
-                            ->whereNull('end_at')
-                            ->where('start_at', '>=', now()->startOfDay());
-                      });
-            })
             ->orderBy('name')
             ->get();
     }

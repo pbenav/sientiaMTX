@@ -4,21 +4,38 @@
         $isGlobal = !$team;
     @endphp
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen">
-        <div class="max-w-7xl mx-auto">
-            <!-- Header Section with Premium Look -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                <div>
-                    <h1 class="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
+    <x-slot name="header">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                @if(!$isGlobal)
+                    <a href="{{ route('teams.index') }}"
+                        class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                        title="{{ __('navigation.back') ?? 'Volver' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                @endif
+                <div class="min-w-0 flex-1">
+                    @if(!$isGlobal)
+                        @include('teams.partials.breadcrumb')
+                    @endif
+                    <h1 class="text-2xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-1 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
                         {{ $isGlobal ? __('Encuestas Globales') : __('Encuestas') }}
                     </h1>
-                    <p class="text-gray-500 dark:text-gray-400 font-medium">
+                    <p class="text-gray-500 dark:text-gray-400 font-medium text-sm sm:text-base">
                         {{ $isGlobal 
                             ? __('Consulta la opinión de toda la organización y participa en la toma de decisiones.') 
                             : __('Consulta la opinión del equipo y toma decisiones basadas en datos.') }}
                     </p>
                 </div>
-                
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
                 @can('create', App\Models\Survey::class)
                 @if(!$isGlobal || auth()->user()->is_admin)
                 <div class="flex items-center gap-3">
@@ -31,7 +48,7 @@
                                    @change="if($event.target.files.length > 0) { uploading = true; $el.form.submit(); }">
                             <button type="button" @click="document.getElementById('json_file').click()" 
                                     :disabled="uploading"
-                                    class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-bold rounded-2xl border-2 border-indigo-100 dark:border-indigo-800 shadow-sm transition-all hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-50 group">
+                                    class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-bold rounded-2xl border-2 border-indigo-100 dark:border-indigo-800 shadow-sm transition-all hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-50 group text-sm">
                                 <svg x-show="!uploading" class="w-5 h-5 mr-2 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                                 </svg>
@@ -45,7 +62,7 @@
                     </div>
 
                     <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}" 
-                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95 group">
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95 group text-sm">
                         <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -55,6 +72,17 @@
                 @endif
                 @endcan
             </div>
+        </div>
+
+        @if(!$isGlobal)
+            <div class="mt-8 mb-4 flex w-full">
+                @include('teams.partials.view-switcher')
+            </div>
+        @endif
+    </x-slot>
+
+    <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen">
+        <div class="max-w-7xl mx-auto">
 
             @if(session('success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" 

@@ -1,110 +1,130 @@
 <x-app-layout>
     @php
-        $routePrefix = $team ? 'teams.surveys.' : 'global-surveys.';
-        $isGlobal = !$team;
+        $isGlobal = is_null($survey->team_id);
+        $routePrefix = $isGlobal ? 'global-surveys.' : 'teams.surveys.';
+        $contextTeam = $isGlobal ? null : ($team ?? $survey->team);
     @endphp
 
     <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen">
         <div class="max-w-7xl mx-auto">
             
-            <!-- Breadcrumbs / Navigation -->
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-4">
-                    <a href="{{ route($routePrefix . 'index', $team ? [$team] : []) }}" class="p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-gray-500 hover:text-indigo-600 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+    <x-slot name="header">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                @if(!$isGlobal)
+                    <a href="{{ route('teams.index') }}"
+                        class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                        title="{{ __('navigation.back') ?? 'Volver' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
                     </a>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-0.5">
-                            {{ $isGlobal ? __('Encuestas Globales') : __('Encuestas de Equipo') }}
-                        </span>
-                        <h1 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase leading-none">{{ $survey->title }}</h1>
-                    </div>
+                @endif
+                <div class="min-w-0 flex-1">
+                    @if(!$isGlobal)
+                        @include('teams.partials.breadcrumb')
+                    @endif
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        {{ $survey->title }}
+                    </h1>
                 </div>
+            </div>
 
-                <div class="flex items-center gap-2">
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-gray-500 hover:text-indigo-600 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                        </button>
-                        <div x-show="open" @click.away="open = false" x-cloak
-                             class="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 py-3 z-50">
-                            
-                            @can('update', $survey)
-                            <a href="{{ route($routePrefix . 'edit', $team ? [$team, $survey] : [$survey]) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                                {{ __('Editar Encuesta') }}
-                            </a>
+            <div class="flex items-center gap-3 shrink-0">
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" class="p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-gray-500 hover:text-indigo-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-cloak
+                         class="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 py-3 z-50">
+                        
+                        @can('update', $survey)
+                        <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            {{ __('Editar Encuesta') }}
+                        </a>
 
-                            @if(!$survey->is_closed)
-                                <form action="{{ route($routePrefix . 'close', $team ? [$team, $survey] : [$survey]) }}" method="POST">
-                                    @csrf @method('POST')
-                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        {{ __('Cerrar Encuesta') }}
-                                    </button>
-                                </form>
-                            @else
-                                <form action="{{ route($routePrefix . 'reactivate', $team ? [$team, $survey] : [$survey]) }}" method="POST">
-                                    @csrf @method('POST')
-                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        {{ __('Reactivar Encuesta') }}
-                                    </button>
-                                </form>
-                            @endif
-                            @endcan
-
-                            @if($team && auth()->user()->is_admin)
-                                <form action="{{ route('teams.surveys.duplicate', [$team, $survey]) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
-                                        {{ __('Promocionar a Global') }}
-                                    </button>
-                                </form>
-                            @endif
-
-                            @if($isGlobal && auth()->user()->teams()->exists())
-                                <div x-data="{ showCloning: false }" class="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-                                    <button @click="showCloning = !showCloning" class="w-full flex items-center justify-between text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
-                                        <span>{{ __('Clonar a un Equipo') }}</span>
-                                        <svg class="w-4 h-4" :class="{'rotate-180': showCloning}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                    </button>
-                                    <div x-show="showCloning" class="mt-2 space-y-1">
-                                        @foreach(auth()->user()->teams as $userTeam)
-                                            <form action="{{ route('global-surveys.duplicate', $survey) }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="target_team_id" value="{{ $userTeam->id }}">
-                                                <button type="submit" class="w-full text-left px-2 py-1.5 text-xs font-bold text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
-                                                    {{ $userTeam->name }}
-                                                </button>
-                                            </form>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            @can('delete', $survey)
-                            <div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
-
-                            <a href="{{ route($team ? 'teams.surveys.export-json' : 'global-surveys.export-json', $team ? [$team, $survey] : [$survey]) }}" 
-                               class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                {{ __('Exportar JSON') }}
-                            </a>
-
-                            <form action="{{ route($routePrefix . 'destroy', $team ? [$team, $survey] : [$survey]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta encuesta?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    {{ __('Eliminar') }}
+                        @if(!$survey->is_closed)
+                            <form action="{{ route($routePrefix . 'close', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST">
+                                @csrf @method('POST')
+                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ __('Cerrar Encuesta') }}
                                 </button>
                             </form>
-                            @endcan
-                        </div>
+                        @else
+                            <form action="{{ route($routePrefix . 'reactivate', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST">
+                                @csrf @method('POST')
+                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ __('Reactivar Encuesta') }}
+                                </button>
+                            </form>
+                        @endif
+                        @endcan
+
+                        @if($contextTeam && auth()->user()->is_admin)
+                            <form action="{{ route('teams.surveys.duplicate', [$contextTeam, $survey]) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                                    {{ __('Promocionar a Global') }}
+                                </button>
+                            </form>
+                        @endif
+
+                        @if($isGlobal && auth()->user()->teams()->exists())
+                            <div x-data="{ showCloning: false }" class="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+                                <button @click="showCloning = !showCloning" class="w-full flex items-center justify-between text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+                                    <span>{{ __('Clonar a un Equipo') }}</span>
+                                    <svg class="w-4 h-4" :class="{'rotate-180': showCloning}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                <div x-show="showCloning" class="mt-2 space-y-1">
+                                    @foreach(auth()->user()->teams as $userTeam)
+                                        <form action="{{ route('global-surveys.duplicate', $survey) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="target_team_id" value="{{ $userTeam->id }}">
+                                            <button type="submit" class="w-full text-left px-2 py-1.5 text-xs font-bold text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
+                                                {{ $userTeam->name }}
+                                            </button>
+                                        </form>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        @can('delete', $survey)
+                        <div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
+
+                        <a href="{{ route($contextTeam ? 'teams.surveys.export-json' : 'global-surveys.export-json', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" 
+                           class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            {{ __('Exportar JSON') }}
+                        </a>
+
+                        <form action="{{ route($routePrefix . 'destroy', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta encuesta?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                {{ __('Eliminar Encuesta') }}
+                            </button>
+                        </form>
+                        @endcan
                     </div>
                 </div>
             </div>
+        </div>
+
+        @if(!$isGlobal)
+            <div class="mt-8 mb-4 flex w-full">
+                @include('teams.partials.view-switcher')
+            </div>
+        @endif
+    </x-slot>
 
             <!-- Main Content Card -->
             <div class="bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden mb-12">
@@ -273,7 +293,7 @@
                         @endif
 
                         <div x-show="showForm" x-collapse x-cloak class="space-y-12" x-data="votingManager(@json($userVotes->map(fn($v) => $v->pluck('option_id'))))">
-                            <form action="{{ route($routePrefix . 'vote', $team ? [$team, $survey] : [$survey]) }}" method="POST" id="survey-form">
+                            <form action="{{ route($routePrefix . 'vote', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" id="survey-form">
                                 @csrf
                                 
                                 <div class="space-y-16">

@@ -4,25 +4,48 @@
         $isGlobal = !$team;
     @endphp
 
+    <x-slot name="header">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                @if(!$isGlobal)
+                    <a href="{{ route('teams.index') }}"
+                        class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                        title="{{ __('navigation.back') ?? 'Volver' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                @endif
+                <div class="min-w-0 flex-1">
+                    @if(!$isGlobal)
+                        @include('teams.partials.breadcrumb')
+                    @endif
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        {{ $isGlobal ? __('Lanzar Encuesta Global') : __('Lanzar Nueva Encuesta') }}
+                    </h1>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">
+                        {{ $isGlobal 
+                            ? __('Diseña una consulta para toda la organización. Como administrador, tu voz llega a todos.') 
+                            : __('Diseña una experiencia de feedback única combinando diferentes tipos de preguntas.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        @if(!$isGlobal)
+            <div class="mt-8 mb-4 flex w-full">
+                @include('teams.partials.view-switcher')
+            </div>
+        @endif
+    </x-slot>
+
     <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen" 
          x-data="surveyManager()">
         <div class="max-w-[1600px] mx-auto">
-            <!-- Header Section -->
-            <div class="mb-10">
-                <div class="flex items-center gap-4 mb-4">
-                    <a href="{{ route($routePrefix . 'index', $team ? [$team] : []) }}" class="p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-gray-500 hover:text-indigo-600 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-                    </a>
-                    <h1 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                        {{ $isGlobal ? __('Lanzar Encuesta Global') : __('Lanzar Nueva Encuesta') }}
-                    </h1>
-                </div>
-                <p class="text-gray-500 dark:text-gray-400 font-medium ml-14 text-sm">
-                    {{ $isGlobal 
-                        ? __('Diseña una consulta para toda la organización. Como administrador, tu voz llega a todos.') 
-                        : __('Diseña una experiencia de feedback única combinando diferentes tipos de preguntas.') }}
-                </p>
-            </div>
 
             <form action="{{ route($routePrefix . 'store', $team ? [$team] : []) }}" method="POST" id="survey-create-form">
                 @csrf

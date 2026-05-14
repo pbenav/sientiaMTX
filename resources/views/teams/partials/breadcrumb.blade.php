@@ -9,6 +9,7 @@
         str_contains($routeName, 'gantt') => __('navigation.gantt'),
         str_contains($routeName, 'members') => __('teams.view_members'),
         str_contains($routeName, 'teams.edit') => __('teams.settings'),
+        str_contains($routeName, 'surveys') => 'Encuestas',
         str_contains($routeName, 'dashboard') => __('teams.eisenhower_matrix'),
         default => null,
     };
