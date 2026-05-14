@@ -196,7 +196,7 @@ class TeamController extends Controller
     {
         $this->authorize('delete', $team);
 
-        $team->delete();
+        $team->forceDelete();
 
         $redirectRoute = auth()->user()->is_admin ? 'settings.teams' : 'teams.index';
         return redirect()->route($redirectRoute)
