@@ -130,6 +130,50 @@
                                     <span class="font-bold">{{ $member->pivot->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('d/m/Y') : $member->created_at->format('d/m/Y') }}</span>
                                 </p>
                             </div>
+
+                            @if(auth()->user()->isCoordinator($team) || auth()->user()->is_admin)
+                                <!-- Connection Data Section -->
+                                <div class="mt-2.5 pt-2.5 border-t border-gray-50 dark:border-gray-800/50 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                    @php
+                                        $activeSessions = $member->sessions->filter(function($s) {
+                                            return $s->last_activity > now()->subMinutes(15)->getTimestamp();
+                                        });
+                                        $hasActive = $activeSessions->isNotEmpty();
+                                    @endphp
+                                    
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="flex h-2 w-2 relative">
+                                            @if($hasActive)
+                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                            @else
+                                                <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-300 dark:bg-gray-700"></span>
+                                            @endif
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider {{ $hasActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500' }}">
+                                            {{ $hasActive ? __('Online') : __('Offline') }}
+                                        </span>
+                                    </div>
+
+                                    @if($member->last_ip)
+                                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500" title="Última IP detectada">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                            <span class="font-mono bg-gray-50 dark:bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-700/50">{{ $member->last_ip }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if($member->last_activity_at)
+                                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500" title="Última actividad">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ $member->last_activity_at->diffForHumans() }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                         <div class="flex items-center gap-4 justify-end min-w-[200px]">
                             @can('manageMembers', $team)

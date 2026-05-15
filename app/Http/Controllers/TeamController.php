@@ -212,7 +212,7 @@ class TeamController extends Controller
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
 
-        $query = $team->members();
+        $query = $team->members()->with('sessions');
 
         // Search
         if ($request->filled('search')) {
