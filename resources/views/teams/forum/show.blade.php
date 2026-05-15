@@ -27,8 +27,7 @@
                         </a>
                     </div>
                     <div class="flex items-start gap-3" 
-                         x-data="{ editingTitle: false }"
-                         x-effect="if(editingTitle) { $nextTick(() => window.initForumTaskSelect($refs.taskSelect)) }">
+                         x-data="{ editingTitle: false }">
                         @if ($thread->is_pinned)
                             <span x-show="!editingTitle" class="text-violet-500 shrink-0 mt-1.5"><svg xmlns="http://www.w3.org/2000/svg"
                                     class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -52,32 +51,6 @@
                                     <button type="button" @click="editingTitle = false" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-bold transition-all">Cancelar</button>
                                 </div>
                                 
-                                <!-- Edit Task Association -->
-                                <div class="flex flex-col gap-1.5 -ml-1">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/></svg>
-                                        Vincular a Tarea
-                                    </label>
-                                    @php
-                                        $availableTasks = \App\Models\Task::where('team_id', $team->id)
-                                            ->whereNull('parent_id')
-                                            ->where(function($q) use ($thread) {
-                                                $q->whereDoesntHave('forumThread')
-                                                  ->orWhere('id', $thread->task_id);
-                                            })
-                                            ->orderBy('title')
-                                            ->get();
-                                    @endphp
-                                    <select x-ref="taskSelect" name="task_id" class="task-selector-tom w-full max-w-md">
-                                        <option value="">{{ __('forum.none') ?? '-- Ninguna (Biblioteca de Conocimiento) --' }}</option>
-                                        @foreach ($availableTasks as $t)
-                                            <option value="{{ $t->id }}" {{ $thread->task_id == $t->id ? 'selected' : '' }}
-                                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : ($t->assignedTo->count() > 0 ? $t->assignedTo->first()->name : 'Sin asignar') }}">
-                                                [{{ __('tasks.statuses.' . $t->status) }}] {{ $t->title }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
 
                                 <!-- Quick Emoji Picker -->
                                 <div class="flex items-center gap-1.5 flex-wrap -ml-1">
@@ -124,15 +97,33 @@
                         @if ($thread->task)
                             <span class="shrink-0">•</span>
                             <a href="{{ route('teams.tasks.show', [$team, $thread->task]) }}"
-                                class="text-violet-600 dark:text-violet-400 hover:underline truncate">Referencia a
-                                tarea:
-                                {{ Str::limit($thread->task->title, 30) }}</a>
+                                class="text-blue-600 dark:text-blue-400 hover:underline truncate flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
+                                <span>Tarea: {{ Str::limit($thread->task->title, 30) }}</span>
+                            </a>
+                        @else
+                            @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
+                                <span class="shrink-0">•</span>
+                                <button type="button" @click="$dispatch('open-modal', 'link-task-modal')" class="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
+                                    Vincular Tarea
+                                </button>
+                            @endif
                         @endif
                     </div>
                 </div>
 
                 @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
                     <div class="items-center gap-2 shrink-0 hidden md:inline-flex">
+                        <button type="button" @click="$dispatch('open-modal', 'link-task-modal')"
+                            class="p-2 {{ $thread->task_id ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500 hover:text-blue-600 hover:bg-blue-50 border-gray-200' }} border dark:bg-gray-800 dark:border-gray-700 rounded-xl transition-colors shadow-sm"
+                            title="{{ $thread->task_id ? 'Cambiar tarea vinculada' : 'Vincular a tarea' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" />
+                            </svg>
+                        </button>
+
                         <form action="{{ route('teams.forum.update', [$team, $thread]) }}" method="POST">
                             @csrf
                             @method('PATCH')
@@ -376,6 +367,64 @@
 
     @push('modals')
         <x-google-drive-picker :team="$team" />
+
+        @php
+            $availableTasks = \App\Models\Task::where('team_id', $team->id)
+                ->whereNull('parent_id')
+                ->where(function($q) use ($thread) {
+                    $q->whereDoesntHave('forumThread')
+                      ->orWhere('id', $thread->task_id);
+                })
+                ->orderBy('title')
+                ->get();
+        @endphp
+
+        <x-modal name="link-task-modal" focusable>
+            <form method="post" action="{{ route('teams.forum.update', [$team, $thread]) }}" class="p-6"
+                  x-data="{}" x-init="$nextTick(() => window.initForumTaskSelect($refs.taskSelectModal))">
+                @csrf
+                @method('PATCH')
+                
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white heading">
+                        Vincular a Tarea
+                    </h2>
+                </div>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    Selecciona una tarea para vincular este hilo. Esto permitirá acceder rápidamente a la conversación desde la tarea y viceversa.
+                </p>
+
+                <div class="mt-6">
+                    <x-input-label for="task_id_modal" value="Seleccionar Tarea" class="mb-2" />
+                    <select x-ref="taskSelectModal" id="task_id_modal" name="task_id" class="task-selector-tom w-full">
+                        <option value="">{{ __('forum.none') ?? '-- Ninguna (Biblioteca de Conocimiento) --' }}</option>
+                        @foreach ($availableTasks as $t)
+                            <option value="{{ $t->id }}" {{ $thread->task_id == $t->id ? 'selected' : '' }}
+                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : ($t->assignedTo->count() > 0 ? $t->assignedTo->first()->name : 'Sin asignar') }}">
+                                [{{ __('tasks.statuses.' . $t->status) }}] {{ $t->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-3">
+                    <x-secondary-button x-on:click="$dispatch('close')">
+                        {{ __('forum.cancel') ?? 'Cancelar' }}
+                    </x-secondary-button>
+
+                    <x-primary-button class="bg-blue-600 hover:bg-blue-500 shadow-blue-600/20">
+                        {{ __('Guardar vinculación') }}
+                    </x-primary-button>
+                </div>
+            </form>
+        </x-modal>
 
         <!-- Attachment History Modal -->
         <div id="attachment-history-modal" class="hidden fixed inset-0 z-[110] overflow-y-auto">

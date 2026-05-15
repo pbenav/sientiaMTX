@@ -43,6 +43,7 @@
                         </svg>
                         <input type="text" name="search" value="{{ $search }}"
                                placeholder="{{ __('Buscar por nombre o email…') }}"
+                               enterkeyhint="search"
                                class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400">
                     </div>
                     <select name="role"

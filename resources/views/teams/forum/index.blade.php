@@ -76,15 +76,23 @@
                     </div>
                     <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
                            placeholder="{{ __('forum.search_threads') ?? 'Buscar en el foro...' }}"
-                           class="block w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-gray-400 dark:text-gray-300">
+                           enterkeyhint="search"
+                           class="block w-full pl-10 pr-12 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-gray-400 dark:text-gray-300">
                     
-                    @if(!empty($filters['search']))
-                        <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 transition-colors">
-                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-1.5 gap-1">
+                        @if(!empty($filters['search']))
+                            <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </a>
+                        @endif
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="Buscar">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
-                        </a>
-                    @endif
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

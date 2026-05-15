@@ -41,26 +41,24 @@
             <form action="{{ route('teams.tasks.index', $team) }}" method="GET"
                 class="flex flex-wrap items-center gap-4">
                 <!-- Search -->
-                <div class="flex-1 min-w-[280px] flex gap-2">
-                    <div class="relative flex-1">
+                    <div class="relative flex-1 group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
                         <input type="text" name="search" value="{{ $filters['search'] }}"
                             placeholder="{{ __('tasks.search') }}..."
-                            class="w-full pl-10 pr-4 py-2 {{ $filters['search'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                            enterkeyhint="search"
+                            class="w-full pl-10 pr-12 py-2 {{ $filters['search'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                        
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="{{ __('tasks.search') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
                     </div>
-                    <button type="submit" 
-                        class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-sm transition-all flex items-center justify-center lg:hidden"
-                        title="{{ __('tasks.search') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-                </div>
 
                 <!-- Status Filter -->
                 <div class="w-40">
