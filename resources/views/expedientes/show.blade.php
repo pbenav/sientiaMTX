@@ -35,9 +35,9 @@
                     </h1>
                     
                     @php
-                        $totalTasks = $expediente->tasks->count();
-                        $completedTasks = $expediente->tasks->where('status', 'completed')->count();
-                        $avgProgress = $totalTasks > 0 ? round($expediente->tasks->avg('progress_percentage')) : 0;
+                        $totalTasks = $expediente->rootTasks->count();
+                        $completedTasks = $expediente->rootTasks->where('status', 'completed')->count();
+                        $avgProgress = $totalTasks > 0 ? round($expediente->rootTasks->avg('progress_percentage')) : 0;
                     @endphp
 
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-xs font-bold text-gray-500">
@@ -154,7 +154,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                     <h3 class="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
                         <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                        Tareas Vinculadas ({{ $expediente->tasks->count() }})
+                        Tareas Vinculadas ({{ $expediente->rootTasks->count() }})
                     </h3>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <button @click="showLinkBox = !showLinkBox" type="button"
@@ -195,7 +195,7 @@
                     </form>
                 </div>
                 
-                @if($expediente->tasks->isEmpty())
+                @if($expediente->rootTasks->isEmpty())
                     <div class="flex flex-col items-center justify-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
                         <div class="w-12 h-12 rounded-full bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-400 mb-3">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
@@ -208,7 +208,7 @@
                     </div>
                 @else
                     <div class="space-y-2">
-                        @foreach($expediente->tasks as $task)
+                        @foreach($expediente->rootTasks as $task)
                             @php
                                 $statusClasses = [
                                     'completed'   => 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',

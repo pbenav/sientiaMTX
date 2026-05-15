@@ -23,7 +23,7 @@ class ExpedienteController extends Controller
 
         $query = $team->expedientes()
             ->with(['creator'])
-            ->withCount('tasks');
+            ->withCount('rootTasks as tasks_count');
 
         $user = auth()->user();
 
@@ -128,7 +128,7 @@ class ExpedienteController extends Controller
             }
         }
 
-        $expediente->load(['creator', 'tasks.assignedUser', 'tasks.creator', 'attachments.user', 'relatedExpedientes']);
+        $expediente->load(['creator', 'rootTasks.assignedUser', 'rootTasks.creator', 'attachments.user', 'relatedExpedientes']);
 
         // Get all tasks from the team that aren't currently attached to this expediente.
         $availableTasks = $team->tasks()

@@ -48,6 +48,15 @@ class Expediente extends Model
         return $this->hasMany(Task::class);
     }
 
+    /**
+     * Get only the root tasks (parents) linked to this expediente.
+     * This avoids duplication in the UI when tasks have children.
+     */
+    public function rootTasks(): HasMany
+    {
+        return $this->hasMany(Task::class)->whereNull('parent_id');
+    }
+
     public function attachments(): MorphMany
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');
