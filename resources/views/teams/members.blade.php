@@ -118,8 +118,14 @@
                         <img src="{{ $member->profile_photo_url }}" alt="{{ $member->name }}" 
                             class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm border border-gray-100 dark:border-gray-800">
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">{{ $member->name }}
-                            </p>
+                            <button type="button" @click="$dispatch('open-modal', 'member-activity-{{ $member->id }}')" class="group/name text-left block">
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-200 group-hover/name:text-violet-600 dark:group-hover/name:text-violet-400 transition-colors flex items-center gap-1.5">
+                                    {{ $member->name }}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </p>
+                            </button>
                             <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
                                 <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ $member->email }}</p>
                                 <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium flex items-center gap-1">
@@ -174,6 +180,89 @@
                                     @endif
                                 </div>
                             @endif
+
+                            <x-modal name="member-activity-{{ $member->id }}" focusable>
+                                <div class="p-6">
+                                    <div class="flex items-start gap-4 mb-8">
+                                        <img src="{{ $member->profile_photo_url }}" class="w-16 h-16 rounded-2xl object-cover shadow-lg border-2 border-white dark:border-gray-800">
+                                        <div>
+                                            <h2 class="text-xl font-black text-gray-900 dark:text-white heading leading-none mb-2">{{ $member->name }}</h2>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">{{ $member->email }}</p>
+                                            <div class="flex items-center gap-2 mt-3">
+                                                @php
+                                                    $membership = $member->teams()->where('team_id', $team->id)->first();
+                                                    $roleName = $membership && $membership->pivot->role_id ? \DB::table('team_roles')->where('id', $membership->pivot->role_id)->value('name') : 'user';
+                                                @endphp
+                                                <span class="px-2 py-0.5 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-violet-100 dark:border-violet-800/50">
+                                                    {{ __('teams.' . $roleName) }}
+                                                </span>
+                                                @if($member->isOnline())
+                                                    <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-emerald-100 dark:border-emerald-900/50">Online</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tareas</p>
+                                            <p class="text-2xl font-black text-gray-900 dark:text-white heading">{{ $member->created_tasks_count }}</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ $member->assigned_tasks_count }} completadas</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Foro</p>
+                                            <p class="text-2xl font-black text-gray-900 dark:text-white heading">{{ $member->forum_threads_count + $member->forum_messages_count }}</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ $member->forum_threads_count }} hilos / {{ $member->forum_messages_count }} msgs</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Aportes</p>
+                                            <p class="text-2xl font-black text-gray-900 dark:text-white heading">{{ $member->attachments_count }}</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">Archivos subidos</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Kudos</p>
+                                            <p class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ $member->received_kudos_count }}</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">Recibidos</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-6">
+                                         <div class="flex items-center justify-between p-4 bg-violet-600 rounded-2xl text-white shadow-lg shadow-violet-500/25">
+                                            <div>
+                                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Experiencia Total</p>
+                                                <p class="text-2xl font-black heading">{{ number_format($member->experience_points) }} XP</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Resiliencia</p>
+                                                <p class="text-2xl font-black heading">{{ number_format($member->resilience_points) }} RP</p>
+                                            </div>
+                                         </div>
+
+                                         @if($member->skills->isNotEmpty())
+                                         <div>
+                                            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                                Habilidades en este Equipo
+                                            </h3>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($member->skills as $skill)
+                                                    <div class="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl flex items-center gap-2">
+                                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $skill->name }}</span>
+                                                        <span class="text-[10px] font-black text-violet-500">Lv.{{ $skill->pivot->level ?? 1 }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                         </div>
+                                         @endif
+                                    </div>
+
+                                    <div class="mt-8 flex justify-end">
+                                        <x-secondary-button x-on:click="$dispatch('close')">Cerrar Perfil</x-secondary-button>
+                                    </div>
+                                </div>
+                            </x-modal>
                         </div>
                         <div class="flex items-center gap-4 justify-end min-w-[200px]">
                             @can('manageMembers', $team)

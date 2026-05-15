@@ -212,7 +212,19 @@ class TeamController extends Controller
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
 
-        $query = $team->members()->with('sessions');
+        $query = $team->members()->with('sessions')
+            ->withCount([
+                'createdTasks' => fn($q) => $q->where('team_id', $team->id),
+                'forumThreads' => fn($q) => $q->where('team_id', $team->id),
+                'forumMessages' => fn($q) => $q->whereHas('thread', fn($sq) => $sq->where('team_id', $team->id)),
+                'attachments' => fn($q) => $q->whereHasMorph('attachable', [\App\Models\Task::class], fn($sq) => $sq->where('team_id', $team->id)),
+                'receivedKudos' => fn($q) => $q->where('team_id', $team->id),
+                'assignedTasks' => fn($q) => $q->where('team_id', $team->id)->where('status', 'completed')
+            ]);
+        
+        $query->with(['skills' => function($q) use ($team) {
+            $q->where('team_id', $team->id)->orWhereNull('team_id');
+        }]);
 
         // Search
         if ($request->filled('search')) {

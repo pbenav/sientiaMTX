@@ -264,6 +264,16 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         return $this->hasMany(TaskAttachment::class);
     }
 
+    public function forumThreads(): HasMany
+    {
+        return $this->hasMany(ForumThread::class);
+    }
+
+    public function forumMessages(): HasMany
+    {
+        return $this->hasMany(ForumMessage::class);
+    }
+
     public function hasAvailableQuota(int $bytes): bool
     {
         return ($this->disk_used + $bytes) <= $this->disk_quota;
