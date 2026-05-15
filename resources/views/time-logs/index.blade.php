@@ -42,7 +42,7 @@
     </x-slot>
 
     <div x-data="{ teamModalOpen: false }" class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Estado de Energía -->
@@ -679,6 +679,8 @@
                 zoom = 13;
             }
             
+            let isMapFirstRender = true;
+            
             const map = L.map('resilience-heatmap', { 
                 center: center, 
                 zoom: zoom,
@@ -786,10 +788,11 @@
                     }
                 });
 
-                // Si hay más de un punto, ajustar el mapa para que se vean todos
-                if (validPoints.length > 1) {
+                // Si es el primer renderizado y hay más de un punto, ajustar el mapa para que se vean todos
+                if (isMapFirstRender && validPoints.length > 1) {
                     const bounds = L.latLngBounds(validPoints.map(p => [p.lat, p.lng]));
                     map.fitBounds(bounds, { padding: [50, 50] });
+                    isMapFirstRender = false;
                 }
             };
 

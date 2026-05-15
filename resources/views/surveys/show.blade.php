@@ -255,7 +255,7 @@
                                     <div class="bg-white dark:bg-gray-800/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
                                         <div class="flex items-start justify-between mb-4 border-l-2 border-indigo-600 pl-3">
                                             <div class="min-w-0">
-                                                <h3 class="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight line-clamp-3" title="{{ $question->title }}">{{ $question->title }}</h3>
+                                                <h3 class="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight" title="{{ $question->title }}">{{ $question->title }}</h3>
                                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
                                                     {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Respuestas') : __('Pregunta abierta') }}
                                                 </p>
@@ -277,7 +277,7 @@
                                                         @endphp
                                                         <div class="relative">
                                                             <div class="flex items-center justify-between mb-1 px-0.5">
-                                                                <span class="text-[11px] sm:text-xs font-bold line-clamp-2 {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
+                                                                <span class="text-[11px] sm:text-xs font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
                                                                     {{ $option->label }}
                                                                 </span>
                                                                 <span class="text-xs font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">
@@ -309,7 +309,7 @@
                                                 @foreach($question->votes->take(5) as $vote)
                                                     @if($vote->text_value)
                                                         <div class="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
-                                                            <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-tight italic line-clamp-2">"{{ $vote->text_value }}"</p>
+                                                            <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-tight italic">"{{ $vote->text_value }}"</p>
                                                             <div class="flex items-center gap-1.5 mt-1">
                                                                 <img src="{{ $vote->user->profile_photo_url }}" class="w-3.5 h-3.5 rounded-full">
                                                                 <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ $vote->user->name }}</span>

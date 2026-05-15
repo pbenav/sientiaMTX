@@ -24,7 +24,12 @@
     },
 
     get preview() {
-        return typeof marked !== 'undefined' ? marked.parse(this.content || '') : '{{ __("Cargando...") }}';
+        if (typeof marked === 'undefined') return '{{ __("Cargando...") }}';
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+        return marked.parse(this.content || '');
     },
 
     async fetchMentions() {

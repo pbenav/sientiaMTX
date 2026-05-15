@@ -46,6 +46,14 @@
         line-height: 1.6;
     }
 
+    .markdown-content p, .prose p {
+        margin-bottom: 1.25rem;
+    }
+
+    .markdown-content p:last-child, .prose p:last-child {
+        margin-bottom: 0;
+    }
+
     .markdown-content h1, .prose h1,
     .prose :where(h1):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
         font-size: var(--md-h1-size) !important;

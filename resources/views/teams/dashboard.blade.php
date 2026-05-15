@@ -192,7 +192,7 @@
                                             @endif
 
                                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                                class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white truncate transition-colors flex items-center gap-1.5 font-black">
+                                                class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white transition-colors flex items-center gap-1.5 font-black">
                                                 @if ($task->visibility === 'private')
                                                     <svg xmlns="http://www.w3.org/2000/svg"
                                                         class="h-2.5 w-2.5 text-amber-500/80 shrink-0" fill="none"
@@ -202,7 +202,7 @@
                                                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                     </svg>
                                                 @endif
-                                                <span class="truncate">{{ $task->title }}</span>
+                                                <span>{{ $task->title }}</span>
                                                 @if ($task->is_template)
                                                     <span class="px-1 py-0.5 rounded-[4px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-violet-200 dark:border-violet-700/50 shadow-sm" title="{{ __('tasks.plan_master') }}">M</span>
                                                 @endif
@@ -246,7 +246,7 @@
                                                         class="flex items-center gap-2 py-1 px-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all group/sub">
                                                         <div class="w-1 h-1 rounded-full bg-gray-400/50"></div>
                                                         <a href="{{ route('teams.tasks.show', [$team, $child]) }}"
-                                                            class="flex-1 text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white truncate">
+                                                            class="flex-1 text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white">
                                                             {{ $child->title }}
                                                         </a>
                                                         @if ($child->assignedUser)
@@ -303,7 +303,7 @@
                             data-id="{{ $task->id }}" data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
                             <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
                             <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                                class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                                 {{ $task->title }}
                             </a>
                         </div>

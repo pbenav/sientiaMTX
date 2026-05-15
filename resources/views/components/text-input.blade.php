@@ -31,7 +31,7 @@
     @elseif($emoji && !$disabled)
         <button type="button" 
             @click="showEmoji = !showEmoji"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all focus:outline-none pointer-events-auto"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-500 opacity-40 group-hover:opacity-100 transition-all focus:outline-none pointer-events-auto"
             title="Añadir icono">
             😊
         </button>

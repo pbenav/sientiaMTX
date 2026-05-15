@@ -175,11 +175,11 @@
 
                                 <!-- Title & Description -->
                                 <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}" class="flex-grow">
-                                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-3">
+                                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                         {{ $survey->title }}
                                     </h3>
                                     @if($survey->description)
-                                        <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 line-clamp-5 font-medium">
+                                        <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 font-medium">
                                             {{ $survey->description }}
                                         </p>
                                     @endif
