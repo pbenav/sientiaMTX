@@ -371,10 +371,17 @@
                                     </div>
                                     <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Google Drive</div>
                                 </button>
+                                <button type="button" id="import-btn-example" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-emerald-50/30 dark:bg-emerald-500/10 hover:border-emerald-500 transition-all text-center group">
+                                    <div class="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shadow-sm">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    </div>
+                                    <div class="font-black text-[9px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400">{{ __("JSON Ejemplo") }}</div>
+                                </button>
                             </div>
                         `,
                         didOpen: (el) => {
                             el.querySelector('#import-btn-file').onclick = () => { Swal.close(); this.$refs.jsonInput.click(); };
+                            el.querySelector('#import-btn-example').onclick = () => { Swal.close(); this.downloadExampleJSON(); };
                             el.querySelector('#import-btn-clipboard').onclick = async () => { 
                                 Swal.close(); 
                                 Swal.fire({
@@ -428,6 +435,41 @@
                             };
                         }
                     });
+                },
+                downloadExampleJSON() {
+                    const example = [
+                        {
+                            "title": "{{ __('Nivel de satisfacción') }}",
+                            "description": "{{ __('Indica cómo te sientes con el proyecto') }}",
+                            "type": "rating",
+                            "is_required": true
+                        },
+                        {
+                            "title": "{{ __('¿Qué mejorarías?') }}",
+                            "type": "multiple_choice",
+                            "options": [
+                                "{{ __('Comunicación') }}",
+                                "{{ __('Herramientas') }}",
+                                "{{ __('Plazos') }}",
+                                "{{ __('Nada, todo genial') }}"
+                            ]
+                        },
+                        {
+                            "title": "{{ __('Sugerencias adicionales') }}",
+                            "type": "text",
+                            "is_required": false
+                        }
+                    ];
+                    
+                    const blob = new Blob([JSON.stringify(example, null, 4)], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'encuesta-ejemplo.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
                 },
                 importJSON(event) {
                     const file = event.target.files[0];

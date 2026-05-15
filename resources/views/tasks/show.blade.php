@@ -1686,6 +1686,65 @@
                         @endforeach
                     </div>
                 @endif
+
+                <!-- Historial de cambios como Timeline -->
+                <div class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
+                    <div class="bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                        <h3 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {{ __('tasks.activity_history') ?? 'Historial de Actividad' }}
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8 space-y-8">
+                            @forelse (($task->histories?->sortByDesc('created_at') ?? collect())->take(15) as $log)
+                                <div onclick="showHistoryDiff({{ $log->id }})" class="relative group cursor-pointer">
+                                    <!-- Dot -->
+                                    <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-white dark:border-gray-900 bg-violet-500 shadow-sm ring-4 ring-violet-50 dark:ring-violet-900/20 group-hover:scale-125 transition-transform"></div>
+                                    
+                                    <div class="bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl p-4 border border-transparent group-hover:border-violet-100 dark:group-hover:border-violet-900/30 transition-all">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $log->user?->name ?? 'Sistema' }}</span>
+                                                <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/50 shadow-sm">
+                                                    {{ $log->action_label ?? 'ACTUALIZACIÓN' }}
+                                                </span>
+                                            </div>
+                                            <span class="text-[10px] text-gray-400 font-bold tabular-nums">{{ $log->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://ui-avatars.com/api/?name=S&color=7c3aed&background=f5f3ff' }}" 
+                                                    alt="{{ $log->user?->name ?? 'System' }}"
+                                                    class="w-6 h-6 rounded-full object-cover border border-white dark:border-gray-800 shadow-sm">
+                                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Realizó cambios en los detalles de la tarea</p>
+                                            </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-300 dark:text-gray-600 group-hover:text-violet-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="py-10 text-center">
+                                    <div class="w-12 h-12 bg-gray-50 dark:bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-400 italic">{{ __('tasks.no_history') }}</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Foro / Discusión -->
+                <div class="mt-8">
+                    @include('teams.forum.partials.thread-widget')
+                </div>
             </div>
         </div>
 
@@ -2138,42 +2197,6 @@
                 </div>
             @endif
 
-            <!-- 12. Historial Card -->
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                <div class="bg-gray-50/50 dark:bg-gray-800/50 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                    <h3 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('tasks.activity_history') ?? 'HISTORIAL DE CAMBIOS' }}</h3>
-                </div>
-                <div class="divide-y divide-gray-50 dark:divide-gray-800/50 max-h-80 overflow-y-auto custom-scrollbar">
-                    @forelse (($task->histories?->sortByDesc('created_at') ?? collect())->take(15) as $log)
-                        <div onclick="showHistoryDiff({{ $log->id }})" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50/30 dark:hover:bg-gray-800/20 transition-colors group cursor-pointer">
-                            <div class="flex items-center gap-3">
-                                <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://ui-avatars.com/api/?name=S&color=7c3aed&background=f5f3ff' }}" 
-                                    alt="{{ $log->user?->name ?? 'System' }}"
-                                    class="w-7 h-7 rounded-lg object-cover shadow-sm border border-gray-100 dark:border-gray-700">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $log->user?->name ?? 'Sistema' }}</span>
-                                    <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-100/50 dark:border-violet-800/50">
-                                        {{ $log->action_label ?? 'UPDATED' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium tabular-nums">{{ $log->created_at->format('d/m H:i') }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="p-8 text-center">
-                            <p class="text-xs text-gray-400 italic">{{ __('tasks.no_history') }}</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
-            <!-- 10. Discusion en el foro Card -->
-            @include('teams.forum.partials.thread-widget')
         </div>
     </div>
 

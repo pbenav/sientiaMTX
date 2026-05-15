@@ -93,13 +93,17 @@
         </div>
     @else
         <div class="space-y-4">
-            <div class="max-h-[700px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+            <div class="max-h-[700px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
                 id="widget-messages-container">
-                @forelse($rootTask->forumThread->messages()->whereNull('parent_id')->withCount('votes')->with(['user', 'replies.user'])->orderBy('votes_count', 'desc')->orderBy('created_at', 'asc')->get() as $message)
+                <div class="relative ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8 space-y-6">
+                    @forelse($rootTask->forumThread->messages()->whereNull('parent_id')->withCount('votes')->with(['user', 'replies.user'])->orderBy('votes_count', 'desc')->orderBy('created_at', 'asc')->get() as $message)
+    
+                        <div class="relative group">
+                            <!-- Dot -->
+                            <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 shadow-sm ring-4 ring-gray-50 dark:ring-gray-900/20 group-hover:bg-violet-500 transition-colors"></div>
 
-                    <div class="group">
-                        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 mb-2 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all">
-                            <div class="flex items-center justify-between mb-1.5">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all shadow-sm">
+                                <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-1.5">
                                     <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
                                         class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 flex-shrink-0">
@@ -197,8 +201,9 @@
                         @endif
                     </div>
                 @empty
-                    <p class="text-xs text-gray-400 italic text-center py-2">{{ __('forum.no_comments_yet') }}</p>
+                    <p class="text-xs text-gray-400 italic text-center py-6">{{ __('forum.no_comments_yet') }}</p>
                 @endforelse
+                </div>
             </div>
 
             @if (!$rootTask->forumThread->is_locked)

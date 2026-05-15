@@ -109,7 +109,7 @@
             async loadFolder(folderId) {
                 this.loading = true;
                 try {
-                    const response = await fetch(`{{ route('google.drive.list') }}?folderId=${folderId || ''}&team_id={{ $team->id }}`);
+                    const response = await fetch(`{{ route('google.drive.list') }}?folderId=${folderId || ''}&team_id={{ $team?->id ?? '' }}`);
                     const data = await response.json();
                     this.files = data.files || [];
                     if (folderId === null) this.breadcrumbs = [];
@@ -135,15 +135,20 @@
                         }));
                         this.isOpen = false;
                     } else {
-                        this.attachFile(file);
+                        @if($team)
+                            this.attachFile(file);
+                        @else
+                            console.warn('Cannot attach file without team context');
+                        @endif
                     }
                 }
             },
 
             async attachFile(file) {
+                @if(!$team) return; @endif
                 this.loading = true;
                 try {
-                    const response = await fetch('{{ route('teams.attachments.from-drive', [$team]) }}', {
+                    const response = await fetch('{{ $team ? route('teams.attachments.from-drive', [$team]) : '#' }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
