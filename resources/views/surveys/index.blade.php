@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout maxWidth="[1600px]">
     @php
         $routePrefix = $team ? 'teams.surveys.' : 'global-surveys.';
         $isGlobal = !$team;
@@ -134,7 +134,7 @@
                 </div>
             @else
                 <!-- Survey Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" x-ref="surveyGrid">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8" x-ref="surveyGrid">
                     @foreach($surveys as $survey)
                         <div class="survey-card group relative bg-white dark:bg-gray-900 rounded-2xl p-1 transition-all duration-500 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 border border-gray-100 dark:border-gray-800 overflow-hidden"
                              x-show="search === '' || '{{ strtolower($survey->title) }}'.includes(search.toLowerCase()) || '{{ strtolower($survey->description) }}'.includes(search.toLowerCase())"
@@ -149,15 +149,15 @@
                                 <div class="flex items-start justify-between mb-6">
                                     <div class="flex flex-col gap-2">
                                         <div class="flex items-center gap-2">
-                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-600 text-white shadow-lg shadow-violet-500/20">
+                                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-violet-600 text-white shadow-lg shadow-violet-500/20">
                                                 {{ $survey->questions->count() }} {{ trans_choice('Pregunta|Preguntas', $survey->questions->count()) }}
                                             </span>
                                             @if($survey->is_closed)
-                                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                                                     {{ __('Cerrada') }}
                                                 </span>
                                             @elseif($survey->is_expired)
-                                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500 text-white shadow-lg shadow-red-500/20">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500 text-white shadow-lg shadow-red-500/20">
                                                     {{ __('Expirada') }}
                                                 </span>
                                             @endif
@@ -175,11 +175,11 @@
 
                                 <!-- Title & Description -->
                                 <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}" class="flex-grow">
-                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-3">
                                         {{ $survey->title }}
                                     </h3>
                                     @if($survey->description)
-                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 line-clamp-3 font-medium">
+                                        <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 line-clamp-5 font-medium">
                                             {{ $survey->description }}
                                         </p>
                                     @endif

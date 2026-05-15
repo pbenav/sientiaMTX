@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout maxWidth="[1600px]">
     @php
         $isGlobal = is_null($survey->team_id);
         $routePrefix = $isGlobal ? 'global-surveys.' : 'teams.surveys.';
@@ -6,7 +6,7 @@
     @endphp
 
     <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen">
-        <div class="max-w-7xl mx-auto">
+        <div class="max-w-full mx-auto">
             
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
@@ -140,7 +140,7 @@
                             <div class="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
                                 <span class="w-2.5 h-2.5 block rounded-full {{ $survey->is_closed ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></span>
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                            <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
                                 {{ $survey->is_closed ? __('Finalizada') : __('Activa') }}
                             </span>
                         </div>
@@ -149,13 +149,13 @@
 
                         <div class="flex items-center gap-2">
                             <img src="{{ $survey->creator->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-800 shadow-sm">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Por') }}</span>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ $survey->creator->name }}</span>
+                            <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400">{{ __('Por') }}</span>
+                            <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ $survey->creator->name }}</span>
                         </div>
                     </div>
 
                     @if($survey->expires_at)
-                        <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        <div class="flex items-center gap-2 text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400">
                             <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             {{ $survey->is_expired ? __('Expiró') : __('Finaliza') }} {{ $survey->expires_at->diffForHumans() }}
                         </div>
@@ -176,10 +176,10 @@
                         <div class="mb-12">
                             <div class="flex items-center justify-between mb-8">
                                 <div class="flex flex-col">
-                                    <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                                    <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
                                         {{ __('Resumen de Resultados') }}
                                     </h2>
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Métricas clave y participación en tiempo real') }}</p>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Métricas clave y participación en tiempo real') }}</p>
                                 </div>
                                 <button onclick="window.print()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -191,8 +191,8 @@
                                 <!-- Total Votes KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Participación') }}</p>
-                                        <h4 class="text-2xl font-black text-gray-900 dark:text-white">{{ $totalVotes }}</h4>
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Participación') }}</p>
+                                        <h4 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{{ $totalVotes }}</h4>
                                         <p class="text-[9px] font-bold text-emerald-500 mt-1 flex items-center gap-1">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                                             {{ __('Votos totales') }}
@@ -206,8 +206,8 @@
                                 <!-- Status KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estado') }}</p>
-                                        <h4 class="text-lg font-black {{ $survey->is_closed ? 'text-red-500' : 'text-emerald-500' }} uppercase tracking-tight">
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estado') }}</p>
+                                        <h4 class="text-lg sm:text-xl font-black {{ $survey->is_closed ? 'text-red-500' : 'text-emerald-500' }} uppercase tracking-tight">
                                             {{ $survey->is_closed ? __('Cerrada') : __('Abierta') }}
                                         </h4>
                                         <p class="text-[9px] font-bold text-gray-400 mt-1">
@@ -222,8 +222,8 @@
                                 <!-- Questions KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estructura') }}</p>
-                                        <h4 class="text-2xl font-black text-gray-900 dark:text-white">{{ $survey->questions->count() }}</h4>
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estructura') }}</p>
+                                        <h4 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{{ $survey->questions->count() }}</h4>
                                         <p class="text-[9px] font-bold text-indigo-500 mt-1">
                                             {{ __('Preguntas totales') }}
                                         </p>
@@ -236,8 +236,8 @@
                                 <!-- Visibility KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Ámbito') }}</p>
-                                        <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Ámbito') }}</p>
+                                        <h4 class="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">
                                             {{ $isGlobal ? __('Global') : ($contextTeam->name ?? __('Equipo')) }}
                                         </h4>
                                         <p class="text-[9px] font-bold text-violet-500 mt-1">
@@ -250,13 +250,13 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                                 @foreach($survey->questions as $question)
                                     <div class="bg-white dark:bg-gray-800/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
                                         <div class="flex items-start justify-between mb-4 border-l-2 border-indigo-600 pl-3">
                                             <div class="min-w-0">
-                                                <h3 class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate" title="{{ $question->title }}">{{ $question->title }}</h3>
-                                                <p class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                                                <h3 class="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight line-clamp-3" title="{{ $question->title }}">{{ $question->title }}</h3>
+                                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
                                                     {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Respuestas') : __('Pregunta abierta') }}
                                                 </p>
                                             </div>
@@ -276,11 +276,11 @@
                                                             $isWinner = $qTotalVotes > 0 && $maxVotes === $option->votes_count;
                                                         @endphp
                                                         <div class="relative">
-                                                            <div class="flex items-center justify-between mb-0.5 px-0.5">
-                                                                <span class="text-[9px] font-bold truncate max-w-[80px] {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
+                                                            <div class="flex items-center justify-between mb-1 px-0.5">
+                                                                <span class="text-[11px] sm:text-xs font-bold line-clamp-2 {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
                                                                     {{ $option->label }}
                                                                 </span>
-                                                                <span class="text-[9px] font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">
+                                                                <span class="text-xs font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">
                                                                     {{ $percentage }}%
                                                                 </span>
                                                             </div>
@@ -700,7 +700,7 @@
 
         <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
 
-        <span class="px-2 text-[10px] font-black uppercase tracking-tight text-gray-900 dark:text-white max-w-[200px] truncate">
+        <span class="px-2 text-[10px] font-black uppercase tracking-tight text-gray-900 dark:text-white max-w-[400px] truncate">
             {{ $survey->title }}
         </span>
 
