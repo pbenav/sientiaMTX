@@ -11,22 +11,22 @@
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
             <div class="flex items-start gap-4 min-w-0 flex-1">
-                @if(!$isGlobal)
-                    <a href="{{ route('teams.index') }}"
-                        class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                        title="{{ __('navigation.back') ?? 'Volver' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </a>
-                @endif
+                <a href="{{ route($routePrefix . 'index', $contextTeam ? [$contextTeam] : []) }}"
+                    class="print-hide mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
                 <div class="min-w-0 flex-1">
                     @if(!$isGlobal)
-                        @include('teams.partials.breadcrumb')
+                        <div class="print-hide">
+                            @include('teams.partials.breadcrumb')
+                        </div>
                     @endif
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <h1 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                         </svg>
                         {{ $survey->title }}
@@ -97,9 +97,14 @@
                             </div>
                         @endif
 
-                        @can('delete', $survey)
                         <div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
 
+                        <button onclick="window.print()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            {{ __('Imprimir Informe') }}
+                        </button>
+
+                        @can('delete', $survey)
                         <a href="{{ route($contextTeam ? 'teams.surveys.export-json' : 'global-surveys.export-json', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" 
                            class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -120,16 +125,16 @@
         </div>
 
         @if(!$isGlobal)
-            <div class="mt-8 mb-4 flex w-full">
+            <div class="mt-8 mb-4 flex w-full view-switcher-container">
                 @include('teams.partials.view-switcher')
             </div>
         @endif
     </x-slot>
 
             <!-- Main Content Card -->
-            <div class="bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden mb-12">
+            <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden mb-12">
                 <!-- Status Banner -->
-                <div class="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800">
+                <div class="print-hide px-8 py-4 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800">
                     <div class="flex items-center gap-6">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
@@ -169,64 +174,118 @@
 
                     @if($showResults)
                         <div class="mb-12">
-                            <div class="flex items-center justify-between mb-16">
-                                <div class="flex flex-col gap-1">
-                                    <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                                        {{ __('Resultados en Vivo') }}
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="flex flex-col">
+                                    <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                                        {{ __('Resumen de Resultados') }}
                                     </h2>
-                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Visualización de datos en tiempo real') }}</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Métricas clave y participación en tiempo real') }}</p>
                                 </div>
-                                <div class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                    <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">{{ $totalVotes }}</span>
-                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                        {{ trans_choice('Voto|Votos', $totalVotes) }}
-                                    </span>
+                                <button onclick="window.print()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                    {{ __('Imprimir Reporte') }}
+                                </button>
+                            </div>
+                            <!-- Top KPI Cards -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                                <!-- Total Votes KPI -->
+                                <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Participación') }}</p>
+                                        <h4 class="text-2xl font-black text-gray-900 dark:text-white">{{ $totalVotes }}</h4>
+                                        <p class="text-[9px] font-bold text-emerald-500 mt-1 flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                                            {{ __('Votos totales') }}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    </div>
+                                </div>
+
+                                <!-- Status KPI -->
+                                <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estado') }}</p>
+                                        <h4 class="text-lg font-black {{ $survey->is_closed ? 'text-red-500' : 'text-emerald-500' }} uppercase tracking-tight">
+                                            {{ $survey->is_closed ? __('Cerrada') : __('Abierta') }}
+                                        </h4>
+                                        <p class="text-[9px] font-bold text-gray-400 mt-1">
+                                            {{ $survey->is_closed ? __('Finalizado el plazo') : __('Recibiendo respuestas') }}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-2xl {{ $survey->is_closed ? 'bg-red-50 dark:bg-red-500/10 text-red-500' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500' }} flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                </div>
+
+                                <!-- Questions KPI -->
+                                <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estructura') }}</p>
+                                        <h4 class="text-2xl font-black text-gray-900 dark:text-white">{{ $survey->questions->count() }}</h4>
+                                        <p class="text-[9px] font-bold text-indigo-500 mt-1">
+                                            {{ __('Preguntas totales') }}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                </div>
+
+                                <!-- Visibility KPI -->
+                                <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Ámbito') }}</p>
+                                        <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">
+                                            {{ $isGlobal ? __('Global') : ($contextTeam->name ?? __('Equipo')) }}
+                                        </h4>
+                                        <p class="text-[9px] font-bold text-violet-500 mt-1">
+                                            {{ $isGlobal ? __('Toda la plataforma') : __('Acceso restringido') }}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="space-y-24">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 @foreach($survey->questions as $question)
-                                    <div>
-                                        <div class="flex items-center justify-between mb-8 border-l-4 border-indigo-600 pl-4">
-                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $question->title }}</h3>
-                                            @if($question->type !== 'text')
-                                                <div class="flex gap-2">
-                                                    <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                                        {{ $question->votes()->count() }} {{ __('Respuestas') }}
-                                                    </span>
-                                                </div>
-                                            @endif
+                                    <div class="bg-white dark:bg-gray-800/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
+                                        <div class="flex items-start justify-between mb-4 border-l-2 border-indigo-600 pl-3">
+                                            <div class="min-w-0">
+                                                <h3 class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate" title="{{ $question->title }}">{{ $question->title }}</h3>
+                                                <p class="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                                                    {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Respuestas') : __('Pregunta abierta') }}
+                                                </p>
+                                            </div>
                                         </div>
                                         
                                         @if($question->type !== 'text')
-                                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                                                <!-- Legend & Details -->
-                                                <div class="space-y-6 order-2 lg:order-1">
+                                            <div class="flex flex-1 items-center gap-4">
+                                                <!-- Legend (Ultra compact KPI style) -->
+                                                <div class="flex-1 space-y-2">
                                                     @php 
                                                         $qTotalVotes = $question->votes()->count();
                                                         $maxVotes = $question->options->max('votes_count');
                                                     @endphp
-                                                    @foreach($question->options as $option)
+                                                    @foreach($question->options->sortByDesc('votes_count')->take(3) as $option)
                                                         @php
-                                                            $percentage = $qTotalVotes > 0 ? round(($option->votes_count / $qTotalVotes) * 100, 1) : 0;
+                                                            $percentage = $qTotalVotes > 0 ? round(($option->votes_count / $qTotalVotes) * 100, 0) : 0;
                                                             $isWinner = $qTotalVotes > 0 && $maxVotes === $option->votes_count;
                                                         @endphp
-                                                        <div class="relative group">
-                                                            <div class="flex items-center justify-between mb-2 px-2">
-                                                                <div class="flex items-center gap-3">
-                                                                    <div class="w-3 h-3 rounded-full chart-color-indicator" data-index="{{ $loop->index }}"></div>
-                                                                    <span class="text-sm font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300' }}">
-                                                                        {{ $option->label }}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="text-right">
-                                                                    <span class="text-sm font-black {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
-                                                                        {{ $percentage }}%
-                                                                    </span>
-                                                                </div>
+                                                        <div class="relative">
+                                                            <div class="flex items-center justify-between mb-0.5 px-0.5">
+                                                                <span class="text-[9px] font-bold truncate max-w-[80px] {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
+                                                                    {{ $option->label }}
+                                                                </span>
+                                                                <span class="text-[9px] font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">
+                                                                    {{ $percentage }}%
+                                                                </span>
                                                             </div>
-                                                            <div class="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
-                                                                <div class="h-full rounded-full transition-all duration-1000 ease-out {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
+                                                            <div class="h-1 w-full bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden">
+                                                                <div class="h-full rounded-full {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
                                                                      style="width: {{ $percentage }}%">
                                                                 </div>
                                                             </div>
@@ -234,9 +293,9 @@
                                                     @endforeach
                                                 </div>
 
-                                                <!-- Chart Canvas -->
-                                                <div class="relative order-1 lg:order-2 flex justify-center">
-                                                    <div class="w-full max-w-[400px] aspect-square">
+                                                <!-- Mini Chart -->
+                                                <div class="relative shrink-0 flex justify-center">
+                                                    <div class="w-[90px] h-[90px]">
                                                         <canvas id="chart-{{ $question->id }}" 
                                                                 data-type="{{ $question->type }}" 
                                                                 data-labels='@json($question->options->pluck("label"))'
@@ -245,33 +304,19 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <!-- Free Text Answers Table -->
-                                            <div class="mt-8 overflow-hidden bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm">
-                                                <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-800">
-                                                    <thead class="bg-gray-50 dark:bg-gray-800/50">
-                                                        <tr>
-                                                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ __('Participante') }}</th>
-                                                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ __('Respuesta') }}</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                                                        @foreach($question->votes as $vote)
-                                                            @if($vote->text_value)
-                                                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                                        <div class="flex items-center gap-3">
-                                                                            <img src="{{ $vote->user->profile_photo_url }}" class="w-8 h-8 rounded-full shadow-sm border border-white dark:border-gray-800">
-                                                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $vote->user->name }}</span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td class="px-6 py-4">
-                                                                        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed italic">"{{ $vote->text_value }}"</p>
-                                                                    </td>
-                                                                </tr>
-                                                            @endif
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
+                                            <!-- Compact Text Answers -->
+                                            <div class="flex-1 mt-2 space-y-2 overflow-y-auto max-h-[80px] custom-scrollbar pr-2">
+                                                @foreach($question->votes->take(5) as $vote)
+                                                    @if($vote->text_value)
+                                                        <div class="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
+                                                            <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-tight italic line-clamp-2">"{{ $vote->text_value }}"</p>
+                                                            <div class="flex items-center gap-1.5 mt-1">
+                                                                <img src="{{ $vote->user->profile_photo_url }}" class="w-3.5 h-3.5 rounded-full">
+                                                                <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ $vote->user->name }}</span>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
                                             </div>
                                         @endif
                                     </div>
@@ -292,7 +337,23 @@
                             </div>
                         @endif
 
-                        <div x-show="showForm" x-collapse x-cloak class="space-y-12" x-data="votingManager(@json($userVotes->map(fn($v) => $v->pluck('option_id'))))">
+                        @php
+                            $initialAnswers = $userVotes->mapWithKeys(function($votes, $qId) use ($survey) {
+                                $question = $survey->questions->where('id', $qId)->first();
+                                if (!$question) return [];
+                                
+                                if ($question->type === 'text') {
+                                    return [$qId => $votes->first()->text_value ?? ''];
+                                } elseif ($question->type === 'multiple_choice') {
+                                    return [$qId => $votes->pluck('option_id')->toArray()];
+                                } else {
+                                    // single_choice o rating (asumiendo que rating guarda option_id o valor similar)
+                                    return [$qId => $votes->first()->option_id ?? ''];
+                                }
+                            });
+                        @endphp
+
+                        <div x-show="showForm" x-collapse x-cloak class="space-y-12" x-data="votingManager(@json($initialAnswers))">
                             <form action="{{ route($routePrefix . 'vote', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" id="survey-form">
                                 @csrf
                                 
@@ -305,7 +366,7 @@
                                                     {{ $index + 1 }}
                                                 </div>
                                                 <div>
-                                                    <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase mb-2">{{ $question->title }}</h3>
+                                                    <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight uppercase mb-2">{{ $question->title }}</h3>
                                                     @if($question->description)
                                                         <p class="text-gray-500 dark:text-gray-400 font-medium">{{ $question->description }}</p>
                                                     @endif
@@ -335,7 +396,7 @@
                                                                 </div>
 
                                                                 <div class="ml-6">
-                                                                    <span class="block text-lg font-bold text-gray-900 dark:text-white transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+                                                                    <span class="block text-sm font-bold text-gray-900 dark:text-white transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
                                                                           :class="isSelected({{ $question->id }}, {{ $option->id }}, '{{ $question->type }}') ? 'text-indigo-600 dark:text-indigo-400' : ''">
                                                                         {{ $option->label }}
                                                                     </span>
@@ -436,7 +497,7 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: true,
                         plugins: {
                             legend: { display: false }
                         }
@@ -460,7 +521,7 @@
                 }
 
                 if (type === 'single_choice') {
-                    chartConfig.options.cutout = '70%';
+                    chartConfig.options.cutout = '60%';
                 }
 
                 new Chart(ctx, chartConfig);
@@ -471,35 +532,210 @@
             return {
                 answers: {},
                 init() {
+                    // Inicializar el objeto answers con los datos que vienen del servidor
+                    // initialAnswers debe ser un objeto: { question_id: [option_ids] o valor }
                     const data = initialAnswers || {};
-                    this.$nextTick(() => {
-                        document.querySelectorAll('#survey-form input[name^="answers"]').forEach(input => {
-                            const qIdMatch = input.name.match(/answers\[(\d+)\]/);
-                            if (qIdMatch && qIdMatch[1]) {
-                                const qId = qIdMatch[1];
-                                if (this.answers[qId] === undefined) {
-                                    if (input.name.includes('[]')) {
-                                        this.answers[qId] = Array.isArray(data[qId]) ? data[qId].map(String) : [];
-                                    } else {
-                                        this.answers[qId] = data[qId] !== undefined ? String(data[qId]) : null;
-                                    }
-                                }
-                            }
-                        });
-                    });
+                    
+                    // Procesamos todas las preguntas para asegurar que existan en el modelo de Alpine
+                    @foreach($survey->questions as $question)
+                        @php
+                            $qId = $question->id;
+                            $type = $question->type;
+                        @endphp
+                        
+                        if (data['{{ $qId }}'] !== undefined) {
+                            @if($type === 'multiple_choice')
+                                // Checkboxes esperan un array de strings
+                                this.answers['{{ $qId }}'] = Array.isArray(data['{{ $qId }}']) 
+                                    ? data['{{ $qId }}'].map(String) 
+                                    : [String(data['{{ $qId }}'])];
+                            @elseif($type === 'single_choice' || $type === 'rating')
+                                // Radios y rating esperan un string o número único
+                                const val = data['{{ $qId }}'];
+                                this.answers['{{ $qId }}'] = Array.isArray(val) ? String(val[0]) : String(val);
+                            @else
+                                // Texto
+                                this.answers['{{ $qId }}'] = String(data['{{ $qId }}']);
+                            @endif
+                        } else {
+                            // Inicializar vacíos para evitar que Laravel no reciba el campo
+                            @if($type === 'multiple_choice')
+                                this.answers['{{ $qId }}'] = [];
+                            @else
+                                this.answers['{{ $qId }}'] = '';
+                            @endif
+                        }
+                    @endforeach
                 },
                 isSelected(qId, oId, type) {
-                    const current = this.answers[qId];
-                    if (current === undefined || current === null) return false;
+                    const current = this.answers[String(qId)];
+                    if (current === undefined || current === null || current === '') return false;
                     
                     if (type === 'single_choice') {
                         return String(current) === String(oId);
                     } else if (type === 'multiple_choice') {
-                        return Array.isArray(current) && current.map(String).includes(String(oId));
+                        return Array.isArray(current) && current.includes(String(oId));
                     }
                     return false;
                 }
             }
         }
+    </script>
+
+    <style>
+        @media print {
+            @page {
+                size: auto;
+                margin: 0.5cm;
+            }
+
+            .print-hide { display: none !important; }
+            
+            body { 
+                background: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Reset layout constraints */
+            .py-8, .px-4, .sm\:px-6, .lg\:px-8 { padding: 0 !important; }
+            .max-w-7xl { max-width: none !important; width: 100% !important; margin: 0 !important; }
+            .bg-gradient-to-b { background: white !important; }
+            .min-h-screen { min-height: 0 !important; }
+
+            /* Remove main card decoration */
+            .bg-white.dark\:bg-gray-900.rounded-\[2rem\].shadow-2xl {
+                background: transparent !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                margin-bottom: 0 !important;
+            }
+
+            /* Container preservation - Ultra compact */
+            .bg-gray-50 {
+                background-color: #f9fafb !important;
+                border-radius: 1rem !important;
+                padding: 0.5rem !important;
+                margin: 0.25rem !important;
+            }
+
+            /* Main padding reduction */
+            .p-8, .sm\:p-12 { padding: 0 !important; }
+            .mb-12, .mb-10, .mb-8, .mb-4 { margin-bottom: 0.5rem !important; }
+
+            /* Card preservation */
+            .bg-white { 
+                background-color: #ffffff !important;
+                border-radius: 0.5rem !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: none !important;
+            }
+
+            /* Grid Layout - Optimized for A4 */
+            .grid {
+                display: grid !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* KPI Grid (Top cards) - 4 columns */
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+            .lg\:grid-cols-4 > div { padding: 0.4rem !important; border-radius: 0.5rem !important; }
+            .lg\:grid-cols-4 h4 { font-size: 10pt !important; }
+
+            /* Dashboard Grid (Question cards) - Force 3 columns for maximum density */
+            .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+
+            /* Typography Scaling */
+            h1 { font-size: 13pt !important; color: #111827 !important; margin-bottom: 0.25rem !important; }
+            h2 { font-size: 10pt !important; color: #111827 !important; }
+            h3 { font-size: 8.5pt !important; color: #111827 !important; }
+            p, span, div { font-size: 7pt !important; color: #374151 !important; }
+            
+            /* Charts and Indicators - Condensed */
+            canvas {
+                max-width: 70px !important;
+                max-height: 70px !important;
+            }
+            
+            .h-1 { height: 2px !important; }
+            .space-y-2 { margin-top: 0.15rem !important; }
+            .space-y-2 > * + * { margin-top: 0.15rem !important; }
+
+            /* Page Management */
+            .grid > div {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            /* Aggressive hiding */
+            header, nav, footer, aside, #sidebar, .view-switcher-container, #survey-floating-bar, 
+            .status-banner, button:not(.print-hide), x-slot[name="header"] a,
+            .animate-pulse {
+                display: none !important;
+            }
+
+            /* Adjust header gap */
+            .flex.flex-col.xl\:flex-row.xl\:items-center.justify-between.gap-6 { gap: 0.25rem !important; }
+        }
+    </style>
+
+    {{-- BARRA FLOTANTE DE ACCIONES RÁPIDAS --}}
+    <div id="survey-floating-bar"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-50 flex items-center gap-2 p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap">
+        
+        <a href="{{ route($routePrefix . 'index', $contextTeam ? [$contextTeam] : []) }}"
+           class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <span>{{ __('Volver') }}</span>
+        </a>
+
+        <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
+
+        <span class="px-2 text-[10px] font-black uppercase tracking-tight text-gray-900 dark:text-white max-w-[200px] truncate">
+            {{ $survey->title }}
+        </span>
+
+        <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
+
+        <div class="flex items-center gap-1">
+            <button onclick="window.print()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Imprimir Informe') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            </button>
+
+            @can('update', $survey)
+            <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" 
+               class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                <span>{{ __('Editar') }}</span>
+            </a>
+            @endcan
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const bar = document.getElementById('survey-floating-bar');
+            if (!bar) return;
+
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY || document.documentElement.scrollTop;
+                if (scrollY > 150) {
+                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                } else {
+                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                }
+            }, { passive: true });
+        })();
     </script>
 </x-app-layout>
