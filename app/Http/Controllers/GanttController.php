@@ -88,6 +88,8 @@ class GanttController extends Controller
                 // Distinguish template vs instance vs recurring in the label
                 if ($task->is_template || $task->is_autoprogrammable) {
                     $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
+                } elseif ($task->metadata && isset($task->metadata['is_occurrence'])) {
+                    $label = '📅 ' . $task->title;
                 } elseif ($task->assignedUser) {
                     $label = '👤 ' . ($task->assignedUser->short_name ?: $task->assignedUser->name) . ': ' . $task->title;
                 } else {
@@ -117,11 +119,11 @@ class GanttController extends Controller
                     'urgency'      => $task->urgency,
                     'is_template'  => $task->is_template,
                     'has_children' => $task->children->count() > 0,
-                    'assigned_to'  => $task->assignedUser?->name ?? $task->creator?->name,
-                    'user_name'    => $task->assignedUser?->name ?? ($task->creator?->name ?? 'Sin asignar'),
-                    'user_initials' => ($task->assignedUser ?: $task->creator) 
-                                        ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(($task->assignedUser ?: $task->creator)->name, 0, 2)) 
-                                        : '??',
+                    'assigned_to'  => $task->assignedUser?->name ?? ($task->children->count() > 0 ? 'Equipo' : 'Sin asignar'),
+                    'user_name'    => $task->assignedUser?->name ?? ($task->children->count() > 0 ? 'Equipo' : 'Sin asignar'),
+                    'user_initials' => ($task->assignedUser) 
+                                        ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) 
+                                        : ($task->children->count() > 0 ? 'EQ' : '??'),
                     'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
                     'weight'       => $task->cognitive_load ?? 1,
                     'parent_id'    => $task->parent_id ? (string)$task->parent_id : null,
@@ -224,9 +226,17 @@ class GanttController extends Controller
         foreach ($baseTasks as $task) {
             $isTaskCompleted = in_array($task->status, ['completed', 'cancelled']);
 
-            // Only add the task itself if it's not completed OR we are showing completed tasks
-            if ($showCompleted || !$isTaskCompleted) {
-                $ganttTaskIds->push($task->id);
+            // DEDUPLICACIÓN: No añadir el contenedor si el usuario ya tiene su propia instancia
+            $isMyAssignedInstance = ($task->assigned_user_id === $user->id);
+            $hasMyAssignedChild = $task->children->contains(fn($c) => $c->assigned_user_id === $user->id);
+
+            // Regla: Los miembros no ven el "esqueleto" (Templates/Occurrences) si ya tienen la "carne" (Instance)
+            if (!$isManager && ($task->is_template || $task->children->count() > 0) && $hasMyAssignedChild) {
+                // Skip this container, we will show the child instead
+            } else {
+                if ($showCompleted || !$isTaskCompleted) {
+                    $ganttTaskIds->push($task->id);
+                }
             }
 
             if ($task->is_template && $team->isCoordinator($user)) {
@@ -239,24 +249,32 @@ class GanttController extends Controller
                         }
                     }
                 });
-            } elseif ($task->isInstance()) {
-                // REDUNDANCY RULE: Only pull the parent if we are NOT the assignee 
-                // Members see their instance but hide the master.
-                $isMyAssignedInstance = ($task->assigned_user_id === $user->id);
-                
-                if (!$isMyAssignedInstance) {
-                    if ($showCompleted || !$isTaskCompleted) {
-                        $ganttTaskIds->push($task->parent_id);
+            } elseif ($task->children->count() > 0 && !$task->is_template) {
+                // If it's a plain container (like an Occurrence), show its children if they match filters
+                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user, $isManager) {
+                    if ($showCompleted || !in_array($child->status, ['completed', 'cancelled'])) {
+                        // For non-managers, only show their own work
+                        if ($isManager || $child->assigned_user_id === $user->id) {
+                            $ganttTaskIds->push($child->id);
+                        }
                     }
-                }
+                });
             }
         }
     
         // Step 2.1: ENSURE HIERARCHY INTEGRITY
         // If we are showing a child, we MUST show its parent (even if completed/hidden) 
         // to maintain the grouping structure in the Gantt UI.
+        // BUT: if we are a regular member, we might prefer a FLAT view to avoid "Sin asignar" phantoms.
         $parentIds = Task::whereIn('id', $ganttTaskIds->filter())->whereNotNull('parent_id')->pluck('parent_id');
-        $ganttTaskIds = $ganttTaskIds->merge($parentIds);
+        
+        if ($isManager) {
+            $ganttTaskIds = $ganttTaskIds->merge($parentIds);
+        } else {
+            // For members, we only add the parent if it's NOT an occurrence/template (i.e. it's a real parent task they might need context for)
+            // Or better: keep it flat if the parent has no user assigned to avoid the "Sin asignar" noise.
+            // Actually, let's just keep it flat for members unless the parent is explicitly visible to them.
+        }
 
         if ($team->isModerator($user)) {
              $templateIds = $team->tasks()->where('is_template', true)->pluck('id');

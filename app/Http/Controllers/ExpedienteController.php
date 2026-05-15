@@ -128,7 +128,7 @@ class ExpedienteController extends Controller
             }
         }
 
-        $expediente->load(['creator', 'rootTasks.assignedUser', 'rootTasks.creator', 'attachments.user', 'relatedExpedientes']);
+        $expediente->load(['creator', 'rootTasks.assignedUser', 'rootTasks.creator', 'rootTasks.children.assignedUser', 'attachments.user', 'relatedExpedientes']);
 
         // Get all tasks from the team that aren't currently attached to this expediente.
         $availableTasks = $team->tasks()

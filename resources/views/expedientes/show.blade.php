@@ -207,7 +207,7 @@
                         </a>
                     </div>
                 @else
-                    <div class="space-y-2">
+                    <div class="space-y-3" x-data="{ expanded: {} }">
                         @foreach($expediente->rootTasks as $task)
                             @php
                                 $statusClasses = [
@@ -217,69 +217,113 @@
                                     'default'     => 'bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-500/10 dark:border-gray-500/20 dark:text-gray-400'
                                 ];
                                 $badgeClass = $statusClasses[$task->status] ?? $statusClasses['default'];
+                                $hasChildren = $task->children->count() > 0;
                             @endphp
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gray-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 rounded-2xl border border-gray-100 hover:border-violet-200 dark:border-gray-800 dark:hover:border-violet-900/50 transition-all group shadow-sm hover:shadow-md">
-                                
-                                <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="flex flex-col sm:flex-row sm:items-center justify-between flex-1 gap-3 min-w-0">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <div @class([
-                                            'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border',
-                                            'bg-emerald-100 border-emerald-200 text-emerald-600' => $task->status === 'completed',
-                                            'bg-white border-gray-200 text-gray-400 group-hover:border-violet-300 group-hover:text-violet-500 dark:bg-gray-900 dark:border-gray-700' => $task->status !== 'completed',
-                                        ])>
-                                            @if($task->status === 'completed')
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                            @else
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                            @endif
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <h4 class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">
-                                                {{ $task->title }}
-                                            </h4>
-                                            <div class="flex items-center gap-2 mt-0.5">
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold border {{ $badgeClass }} uppercase tracking-wider">
-                                                    {{ __("tasks.statuses.{$task->status}") }}
-                                                </span>
-                                                @if($task->due_date)
-                                                    <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                        {{ $task->due_date->diffForHumans() }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-none border-gray-100 dark:border-gray-800 pt-2 sm:pt-0">
-                                        @if($task->assignedUser)
-                                            <div class="flex items-center gap-2" title="Asignado a {{ $task->assignedUser->name }}">
-                                                <img src="{{ $task->assignedUser->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-700 shadow-sm">
-                                                <span class="text-[11px] font-medium text-gray-600 dark:text-gray-300 hidden md:block">{{ explode(' ', $task->assignedUser->name)[0] }}</span>
+                            <div class="flex flex-col gap-1">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gray-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 rounded-2xl border border-gray-100 hover:border-violet-200 dark:border-gray-800 dark:hover:border-violet-900/50 transition-all group shadow-sm hover:shadow-md">
+                                    
+                                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                                        {{-- Toggle Button for Children --}}
+                                        @if($hasChildren)
+                                            <button @click="expanded[{{ $task->id }}] = !expanded[{{ $task->id }}]" 
+                                                class="w-6 h-6 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 hover:text-violet-500 transition-all active:scale-90 shadow-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform duration-300" :class="expanded[{{ $task->id }}] ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        @else
+                                            <div class="w-6 h-6 flex items-center justify-center">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                                             </div>
                                         @endif
-                                        
-                                        <div class="w-12 text-right">
-                                            <span class="text-xs font-black tabular-nums text-gray-400 dark:text-gray-500 group-hover:text-violet-600 dark:group-hover:text-violet-400">{{ $task->progress_percentage }}%</span>
+
+                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="flex flex-col sm:flex-row sm:items-center justify-between flex-1 gap-3 min-w-0">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <div @class([
+                                                    'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border',
+                                                    'bg-emerald-100 border-emerald-200 text-emerald-600' => $task->status === 'completed',
+                                                    'bg-white border-gray-200 text-gray-400 group-hover:border-violet-300 group-hover:text-violet-500 dark:bg-gray-900 dark:border-gray-700' => $task->status !== 'completed',
+                                                ])>
+                                                    @if($task->status === 'completed')
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                    @elseif($task->is_template)
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                                                    @else
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                                                    @endif
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">
+                                                        {{ $task->title }}
+                                                    </h4>
+                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold border {{ $badgeClass }} uppercase tracking-wider">
+                                                            {{ __("tasks.statuses.{$task->status}") }}
+                                                        </span>
+                                                        @if($task->is_template)
+                                                            <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 uppercase tracking-widest">Plan Maestro</span>
+                                                        @endif
+                                                        @if($task->due_date)
+                                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                                {{ $task->due_date->diffForHumans() }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-none border-gray-100 dark:border-gray-800 pt-2 sm:pt-0">
+                                                @if($task->assignedUser)
+                                                    <div class="flex items-center gap-2" title="Asignado a {{ $task->assignedUser->name }}">
+                                                        <img src="{{ $task->assignedUser->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-700 shadow-sm">
+                                                        <span class="text-[11px] font-medium text-gray-600 dark:text-gray-300 hidden md:block">{{ explode(' ', $task->assignedUser->name)[0] }}</span>
+                                                    </div>
+                                                @endif
+                                                
+                                                <div class="w-12 text-right">
+                                                    <span class="text-xs font-black tabular-nums text-gray-400 dark:text-gray-500 group-hover:text-violet-600 dark:group-hover:text-violet-400">{{ $task->progress_percentage }}%</span>
+                                                </div>
+                                            </div>
+                                        </a>
+
+                                        {{-- Detach Action --}}
+                                        <div class="flex items-center pl-2 border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-gray-700/50 shrink-0 justify-end sm:justify-start">
+                                            @if($task->parent_id && !$task->is_template)
+                                                <div class="p-2 text-gray-300 dark:text-gray-600 cursor-help" title="Heredado del Plan Maestro 🔒">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                                </div>
+                                            @else
+                                                <form id="unlink-form-{{ $task->id }}" action="{{ route('teams.expedientes.unlink-task', [$team, $expediente, $task]) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="button" onclick="confirmUnlinkTask({{ $task->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Tarea">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </div>
-                                </a>
-
-                                {{-- Divider and Detach Action --}}
-                                <div class="flex items-center pl-2 border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-gray-700/50 shrink-0 justify-end sm:justify-start">
-                                    @if($task->parent_id && !$task->is_template)
-                                        <div class="p-2 text-gray-300 dark:text-gray-600 cursor-help" title="Heredado del Plan Maestro 🔒">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                        </div>
-                                    @else
-                                        <form id="unlink-form-{{ $task->id }}" action="{{ route('teams.expedientes.unlink-task', [$team, $expediente, $task]) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="button" onclick="confirmUnlinkTask({{ $task->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Tarea">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                            </button>
-                                        </form>
-                                    @endif
                                 </div>
+
+                                {{-- Children List --}}
+                                @if($hasChildren)
+                                    <div x-show="expanded[{{ $task->id }}]" x-collapse x-cloak class="ml-10 border-l-2 border-gray-100 dark:border-gray-800/50 pl-4 space-y-2 mb-4">
+                                        @foreach($task->children as $subtask)
+                                            <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}" class="flex items-center justify-between p-2.5 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl hover:bg-white dark:hover:bg-gray-800 transition-all group/sub">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <div class="w-1.5 h-1.5 rounded-full {{ $subtask->status === 'completed' ? 'bg-emerald-500' : 'bg-violet-400' }}"></div>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300 group-hover/sub:text-gray-900 dark:group-hover/sub:text-white truncate">{{ $subtask->title }}</span>
+                                                </div>
+                                                <div class="flex items-center gap-3 shrink-0">
+                                                    @if($subtask->assignedUser)
+                                                        <img src="{{ $subtask->assignedUser->profile_photo_url }}" class="w-5 h-5 rounded-full grayscale group-hover/sub:grayscale-0 transition-all shadow-xs" title="{{ $subtask->assignedUser->name }}">
+                                                    @endif
+                                                    <span class="text-[10px] font-black text-gray-400 w-8 text-right">{{ $subtask->progress_percentage }}%</span>
+                                                </div>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>

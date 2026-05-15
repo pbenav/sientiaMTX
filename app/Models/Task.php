@@ -495,14 +495,14 @@ class Task extends Model
         $userId = $user->id;
 
         $query->where('is_template', false) // NUNCA mostrar planes maestros en Vistas Enfocadas (Matrix/Kanban)
+            ->whereDoesntHave('children') // ELIMINAR FANTASMAS: Solo mostrar tareas finales (hojas), no contenedores u ocurrencias con hijos
             ->where(function ($q) use ($userId) {
-                // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces sin hijos
+                // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces creadas por mí
                 $q->where('assigned_user_id', $userId)
                   ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
                   ->orWhere(function($roots) use ($userId) {
                       $roots->whereNull('parent_id')
-                            ->where('created_by_id', $userId) // Show own non-child tasks
-                            ->whereDoesntHave('children'); // No children
+                            ->where('created_by_id', $userId);
                   });
             });
 
