@@ -25,6 +25,16 @@ class ChatMessageController extends Controller
                 ->where('is_read', false)
                 ->update(['is_read' => true]);
 
+            // TAMBIÉN marcar como leídas las NOTIFICACIONES de Laravel para este remitente
+            // Esto limpia la campana de notificaciones al entrar al chat
+            auth()->user()->unreadNotifications()
+                ->where('type', 'App\Notifications\NewChatMessageNotification')
+                ->get()
+                ->filter(function ($n) use ($receiverId) {
+                    return isset($n->data['sender_id']) && (int)$n->data['sender_id'] === (int)$receiverId;
+                })
+                ->each->markAsRead();
+
             $messages = ChatMessage::where(function ($query) use ($userId, $receiverId) {
                     $query->where('sender_id', $userId)->where('receiver_id', $receiverId);
                 })
@@ -158,6 +168,12 @@ class ChatMessageController extends Controller
         $msg = ChatMessage::create($data);
 
         Log::info("ChatMessageController@store success", ['user' => auth()->id(), 'msg_id' => $msg->id]);
+
+        // Notificar al destinatario si no está online
+        $receiver = \App\Models\User::find($request->receiver_id);
+        if ($receiver && !$receiver->isOnline()) {
+            $receiver->notify(new \App\Notifications\NewChatMessageNotification($msg));
+        }
 
         return response()->json([
             'message' => [

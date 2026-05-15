@@ -142,43 +142,120 @@
                 Define tus turnos diarios habituales de trabajo. Si excedes los horarios límite y tu contador de jornada sigue en marcha, se mostrará un mensaje interactivo para evitar olvidos al apagar tus contadores.
             </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-800/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100 dark:border-gray-800/50" x-data="{ 
+                days: {mon: 'L', tue: 'M', wed: 'X', thu: 'J', fri: 'V', sat: 'S', sun: 'D'},
+                shift1Days: {{ json_encode($user->work_days_1 ?? []) }},
+                shift2Days: {{ json_encode($user->work_days_2 ?? []) }},
+                shift1Enabled: {{ ($user->work_days_1 && count($user->work_days_1) > 0) ? 'true' : 'false' }},
+                shift2Enabled: {{ ($user->work_days_2 && count($user->work_days_2) > 0) ? 'true' : 'false' }},
+                toggleDay(shift, day) {
+                    if (shift === 1) {
+                        if (this.shift1Days.includes(day)) {
+                            this.shift1Days = this.shift1Days.filter(d => d !== day);
+                        } else {
+                            this.shift1Days.push(day);
+                        }
+                    } else {
+                        if (this.shift2Days.includes(day)) {
+                            this.shift2Days = this.shift2Days.filter(d => d !== day);
+                        } else {
+                            this.shift2Days.push(day);
+                        }
+                    }
+                }
+            }">
                 <!-- Turno 1 (Mañana) -->
-                <div class="space-y-3">
-                    <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                        Primer Turno / Mañana
-                    </h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <x-input-label for="work_start_time_1" value="Hora de Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
-                            <x-text-input id="work_start_time_1" name="work_start_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_start_time_1', $user->work_start_time_1 ?? '08:00')" />
-                            <x-input-error class="mt-2" :messages="$errors->get('work_start_time_1')" />
+                <div class="space-y-4 p-4 rounded-2xl transition-all duration-300" :class="shift1Enabled ? 'bg-white dark:bg-gray-900/40 shadow-sm border border-gray-100 dark:border-gray-800' : 'opacity-60 bg-gray-100/50 dark:bg-gray-800/20 border border-transparent'">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full" :class="shift1Enabled ? 'bg-amber-500' : 'bg-gray-300 dark:bg-gray-700'"></span>
+                            Primer Turno / Mañana
+                        </h4>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" x-model="shift1Enabled" class="sr-only peer">
+                            <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <div x-show="shift1Enabled" x-collapse>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <x-input-label for="work_start_time_1" value="Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
+                                <x-text-input id="work_start_time_1" name="work_start_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_start_time_1', $user->work_start_time_1 ?? '08:00')" />
+                            </div>
+                            <div>
+                                <x-input-label for="work_end_time_1" value="Salida" class="text-[9px] font-bold uppercase text-gray-400" />
+                                <x-text-input id="work_end_time_1" name="work_end_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_end_time_1', $user->work_end_time_1 ?? '14:00')" />
+                            </div>
                         </div>
-                        <div>
-                            <x-input-label for="work_end_time_1" value="Hora de Salida" class="text-[9px] font-bold uppercase text-gray-400" />
-                            <x-text-input id="work_end_time_1" name="work_end_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_end_time_1', $user->work_end_time_1 ?? '14:00')" />
-                            <x-input-error class="mt-2" :messages="$errors->get('work_end_time_1')" />
+
+                        <div class="space-y-2">
+                            <span class="text-[9px] font-bold uppercase text-gray-400 block">Días de actividad</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <template x-for="(label, key) in days" :key="key">
+                                    <button type="button" @click="toggleDay(1, key)" 
+                                        class="w-8 h-8 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center justify-center border"
+                                        :class="shift1Days.includes(key) 
+                                            ? 'bg-amber-500 border-amber-600 text-white shadow-md shadow-amber-500/20 scale-105' 
+                                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:border-amber-300'">
+                                        <span x-text="label"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <template x-if="shift1Enabled">
+                                <template x-for="day in shift1Days" :key="'s1-'+day">
+                                    <input type="hidden" name="work_days_1[]" :value="day">
+                                </template>
+                            </template>
+                            <!-- Input para asegurar que si no hay días o está desactivado, se envíe un array vacío si fuera necesario, 
+                                 pero con nullable en el Request, si no se envía nada quedará como null, lo cual es correcto. -->
                         </div>
                     </div>
                 </div>
 
                 <!-- Turno 2 (Tarde) -->
-                <div class="space-y-3">
-                    <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
-                        Segundo Turno / Tarde (Opcional)
-                    </h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <x-input-label for="work_start_time_2" value="Hora de Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
-                            <x-text-input id="work_start_time_2" name="work_start_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_start_time_2', $user->work_start_time_2 ?? '15:00')" />
-                            <x-input-error class="mt-2" :messages="$errors->get('work_start_time_2')" />
+                <div class="space-y-4 p-4 rounded-2xl transition-all duration-300" :class="shift2Enabled ? 'bg-white dark:bg-gray-900/40 shadow-sm border border-gray-100 dark:border-gray-800' : 'opacity-60 bg-gray-100/50 dark:bg-gray-800/20 border border-transparent'">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full" :class="shift2Enabled ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-700'"></span>
+                            Segundo Turno / Tarde
+                        </h4>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" x-model="shift2Enabled" class="sr-only peer">
+                            <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-500"></div>
+                        </label>
+                    </div>
+
+                    <div x-show="shift2Enabled" x-collapse>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <x-input-label for="work_start_time_2" value="Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
+                                <x-text-input id="work_start_time_2" name="work_start_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_start_time_2', $user->work_start_time_2 ?? '15:00')" />
+                            </div>
+                            <div>
+                                <x-input-label for="work_end_time_2" value="Salida" class="text-[9px] font-bold uppercase text-gray-400" />
+                                <x-text-input id="work_end_time_2" name="work_end_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_end_time_2', $user->work_end_time_2 ?? '18:00')" />
+                            </div>
                         </div>
-                        <div>
-                            <x-input-label for="work_end_time_2" value="Hora de Salida" class="text-[9px] font-bold uppercase text-gray-400" />
-                            <x-text-input id="work_end_time_2" name="work_end_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" :value="old('work_end_time_2', $user->work_end_time_2 ?? '18:00')" />
-                            <x-input-error class="mt-2" :messages="$errors->get('work_end_time_2')" />
+
+                        <div class="space-y-2">
+                            <span class="text-[9px] font-bold uppercase text-gray-400 block">Días de actividad</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <template x-for="(label, key) in days" :key="key">
+                                    <button type="button" @click="toggleDay(2, key)" 
+                                        class="w-8 h-8 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center justify-center border"
+                                        :class="shift2Days.includes(key) 
+                                            ? 'bg-indigo-500 border-indigo-600 text-white shadow-md shadow-indigo-500/20 scale-105' 
+                                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:border-indigo-300'">
+                                        <span x-text="label"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <template x-if="shift2Enabled">
+                                <template x-for="day in shift2Days" :key="'s2-'+day">
+                                    <input type="hidden" name="work_days_2[]" :value="day">
+                                </template>
+                            </template>
                         </div>
                     </div>
                 </div>

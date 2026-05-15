@@ -187,9 +187,19 @@
                         body: formData
                     })
                     .then(r => r.ok ? r.json() : Promise.reject(r))
-                    .then(() => this.fetchMessages())
+                    .then(data => {
+                        // Actualizar el mensaje optimista con los datos reales del servidor (especialmente el ID real)
+                        const idx = this.messages.findIndex(m => m.id === optimisticMsg.id);
+                        if (idx !== -1) {
+                            this.messages[idx] = { ...this.messages[idx], ...data.message, sender: 'me' };
+                        } else {
+                            this.fetchMessages(); // Fallback por si acaso
+                        }
+                    })
                     .catch(err => {
                         console.error('Error sending message:', err);
+                        // Quitar el mensaje optimista si falló el envío
+                        this.messages = this.messages.filter(m => m.id !== optimisticMsg.id);
                         Swal.fire({ icon: 'error', title: 'Error al enviar', text: 'No se pudo enviar el mensaje.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                     })
                     .finally(() => this.isUploading = false);

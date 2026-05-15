@@ -11,8 +11,10 @@
     countdown: 60,
     timer: null,
     endTime1: '{{ auth()->user()->work_end_time_1 }}',
+    workDays1: {{ json_encode(auth()->user()->work_days_1 ?? []) }},
     startTime2: '{{ auth()->user()->work_start_time_2 }}',
     endTime2: '{{ auth()->user()->work_end_time_2 }}',
+    workDays2: {{ json_encode(auth()->user()->work_days_2 ?? []) }},
     limitShown: '',
     checkInterval: null,
     
@@ -30,6 +32,9 @@
         const M = String(nowObj.getMonth() + 1).padStart(2, '0');
         const D = String(nowObj.getDate()).padStart(2, '0');
         const todayStr = `${Y}-${M}-${D}`;
+        
+        const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+        const currentDayName = dayNames[nowObj.getDay()];
 
         if (localStorage.getItem('schedule_check_ack_' + todayStr) === 'true') {
             return;
@@ -59,9 +64,14 @@
         let limitLabel = '';
 
         // 1. EVALUAR HORARIO DEFINIDO
-        if (end1 || end2) {
-            if (end1 && currentMinutes >= end1) {
-                if (start2) {
+        const shift1Active = this.workDays1.includes(currentDayName);
+        const shift2Active = this.workDays2.includes(currentDayName);
+
+        if (shift1Active || shift2Active) {
+            // Caso Turno 1
+            if (shift1Active && end1 && currentMinutes >= end1) {
+                // Si el turno 2 también está activo hoy y empieza después, esperamos.
+                if (shift2Active && start2) {
                     if (currentMinutes < start2) {
                         pastEndTime = true;
                         limitLabel = this.endTime1;
@@ -70,10 +80,12 @@
                         limitLabel = this.endTime2;
                     }
                 } else {
-                            pastEndTime = true;
-                            limitLabel = this.endTime1;
+                    pastEndTime = true;
+                    limitLabel = this.endTime1;
                 }
-            } else if (!end1 && end2 && currentMinutes >= end2) {
+            } 
+            // Caso solo Turno 2 activo hoy o turno 1 no activado pero el 2 sí
+            else if (shift2Active && end2 && currentMinutes >= end2) {
                 pastEndTime = true;
                 limitLabel = this.endTime2;
             }

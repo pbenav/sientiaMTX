@@ -68,14 +68,18 @@ class ForumController extends Controller
                       ->orWhereHas('task', function($q) use ($userId) {
                           $q->withTrashed()
                             ->where(function($sq) use ($userId) {
-                                $sq->where('visibility', 'public')
-                                  ->orWhere('created_by_id', $userId)
+                                $sq->where('created_by_id', $userId)
                                   ->orWhere('assigned_user_id', $userId)
                                   ->orWhereHas('assignedTo', function($q2) use ($userId) {
                                       $q2->where('users.id', $userId);
                                   })
                                   ->orWhereHas('assignedGroups.users', function($q3) use ($userId) {
                                       $q3->where('users.id', $userId);
+                                  })
+                                  // Also allow access if assigned to any child/subtask
+                                  ->orWhereHas('children', function($q4) use ($userId) {
+                                      $q4->where('assigned_user_id', $userId)
+                                        ->orWhereHas('assignedTo', fn($q5) => $q5->where('users.id', $userId));
                                   });
                             });
                       });
@@ -294,11 +298,14 @@ class ForumController extends Controller
                 $isCoordinator = $team->isCoordinator(auth()->user());
 
                 if (!$isCoordinator) {
-                    $hasAccess = $task->visibility === 'public' ||
-                                 $task->created_by_id === $userId ||
+                    $hasAccess = $task->created_by_id === $userId ||
                                  $task->assigned_user_id === $userId ||
                                  $task->assignedTo()->where('users.id', $userId)->exists() ||
-                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
+                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists() ||
+                                 $task->children()->where(function($q) use ($userId) {
+                                     $q->where('assigned_user_id', $userId)
+                                       ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
+                                 })->exists();
 
                     if (!$hasAccess) {
                         return redirect()->route('teams.forum.index', $team)

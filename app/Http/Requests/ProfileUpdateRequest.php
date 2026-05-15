@@ -34,6 +34,10 @@ class ProfileUpdateRequest extends FormRequest
             'work_end_time_1' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
             'work_start_time_2' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
             'work_end_time_2' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],
+            'work_days_1' => ['nullable', 'array'],
+            'work_days_1.*' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])],
+            'work_days_2' => ['nullable', 'array'],
+            'work_days_2.*' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])],
         ];
     }
 }

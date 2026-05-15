@@ -64,8 +64,10 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         'work_end_time',
         'work_start_time_1',
         'work_end_time_1',
+        'work_days_1',
         'work_start_time_2',
         'work_end_time_2',
+        'work_days_2',
         'two_factor_secret',
         'two_factor_confirmed_at',
         'two_factor_method',
@@ -108,6 +110,8 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             'inactive_warning_sent_at' => 'datetime',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
+            'work_days_1' => 'array',
+            'work_days_2' => 'array',
         ];
     }
 
