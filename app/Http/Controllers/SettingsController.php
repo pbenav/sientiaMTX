@@ -299,6 +299,12 @@ class SettingsController extends Controller
             'disk_quota' => 'required|numeric|min:1',
             'timezone' => 'nullable|timezone',
             'invitations_left' => 'nullable|integer|min:0',
+            'work_start_time_1' => 'nullable|string|regex:/^[0-9]{2}:[0-9]{2}$/',
+            'work_end_time_1' => 'nullable|string|regex:/^[0-9]{2}:[0-9]{2}$/',
+            'work_start_time_2' => 'nullable|string|regex:/^[0-9]{2}:[0-9]{2}$/',
+            'work_end_time_2' => 'nullable|string|regex:/^[0-9]{2}:[0-9]{2}$/',
+            'work_days_1' => 'nullable|array',
+            'work_days_2' => 'nullable|array',
         ]);
 
         $user_settings = $user->notification_settings ?? $user->defaultNotificationSettings();
@@ -312,6 +318,12 @@ class SettingsController extends Controller
             'timezone' => $validated['timezone'] ?? $user->timezone,
             'disk_quota' => $validated['disk_quota'] * 1024 * 1024,
             'invitations_left' => $validated['invitations_left'] ?? 0,
+            'work_start_time_1' => $validated['work_start_time_1'] ?? $user->work_start_time_1,
+            'work_end_time_1' => $validated['work_end_time_1'] ?? $user->work_end_time_1,
+            'work_start_time_2' => $validated['work_start_time_2'] ?? $user->work_start_time_2,
+            'work_end_time_2' => $validated['work_end_time_2'] ?? $user->work_end_time_2,
+            'work_days_1' => $request->has('work_days_1') ? $validated['work_days_1'] : ($request->has('schedule_provided') ? [] : $user->work_days_1),
+            'work_days_2' => $request->has('work_days_2') ? $validated['work_days_2'] : ($request->has('schedule_provided') ? [] : $user->work_days_2),
         ]);
 
         if (!empty($validated['password'])) {

@@ -182,10 +182,12 @@
                             <div>
                                 <x-input-label for="work_start_time_1" value="Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
                                 <x-text-input id="work_start_time_1" name="work_start_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_start_time_1', $user->work_start_time_1 ?? '08:00')" />
+                                <x-input-error class="mt-2" :messages="$errors->get('work_start_time_1')" />
                             </div>
                             <div>
                                 <x-input-label for="work_end_time_1" value="Salida" class="text-[9px] font-bold uppercase text-gray-400" />
                                 <x-text-input id="work_end_time_1" name="work_end_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_end_time_1', $user->work_end_time_1 ?? '14:00')" />
+                                <x-input-error class="mt-2" :messages="$errors->get('work_end_time_1')" />
                             </div>
                         </div>
 
@@ -207,6 +209,8 @@
                                     <input type="hidden" name="work_days_1[]" :value="day">
                                 </template>
                             </template>
+                            <x-input-error class="mt-2" :messages="$errors->get('work_days_1')" />
+
                             <!-- Input para asegurar que si no hay días o está desactivado, se envíe un array vacío si fuera necesario, 
                                  pero con nullable en el Request, si no se envía nada quedará como null, lo cual es correcto. -->
                         </div>
@@ -231,10 +235,12 @@
                             <div>
                                 <x-input-label for="work_start_time_2" value="Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
                                 <x-text-input id="work_start_time_2" name="work_start_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_start_time_2', $user->work_start_time_2 ?? '15:00')" />
+                                <x-input-error class="mt-2" :messages="$errors->get('work_start_time_2')" />
                             </div>
                             <div>
                                 <x-input-label for="work_end_time_2" value="Salida" class="text-[9px] font-bold uppercase text-gray-400" />
                                 <x-text-input id="work_end_time_2" name="work_end_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_end_time_2', $user->work_end_time_2 ?? '18:00')" />
+                                <x-input-error class="mt-2" :messages="$errors->get('work_end_time_2')" />
                             </div>
                         </div>
 
@@ -256,6 +262,8 @@
                                     <input type="hidden" name="work_days_2[]" :value="day">
                                 </template>
                             </template>
+                            <x-input-error class="mt-2" :messages="$errors->get('work_days_2')" />
+
                         </div>
                     </div>
                 </div>

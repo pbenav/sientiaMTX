@@ -293,6 +293,14 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         return $role ? $role->name : null;
     }
 
+    /**
+     * Determine if the user is a coordinator in the given team.
+     */
+    public function isCoordinator(Team $team): bool
+    {
+        return $team->isCoordinator($this);
+    }
+
     public function timeLogs(): HasMany
     {
         return $this->hasMany(TimeLog::class);

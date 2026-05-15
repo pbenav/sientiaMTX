@@ -40,4 +40,17 @@ class ProfileUpdateRequest extends FormRequest
             'work_days_2.*' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])],
         ];
     }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation()
+    {
+        if ($this->input('tab') === 'general') {
+            $this->merge([
+                'work_days_1' => $this->input('work_days_1', []),
+                'work_days_2' => $this->input('work_days_2', []),
+            ]);
+        }
+    }
 }

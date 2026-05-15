@@ -778,7 +778,7 @@
             const old = document.getElementById('today-line'); if(old) old.remove();
             const x = parseFloat(h.getAttribute('x')), l = document.createElementNS('http://www.w3.org/2000/svg','line');
             l.setAttribute('id','today-line'); l.setAttribute('x1',x); l.setAttribute('y1',0); l.setAttribute('x2',x); l.setAttribute('y2','100%');
-            l.setAttribute('stroke','#10b981'); l.setAttribute('stroke-width','2'); l.setAttribute('stroke-dasharray','4');
+            l.setAttribute('stroke','#10b981'); l.setAttribute('stroke-width','2');
             s.appendChild(l);
         }
 

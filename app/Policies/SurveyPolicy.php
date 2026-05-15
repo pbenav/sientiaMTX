@@ -37,7 +37,7 @@ class SurveyPolicy
         if ($survey->team_id === null) {
             return $user->is_admin;
         }
-        return $user->id === $survey->created_by_id || $user->isCoordinator($survey->team) || $user->is_admin;
+        return $user->id === $survey->created_by_id || $survey->team->isCoordinator($user) || $user->is_admin;
     }
 
     /**
@@ -62,7 +62,7 @@ class SurveyPolicy
         if ($survey->team_id === null) {
             return $user->is_admin;
         }
-        return $user->id === $survey->created_by_id || $user->isCoordinator($survey->team) || $user->is_admin;
+        return $user->id === $survey->created_by_id || $survey->team->isCoordinator($user) || $user->is_admin;
     }
 
     /**
@@ -80,6 +80,6 @@ class SurveyPolicy
         }
 
         // Team surveys can be cloned by creator or coordinator
-        return $user->id === $survey->created_by_id || $user->isCoordinator($survey->team);
+        return $user->id === $survey->created_by_id || $survey->team->isCoordinator($user);
     }
 }
