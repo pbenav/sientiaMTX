@@ -66,36 +66,50 @@
 
                 <!-- Filters -->
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
-                    <form action="{{ route('teams.members', $team) }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+                    <form action="{{ route('teams.members', $team) }}" method="GET" class="flex flex-wrap items-center gap-3">
                         <input type="hidden" name="tab" value="members">
-                        <div class="relative flex-1 group">
+                        
+                        <!-- Search Input -->
+                        <div class="relative flex-1 min-w-[250px] group">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input type="text" name="search" value="{{ request('search') }}" 
                                 placeholder="{{ __('Buscar por nombre o email...') }}"
                                 enterkeyhint="search"
-                                class="w-full pl-9 pr-12 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm">
-                            <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="Buscar">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                            </button>
+                                class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm">
                         </div>
-                        <select name="role_id" onchange="this.form.submit()" 
-                            class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl focus:border-violet-500 outline-none cursor-pointer transition-all min-w-[150px] shadow-sm">
-                            <option value="">{{ __('Todos los roles') }}</option>
-                            @foreach ($roles as $role)
-                                <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
-                                    {{ __('teams.' . $role->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @if(request()->anyFilled(['search', 'role_id']))
-                            <a href="{{ route('teams.members', $team) }}?tab=members" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center justify-center">
-                                {{ __('Limpiar filtros') }}
-                            </a>
-                        @endif
+
+                        <!-- Role Filter -->
+                        <div class="w-full sm:w-48">
+                            <select name="role_id" 
+                                class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 outline-none cursor-pointer transition-all shadow-sm">
+                                <option value="">{{ __('Todos los roles') }}</option>
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
+                                        {{ __('teams.' . $role->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20 active:scale-95 group">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h18m-18 5h18M3 14.5h18M3 19.5h18" />
+                                </svg>
+                                <span>{{ __('Filtrar') }}</span>
+                            </button>
+
+                            @if(request()->anyFilled(['search', 'role_id']))
+                                <a href="{{ route('teams.members', $team) }}?tab=members" class="p-2.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Limpiar filtros') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </a>
+                            @endif
+                        </div>
                     </form>
                 </div>
                 @forelse($members as $member)
