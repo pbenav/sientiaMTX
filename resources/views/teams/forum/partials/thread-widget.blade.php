@@ -102,8 +102,8 @@
                             <!-- Dot -->
                             <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 shadow-sm ring-4 ring-gray-50 dark:ring-gray-900/20 group-hover:bg-violet-500 transition-colors"></div>
 
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all shadow-sm">
-                                <div class="flex items-center justify-between mb-2">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-3 py-2.5 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all shadow-sm">
+                                <div class="flex items-center justify-between mb-1.5">
                                 <div class="flex items-center gap-1.5">
                                     <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
                                         class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 flex-shrink-0">
@@ -113,7 +113,7 @@
                                     {{ $message->created_at->diffForHumans() }}
                                 </span>
                             </div>
-                            <div class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed break-words whitespace-pre-wrap markdown-content" id="msg-content-{{ $message->id }}">
+                            <div class="text-[12px] text-gray-600 dark:text-gray-300 break-words markdown-content [&_p]:my-0" style="--md-text-size: 12px; line-height: 1.35;" id="msg-content-{{ $message->id }}">
                                 @php
                                     $decoded = json_decode($message->content, true);
                                     $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
@@ -174,7 +174,7 @@
                                             </div>
                                             <span class="text-[8px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
                                         </div>
-                                        <div class="text-[10px] text-gray-600 dark:text-gray-400 leading-snug">
+                                        <div class="text-[11px] text-gray-600 dark:text-gray-400 break-words markdown-content [&_p]:my-0" style="--md-text-size: 11px; line-height: 1.3;">
                                             {!! Str::markdown($reply->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                                         </div>
                                         
