@@ -37,24 +37,24 @@
             @can('create', App\Models\Survey::class)
                 @if(!$isGlobal || auth()->user()->is_admin)
                     <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}" 
-                       class="inline-flex items-center justify-center px-4 py-2 bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold rounded-xl shadow-sm transition-all transform hover:scale-[1.02] active:scale-95 group text-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                       class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-violet-500/20 active:scale-95 group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
-                        {{ __('Nueva Encuesta') }}
+                        <span>{{ __('Nueva Encuesta') }}</span>
                     </a>
 
                     <div x-data="{ uploading: false }">
                         <form action="{{ route($team ? 'teams.surveys.import-json' : 'global-surveys.import-json', $team ? [$team] : []) }}" 
-                              method="POST" enctype="multipart/form-data" id="import-form">
+                               method="POST" enctype="multipart/form-data" id="import-form">
                             @csrf
                             <input type="file" name="json_file" id="json_file" class="hidden" accept=".json,.txt" 
                                    @change="if($event.target.files.length > 0) { uploading = true; $el.form.submit(); }">
                             <button type="button" @click="document.getElementById('json_file').click()" 
                                     :disabled="uploading"
-                                    class="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-bold rounded-xl border border-indigo-100 dark:border-indigo-800 shadow-sm transition-all hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-50 text-sm">
-                                <svg x-show="!uploading" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm disabled:opacity-50">
+                                <svg x-show="!uploading" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                                 </svg>
                                 <span x-text="uploading ? '{{ __('Importando...') }}' : '{{ __('Importar JSON') }}'"></span>
                             </button>
@@ -74,30 +74,25 @@
          }">
         
         <!-- Filters and Search Bar -->
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm transition-all">
-            <div class="flex flex-wrap items-center gap-4">
-                <!-- Search -->
-                <div class="flex-1 min-w-[280px] flex gap-2">
-                    <div class="relative flex-1">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input type="text" 
-                               x-model="search"
-                               placeholder="{{ __('Buscar por título o descripción...') }}" 
-                               class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+            <div class="flex gap-4">
+                <div class="relative flex-1 group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </div>
-                </div>
-
-                <template x-if="search !== ''">
-                    <button @click="search = ''"
-                        class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
-                        {{ __('Limpiar Filtros') }}
+                    <input type="text" 
+                           x-model="search"
+                           placeholder="{{ __('Buscar por título o descripción...') }}"
+                           enterkeyhint="search"
+                           class="w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:text-white transition-all shadow-sm">
+                    <button x-show="search !== ''" @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Limpiar Filtros') }}" x-cloak>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
-                </template>
+                </div>
             </div>
         </div>
 
@@ -134,85 +129,87 @@
                 </div>
             @else
                 <!-- Survey Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8" x-ref="surveyGrid">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" x-ref="surveyGrid">
                     @foreach($surveys as $survey)
-                        <div class="survey-card group relative bg-white dark:bg-gray-900 rounded-2xl p-1 transition-all duration-500 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 border border-gray-100 dark:border-gray-800 overflow-hidden"
-                             x-show="search === '' || '{{ strtolower($survey->title) }}'.includes(search.toLowerCase()) || '{{ strtolower($survey->description) }}'.includes(search.toLowerCase())"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100">
-                            <!-- Premium Background Accent -->
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br {{ $survey->type_color }} opacity-[0.03] dark:opacity-[0.07] rounded-bl-full transition-all duration-500 group-hover:scale-150"></div>
+                        <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}"
+                           class="survey-card group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col relative overflow-hidden"
+                           x-show="search === '' || '{{ strtolower($survey->title) }}'.includes(search.toLowerCase()) || '{{ strtolower($survey->description) }}'.includes(search.toLowerCase())"
+                           x-transition:enter="transition ease-out duration-300"
+                           x-transition:enter-start="opacity-0 scale-95"
+                           x-transition:enter-end="opacity-100 scale-100">
                             
-                            <div class="relative p-6 flex flex-col h-full">
-                                <!-- Card Header -->
-                                <div class="flex items-start justify-between mb-6">
-                                    <div class="flex flex-col gap-2">
-                                        <div class="flex items-center gap-2">
-                                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-violet-600 text-white shadow-lg shadow-violet-500/20">
-                                                {{ $survey->questions->count() }} {{ trans_choice('Pregunta|Preguntas', $survey->questions->count()) }}
-                                            </span>
-                                            @if($survey->is_closed)
-                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                                                    {{ __('Cerrada') }}
-                                                </span>
-                                            @elseif($survey->is_expired)
-                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500 text-white shadow-lg shadow-red-500/20">
-                                                    {{ __('Expirada') }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        @can('update', $survey)
-                                            <a href="{{ route($routePrefix . 'edit', $team ? [$team, $survey] : [$survey]) }}" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors">
+                            <!-- Card Header -->
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-black uppercase tracking-widest bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 px-2 py-1 rounded-md">
+                                        {{ $survey->questions->count() }} {{ trans_choice('Pregunta|Preguntas', $survey->questions->count()) }}
+                                    </span>
+                                    @if($survey->is_closed)
+                                        <span class="text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-md">
+                                            {{ __('Cerrada') }}
+                                        </span>
+                                    @elseif($survey->is_expired)
+                                        <span class="text-[10px] font-black uppercase tracking-widest bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md">
+                                            {{ __('Expirada') }}
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-md">
+                                            {{ __('Activa') }}
+                                        </span>
+                                    @endif
+                                </div>
+                                
+                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    @can('update', $survey)
+                                        <object>
+                                            <a href="{{ route($routePrefix . 'edit', $team ? [$team, $survey] : [$survey]) }}" 
+                                               class="p-1 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                               onclick="event.stopPropagation()"
+                                               title="Editar Encuesta">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                             </a>
-                                        @endcan
-                                    </div>
-                                </div>
-
-                                <!-- Title & Description -->
-                                <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}" class="flex-grow">
-                                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                        {{ $survey->title }}
-                                    </h3>
-                                    @if($survey->description)
-                                        <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 font-medium">
-                                            {{ $survey->description }}
-                                        </p>
-                                    @endif
-                                </a>
-
-                                <!-- Stats & Footer -->
-                                <div class="mt-auto">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="flex -space-x-2 overflow-hidden">
-                                            <!-- Simple simulation of voters if not anonymous, or just a nice icon -->
-                                            <div class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                                {{ $survey->votes_count }}
-                                            </div>
-                                            <span class="ml-2 text-xs font-bold text-gray-400 flex items-center uppercase tracking-widest pl-4">
-                                                {{ __('Votos') }}
-                                            </span>
-                                        </div>
-                                        
-                                        @if($survey->expires_at)
-                                            <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                {{ $survey->expires_at->diffForHumans() }}
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <a href="{{ route($routePrefix . 'show', $team ? [$team, $survey] : [$survey]) }}" 
-                                       class="block w-full text-center py-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:text-gray-300 rounded-xl font-bold text-sm transition-all duration-300">
-                                        {{ $survey->hasVoted(auth()->user()) ? __('Ver Resultados') : __('Votar Ahora') }}
-                                    </a>
+                                        </object>
+                                    @endcan
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- Title -->
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors leading-tight mb-2">
+                                {{ $survey->title }}
+                            </h4>
+
+                            <!-- Description short snippet -->
+                            <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-grow">
+                                {{ Str::limit($survey->description, 120) ?? 'Sin descripción.' }}
+                            </p>
+
+                            <!-- Footer Metadata -->
+                            <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] font-medium text-gray-400 dark:text-gray-500">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex items-center gap-1.5" title="Votos recibidos">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <span>{{ $survey->votes_count }} {{ trans_choice('Voto|Votos', $survey->votes_count) }}</span>
+                                    </div>
+                                    @if($survey->expires_at)
+                                        <div class="flex items-center gap-1" title="Fecha de expiración">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span>{{ $survey->expires_at->diffForHumans() }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <img src="{{ $survey->creator->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($survey->creator->name) }}" class="w-4 h-4 rounded-full border border-white dark:border-gray-800">
+                                    <span class="truncate max-w-[80px]">{{ explode(' ', $survey->creator->name)[0] }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Accent background glow effect on hover -->
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-violet-500/5 dark:bg-violet-400/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                        </a>
                     @endforeach
                 </div>
 
