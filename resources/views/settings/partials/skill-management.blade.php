@@ -4,7 +4,7 @@
             <div class="flex justify-start">
                <form action="{{ route('teams.skills.inherit', $team) }}" method="POST">
                    @csrf
-                   <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all shadow-sm">
+                   <button type="submit" class="flex items-center gap-2 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
@@ -14,58 +14,74 @@
             </div>
         @endif
 
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm overflow-hidden text-xs">
+        <div class="bg-white/80 dark:bg-gray-900/80 border border-gray-100 dark:border-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-gray-100/40 dark:shadow-none overflow-hidden text-xs transition-all duration-300">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100 dark:border-gray-800">
-                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-wider">Habilidad</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-wider hidden md:table-cell">Ámbito</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-wider hidden md:table-cell">Descripción</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-wider text-center">Tareas</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-wider text-right">Acciones</th>
+                    <tr class="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100/80 dark:border-gray-800/80">
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Habilidad / Especialidad</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest hidden md:table-cell">Ámbito</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest hidden md:table-cell">Descripción</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Tareas</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
+                <tbody class="divide-y divide-gray-50/50 dark:divide-gray-800/40">
                     @forelse($skills as $skill)
-                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors group">
+                        @php
+                            $skillColor = $skill->color ?: '#7c3aed';
+                        @endphp
+                        <tr class="hover:bg-violet-500/[0.02] dark:hover:bg-violet-500/[0.01] transition-all duration-300 group">
                             <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-xl shadow-sm overflow-hidden" 
-                                         style="background-color: {{ $skill->color ?: '#f3f4f6' }}20; color: {{ $skill->color ?: '#6b7280' }}">
+                                <div class="flex items-center gap-3.5">
+                                    {{-- Gema Orbe tridimensional del icono --}}
+                                    <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center text-xl shadow-sm transition-all duration-300 group-hover:scale-105 select-none" 
+                                         style="background: linear-gradient(135deg, {{ $skillColor }}15, {{ $skillColor }}28); border: 1px solid {{ $skillColor }}38; color: {{ $skillColor }}">
                                         @if($skill->icon && strlen($skill->icon) <= 8)
                                             <span>{{ $skill->icon }}</span>
                                         @else
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
                                         @endif
                                     </div>
-                                    <div class="font-bold text-gray-900 dark:text-white">{{ $skill->name }}</div>
+                                    <div class="font-black text-gray-900 dark:text-white text-[13px] group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors duration-300">
+                                        {{ $skill->name }}
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-[11px] hidden md:table-cell text-gray-500">
                                 @if($skill->team)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shadow-sm">
                                         {{ $skill->team->name }}
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-gray-100 dark:border-gray-700/50">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20 shadow-sm">
                                         Global
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-[11px] text-gray-400 hidden md:table-cell max-w-xs truncate font-medium italic">
+                            <td class="px-6 py-4 text-[11px] text-gray-400 hidden md:table-cell max-w-[200px] truncate font-medium italic">
                                 {{ $skill->description ?? '-' }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400">
-                                    {{ $skill->tasks_count }}
-                                </span>
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-700/80 shadow-sm relative">
+                                    @if($skill->tasks_count > 0)
+                                        {{-- Punto pulsante de actividad --}}
+                                        <span class="relative flex h-2 w-2">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        </span>
+                                    @else
+                                        <span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                                    @endif
+                                    <span>{{ $skill->tasks_count }}</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2 text-xs">
+                                <div class="flex items-center justify-end gap-1.5 text-xs">
                                     <button onclick="editSkill({{ json_encode($skill) }})" 
-                                            class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                            class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-all duration-300 cursor-pointer"
+                                            title="Editar Habilidad">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
@@ -74,7 +90,7 @@
                                     <form action="{{ isset($team) ? route('teams.skills.destroy', [$team, $skill, 'tab' => 'skills']) : route('settings.skills.destroy', $skill) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar esta habilidad?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-2 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors {{ $skill->tasks_count > 0 ? 'opacity-20 cursor-not-allowed' : '' }}" {{ $skill->tasks_count > 0 ? 'disabled' : '' }}>
+                                        <button type="submit" class="p-2 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all duration-300 cursor-pointer {{ $skill->tasks_count > 0 ? 'opacity-20 cursor-not-allowed' : '' }}" {{ $skill->tasks_count > 0 ? 'disabled' : '' }} title="Eliminar Habilidad">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -85,8 +101,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-500 italic">
-                                No hay habilidades configuradas todavía.
+                            <td colspan="5" class="px-6 py-16 text-center text-gray-400 dark:text-gray-500 italic font-medium">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    No hay habilidades configuradas todavía.
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -97,14 +118,14 @@
 
     <!-- Formulario Crear/Editar -->
     <div class="space-y-6">
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm sticky top-6 text-xs">
-            <h2 id="form-title" class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2 heading">
-                 <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        <div class="bg-gradient-to-b from-white to-gray-50/40 dark:from-gray-900 dark:to-gray-950/30 border border-gray-100 dark:border-gray-800/80 rounded-3xl p-6 shadow-xl shadow-gray-100/50 dark:shadow-none sticky top-6 text-xs backdrop-blur-xl transition-all duration-300">
+            <h2 id="form-title" class="text-lg font-black text-gray-900 dark:text-white mb-6 flex items-center gap-2.5 heading tracking-tight">
+                 <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
                  </div>
-                 Nueva Habilidad
+                 <span>Nueva Habilidad</span>
             </h2>
 
             <form id="skill-form" action="{{ isset($team) ? route('teams.skills.store', [$team, 'tab' => 'skills']) : route('settings.skills.store') }}" method="POST" class="space-y-5">
@@ -112,9 +133,9 @@
                 <input type="hidden" name="_method" id="form-method" value="POST">
                 
                 @if(!isset($team))
-                <div>
-                    <x-input-label for="team_id" value="Equipo / Ámbito" />
-                    <select id="team_id" name="team_id" class="mt-1 block w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none cursor-pointer font-bold">
+                <div class="space-y-1.5">
+                    <x-input-label for="team_id" value="Equipo / Ámbito" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                    <select id="team_id" name="team_id" class="mt-1 block w-full bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none cursor-pointer font-bold">
                         <option value="">Global (Todos los equipos)</option>
                         @foreach($teams as $t)
                             <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -125,31 +146,31 @@
                     <input type="hidden" name="team_id" value="{{ $team->id }}">
                 @endif
 
-                <div>
-                    <x-input-label for="skill_name" value="Nombre" />
-                    <x-text-input id="skill_name" name="name" type="text" class="mt-1 block w-full text-xs" required placeholder="Ej: Dinamización" />
+                <div class="space-y-1.5">
+                    <x-input-label for="skill_name" value="Nombre" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                    <x-text-input id="skill_name" name="name" type="text" class="mt-1 block w-full text-xs bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" required placeholder="Ej: Dinamización" />
                 </div>
 
-                <div>
-                    <x-input-label for="skill_description" value="Descripción" />
-                    <textarea id="skill_description" name="description" rows="3" class="mt-1 block w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all outline-none font-medium italic" placeholder="¿En qué consiste esta especialidad?"></textarea>
+                <div class="space-y-1.5">
+                    <x-input-label for="skill_description" value="Descripción" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                    <textarea id="skill_description" name="description" rows="3" class="mt-1 block w-full bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none font-medium italic placeholder:not-italic" placeholder="¿En qué consiste esta especialidad?"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <x-input-label for="skill_icon" value="Icono (Emoji)" />
-                        <x-text-input id="skill_icon" name="icon" type="text" class="mt-1 block w-full text-center text-xl" placeholder="💠" maxlength="4" />
+                    <div class="space-y-1.5">
+                        <x-input-label for="skill_icon" value="Icono (Emoji)" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                        <x-text-input id="skill_icon" name="icon" type="text" class="mt-1 block w-full text-center text-xl bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl py-1.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" placeholder="💠" maxlength="4" />
                     </div>
-                    <div>
-                        <x-input-label for="skill_color" value="Color" />
-                        <x-text-input id="skill_color" name="color" type="color" class="mt-1 block w-full h-11 p-1 cursor-pointer bg-transparent border-none" value="#7c3aed" />
+                    <div class="space-y-1.5">
+                        <x-input-label for="skill_color" value="Color" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                        <x-text-input id="skill_color" name="color" type="color" class="mt-1 block w-full h-11 p-1 cursor-pointer bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all" value="#7c3aed" />
                     </div>
                 </div>
 
-                {{-- Emoji Selector Palette --}}
-                <div class="space-y-1.5">
-                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Seleccionar Emoji</span>
-                    <div class="gap-0.5 p-1 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 max-h-[150px] overflow-y-auto no-scrollbar"
+                {{-- Emoji Selector Palette (Gemas Compactas) --}}
+                <div class="space-y-2 pt-1">
+                    <span class="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest block">Seleccionar Emoji Rápido</span>
+                    <div class="gap-1 p-1.5 bg-gray-50/80 dark:bg-gray-800/40 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 max-h-[140px] overflow-y-auto no-scrollbar shadow-inner"
                          style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr));">
                         @php
                             $emojis = [
@@ -162,7 +183,7 @@
                         @endphp
                         @foreach($emojis as $emoji)
                             <button type="button" onclick="selectEmoji('{{ $emoji }}')"
-                                class="text-base p-0 hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm hover:scale-110 active:scale-95 rounded-lg transition-all duration-150 focus:outline-none flex items-center justify-center h-7 w-full select-none cursor-pointer">
+                                class="text-[15px] p-0 hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm hover:scale-125 active:scale-95 rounded-lg transition-all duration-200 focus:outline-none flex items-center justify-center h-7 w-full select-none cursor-pointer">
                                 {{ $emoji }}
                             </button>
                         @endforeach
@@ -170,10 +191,10 @@
                 </div>
 
                 <div class="pt-4 flex items-center justify-between gap-4">
-                    <button type="button" id="cancel-btn" onclick="resetForm()" class="hidden text-[10px] font-black text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors uppercase tracking-widest">
+                    <button type="button" id="cancel-btn" onclick="resetForm()" class="hidden text-[10px] font-black text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors uppercase tracking-widest py-3">
                         Cancelar
                     </button>
-                    <button type="submit" class="flex-1 bg-gray-900 dark:bg-violet-600 hover:bg-black dark:hover:bg-violet-700 text-white font-black py-3 px-6 rounded-2xl shadow-lg shadow-gray-200 dark:shadow-violet-900/20 transition-all active:scale-95 uppercase text-[11px] tracking-widest">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black py-3 px-6 rounded-2xl shadow-lg shadow-violet-500/20 dark:shadow-none hover:shadow-violet-500/30 transition-all active:scale-[0.98] uppercase text-[10px] tracking-widest cursor-pointer">
                         Guardar Habilidad
                     </button>
                 </div>
@@ -184,6 +205,12 @@
 <script>
     function selectEmoji(emoji) {
         document.getElementById('skill_icon').value = emoji;
+        // Animación suave de confirmación en el input
+        const input = document.getElementById('skill_icon');
+        input.classList.add('ring-4', 'ring-emerald-500/20', 'border-emerald-500');
+        setTimeout(() => {
+            input.classList.remove('ring-4', 'ring-emerald-500/20', 'border-emerald-500');
+        }, 600);
     }
 
     function getBaseRoute() {
@@ -201,7 +228,7 @@
         // Update URL and Method
         form.action = `${getBaseRoute()}/${skill.id}`;
         methodInput.value = 'PATCH';
-        title.innerHTML = '<div class="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></div> Editar Habilidad';
+        title.innerHTML = '<div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></div> Editar Habilidad';
         cancelBtn.classList.remove('hidden');
         
         // Fill fields
@@ -213,7 +240,7 @@
         document.getElementById('skill_icon').value = skill.icon || '💠';
         document.getElementById('skill_color').value = skill.color || '#7c3aed';
         
-        // Scroll to form only if it's not and we have room
+        // Scroll to form smoothly
         const formElement = document.getElementById('skill-form');
         formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -226,7 +253,7 @@
         
         form.action = getBaseRoute();
         methodInput.value = 'POST';
-        title.innerHTML = '<div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg></div> Nueva Habilidad';
+        title.innerHTML = '<div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg></div> Nueva Habilidad';
         cancelBtn.classList.add('hidden');
         
         form.reset();
