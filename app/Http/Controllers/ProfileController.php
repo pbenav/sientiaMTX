@@ -152,20 +152,26 @@ class ProfileController extends Controller
         // Merge with existing or default
         $current = $user->notification_settings ?? $user->defaultNotificationSettings();
         
-        $newSettings = array_merge($current, [
-            'mail' => $request->boolean('mail'),
-            'web_push' => $request->boolean('web_push'),
-            'telegram' => $request->boolean('telegram'),
-            'whatsapp' => $request->boolean('whatsapp'),
-            'quiet_hours_enabled' => $request->boolean('quiet_hours_enabled'),
-            'quiet_hours_start' => $validated['quiet_hours_start'] ?? '22:00',
-            'quiet_hours_end' => $validated['quiet_hours_end'] ?? '08:00',
-            'notify_before_hours' => (int) ($validated['notify_before_hours'] ?? 2),
-            'morning_summary' => $request->boolean('morning_summary'),
-            'morning_summary_time' => $validated['morning_summary_time'] ?? '08:00',
-            'morning_summary_weekends' => $request->boolean('morning_summary_weekends'),
-            'chat_sounds' => $request->boolean('chat_sounds'),
-        ]);
+        $newSettings = $current;
+
+        // Solo sobreescribir el array de configuraciones si la petición procede
+        // explícitamente de la pestaña de notificaciones.
+        if ($request->input('tab') === 'notifications') {
+            $newSettings = array_merge($current, [
+                'mail' => $request->boolean('mail'),
+                'web_push' => $request->boolean('web_push'),
+                'telegram' => $request->boolean('telegram'),
+                'whatsapp' => $request->boolean('whatsapp'),
+                'quiet_hours_enabled' => $request->boolean('quiet_hours_enabled'),
+                'quiet_hours_start' => $validated['quiet_hours_start'] ?? ($current['quiet_hours_start'] ?? '22:00'),
+                'quiet_hours_end' => $validated['quiet_hours_end'] ?? ($current['quiet_hours_end'] ?? '08:00'),
+                'notify_before_hours' => isset($validated['notify_before_hours']) ? (int) $validated['notify_before_hours'] : (int) ($current['notify_before_hours'] ?? 2),
+                'morning_summary' => $request->boolean('morning_summary'),
+                'morning_summary_time' => $validated['morning_summary_time'] ?? ($current['morning_summary_time'] ?? '08:00'),
+                'morning_summary_weekends' => $request->boolean('morning_summary_weekends'),
+                'chat_sounds' => $request->boolean('chat_sounds'),
+            ]);
+        }
 
         if ($request->has('telegram_chat_id')) {
             if ($request->team_id) {
