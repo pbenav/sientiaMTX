@@ -13,11 +13,11 @@
         x-cloak></div>
 
     <aside id="sidebar"
-        x-show="sidebarOpen || window.innerWidth >= 1024"
-        class="fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 dark:border-gray-800 bg-white lg:bg-white/80 dark:bg-gray-900 lg:dark:bg-gray-900/80 backdrop-blur-xl lg:translate-x-0"
+        x-show="sidebarOpen"
+        class="fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 dark:border-gray-800 bg-white lg:bg-white/80 dark:bg-gray-900 lg:dark:bg-gray-900/80 backdrop-blur-xl"
         :class="{
-            'translate-x-0': sidebarOpen || window.innerWidth >= 1024,
-            '-translate-x-full': !sidebarOpen && window.innerWidth < 1024,
+            'translate-x-0': sidebarOpen,
+            '-translate-x-full': !sidebarOpen,
             'transition-transform duration-300': mounted
         }" x-cloak>
         <div class="flex flex-col h-full px-4 py-6 overflow-y-auto">

@@ -607,10 +607,10 @@
                 transform: translateX(-100%) !important;
             }
             @media (min-width: 1024px) {
-                #sidebar { transform: translateX(0) !important; }
-                #mainContent.lg-layout-v-fix, 
-                footer.lg-layout-v-fix, 
-                .header-v-fix { 
+                body:not(.sidebar-closed) #sidebar { transform: translateX(0) !important; }
+                body:not(.sidebar-closed) #mainContent.lg-layout-v-fix, 
+                body:not(.sidebar-closed) footer.lg-layout-v-fix, 
+                body:not(.sidebar-closed) .header-v-fix { 
                     padding-left: 18rem !important; 
                 }
             }
@@ -655,7 +655,9 @@
     </style>
 </head>
 
-<body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased" x-data="{
+<body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased"
+    :class="{ 'sidebar-closed': !sidebarOpen && layout === 'vertical' }"
+    x-data="{
     layout: '{{ $layout }}',
     sidebarOpen: false,
     mounted: false,
@@ -672,8 +674,6 @@
         window.addEventListener('resize', () => {
             if (window.innerWidth < 1024) {
                 this.sidebarOpen = false;
-            } else if (this.layout === 'vertical' && window.innerWidth >= 1024) {
-                this.sidebarOpen = true;
             }
         });
     },
