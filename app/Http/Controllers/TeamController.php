@@ -449,10 +449,11 @@ class TeamController extends Controller
 
         $query = $team->tasks()
             ->with([
-                'assignedTo', 'assignedGroups', 'tags', 'assignedUser', 'skills',
+                'assignedTo', 'assignedGroups', 'tags', 'assignedUser', 'skills', 'parent', 'creator', 'service',
                 'children' => function($q) use ($user, $isManager) {
                     $q->visibleTo($user, $isManager);
-                }
+                },
+                'children.assignedUser'
             ])
             ->visibleTo($user, $isManager)
             ->focusedFor($user, $team)

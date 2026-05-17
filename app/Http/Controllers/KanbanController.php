@@ -46,7 +46,8 @@ class KanbanController extends Controller
 
         $columns = $team->kanbanColumns()
             ->with(['tasks' => function ($query) use ($team, $user, $isManager, $filters) {
-                $query->visibleTo($user, $isManager)
+                $query->with(['expediente', 'assignedUser', 'assignedTo', 'skills'])
+                      ->visibleTo($user, $isManager)
                       ->operationalForKanban($user, $team)
                       ->where('is_archived', false)
                       ->when($filters['status'] ?? null, fn($q, $s) => $q->where('status', $s))
@@ -94,6 +95,7 @@ class KanbanController extends Controller
         });
 
         $completedTasks = $team->tasks()
+            ->with(['expediente', 'assignedUser'])
             ->visibleTo($user, $isManager)
             ->where('is_archived', true)
             ->orderBy('updated_at', 'desc')

@@ -29,7 +29,7 @@ class GanttController extends Controller
         $expedientes = $team->expedientes()->orderBy('created_at', 'desc')->get();
 
         // Get the exact task set that would be visible in the Gantt chart with current filters
-        $tasks = $this->getTaskSet($request, $team);
+        $tasks = $this->getTaskSet($request, $team, false);
 
         // Calculate Heat Bar (Action Density) for the current month
         $startOfMonth = now()->startOfMonth();
@@ -202,19 +202,19 @@ class GanttController extends Controller
     /**
      * Shared logic to get the filtered task set for Gantt
      */
-    private function getTaskSet(Request $request, Team $team)
+    private function getTaskSet(Request $request, Team $team, bool $loadRelations = true)
     {
         $user      = auth()->user();
         $isManager = $team->isManager($user);
 
         // Step 1: Base operational set (visibility)
         $baseTasks = $team->tasks()
-            ->with([
+            ->with($loadRelations ? [
                 'parent', 'assignedUser', 'creator', 'skills',
                 'children' => function($q) use ($user, $isManager) {
                     $q->visibleTo($user, $isManager);
                 }
-            ])
+            ] : ['assignedUser'])
             ->visibleTo($user, $isManager)
             ->operationalFor($user, $team, true)
             ->get();
@@ -288,7 +288,7 @@ class GanttController extends Controller
             'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id'
         ]);
 
-        $query = Task::with(['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user'])
+        $query = Task::with($loadRelations ? ['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user', 'children.assignedUser'] : ['assignedUser'])
             ->whereIn('id', $uniqueIds)
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
