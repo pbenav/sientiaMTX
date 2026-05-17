@@ -81,6 +81,83 @@ class TaskController extends Controller
         ]);
     }
 
+    public function cloneTask(Request $request, Team $team, Task $task)
+    {
+        $user = auth()->user();
+        if ($user->cannot('view', $team) || $task->team_id !== $team->id) {
+            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
+        }
+
+        if ($user->cannot('create', [Task::class, $team])) {
+            return redirect()->back()->with('warning', 'No tienes permisos para crear tareas.');
+        }
+
+        $clonedTask = \DB::transaction(function () use ($task, $team, $user) {
+            // 1. Create the base cloned task
+            $newTitle = '[Clon] ' . $task->title;
+            if (mb_strlen($newTitle) > 255) {
+                $newTitle = mb_substr($newTitle, 0, 252) . '...';
+            }
+
+            $new = $team->tasks()->create([
+                'title' => $newTitle,
+                'description' => $task->description,
+                'priority' => $task->priority,
+                'urgency' => $task->urgency,
+                'status' => 'pending',
+                'progress_percentage' => 0,
+                'scheduled_date' => $task->scheduled_date,
+                'due_date' => $task->due_date,
+                'original_due_date' => $task->due_date,
+                'created_by_id' => $user->id,
+                'observations' => $task->observations,
+                'parent_id' => $task->parent_id,
+                'is_template' => $task->is_template,
+                'visibility' => $task->visibility,
+                'is_autoprogrammable' => $task->is_autoprogrammable,
+                'autoprogram_settings' => $task->autoprogram_settings,
+                'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
+                'cognitive_load' => $task->cognitive_load,
+                'is_backstage' => $task->is_backstage,
+                'service_id' => $task->service_id,
+                'expediente_id' => $task->expediente_id,
+                'is_timeline_locked' => $task->is_timeline_locked,
+            ]);
+
+            // Sync Kanban Column
+            $new->syncKanbanColumn();
+
+            // 2. Sync Skills
+            if ($task->skills->isNotEmpty()) {
+                $new->skills()->sync($task->skills->pluck('id')->toArray());
+            }
+
+            // 3. Sync Tags (if they exist)
+            if ($task->tags && $task->tags->isNotEmpty()) {
+                $new->tags()->sync($task->tags->pluck('id')->toArray());
+            }
+
+            // 4. Sync Assigned Users & Groups
+            if ($task->assignedTo->isNotEmpty()) {
+                $new->assignedTo()->sync($task->assignedTo->pluck('id')->toArray());
+            }
+            if ($task->assignedGroups->isNotEmpty()) {
+                $new->assignedGroups()->sync($task->assignedGroups->pluck('id')->toArray());
+            }
+
+            // Create history record
+            $new->histories()->create([
+                'user_id' => $user->id,
+                'action' => 'cloned',
+                'notes' => 'Clonado desde la tarea ID: ' . $task->id
+            ]);
+
+            return $new;
+        });
+
+        return redirect()->back()->with('success', 'Tarea clonada con éxito: "' . $clonedTask->title . '"');
+    }
+
     public function importJson(Request $request, Team $team)
     {
         if (auth()->user()->cannot('create', [Task::class, $team])) {
@@ -329,6 +406,7 @@ class TaskController extends Controller
             'attachments.*' => 'file|max:' . (\Illuminate\Http\UploadedFile::getMaxFilesize() / 1024),
             'assignment_mode' => 'nullable|string|in:shared,distributed',
             'expediente_id' => 'nullable|exists:expedientes,id',
+            'is_timeline_locked' => 'nullable|boolean',
         ]);
 
         // Force validation: Dossier must belong to this team
@@ -383,6 +461,7 @@ class TaskController extends Controller
             'is_backstage' => $request->boolean('is_backstage'),
             'service_id' => $validated['service_id'] ?? null,
             'expediente_id' => $validated['expediente_id'] ?? null,
+            'is_timeline_locked' => $request->boolean('is_timeline_locked'),
         ]);
 
         \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
@@ -674,6 +753,7 @@ class TaskController extends Controller
             'service_id' => 'nullable|integer|exists:services,id',
             'assignment_mode' => 'nullable|string|in:shared,distributed',
             'expediente_id' => 'nullable|exists:expedientes,id',
+            'is_timeline_locked' => 'nullable|boolean',
         ]);
 
         // Force validation: Dossier must belong to this team
@@ -738,6 +818,7 @@ class TaskController extends Controller
             'expediente_id' => ($task->parent_id && !$task->is_template) 
                 ? $task->expediente_id 
                 : (array_key_exists('expediente_id', $validated) ? $validated['expediente_id'] : $task->expediente_id),
+            'is_timeline_locked' => $request->boolean('is_timeline_locked'),
         ]);
 
 
@@ -1462,6 +1543,13 @@ class TaskController extends Controller
     public function move(\Illuminate\Http\Request $request, Team $team, Task $task)
     {
         $this->authorize('update', $task);
+
+        if ($task->is_timeline_locked && ($request->has('scheduled_date') || $request->has('due_date'))) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Esta tarea tiene la programación bloqueada (inamovible) y no se puede reprogramar.'
+            ], 422);
+        }
 
         $validated = $request->validate([
             'quadrant' => 'nullable|integer|between:1,4',

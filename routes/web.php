@@ -187,6 +187,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/{task}/move', [TaskController::class, 'move'])->name('teams.tasks.move');
     Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
     Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
+    Route::post('/teams/{team}/tasks/{task}/clone', [TaskController::class, 'cloneTask'])->name('teams.tasks.clone');
     Route::get('/teams/{team}/tasks/{task}/export-json', [TaskController::class, 'exportJson'])->name('teams.tasks.export-json');
     Route::post('/teams/{team}/tasks/{task}/merge', [TaskController::class, 'merge'])->name('teams.tasks.merge');
     Route::get('/teams/{team}/gantt', [\App\Http\Controllers\GanttController::class, 'index'])->name('teams.gantt');

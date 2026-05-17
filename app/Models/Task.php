@@ -122,6 +122,7 @@ class Task extends Model
         'matrix_order',
         'service_id',
         'is_autoprogrammable',
+        'is_timeline_locked',
     ];
  
     protected $casts = [
@@ -140,6 +141,7 @@ class Task extends Model
         'service_id' => 'integer',
         'is_autoprogrammable' => 'boolean',
         'auto_priority' => 'boolean',
+        'is_timeline_locked' => 'boolean',
     ];
 
     public function service(): BelongsTo

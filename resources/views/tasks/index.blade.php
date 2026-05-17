@@ -480,6 +480,18 @@
                                                         d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
                                             </a>
+                                            <!-- Cloning button -->
+                                            <button type="button"
+                                                onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.tasks.clone', [$team, $task]) }}')"
+                                                class="p-1.5 text-gray-400 hover:text-violet-500 transition-colors"
+                                                title="Clonar tarea">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                                                </svg>
+                                            </button>
+
                                             <button type="button"
                                                 onclick="event.stopPropagation(); confirmDeleteTask({{ $task->id }}, '{{ addslashes($task->title) }}')"
                                                 class="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
@@ -575,6 +587,18 @@
                                                         stroke-width="2" d="M9 5l7 7-7 7" />
                                                 </svg>
                                             </a>
+                                            <!-- Cloning button -->
+                                            <button type="button"
+                                                onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.tasks.clone', [$team, $subtask]) }}')"
+                                                class="p-1 text-gray-400 hover:text-violet-500 transition-colors"
+                                                title="Clonar tarea">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                                                </svg>
+                                            </button>
+
                                             @can('delete', $subtask)
                                                 <button type="button"
                                                     onclick="event.stopPropagation(); confirmDeleteTask({{ $subtask->id }}, '{{ addslashes($subtask->title) }}')"
@@ -843,6 +867,32 @@
                     });
                 }
 
+                window.cloneTask = function(url) {
+                    Swal.fire({
+                        title: '¿Clonar tarea?',
+                        text: 'Se creará una copia exacta de esta tarea en este mismo equipo.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#7c3aed',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, clonar',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827',
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
+                            cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const form = document.getElementById('individualCloneForm');
+                            form.action = url;
+                            form.submit();
+                        }
+                    });
+                }
+
                 function confirmDeleteTask(taskId, taskTitle) {
                     Swal.fire({
                         title: '¿Eliminar tarea?',
@@ -927,6 +977,10 @@
         <form id="individualDeleteForm" method="POST" class="hidden">
             @csrf
             @method('DELETE')
+        </form>
+
+        <form id="individualCloneForm" method="POST" class="hidden">
+            @csrf
         </form>
 
         <form id="bulkDeleteForm" action="{{ route('teams.tasks.bulk-delete', $team) }}" method="POST"

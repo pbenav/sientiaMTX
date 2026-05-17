@@ -274,11 +274,22 @@
                 </x-dropdown>
             @endif
 
+            <!-- Cloning Button -->
+            <form id="clone-task-form-{{ $task->id }}" action="{{ route('teams.tasks.clone', [$team, $task]) }}" method="POST" class="inline">
+                @csrf
+                <button type="button" onclick="confirmCloneTask('clone-task-form-{{ $task->id }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-violet-100 dark:border-violet-900/50 shadow-sm ml-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                    <span class="hidden sm:inline">Clonar</span>
+                </button>
+            </form>
+
             @can('delete', $task)
                 <form id="delete-task-form-{{ $task->id }}" action="{{ route('teams.tasks.destroy', [$team, $task]) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="button" onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-red-100 dark:border-red-900/50 shadow-sm ml-auto">
+                    <button type="button" onclick="confirmDelete('delete-task-form-{{ $task->id }}', '{{ __('tasks.delete_confirm') }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-red-100 dark:border-red-900/50 shadow-sm ml-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -288,6 +299,30 @@
             @endcan
 
             <script>
+                function confirmCloneTask(formId) {
+                    Swal.fire({
+                        title: '¿Clonar tarea?',
+                        text: 'Se creará una copia exacta de esta tarea en este mismo equipo.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#7c3aed',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, clonar',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
+                            cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(formId).submit();
+                        }
+                    });
+                }
+
                 function reproduceInTeam() {
                     const teams = @json($otherTeams->pluck('name', 'id'));
                     let options = '';

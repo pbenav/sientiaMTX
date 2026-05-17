@@ -86,6 +86,7 @@ class GanttController extends Controller
                 $progress = $task->progress;
 
                 // Distinguish template vs instance vs recurring in the label
+                $lockIcon = $task->is_timeline_locked ? '🔒 ' : '';
                 if ($task->is_template || $task->is_autoprogrammable) {
                     $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
                 } elseif ($task->metadata && isset($task->metadata['is_occurrence'])) {
@@ -96,11 +97,13 @@ class GanttController extends Controller
                     $label = $task->title;
                 }
 
+                $label = $lockIcon . $label;
+
                 if ($task->parent_id) $label = '   ↳ ' . $label;
 
                 $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
                 // Only templates should be forced readonly for regular members in this context
-                $isReadonly = $task->is_template && auth()->user()->cannot('update', $task);
+                $isReadonly = ($task->is_template && auth()->user()->cannot('update', $task)) || $task->is_timeline_locked;
                 $readonlyClass = $isReadonly ? 'gantt-readonly' : '';
                 $colorClass = $task->getGanttColorClass();
 
@@ -128,7 +131,7 @@ class GanttController extends Controller
                     'weight'       => $task->cognitive_load ?? 1,
                     'parent_id'    => $task->parent_id ? (string)$task->parent_id : null,
                     'parent_title' => $task->parent?->title,
-                    'readonly'     => auth()->user()->cannot('update', $task),
+                    'readonly'     => $isReadonly || auth()->user()->cannot('update', $task),
                     'skills'       => $task->skills->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray(),
                     'members_progress' => (function() use ($task, $request) {
                         $user = auth()->user();

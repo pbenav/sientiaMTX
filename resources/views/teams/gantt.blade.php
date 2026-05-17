@@ -409,7 +409,17 @@
 
                                 renderActionWave(); 
                             }
-                        } else refreshGanttDisplay();
+                        } else {
+                            if (data.error) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Acción bloqueada',
+                                    text: data.error,
+                                    confirmButtonColor: '#7c3aed',
+                                });
+                            }
+                            refreshGanttDisplay();
+                        }
                     });
                 }
             });
