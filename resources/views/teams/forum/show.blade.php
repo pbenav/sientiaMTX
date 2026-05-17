@@ -828,6 +828,62 @@
                     window.initForumTaskSelect(select);
                 });
             });
+
+            (function() {
+                const btn = document.getElementById('forum-scroll-to-top');
+                if (!btn) return;
+                let visible = false;
+
+                function updateScrollBtn() {
+                    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                    const shouldShow = scrollY > 300;
+                    if (shouldShow === visible) return;
+                    visible = shouldShow;
+                    if (visible) {
+                        btn.style.opacity = '1';
+                        btn.style.transform = 'translateY(0)';
+                        btn.style.pointerEvents = 'auto';
+                    } else {
+                        btn.style.opacity = '0';
+                        btn.style.transform = 'translateY(1rem)';
+                        btn.style.pointerEvents = 'none';
+                    }
+                }
+
+                window.addEventListener('scroll', updateScrollBtn, { passive: true });
+            })();
         </script>
+        
+        <!-- Floating scroll to top button -->
+        <div id="forum-scroll-to-top"
+             style="
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                z-index: 800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 3rem;
+                height: 3rem;
+                background: rgba(255,255,255,0.9);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid #e5e7eb;
+                border-radius: 1rem;
+                box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(1rem);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+             "
+             class="dark:[background:rgba(17,24,39,0.9)] dark:[border-color:#374151] hover:scale-110 active:scale-95 group"
+             onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+             title="Volver al principio">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 group-hover:text-violet-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+             </svg>
+        </div>
     @endpush
 </x-app-layout>
