@@ -146,6 +146,29 @@
                     </div>
                 </div>
 
+                {{-- Emoji Selector Palette --}}
+                <div class="space-y-1.5">
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Seleccionar Emoji</span>
+                    <div class="gap-0.5 p-1 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 max-h-[150px] overflow-y-auto no-scrollbar"
+                         style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr));">
+                        @php
+                            $emojis = [
+                                '🤖', '💻', '🔬', '🚀', '🧠', '⚙️', '🔌', '⚡', '🧬', '🧪',
+                                '🎨', '🖌️', '📷', '🎬', '🎭', '🎻', '🎮', '🧵', '🔨', '📐',
+                                '💼', '📊', '📅', '📋', '📈', '🎯', '💡', '🧩', '🗝️', '🔍',
+                                '🎓', '📚', '✍️', '✏️', '🗣️', '📖', '🩺', '💊', '🏥', '🤝',
+                                '❤️', '🌟', '🛡️', '🌱', '🪴', '🌍', '🗺️', '💠', '💎', '🔮'
+                            ];
+                        @endphp
+                        @foreach($emojis as $emoji)
+                            <button type="button" onclick="selectEmoji('{{ $emoji }}')"
+                                class="text-base p-0 hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm hover:scale-110 active:scale-95 rounded-lg transition-all duration-150 focus:outline-none flex items-center justify-center h-7 w-full select-none cursor-pointer">
+                                {{ $emoji }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
                 <div class="pt-4 flex items-center justify-between gap-4">
                     <button type="button" id="cancel-btn" onclick="resetForm()" class="hidden text-[10px] font-black text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors uppercase tracking-widest">
                         Cancelar
@@ -159,6 +182,10 @@
     </div>
 
 <script>
+    function selectEmoji(emoji) {
+        document.getElementById('skill_icon').value = emoji;
+    }
+
     function getBaseRoute() {
         const isTeam = {{ isset($team) ? 'true' : 'false' }};
         const tid = "{{ isset($team) ? $team->id : '' }}";
