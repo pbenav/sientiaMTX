@@ -829,23 +829,23 @@
                 });
             });
 
-            (function() {
-                const btn = document.getElementById('forum-scroll-to-top');
-                if (!btn) return;
+            document.addEventListener('DOMContentLoaded', () => {
+                const dock = document.getElementById('forum-action-dock');
+                if (!dock) return;
                 let visible = false;
 
-                function updateScrollBtn(scrollY) {
+                function updateScrollDock(scrollY) {
                     const shouldShow = scrollY > 300;
                     if (shouldShow === visible) return;
                     visible = shouldShow;
                     if (visible) {
-                        btn.style.opacity = '1';
-                        btn.style.transform = 'translateY(0)';
-                        btn.style.pointerEvents = 'auto';
+                        dock.style.opacity = '1';
+                        dock.style.transform = 'translateX(-50%) translateY(0)';
+                        dock.style.pointerEvents = 'auto';
                     } else {
-                        btn.style.opacity = '0';
-                        btn.style.transform = 'translateY(1rem)';
-                        btn.style.pointerEvents = 'none';
+                        dock.style.opacity = '0';
+                        dock.style.transform = 'translateX(-50%) translateY(1rem)';
+                        dock.style.pointerEvents = 'none';
                     }
                 }
 
@@ -853,50 +853,76 @@
                     const target = e.target === document ? document.documentElement : e.target;
                     const scrollY = target.scrollTop || 0;
                     const finalScroll = scrollY || window.scrollY || 0;
-                    updateScrollBtn(finalScroll);
+                    updateScrollDock(finalScroll);
                 };
 
                 window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-            })();
+                
+                // Chequeo inicial
+                const initialScroll = window.scrollY || document.documentElement.scrollTop || 0;
+                updateScrollDock(initialScroll);
+            });
         </script>
         
-        <!-- Floating scroll to top button -->
-        <div id="forum-scroll-to-top"
+        <!-- Floating Contextual Action Dock -->
+        <div id="forum-action-dock"
              style="
                 position: fixed;
                 bottom: 2rem;
-                right: 2rem;
-                z-index: 800;
+                left: 50%;
+                transform: translateX(-50%) translateY(1rem);
+                z-index: 99999;
                 display: flex;
                 align-items: center;
-                justify-content: center;
-                width: 3rem;
-                height: 3rem;
-                background: rgba(255,255,255,0.9);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                border: 1px solid #e5e7eb;
-                border-radius: 1rem;
-                box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+                gap: 1rem;
+                padding: 0.6rem 1rem;
+                background: rgba(255,255,255,0.92);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border: 1px solid rgba(229, 231, 235, 0.8);
+                border-radius: 1.5rem;
+                box-shadow: 0 15px 40px -10px rgba(0,0,0,0.12), 0 0 1px 0 rgba(0,0,0,0.1);
                 opacity: 0;
                 pointer-events: none;
-                transform: translateY(1rem);
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                cursor: pointer;
+                transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
              "
-             class="dark:[background:rgba(17,24,39,0.9)] dark:[border-color:#374151] hover:scale-110 active:scale-95 group"
-             onclick="(function() {
-                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                 document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
-                 document.body.scrollTo({ top: 0, behavior: 'smooth' });
-                 document.querySelectorAll('.overflow-y-auto, [style*=\'overflow-y: auto\'], [style*=\'overflow-y: scroll\']').forEach(el => {
-                     el.scrollTo({ top: 0, behavior: 'smooth' });
-                 });
-             })()"
-             title="Volver al principio">
-             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 group-hover:text-violet-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-             </svg>
+             class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
+             
+             <!-- Back button -->
+             <a href="{{ route('teams.forum.index', $team) }}" 
+                class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors py-1.5 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                 </svg>
+                 <span>Volver</span>
+             </a>
+
+             <!-- Divider -->
+             <div class="h-5 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+             <!-- Thread Title Context -->
+             <span class="text-xs font-bold text-gray-600 dark:text-gray-300 max-w-[150px] sm:max-w-[280px] truncate tracking-tight py-0.5">
+                 {{ $thread->title }}
+             </span>
+
+             <!-- Divider -->
+             <div class="h-5 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+             <!-- Floating Scroll Button -->
+             <button onclick="(function() {
+                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                         document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                         document.body.scrollTo({ top: 0, behavior: 'smooth' });
+                         document.querySelectorAll('.overflow-y-auto, [style*=\'overflow-y: auto\'], [style*=\'overflow-y: scroll\']').forEach(el => {
+                             el.scrollTo({ top: 0, behavior: 'smooth' });
+                         });
+                     })()"
+                     class="flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 py-1.5 px-3.5 rounded-xl shadow-sm hover:shadow hover:scale-105 active:scale-95 transition-all duration-300 shrink-0">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                 </svg>
+                 <span>Inicio</span>
+             </button>
         </div>
-    @endpush
+@endpush
 </x-app-layout>
