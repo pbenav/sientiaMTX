@@ -25,16 +25,16 @@
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />',
             ],
             [
-                'name' => 'Expedientes',
-                'route' => route('teams.expedientes.index', $teamId),
-                'active' => request()->routeIs('teams.expedientes.*'),
-                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />',
-            ],
-            [
                 'name' => 'Encuestas',
                 'route' => route('teams.surveys.index', $teamId),
                 'active' => request()->routeIs('teams.surveys.*'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />',
+            ],
+            [
+                'name' => 'Expedientes',
+                'route' => route('teams.expedientes.index', $teamId),
+                'active' => request()->routeIs('teams.expedientes.*'),
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />',
             ],
             [
                 'name' => __('navigation.task_list'),
@@ -86,7 +86,7 @@
     <div class="flex-1 min-w-0">
         <div class="flex items-center gap-0.5">
             @foreach ($views as $index => $view)
-                @if ($index === 4 || $index === 8)
+                @if ($index === 3 || $index === 8)
                     <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 mx-1 shrink-0"></div>
                 @endif
                 <a href="{{ $view['route'] }}"
