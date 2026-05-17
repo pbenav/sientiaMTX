@@ -540,8 +540,7 @@
                 if (!btn) return;
                 let visible = false;
 
-                function updateScrollBtn() {
-                    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                function updateScrollBtn(scrollY) {
                     const shouldShow = scrollY > 300;
                     if (shouldShow === visible) return;
                     visible = shouldShow;
@@ -556,7 +555,14 @@
                     }
                 }
 
-                window.addEventListener('scroll', updateScrollBtn, { passive: true });
+                const checkScroll = (e) => {
+                    const target = e.target === document ? document.documentElement : e.target;
+                    const scrollY = target.scrollTop || 0;
+                    const finalScroll = scrollY || window.scrollY || 0;
+                    updateScrollBtn(finalScroll);
+                };
+
+                window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
             })();
         </script>
         
@@ -585,7 +591,14 @@
                 cursor: pointer;
              "
              class="dark:[background:rgba(17,24,39,0.9)] dark:[border-color:#374151] hover:scale-110 active:scale-95 group"
-             onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+             onclick="(function() {
+                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                 document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                 document.body.scrollTo({ top: 0, behavior: 'smooth' });
+                 document.querySelectorAll('.overflow-y-auto, [style*=\'overflow-y: auto\'], [style*=\'overflow-y: scroll\']').forEach(el => {
+                     el.scrollTo({ top: 0, behavior: 'smooth' });
+                 });
+             })()"
              title="Volver al principio">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 group-hover:text-violet-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
