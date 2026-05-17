@@ -77,11 +77,11 @@
                     <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
                            placeholder="{{ __('forum.search_threads') ?? 'Buscar en el foro...' }}"
                            enterkeyhint="search"
-                           class="block w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm placeholder:text-gray-400 dark:text-white">
+                           class="block w-full pl-10 pr-12 py-2.5 {{ !empty($filters['search']) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' }} border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm placeholder:text-gray-400 dark:text-white">
                     
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-1.5 gap-1">
+                    <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
-                            <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                            <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>

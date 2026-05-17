@@ -96,16 +96,39 @@
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
             <form action="{{ route('teams.gantt', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
-                <div class="flex-1 min-w-[200px] relative">
-                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('tasks.search') }}..." class="w-full pl-4 pr-4 py-2 {{ ($filters['search'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
+                <div class="flex-1 min-w-[200px] relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
+                           placeholder="{{ __('tasks.search') }}..." 
+                           enterkeyhint="search"
+                           class="w-full pl-10 pr-12 py-2.5 {{ ($filters['search'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' }} border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:text-white transition-all shadow-sm">
+                    
+                    <div class="absolute inset-y-0 right-2 flex items-center gap-1">
+                        @if(!empty($filters['search']))
+                            <a href="{{ route('teams.gantt', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </a>
+                        @endif
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="{{ __('tasks.search') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-                <select name="status" onchange="this.form.submit()" class="w-40 {{ ($filters['status'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="status" onchange="this.form.submit()" class="w-40 {{ ($filters['status'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                     <option value="">{{ __('tasks.status') }}</option>
                     @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
                         <option value="{{ $status }}" {{ ($filters['status'] ?? null) === $status ? 'selected' : '' }}>{{ __("tasks.statuses.{$status}") }}</option>
                     @endforeach
                 </select>
-                <select name="priority" onchange="this.form.submit()" class="w-40 {{ ($filters['priority'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="priority" onchange="this.form.submit()" class="w-40 {{ ($filters['priority'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                     <option value="">{{ __('tasks.priority') }}</option>
                     @foreach(['low','medium','high','critical'] as $p)
                         <option value="{{$p}}" {{($filters['priority'] ?? null)==$p?'selected':''}}>{{__("tasks.priorities.{$p}")}}</option>
@@ -113,7 +136,7 @@
                 </select>
 
                 <!-- Assigned To -->
-                <select name="assigned_to" onchange="this.form.submit()" class="w-40 {{ ($filters['assigned_to'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="assigned_to" onchange="this.form.submit()" class="w-40 {{ ($filters['assigned_to'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                     <option value="">{{ __('tasks.assigned_to') }}</option>
                     @foreach ($members as $member)
                         <option value="{{ $member->id }}" {{ ($filters['assigned_to'] ?? null) == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
@@ -121,7 +144,7 @@
                 </select>
 
                 <!-- Expediente Filter -->
-                <select name="expediente_id" onchange="this.form.submit()" class="w-40 {{ ($filters['expediente_id'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="expediente_id" onchange="this.form.submit()" class="w-40 {{ ($filters['expediente_id'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                     <option value="">{{ __('Expediente') }}</option>
                     @foreach($expedientes as $exp)
                         <option value="{{ $exp->id }}" {{ ($filters['expediente_id'] ?? null) == $exp->id ? 'selected' : '' }}>{{ $exp->code }}</option>
@@ -129,7 +152,7 @@
                 </select>
 
                 <!-- Skill Filter -->
-                <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ ($filters['skill_id'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ ($filters['skill_id'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                     <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
                     @foreach($skills as $skill)
                         <option value="{{ $skill->id }}" {{ ($filters['skill_id'] ?? null) == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
@@ -137,13 +160,13 @@
                 </select>
 
                 <!-- Type Filter -->
-                <select name="type" onchange="this.form.submit()" class="w-40 {{ ($filters['type'] ?? null) ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer">
+                <select name="type" onchange="this.form.submit()" class="w-40 {{ ($filters['type'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                     <option value="">{{ __('tasks.type') }}</option>
                     <option value="template" {{ ($filters['type'] ?? null) === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
                     <option value="instance" {{ ($filters['type'] ?? null) === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
                     <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
                 </select>
-                <select name="time_range" onchange="this.form.submit()" class="w-44 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold uppercase py-2 cursor-pointer text-violet-600 dark:text-violet-400">
+                <select name="time_range" onchange="this.form.submit()" class="w-44 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all text-violet-600 dark:text-violet-400 shadow-sm">
                     <option value="all"   {{ request('time_range') === 'all'                                              ? 'selected' : '' }}>📅 Todo</option>
                     <option value="1"     {{ request('time_range') === '1'                                                ? 'selected' : '' }}>🔍 1 Mes</option>
                     <option value="3"     {{ request('time_range') === '3' || (!request()->has('time_range'))             ? 'selected' : '' }}>📆 3 Meses</option>

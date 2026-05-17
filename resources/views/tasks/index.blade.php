@@ -41,29 +41,37 @@
             <form action="{{ route('teams.tasks.index', $team) }}" method="GET"
                 class="flex flex-wrap items-center gap-4">
                 <!-- Search -->
-                    <div class="relative flex-1 group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input type="text" name="search" value="{{ $filters['search'] }}"
-                            placeholder="{{ __('tasks.search') }}..."
-                            enterkeyhint="search"
-                            class="w-full pl-10 pr-12 py-2 {{ $filters['search'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30' : 'bg-gray-50 dark:bg-gray-800' }} border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-500/50 dark:text-white transition-all">
-                        
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="{{ __('tasks.search') }}">
+                <div class="relative flex-1 group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="search" value="{{ $filters['search'] }}"
+                        placeholder="{{ __('tasks.search') }}..."
+                        enterkeyhint="search"
+                        class="w-full pl-10 pr-12 py-2.5 {{ $filters['search'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' }} border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:text-white transition-all shadow-sm">
+                    
+                    <div class="absolute inset-y-0 right-2 flex items-center gap-1">
+                        @if(!empty($filters['search']))
+                            <a href="{{ route('teams.tasks.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </a>
+                        @endif
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="{{ __('tasks.search') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
                         </button>
                     </div>
+                </div>
 
                 <!-- Status Filter -->
                 <div class="w-40">
                     <select name="status" onchange="this.form.submit()"
-                        class="w-full {{ $filters['status'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['status'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">{{ __('tasks.status') }}</option>
                         @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
                             <option value="{{ $status }}" {{ $filters['status'] === $status ? 'selected' : '' }}>
@@ -76,7 +84,7 @@
                 <!-- Priority Filter -->
                 <div class="w-40">
                     <select name="priority" onchange="this.form.submit()"
-                        class="w-full {{ $filters['priority'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['priority'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">{{ __('tasks.priority') }}</option>
                         @foreach (['low', 'medium', 'high', 'critical'] as $priority)
                             <option value="{{ $priority }}"
@@ -90,7 +98,7 @@
                 <!-- Assigned To Filter -->
                 <div class="w-48">
                     <select name="assigned_to" onchange="this.form.submit()"
-                        class="w-full {{ $filters['assigned_to'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['assigned_to'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">{{ __('tasks.assigned_to') }}</option>
                         @foreach ($members as $member)
                             <option value="{{ $member->id }}"
@@ -104,7 +112,7 @@
                 <!-- Skill Filter -->
                 <div class="w-48">
                     <select name="skill_id" onchange="this.form.submit()"
-                        class="w-full {{ $filters['skill_id'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['skill_id'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
                         @foreach($skills as $skill)
                             <option value="{{ $skill->id }}" {{ $filters['skill_id'] == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
@@ -115,7 +123,7 @@
                 <!-- Type Filter -->
                 <div class="w-40">
                     <select name="type" onchange="this.form.submit()"
-                        class="w-full {{ $filters['type'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['type'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">{{ __('tasks.type') }}</option>
                         <option value="template" {{ $filters['type'] === 'template' ? 'selected' : '' }}>
                             {{ __('tasks.template') }}</option>
@@ -129,7 +137,7 @@
                 <!-- Per Page -->
                 <div class="w-32">
                     <select name="per_page" onchange="this.form.submit()"
-                        class="w-full {{ $filters['per_page'] ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }} border-none rounded-xl text-xs font-bold uppercase tracking-wider py-2 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all">
+                        class="w-full {{ $filters['per_page'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="10" {{ ($filters['per_page'] ?? 10) == 10 ? 'selected' : '' }}>10 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="25" {{ $filters['per_page'] == 25 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="50" {{ $filters['per_page'] == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
