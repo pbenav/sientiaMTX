@@ -1058,4 +1058,110 @@
         </div>
     </div>
 
+    <!-- Floating Contextual Action Dock -->
+    <div id="dashboard-action-dock"
+         style="
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(1rem);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.6rem 1rem;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 40px -10px rgba(0,0,0,0.12), 0 0 1px 0 rgba(0,0,0,0.1);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+         "
+         class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
+         
+         <!-- Back to team button -->
+         <a href="{{ route('teams.index') }}" 
+            class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors py-1.5 px-3 rounded-xl hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+             </svg>
+             <span>Equipos</span>
+         </a>
+
+         <!-- Divider -->
+         <div class="h-5 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+         <!-- Context Title -->
+         <span class="text-xs font-bold text-gray-600 dark:text-gray-300 max-w-[120px] sm:max-w-[200px] truncate tracking-tight py-0.5">
+             {{ $team->name }}
+         </span>
+
+         <!-- Divider -->
+         <div class="h-5 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+         <!-- Go to Sentinel -->
+         <button onclick="document.getElementById('sentinel-services-panel')?.scrollIntoView({ behavior: 'smooth' })"
+                 class="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 py-1.5 px-3 rounded-xl transition-all duration-300">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+             </svg>
+             <span class="hidden sm:inline">Sentinel</span>
+         </button>
+
+         <!-- Divider -->
+         <div class="h-5 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+         <!-- Scroll to top -->
+         <button onclick="(function() {
+                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                     document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                     document.body.scrollTo({ top: 0, behavior: 'smooth' });
+                 })()"
+                 class="flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 py-1.5 px-3.5 rounded-xl shadow-sm hover:shadow hover:scale-105 active:scale-95 transition-all duration-300 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+              <span>Inicio</span>
+         </button>
+    </div>
+
+    <!-- Scroll Dock Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dock = document.getElementById('dashboard-action-dock');
+            if (!dock) return;
+            let visible = false;
+
+            function updateScrollDock(scrollY) {
+                const shouldShow = scrollY > 300;
+                if (shouldShow === visible) return;
+                visible = shouldShow;
+                if (visible) {
+                    dock.style.opacity = '1';
+                    dock.style.transform = 'translateX(-50%) translateY(0)';
+                    dock.style.pointerEvents = 'auto';
+                } else {
+                    dock.style.opacity = '0';
+                    dock.style.transform = 'translateX(-50%) translateY(1rem)';
+                    dock.style.pointerEvents = 'none';
+                }
+            }
+
+            const checkScroll = (e) => {
+                const target = e.target === document ? document.documentElement : e.target;
+                const scrollY = target.scrollTop || 0;
+                const finalScroll = scrollY || window.scrollY || 0;
+                updateScrollDock(finalScroll);
+            };
+
+            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            
+            // Chequeo inicial
+            const initialScroll = window.scrollY || document.documentElement.scrollTop || 0;
+            updateScrollDock(initialScroll);
+        });
+    </script>
 </x-app-layout>
