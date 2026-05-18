@@ -43,4 +43,6 @@ return [
     'back_to_forum' => 'Back to forum',
     'cleanup_confirm' => 'Would you like to prune library threads with no activity in the last 90 days? This will keep the forum lean and relevant.',
     'cleanup_success' => ':count inactive library threads have been pruned.',
+    'recent_badge' => 'Recent',
+    'recent_activity' => 'Very recent activity (one of the last 5 forum entries)',
 ];

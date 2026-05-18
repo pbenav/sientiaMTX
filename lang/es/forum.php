@@ -43,4 +43,6 @@ return [
     'back_to_forum' => 'Volver al foro',
     'cleanup_confirm' => '¿Deseas depurar de la biblioteca los hilos sin actividad en los últimos 90 días? Esto mantendrá el foro ágil y con información relevante.',
     'cleanup_success' => 'Se han depurado :count hilos de la biblioteca por inactividad.',
+    'recent_badge' => 'Reciente',
+    'recent_activity' => 'Actividad muy reciente (una de las últimas 5 entradas del foro)',
 ];

@@ -94,7 +94,17 @@ class ForumController extends Controller
             ->paginate(in_array($limit, [15, 30, 50, 100]) ? $limit : 15)
             ->withQueryString();
 
-        return view('teams.forum.index', compact('team', 'threads', 'filters'));
+        // Obtener los hilos que contienen las últimas 5 respuestas/mensajes de este equipo
+        $recentThreadIds = \App\Models\ForumMessage::whereHas('thread', function($q) use ($team) {
+                $q->where('team_id', $team->id);
+            })
+            ->latest()
+            ->limit(5)
+            ->pluck('forum_thread_id')
+            ->unique()
+            ->toArray();
+
+        return view('teams.forum.index', compact('team', 'threads', 'filters', 'recentThreadIds'));
     }
 
     /**

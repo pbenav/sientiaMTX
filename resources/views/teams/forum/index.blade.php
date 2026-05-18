@@ -204,6 +204,17 @@
                                         </svg>
                                     </span>
                                 @endif
+                                
+                                @if(isset($recentThreadIds) && in_array($thread->id, $recentThreadIds))
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 rounded-xl text-[9px] font-black uppercase tracking-wider shrink-0 animate-pulse border border-amber-500/20"
+                                        title="{{ __('forum.recent_activity') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                                        </svg>
+                                        {{ __('forum.recent_badge') }}
+                                    </span>
+                                @endif
 
                                 <a href="{{ route('teams.forum.show', [$team, $thread]) }}"
                                     class="text-base font-bold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-colors truncate">
