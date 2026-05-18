@@ -50,8 +50,8 @@ class Task extends Model
                 }
             }
 
-            // Cascade completion: If this task is completed, all children should be completed
-            if ($model->isDirty('status') && $model->status === 'completed') {
+            // Cascade completion: If this task is completed, all children should be completed (except for Master Plans / Distributed Templates)
+            if ($model->isDirty('status') && $model->status === 'completed' && !$model->is_template) {
                 $model->children()->where('status', '!=', 'completed')->each(function($child) {
                     $child->update(['status' => 'completed', 'progress_percentage' => 100]);
                 });
