@@ -40,6 +40,16 @@ class ForumController extends Controller
         $showOrphaned = $request->get('orphaned') ?? null;
         $filters['orphaned'] = $showOrphaned;
 
+        // Obtener los hilos que contienen las últimas 5 respuestas/mensajes de este equipo
+        $recentThreadIds = \App\Models\ForumMessage::whereHas('thread', function($q) use ($team) {
+                $q->where('team_id', $team->id);
+            })
+            ->latest()
+            ->limit(5)
+            ->pluck('forum_thread_id')
+            ->unique()
+            ->toArray();
+
         $threads = $team->forumThreads()
             ->when($search, function($query) use ($search) {
                 $query->where(function($q) use ($search) {
@@ -86,6 +96,10 @@ class ForumController extends Controller
             })
             ->withCount('messages')
             ->orderBy('is_pinned', 'desc')
+            ->when(!empty($recentThreadIds), function($q) use ($recentThreadIds) {
+                $idsString = implode(',', array_map('intval', $recentThreadIds));
+                $q->orderByRaw("CASE WHEN id IN ({$idsString}) THEN 1 ELSE 0 END DESC");
+            })
             ->when($sort === 'updated_at_desc', fn($q) => $q->orderBy('updated_at', 'desc'))
             ->when($sort === 'updated_at_asc', fn($q) => $q->orderBy('updated_at', 'asc'))
             ->when($sort === 'views_desc', fn($q) => $q->orderBy('views', 'desc'))
@@ -93,16 +107,6 @@ class ForumController extends Controller
             ->when($sort === 'title_asc', fn($q) => $q->orderBy('title', 'asc'))
             ->paginate(in_array($limit, [15, 30, 50, 100]) ? $limit : 15)
             ->withQueryString();
-
-        // Obtener los hilos que contienen las últimas 5 respuestas/mensajes de este equipo
-        $recentThreadIds = \App\Models\ForumMessage::whereHas('thread', function($q) use ($team) {
-                $q->where('team_id', $team->id);
-            })
-            ->latest()
-            ->limit(5)
-            ->pluck('forum_thread_id')
-            ->unique()
-            ->toArray();
 
         return view('teams.forum.index', compact('team', 'threads', 'filters', 'recentThreadIds'));
     }
