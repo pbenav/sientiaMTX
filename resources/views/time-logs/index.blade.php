@@ -44,7 +44,7 @@
     <div x-data="{ teamModalOpen: false }" class="py-8">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 <!-- Estado de Energía -->
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group">
                     <div class="absolute top-4 right-4">
@@ -178,6 +178,49 @@
                     <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 transition-all hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:scale-110 shadow-sm group-hover:shadow-emerald-500/10" title="Ver equipo">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Sentinel Widget -->
+                @php
+                    $upServicesCount = $services->where('status', 'up')->count();
+                    $totalServicesCount = $services->count();
+                    $sentinelStatus = $totalServicesCount > 0 ? round(($upServicesCount / $totalServicesCount) * 100) : 100;
+                    
+                    // Elegir color según el estado
+                    if ($sentinelStatus === 100) {
+                        $sentinelColor = 'text-violet-600 dark:text-violet-400';
+                        $sentinelBgIcon = 'bg-violet-50 dark:bg-violet-900/20';
+                        $sentinelBorderIcon = 'border-violet-100 dark:border-violet-800/50';
+                        $sentinelHoverIcon = 'hover:bg-violet-100 dark:hover:bg-violet-900/40';
+                        $sentinelShadow = 'group-hover:shadow-violet-500/10';
+                    } elseif ($sentinelStatus >= 50) {
+                        $sentinelColor = 'text-amber-500 dark:text-amber-400';
+                        $sentinelBgIcon = 'bg-amber-50 dark:bg-amber-900/20';
+                        $sentinelBorderIcon = 'border-amber-100 dark:border-amber-800/50';
+                        $sentinelHoverIcon = 'hover:bg-amber-100 dark:hover:bg-amber-900/40';
+                        $sentinelShadow = 'group-hover:shadow-amber-500/10';
+                    } else {
+                        $sentinelColor = 'text-rose-600 dark:text-rose-400';
+                        $sentinelBgIcon = 'bg-rose-50 dark:bg-rose-900/20';
+                        $sentinelBorderIcon = 'border-rose-100 dark:border-rose-800/50';
+                        $sentinelHoverIcon = 'hover:bg-rose-100 dark:hover:bg-rose-900/40';
+                        $sentinelShadow = 'group-hover:shadow-rose-500/10';
+                    }
+                @endphp
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group flex items-center justify-between cursor-pointer animate-fade-in" 
+                     onclick="document.getElementById('sentinel-services-panel')?.scrollIntoView({ behavior: 'smooth' })">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Estado de Sentinel</p>
+                        <h3 class="text-4xl font-black {{ $sentinelColor }} tabular-nums transition-colors duration-500">
+                            {{ $sentinelStatus }}%
+                        </h3>
+                        <p class="text-[10px] text-gray-500 mt-1">{{ $upServicesCount }} de {{ $totalServicesCount }} servicios en línea.</p>
+                    </div>
+                    <div class="p-4 {{ $sentinelBgIcon }} rounded-2xl border {{ $sentinelBorderIcon }} transition-all {{ $sentinelHoverIcon }} hover:scale-110 shadow-sm {{ $sentinelShadow }}" title="Ir a Sentinel">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
                 </div>

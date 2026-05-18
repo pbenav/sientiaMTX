@@ -1,5 +1,5 @@
 <!-- Active Services Panel (Sentinel) -->
-<div class="mt-6 mb-12">
+<div class="mt-6 mb-12" id="sentinel-services-panel">
     <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 px-6 py-6 transition-all duration-300">
         <div class="flex items-center justify-between mb-8 border-b border-gray-50 dark:border-gray-800 pb-6">
             <div class="flex items-center gap-3">
