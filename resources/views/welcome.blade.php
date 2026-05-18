@@ -20,8 +20,8 @@
     <!-- Datos Estructurados Schema.org para especificar el Nombre del Sitio oficial a Google -->
     <script type="application/ld+json">
     {
-      "@context" : "https://schema.org",
-      "@type" : "WebSite",
+      "@@context" : "https://schema.org",
+      "@@type" : "WebSite",
       "name" : "Sientia Open Labs",
       "alternateName": ["sientiaMTX", "Sientia"],
       "url" : "https://mtx.sientia.com/"
