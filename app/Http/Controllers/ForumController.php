@@ -96,7 +96,7 @@ class ForumController extends Controller
             })
             ->withCount('messages')
             ->orderBy('is_pinned', 'desc')
-            ->when(!empty($recentThreadIds), function($q) use ($recentThreadIds) {
+            ->when(!empty($recentThreadIds) && $sort === 'updated_at_desc', function($q) use ($recentThreadIds) {
                 $idsString = implode(',', array_map('intval', $recentThreadIds));
                 $q->orderByRaw("CASE WHEN id IN ({$idsString}) THEN 1 ELSE 0 END DESC");
             })
