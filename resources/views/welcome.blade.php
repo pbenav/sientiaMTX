@@ -10,6 +10,24 @@
     <meta name="description"
         content="{{ app()->getLocale() === 'es' ? 'sientiaMTX te ayuda a priorizar lo que importa de verdad usando la Matriz de Eisenhower. Organiza tu equipo, no pierdas el foco.' : 'sientiaMTX helps you prioritize what truly matters using the Eisenhower Matrix. Organize your team, stay focused.' }}">
 
+    <!-- Metadatos de Nombre de Sitio para Google (SEO / Open Graph) -->
+    <meta property="og:site_name" content="Sientia Open Labs">
+    <meta property="og:title" content="sientiaMTX — {{ app()->getLocale() === 'es' ? 'Gestión de tareas con la Matriz de Eisenhower' : 'Task Management with the Eisenhower Matrix' }}">
+    <meta property="og:description" content="{{ app()->getLocale() === 'es' ? 'sientiaMTX te ayuda a priorizar lo que importa de verdad usando la Matriz de Eisenhower. Organiza tu equipo, no pierdas el foco.' : 'sientiaMTX helps you prioritize what truly matters using the Eisenhower Matrix. Organize your team, stay focused.' }}">
+    <meta property="og:url" content="https://mtx.sientia.com/">
+    <meta property="og:type" content="website">
+
+    <!-- Datos Estructurados Schema.org para especificar el Nombre del Sitio oficial a Google -->
+    <script type="application/ld+json">
+    {
+      "@context" : "https://schema.org",
+      "@type" : "WebSite",
+      "name" : "Sientia Open Labs",
+      "alternateName": ["sientiaMTX", "Sientia"],
+      "url" : "https://mtx.sientia.com/"
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
