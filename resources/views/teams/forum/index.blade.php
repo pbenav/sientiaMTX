@@ -302,7 +302,8 @@
         <form method="post" action="{{ route('teams.forum.store', $team) }}" 
               x-data="{ 
                 driveFiles: [], 
-                addFile(file) { 
+                addFile(detail) { 
+                    const file = detail.file;
                     if (!this.driveFiles.find(f => f.id === file.id)) {
                         this.driveFiles.push({
                             id: file.id,
