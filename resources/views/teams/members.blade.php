@@ -145,6 +145,15 @@
                                             return $s->last_activity > now()->subMinutes(15)->getTimestamp();
                                         });
                                         $hasActive = $activeSessions->isNotEmpty();
+
+                                        $sessionDuration = '';
+                                        if ($member->last_login_at) {
+                                            if ($hasActive) {
+                                                $sessionDuration = $member->last_login_at->diffForHumans(null, true);
+                                            } elseif ($member->last_activity_at && $member->last_activity_at > $member->last_login_at) {
+                                                $sessionDuration = $member->last_login_at->diffForHumans($member->last_activity_at, true);
+                                            }
+                                        }
                                     @endphp
                                     
                                     <div class="flex items-center gap-1.5">
@@ -156,8 +165,11 @@
                                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-300 dark:bg-gray-700"></span>
                                             @endif
                                         </div>
-                                        <span class="text-[10px] font-bold uppercase tracking-wider {{ $hasActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500' }}">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 {{ $hasActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500' }}">
                                             {{ $hasActive ? __('Online') : __('Offline') }}
+                                            @if($sessionDuration)
+                                                <span class="lowercase font-medium opacity-75">({{ $sessionDuration }})</span>
+                                            @endif
                                         </span>
                                     </div>
 
