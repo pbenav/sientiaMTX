@@ -139,10 +139,10 @@ class TaskController extends Controller
 
             // 4. Sync Assigned Users & Groups
             if ($task->assignedTo->isNotEmpty()) {
-                $new->assignedTo()->sync($task->assignedTo->pluck('id')->toArray());
+                $new->assignedTo()->syncWithPivotValues($task->assignedTo->pluck('id')->toArray(), ['assigned_by_id' => $user->id]);
             }
             if ($task->assignedGroups->isNotEmpty()) {
-                $new->assignedGroups()->sync($task->assignedGroups->pluck('id')->toArray());
+                $new->assignedGroups()->syncWithPivotValues($task->assignedGroups->pluck('id')->toArray(), ['assigned_by_id' => $user->id]);
             }
 
             // Create history record
