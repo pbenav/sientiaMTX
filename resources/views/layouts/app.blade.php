@@ -248,7 +248,7 @@
                                 if (this.chatSoundsEnabled) this.playMessageChime();
                                 this.startMessageFlash();
                                 const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
-                                Toast.fire({ icon: 'info', html: `<div class="text-left py-1 pr-2"><p class="text-xs font-black uppercase">${lastMsg.sender_name}</p><p class="text-xs text-gray-600 dark:text-gray-300 truncate">${lastMsg.text}</p></div>`, didOpen: (t) => { t.style.cursor = 'pointer'; t.onclick = () => this.openChat(lastMsg); } });
+                                Toast.fire({ icon: 'info', html: `<div class="text-left py-1 pr-2"><p class="text-xs font-black uppercase">${lastMsg.sender_name}</p><p class="text-xs text-gray-600 dark:text-gray-300 truncate">${lastMsg.text}</p></div>`, didOpen: (t) => { t.style.cursor = 'pointer'; t.onclick = () => this.openChat({ id: lastMsg.sender_id, name: lastMsg.sender_name, photo: lastMsg.sender_photo, team: lastMsg.sender_team, is_group: String(lastMsg.sender_id).startsWith('group_') }); } });
                             }
                             if (this.open && this.member.id === lastMsg.sender_id) this.fetchMessages();
                         } else {
