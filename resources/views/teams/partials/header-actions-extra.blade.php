@@ -40,6 +40,47 @@
             @auth
                 <div class="hidden sm:block h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
             
+            <!-- Chat Notification Dropdown -->
+            <div class="relative items-center" x-data="{ open: false }">
+                 <button @click="open = !open" @click.outside="open = false"
+                         class="relative p-1.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                         title="{{ __('Chat Interno') }}">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                     </svg>
+                     <template x-if="$store.chatStore.totalCount > 0">
+                         <span class="absolute top-0.5 right-0.5 flex h-3.5 w-3.5">
+                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                             <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 text-[8px] text-white font-bold items-center justify-center"
+                                   x-text="$store.chatStore.totalCount > 9 ? '9+' : $store.chatStore.totalCount">
+                             </span>
+                         </span>
+                     </template>
+                 </button>
+                 
+                 <!-- Dropdown with unread -->
+                 <div x-show="open" x-transition x-cloak style="display: none"
+                      class="absolute right-0 mt-12 top-0 w-72 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] overflow-hidden transform origin-top-right">
+                      <div class="p-3 border-b border-gray-50 dark:border-gray-800 bg-emerald-50/30 dark:bg-emerald-900/20">
+                          <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Chats sin leer</p>
+                      </div>
+                      <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                          <template x-if="$store.chatStore.totalCount === 0">
+                              <div class="p-6 text-center text-gray-400 italic text-xs">¡Estás al día! 🎉</div>
+                          </template>
+                          <template x-for="conv in $store.chatStore.unreadConversations" :key="conv.id">
+                              <button @click="open = false; $dispatch('open-chat', conv)" class="w-full p-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-0 text-left">
+                                  <img :src="conv.photo" class="w-9 h-9 rounded-xl object-cover shadow-sm border border-white dark:border-gray-700 shrink-0">
+                                  <div class="min-w-0 flex-1">
+                                      <h6 class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="conv.name"></h6>
+                                      <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate font-medium mt-0.5" x-text="conv.text"></p>
+                                  </div>
+                              </button>
+                          </template>
+                      </div>
+                 </div>
+            </div>
+
             <!-- Notifications Bell -->
             <a href="{{ route('notifications.index') }}" class="relative p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-500/10" title="{{ __('Notificaciones') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
