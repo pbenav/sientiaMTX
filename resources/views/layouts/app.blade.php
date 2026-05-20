@@ -1913,7 +1913,7 @@
                         <!-- Their message -->
                         <template x-if="msg.sender === 'them'">
                             <div class="flex justify-start group relative my-1">
-                                <div class="max-w-[75%] bg-white dark:bg-gray-850 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
+                                <div class="max-w-[75%] bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
                                     <!-- Quoted Context -->
                                     <template x-if="msg.parent_id">
                                         <div class="mb-2 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-xl border-l-4 border-emerald-500 text-gray-600 dark:text-gray-300 text-[10px] font-medium flex flex-col opacity-90 border border-gray-100 dark:border-gray-800 shadow-inner mb-3">
@@ -1974,7 +1974,7 @@
                 
                 <!-- Typing Indicator -->
                 <div x-show="isTyping" class="flex justify-start" style="display: none;">
-                    <div class="bg-white dark:bg-gray-850 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1">
                         <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
                         <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
                         <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
