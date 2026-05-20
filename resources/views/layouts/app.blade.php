@@ -1914,6 +1914,9 @@
                         <template x-if="msg.sender === 'them'">
                             <div class="flex justify-start group relative my-1">
                                 <div class="max-w-[75%] bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm relative">
+                                    <template x-if="String(member.id).startsWith('group_')">
+                                        <p class="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 mb-0.5 opacity-80" x-text="msg.sender_name"></p>
+                                    </template>
                                     <!-- Quoted Context -->
                                     <template x-if="msg.parent_id">
                                         <div class="mb-2 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-xl border-l-4 border-emerald-500 text-gray-600 dark:text-gray-300 text-[10px] font-medium flex flex-col opacity-90 border border-gray-100 dark:border-gray-800 shadow-inner mb-3">
