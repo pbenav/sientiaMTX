@@ -481,12 +481,35 @@
                 </div>
 
                 <!-- Network Column -->
-                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-200 dark:border-gray-800 flex flex-col">
-                    <div class="px-5 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent">
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-200 dark:border-gray-800 flex flex-col"
+                     x-data="{ groupMode: false, selectedUsers: [] }">
+                    <div class="px-5 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent flex justify-between items-center">
                         <h4 class="font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest text-[10px] flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            {{ __('Red Activa | Chat Interno') }}
+                            {{ __('Red Activa') }}
                         </h4>
+                        <div class="flex items-center gap-2">
+                            <button x-show="groupMode && selectedUsers.length > 0" @click="
+                                fetch('/chat/group', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                    body: JSON.stringify({ receiver_ids: selectedUsers })
+                                }).then(r => r.json()).then(d => {
+                                    if(d.success) { 
+                                        $dispatch('open-chat', { id: d.group.id, name: d.group.name, photo: d.group.photo, status: d.group.status, email: '', telegram: '', is_group: true });
+                                        groupMode = false; selectedUsers = []; 
+                                    }
+                                    else { Swal.fire({ icon: 'error', title: 'Error', text: d.message }); }
+                                });
+                            " class="text-[9px] font-black px-2 py-1.5 rounded-lg bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition-colors uppercase flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                                Iniciar <span x-text="'(' + selectedUsers.length + ')'"></span>
+                            </button>
+                            <button @click="groupMode = !groupMode; selectedUsers = []" class="text-[9px] font-black px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors uppercase">
+                                <span x-show="!groupMode">Grupal</span>
+                                <span x-show="groupMode">Cancelar</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar"
                          x-data="{ 

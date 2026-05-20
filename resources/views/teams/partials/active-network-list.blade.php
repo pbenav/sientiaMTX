@@ -54,16 +54,24 @@
         @endphp
         @php
             $isSelf = $member->id === auth()->id();
-            $clickAction = $isSelf ? '' : '@click="$dispatch(\'open-chat\', { id: ' . $member->id . ', name: \'' . addslashes($member->name) . '\', photo: \'' . $member->profile_photo_url . '\', status: \'' . addslashes($statusLabel) . '\', email: \'' . $member->email . '\', telegram: \'' . ($member->telegram_chat_id ?? '') . '\' })"';
+            $clickAction = $isSelf ? '' : '@click="groupMode ? (selectedUsers.includes('.$member->id.') ? selectedUsers = selectedUsers.filter(id => id !== '.$member->id.') : selectedUsers.push('.$member->id.')) : $dispatch(\'open-chat\', { id: ' . $member->id . ', name: \'' . addslashes($member->name) . '\', photo: \'' . $member->profile_photo_url . '\', status: \'' . addslashes($statusLabel) . '\', email: \'' . $member->email . '\', telegram: \'' . ($member->telegram_chat_id ?? '') . '\' })"';
             $itemClasses = $isSelf 
                 ? 'flex items-center justify-between group p-2 rounded-2xl opacity-80 transition-all duration-300 cursor-default w-full'
-                : 'flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer hover:translate-x-1 w-full';
+                : 'flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer w-full relative';
         @endphp
 
         <div {!! $clickAction !!}
-             x-data
-             class="{{ $itemClasses }}">
+             :class="selectedUsers.includes({{ $member->id }}) ? '{{ $itemClasses }} bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-emerald-500' : '{{ $itemClasses }} !hover:translate-x-1'">
             <div class="flex items-center gap-3 min-w-0">
+                <!-- Checkbox for group mode -->
+                @if(!$isSelf)
+                <div x-show="groupMode" class="shrink-0 transition-all" x-cloak>
+                    <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+                         :class="selectedUsers.includes({{ $member->id }}) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'">
+                        <svg x-show="selectedUsers.includes({{ $member->id }})" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                </div>
+                @endif
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-br {{ $gradientClass }} p-0.5 shadow-sm transition-transform group-hover:scale-105 shrink-0 relative">
                 <img src="{{ $member->profile_photo_url }}" 
                     alt="{{ $member->name }}"

@@ -216,6 +216,13 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         return $this->hasMany(Team::class, 'created_by_id');
     }
 
+    public function chatGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(ChatGroup::class, 'chat_group_user')
+            ->withPivot('last_read_at')
+            ->withTimestamps();
+    }
+
     public function assignedTasks(): BelongsToMany
     {
         return $this->belongsToMany(Task::class, 'task_assignments')
