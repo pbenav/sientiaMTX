@@ -117,8 +117,9 @@
                         class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                         <img src="{{ $member->profile_photo_url }}" alt="{{ $member->name }}" 
                             class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm border border-gray-100 dark:border-gray-800">
-                        <div class="flex-1 min-w-0">
-                            <button type="button" @click="$dispatch('open-modal', 'member-activity-{{ $member->id }}')" class="group/name text-left block">
+                        <div class="flex-1 min-w-0 flex flex-col xl:flex-row xl:items-center justify-between gap-y-2 gap-x-4">
+                            <div class="min-w-0">
+                                <button type="button" @click="$dispatch('open-modal', 'member-activity-{{ $member->id }}')" class="group/name text-left block">
                                 <p class="text-sm font-bold text-gray-700 dark:text-gray-200 group-hover/name:text-violet-600 dark:group-hover/name:text-violet-400 transition-colors flex items-center gap-1.5">
                                     {{ $member->name }}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -136,10 +137,11 @@
                                     <span class="font-bold">{{ $member->pivot->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('d/m/Y') : $member->created_at->format('d/m/Y') }}</span>
                                 </p>
                             </div>
+                            </div>
 
                             @if(auth()->user()->isCoordinator($team) || auth()->user()->is_admin)
                                 <!-- Connection Data Section -->
-                                <div class="mt-2.5 pt-2.5 border-t border-gray-50 dark:border-gray-800/50 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <div class="xl:border-none border-t border-gray-50 dark:border-gray-800/50 pt-2.5 xl:pt-0 mt-1 xl:mt-0 flex flex-wrap items-center gap-x-4 gap-y-2 shrink-0">
                                     @php
                                         $activeSessions = $member->sessions->filter(function($s) {
                                             return $s->last_activity > now()->subMinutes(15)->getTimestamp();
@@ -167,8 +169,12 @@
                                         </div>
                                         <span class="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 {{ $hasActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500' }}">
                                             {{ $hasActive ? __('Online') : __('Offline') }}
-                                            @if($sessionDuration)
+                                            @if($hasActive && $sessionDuration)
                                                 <span class="lowercase font-medium opacity-75">({{ $sessionDuration }})</span>
+                                            @elseif(!$hasActive && $member->last_login_at)
+                                                <span class="normal-case font-medium opacity-75 whitespace-nowrap">
+                                                    ({{ $member->last_login_at->format('d/m/y H:i') }}@if($sessionDuration)<span class="lowercase">, {{ $sessionDuration }}</span>@endif)
+                                                </span>
                                             @endif
                                         </span>
                                     </div>
@@ -513,6 +519,44 @@
         <div x-show="activeTab === 'groups'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Groups list -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Group Filters -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
+                    <div class="px-5 py-4 bg-gray-50/50 dark:bg-gray-800/20">
+                        <form action="{{ route('teams.members', $team) }}" method="GET" class="flex flex-wrap items-center gap-3">
+                            <input type="hidden" name="tab" value="groups">
+                            
+                            <!-- Search Input -->
+                            <div class="relative flex-1 min-w-[250px] group">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" name="search_group" value="{{ request('search_group') }}" 
+                                    placeholder="{{ __('Buscar grupo...') }}"
+                                    enterkeyhint="search"
+                                    class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm">
+                            </div>
+
+                            <!-- Action Button -->
+                            <div class="flex items-center gap-2">
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20 active:scale-95 group">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h18m-18 5h18M3 14.5h18M3 19.5h18" />
+                                    </svg>
+                                    <span>{{ __('Filtrar') }}</span>
+                                </button>
+
+                                @if(request()->filled('search_group'))
+                                    <a href="{{ route('teams.members', $team) }}?tab=groups" class="p-2.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Limpiar filtros') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 @forelse($groups as $group)
                     <div
                         class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 shadow-sm dark:shadow-none transition-colors">

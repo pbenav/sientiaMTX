@@ -243,7 +243,12 @@ class TeamController extends Controller
         $members = $query->paginate(20, ['*'], 'members_page')->withQueryString();
         $allMembers = $team->members; // Complete list for group assignment dropdowns
 
-        $groups = $team->groups()->with('users')->get();
+        $groupsQuery = $team->groups()->with('users');
+        if ($request->filled('search_group')) {
+            $groupsQuery->where('name', 'like', '%' . $request->search_group . '%')
+                        ->orWhere('description', 'like', '%' . $request->search_group . '%');
+        }
+        $groups = $groupsQuery->get();
         $roles = TeamRole::all();
         $invitations = $team->invitations()->with('role')->get();
 

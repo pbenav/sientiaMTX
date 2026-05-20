@@ -1773,7 +1773,7 @@
         </div>
         
         <!-- Widget de Comunicación Premium en Vivo Global (Sientia Direct & Videollamadas) -->
-        <div x-data="sientiaChat">
+        <div x-data="sientiaChat" @open-chat.window="openChat($event.detail)">
         <!-- Backdrop blur overlay -->
         <div x-show="open" 
              @click="close()" 
