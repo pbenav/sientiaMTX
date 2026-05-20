@@ -129,6 +129,19 @@
                     });
                 },
                 
+                openLastChat() {
+                    if (this.member && this.member.id) {
+                        this.open = true;
+                        this.fetchMessages();
+                        this.$nextTick(() => {
+                            const input = this.$refs.chatInput;
+                            if (input) input.focus();
+                        });
+                    } else {
+                        Swal.fire({ icon: 'info', title: 'Chat Interno', text: 'No tienes ninguna sala de chat activa. Selecciona un usuario o grupo en la Red Activa o abre un mensaje pendiente.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                    }
+                },
+                
                 close() { this.open = false; this.activeCallRoom = null; this.stopFlashAndSound(); },
                 
                 fetchMessages() {
@@ -1773,7 +1786,7 @@
         </div>
         
         <!-- Widget de Comunicación Premium en Vivo Global (Sientia Direct & Videollamadas) -->
-        <div x-data="sientiaChat" @open-chat.window="openChat($event.detail)">
+        <div x-data="sientiaChat" @open-chat.window="openChat($event.detail)" @open-last-chat.window="openLastChat()">
         <!-- Backdrop blur overlay -->
         <div x-show="open" 
              @click="close()" 

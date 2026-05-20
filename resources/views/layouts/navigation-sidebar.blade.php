@@ -56,6 +56,20 @@
             <!-- Navigation Links -->
             <nav class="flex-1 space-y-2">
                 @auth
+                    <div class="pt-2 pb-1 px-3">
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('COMUNICACIÓN') }}</span>
+                    </div>
+                    <button @click="$dispatch('open-last-chat')"
+                        class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all text-gray-500 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                        <span class="flex-1 text-left truncate">{{ __('Chat Interno') }}</span>
+                        <template x-if="$store.chatStore.totalCount > 0">
+                            <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" x-text="$store.chatStore.totalCount > 9 ? '9+' : $store.chatStore.totalCount"></span>
+                        </template>
+                    </button>
+
                     <div class="pt-4 pb-2 px-3">
                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('navigation.my_teams') }}</span>
                     </div>
