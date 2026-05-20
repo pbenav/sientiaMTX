@@ -155,7 +155,7 @@ class TaskController extends Controller
             return $new;
         });
 
-        return redirect()->back()->with('success', 'Tarea clonada con éxito: "' . $clonedTask->title . '"');
+        return redirect()->route('teams.tasks.edit', [$team, $clonedTask])->with('success', 'Tarea clonada con éxito: "' . $clonedTask->title . '"');
     }
 
     public function importJson(Request $request, Team $team)
