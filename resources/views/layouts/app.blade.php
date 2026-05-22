@@ -2080,7 +2080,7 @@
                         </div>
                         <textarea x-ref="chatInput" 
                                x-model="message" 
-                               @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()" 
+                               @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); sendMessage(); }" 
                                @paste="handlePaste($event)"
                                rows="3"
                                placeholder="Escribe un mensaje... (Shift+Intro para línea nueva)" 

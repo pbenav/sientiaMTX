@@ -275,7 +275,7 @@
                     x-model="input" 
                     x-ref="aiInput"
                     @paste="handlePaste($event)"
-                    @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()"
+                    @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); sendMessage(); }"
                     rows="1"
                     class="flex-1 min-w-0 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-indigo-500 focus:ring-0 rounded-2xl text-xs sm:text-sm py-2.5 sm:py-3 px-3 sm:px-5 shadow-inner resize-none overflow-y-auto max-h-32 transition-all"
                     :placeholder="isRecording ? 'Grabando...' : 'Pregunta...'" 

@@ -300,7 +300,7 @@
                 <div class="relative flex-1">
                     <textarea x-ref="chatInput" x-model="newMessage" 
                            @paste="handlePaste($event)"
-                           @keydown.enter.prevent="if(!$event.shiftKey) send()"
+                           @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); send(); }"
                            rows="2"
                            :placeholder="isRecording ? 'Grabando audio...' : (editingId ? 'Editando mensaje...' : 'Escribe un mensaje...')"
                            :disabled="!teamId || isRecording"

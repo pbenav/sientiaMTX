@@ -516,6 +516,18 @@
             document.querySelectorAll('.progress-slider').forEach(slider => {
                 if(slider.disabled) return;
                 
+                // Inicializar estado visual por si el navegador restaura 'value' desde caché
+                const fill = slider.parentElement.querySelector('.progress-fill');
+                const thumb = slider.parentElement.querySelector('.progress-thumb');
+                const label = slider.parentElement.parentElement.querySelector('.progress-label');
+                
+                if (fill) fill.style.width = slider.value + '%';
+                if (thumb) {
+                    thumb.style.left = slider.value + '%';
+                    thumb.style.marginLeft = slider.value == 0 ? '8px' : (slider.value == 100 ? '-8px' : '0');
+                }
+                if (label) label.textContent = slider.value + '%';
+                
                 slider.addEventListener('input', function() {
                     const label = this.parentElement.parentElement.querySelector('.progress-label');
                     if (label) label.textContent = this.value + '%';
@@ -566,7 +578,16 @@
                         const card = document.querySelector(`[data-task-id="${taskId}"]`);
                         if (card) {
                             const slider = card.querySelector('input[type="range"]');
-                            if (slider) slider.value = data.progress;
+                            if (slider) {
+                                slider.value = data.progress;
+                                const fill = slider.parentElement.querySelector('.progress-fill');
+                                if (fill) fill.style.width = data.progress + '%';
+                                const thumb = slider.parentElement.querySelector('.progress-thumb');
+                                if (thumb) {
+                                    thumb.style.left = data.progress + '%';
+                                    thumb.style.marginLeft = data.progress == 0 ? '8px' : (data.progress == 100 ? '-8px' : '0');
+                                }
+                            }
                             const label = card.querySelector('.progress-text') || card.querySelector('.progress-label');
                             if (label) label.innerText = `${data.progress}%`;
                         }
