@@ -338,12 +338,19 @@
                                             <span class="text-gray-400 uppercase tracking-widest">{{ __('tasks.progress') }}</span>
                                             <span class="text-violet-600 dark:text-violet-400 progress-label">{{ $task->progress }}%</span>
                                         </div>
-                                        <div class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-                                           <div class="absolute top-0 left-0 h-full bg-violet-500 transition-all duration-300 progress-fill" style="width: {{ $task->progress }}%;"></div>
-                                           <input type="range" min="0" max="100" value="{{ $task->progress }}" 
-                                               class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-30 progress-slider"
-                                               data-task-id="{{ $task->id }}"
-                                               {{ $task->children()->count() > 0 ? 'disabled' : '' }}>
+                                        <div class="relative w-full h-8 flex items-center group">
+                                            <!-- Visual Track -->
+                                            <div class="absolute w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg pointer-events-none"></div>
+                                            <!-- Visual Fill -->
+                                            <div class="absolute h-2 bg-violet-500 rounded-lg transition-all duration-300 pointer-events-none progress-fill" style="width: {{ $task->progress }}%;"></div>
+                                            <!-- Visual Thumb -->
+                                            <div class="absolute w-4 h-4 bg-white border-2 border-violet-500 rounded-full shadow-sm transition-all duration-300 pointer-events-none progress-thumb transform -translate-x-1/2" style="left: {{ $task->progress }}%; {{ $task->progress == 0 ? 'margin-left: 8px;' : ($task->progress == 100 ? 'margin-left: -8px;' : '') }}"></div>
+                                            
+                                            <!-- Interactive Invisible Slider (Touch Target) -->
+                                            <input type="range" min="0" max="100" value="{{ $task->progress }}" 
+                                                class="absolute w-full h-full opacity-0 cursor-pointer z-30 progress-slider"
+                                                data-task-id="{{ $task->id }}"
+                                                {{ $task->children()->count() > 0 ? 'disabled' : '' }}>
                                         </div>
                                     </div>
 
@@ -514,6 +521,11 @@
                     if (label) label.textContent = this.value + '%';
                     const fill = this.parentElement.querySelector('.progress-fill');
                     if (fill) fill.style.width = this.value + '%';
+                    const thumb = this.parentElement.querySelector('.progress-thumb');
+                    if (thumb) {
+                        thumb.style.left = this.value + '%';
+                        thumb.style.marginLeft = this.value == 0 ? '8px' : (this.value == 100 ? '-8px' : '0');
+                    }
                 });
 
                 slider.addEventListener('change', function() {
