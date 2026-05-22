@@ -547,6 +547,25 @@
                 }
             }
 
+            if (typeof window.printMessage === 'undefined') {
+                window.printMessage = function(messageId) {
+                    const content = document.getElementById('msg-content-' + messageId) || document.getElementById('message-view-' + messageId);
+                    if (!content) return;
+                    const printWindow = window.open('', '', 'height=600,width=800');
+                    printWindow.document.write('<html><head><title>Imprimir Mensaje</title>');
+                    printWindow.document.write('<style>body { font-family: sans-serif; padding: 20px; line-height: 1.5; color: #333; } pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }</style>');
+                    printWindow.document.write('</head><body>');
+                    printWindow.document.write(content.innerHTML);
+                    printWindow.document.write('</body></html>');
+                    printWindow.document.close();
+                    printWindow.focus();
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 250);
+                };
+            }
+
             function editMessage(messageId, content) {
                 document.getElementById(`message-view-${messageId}`).classList.add('hidden');
                 document.getElementById(`actions-${messageId}`).classList.add('hidden');

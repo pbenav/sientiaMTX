@@ -143,6 +143,14 @@
                                     {{ __('Responder') }}
                                 </button>
 
+                                <button type="button" onclick="printMessage({{ $message->id }})" 
+                                    class="text-[9px] font-bold text-emerald-500 hover:text-emerald-600 uppercase tracking-tighter transition-colors flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    {{ __('Imprimir') }}
+                                </button>
+
                                 @if(!$rootTask->forumThread->is_locked && (auth()->id() === $message->user_id || auth()->user()->getRole($team) === 'coordinator'))
                                     @if(auth()->id() === $message->user_id)
                                         <button type="button" @click="startWidgetEdit({{ $message->id }}, {{ json_encode($message->content) }})" 
@@ -278,6 +286,25 @@
                             input.setSelectionRange(newPos, newPos);
                             input.focus();
                         }
+                    }
+
+                    if (typeof window.printMessage === 'undefined') {
+                        window.printMessage = function(messageId) {
+                            const content = document.getElementById('msg-content-' + messageId) || document.getElementById('message-view-' + messageId);
+                            if (!content) return;
+                            const printWindow = window.open('', '', 'height=600,width=800');
+                            printWindow.document.write('<html><head><title>Imprimir Mensaje</title>');
+                            printWindow.document.write('<style>body { font-family: sans-serif; padding: 20px; line-height: 1.5; color: #333; } pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }</style>');
+                            printWindow.document.write('</head><body>');
+                            printWindow.document.write(content.innerHTML);
+                            printWindow.document.write('</body></html>');
+                            printWindow.document.close();
+                            printWindow.focus();
+                            setTimeout(() => {
+                                printWindow.print();
+                                printWindow.close();
+                            }, 250);
+                        };
                     }
 
                     function voteMessage(messageId, button) {
