@@ -105,3 +105,5 @@
         </div>
     </div>
 @endforeach
+
+<div class="hidden" x-init="$nextTick(() => { if (typeof activeMemberIds !== 'undefined') { activeMemberIds = [{{ $sortedMembers->where('status_priority', '<', 4)->pluck('id')->join(',') }}]; } })"></div>

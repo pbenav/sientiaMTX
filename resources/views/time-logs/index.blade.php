@@ -481,34 +481,83 @@
                 </div>
 
                 <!-- Network Column -->
+                @php
+                    $teamGroups = $team->groups->map(function($g) {
+                        return ['id' => $g->id, 'name' => $g->name, 'members' => $g->users->pluck('id')];
+                    })->toJson();
+                @endphp
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-200 dark:border-gray-800 flex flex-col"
-                     x-data="{ groupMode: false, selectedUsers: [] }">
-                    <div class="px-5 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent flex justify-between items-center">
-                        <h4 class="font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest text-[10px] flex items-center gap-2">
-                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            {{ __('Red Activa') }}
-                        </h4>
-                        <div class="flex items-center gap-2">
-                            <button x-show="groupMode && selectedUsers.length > 0" @click="
-                                fetch('/chat/group', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                                    body: JSON.stringify({ receiver_ids: selectedUsers })
-                                }).then(r => r.json()).then(d => {
-                                    if(d.success) { 
-                                        $dispatch('open-chat', { id: d.group.id, name: d.group.name, photo: d.group.photo, status: d.group.status, email: '', telegram: '', is_group: true });
-                                        groupMode = false; selectedUsers = []; 
-                                    }
-                                    else { Swal.fire({ icon: 'error', title: 'Error', text: d.message }); }
-                                });
-                            " class="text-[9px] font-black px-2 py-1.5 rounded-lg bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition-colors uppercase flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
-                                Iniciar <span x-text="'(' + selectedUsers.length + ')'"></span>
-                            </button>
-                            <button @click="groupMode = !groupMode; selectedUsers = []" class="text-[9px] font-black px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors uppercase">
-                                <span x-show="!groupMode">Grupal</span>
-                                <span x-show="groupMode">Cancelar</span>
-                            </button>
+                     x-data="{ 
+                        groupMode: false, 
+                        selectedUsers: [],
+                        activeMemberIds: [],
+                        teamGroups: {{ $teamGroups }},
+                        selectAll() {
+                            const allSelected = this.activeMemberIds.length > 0 && this.activeMemberIds.every(id => this.selectedUsers.includes(id));
+                            if (allSelected) {
+                                this.selectedUsers = this.selectedUsers.filter(id => !this.activeMemberIds.includes(id));
+                            } else {
+                                this.selectedUsers = [...new Set([...this.selectedUsers, ...this.activeMemberIds])];
+                            }
+                        },
+                        selectGroup(event) {
+                            const groupId = event.target.value;
+                            if (!groupId) return;
+                            const group = this.teamGroups.find(g => g.id == groupId);
+                            if (group) {
+                                const activeInGroup = group.members.filter(id => this.activeMemberIds.includes(id));
+                                this.selectedUsers = [...new Set([...this.selectedUsers, ...activeInGroup])];
+                            }
+                            event.target.value = '';
+                        }
+                     }">
+                    <div class="px-5 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest text-[10px] flex items-center gap-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                {{ __('Red Activa') }}
+                            </h4>
+                            <div class="flex items-center gap-2">
+                                <button x-show="groupMode && selectedUsers.length > 0" @click="
+                                    fetch('/chat/group', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                        body: JSON.stringify({ receiver_ids: selectedUsers })
+                                    }).then(r => r.json()).then(d => {
+                                        if(d.success) { 
+                                            $dispatch('open-chat', { id: d.group.id, name: d.group.name, photo: d.group.photo, status: d.group.status, email: '', telegram: '', is_group: true });
+                                            groupMode = false; selectedUsers = []; 
+                                        }
+                                        else { Swal.fire({ icon: 'error', title: 'Error', text: d.message }); }
+                                    });
+                                " class="text-[9px] font-black px-2 py-1.5 rounded-lg bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition-colors uppercase flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                                    Iniciar <span x-text="'(' + selectedUsers.length + ')'"></span>
+                                </button>
+                                <button @click="groupMode = !groupMode; selectedUsers = []" class="text-[9px] font-black px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors uppercase">
+                                    <span x-show="!groupMode">Grupal</span>
+                                    <span x-show="groupMode">Cancelar</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filtros Group Mode -->
+                        <div x-show="groupMode" x-collapse x-cloak>
+                            <div class="flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-800 mt-1">
+                                <label class="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-emerald-600 transition-colors shrink-0">
+                                    <input type="checkbox" class="w-3 h-3 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" 
+                                           :checked="activeMemberIds.length > 0 && activeMemberIds.every(id => selectedUsers.includes(id))"
+                                           @click="selectAll()">
+                                    Todos los activos
+                                </label>
+                                <div class="w-px h-3 bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+                                <select @change="selectGroup($event)" class="text-[9px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 bg-white dark:bg-gray-900 focus:ring-0 focus:border-emerald-500 transition-all flex-1 min-w-0">
+                                    <option value="">Seleccionar grupo...</option>
+                                    <template x-for="group in teamGroups" :key="group.id">
+                                        <option :value="group.id" x-text="group.name"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar"
