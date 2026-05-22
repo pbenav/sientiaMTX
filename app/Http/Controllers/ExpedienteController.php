@@ -33,7 +33,9 @@ class ExpedienteController extends Controller
                 $q->where('visibility', 'public')
                   ->orWhere('created_by_id', $user->id)
                   ->orWhereHas('tasks', function ($sub) use ($user) {
-                      $sub->where('assigned_to', $user->id);
+                      $sub->where('assigned_user_id', $user->id)
+                          ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
+                          ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
                   });
             });
         }
@@ -121,7 +123,11 @@ class ExpedienteController extends Controller
         if ($expediente->visibility === 'private' && !$user->is_admin && !$team->isOwner($user) && !$team->isCoordinator($user)) {
             // Check if user created it or is assigned to internal tasks
             $isCreator = $expediente->created_by_id === $user->id;
-            $isAssigned = $expediente->tasks()->where('assigned_to', $user->id)->exists();
+            $isAssigned = $expediente->tasks()->where(function ($q) use ($user) {
+                $q->where('assigned_user_id', $user->id)
+                  ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
+                  ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+            })->exists();
             
             if (!$isCreator && !$isAssigned) {
                 abort(403, 'Este expediente es privado y solo es accesible para sus responsables y asignados.');
