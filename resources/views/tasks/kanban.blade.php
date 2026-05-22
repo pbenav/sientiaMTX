@@ -336,11 +336,15 @@
                                     <div class="mt-4 space-y-1.5">
                                         <div class="flex items-center justify-between text-[10px] font-bold">
                                             <span class="text-gray-400 uppercase tracking-widest">{{ __('tasks.progress') }}</span>
-                                            <span class="text-violet-600 dark:text-violet-400 progress-label">{{ $task->progress_percentage }}%</span>
+                                            <span class="text-violet-600 dark:text-violet-400 progress-label">{{ $task->progress }}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value="{{ $task->progress_percentage }}" 
-                                               class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 progress-slider z-30 relative"
-                                               data-task-id="{{ $task->id }}">
+                                        <div class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+                                           <div class="absolute top-0 left-0 h-full bg-violet-500 transition-all duration-300 progress-fill" style="width: {{ $task->progress }}%;"></div>
+                                           <input type="range" min="0" max="100" value="{{ $task->progress }}" 
+                                               class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-30 progress-slider"
+                                               data-task-id="{{ $task->id }}"
+                                               {{ $task->children()->count() > 0 ? 'disabled' : '' }}>
+                                        </div>
                                     </div>
 
                                     <!-- Card Footer -->
@@ -503,9 +507,13 @@
 
             // Progress Slider Integration
             document.querySelectorAll('.progress-slider').forEach(slider => {
+                if(slider.disabled) return;
+                
                 slider.addEventListener('input', function() {
-                    const label = this.parentElement.querySelector('.progress-label');
-                    label.textContent = this.value + '%';
+                    const label = this.parentElement.parentElement.querySelector('.progress-label');
+                    if (label) label.textContent = this.value + '%';
+                    const fill = this.parentElement.querySelector('.progress-fill');
+                    if (fill) fill.style.width = this.value + '%';
                 });
 
                 slider.addEventListener('change', function() {
@@ -558,6 +566,13 @@
 
 
             window.archiveTask = function(taskId) {
+                const card = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (card) {
+                    card.style.transform = 'scale(0.9)';
+                    card.style.opacity = '0';
+                    setTimeout(() => card.remove(), 300);
+                }
+
                 fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
@@ -571,15 +586,16 @@
                     })
                 })
                 .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload(); 
-                    }
-                })
                 .catch(error => console.error('Error:', error));
             }
 
             window.unarchiveTask = function(taskId) {
+                const row = document.querySelector(`button[onclick="unarchiveTask(${taskId})"]`)?.closest('div');
+                if (row) {
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                }
+
                 fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
@@ -593,7 +609,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        location.reload(); 
+                        location.reload(); // Reload needed to place it in the correct column since we don't have all column data readily available here
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -635,11 +651,18 @@
                             if (currentList && currentList.dataset.columnId != data.kanban_column_id) {
                                 const targetList = document.querySelector(`.task-list[data-column-id="${data.kanban_column_id}"]`);
                                 if (targetList) {
+                                    card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                                     card.style.opacity = '0';
+                                    card.style.transform = 'scale(0.95)';
+                                    
                                     setTimeout(() => {
                                         targetList.appendChild(card);
+                                        // Force reflow
+                                        void card.offsetWidth;
+                                        
                                         card.style.opacity = '1';
-                                    }, 150);
+                                        card.style.transform = 'scale(1)';
+                                    }, 300);
                                 }
                             }
                         }
