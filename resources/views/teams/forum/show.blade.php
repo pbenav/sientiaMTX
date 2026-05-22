@@ -369,8 +369,10 @@
         <x-google-drive-picker :team="$team" />
 
         @php
+            $isManager = auth()->user()->getRole($team) === 'coordinator';
             $availableTasks = \App\Models\Task::where('team_id', $team->id)
                 ->whereNull('parent_id')
+                ->visibleTo(auth()->user(), $isManager)
                 ->where(function($q) use ($thread) {
                     $q->whereDoesntHave('forumThread')
                       ->orWhere('id', $thread->task_id);
