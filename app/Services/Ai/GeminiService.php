@@ -364,6 +364,21 @@ class GeminiService implements AiAssistantInterface
         return $this->callGemini($this->targetModel, [['text' => $prompt]]);
     }
 
+    public function generateMotivationalPhrase(int $taskCount, string $userName, string $locale): string
+    {
+        $prompt = "Genera una frase motivacional corta (máximo 15 palabras) para empezar el día. ";
+        $prompt .= "El usuario tiene {$taskCount} tareas pendientes hoy. ";
+        $prompt .= "Nombre del usuario: {$userName}. ";
+        $prompt .= "Idioma: {$locale}. ";
+        $prompt .= "Instrucción MUY ESTRICTA: Escribe SOLO y ÚNICAMENTE la frase final para el usuario. NO uses markdown. NO des explicaciones. NO uses formato JSON. NO uses etiquetas de pensamiento. NADA de texto extra.";
+
+        $response = $this->callGemini($this->targetModel, [['text' => $prompt]]);
+        
+        // Limpieza de cualquier etiqueta [PAYLOAD] o basura que pueda añadir por costumbre
+        $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', '', $response);
+        return trim(strip_tags($response));
+    }
+
     /**
      * Lists all models available for the current API key.
      */

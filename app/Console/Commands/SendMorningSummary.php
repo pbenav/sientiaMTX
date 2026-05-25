@@ -101,7 +101,8 @@ class SendMorningSummary extends Command
             })
             ->with('team')
             ->limit(20)
-            ->get();
+            ->get()
+            ->unique('id');
 
         if ($tasks->isEmpty()) {
             $this->line("User {$user->name}: No pending tasks for today. Sending a focus-on-rest phrase.");
@@ -112,24 +113,18 @@ class SendMorningSummary extends Command
             $phrase = '';
             
             try {
-                // Generate motivational phrase using AI
-                $prompt = "Genera una frase motivacional corta (máximo 15 palabras) para empezar el día. ";
-                $prompt .= "El usuario tiene " . $tasks->count() . " tareas pendientes hoy. ";
-                $prompt .= "Nombre del usuario: " . explode(' ', $user->name)[0] . ". ";
-                $prompt .= "Idioma: " . ($user->locale ?? 'es') . ". ";
-                $prompt .= "No uses hashtags ni emojis excesivos. Que sea inspiradora pero profesional.";
-
-                $phrase = $ai->forUser($user)->generateText($prompt);
+                // Generate motivational phrase using AI without the heavy payload format
+                $phrase = $ai->forUser($user)->generateMotivationalPhrase(
+                    $tasks->count(), 
+                    explode(' ', $user->name)[0], 
+                    $user->locale ?? 'es'
+                );
                     
-                    // Check if the AI returned an error message (common if key is missing)
-                    if (str_starts_with($phrase, 'Error:') || str_starts_with($phrase, 'Lo siento,')) {
-                        throw new \Exception("AI unavailable: " . $phrase);
-                    }
-
-                    // Remove any [PAYLOAD] tags if present by mistake
-                    $phrase = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', '', $phrase);
-                    $phrase = trim(strip_tags($phrase));
-                } catch (\Exception $aiEx) {
+                // Check if the AI returned an error message (common if key is missing)
+                if (str_starts_with($phrase, 'Error:') || str_starts_with($phrase, 'Lo siento,')) {
+                    throw new \Exception("AI unavailable: " . $phrase);
+                }
+            } catch (\Exception $aiEx) {
                     $this->warn("AI phrase generation failed for {$user->name}: " . $aiEx->getMessage());
                     
                     // Fallback phrases
