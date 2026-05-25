@@ -293,7 +293,7 @@ class ForumController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Team $team, ForumThread $thread)
+    public function show(Request $request, Team $team, ForumThread $thread)
     {
         if (auth()->user()->cannot('view', $team)) {
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
@@ -357,9 +357,20 @@ class ForumController extends Controller
                 }
             });
 
-        $messages = $messagesQuery->oldest()->paginate(15);
+        $filters = $this->getPersistentFilters($request, 'forum_thread', [
+            'sort_messages'
+        ]);
+        $sortMessages = $filters['sort_messages'] ?? 'oldest';
 
-        return view('teams.forum.show', compact('team', 'thread', 'messages'));
+        if ($sortMessages === 'newest') {
+            $messagesQuery->latest();
+        } else {
+            $messagesQuery->oldest();
+        }
+
+        $messages = $messagesQuery->paginate(15)->withQueryString();
+
+        return view('teams.forum.show', compact('team', 'thread', 'messages', 'filters'));
     }
 
     /**

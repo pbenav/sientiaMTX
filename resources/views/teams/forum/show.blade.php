@@ -197,6 +197,17 @@
             </div>
         @endif
 
+        <div class="flex items-center justify-end mb-4">
+            <form action="{{ route('teams.forum.show', [$team, $thread]) }}" method="GET" class="flex items-center gap-3">
+                <label for="sort_messages" class="text-xs font-bold text-gray-500 uppercase tracking-widest">{{ __('Ordenar:') }}</label>
+                <select name="sort_messages" id="sort_messages" onchange="this.form.submit()"
+                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold py-1.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
+                    <option value="oldest" {{ ($filters['sort_messages'] ?? 'oldest') === 'oldest' ? 'selected' : '' }}>Más antiguos primero</option>
+                    <option value="newest" {{ ($filters['sort_messages'] ?? 'oldest') === 'newest' ? 'selected' : '' }}>Más recientes primero</option>
+                </select>
+            </form>
+        </div>
+
         <div class="space-y-6" x-data="{ 
             replyingToId: null, 
             replyingToName: '',

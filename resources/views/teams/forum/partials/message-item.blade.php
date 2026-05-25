@@ -134,11 +134,17 @@
             <!-- View Mode -->
             <div id="message-view-{{ $message->id }}"
                 class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-violet-50 border-violet-100 dark:bg-violet-900/10 dark:border-violet-800/50 rounded-tr-none text-violet-900 dark:text-violet-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }} {{ !$isRoot ? 'py-3' : '' }}">
-                <div class="text-sm markdown-content leading-relaxed">
-                    @php
-                        $decoded = json_decode($message->content, true);
-                        $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
-                    @endphp
+                <div x-data="{ expanded: false, isOverflowing: false }"
+                     x-init="$nextTick(() => { if ($refs.contentBox.scrollHeight > 300) isOverflowing = true })"
+                     class="relative">
+                    
+                    <div x-ref="contentBox"
+                         class="text-sm markdown-content leading-relaxed transition-all duration-300"
+                         :class="(!expanded && isOverflowing) ? 'max-h-[300px] overflow-hidden' : ''">
+                        @php
+                            $decoded = json_decode($message->content, true);
+                            $isJson = (json_last_error() === JSON_ERROR_NONE) && (is_array($decoded) || is_object($decoded));
+                        @endphp
 
                     @if($isJson)
                         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 my-2 border border-gray-100 dark:border-gray-700 font-mono text-xs overflow-x-auto">
@@ -147,6 +153,25 @@
                     @else
                         {!! Str::markdown($message->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     @endif
+                    </div>
+                    
+                    <!-- Gradiente y Botón "Ver más" -->
+                    <template x-if="!expanded && isOverflowing">
+                        <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white dark:from-gray-900 to-transparent flex items-end justify-center pb-2 pointer-events-none">
+                            <button @click="expanded = true" type="button" class="pointer-events-auto text-[10px] uppercase tracking-widest font-black text-violet-600 dark:text-violet-400 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-md border border-violet-100 dark:border-violet-900/50 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all hover:scale-105">
+                                Mostrar más
+                            </button>
+                        </div>
+                    </template>
+                    
+                    <!-- Botón "Ver menos" -->
+                    <template x-if="expanded && isOverflowing">
+                        <div class="flex justify-center mt-3">
+                            <button @click="expanded = false; $el.closest('.relative').scrollIntoView({ behavior: 'smooth', block: 'center' })" type="button" class="text-[10px] uppercase tracking-widest font-black text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                Mostrar menos
+                            </button>
+                        </div>
+                    </template>
                 </div>
 
                 @if($message->attachments->isNotEmpty())
