@@ -97,6 +97,102 @@
                 </div>
             </div>
 
+            <!-- Asignaciones -->
+            <div class="p-5 bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800/30 rounded-2xl space-y-5 mt-6">
+                <h3 class="text-sm font-black text-violet-900 dark:text-violet-300 uppercase tracking-widest flex items-center gap-2 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    Asignación y Participación
+                </h3>
+                
+                <!-- Responsable Principal -->
+                <div class="mb-8">
+                    <label for="assigned_user_id" class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        Responsable Principal
+                    </label>
+                    <select name="assigned_user_id" id="assigned_user_id" class="w-full text-sm">
+                        <option value="">-- Sin asignar --</option>
+                        @foreach($users as $user)
+                            <option value="{{ $user->id }}" {{ old('assigned_user_id', $expediente->assigned_user_id) == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-input-error class="mt-2" :messages="$errors->get('assigned_user_id')" />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Colaboradores -->
+                    @php
+                        $selectedUsers = old('assigned_to', $expediente->assignedTo->pluck('id')->toArray());
+                    @endphp
+                    @if ($users->count() > 0)
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    Colaboradores (Múltiple)
+                                </label>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="window.selectAllUsers(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
+                                        Todo
+                                    </button>
+                                    <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
+                                    <button type="button" onclick="window.selectAllUsers(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                        Nada
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                                @foreach ($users as $user)
+                                    <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
+                                        <input type="checkbox" name="assigned_to[]" value="{{ $user->id }}"
+                                            id="user_checkbox_{{ $user->id }}"
+                                            {{ in_array($user->id, $selectedUsers) ? 'checked' : '' }}
+                                            class="user-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $user->name }}</span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 truncate">{{ $user->email }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <x-input-error class="mt-2" :messages="$errors->get('assigned_to')" />
+                        </div>
+                    @endif
+                <!-- Grupos -->
+                @if($groups->count() > 0)
+                @php
+                    $selectedGroups = old('assigned_groups', $expediente->assignedGroups->pluck('id')->toArray());
+                @endphp
+                <div class="mt-6">
+                    <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+                        Grupos Involucrados
+                    </label>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                        @foreach ($groups as $group)
+                            <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
+                                <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
+                                    data-members="{{ json_encode($group->users->pluck('id')) }}"
+                                    onchange="window.syncGroupMembers(this)"
+                                    {{ in_array($group->id, $selectedGroups) ? 'checked' : '' }}
+                                    class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $group->name }}</span>
+                                    <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                                        {{ $group->users->count() }} Miembros
+                                    </span>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                    <x-input-error class="mt-2" :messages="$errors->get('assigned_groups')" />
+                </div>
+                @endif
+                </div>
+                <p class="text-xs text-violet-600 dark:text-violet-400 font-medium mt-6">💡 Si el expediente es <span class="font-bold">Privado</span> y añades colaboradores/grupos, el expediente será automáticamente <span class="font-bold">Público</span> para permitir su visualización dentro del equipo.</p>
+            </div>
+
             <!-- End of basic administrative data -->
 
             <div class="pt-4 flex items-center justify-end gap-4 border-t border-gray-100 dark:border-gray-800">
@@ -160,20 +256,53 @@
         }
     </style>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            new TomSelect('#related_ids', {
-                plugins: {
-                    'remove_button': { title: 'Quitar' }
-                },
-                maxItems: null,
-                render: {
-                    option: function(data, escape) {
-                        return '<div class="py-1.5 px-2 border-b border-gray-50 dark:border-gray-800/50">' +
-                            '<div class="font-bold text-gray-900 dark:text-white text-xs">' + escape(data.text) + '</div>' +
-                        '</div>';
-                    }
-                }
+        // --- Global Helpers for Assignments (Direct Scope for Compatibility) ---
+        window.selectAllUsers = function(status) {
+            document.querySelectorAll('.user-checkbox').forEach(cb => {
+                cb.checked = status;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
             });
+        };
+
+        window.syncGroupMembers = function(groupCb) {
+            try {
+                const memberIds = JSON.parse(groupCb.getAttribute('data-members'));
+                const isChecked = groupCb.checked;
+                memberIds.forEach(id => {
+                    const userCb = document.getElementById('user_checkbox_' + id);
+                    if (userCb) {
+                        userCb.checked = isChecked;
+                        userCb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            } catch (err) {
+                console.error('Group sync error:', err);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.getElementById('related_ids')) {
+                new TomSelect('#related_ids', {
+                    plugins: {
+                        'remove_button': { title: 'Quitar' }
+                    },
+                    maxItems: null,
+                    render: {
+                        option: function(data, escape) {
+                            return '<div class="py-1.5 px-2 border-b border-gray-50 dark:border-gray-800/50">' +
+                                '<div class="font-bold text-gray-900 dark:text-white text-xs">' + escape(data.text) + '</div>' +
+                            '</div>';
+                        }
+                    }
+                });
+            }
+
+            if (document.getElementById('assigned_user_id')) {
+                new TomSelect('#assigned_user_id', {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" }
+                });
+            }
         });
     </script>
 @endpush

@@ -83,11 +83,16 @@ class PurgeGhostSessionsCommand extends Command
                 ->where('user_id', $user->id)
                 ->exists();
 
-            $isWorking = $user->isWorking(); // Has active TimeLog
+            // Logic: If user has NO running session, they cannot be working. 
+            // We must close their active timers and reset their timestamps.
+            if (!$hasActiveSession) {
+                // 1. Close any active TimeLogs
+                $closedLogs = $user->timeLogs()->whereNull('end_at')->update(['end_at' => Carbon::createFromTimestamp($user->last_activity_at?->timestamp ?? now()->timestamp)]);
+                if ($closedLogs > 0) {
+                    $this->line("<info>[TIMELOGS]</info> Closed {$closedLogs} ghost timers for User ID: {$user->id} ({$user->name}).");
+                }
 
-            // Logic: If user has NO running session AND is NOT working, their timestamps MUST be stale
-            if (!$hasActiveSession && !$isWorking) {
-                // User is a "ghost" if their timestamps say they are active
+                // 2. User is a "ghost" if their timestamps say they are active
                 if ($user->last_activity_at !== null || $user->last_login_at !== null) {
                     $user->last_activity_at = null;
                     $user->last_login_at = null;

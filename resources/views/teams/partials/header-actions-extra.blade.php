@@ -58,15 +58,23 @@
                      </template>
                  </button>
                  
-                 <!-- Dropdown with unread -->
+                  <!-- Dropdown with unread -->
                  <div x-show="open" x-transition x-cloak style="display: none"
-                      class="absolute right-0 mt-12 top-0 w-72 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] overflow-hidden transform origin-top-right">
-                      <div class="p-3 border-b border-gray-50 dark:border-gray-800 bg-emerald-50/30 dark:bg-emerald-900/20">
+                      class="absolute right-0 mt-12 top-0 w-72 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] overflow-hidden transform origin-top-right flex flex-col">
+                      <div class="p-3 border-b border-gray-50 dark:border-gray-800 bg-emerald-50/30 dark:bg-emerald-900/20 flex justify-between items-center">
                           <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Chats sin leer</p>
+                          <button @click.stop="open = false; $dispatch('open-chat')" class="text-[10px] font-bold text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-gray-800 px-2 py-1 rounded shadow-sm border border-gray-100 dark:border-gray-700">
+                              Abrir Chat General
+                          </button>
                       </div>
                       <div class="max-h-64 overflow-y-auto custom-scrollbar">
                           <template x-if="$store.chatStore.totalCount === 0">
-                              <div class="p-6 text-center text-gray-400 italic text-xs">¡Estás al día! 🎉</div>
+                              <div class="p-6 text-center">
+                                  <div class="text-gray-400 italic text-xs mb-3">¡Estás al día! 🎉</div>
+                                  <button @click="open = false; $dispatch('open-chat')" class="px-4 py-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
+                                      Iniciar una conversación
+                                  </button>
+                              </div>
                           </template>
                           <template x-for="conv in $store.chatStore.unreadConversations" :key="conv.id">
                               <button @click="open = false; $dispatch('open-chat', conv)" class="w-full p-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-0 text-left">
@@ -78,6 +86,13 @@
                               </button>
                           </template>
                       </div>
+                      <template x-if="$store.chatStore.totalCount > 0">
+                          <div class="p-2 border-t border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                              <button @click="open = false; $dispatch('open-chat')" class="w-full py-2 text-[11px] font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-center transition-colors uppercase tracking-wider">
+                                  Ver todos los chats
+                              </button>
+                          </div>
+                      </template>
                  </div>
             </div>
 

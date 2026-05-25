@@ -16,6 +16,7 @@ class Expediente extends Model
     protected $fillable = [
         'team_id',
         'created_by_id',
+        'assigned_user_id',
         'code',
         'title',
         'description',
@@ -43,6 +44,31 @@ class Expediente extends Model
         return $this->belongsTo(User::class, 'created_by_id');
     }
 
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(ExpedienteAssignment::class);
+    }
+
+    public function assignedTo(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'expediente_assignments')
+            ->withPivot('assigned_at', 'assigned_by_id')
+            ->withTimestamps()
+            ->orderBy('name');
+    }
+
+    public function assignedGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'expediente_assignments')
+            ->withPivot('assigned_at', 'assigned_by_id')
+            ->withTimestamps();
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
@@ -60,6 +86,36 @@ class Expediente extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');
+    }
+
+    public function scopeVisibleTo($query, $user, $isCoordinator = false)
+    {
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        $builder = $query instanceof \Illuminate\Database\Eloquent\Relations\Relation ? $query->getQuery() : $query;
+
+        return $builder->where(function ($q) use ($user, $isCoordinator) {
+            if ($isCoordinator) {
+                // Coordinators see everything in the team
+                return $q;
+            } else {
+                // Regular members see public expedientes or ones they are assigned to / created
+                $q->where(function ($public) {
+                    $public->where('visibility', 'public');
+                })
+                ->orWhere(function ($private) use ($user) {
+                    $private->where('visibility', 'private')
+                        ->where(function ($access) use ($user) {
+                            $access->where('created_by_id', $user->id)
+                                ->orWhere('assigned_user_id', $user->id)
+                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
+                                ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                        });
+                });
+            }
+        });
     }
 
     // --- Relational Engine ---

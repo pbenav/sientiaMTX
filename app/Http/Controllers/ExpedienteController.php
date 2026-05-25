@@ -64,7 +64,10 @@ class ExpedienteController extends Controller
         }
 
         $allExpedientes = $team->expedientes()->orderBy('title')->get();
-        return view('expedientes.create', compact('team', 'allExpedientes'));
+        $users = $team->members;
+        $groups = $team->groups;
+        
+        return view('expedientes.create', compact('team', 'allExpedientes', 'users', 'groups'));
     }
 
     /**
@@ -86,7 +89,31 @@ class ExpedienteController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'related_ids' => 'nullable|array',
             'related_ids.*' => 'exists:expedientes,id',
+            'assigned_user_id' => 'nullable|exists:users,id',
+            'assigned_to' => 'nullable|array',
+            'assigned_to.*' => 'exists:users,id',
+            'assigned_groups' => 'nullable|array',
+            'assigned_groups.*' => 'exists:groups,id',
         ]);
+
+        // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
+        $autoPublic = false;
+        if (($validated['visibility'] ?? 'private') === 'private') {
+            $hasOtherAssignee = false;
+            if ($request->filled('assigned_user_id') && (int)$request->assigned_user_id !== auth()->id()) {
+                $hasOtherAssignee = true;
+            }
+            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
+                $hasOtherAssignee = true;
+            }
+            if ($request->filled('assigned_groups') && count($request->assigned_groups) > 0) {
+                $hasOtherAssignee = true;
+            }
+            if ($hasOtherAssignee) {
+                $validated['visibility'] = 'public';
+                $autoPublic = true;
+            }
+        }
 
         $expediente = $team->expedientes()->create([
             'created_by_id' => Auth::id(),
@@ -98,7 +125,27 @@ class ExpedienteController extends Controller
             'status' => $validated['status'],
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
+            'assigned_user_id' => $validated['assigned_user_id'] ?? null,
         ]);
+
+        // Create Role-Based Assignments
+        if (!empty($validated['assigned_to'])) {
+            foreach ($validated['assigned_to'] as $userId) {
+                $expediente->assignments()->create([
+                    'user_id' => $userId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
+        
+        if (!empty($validated['assigned_groups'])) {
+            foreach ($validated['assigned_groups'] as $groupId) {
+                $expediente->assignments()->create([
+                    'group_id' => $groupId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
 
         if (!empty($validated['related_ids'])) {
             $this->syncBidirectionalRelations($expediente, $validated['related_ids']);
@@ -233,8 +280,11 @@ class ExpedienteController extends Controller
             ->where('id', '!=', $expediente->id)
             ->orderBy('title')
             ->get();
+            
+        $users = $team->members;
+        $groups = $team->groups;
 
-        return view('expedientes.edit', compact('team', 'expediente', 'allExpedientes'));
+        return view('expedientes.edit', compact('team', 'expediente', 'allExpedientes', 'users', 'groups'));
     }
 
     /**
@@ -256,9 +306,57 @@ class ExpedienteController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'related_ids' => 'nullable|array',
             'related_ids.*' => 'exists:expedientes,id',
+            'assigned_user_id' => 'nullable|exists:users,id',
+            'assigned_to' => 'nullable|array',
+            'assigned_to.*' => 'exists:users,id',
+            'assigned_groups' => 'nullable|array',
+            'assigned_groups.*' => 'exists:groups,id',
         ]);
 
+        $autoPublic = false;
+        $visibility = $validated['visibility'] ?? $expediente->visibility;
+        if ($visibility === 'private') {
+            $hasOtherAssignee = false;
+            $targetAssignee = $request->has('assigned_user_id') ? $request->assigned_user_id : $expediente->assigned_user_id;
+            if ($targetAssignee && (int)$targetAssignee !== auth()->id()) {
+                $hasOtherAssignee = true;
+            }
+            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
+                $hasOtherAssignee = true;
+            }
+            if ($request->filled('assigned_groups') && count($request->assigned_groups) > 0) {
+                $hasOtherAssignee = true;
+            }
+
+            if ($hasOtherAssignee) {
+                $visibility = 'public';
+                $autoPublic = true;
+            }
+            $validated['visibility'] = $visibility;
+        }
+
         $expediente->update($validated);
+
+        // Update assignments
+        $expediente->assignments()->delete();
+        
+        if (!empty($validated['assigned_to'])) {
+            foreach ($validated['assigned_to'] as $userId) {
+                $expediente->assignments()->create([
+                    'user_id' => $userId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
+        
+        if (!empty($validated['assigned_groups'])) {
+            foreach ($validated['assigned_groups'] as $groupId) {
+                $expediente->assignments()->create([
+                    'group_id' => $groupId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
         
         $this->syncBidirectionalRelations($expediente, $validated['related_ids'] ?? []);
 
