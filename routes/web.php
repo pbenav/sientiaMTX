@@ -419,6 +419,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });
 
+// Public Survey Routes
+Route::get('/s/{uuid}', [\App\Http\Controllers\PublicSurveyController::class, 'show'])->name('public.surveys.show');
+Route::post('/s/{uuid}', [\App\Http\Controllers\PublicSurveyController::class, 'store'])->name('public.surveys.store');
+
 require __DIR__.'/auth.php';
 
 // OnlyOffice Integration Routes

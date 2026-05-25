@@ -22,6 +22,7 @@ class SurveyVote extends Model
         'question_id',
         'option_id',
         'user_id',
+        'session_id',
         'text_value',
         'voted_at',
     ];

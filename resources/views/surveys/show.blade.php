@@ -35,6 +35,15 @@
             </div>
 
             <div class="flex items-center gap-3 shrink-0">
+                @if($survey->is_public && $survey->uuid)
+                    <button type="button" @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); Swal.fire({title:"Enlace Copiado", text:"El enlace público de la encuesta ha sido copiado al portapapeles", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})'
+                            class="flex items-center gap-2 px-4 py-2.5 bg-fuchsia-50 dark:bg-fuchsia-900/20 text-fuchsia-600 dark:text-fuchsia-400 font-bold rounded-2xl hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/40 transition-colors border border-fuchsia-100 dark:border-fuchsia-800/50 shadow-sm"
+                            title="{{ __('Copiar Enlace Público') }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        <span class="text-sm hidden sm:inline">{{ __('Enlace Público') }}</span>
+                    </button>
+                @endif
+
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open" class="p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-gray-500 hover:text-indigo-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
@@ -105,6 +114,7 @@
                         </button>
 
                         @can('delete', $survey)
+
                         <a href="{{ route($contextTeam ? 'teams.surveys.export-json' : 'global-surveys.export-json', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" 
                            class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -234,18 +244,32 @@
                                 </div>
 
                                 <!-- Visibility KPI -->
-                                <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
+                                <div x-data="{ copied: false }"
+                                     @if($survey->is_public && $survey->uuid) 
+                                        @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); copied = true; setTimeout(() => copied = false, 3000); Swal.fire({title:"Enlace Copiado", text:"El enlace público de la encuesta ha sido copiado al portapapeles", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})' 
+                                        class="cursor-pointer bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-violet-500/50 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-all duration-300"
+                                        title="{{ __('Copiar Enlace Público') }}"
+                                     @else 
+                                        class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300"
+                                     @endif>
                                     <div class="min-w-0">
                                         <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Ámbito') }}</p>
                                         <h4 class="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">
                                             {{ $isGlobal ? __('Global') : ($contextTeam->name ?? __('Equipo')) }}
                                         </h4>
-                                        <p class="text-[9px] font-bold text-violet-500 mt-1">
-                                            {{ $isGlobal ? __('Toda la plataforma') : __('Acceso restringido') }}
+                                        <p class="text-[9px] font-bold text-violet-500 mt-1 transition-colors duration-300 group-hover:text-violet-600">
+                                            @if($survey->is_public && $survey->uuid)
+                                                <span x-show="!copied">{{ __('Acceso Público (Clic para copiar enlace)') }}</span>
+                                                <span x-show="copied" x-cloak class="text-emerald-500">{{ __('¡Enlace Copiado!') }}</span>
+                                            @else
+                                                {{ $isGlobal ? __('Toda la plataforma') : __('Acceso restringido al equipo') }}
+                                            @endif
                                         </p>
                                     </div>
-                                    <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                                    <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-all duration-300"
+                                         :class="copied ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500' : ''">
+                                        <svg x-show="!copied" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                                        <svg x-show="copied" x-cloak class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                     </div>
                                 </div>
                             </div>

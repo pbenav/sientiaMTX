@@ -12,20 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('expedientes', function (Blueprint $table) {
-            $table->foreignId('assigned_user_id')->nullable()->constrained('users')->nullOnDelete()->after('created_by_id');
+            if (!Schema::hasColumn('expedientes', 'assigned_user_id')) {
+                $table->foreignId('assigned_user_id')->nullable()->constrained('users')->nullOnDelete()->after('created_by_id');
+            }
         });
 
-        Schema::create('expediente_assignments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('expediente_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('group_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('assigned_by_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('assigned_at')->useCurrent();
-            $table->timestamps();
+        if (!Schema::hasTable('expediente_assignments')) {
+            Schema::create('expediente_assignments', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('expediente_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+                $table->foreignId('group_id')->nullable()->constrained()->cascadeOnDelete();
+                $table->foreignId('assigned_by_id')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamp('assigned_at')->useCurrent();
+                $table->timestamps();
 
-            $table->unique(['expediente_id', 'user_id', 'group_id'], 'expediente_assignment_unique');
-        });
+                $table->unique(['expediente_id', 'user_id', 'group_id'], 'expediente_assignment_unique');
+            });
+        }
     }
 
     /**

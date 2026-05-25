@@ -28,6 +28,7 @@ class Survey extends Model
         'title',
         'description',
         'is_active',
+        'is_public',
         'allow_multiple_votes',
         'show_results_before_voting',
         'expires_at',
@@ -45,6 +46,7 @@ class Survey extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
             'allow_multiple_votes' => 'boolean',
             'show_results_before_voting' => 'boolean',
             'expires_at' => 'datetime',

@@ -242,7 +242,7 @@
                                     <div class="pt-4 space-y-4">
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                <input type="hidden" name="show_results_before_voting" value="0">
+                                                
                                                 <input type="checkbox" name="show_results_before_voting" value="1" {{ old('show_results_before_voting', $survey->show_results_before_voting) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
@@ -251,20 +251,29 @@
 
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                <input type="hidden" name="is_active" value="0">
-                                                <input type="checkbox" name="is_active" value="1" {{ old('is_active', $survey->is_active) ? 'checked' : '' }} class="sr-only peer">
-                                                <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
+                                                
+                                                <input type="checkbox" name="is_public" value="1" {{ old('is_public', $survey->is_public) ? 'checked' : '' }} class="sr-only peer">
+                                                <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-fuchsia-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
-                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Encuesta Activa') }}</span>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-fuchsia-600 transition-colors">{{ __('Encuesta pública (Enlace externo)') }}</span>
                                         </label>
 
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                <input type="hidden" name="allow_multiple_votes" value="0">
+                                                
                                                 <input type="checkbox" name="allow_multiple_votes" value="1" {{ old('allow_multiple_votes', $survey->allow_multiple_votes) ? 'checked' : '' }} class="sr-only peer">
+                                                <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-emerald-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
+                                            </div>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 transition-colors">{{ __('Permitir múltiples votos por usuario') }}</span>
+                                        </label>
+
+                                        <label class="flex items-center group cursor-pointer">
+                                            <div class="relative">
+                                                
+                                                <input type="checkbox" name="is_active" value="1" {{ old('is_active', $survey->is_active) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
-                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Permitir múltiples votos por usuario') }}</span>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Encuesta Activa') }}</span>
                                         </label>
                                     </div>
                                 </div>
@@ -493,7 +502,20 @@
                 },
                 processImportedJSON(jsonString) {
                     try {
-                        const imported = JSON.parse(jsonString);
+                        let cleanedJson = jsonString;
+                        if (cleanedJson.includes('```')) {
+                            const match = cleanedJson.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                            if (match && match[1]) {
+                                cleanedJson = match[1].trim();
+                            }
+                        }
+                        // Also, the AI might add extra text before or after the JSON array
+                        // We can try to extract from the first '[' to the last ']'
+                        if (cleanedJson.indexOf('[') !== -1 && cleanedJson.lastIndexOf(']') !== -1) {
+                            cleanedJson = cleanedJson.substring(cleanedJson.indexOf('['), cleanedJson.lastIndexOf(']') + 1);
+                        }
+
+                        const imported = JSON.parse(cleanedJson);
                         if (Array.isArray(imported)) {
                             // Add IDs and ensure structure
                             const validated = imported.map(q => ({

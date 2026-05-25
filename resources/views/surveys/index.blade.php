@@ -158,9 +158,26 @@
                                             {{ __('Activa') }}
                                         </span>
                                     @endif
+                                    
+                                    @if($survey->is_public)
+                                        <span class="text-[10px] font-black uppercase tracking-widest bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300 px-2 py-1 rounded-md" title="Pública (Enlace Externo)">
+                                            <svg class="w-3 h-3 inline-block -mt-0.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                                            {{ __('Pública') }}
+                                        </span>
+                                    @endif
                                 </div>
                                 
                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    @if($survey->is_public && $survey->uuid)
+                                        <object>
+                                            <button type="button" 
+                                                    @click='event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); Swal.fire({title:"Enlace Copiado", text:"El enlace público ha sido copiado", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000});'
+                                                    class="p-1 text-gray-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-400 transition-colors"
+                                                    title="Copiar Enlace Público">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                            </button>
+                                        </object>
+                                    @endif
                                     @can('update', $survey)
                                         <object>
                                             <a href="{{ route($routePrefix . 'edit', $team ? [$team, $survey] : [$survey]) }}" 

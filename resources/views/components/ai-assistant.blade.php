@@ -1613,6 +1613,12 @@
             </div>
             <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Editor Activo</div>
             </button>
+            <button type="button" onclick="window._aiSelect1('new-survey')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-900 hover:border-blue-600 transition-all text-center group">
+            <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Encuesta</div>
+            </button>
             </div>
             `,
             didOpen: () => {
@@ -1632,6 +1638,11 @@
             } else if (firstLevelSelection === 'active-editor') {
             const success = await this.transferToTask({ content: rawPayload, direct: true, silent: false });
             if (!success) Swal.fire('Aviso', 'No hay editor activo.', 'info');
+            } else if (firstLevelSelection === 'new-survey') {
+            localStorage.setItem('ai_pending_survey_json', rawPayload);
+            let teamId = this.teamId || 0;
+            let surveyUrl = teamId ? `/teams/${teamId}/surveys/create` : `/global-surveys/create`;
+            window.location.href = surveyUrl;
             } else if (firstLevelSelection === 'current-task') {
             if (!this.taskId) {
                         const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);

@@ -59,6 +59,7 @@ class SurveyController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
             'allow_multiple_votes' => 'boolean',
             'show_results_before_voting' => 'boolean',
             'expires_at' => 'nullable|date|after:now',
@@ -73,15 +74,16 @@ class SurveyController extends Controller
             'questions.*.is_required' => 'boolean',
         ]);
 
-        return DB::transaction(function () use ($team, $validated) {
+        return DB::transaction(function () use ($team, $validated, $request) {
             $data = [
                 'team_id' => $team ? $team->id : null,
                 'created_by_id' => Auth::id(),
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
-                'is_active' => $validated['is_active'] ?? true,
-                'allow_multiple_votes' => $validated['allow_multiple_votes'] ?? false,
-                'show_results_before_voting' => $validated['show_results_before_voting'] ?? false,
+                'is_active' => $request->boolean('is_active'),
+                'is_public' => $request->boolean('is_public'),
+                'allow_multiple_votes' => $request->boolean('allow_multiple_votes'),
+                'show_results_before_voting' => $request->boolean('show_results_before_voting'),
                 'expires_at' => $validated['expires_at'] ?? null,
                 'published_at' => now(),
             ];
@@ -195,6 +197,7 @@ class SurveyController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
             'allow_multiple_votes' => 'boolean',
             'show_results_before_voting' => 'boolean',
             'expires_at' => 'nullable|date',
@@ -210,13 +213,14 @@ class SurveyController extends Controller
             'questions.*.is_required' => 'boolean',
         ]);
 
-        return DB::transaction(function () use ($team, $survey, $validated) {
+        return DB::transaction(function () use ($team, $survey, $validated, $request) {
             $survey->update([
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
-                'is_active' => $validated['is_active'] ?? true,
-                'allow_multiple_votes' => $validated['allow_multiple_votes'] ?? false,
-                'show_results_before_voting' => $validated['show_results_before_voting'] ?? false,
+                'is_active' => $request->boolean('is_active'),
+                'is_public' => $request->boolean('is_public'),
+                'allow_multiple_votes' => $request->boolean('allow_multiple_votes'),
+                'show_results_before_voting' => $request->boolean('show_results_before_voting'),
                 'expires_at' => $validated['expires_at'] ?? null,
             ]);
 
@@ -373,7 +377,7 @@ class SurveyController extends Controller
                 } elseif ($question->type === 'text') {
                     $question->votes()->create([
                         'user_id' => $user->id,
-                        'text_value' => $val,
+                        'text_value' => strip_tags($val),
                         'voted_at' => now(),
                     ]);
                 }
