@@ -17,7 +17,7 @@ class PublicSurveyController extends Controller
             ->with(['questions.options', 'creator'])
             ->firstOrFail();
 
-        if ($survey->is_expired || clone $survey->closed_at !== null) {
+        if ($survey->is_expired || $survey->closed_at !== null) {
             // It might be closed. We might still want to show the results if show_results_before_voting is true.
         }
 
