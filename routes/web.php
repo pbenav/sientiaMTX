@@ -149,7 +149,11 @@ Route::middleware('auth')->group(function () {
     Route::post('teams/{team}/expedientes/{expediente}/attachments', [\App\Http\Controllers\ExpedienteController::class, 'uploadAttachment'])->name('teams.expedientes.attachments.upload');
     Route::post('teams/{team}/expedientes/{expediente}/link-tasks', [\App\Http\Controllers\ExpedienteController::class, 'linkTasks'])->name('teams.expedientes.link-tasks');
     Route::post('teams/{team}/expedientes/{expediente}/link-related', [\App\Http\Controllers\ExpedienteController::class, 'linkRelated'])->name('teams.expedientes.link-related');
+    Route::post('teams/{team}/expedientes/{expediente}/unlink-related/{related_id}', [\App\Http\Controllers\ExpedienteController::class, 'unlinkRelated'])->name('teams.expedientes.unlink-related');
     Route::post('teams/{team}/expedientes/{expediente}/unlink-task/{task}', [\App\Http\Controllers\ExpedienteController::class, 'unlinkTask'])->name('teams.expedientes.unlink-task');
+    Route::post('teams/{team}/expedientes/{expediente}/notes', [\App\Http\Controllers\ExpedienteNoteController::class, 'store'])->name('teams.expedientes.notes.store');
+    Route::patch('teams/{team}/expedientes/{expediente}/notes/{note}', [\App\Http\Controllers\ExpedienteNoteController::class, 'update'])->name('teams.expedientes.notes.update');
+    Route::delete('teams/{team}/expedientes/{expediente}/notes/{note}', [\App\Http\Controllers\ExpedienteNoteController::class, 'destroy'])->name('teams.expedientes.notes.destroy');
 
     // Forum routes inside team
     Route::get('/teams/{team}/forum', [ForumController::class, 'index'])->name('teams.forum.index');

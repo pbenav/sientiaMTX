@@ -137,4 +137,9 @@ class Expediente extends Model
         $count = static::whereYear('created_at', $year)->count() + 1;
         return 'EXP-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(ExpedienteNote::class)->latest();
+    }
 }

@@ -114,8 +114,8 @@
                         <div class="space-y-3">
                             <div>
                                 <select name="related_ids[]" id="related-selector" multiple class="w-full">
-                                    @foreach($allTeamExpedientes as $availExp)
-                                        <option value="{{ $availExp->id }}" {{ $expediente->relatedExpedientes->contains($availExp->id) ? 'selected' : '' }}>
+                                    @foreach($availableRelatedExpedientes as $availExp)
+                                        <option value="{{ $availExp->id }}">
                                             {{ $availExp->code }} — {{ $availExp->title }}
                                         </option>
                                     @endforeach
@@ -123,7 +123,7 @@
                             </div>
                             <div class="flex justify-end gap-2">
                                 <button @click="showLinkRelated = false" type="button" class="text-xs font-bold text-gray-500 px-3 py-1.5 hover:text-gray-700">Cancelar</button>
-                                <button type="submit" class="text-xs font-black uppercase bg-violet-600 text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-violet-700 transition-all">Actualizar Relaciones</button>
+                                <button type="submit" class="text-xs font-black uppercase bg-violet-600 text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-violet-700 transition-all">Vincular Seleccionados</button>
                             </div>
                         </div>
                     </form>
@@ -136,14 +136,22 @@
                 @else
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         @foreach($expediente->relatedExpedientes as $rel)
-                            <a href="{{ route('teams.expedientes.show', [$team, $rel]) }}" 
-                                class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 hover:border-violet-200 dark:hover:border-violet-900/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-2xl transition-all group">
-                                <div class="w-8 h-8 bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center shrink-0 text-violet-500 font-black text-[9px] shadow-sm border border-gray-100 dark:border-gray-700">EXP</div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="text-[9px] font-black text-violet-600 dark:text-violet-400 tracking-wider">{{ $rel->code }}</div>
-                                    <div class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 dark:group-hover:text-white">{{ $rel->title }}</div>
-                                </div>
-                            </a>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 hover:border-violet-200 dark:hover:border-violet-900/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-2xl transition-all group relative">
+                                <a href="{{ route('teams.expedientes.show', [$team, $rel]) }}" class="flex items-center gap-3 min-w-0 flex-1">
+                                    <div class="w-8 h-8 bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center shrink-0 text-violet-500 font-black text-[9px] shadow-sm border border-gray-100 dark:border-gray-700">EXP</div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-[9px] font-black text-violet-600 dark:text-violet-400 tracking-wider">{{ $rel->code }}</div>
+                                        <div class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 dark:group-hover:text-white">{{ $rel->title }}</div>
+                                    </div>
+                                </a>
+                                
+                                <form id="unlink-related-{{ $rel->id }}" action="{{ route('teams.expedientes.unlink-related', [$team, $expediente, $rel->id]) }}" method="POST" class="shrink-0 ml-2">
+                                    @csrf
+                                    <button type="button" onclick="confirmUnlinkRelated({{ $rel->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Expediente">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </form>
+                            </div>
                         @endforeach
                     </div>
                 @endif
@@ -424,6 +432,109 @@
             </div>
         </div>
 
+            <!-- Card: Notes -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        Notas
+                    </h3>
+                </div>
+
+                <form action="{{ route('teams.expedientes.notes.store', [$team, $expediente]) }}" method="POST" class="mb-6">
+                    @csrf
+                    <x-markdown-editor name="content" rows="3" placeholder="Añadir una nueva nota..." :mentionsUrl="route('teams.mentions', $team)" required="true" />
+                    <div class="flex items-center justify-between mt-4">
+                        <label class="flex items-center gap-2 px-2 cursor-pointer group">
+                            <input type="checkbox" name="is_private" value="1" class="rounded border-gray-300 dark:border-gray-600 text-rose-500 focus:ring-rose-500 bg-white dark:bg-gray-900">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400 group-hover:text-rose-500 transition-colors flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                Nota Privada
+                            </span>
+                        </label>
+                        <button type="submit" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-sm">
+                            Añadir
+                        </button>
+                    </div>
+                </form>
+
+                <div class="space-y-3">
+                    @php
+                        $notes = $expediente->notes()->with('user')->get()->filter(function($note) use ($team) {
+                            return !$note->is_private || $note->user_id === auth()->id() || auth()->user()->isCoordinatorOf($team);
+                        });
+                    @endphp
+
+                    @if($notes->isEmpty())
+                        <div class="text-center py-6 text-gray-400 text-xs italic border border-dashed border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-800/30">
+                            Aún no hay notas. Sé el primero en escribir una.
+                        </div>
+                    @else
+                        @foreach($notes as $note)
+                            @php
+                                $canEdit = (!$note->is_private) || ($note->user_id === auth()->id());
+                            @endphp
+                            <div x-data="{ editing: false }" class="p-4 rounded-2xl border {{ $note->is_private ? 'bg-rose-50/50 border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30' : 'bg-gray-50 border-gray-100 dark:bg-gray-800/50 dark:border-gray-800' }}">
+                                <div class="flex items-start justify-between gap-3 mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <img src="{{ $note->user->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-700 shadow-sm">
+                                        <div>
+                                            <span class="text-xs font-bold text-gray-900 dark:text-white">{{ $note->user->name }}</span>
+                                            <span class="text-[10px] text-gray-500 ml-1">{{ $note->created_at->diffForHumans() }}</span>
+                                            @if($note->is_private)
+                                                <span class="ml-2 text-[8px] font-black uppercase bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 px-1.5 py-0.5 rounded tracking-widest">Privada</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        @if($canEdit)
+                                            <button @click="editing = !editing" type="button" class="p-1 text-gray-400 hover:text-violet-500 transition-colors" title="Editar nota">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                            </button>
+                                        @endif
+                                        @if($note->user_id === auth()->id() || auth()->user()->isCoordinatorOf($team))
+                                            <form action="{{ route('teams.expedientes.notes.destroy', [$team, $expediente, $note]) }}" method="POST" onsubmit="return confirm('¿Eliminar esta nota?')" class="inline">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Eliminar nota">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div x-show="!editing" class="text-sm text-gray-700 dark:text-gray-300 pl-8 prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:text-violet-600 dark:prose-a:text-violet-400">
+                                    {!! Str::markdown($note->content) !!}
+                                </div>
+                                @if($canEdit)
+                                    <div x-show="editing" x-cloak class="mt-2 pl-8">
+                                        <form action="{{ route('teams.expedientes.notes.update', [$team, $expediente, $note]) }}" method="POST">
+                                            @csrf @method('PATCH')
+                                            <x-markdown-editor name="content" :value="$note->content" rows="3" :mentionsUrl="route('teams.mentions', $team)" required="true" />
+                                            <div class="flex items-center justify-between mt-4">
+                                                <label class="flex items-center gap-2 px-2 cursor-pointer group">
+                                                    <input type="checkbox" name="is_private" value="1" {{ $note->is_private ? 'checked' : '' }} class="rounded border-gray-300 dark:border-gray-600 text-rose-500 focus:ring-rose-500 bg-white dark:bg-gray-900">
+                                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 group-hover:text-rose-500 transition-colors flex items-center gap-1">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                                        Privada
+                                                    </span>
+                                                </label>
+                                                <div class="flex items-center gap-2">
+                                                    <button type="button" @click="editing = false" class="px-3 py-1 text-xs font-bold text-gray-500 hover:text-gray-700">Cancelar</button>
+                                                    <button type="submit" class="px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-sm transition-all">
+                                                        Guardar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <!-- Sidebar Meta -->
         <div class="space-y-6">
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
@@ -603,6 +714,31 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('unlink-form-' + taskId).submit();
+                }
+            });
+        }
+
+        window.confirmUnlinkRelated = function(relatedId) {
+            Swal.fire({
+                title: '¿Desvincular Expediente?',
+                text: "Los expedientes dejarán de estar relacionados, pero ninguno se eliminará.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#7c3aed',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Sí, desvincular',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
+                    title: 'text-xl font-black text-gray-900 dark:text-white pt-4',
+                    htmlContainer: 'text-sm text-gray-500 dark:text-gray-400 px-4 pb-2',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest shadow-lg shadow-violet-500/30 transition-all',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest transition-all'
+                },
+                buttonsStyling: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('unlink-related-' + relatedId).submit();
                 }
             });
         }

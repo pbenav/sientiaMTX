@@ -1565,7 +1565,21 @@ class TaskController extends Controller
         // Collect all changes in the model object first
         if ($request->has('scheduled_date')) $task->scheduled_date = $validated['scheduled_date'];
         if ($request->has('due_date')) $task->due_date = $validated['due_date'];
-        if ($request->has('progress_percentage')) $task->progress_percentage = $validated['progress_percentage'];
+        if ($request->has('progress_percentage')) {
+            $task->progress_percentage = $validated['progress_percentage'];
+            
+            if (!$request->has('status')) {
+                if ($task->progress_percentage == 100 && $oldStatus !== 'completed' && $oldStatus !== 'cancelled') {
+                    $task->status = 'completed';
+                    $this->awardGamificationPoints($task);
+                    $task->notifyCoordinatorsIfCompleted();
+                } elseif ($task->progress_percentage == 0 && $oldStatus !== 'pending') {
+                    $task->status = 'pending';
+                } elseif ($task->progress_percentage > 0 && $task->progress_percentage < 100 && in_array($oldStatus, ['completed', 'pending'])) {
+                    $task->status = 'in_progress';
+                }
+            }
+        }
         if ($request->has('is_archived')) {
             $task->is_archived = (bool) $validated['is_archived'];
             \Log::info('Setting is_archived to:', ['val' => $task->is_archived]);

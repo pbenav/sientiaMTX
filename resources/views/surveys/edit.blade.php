@@ -443,6 +443,17 @@
                             "is_required": true
                         },
                         {
+                            "title": "{{ __('¿De qué departamento eres?') }}",
+                            "type": "single_choice",
+                            "options": [
+                                "{{ __('Desarrollo') }}",
+                                "{{ __('Diseño') }}",
+                                "{{ __('Marketing') }}",
+                                "{{ __('Ventas') }}"
+                            ],
+                            "is_required": true
+                        },
+                        {
                             "title": "{{ __('¿Qué mejorarías?') }}",
                             "type": "multiple_choice",
                             "options": [

@@ -194,12 +194,15 @@ class ExpedienteController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $allTeamExpedientes = $team->expedientes()
+        // Get expedientes that can be linked (excluding the current one and already linked ones)
+        $linkedExpedienteIds = $expediente->relatedExpedientes->pluck('id')->toArray();
+        $availableRelatedExpedientes = $team->expedientes()
             ->where('id', '!=', $expediente->id)
+            ->whereNotIn('id', $linkedExpedienteIds)
             ->orderBy('code', 'desc')
             ->get();
 
-        return view('expedientes.show', compact('team', 'expediente', 'availableTasks', 'allTeamExpedientes'));
+        return view('expedientes.show', compact('team', 'expediente', 'availableTasks', 'availableRelatedExpedientes'));
     }
 
     /**
@@ -212,13 +215,33 @@ class ExpedienteController extends Controller
         }
 
         $validated = $request->validate([
-            'related_ids' => 'nullable|array',
+            'related_ids' => 'required|array',
             'related_ids.*' => 'exists:expedientes,id',
         ]);
 
-        $this->syncBidirectionalRelations($expediente, $validated['related_ids'] ?? []);
+        $currentIds = $expediente->relatedExpedientes()->pluck('expedientes.id')->toArray();
+        $newIds = array_unique(array_merge($currentIds, $validated['related_ids']));
 
-        return redirect()->back()->with('success', 'Los expedientes relacionados han sido actualizados correctamente.');
+        $this->syncBidirectionalRelations($expediente, $newIds);
+
+        return redirect()->back()->with('success', 'Los expedientes relacionados han sido vinculados correctamente.');
+    }
+
+    /**
+     * Unlink a specific related expediente.
+     */
+    public function unlinkRelated(Team $team, Expediente $expediente, $related_id)
+    {
+        if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $currentIds = $expediente->relatedExpedientes()->pluck('expedientes.id')->toArray();
+        $newIds = array_diff($currentIds, [$related_id]);
+
+        $this->syncBidirectionalRelations($expediente, $newIds);
+
+        return redirect()->back()->with('success', 'Expediente desvinculado correctamente.');
     }
 
     /**
