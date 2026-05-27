@@ -277,8 +277,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
                                 @foreach($survey->questions as $question)
                                     <div x-data="{ showModal: false }" 
-                                         class="bg-white dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-all {{ $question->type === 'text' ? 'cursor-pointer hover:border-indigo-500/50 group/card' : '' }}"
-                                         @if($question->type === 'text') @click="showModal = true" @endif>
+                                         class="bg-white dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-all cursor-pointer hover:border-indigo-500/50 group/card"
+                                         @click="showModal = true">
                                         <div class="flex items-start justify-between mb-2 border-l-2 border-indigo-600 pl-3">
                                             <div class="min-w-0">
                                                 <h3 class="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight" title="{{ $question->title }}">{{ $question->title }}</h3>
@@ -286,11 +286,9 @@
                                                     {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Respuestas') : __('Pregunta abierta') }}
                                                 </p>
                                             </div>
-                                            @if($question->type === 'text')
-                                                <div class="shrink-0 text-indigo-400 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-                                                </div>
-                                            @endif
+                                            <div class="shrink-0 text-indigo-400 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                                            </div>
                                         </div>
                                         
                                         @if($question->type !== 'text')
@@ -356,36 +354,38 @@
                                                     @endif
                                                 @endforeach
                                             </div>
+                                        @endif
 
-                                            <!-- Modal for Text Answers -->
-                                            <div x-show="showModal" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" style="display: none;">
-                                                <div x-show="showModal" x-transition.opacity class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showModal = false"></div>
-                                                <div x-show="showModal" 
-                                                     x-transition:enter="transition ease-out duration-300"
-                                                     x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-                                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                                     x-transition:leave="transition ease-in duration-200"
-                                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                                     x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                                                     class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] cursor-default"
-                                                     @click.stop>
-                                                    
-                                                    <!-- Modal Header -->
-                                                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-gray-800/50">
-                                                        <div class="flex items-center gap-3">
-                                                            <div class="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 rounded-xl">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
-                                                            </div>
-                                                            <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $question->title }}</h3>
+                                        <!-- Modal for Answers (All Types) -->
+                                        <div x-show="showModal" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" style="display: none;">
+                                            <div x-show="showModal" x-transition.opacity class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showModal = false"></div>
+                                            <div x-show="showModal" 
+                                                 x-transition:enter="transition ease-out duration-300"
+                                                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                                 x-transition:leave="transition ease-in duration-200"
+                                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                                 x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                                                 class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] cursor-default"
+                                                 @click.stop>
+                                                
+                                                <!-- Modal Header -->
+                                                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-gray-800/50">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 rounded-xl">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
                                                         </div>
-                                                        <button @click="showModal = false" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                        </button>
+                                                        <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $question->title }}</h3>
                                                     </div>
+                                                    <button @click="showModal = false" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                </div>
 
-                                                    <!-- Modal Body -->
-                                                    <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30 dark:bg-gray-900/30">
-                                                        <div class="space-y-4">
+                                                <!-- Modal Body -->
+                                                <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30 dark:bg-gray-900/30">
+                                                    <div class="space-y-4">
+                                                        @if($question->type === 'text')
                                                             @foreach($question->votes as $vote)
                                                                 @if($vote->text_value)
                                                                     <div class="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm">
@@ -404,11 +404,49 @@
                                                                     </div>
                                                                 @endif
                                                             @endforeach
-                                                        </div>
+                                                        @else
+                                                            <div class="flex justify-center mb-8 mt-4">
+                                                                <div class="w-full max-w-[300px] sm:max-w-[400px]">
+                                                                    <canvas id="chart-modal-{{ $question->id }}" 
+                                                                            data-type="{{ $question->type }}" 
+                                                                            data-labels='@json($question->options->pluck("label"))'
+                                                                            data-values='@json($question->options->pluck("votes_count"))'></canvas>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Detail Legend -->
+                                                            <div class="space-y-3">
+                                                                @php 
+                                                                    $qTotalVotes = $question->votes()->count();
+                                                                    $maxVotes = $question->options->max('votes_count');
+                                                                @endphp
+                                                                @foreach($question->options->sortByDesc('votes_count') as $option)
+                                                                    @php
+                                                                        $percentage = $qTotalVotes > 0 ? round(($option->votes_count / $qTotalVotes) * 100, 0) : 0;
+                                                                        $isWinner = $qTotalVotes > 0 && $maxVotes === $option->votes_count;
+                                                                    @endphp
+                                                                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                                        <div class="flex items-center justify-between mb-2">
+                                                                            <span class="text-sm font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300' }}">
+                                                                                {{ $option->label }}
+                                                                            </span>
+                                                                            <div class="flex items-center gap-3">
+                                                                                <span class="text-xs font-medium text-gray-500">{{ $option->votes_count }} votos</span>
+                                                                                <span class="text-sm font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">{{ $percentage }}%</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="h-2 w-full bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden">
+                                                                            <div class="h-full rounded-full {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
+                                                                                 style="width: {{ $percentage }}%">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>
-                                        @endif
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -778,7 +816,15 @@
 
     {{-- BARRA FLOTANTE DE ACCIONES RÁPIDAS --}}
     <div id="survey-floating-bar"
-         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-50 flex items-center gap-2 p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap">
+         x-data="floatingDraggable"
+         @mousedown="startDrag"
+         @touchstart.passive="startDrag"
+         @window:mousemove="drag"
+         @window:touchmove.passive="drag"
+         @window:mouseup="stopDrag"
+         @window:touchend="stopDrag"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-50 flex items-center gap-2 p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+         :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
         
         <a href="{{ route($routePrefix . 'index', $contextTeam ? [$contextTeam] : []) }}"
            class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10">

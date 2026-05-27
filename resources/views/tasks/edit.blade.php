@@ -1452,28 +1452,15 @@
      BARRA FLOTANTE DE ACCIONES RÁPIDAS (EDICIÓN)
      ============================================================ --}}
 <div id="task-edit-floating-bar"
-     style="
-        position: fixed;
-        bottom: 1.5rem;
-        left: 50%;
-        transform: translateX(-50%) translateY(1rem);
-        z-index: 800;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.625rem 1rem;
-        background: rgba(255,255,255,0.93);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid #e5e7eb;
-        border-radius: 1rem;
-        box-shadow: 0 20px 40px -8px rgba(0,0,0,0.15);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s ease, transform 0.25s ease;
-        white-space: nowrap;
-     "
-     class="dark:[background:rgba(17,24,39,0.93)] dark:[border-color:#374151]">
+     x-data="floatingDraggable"
+     @mousedown="startDrag"
+     @touchstart.passive="startDrag"
+     @window:mousemove="drag"
+     @window:touchmove.passive="drag"
+     @window:mouseup="stopDrag"
+     @window:touchend="stopDrag"
+     class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+     :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
     {{-- Volver --}}
     <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
@@ -1513,28 +1500,19 @@
         const bar = document.getElementById('task-edit-floating-bar');
         let visible = false;
 
-        function updateBar(scrollY) {
-            const shouldShow = scrollY > 150;
-            if (shouldShow === visible) return;
-            visible = shouldShow;
-            if (visible) {
-                bar.style.opacity = '1';
-                bar.style.transform = 'translateX(-50%) translateY(0)';
-                bar.style.pointerEvents = 'auto';
-            } else {
-                bar.style.opacity = '0';
-                bar.style.transform = 'translateX(-50%) translateY(1rem)';
-                bar.style.pointerEvents = 'none';
-            }
-        }
-
         // Catch scroll on any container (Universal listener with capture phase)
         const checkScroll = (e) => {
             const target = e.target === document ? document.documentElement : e.target;
             const scrollY = target.scrollTop || 0;
-            // Also consider window.scrollY in case document itself is scrolling
             const finalScroll = scrollY || window.scrollY || 0;
-            updateBar(finalScroll);
+            
+            if (finalScroll > 150) {
+                bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            } else {
+                bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            }
         };
 
         window.addEventListener('scroll', checkScroll, { passive: true, capture: true });

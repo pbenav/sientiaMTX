@@ -2549,6 +2549,68 @@
             });
         })();
     </script>
+    <!-- 🚀 Sientia Floating Draggable Trait 🚀 -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('floatingDraggable', () => ({
+                isDragging: false,
+                hasDragged: false,
+                startX: 0,
+                startY: 0,
+                
+                startDrag(e) {
+                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+                    
+                    this.isDragging = true;
+                    this.$el.style.transition = 'none';
+                    
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                    
+                    const rect = this.$el.getBoundingClientRect();
+                    
+                    if (!this.hasDragged) {
+                        this.$el.style.bottom = 'auto';
+                        this.$el.style.right = 'auto';
+                        this.$el.style.transform = 'none';
+                        this.$el.style.left = rect.left + 'px';
+                        this.$el.style.top = rect.top + 'px';
+                        this.hasDragged = true;
+                    }
+                    
+                    this.startX = clientX - rect.left;
+                    this.startY = clientY - rect.top;
+                },
+                
+                drag(e) {
+                    if (!this.isDragging) return;
+                    if (e.cancelable) e.preventDefault();
+                    
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                    
+                    let newLeft = clientX - this.startX;
+                    let newTop = clientY - this.startY;
+                    
+                    const rect = this.$el.getBoundingClientRect();
+                    const maxLeft = window.innerWidth - rect.width;
+                    const maxTop = window.innerHeight - rect.height;
+                    
+                    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(0, Math.min(newTop, maxTop));
+                    
+                    this.$el.style.left = newLeft + 'px';
+                    this.$el.style.top = newTop + 'px';
+                },
+                
+                stopDrag() {
+                    if (!this.isDragging) return;
+                    this.isDragging = false;
+                    this.$el.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+            }));
+        });
+    </script>
 </body>
 
 </html>
