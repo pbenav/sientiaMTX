@@ -100,10 +100,11 @@
                 allUsers: [],
                 searchUserQuery: '',
 
-                get filteredUsersForAdd() {
-                    if (!this.searchUserQuery) return this.allUsers;
+                getFilteredUsersForAdd() {
+                    const all = this.allUsers || [];
+                    if (!this.searchUserQuery) return all;
                     const q = String(this.searchUserQuery).toLowerCase();
-                    return this.allUsers.filter(u => u.name && String(u.name).toLowerCase().includes(q));
+                    return all.filter(u => u.name && String(u.name).toLowerCase().includes(q));
                 },
                 fetchUsersForChat() {
                     if (this.allUsers.length > 0) return;
@@ -1920,13 +1921,13 @@
                                 <input type="text" x-model="searchUserQuery" placeholder="Buscar miembro..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
                             </div>
                             <div class="max-h-48 overflow-y-auto custom-scrollbar flex-1 p-1">
-                                <template x-for="u in filteredUsersForAdd" :key="u.id">
+                                <template x-for="u in getFilteredUsersForAdd()" :key="u.id">
                                     <button @click="addMemberToGroup(u.id)" class="w-full flex items-center gap-2 p-2 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-colors text-left group">
                                         <img :src="u.photo" class="w-7 h-7 rounded-lg object-cover shadow-sm group-hover:shadow-violet-200 dark:group-hover:shadow-none transition-shadow">
                                         <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate" x-text="u.name"></span>
                                     </button>
                                 </template>
-                                <div x-show="filteredUsersForAdd.length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
+                                <div x-show="getFilteredUsersForAdd().length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
                                     No hay usuarios
                                 </div>
                             </div>
