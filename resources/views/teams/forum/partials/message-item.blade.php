@@ -139,7 +139,7 @@
                      class="relative">
                     
                     <div x-ref="contentBox"
-                         class="text-sm markdown-content leading-relaxed transition-all duration-300"
+                         class="markdown-content leading-relaxed transition-all duration-300"
                          :class="(!expanded && isOverflowing) ? 'max-h-[300px] overflow-hidden' : ''">
                         @php
                             $decoded = json_decode($message->content, true);

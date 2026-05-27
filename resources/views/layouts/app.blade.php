@@ -420,7 +420,7 @@
 
 
     <!-- Marked.js (Markdown Rendering) -->
-    <x-markdown-styles :team="request()->route('team') && is_object(request()->route('team')) ? request()->route('team') : (request()->route('team') ? \App\Models\Team::find(request()->route('team')) : null)" />
+    <x-markdown-styles :team="$team ?? (request()->route('team') && is_object(request()->route('team')) ? request()->route('team') : (request()->route('team') ? \App\Models\Team::find(request()->route('team')) : null))" />
 
     <!-- Global Alpine Store for Timer (Performance optimization N -> 1) -->
     <script>
