@@ -41,7 +41,9 @@
         --md-bullet-color: {{ $bullet_color }};
     }
 
-    .markdown-content, .prose {
+    .markdown-content, .prose,
+    .markdown-content p, .prose p,
+    .markdown-content li, .prose li {
         font-size: var(--md-text-size) !important;
         line-height: 1.6;
     }
