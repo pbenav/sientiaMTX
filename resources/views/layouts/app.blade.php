@@ -175,6 +175,7 @@
                 
                 openChat(detail) {
                     this.member = detail;
+                    try { localStorage.setItem('sientia_last_chat', JSON.stringify(detail)); } catch(e) {}
                     this.open = true;
                     this.activeCallRoom = null;
                     this.incomingCall = null;
@@ -189,6 +190,10 @@
                 },
                 
                 openLastChat() {
+                    if (Alpine.store('chatStore').unreadConversations.length > 0) {
+                        this.openChat(Alpine.store('chatStore').unreadConversations[0]);
+                        return;
+                    }
                     if (this.member && this.member.id) {
                         this.open = true;
                         this.fetchMessages();
@@ -197,6 +202,16 @@
                             if (input) input.focus();
                         });
                     } else {
+                        const lastChatJson = localStorage.getItem('sientia_last_chat');
+                        if (lastChatJson) {
+                            try {
+                                const lastChat = JSON.parse(lastChatJson);
+                                if (lastChat && lastChat.id) {
+                                    this.openChat(lastChat);
+                                    return;
+                                }
+                            } catch (e) {}
+                        }
                         Swal.fire({ icon: 'info', title: 'Chat Interno', text: 'No tienes ninguna sala de chat activa. Selecciona un usuario o grupo en la Red Activa o abre un mensaje pendiente.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
                     }
                 },
@@ -1010,8 +1025,8 @@
                     <div class="flex items-center sm:hidden gap-2 ml-auto">
                         @auth
                         <!-- Chat Notification: Mobile -->
-                        <div class="relative inline-flex items-center sm:hidden" x-data="{ open: false }">
-                             <button @click="open = !open" @click.outside="open = false"
+                        <div class="relative inline-flex items-center sm:hidden">
+                             <button @click="$dispatch('open-last-chat')"
                                      class="relative p-2 text-gray-400"
                                      title="{{ __('Chat Interno') }}">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1023,27 +1038,6 @@
                                       </span>
                                  </template>
                              </button>
-                             <!-- Dropdown -->
-                             <div x-show="open" x-transition x-cloak style="display: none"
-                                  class="absolute right-0 mt-12 top-0 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-[100] overflow-hidden">
-                                  <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                                      <template x-if="$store.chatStore.totalCount === 0">
-                                          <div class="p-4 text-center text-gray-400 text-xs">Sin chats pendientes</div>
-                                      </template>
-                                      <template x-for="conv in $store.chatStore.unreadConversations" :key="conv.id">
-                                          <button @click="open = false; $dispatch('open-chat', conv)" class="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 border-b last:border-0 text-left dark:border-gray-800">
-                                              <img :src="conv.photo" class="w-8 h-8 rounded-lg object-cover">
-                                              <div class="min-w-0 flex-1">
-                                                  <h6 class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="conv.name"></h6>
-                                                  <template x-if="conv.team">
-                                                      <p class="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider truncate" x-text="conv.team"></p>
-                                                  </template>
-                                                  <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate font-medium mt-0.5" x-text="conv.text"></p>
-                                              </div>
-                                          </button>
-                                      </template>
-                                  </div>
-                             </div>
                         </div>
 
                         <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-400" x-data>
@@ -1069,9 +1063,9 @@
 
 
                     @auth
-                        <!-- Chat Notification Dropdown: Desktop -->
-                        <div class="hidden sm:inline-flex relative items-center" x-data="{ open: false }">
-                             <button @click="open = !open" @click.outside="open = false"
+                        <!-- Chat Notification: Desktop -->
+                        <div class="hidden sm:inline-flex relative items-center">
+                             <button @click="$dispatch('open-last-chat')"
                                      class="relative p-2 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                                      title="{{ __('Chat Interno') }}">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1086,28 +1080,6 @@
                                      </span>
                                  </template>
                              </button>
-                             
-                             <!-- Dropdown with unread -->
-                             <div x-show="open" x-transition x-cloak style="display: none"
-                                  class="absolute right-0 mt-12 top-0 w-72 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] overflow-hidden transform origin-top-right">
-                                  <div class="p-3 border-b border-gray-50 dark:border-gray-800 bg-emerald-50/30 dark:bg-emerald-900/20">
-                                      <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Chats sin leer</p>
-                                  </div>
-                                  <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                                      <template x-if="$store.chatStore.totalCount === 0">
-                                          <div class="p-6 text-center text-gray-400 italic text-xs">¡Estás al día! 🎉</div>
-                                      </template>
-                                      <template x-for="conv in $store.chatStore.unreadConversations" :key="conv.id">
-                                          <button @click="open = false; $dispatch('open-chat', conv)" class="w-full p-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-0 text-left">
-                                              <img :src="conv.photo" class="w-9 h-9 rounded-xl object-cover shadow-sm border border-white dark:border-gray-700 shrink-0">
-                                              <div class="min-w-0 flex-1">
-                                                  <h6 class="text-xs font-bold text-gray-900 dark:text-white truncate" x-text="conv.name"></h6>
-                                                  <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate font-medium mt-0.5" x-text="conv.text"></p>
-                                              </div>
-                                          </button>
-                                      </template>
-                                  </div>
-                             </div>
                         </div>
 
                         <!-- Notifications Bell: hidden on mobile (in mobile block above) -->
