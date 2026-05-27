@@ -648,9 +648,16 @@ class TeamController extends Controller
                 return $data;
             })->values();
 
+            $counts = ['working' => 0, 'online' => 0, 'sleeping' => 0, 'offline' => 0];
+            foreach ($members as $m) {
+                $status = $m->getStatusInfo()['status'];
+                if (isset($counts[$status])) $counts[$status]++;
+            }
+
             return response()->json([
                 'html' => view('teams.partials.active-network-list', compact('members'))->render(),
-                'mapData' => $heatmapData
+                'mapData' => $heatmapData,
+                'counts' => $counts
             ]);
         }
 
