@@ -335,8 +335,15 @@
                                                         <div class="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
                                                             <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-tight italic">"{{ $vote->text_value }}"</p>
                                                             <div class="flex items-center gap-1.5 mt-1">
-                                                                <img src="{{ $vote->user->profile_photo_url }}" class="w-3.5 h-3.5 rounded-full">
-                                                                <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ $vote->user->name }}</span>
+                                                                @if($vote->user)
+                                                                    <img src="{{ $vote->user->profile_photo_url }}" class="w-3.5 h-3.5 rounded-full">
+                                                                    <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ $vote->user->name }}</span>
+                                                                @else
+                                                                    <div class="w-3.5 h-3.5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                                                                        <svg class="w-2.5 h-2.5 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                                                    </div>
+                                                                    <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Anónimo') }}</span>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     @endif
