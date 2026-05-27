@@ -276,7 +276,9 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
                                 @foreach($survey->questions as $question)
-                                    <div class="bg-white dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
+                                    <div x-data="{ showModal: false }" 
+                                         class="bg-white dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-all {{ $question->type === 'text' ? 'cursor-pointer hover:border-indigo-500/50 group/card' : '' }}"
+                                         @if($question->type === 'text') @click="showModal = true" @endif>
                                         <div class="flex items-start justify-between mb-2 border-l-2 border-indigo-600 pl-3">
                                             <div class="min-w-0">
                                                 <h3 class="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight" title="{{ $question->title }}">{{ $question->title }}</h3>
@@ -284,6 +286,11 @@
                                                     {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Respuestas') : __('Pregunta abierta') }}
                                                 </p>
                                             </div>
+                                            @if($question->type === 'text')
+                                                <div class="shrink-0 text-indigo-400 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                                                </div>
+                                            @endif
                                         </div>
                                         
                                         @if($question->type !== 'text')
@@ -329,11 +336,11 @@
                                             </div>
                                         @else
                                             <!-- Compact Text Answers -->
-                                            <div class="flex-1 mt-2 space-y-2 overflow-y-auto max-h-[80px] custom-scrollbar pr-2">
+                                            <div class="flex-1 mt-2 space-y-2 overflow-y-auto max-h-[80px] custom-scrollbar pr-2 pointer-events-none">
                                                 @foreach($question->votes->take(5) as $vote)
                                                     @if($vote->text_value)
                                                         <div class="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
-                                                            <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-tight italic">"{{ $vote->text_value }}"</p>
+                                                            <p class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-tight italic line-clamp-2">"{{ $vote->text_value }}"</p>
                                                             <div class="flex items-center gap-1.5 mt-1">
                                                                 @if($vote->user)
                                                                     <img src="{{ $vote->user->profile_photo_url }}" class="w-3.5 h-3.5 rounded-full">
@@ -348,6 +355,58 @@
                                                         </div>
                                                     @endif
                                                 @endforeach
+                                            </div>
+
+                                            <!-- Modal for Text Answers -->
+                                            <div x-show="showModal" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" style="display: none;">
+                                                <div x-show="showModal" x-transition.opacity class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showModal = false"></div>
+                                                <div x-show="showModal" 
+                                                     x-transition:enter="transition ease-out duration-300"
+                                                     x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                                     x-transition:leave="transition ease-in duration-200"
+                                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                                     x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                                                     class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] cursor-default"
+                                                     @click.stop>
+                                                    
+                                                    <!-- Modal Header -->
+                                                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-gray-800/50">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 rounded-xl">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                                                            </div>
+                                                            <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ $question->title }}</h3>
+                                                        </div>
+                                                        <button @click="showModal = false" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Modal Body -->
+                                                    <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30 dark:bg-gray-900/30">
+                                                        <div class="space-y-4">
+                                                            @foreach($question->votes as $vote)
+                                                                @if($vote->text_value)
+                                                                    <div class="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm">
+                                                                        <p class="text-sm text-gray-700 dark:text-gray-300 font-medium leading-relaxed italic">"{{ $vote->text_value }}"</p>
+                                                                        <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 dark:border-gray-700/50">
+                                                                            @if($vote->user)
+                                                                                <img src="{{ $vote->user->profile_photo_url }}" class="w-5 h-5 rounded-full border border-gray-100 dark:border-gray-700">
+                                                                                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ $vote->user->name }}</span>
+                                                                            @else
+                                                                                <div class="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                                                                                    <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                                                                </div>
+                                                                                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ __('Anónimo') }}</span>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         @endif
                                     </div>
