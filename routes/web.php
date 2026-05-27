@@ -412,9 +412,11 @@ Route::middleware('auth')->group(function () {
     // --- Internal Direct Chat and Video Conference ---
     Route::get('/comms/heartbeat', [\App\Http\Controllers\ChatMessageController::class, 'check'])->name('chat.check');
     Route::get('/chat/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('chat.index');
+    Route::get('/chat/users', [\App\Http\Controllers\ChatMessageController::class, 'getUsers'])->name('chat.users');
     Route::post('/chat', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('chat.store');
     Route::post('/chat/call', [\App\Http\Controllers\ChatMessageController::class, 'startCall'])->name('chat.call');
     Route::post('/chat/group', [\App\Http\Controllers\ChatMessageController::class, 'createGroup'])->name('chat.group');
+    Route::post('/chat/group/{group}/members', [\App\Http\Controllers\ChatMessageController::class, 'addGroupMember'])->name('chat.group.add-member');
     Route::post('/chat/meet', [\App\Http\Controllers\ChatMessageController::class, 'startGoogleMeet'])->name('chat.meet');
     Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });

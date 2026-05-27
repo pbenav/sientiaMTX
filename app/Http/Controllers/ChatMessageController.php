@@ -165,6 +165,29 @@ class ChatMessageController extends Controller
         }
     }
 
+    public function getUsers(): JsonResponse
+    {
+        $user = auth()->user();
+        
+        // Return users from all teams the current user is a part of
+        $users = \App\Models\User::whereHas('teams', function ($query) use ($user) {
+            $query->whereIn('teams.id', $user->teams()->pluck('teams.id'));
+        })
+        ->where('id', '!=', $user->id)
+        ->select('id', 'name', 'profile_photo_path', 'email')
+        ->get()
+        ->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+                'photo' => $u->profile_photo_url,
+                'email' => $u->email,
+            ];
+        });
+
+        return response()->json(['users' => $users]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -288,6 +311,44 @@ class ChatMessageController extends Controller
             Log::error('createGroup error: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Error al crear grupo'], 500);
         }
+    }
+
+    public function addGroupMember(Request $request, $groupId): JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $group = \App\Models\ChatGroup::findOrFail($groupId);
+
+        // Ensure current user is in the group
+        if (!$group->users()->where('user_id', auth()->id())->exists()) {
+            return response()->json(['success' => false, 'message' => 'No estás autorizado para modificar este grupo.'], 403);
+        }
+
+        $userIdToAdd = $request->user_id;
+
+        if (!$group->users()->where('user_id', $userIdToAdd)->exists()) {
+            // Add user to the group
+            $group->users()->attach($userIdToAdd, ['last_read_at' => null]);
+            
+            // Add a system message notifying about the new member
+            $addedUser = \App\Models\User::find($userIdToAdd);
+            \App\Models\ChatMessage::create([
+                'sender_id' => auth()->id(),
+                'chat_group_id' => $group->id,
+                'message' => '👋 ha añadido a ' . $addedUser->name . ' al grupo.',
+            ]);
+
+            Log::info('addGroupMember: member added', ['group_id' => $group->id, 'added_user' => $userIdToAdd]);
+
+            return response()->json([
+                'success' => true,
+                'status' => $group->users()->count() . ' participantes'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'El usuario ya es miembro del grupo']);
     }
 
     public function startCall(Request $request): JsonResponse
