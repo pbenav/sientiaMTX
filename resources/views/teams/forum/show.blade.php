@@ -530,6 +530,12 @@
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
         
         select.task-selector-tom { display: none !important; }
+
+        @media (max-width: 1024px) {
+            #forum-action-dock {
+                display: none !important;
+            }
+        }
     </style>
     <script>
             function quoteMessage(name, content) {
