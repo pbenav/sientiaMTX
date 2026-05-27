@@ -420,7 +420,28 @@
 
 
     <!-- Marked.js (Markdown Rendering) -->
-    <x-markdown-styles :team="$team ?? (request()->route('team') && is_object(request()->route('team')) ? request()->route('team') : (request()->route('team') ? \App\Models\Team::find(request()->route('team')) : null))" />
+    @php
+        $resolvedTeam = $team ?? ($__data['team'] ?? null);
+        if (!$resolvedTeam) {
+            $teamRouteParam = request()->route('team');
+            if ($teamRouteParam) {
+                if (is_object($teamRouteParam)) {
+                    $resolvedTeam = $teamRouteParam;
+                } else {
+                    $resolvedTeam = \App\Models\Team::where('id', $teamRouteParam)
+                        ->orWhere('slug', $teamRouteParam)
+                        ->first();
+                }
+            }
+        }
+        if (!$resolvedTeam) {
+            $threadObj = $thread ?? ($__data['thread'] ?? null);
+            if ($threadObj) {
+                $resolvedTeam = is_object($threadObj) ? ($threadObj->team ?? null) : null;
+            }
+        }
+    @endphp
+    <x-markdown-styles :team="$resolvedTeam" />
 
     <!-- Global Alpine Store for Timer (Performance optimization N -> 1) -->
     <script>
