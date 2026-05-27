@@ -560,7 +560,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar"
+                    <div class="flex flex-col flex-1 overflow-hidden"
                          x-data="{ 
                             counts: { working: 0, online: 0, sleeping: 0, offline: 0 },
                             refresh() {
@@ -598,27 +598,29 @@
                             window.addEventListener('task-started', () => refresh());
                             window.addEventListener('workday-toggled', () => refresh());
                          ">
-                        <div id="network-list-container" class="space-y-4">
-                            @include('teams.partials.active-network-list', ['members' => $members])
+                        <div class="p-5 flex-1 overflow-y-auto max-h-[350px] space-y-4 custom-scrollbar">
+                            <div id="network-list-container" class="space-y-4">
+                                @include('teams.partials.active-network-list', ['members' => $members])
+                            </div>
                         </div>
-                    </div>
-                    <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
-                        <div class="flex items-center justify-center gap-4">
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
-                                <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('En labor') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.working"></span></span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
-                                <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Activo') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.online"></span></span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                                <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Dormido') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.sleeping"></span></span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700"></div>
-                                <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Inactivo') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.offline"></span></span>
+                        <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
+                            <div class="flex items-center justify-center gap-4">
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('En labor') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.working"></span></span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Activo') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.online"></span></span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Dormido') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.sleeping"></span></span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Inactivo') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.offline"></span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
