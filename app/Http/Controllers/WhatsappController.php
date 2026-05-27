@@ -12,6 +12,19 @@ use Illuminate\Support\Facades\Log;
 
 class WhatsappController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!config('services.whatsapp.enabled', true)) {
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'error' => 'El módulo de WhatsApp está globalmente desactivado.'], 403);
+                }
+                abort(403, 'El módulo de WhatsApp está globalmente desactivado.');
+            }
+            return $next($request);
+        })->except(['webhook']);
+    }
+
     /**
      * Muestra la vista de configuración y el QR de WhatsApp.
      */
@@ -38,6 +51,10 @@ class WhatsappController extends Controller
      */
     public function webhook(Request $request)
     {
+        if (!config('services.whatsapp.enabled', true)) {
+            return response()->json(['status' => 'disabled']);
+        }
+
         $payload = $request->all();
         
         // Log de depuración desactivado por privacidad (Hotfix Production)
@@ -278,6 +295,10 @@ class WhatsappController extends Controller
      */
     public function sendMessage($phone, $message, $session = null)
     {
+        if (!config('services.whatsapp.enabled', true)) {
+            return ['success' => false, 'error' => 'WhatsApp globalmente desactivado.'];
+        }
+
         $user = auth()->user();
         $notifSettings = $user ? ($user->notification_settings ?? $user->defaultNotificationSettings()) : null;
         if ($user && !($notifSettings['whatsapp'] ?? false)) {

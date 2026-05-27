@@ -1569,7 +1569,7 @@
             @if($notifSettings['telegram'] ?? false)
                 @include('partials.telegram-widget')
             @endif
-            @if(($notifSettings['whatsapp'] ?? false) || ($layoutTeam && ($layoutTeam->settings['has_whatsapp'] ?? false)))
+            @if(config('services.whatsapp.enabled', true) && (($notifSettings['whatsapp'] ?? false) || ($layoutTeam && ($layoutTeam->settings['has_whatsapp'] ?? false))))
                 @include('partials.whatsapp-widget')
             @endif
             <x-ai-assistant :team-id="$currTeamId" :task-id="$currTaskId" :thread-id="$currThreadId" :message-id="$currMessageId" />
@@ -1795,7 +1795,7 @@
     </script>
     @stack('modals')
     @stack('scripts')
-    @if(($notifSettings['telegram'] ?? false) || ($notifSettings['whatsapp'] ?? false))
+    @if(($notifSettings['telegram'] ?? false) || (config('services.whatsapp.enabled', true) && ($notifSettings['whatsapp'] ?? false)))
     <!-- Lottie Web for animated stickers -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
     @endif
