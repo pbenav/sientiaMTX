@@ -530,12 +530,6 @@
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
         
         select.task-selector-tom { display: none !important; }
-
-        @media (max-width: 1024px) {
-            #forum-action-dock {
-                display: none !important;
-            }
-        }
     </style>
     <script>
             function quoteMessage(name, content) {
@@ -871,6 +865,9 @@
                 const dock = document.getElementById('forum-action-dock');
                 if (!dock) return;
                 let visible = false;
+                let isDragging = false;
+                let startX, startY;
+                let hasDragged = false;
 
                 function updateScrollDock(scrollY) {
                     const shouldShow = scrollY > 300;
@@ -878,11 +875,15 @@
                     visible = shouldShow;
                     if (visible) {
                         dock.style.opacity = '1';
-                        dock.style.transform = 'translateX(-50%) translateY(0)';
+                        if (!hasDragged) {
+                            dock.style.transform = 'translateX(-50%) translateY(0)';
+                        }
                         dock.style.pointerEvents = 'auto';
                     } else {
                         dock.style.opacity = '0';
-                        dock.style.transform = 'translateX(-50%) translateY(1rem)';
+                        if (!hasDragged) {
+                            dock.style.transform = 'translateX(-50%) translateY(1rem)';
+                        }
                         dock.style.pointerEvents = 'none';
                     }
                 }
@@ -899,6 +900,79 @@
                 // Chequeo inicial
                 const initialScroll = window.scrollY || document.documentElement.scrollTop || 0;
                 updateScrollDock(initialScroll);
+
+                // --- SISTEMA DE ARRASTRE DRAGGABLE PREMIUM (Mouse y Touch) ---
+                const startDrag = (e) => {
+                    // Evitar arrastrar si clicamos en botones, inputs o enlaces interactivos
+                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
+                        return;
+                    }
+                    
+                    isDragging = true;
+                    dock.style.transition = 'none'; // Desactivar transiciones durante el arrastre
+                    
+                    // Obtener la posición inicial del toque/clic
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                    
+                    const rect = dock.getBoundingClientRect();
+                    
+                    // Al iniciar, fijamos el left y top reales para evitar que salte por el transform del CSS
+                    if (!hasDragged) {
+                        dock.style.bottom = 'auto';
+                        dock.style.transform = 'none';
+                        dock.style.left = rect.left + 'px';
+                        dock.style.top = rect.top + 'px';
+                        hasDragged = true;
+                    }
+                    
+                    startX = clientX - rect.left;
+                    startY = clientY - rect.top;
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                    document.addEventListener('touchmove', drag, { passive: false });
+                    document.addEventListener('touchend', stopDrag);
+                };
+
+                const drag = (e) => {
+                    if (!isDragging) return;
+                    if (e.cancelable) e.preventDefault();
+                    
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                    
+                    let newLeft = clientX - startX;
+                    let newTop = clientY - startY;
+                    
+                    // Límites de la ventana para que no se salga de la pantalla
+                    const rect = dock.getBoundingClientRect();
+                    const maxLeft = window.innerWidth - rect.width;
+                    const maxTop = window.innerHeight - rect.height;
+                    
+                    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(0, Math.min(newTop, maxTop));
+                    
+                    dock.style.left = newLeft + 'px';
+                    dock.style.top = newTop + 'px';
+                };
+
+                const stopDrag = () => {
+                    isDragging = false;
+                    dock.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'; // Restaurar transiciones
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchmove', drag);
+                    document.removeEventListener('touchend', stopDrag);
+                };
+
+                dock.addEventListener('mousedown', startDrag);
+                dock.addEventListener('touchstart', startDrag, { passive: true });
+                dock.style.cursor = 'grab';
+                
+                dock.addEventListener('mouseenter', () => { if (!isDragging) dock.style.cursor = 'grab'; });
+                dock.addEventListener('mousedown', () => { dock.style.cursor = 'grabbing'; });
+                dock.addEventListener('mouseup', () => { dock.style.cursor = 'grab'; });
             });
         </script>
         
@@ -926,6 +1000,18 @@
              "
              class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
              
+             <!-- Drag Handle -->
+             <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="Arrastrar">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                     <circle cx="9" cy="5" r="1.5" />
+                     <circle cx="15" cy="5" r="1.5" />
+                     <circle cx="9" cy="12" r="1.5" />
+                     <circle cx="15" cy="12" r="1.5" />
+                     <circle cx="9" cy="19" r="1.5" />
+                     <circle cx="15" cy="19" r="1.5" />
+                 </svg>
+             </div>
+
              <!-- Back button -->
              <a href="{{ route('teams.forum.index', $team) }}" 
                 class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors py-1.5 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800">
