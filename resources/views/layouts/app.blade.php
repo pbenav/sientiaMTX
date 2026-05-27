@@ -102,8 +102,8 @@
 
                 get filteredUsersForAdd() {
                     if (!this.searchUserQuery) return this.allUsers;
-                    const q = this.searchUserQuery.toLowerCase();
-                    return this.allUsers.filter(u => u.name.toLowerCase().includes(q));
+                    const q = String(this.searchUserQuery).toLowerCase();
+                    return this.allUsers.filter(u => u.name && String(u.name).toLowerCase().includes(q));
                 },
                 fetchUsersForChat() {
                     if (this.allUsers.length > 0) return;

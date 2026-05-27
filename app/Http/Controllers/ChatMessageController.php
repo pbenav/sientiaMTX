@@ -169,12 +169,11 @@ class ChatMessageController extends Controller
     {
         $user = auth()->user();
         
-        // Return users from all teams the current user is a part of
-        $users = \App\Models\User::whereHas('teams', function ($query) use ($user) {
-            $query->whereIn('teams.id', $user->teams()->pluck('teams.id'));
-        })
-        ->where('id', '!=', $user->id)
+        // Return all approved users in the system
+        $users = \App\Models\User::where('id', '!=', $user->id)
+        ->where('is_approved', true)
         ->select('id', 'name', 'profile_photo_path', 'email')
+        ->orderBy('name')
         ->get()
         ->map(function ($u) {
             return [
