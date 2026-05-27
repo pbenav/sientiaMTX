@@ -113,25 +113,46 @@
                         .catch(e => console.error('Error fetching users:', e));
                 },
                 addMemberToGroup(userId) {
-                    const groupId = String(this.member.id).replace('group_', '');
-                    fetch(`/chat/group/${groupId}/members`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
-                        body: JSON.stringify({ user_id: userId })
-                    })
-                    .then(r => r.json())
-                    .then(d => {
-                        if (d.success) {
-                            Swal.fire({ icon: 'success', title: 'Añadido', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
-                            this.member.status = d.status;
-                            this.addingMember = false;
-                            this.searchUserQuery = '';
-                            this.fetchMessages();
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
-                        }
-                    })
-                    .catch(e => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                    const isGroup = String(this.member.id).startsWith('group_');
+                    if (isGroup) {
+                        const groupId = String(this.member.id).replace('group_', '');
+                        fetch(`/chat/group/${groupId}/members`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                            body: JSON.stringify({ user_id: userId })
+                        })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.success) {
+                                Swal.fire({ icon: 'success', title: 'Añadido', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                                this.member.status = d.status;
+                                this.addingMember = false;
+                                this.searchUserQuery = '';
+                                this.fetchMessages();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                            }
+                        })
+                        .catch(e => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                    } else {
+                        fetch('/chat/group', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                            body: JSON.stringify({ receiver_ids: [this.member.id, userId] })
+                        })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.success) {
+                                Swal.fire({ icon: 'success', title: 'Grupo creado', text: 'Chat convertido a grupal', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                                this.addingMember = false;
+                                this.searchUserQuery = '';
+                                this.openChat(d.group);
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                            }
+                        })
+                        .catch(e => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                    }
                 },
                 
                 init() {
@@ -1887,32 +1908,30 @@
                 </div>
                 
                 <div class="flex items-center gap-1 shrink-0">
-                    <!-- Add Members to Group -->
-                    <template x-if="String(member.id).startsWith('group_')">
-                        <div class="relative" @click.away="addingMember = false">
-                            <button @click="addingMember = !addingMember; if(addingMember) fetchUsersForChat();" class="p-2 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 rounded-xl transition-colors" title="Añadir miembro">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-                            </button>
-                            
-                            <!-- Dropdown -->
-                            <div x-show="addingMember" x-transition class="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
-                                <div class="p-2 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
-                                    <input type="text" x-model="searchUserQuery" placeholder="Buscar miembro..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
-                                </div>
-                                <div class="max-h-48 overflow-y-auto custom-scrollbar flex-1 p-1">
-                                    <template x-for="u in filteredUsersForAdd" :key="u.id">
-                                        <button @click="addMemberToGroup(u.id)" class="w-full flex items-center gap-2 p-2 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-colors text-left group">
-                                            <img :src="u.photo" class="w-7 h-7 rounded-lg object-cover shadow-sm group-hover:shadow-violet-200 dark:group-hover:shadow-none transition-shadow">
-                                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate" x-text="u.name"></span>
-                                        </button>
-                                    </template>
-                                    <div x-show="filteredUsersForAdd.length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
-                                        No hay usuarios
-                                    </div>
+                    <!-- Add Members to Chat -->
+                    <div class="relative" @click.away="addingMember = false">
+                        <button @click="addingMember = !addingMember; if(addingMember) fetchUsersForChat();" class="p-2 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 rounded-xl transition-colors" title="Añadir miembro al chat">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                        </button>
+                        
+                        <!-- Dropdown -->
+                        <div x-show="addingMember" x-transition class="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
+                            <div class="p-2 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
+                                <input type="text" x-model="searchUserQuery" placeholder="Buscar miembro..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
+                            </div>
+                            <div class="max-h-48 overflow-y-auto custom-scrollbar flex-1 p-1">
+                                <template x-for="u in filteredUsersForAdd" :key="u.id">
+                                    <button @click="addMemberToGroup(u.id)" class="w-full flex items-center gap-2 p-2 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-colors text-left group">
+                                        <img :src="u.photo" class="w-7 h-7 rounded-lg object-cover shadow-sm group-hover:shadow-violet-200 dark:group-hover:shadow-none transition-shadow">
+                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate" x-text="u.name"></span>
+                                    </button>
+                                </template>
+                                <div x-show="filteredUsersForAdd.length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
+                                    No hay usuarios
                                 </div>
                             </div>
                         </div>
-                    </template>
+                    </div>
 
                     <!-- Video Call Button (Sientia) -->
                     <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="Iniciar Videollamada Sientia">
