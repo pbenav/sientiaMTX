@@ -402,20 +402,34 @@
 
                         {{-- Webhook Diagnostic --}}
                         @if(isset($telegram['webhook_info']))
-                        <div class="mb-8 p-4 rounded-xl border {{ isset($telegram['webhook_info']['last_error_message']) ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800' }}">
+                        @php
+                            $hasError = isset($telegram['webhook_info']['last_error_message']);
+                            $pendingUpdates = $telegram['webhook_info']['pending_update_count'] ?? 0;
+                            $errorDate = $telegram['webhook_info']['last_error_date'] ?? 0;
+                            // Consider error "active" if updates are stuck OR the error is very recent (last 2 hours)
+                            $isActiveError = $hasError && ($pendingUpdates > 0 || (time() - $errorDate < 7200));
+                        @endphp
+                        <div class="mb-8 p-4 rounded-xl border {{ $isActiveError ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800' }}">
                             <div class="flex items-center gap-2 mb-2">
-                                <div class="w-2 h-2 rounded-full {{ isset($telegram['webhook_info']['last_error_message']) ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></div>
-                                <span class="text-xs font-bold uppercase tracking-wider {{ isset($telegram['webhook_info']['last_error_message']) ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400' }}">
-                                    {{ isset($telegram['webhook_info']['last_error_message']) ? 'Error en Webhook' : 'Webhook Activo' }}
+                                <div class="w-2 h-2 rounded-full {{ $isActiveError ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></div>
+                                <span class="text-xs font-bold uppercase tracking-wider {{ $isActiveError ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400' }}">
+                                    {{ $isActiveError ? 'Error en Webhook' : 'Webhook Activo' }}
                                 </span>
                             </div>
                             <div class="space-y-1">
                                 <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ ($telegram['webhook_info']['url'] ?? null) ?: 'No registrada' }}</p>
-                                @if(isset($telegram['webhook_info']['last_error_message']))
-                                    <p class="text-xs text-red-600 dark:text-red-400 font-mono mt-2"><strong>Último error:</strong> {{ $telegram['webhook_info']['last_error_message'] }}</p>
-                                    <p class="text-[10px] text-gray-500 mt-1 italic">{{ __('notifications.webhook_troubleshoot') }}</p>
-                                @else
-                                    <p class="text-xs text-gray-600 dark:text-gray-400"><strong>Updates pendientes:</strong> {{ $telegram['webhook_info']['pending_update_count'] ?? 0 }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>Updates pendientes:</strong> {{ $pendingUpdates }}</p>
+                                @if($hasError)
+                                    <p class="text-[10px] {{ $isActiveError ? 'text-red-600 dark:text-red-400 font-mono mt-2' : 'text-gray-400 mt-2 italic' }}">
+                                        <strong>{{ $isActiveError ? 'Último error:' : 'Último error registrado (ya resuelto):' }}</strong> 
+                                        {{ $telegram['webhook_info']['last_error_message'] }}
+                                        @if($errorDate)
+                                            ({{ \Carbon\Carbon::createFromTimestamp($errorDate)->diffForHumans() }})
+                                        @endif
+                                    </p>
+                                    @if($isActiveError)
+                                        <p class="text-[10px] text-gray-500 mt-1 italic">{{ __('notifications.webhook_troubleshoot') }}</p>
+                                    @endif
                                 @endif
                             </div>
                         </div>
