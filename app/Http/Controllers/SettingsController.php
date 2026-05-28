@@ -623,8 +623,7 @@ class SettingsController extends Controller
             $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", $params);
 
             if ($response->successful()) {
-                $result = $response->json();
-                return back()->with('success', __('notifications.webhook_registered_success', ['url' => $webhookUrl]) . ' Detail: ' . json_encode($result));
+                return back()->with('success', __('notifications.webhook_registered_success', ['url' => $webhookUrl]));
             }
 
             return back()->with('error', __('notifications.webhook_registered_error', ['error' => $response->body()]));
