@@ -111,6 +111,29 @@ class ChatMessageController extends Controller
         }
     }
 
+    /**
+     * Real-presence ping endpoint.
+     * Only called by the frontend when the user has genuinely interacted with the app
+     * (mouse movement, keypress, click, scroll) within the idle threshold.
+     * This is the ONLY source of truth for last_activity_at.
+     */
+    public function presence(): JsonResponse
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['ok' => false], 401);
+        }
+
+        $user->last_activity_at = now();
+        $user->last_ip = request()->ip();
+        if (!$user->last_login_at) {
+            $user->last_login_at = now();
+        }
+        $user->save();
+
+        return response()->json(['ok' => true]);
+    }
+
     public function check(): JsonResponse
     {
         $user = auth()->user();

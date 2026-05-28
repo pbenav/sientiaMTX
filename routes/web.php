@@ -411,6 +411,7 @@ Route::middleware('auth')->group(function () {
 
     // --- Internal Direct Chat and Video Conference ---
     Route::get('/comms/heartbeat', [\App\Http\Controllers\ChatMessageController::class, 'check'])->name('chat.check');
+    Route::post('/comms/presence', [\App\Http\Controllers\ChatMessageController::class, 'presence'])->name('comms.presence');
     Route::get('/chat/users', [\App\Http\Controllers\ChatMessageController::class, 'getUsers'])->name('chat.users');
     Route::get('/chat/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('chat.index');
     Route::post('/chat', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('chat.store');

@@ -86,6 +86,9 @@
                 activeCallRoom: null,
                 incomingCall: null,
                 pollInterval: null,
+                presenceInterval: null,
+                lastUserActivity: Date.now(),
+                presenceIdleThresholdMs: 5 * 60 * 1000,
                 titleInterval: null,
                 originalTitle: '',
                 lastNotifiedMsgId: null,
@@ -160,6 +163,32 @@
                     this.originalTitle = document.title;
                     console.log('✅ SientiaChat Component: Initialized');
                     this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+
+                    // --- Real Presence System ---
+                    // Track genuine user activity (mouse, keyboard, touch, scroll)
+                    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click', 'focus'];
+                    const recordActivity = () => { this.lastUserActivity = Date.now(); };
+                    activityEvents.forEach(evt => window.addEventListener(evt, recordActivity, { passive: true }));
+
+                    // Send presence ping every 60s, but ONLY if:
+                    // 1. The tab is visible (document not hidden)
+                    // 2. User has been active in the last 5 minutes
+                    const sendPresencePing = () => {
+                        if (document.hidden) return;
+                        const idleMs = Date.now() - this.lastUserActivity;
+                        if (idleMs > this.presenceIdleThresholdMs) return;
+                        fetch('/comms/presence', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                'Accept': 'application/json',
+                            },
+                        }).catch(() => {});
+                    };
+
+                    // Fire immediately (user just loaded the page = real activity)
+                    sendPresencePing();
+                    this.presenceInterval = setInterval(sendPresencePing, 60000);
 
                     // Unlock AudioContext on first user interaction (Brave/Firefox fix)
                     const unlockAudio = () => {

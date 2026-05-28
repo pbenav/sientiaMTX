@@ -20,6 +20,8 @@ class TrackUserActivity
             $backgroundKeywords = [
                 'active-network',
                 'chat/check',
+                'comms/heartbeat',
+                'comms/presence',
                 'telegram-chat',
                 'whatsapp-chat',
                 'notifications/unread-count',
