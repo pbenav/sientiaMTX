@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 // Telegram Webhook (Public)
 Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
+Route::get('/telegram/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'Telegram webhook endpoint (POST only)'], 200));
 
 // WhatsApp Webhook (Public)
 Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappController::class, 'webhook'])->name('whatsapp.webhook');
+Route::get('/whatsapp/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'WhatsApp webhook endpoint (POST only)'], 200));
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
