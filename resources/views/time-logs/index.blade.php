@@ -332,7 +332,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-6">
+            <div x-data="{ activeSkillModal: null }" class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-6">
                 <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-violet-50/10 dark:bg-violet-950/10">
                     <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -377,6 +377,14 @@
                                 ->groupBy('skills.name')
                                 ->pluck('count', 'name');
 
+                            $memberXpPerSkill = \DB::table('user_skills')
+                                ->join('skills', 'user_skills.skill_id', '=', 'skills.id')
+                                ->whereIn('user_skills.user_id', $memberIds)
+                                ->select('skills.name', 'user_skills.user_id', \DB::raw('SUM(user_skills.total_xp) as total_xp'))
+                                ->groupBy('skills.name', 'user_skills.user_id')
+                                ->get()
+                                ->groupBy('name');
+
                             $levelThresholds = [1 => 0, 2 => 30, 3 => 100, 4 => 300, 5 => 1000]; // Adjusted for better early reward
                         @endphp
                         @foreach($allSkills as $skill)
@@ -400,7 +408,7 @@
                                 $progress = $level >= 5 ? 100 : (($xp - $prevThreshold) / $range) * 100;
                                 $planProgress = $level >= 5 ? 0 : ($plan / $range) * 100;
                             @endphp
-                            <div class="flex flex-col items-center w-[120px] shrink-0 group/skill">
+                            <div class="flex flex-col items-center w-[120px] shrink-0 group/skill cursor-pointer hover:scale-105 transition-all" @click="activeSkillModal = '{{ $skill->name }}'">
                                 <div class="relative w-16 h-16 flex items-center justify-center mb-2">
                                     <svg class="w-full h-full transform -rotate-90">
                                         <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" class="text-gray-100 dark:text-gray-800" />
@@ -444,6 +452,123 @@
                                     @if($plan > 0)
                                         <div class="text-[8px] font-black text-violet-400 uppercase italic tracking-tighter">{{ number_format($plan) }} XP en curso</div>
                                     @endif
+                                </div>
+                            </div>
+
+                            <!-- Modal for this Skill -->
+                            <div x-data="{ 
+                                    page: 1, 
+                                    tasks: [], 
+                                    loading: false, 
+                                    lastPage: 1,
+                                    loadTasks(p = 1) {
+                                        this.loading = true;
+                                        this.page = p;
+                                        fetch(`/teams/{{ $team->id }}/skills/${encodeURIComponent('{{ $skill->name }}')}/tasks?page=${p}`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                this.tasks = data.data;
+                                                this.lastPage = data.last_page;
+                                                this.loading = false;
+                                            });
+                                    }
+                                 }"
+                                 x-init="$watch('activeSkillModal', val => { if(val === '{{ $skill->name }}' && tasks.length === 0) loadTasks(1) })"
+                                 x-show="activeSkillModal === '{{ $skill->name }}'" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 class="fixed inset-0 z-[10000] overflow-y-auto px-4 py-6 sm:px-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm"
+                                 style="display: none;"
+                                 @click.away="activeSkillModal = null">
+                                <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-2xl transform transition-all sm:max-w-3xl w-full border border-gray-200 dark:border-gray-800 flex flex-col max-h-[85vh]" @click.stop>
+                                    <div class="p-8 border-b border-gray-100 dark:border-gray-800 bg-violet-50/50 dark:bg-violet-950/30 flex justify-between items-center shrink-0">
+                                        <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
+                                            <div class="p-2 bg-violet-500 rounded-xl shadow-lg shadow-violet-500/20 text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                </svg>
+                                            </div>
+                                            {{ $skill->name }}
+                                        </h3>
+                                        <button @click="activeSkillModal = null" class="p-2 bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white rounded-xl transition-all hover:rotate-90">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                    <div class="p-8 overflow-y-auto custom-scrollbar">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <!-- Miembros -->
+                                            <div>
+                                                <h4 class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest flex items-center gap-2">
+                                                    <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                                    Aportación por Miembro
+                                                </h4>
+                                                <div class="space-y-3">
+                                                    @php
+                                                        $skillMembers = $memberXpPerSkill->get($skill->name, collect())->sortByDesc('total_xp');
+                                                    @endphp
+                                                    @forelse($skillMembers as $sm)
+                                                        @php $u = $teamMembers->firstWhere('id', $sm->user_id); @endphp
+                                                        @if($u)
+                                                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                                            <img src="{{ $u->profile_photo_url }}" class="w-10 h-10 rounded-xl object-cover shadow-sm">
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $u->name }}</div>
+                                                            </div>
+                                                            <div class="text-[10px] font-black text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2.5 py-1.5 rounded-lg border border-violet-200 dark:border-violet-800/50">
+                                                                {{ number_format($sm->total_xp) }} XP
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                    @empty
+                                                        <p class="text-xs text-gray-500 italic p-4 text-center bg-gray-50 dark:bg-gray-800/30 rounded-2xl">Sin aportaciones aún.</p>
+                                                    @endforelse
+                                                </div>
+                                            </div>
+                                            <!-- Tareas -->
+                                            <div class="flex flex-col">
+                                                <h4 class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest flex items-center gap-2 shrink-0">
+                                                    <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                                                    Últimas Tareas
+                                                </h4>
+                                                
+                                                <div class="space-y-3 relative flex-1 min-h-[100px]">
+                                                    <!-- Loading state -->
+                                                    <div x-show="loading" class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm z-10 rounded-2xl">
+                                                        <svg class="animate-spin h-6 w-6 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                    </div>
+
+                                                    <template x-for="st in tasks" :key="st.id">
+                                                        <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                                            <div class="text-sm font-bold text-gray-900 dark:text-white truncate" x-text="st.title"></div>
+                                                            <div class="flex items-center gap-2 mt-2">
+                                                                <span class="text-[9px] font-black uppercase px-2 py-1 rounded-md"
+                                                                      :class="st.status === 'completed' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'"
+                                                                      x-text="st.status === 'completed' ? 'Completada' : (st.status === 'pending' ? 'Pendiente' : 'En progreso')">
+                                                                </span>
+                                                                <span class="text-[9px] font-bold text-gray-500 uppercase bg-white dark:bg-gray-900 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700" x-text="`Carga: ${st.cognitive_load}/5`"></span>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    
+                                                    <div x-show="!loading && tasks.length === 0" class="text-xs text-gray-500 italic p-4 text-center bg-gray-50 dark:bg-gray-800/30 rounded-2xl">No hay tareas asociadas.</div>
+                                                </div>
+
+                                                <!-- Pagination controls -->
+                                                <div x-show="lastPage > 1" class="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4 shrink-0">
+                                                    <button @click="loadTasks(page - 1)" :disabled="page <= 1" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-violet-100 hover:text-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                                        Anterior
+                                                    </button>
+                                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
+                                                        Pág. <span x-text="page"></span> de <span x-text="lastPage"></span>
+                                                    </span>
+                                                    <button @click="loadTasks(page + 1)" :disabled="page >= lastPage" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-violet-100 hover:text-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                                        Siguiente
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach

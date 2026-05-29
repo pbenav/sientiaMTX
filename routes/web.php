@@ -265,6 +265,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'update'])->name('skills.update');
         Route::delete('/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'destroy'])->name('skills.destroy');
         Route::post('/skills/inherit', [\App\Http\Controllers\SkillController::class, 'inherit'])->name('skills.inherit');
+        Route::get('/skills/{skillName}/tasks', [\App\Http\Controllers\SkillController::class, 'tasks'])->name('skills.tasks');
     });
 
     // Surveys routes

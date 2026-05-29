@@ -166,4 +166,19 @@ class SkillController extends Controller
 
         return back()->with('info', "Todas las habilidades globales ya estaban presentes en el equipo.");
     }
+
+    public function tasks(Request $request, \App\Models\Team $team, $skillName)
+    {
+        $tasks = \App\Models\Task::visibleTo(auth()->user(), $team->isManager(auth()->user()))
+            ->join('skill_task', 'tasks.id', '=', 'skill_task.task_id')
+            ->join('skills', 'skill_task.skill_id', '=', 'skills.id')
+            ->where('tasks.team_id', $team->id)
+            ->where('skills.name', $skillName)
+            ->select('tasks.id', 'tasks.title', 'tasks.status', 'tasks.cognitive_load', 'tasks.created_at')
+            ->distinct()
+            ->orderBy('tasks.created_at', 'desc')
+            ->paginate(10);
+
+        return response()->json($tasks);
+    }
 }
