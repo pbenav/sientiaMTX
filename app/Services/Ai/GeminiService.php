@@ -374,8 +374,11 @@ class GeminiService implements AiAssistantInterface
 
         $response = $this->callGemini($this->targetModel, [['text' => $prompt]]);
         
+        // Limpieza de etiquetas de pensamiento (modelos tipo thinking) y su contenido
+        $response = preg_replace('/<think>.*?<\/think>/is', '', $response);
+        
         // Limpieza de cualquier etiqueta [PAYLOAD] o basura que pueda añadir por costumbre
-        $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/s', '', $response);
+        $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/is', '', $response);
         return trim(strip_tags($response));
     }
 

@@ -36,14 +36,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy
     })
-    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
-        $schedule->command('app:check-sentinel')->everyFiveMinutes();
-        $schedule->command('tasks:check-urgent')->hourly();
-        $schedule->command('app:tasks-autoprogram-wakeup')->hourly();
-        $schedule->command('morning:summary')->hourly();
-        $schedule->command('gamification:regenerate-energy')->hourly();
-        $schedule->command('gamification:fresh-start')->hourly();
-    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
