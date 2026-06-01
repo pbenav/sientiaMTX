@@ -170,6 +170,30 @@
                         .catch(e => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
                     }
                 },
+                renameActiveGroup(newName) {
+                    if (!newName.trim()) return;
+                    const groupId = String(this.member.id).replace('group_', '');
+                    fetch(`/chat/group/${groupId}/rename`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ name: newName })
+                    })
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.success) {
+                            this.member.name = d.name;
+                            try { localStorage.setItem('sientia_last_chat', JSON.stringify(this.member)); } catch(e) {}
+                            Swal.fire({ icon: 'success', title: 'Grupo renombrado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        }
+                    })
+                    .catch(e => console.error('Error renaming group:', e));
+                },
                 
                 init() {
                     this.originalTitle = document.title;
@@ -1910,14 +1934,39 @@
                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-sm relative shrink-0">
                         <img :src="member.photo" :alt="member.name" class="w-full h-full rounded-[14px] object-cover border border-white dark:border-gray-800 shadow-inner">
                     </div>
-                    <div class="min-w-0">
-                        <div class="min-w-0">
-                            <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="member.name"></p>
+                    <div class="min-w-0 flex-1">
+                        <div class="min-w-0" x-data="{ editingName: false, newName: '' }">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <!-- Modo Visualización -->
+                                <template x-if="!editingName">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="member.name"></p>
+                                        <template x-if="member.is_group">
+                                            <button @click="editingName = true; newName = member.name;" class="text-gray-400 hover:text-emerald-500 transition-colors shrink-0" title="Editar nombre del grupo">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <!-- Modo Edición -->
+                                <template x-if="editingName">
+                                    <div class="flex items-center gap-1 min-w-0 w-full">
+                                        <input type="text" x-model="newName" @keydown.enter="renameActiveGroup(newName); editingName = false;" @keydown.escape="editingName = false" class="bg-white dark:bg-gray-800 border border-emerald-500 rounded-lg text-[10px] px-2 py-0.5 font-bold uppercase tracking-tight focus:ring-1 focus:ring-emerald-500 focus:outline-none w-48 truncate" x-ref="editGroupNameInput" x-init="$nextTick(() => $refs.editGroupNameInput.focus())">
+                                        <button @click="renameActiveGroup(newName); editingName = false;" class="text-emerald-500 hover:text-emerald-600 transition-colors shrink-0" title="Guardar">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                        </button>
+                                        <button @click="editingName = false" class="text-gray-400 hover:text-rose-500 transition-colors shrink-0" title="Cancelar">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
                             <template x-if="member.team">
                                 <p class="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider truncate" x-text="member.team"></p>
                             </template>
                         </div>
-                        <p class="text-[9px] text-emerald-500 font-bold truncate tracking-tight" x-text="member.status"></p>
+                        <p class="text-[9px] text-emerald-500 font-bold truncate tracking-tight" :title="member.status" x-text="member.status"></p>
                     </div>
                 </div>
                 

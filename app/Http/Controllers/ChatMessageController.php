@@ -33,12 +33,19 @@ class ChatMessageController extends Controller
                     ->orderBy('created_at', 'asc')
                     ->get();
                     
+                $namesList = $group->users->map(function($u) use ($userId) {
+                    return $u->id === $userId ? 'Tú' : explode(' ', trim($u->name))[0];
+                });
+                $me = $namesList->filter(fn($n) => $n === 'Tú');
+                $others = $namesList->filter(fn($n) => $n !== 'Tú');
+                $statusString = $me->merge($others)->implode(', ') . ' (' . $group->users->count() . ')';
+
                 $memberInfo = [
                     'id' => 'group_' . $group->id,
-                    'name' => $group->name ?? 'Grupo de ' . $group->users->count() . ' miembros',
+                    'name' => $group->name,
                     'photo' => $group->avatar,
                     'team' => 'Chat Grupal',
-                    'status' => $group->users->count() . ' participantes',
+                    'status' => $statusString,
                     'is_group' => true
                 ];
             } else {
@@ -294,6 +301,7 @@ class ChatMessageController extends Controller
         $request->validate([
             'receiver_ids' => 'required|array',
             'receiver_ids.*' => 'exists:users,id',
+            'name' => 'nullable|string|max:100',
         ]);
 
         $userId = auth()->id();
@@ -307,7 +315,7 @@ class ChatMessageController extends Controller
             // Find existing exact match group or create new one
             // Simple approach: just create a new group
             $group = \App\Models\ChatGroup::create([
-                'name' => 'Grupo de ' . $userIds->count() . ' miembros',
+                'name' => $request->name ?? ('Grupo de ' . $userIds->count() . ' miembros'),
                 'created_by' => $userId
             ]);
 
@@ -348,11 +356,18 @@ class ChatMessageController extends Controller
                 $lastMessage = $group->messages->first();
                 $lastActive = $lastMessage ? $lastMessage->created_at : $group->created_at;
                 
+                $namesList = $group->users->map(function($u) use ($user) {
+                    return $u->id === $user->id ? 'Tú' : explode(' ', trim($u->name))[0];
+                });
+                $me = $namesList->filter(fn($n) => $n === 'Tú');
+                $others = $namesList->filter(fn($n) => $n !== 'Tú');
+                $statusString = $me->merge($others)->implode(', ') . ' (' . $group->users->count() . ')';
+
                 return [
                     'id' => 'group_' . $group->id,
-                    'name' => $group->name ?? 'Grupo de ' . $group->users->count() . ' miembros',
+                    'name' => $group->name,
                     'photo' => $group->avatar,
-                    'status' => $group->users->count() . ' participantes',
+                    'status' => $statusString,
                     'last_active' => $lastActive,
                     'last_message' => $lastMessage ? [
                         'text' => $lastMessage->message,
@@ -365,6 +380,27 @@ class ChatMessageController extends Controller
             ->values();
 
         return response()->json(['success' => true, 'groups' => $groups]);
+    }
+
+    public function renameGroup(Request $request, $groupId): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+        ]);
+
+        $group = \App\Models\ChatGroup::findOrFail($groupId);
+        
+        if (!$group->users()->where('user_id', auth()->id())->exists()) {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        $group->name = $request->name;
+        $group->save();
+
+        return response()->json([
+            'success' => true,
+            'name' => $group->name
+        ]);
     }
 
 
