@@ -150,14 +150,18 @@
                 </div>
 
                 <div class="md:col-span-8">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Municipio</label>
-                    <input type="text" name="city" value="{{ old('city') }}"
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">
+                        Municipio
+                        <span id="geo-loading" class="hidden ml-2 text-cyan-500 normal-case tracking-normal font-semibold">⟳ Detectando ubicación...</span>
+                        <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 Rellenado por ubicación del servicio</span>
+                    </label>
+                    <input type="text" id="input-city" name="city" value="{{ old('city') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Código Postal</label>
-                    <input type="text" name="postal_code" value="{{ old('postal_code') }}"
+                    <input type="text" id="input-postal" name="postal_code" value="{{ old('postal_code') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
@@ -515,6 +519,65 @@
             });
             phoneInput.addEventListener('input', function () {
                 if (!this.value.trim()) clearHint(phoneHint, phoneInput);
+            });
+        }
+    })();
+</script>
+
+<script>
+    // ---- Geocodificación inversa: pre-rellenar municipio y CP con coords del servicio ----
+    (function () {
+        @php
+            $memberLat = $service->user->location_lat;
+            $memberLng = $service->user->location_lng;
+        @endphp
+
+        const lat = {{ $memberLat ? json_encode((float)$memberLat) : 'null' }};
+        const lng = {{ $memberLng ? json_encode((float)$memberLng) : 'null' }};
+
+        const cityInput   = document.getElementById('input-city');
+        const postalInput = document.getElementById('input-postal');
+        const geoLoading  = document.getElementById('geo-loading');
+        const geoDetected = document.getElementById('geo-detected');
+
+        // Solo actuar si tenemos coords y los campos están vacíos (sin old())
+        if (lat && lng && cityInput && postalInput && !cityInput.value && !postalInput.value) {
+            geoLoading.classList.remove('hidden');
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                geoLoading.classList.add('hidden');
+
+                const addr = data.address || {};
+                // Municipio: en España puede estar en 'city', 'town', 'village', 'municipality'
+                const city       = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+                const postalCode = addr.postcode || '';
+
+                if (city && !cityInput.value) {
+                    cityInput.value = city;
+                    cityInput.classList.add('border-emerald-300', 'dark:border-emerald-700');
+                }
+                if (postalCode && !postalInput.value) {
+                    postalInput.value = postalCode;
+                    postalInput.classList.add('border-emerald-300', 'dark:border-emerald-700');
+                }
+
+                if (city || postalCode) {
+                    geoDetected.classList.remove('hidden');
+                    // Quitar estilo verde suave al editar manualmente
+                    [cityInput, postalInput].forEach(el => {
+                        el.addEventListener('input', () => {
+                            el.classList.remove('border-emerald-300', 'dark:border-emerald-700');
+                            geoDetected.classList.add('hidden');
+                        }, { once: true });
+                    });
+                }
+            })
+            .catch(() => {
+                geoLoading.classList.add('hidden');
             });
         }
     })();
