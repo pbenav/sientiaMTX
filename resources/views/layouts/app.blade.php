@@ -102,6 +102,8 @@
                 addingMember: false,
                 allUsers: [],
                 searchUserQuery: '',
+                recentGroups: [],
+                showingRecentGroups: false,
 
                 getFilteredUsersForAdd() {
                     const all = this.allUsers || [];
@@ -115,6 +117,16 @@
                         .then(r => r.json())
                         .then(d => this.allUsers = d.users || [])
                         .catch(e => console.error('Error fetching users:', e));
+                },
+                fetchRecentGroups() {
+                    fetch('/chat/groups/recent')
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.success) {
+                                this.recentGroups = d.groups || [];
+                            }
+                        })
+                        .catch(e => console.error('Error fetching recent groups:', e));
                 },
                 addMemberToGroup(userId) {
                     const isGroup = String(this.member.id).startsWith('group_');
@@ -1910,6 +1922,41 @@
                 </div>
                 
                 <div class="flex items-center gap-1 shrink-0">
+                    <!-- Chats Grupales Recientes -->
+                    <div class="relative" @click.away="showingRecentGroups = false">
+                        <button @click="showingRecentGroups = !showingRecentGroups; if(showingRecentGroups) fetchRecentGroups();" class="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-500 rounded-xl transition-colors" title="Chats Grupales Recientes 👥">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        </button>
+                        
+                        <!-- Dropdown de grupos recientes -->
+                        <div x-show="showingRecentGroups" x-transition class="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
+                            <div class="p-3 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
+                                <p class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider">Historial de Grupos</p>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto custom-scrollbar p-1 flex-1">
+                                <template x-for="g in recentGroups" :key="g.id">
+                                    <button @click="openChat(g); showingRecentGroups = false;" class="w-full flex items-center gap-3 p-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors text-left group">
+                                        <img :src="g.photo" class="w-8 h-8 rounded-xl object-cover shadow-sm group-hover:shadow-emerald-200 dark:group-hover:shadow-none transition-shadow shrink-0">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="g.name"></p>
+                                            <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                                <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="g.last_message ? g.last_message.sender_name + ': ' : ''"></span>
+                                                <span x-text="g.last_message ? g.last_message.text : 'Sin mensajes'"></span>
+                                            </p>
+                                        </div>
+                                        <div class="shrink-0 flex flex-col items-end gap-1">
+                                            <span class="text-[8px] font-medium text-gray-400" x-text="g.last_message ? g.last_message.time : ''"></span>
+                                            <span class="text-[8px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded" x-text="g.status"></span>
+                                        </div>
+                                    </button>
+                                </template>
+                                <div x-show="recentGroups.length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
+                                    No tienes grupos recientes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Add Members to Chat -->
                     <div class="relative" @click.away="addingMember = false">
                         <button @click="addingMember = !addingMember; if(addingMember) fetchUsersForChat();" class="p-2 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 rounded-xl transition-colors" title="Añadir miembro al chat">

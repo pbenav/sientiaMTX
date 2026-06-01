@@ -335,6 +335,39 @@ class ChatMessageController extends Controller
         }
     }
 
+    public function getRecentGroups(): JsonResponse
+    {
+        $user = auth()->user();
+        
+        $groups = $user->chatGroups()
+            ->with(['users', 'messages' => function($q) {
+                $q->latest()->limit(1);
+            }, 'messages.sender'])
+            ->get()
+            ->map(function($group) use ($user) {
+                $lastMessage = $group->messages->first();
+                $lastActive = $lastMessage ? $lastMessage->created_at : $group->created_at;
+                
+                return [
+                    'id' => 'group_' . $group->id,
+                    'name' => $group->name ?? 'Grupo de ' . $group->users->count() . ' miembros',
+                    'photo' => $group->avatar,
+                    'status' => $group->users->count() . ' participantes',
+                    'last_active' => $lastActive,
+                    'last_message' => $lastMessage ? [
+                        'text' => $lastMessage->message,
+                        'time' => $lastMessage->created_at->timezone($user->timezone ?? 'Europe/Madrid')->format('H:i'),
+                        'sender_name' => $lastMessage->sender?->name,
+                    ] : null,
+                ];
+            })
+            ->sortByDesc('last_active')
+            ->values();
+
+        return response()->json(['success' => true, 'groups' => $groups]);
+    }
+
+
     public function addGroupMember(Request $request, $groupId): JsonResponse
     {
         $request->validate([

@@ -630,8 +630,8 @@
                             if (!groupId) return;
                             const group = this.teamGroups.find(g => g.id == groupId);
                             if (group) {
-                                const activeInGroup = group.members.filter(id => this.activeMemberIds.includes(id));
-                                this.selectedUsers = [...new Set([...this.selectedUsers, ...activeInGroup])];
+                                const membersInGroup = group.members.filter(id => id != {{ auth()->id() }});
+                                this.selectedUsers = [...new Set([...this.selectedUsers, ...membersInGroup])];
                             }
                             event.target.value = '';
                         }
@@ -728,6 +728,43 @@
                                 @include('teams.partials.active-network-list', ['members' => $members])
                             </div>
                         </div>
+
+                        <!-- Historial de Chats Grupales Recientes (Acceso Rápido) -->
+                        <div x-data="{ openGroups: false, recentGroups: [] }" 
+                             x-init="$watch('openGroups', value => { if(value) fetch('/chat/groups/recent').then(r=>r.json()).then(d => recentGroups = d.groups || []) })"
+                             class="border-t border-gray-100 dark:border-gray-800">
+                            <button @click="openGroups = !openGroups" 
+                                    class="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/10 transition-colors">
+                                <span class="text-[9px] font-black uppercase text-gray-500 tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    {{ __('Chats Grupales Recientes') }}
+                                </span>
+                                <svg class="w-3 h-3 text-gray-400 transition-transform duration-300" :class="openGroups ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            
+                            <div x-show="openGroups" x-collapse x-cloak class="px-5 pb-4 max-h-48 overflow-y-auto custom-scrollbar space-y-2 border-t border-gray-50 dark:border-gray-800/50 pt-3">
+                                <template x-for="g in recentGroups" :key="g.id">
+                                    <div @click="$dispatch('open-chat', { id: g.id, name: g.name, photo: g.photo, status: g.status, email: '', telegram: '', is_group: true })" 
+                                         class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer w-full relative border border-transparent hover:border-gray-100 dark:hover:border-gray-800">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <img :src="g.photo" class="w-8 h-8 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                                            <div class="min-w-0">
+                                                <p class="text-[10px] font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="g.name"></p>
+                                                <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate tracking-tight">
+                                                    <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="g.last_message ? g.last_message.sender_name + ': ' : ''"></span>
+                                                    <span x-text="g.last_message ? g.last_message.text : 'Sin mensajes'"></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="text-[8px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-lg shrink-0" x-text="g.status"></span>
+                                    </div>
+                                </template>
+                                <div x-show="recentGroups.length === 0" class="text-center py-4 text-[10px] font-medium text-gray-400">
+                                    {{ __('No tienes chats grupales recientes') }}
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 mt-auto">
                             <div class="flex items-center justify-center gap-4">
                                 <div class="flex items-center gap-1.5">
