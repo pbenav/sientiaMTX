@@ -105,7 +105,18 @@
                                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ $cita->visitor->email }}</p>
                                     </td>
                                     <td class="px-5 py-3.5">
-                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $cita->service->name }}</span>
+                                        <div class="flex flex-col">
+                                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $cita->service->name }}</span>
+                                            @if(in_array($cita->service->modality, ['jitsi', 'meet']))
+                                                <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase mt-0.5 tracking-wider">
+                                                    💻 Videocita ({{ ucfirst($cita->service->modality) }})
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase mt-0.5 tracking-wider">
+                                                    🏢 Presencial
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-5 py-3.5">
                                         <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg
@@ -118,10 +129,18 @@
                                         </span>
                                     </td>
                                     <td class="px-5 py-3.5 text-right">
-                                        <a href="{{ route('appointments.show', $cita) }}"
-                                           class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline opacity-0 group-hover:opacity-100 transition-opacity">
-                                            Ver →
-                                        </a>
+                                        <div class="flex items-center justify-end gap-3">
+                                            @if($cita->status === 'confirmed' && in_array($cita->service->modality, ['jitsi', 'meet']))
+                                                <a href="{{ route('public.appointments.video.auth', $cita) }}?localizador={{ $cita->localizador }}" target="_blank"
+                                                   class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase rounded-lg border border-indigo-150/40 dark:border-indigo-900/30 transition-all select-none">
+                                                    💻 Iniciar
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('appointments.show', $cita) }}"
+                                               class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline opacity-0 group-hover:opacity-100 transition-opacity">
+                                                Ver →
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
