@@ -295,6 +295,8 @@ class PublicAppointmentController extends Controller
         } catch (\Throwable $e) {
             \Log::error("Error creando tarea para cita {$appointment->localizador}: " . $e->getMessage());
         }
+    }
+
     /**
      * Pantalla de autenticación para la videoconferencia.
      */
