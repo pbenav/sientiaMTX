@@ -168,7 +168,7 @@
                             <div class="flex flex-col gap-4 py-6 first:pt-0 last:pb-0"
                                  x-data="{ 
                                     active: {{ $isActive ? 'true' : 'false' }},
-                                    tramos: @json($initialTramos),
+                                    tramos: {{ json_encode($initialTramos) }},
                                     addTramo() {
                                         this.tramos.push({ start_time: '09:00', end_time: '14:00' });
                                     },
