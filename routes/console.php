@@ -38,3 +38,6 @@ Schedule::command('task:reward-quality')->hourly();
 // Monitorización automática Sentinel — cada 15 minutos
 Schedule::command('sentinel:check')->everyFifteenMinutes();
 
+// Purga automática de mensajes de chat antiguos de más de 30 días — Cada día a las 04:00
+Schedule::command('chat:purge-old-messages --days=30 --force')->dailyAt('04:00');
+
