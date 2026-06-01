@@ -2464,19 +2464,30 @@
             // Clave única por ruta para evitar conflictos de scroll entre distintas páginas
             const scrollKey = "sientia_scroll_pos_" + window.location.pathname;
 
-            // 1. RESTAURACIÓN INSTANTÁNEA
+            // 1. RESTAURACIÓN INSTANTÁNEA (SOLO EN RECARGAS)
             document.addEventListener("DOMContentLoaded", function() {
                 const savedScroll = sessionStorage.getItem(scrollKey);
+                
+                // Verificar si la página fue recargada (reload) o si venimos de una navegación normal
+                const navEntries = performance.getEntriesByType("navigation");
+                const isReload = navEntries.length > 0 && navEntries[0].type === 'reload';
+
                 if (savedScroll !== null) {
-                    // Un micro-retardo de 30ms garantiza que el layout de Tailwind/Alpine ya se haya estabilizado
-                    setTimeout(function() {
-                        window.scrollTo({
-                            top: parseInt(savedScroll, 10),
-                            behavior: 'instant' // Evita la animación de scroll fluido al recargar para dar sensación de inmediatez
-                        });
-                        // Una vez restaurado, limpiamos la sesión para no forzar el scroll en visitas posteriores no deseadas
+                    if (isReload) {
+                        // Un micro-retardo de 30ms garantiza que el layout de Tailwind/Alpine ya se haya estabilizado
+                        setTimeout(function() {
+                            window.scrollTo({
+                                top: parseInt(savedScroll, 10),
+                                behavior: 'instant' // Evita la animación de scroll fluido al recargar para dar sensación de inmediatez
+                            });
+                            // Una vez restaurado, limpiamos la sesión para no forzar el scroll en visitas posteriores no deseadas
+                            sessionStorage.removeItem(scrollKey);
+                        }, 30);
+                    } else {
+                        // Si no es una recarga (por ejemplo, nueva visita desde otra página), limpiamos el scroll guardado
+                        // para evitar saltar al final del formulario al acceder a los detalles o edición de tareas.
                         sessionStorage.removeItem(scrollKey);
-                    }, 30);
+                    }
                 }
             });
 

@@ -32,6 +32,9 @@ class ExpedienteController extends Controller
             $query->where(function ($q) use ($user) {
                 $q->where('visibility', 'public')
                   ->orWhere('created_by_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id)
+                  ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
+                  ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
                   ->orWhereHas('tasks', function ($sub) use ($user) {
                       $sub->where('assigned_user_id', $user->id)
                           ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
@@ -168,15 +171,20 @@ class ExpedienteController extends Controller
         // Privacy Check for detailed view
         $user = auth()->user();
         if ($expediente->visibility === 'private' && !$user->is_admin && !$team->isOwner($user) && !$team->isCoordinator($user)) {
-            // Check if user created it or is assigned to internal tasks
+            // Check if user created it or is assigned directly to it or to its tasks
             $isCreator = $expediente->created_by_id === $user->id;
-            $isAssigned = $expediente->tasks()->where(function ($q) use ($user) {
+            
+            $isDirectlyAssigned = $expediente->assigned_user_id === $user->id 
+                || $expediente->assignedTo()->where('users.id', $user->id)->exists()
+                || $expediente->assignedGroups()->whereHas('users', fn($u) => $u->where('users.id', $user->id))->exists();
+
+            $isTaskAssigned = $expediente->tasks()->where(function ($q) use ($user) {
                 $q->where('assigned_user_id', $user->id)
                   ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
                   ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             })->exists();
             
-            if (!$isCreator && !$isAssigned) {
+            if (!$isCreator && !$isDirectlyAssigned && !$isTaskAssigned) {
                 abort(403, 'Este expediente es privado y solo es accesible para sus responsables y asignados.');
             }
         }

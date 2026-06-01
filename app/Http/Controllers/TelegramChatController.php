@@ -359,8 +359,8 @@ class TelegramChatController extends Controller
             }
         }
 
-        // We mark as deleted locally so it doesn't show up in history
-        $message->update(['is_deleted_on_telegram' => true]);
+        // We delete the message entirely from our local database
+        $message->delete();
         
         return response()->json(['success' => true]);
     }

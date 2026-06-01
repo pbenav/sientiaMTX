@@ -761,6 +761,42 @@
                 }
             }
 
+            window.renameAttachment = function(id, currentName) {
+                Swal.fire({
+                    title: 'Renombrar Archivo',
+                    input: 'text',
+                    inputValue: currentName,
+                    showCancelButton: true,
+                    confirmButtonColor: '#7c3aed',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'El nombre no puede estar vacío';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/teams/{{ $team->id }}/attachments/${id}`;
+                        form.innerHTML = `
+                            <input type="hidden" name="_method" value="PATCH">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="file_name" value="${result.value}">
+                        `;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+
             window.shareMessage = function(id) {
                 const url = window.location.origin + window.location.pathname + '#msg-' + id;
                 navigator.clipboard.writeText(url).then(() => {
