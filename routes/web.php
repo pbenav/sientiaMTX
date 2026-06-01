@@ -22,6 +22,17 @@ Route::get('/telegram/webhook', fn() => response()->json(['status' => 'ok', 'inf
 Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappController::class, 'webhook'])->name('whatsapp.webhook');
 Route::get('/whatsapp/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'WhatsApp webhook endpoint (POST only)'], 200));
 
+// --- Citas Previas — Portal Público (sin autenticación) ---
+Route::prefix('citas')->name('public.appointments.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'map'])->name('map');
+    Route::get('/{slug}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'member'])->name('member');
+    Route::get('/service/{service}/slots/{date}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'slots'])->name('slots');
+    Route::get('/service/{service}/available-days/{year}/{month}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'availableDays'])->name('available-days');
+    Route::get('/service/{service}/book', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'book'])->name('book');
+    Route::post('/service/{service}/book', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'store'])->name('store');
+    Route::get('/confirm/{localizador}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'confirm'])->name('confirm');
+});
+
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
     if (auth()->check()) {
@@ -444,3 +455,34 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/onlyoffice/download/{attachment}', [OnlyOfficeController::class, 'downloadFile'])->name('onlyoffice.download');
 Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');
 
+// --- Citas Previas — Panel de Gestión (autenticado) ---
+Route::middleware(['auth'])->prefix('mis-citas')->name('appointments.')->group(function () {
+    // Dashboard y agenda
+    Route::get('/', [\App\Http\Controllers\Appointments\AppointmentController::class, 'index'])->name('index');
+    Route::get('/lista', [\App\Http\Controllers\Appointments\AppointmentController::class, 'list'])->name('list');
+    Route::get('/agenda', [\App\Http\Controllers\Appointments\AppointmentController::class, 'agenda'])->name('agenda');
+    Route::get('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'show'])->name('show');
+    Route::patch('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'update'])->name('update');
+    Route::delete('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'destroy'])->name('destroy');
+
+    // Servicios
+    Route::prefix('servicios')->name('services.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Appointments\AppointmentServiceController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\Appointments\AppointmentServiceController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Appointments\AppointmentServiceController::class, 'store'])->name('store');
+        Route::get('/{service}/editar', [\App\Http\Controllers\Appointments\AppointmentServiceController::class, 'edit'])->name('edit');
+        Route::patch('/{service}', [\App\Http\Controllers\Appointments\AppointmentServiceController::class, 'update'])->name('update');
+        Route::delete('/{service}', [\App\Http\Controllers\Appointments\AppointmentServiceController::class, 'destroy'])->name('destroy');
+    });
+
+    // Bloqueos de urgencia
+    Route::prefix('bloqueos')->name('blocks.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'store'])->name('store');
+        Route::delete('/{block}', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'destroy'])->name('destroy');
+    });
+
+    // Configuración del portal
+    Route::get('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'edit'])->name('settings');
+    Route::patch('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'update'])->name('settings.update');
+});

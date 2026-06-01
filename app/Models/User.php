@@ -223,6 +223,26 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->withTimestamps();
     }
 
+    public function appointmentSettings(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(AppointmentSettings::class);
+    }
+
+    public function appointmentServices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AppointmentService::class);
+    }
+
+    public function appointments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    public function appointmentBlocks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AppointmentBlock::class);
+    }
+
     public function assignedTasks(): BelongsToMany
     {
         return $this->belongsToMany(Task::class, 'task_assignments')
