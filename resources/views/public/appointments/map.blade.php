@@ -90,8 +90,35 @@
     <!-- Mapa Leaflet -->
     <div class="lg:col-span-3 relative">
         <div id="map" class="w-full h-full"></div>
+        
+        <!-- Acceso rápido a Videoconferencia -->
+        <div class="absolute top-4 left-4 z-[1000] bg-white/95 dark:bg-gray-900/95 p-5 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 w-80 backdrop-blur-sm transition-all hover:shadow-cyan-500/5">
+            <div class="flex items-center gap-2.5 mb-3">
+                <div class="w-7 h-7 bg-cyan-50 dark:bg-cyan-950/40 rounded-lg flex items-center justify-center text-cyan-500 border border-cyan-100 dark:border-cyan-900/50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </div>
+                <h3 class="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Acceso a Videocita</h3>
+            </div>
+            
+            <p class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold mb-4 leading-relaxed">Si tienes una cita de videoconferencia hoy, introduce tu localizador para acceder.</p>
+
+            <form method="POST" action="{{ route('public.appointments.video.find') }}" class="space-y-3">
+                @csrf
+                <div>
+                    <input type="text" name="localizador" required autocomplete="off"
+                           class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl text-xs font-mono font-bold uppercase tracking-wide text-gray-950 dark:text-white outline-none transition-all placeholder-gray-400"
+                           placeholder="MTXCITA-XXXXXXXX">
+                    @error('localizador_search')
+                        <p class="mt-1.5 text-[9px] text-red-500 font-bold leading-tight">{{ $message }}</p>
+                    @enderror
+                </div>
+                <button type="submit"
+                        class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-md shadow-cyan-500/10 transition-all select-none">
+                    Acceder a la videocita
+                </button>
+            </form>
+        </div>
     </div>
-</div>
 @endsection
 
 @section('scripts')

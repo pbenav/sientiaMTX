@@ -345,4 +345,27 @@ class PublicAppointmentController extends Controller
 
         return view('public.appointments.video_room', compact('appointment'));
     }
+
+    /**
+     * Buscar cita de videoconferencia por localizador
+     */
+    public function findVideoAppointment(Request $request)
+    {
+        $request->validate([
+            'localizador' => 'required|string|max:50',
+        ]);
+
+        $localizador = strtoupper(trim($request->localizador));
+        $appointment = Appointment::where('localizador', $localizador)->first();
+
+        if (!$appointment) {
+            return back()->withErrors(['localizador_search' => 'No se ha encontrado ninguna cita con ese localizador.']);
+        }
+
+        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+            return back()->withErrors(['localizador_search' => 'Esta cita no está configurada como videoconferencia (es presencial).']);
+        }
+
+        return redirect()->route('public.appointments.video.auth', $appointment);
+    }
 }
