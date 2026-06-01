@@ -125,86 +125,109 @@
             </div>
 
             {{-- Horario y Disponibilidad Semanal --}}
-            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+            @php
+                $days = [
+                    1 => 'Lunes',
+                    2 => 'Martes',
+                    3 => 'Miércoles',
+                    4 => 'Jueves',
+                    5 => 'Viernes',
+                    6 => 'Sábado',
+                    0 => 'Domingo',
+                ];
+                // Si es edición, obtenemos todos los schedules agrupados por day_of_week
+                $schedulesMap = $isEdit ? $service->schedules->groupBy('day_of_week') : collect();
+
+                $initialSchedulesJS = [];
+                foreach ($days as $num => $name) {
+                    $daySchedules = $schedulesMap->get($num) ?: collect();
+                    $isActive = $isEdit ? $daySchedules->isNotEmpty() : in_array($num, [1, 2, 3, 4, 5]); // Por defecto de Lunes a Viernes
+                    
+                    $tramos = [];
+                    if ($daySchedules->isNotEmpty()) {
+                        foreach ($daySchedules as $ds) {
+                            $tramos[] = [
+                                'start_time' => substr($ds->start_time, 0, 5),
+                                'end_time' => substr($ds->end_time, 0, 5),
+                            ];
+                        }
+                    } else {
+                        $tramos[] = [
+                            'start_time' => '09:00',
+                            'end_time' => '14:00',
+                        ];
+                    }
+                    
+                    $initialSchedulesJS[$num] = [
+                        'active' => $isActive,
+                        'tramos' => $tramos,
+                    ];
+                }
+            @endphp
+
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
+                 x-data="{
+                    schedules: {{ json_encode($initialSchedulesJS) }},
+                    addTramo(day) {
+                        this.schedules[day].tramos.push({ start_time: '09:00', end_time: '14:00' });
+                        this.schedules[day].active = true;
+                    },
+                    removeTramo(day, index) {
+                        if (this.schedules[day].tramos.length > 1) {
+                            this.schedules[day].tramos.splice(index, 1);
+                        } else {
+                            this.schedules[day].active = false;
+                        }
+                    },
+                    copiarLunes() {
+                        const lunes = this.schedules[1];
+                        const copia = JSON.parse(JSON.stringify(lunes.tramos));
+                        const estado = lunes.active;
+                        
+                        // Copiar el estado y tramos del lunes a todos los días de martes a domingo
+                        [2, 3, 4, 5, 6, 0].forEach(day => {
+                            this.schedules[day].tramos = JSON.parse(JSON.stringify(copia));
+                            this.schedules[day].active = estado;
+                        });
+                    }
+                 }">
+                <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <p class="text-xs font-black uppercase tracking-widest text-gray-400">📅 Horario y Disponibilidad Semanal</p>
+                    <button type="button" @click="copiarLunes()"
+                            class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100/50 px-3.5 py-2 rounded-xl transition-all active:scale-95 border border-cyan-150 dark:border-cyan-900/30">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+                        Copiar Lunes al resto
+                    </button>
                 </div>
                 <div class="p-6 space-y-4">
-                    @php
-                        $days = [
-                            1 => 'Lunes',
-                            2 => 'Martes',
-                            3 => 'Miércoles',
-                            4 => 'Jueves',
-                            5 => 'Viernes',
-                            6 => 'Sábado',
-                            0 => 'Domingo',
-                        ];
-                        // Si es edición, obtenemos todos los schedules agrupados por day_of_week
-                        $schedulesMap = $isEdit ? $service->schedules->groupBy('day_of_week') : collect();
-                    @endphp
-
                     <div class="divide-y divide-gray-100 dark:divide-gray-800">
                         @foreach($days as $num => $name)
-                            @php
-                                $daySchedules = $schedulesMap->get($num) ?: collect();
-                                $isActive = $isEdit ? $daySchedules->isNotEmpty() : in_array($num, [1, 2, 3, 4, 5]); // Por defecto de Lunes a Viernes
-                                
-                                $initialTramos = [];
-                                if ($daySchedules->isNotEmpty()) {
-                                    foreach ($daySchedules as $ds) {
-                                        $initialTramos[] = [
-                                            'start_time' => substr($ds->start_time, 0, 5),
-                                            'end_time' => substr($ds->end_time, 0, 5),
-                                        ];
-                                    }
-                                } else {
-                                    $initialTramos[] = [
-                                        'start_time' => '09:00',
-                                        'end_time' => '14:00',
-                                    ];
-                                }
-                            @endphp
-                            <div class="flex flex-col gap-4 py-6 first:pt-0 last:pb-0"
-                                 x-data="{ 
-                                    active: {{ $isActive ? 'true' : 'false' }},
-                                    tramos: {{ json_encode($initialTramos) }},
-                                    addTramo() {
-                                        this.tramos.push({ start_time: '09:00', end_time: '14:00' });
-                                    },
-                                    removeTramo(index) {
-                                        if (this.tramos.length > 1) {
-                                            this.tramos.splice(index, 1);
-                                        } else {
-                                            this.active = false;
-                                        }
-                                    }
-                                 }">
+                            <div class="flex flex-col gap-4 py-6 first:pt-0 last:pb-0">
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="flex items-center gap-3">
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="hidden" name="schedules[{{ $num }}][is_active]" value="0">
-                                            <input type="checkbox" name="schedules[{{ $num }}][is_active]" value="1" x-model="active" class="sr-only peer">
+                                            <input type="checkbox" name="schedules[{{ $num }}][is_active]" value="1" x-model="schedules[{{ $num }}].active" class="sr-only peer">
                                             <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                                         </label>
-                                        <span class="text-sm font-black text-gray-900 dark:text-white" :class="active ? '' : 'opacity-50'">{{ $name }}</span>
+                                        <span class="text-sm font-black text-gray-900 dark:text-white" :class="schedules[{{ $num }}].active ? '' : 'opacity-50'">{{ $name }}</span>
                                     </div>
 
-                                    <button type="button" @click="addTramo()" x-show="active"
+                                    <button type="button" @click="addTramo({{ $num }})" x-show="schedules[{{ $num }}].active"
                                             class="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 px-2.5 py-1.5 rounded-lg transition-all active:scale-95">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                         Añadir Tramo
                                     </button>
 
-                                    <div class="text-xs text-gray-400 italic" x-show="!active" x-transition>
+                                    <div class="text-xs text-gray-400 italic" x-show="!schedules[{{ $num }}].active" x-transition>
                                         No disponible
                                     </div>
                                 </div>
 
                                 <!-- Listado de tramos horarias para este día -->
-                                <div class="pl-0 sm:pl-13 space-y-3" x-show="active" x-transition x-cloak>
+                                <div class="pl-0 sm:pl-13 space-y-3" x-show="schedules[{{ $num }}].active" x-transition x-cloak>
                                     <div class="flex flex-wrap items-center gap-3">
-                                        <template x-for="(tramo, index) in tramos" :key="index">
+                                        <template x-for="(tramo, index) in schedules[{{ $num }}].tramos" :key="index">
                                             <div class="flex items-center gap-3 bg-gray-50/50 dark:bg-gray-800/35 p-3 rounded-2xl border border-gray-150 dark:border-gray-800/80 shadow-sm shrink-0">
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-[10px] text-gray-400 font-black uppercase tracking-wider">De:</span>
@@ -216,7 +239,7 @@
                                                     <input type="time" :name="`schedules[{{ $num }}][tramos][${index}][end_time]`" x-model="tramo.end_time"
                                                            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-xs text-gray-900 dark:text-white outline-none transition-all font-bold">
                                                 </div>
-                                                <button type="button" @click="removeTramo(index)"
+                                                <button type="button" @click="removeTramo({{ $num }}, index)"
                                                         class="p-1.5 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/25 rounded-lg transition-all active:scale-90"
                                                         title="Eliminar tramo">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -227,6 +250,7 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
                 </div>
             </div>
 
