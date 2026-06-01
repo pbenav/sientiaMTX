@@ -194,6 +194,48 @@
                     })
                     .catch(e => console.error('Error renaming group:', e));
                 },
+                deleteGroupChat(groupId) {
+                    Swal.fire({
+                        title: '¿Eliminar Grupo?',
+                        text: 'Esta acción borrará el grupo, todos sus mensajes y archivos adjuntos permanentemente. ¿Estás seguro?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                            cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`/chat/group/${groupId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(r => r.json())
+                            .then(d => {
+                                if (d.success) {
+                                    Swal.fire({ icon: 'success', title: 'Grupo eliminado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                                    if (this.member && String(this.member.id) === `group_${groupId}`) {
+                                        this.chatOpen = false;
+                                        this.member = null;
+                                        try { localStorage.removeItem('sientia_last_chat'); } catch(e) {}
+                                    }
+                                    this.fetchRecentGroups();
+                                } else {
+                                    Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                }
+                            })
+                            .catch(e => console.error('Error deleting group:', e));
+                        }
+                    });
+                },
                 
                 init() {
                     this.originalTitle = document.title;
@@ -1984,20 +2026,25 @@
                             </div>
                             <div class="max-h-64 overflow-y-auto custom-scrollbar p-1 flex-1">
                                 <template x-for="g in recentGroups" :key="g.id">
-                                    <button @click="openChat(g); showingRecentGroups = false;" class="w-full flex items-center gap-3 p-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors text-left group">
-                                        <img :src="g.photo" class="w-8 h-8 rounded-xl object-cover shadow-sm group-hover:shadow-emerald-200 dark:group-hover:shadow-none transition-shadow shrink-0">
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="g.name"></p>
-                                            <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                                                <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="g.last_message ? g.last_message.sender_name + ': ' : ''"></span>
-                                                <span x-text="g.last_message ? g.last_message.text : 'Sin mensajes'"></span>
-                                            </p>
-                                        </div>
-                                        <div class="shrink-0 flex flex-col items-end gap-1">
-                                            <span class="text-[8px] font-medium text-gray-400" x-text="g.last_message ? g.last_message.time : ''"></span>
-                                            <span class="text-[8px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded" x-text="g.status"></span>
-                                        </div>
-                                    </button>
+                                    <div class="w-full flex items-center justify-between p-1 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-xl transition-all group/item">
+                                        <button @click="openChat(g); showingRecentGroups = false;" class="flex-1 flex items-center gap-3 p-1.5 text-left min-w-0">
+                                            <img :src="g.photo" class="w-8 h-8 rounded-xl object-cover shadow-sm group-hover:shadow-emerald-200 dark:group-hover:shadow-none transition-shadow shrink-0">
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="g.name"></p>
+                                                <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                                    <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="g.last_message ? g.last_message.sender_name + ': ' : ''"></span>
+                                                    <span x-text="g.last_message ? g.last_message.text : 'Sin mensajes'"></span>
+                                                </p>
+                                            </div>
+                                            <div class="shrink-0 flex flex-col items-end gap-1">
+                                                <span class="text-[8px] font-medium text-gray-400" x-text="g.last_message ? g.last_message.time : ''"></span>
+                                                <span class="text-[8px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded" x-text="g.status"></span>
+                                            </div>
+                                        </button>
+                                        <button @click.stop="deleteGroupChat(g.id)" class="mr-1 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all opacity-0 group-hover/item:opacity-100 focus:opacity-100 shrink-0" title="Eliminar Chat Grupal 🗑️">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </div>
                                 </template>
                                 <div x-show="recentGroups.length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
                                     No tienes grupos recientes

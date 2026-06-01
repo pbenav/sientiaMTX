@@ -403,6 +403,38 @@ class ChatMessageController extends Controller
         ]);
     }
 
+    public function deleteGroup($groupId): JsonResponse
+    {
+        $group = \App\Models\ChatGroup::findOrFail($groupId);
+        
+        if (!$group->users()->where('user_id', auth()->id())->exists()) {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        // Eliminar archivos adjuntos físicos de los mensajes de este grupo
+        $messages = $group->messages;
+        foreach ($messages as $message) {
+            if ($message->file_path) {
+                try {
+                    if (\Illuminate\Support\Facades\Storage::exists($message->file_path)) {
+                        \Illuminate\Support\Facades\Storage::delete($message->file_path);
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("Error al borrar archivo adjunto al eliminar grupo: " . $e->getMessage());
+                }
+            }
+            $message->delete();
+        }
+
+        // Desvincular usuarios
+        $group->users()->detach();
+
+        // Eliminar el grupo
+        $group->delete();
+
+        return response()->json(['success' => true]);
+    }
+
 
     public function addGroupMember(Request $request, $groupId): JsonResponse
     {
