@@ -75,13 +75,12 @@ class TelegramChatController extends Controller
                 'reply_to_text' => $request->reply_to_id ? TelegramMessage::find($request->reply_to_id)?->text : null,
             ]);
 
-            // Formateamos el pie del mensaje usando HTML (más robusto que Markdown para tildes y caracteres especiales)
-            // Formateamos el pie del mensaje usando Markdown (original)
-            $caption = "💬 *[{$user->name}]:*\n{$text}";
+            // Formateamos el pie del mensaje usando HTML (mucho más robusto contra caracteres especiales)
+            $caption = "💬 <b>" . e($user->name) . ":</b>\n" . e($text);
             
             $params = [
                 'chat_id' => $chatId,
-                'parse_mode' => 'Markdown',
+                'parse_mode' => 'HTML',
             ];
 
             if ($localMsg->reply_to_message_id) {
@@ -159,14 +158,14 @@ class TelegramChatController extends Controller
 
             Log::error("Error de Telegram: " . $response->body());
             return response()->json([
-                'reply' => '😕 No he podido enviar el mensaje a Telegram.'
-            ]);
+                'error' => '😕 No he podido enviar el mensaje a Telegram.'
+            ], 400);
 
         } catch (\Exception $e) {
             Log::error("Error en TelegramChatController@sendMessage: " . $e->getMessage());
             return response()->json([
-                'reply' => '💥 Error técnico al enviar el mensaje.'
-            ]);
+                'error' => '💥 Error técnico al enviar el mensaje.'
+            ], 500);
         }
     }
 
@@ -298,13 +297,13 @@ class TelegramChatController extends Controller
             $message->update(['text' => $text]);
 
             if ($message->telegram_message_id && $chatId) {
-                $formattedText = "💬 *[{$user->name}]:* (editado)\n{$text}";
+                $formattedText = "💬 <b>" . e($user->name) . ":</b> (editado)\n" . e($text);
                 
                 $method = $message->photo_path ? 'editMessageCaption' : 'editMessageText';
                 $params = [
                     'chat_id' => $chatId,
                     'message_id' => $message->telegram_message_id,
-                    'parse_mode' => 'Markdown',
+                    'parse_mode' => 'HTML',
                 ];
 
                 if ($message->photo_path) {

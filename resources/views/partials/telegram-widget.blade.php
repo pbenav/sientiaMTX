@@ -841,6 +841,13 @@
                     formData.append('voice', this.pendingVoice);
                 }
 
+                // Guardamos los valores originales por si falla el envío
+                const originalMessage = this.newMessage;
+                const originalPhoto = this.pendingPhoto;
+                const originalVoice = this.pendingVoice;
+                const originalReplyToId = this.replyToId;
+                const originalReplyToText = this.replyToText;
+
                 this.newMessage = '';
                 this.pendingPhoto = null;
                 this.previewUrl = null;
@@ -861,9 +868,51 @@
                     
                     if (response.ok) {
                         this.refreshMessages();
+                    } else {
+                        // Si falló el request HTTP, restauramos el mensaje e informamos del error
+                        this.newMessage = originalMessage;
+                        this.pendingPhoto = originalPhoto;
+                        this.pendingVoice = originalVoice;
+                        this.replyToId = originalReplyToId;
+                        this.replyToText = originalReplyToText;
+
+                        // Intentamos regenerar las vistas previas de archivos si existían
+                        if (originalPhoto) {
+                            this.previewUrl = URL.createObjectURL(originalPhoto);
+                        }
+                        if (originalVoice) {
+                            this.voicePreviewUrl = URL.createObjectURL(originalVoice);
+                        }
+
+                        const errorData = await response.json();
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error al enviar a Telegram',
+                                text: errorData.error || 'No se pudo enviar el mensaje.',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 5000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            alert(errorData.error || 'No se pudo enviar el mensaje.');
+                        }
                     }
                 } catch (e) {
                     console.error('Error enviando:', e);
+                    this.newMessage = originalMessage;
+                    this.pendingPhoto = originalPhoto;
+                    this.pendingVoice = originalVoice;
+                    this.replyToId = originalReplyToId;
+                    this.replyToText = originalReplyToText;
+                    
+                    if (originalPhoto) {
+                        this.previewUrl = URL.createObjectURL(originalPhoto);
+                    }
+                    if (originalVoice) {
+                        this.voicePreviewUrl = URL.createObjectURL(originalVoice);
+                    }
                 }
             },
             async updateMsg() {
