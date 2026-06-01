@@ -31,6 +31,11 @@ Route::prefix('citas')->name('public.appointments.')->group(function () {
     Route::get('/service/{service}/book', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'book'])->name('book');
     Route::post('/service/{service}/book', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'store'])->name('store');
     Route::get('/confirm/{localizador}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'confirm'])->name('confirm');
+    
+    // Videoconferencia (Acceso público con Localizador)
+    Route::get('/video/{appointment}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'videoAuth'])->name('video.auth');
+    Route::post('/video/{appointment}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'videoAccess'])->name('video.access');
+    Route::get('/video/{appointment}/room', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'videoRoom'])->name('video.room');
 });
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)

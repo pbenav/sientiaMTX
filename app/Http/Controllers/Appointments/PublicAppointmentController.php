@@ -295,5 +295,51 @@ class PublicAppointmentController extends Controller
         } catch (\Throwable $e) {
             \Log::error("Error creando tarea para cita {$appointment->localizador}: " . $e->getMessage());
         }
+    /**
+     * Pantalla de autenticación para la videoconferencia.
+     */
+    public function videoAuth(Appointment $appointment)
+    {
+        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+            abort(404);
+        }
+
+        return view('public.appointments.video_auth', compact('appointment'));
+    }
+
+    /**
+     * Procesar acceso a la videoconferencia.
+     */
+    public function videoAccess(Request $request, Appointment $appointment)
+    {
+        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+            abort(404);
+        }
+
+        $request->validate(['localizador' => 'required|string']);
+
+        if (strtoupper($request->localizador) !== $appointment->localizador) {
+            return back()->withErrors(['localizador' => 'El localizador introducido es incorrecto.']);
+        }
+
+        session(['video_access_' . $appointment->id => true]);
+
+        return redirect()->route('public.appointments.video.room', $appointment);
+    }
+
+    /**
+     * Sala de videoconferencia pública.
+     */
+    public function videoRoom(Appointment $appointment)
+    {
+        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+            abort(404);
+        }
+
+        if (!session('video_access_' . $appointment->id)) {
+            return redirect()->route('public.appointments.video.auth', $appointment);
+        }
+
+        return view('public.appointments.video_room', compact('appointment'));
     }
 }

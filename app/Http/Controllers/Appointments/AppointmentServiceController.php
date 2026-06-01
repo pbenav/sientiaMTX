@@ -23,6 +23,7 @@ class AppointmentServiceController extends Controller
     {
         $data = $request->validate([
             'name'               => 'required|string|max:150',
+            'modality'           => 'required|string|in:presencial,jitsi,meet',
             'description'        => 'nullable|string',
             'duration_minutes'   => 'required|integer|min:5|max:480',
             'slot_duration_minutes' => 'nullable|integer|min:5|max:120',
@@ -81,6 +82,7 @@ class AppointmentServiceController extends Controller
 
         $data = $request->validate([
             'name'               => 'required|string|max:150',
+            'modality'           => 'required|string|in:presencial,jitsi,meet',
             'description'        => 'nullable|string',
             'duration_minutes'   => 'required|integer|min:5|max:480',
             'slot_duration_minutes' => 'nullable|integer|min:5|max:120',

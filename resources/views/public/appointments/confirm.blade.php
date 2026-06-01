@@ -57,6 +57,14 @@
 
     <!-- Botones de Acción -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+        @if(in_array($appointment->service->modality, ['jitsi', 'meet']))
+            <a href="{{ route('public.appointments.video.auth', $appointment) }}"
+               class="flex items-center justify-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/20 active:scale-98 transition-all w-full sm:w-auto">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Entrar a Videoconferencia
+            </a>
+        @endif
+
         @php
             $gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
                 . '&text=' . urlencode('[CITA] ' . $appointment->service->name)
@@ -68,12 +76,12 @@
         <a href="{{ $gcalUrl }}" target="_blank"
            class="flex items-center justify-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/20 border border-cyan-150 dark:border-cyan-900/50 hover:bg-cyan-100 dark:hover:bg-cyan-950/40 rounded-xl transition-all w-full sm:w-auto">
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-2V1.5h-1.5V3h-9V1.5H5.5V3h-2C2.67 3 2 3.67 2 4.5v15C2 20.33 2.67 21 3.5 21h16c.83 0 1.5-.67 1.5-1.5v-15c0-.83-.67-1.5-1.5-1.5zm0 16.5h-16V9h16v10.5zM3.5 7.5h16V4.5h-16V7.5z"/></svg>
-            Añadir a Google Calendar
+            Añadir a Calendar
         </a>
 
         <a href="{{ route('public.appointments.map') }}" 
            class="px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all w-full sm:w-auto">
-            Volver al Inicio
+            Inicio
         </a>
     </div>
 

@@ -39,13 +39,32 @@
                 </div>
                 <div class="p-6 space-y-5">
 
-                    {{-- Nombre --}}
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="name">Nombre del Servicio *</label>
-                        <input type="text" id="name" name="name" value="{{ old('name', $service->name ?? '') }}" required
-                               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                               placeholder="ej. Consulta General, Asesoramiento Técnico...">
-                        @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {{-- Nombre --}}
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="name">Nombre del Servicio *</label>
+                            <input type="text" id="name" name="name" value="{{ old('name', $service->name ?? '') }}" required
+                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                                   placeholder="ej. Consulta General, Asesoramiento Técnico...">
+                            @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Modalidad --}}
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="modality">Modalidad *</label>
+                            <div class="relative">
+                                <select id="modality" name="modality" required
+                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all appearance-none pr-10 cursor-pointer">
+                                    <option value="presencial" {{ old('modality', $service->modality ?? '') == 'presencial' ? 'selected' : '' }}>Presencial</option>
+                                    <option value="jitsi" {{ old('modality', $service->modality ?? '') == 'jitsi' ? 'selected' : '' }}>Videoconferencia (Jitsi)</option>
+                                    <option value="meet" {{ old('modality', $service->modality ?? '') == 'meet' ? 'selected' : '' }}>Videoconferencia (Google Meet)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </div>
+                            @error('modality') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
                     </div>
 
                     {{-- Descripción Markdown --}}

@@ -11,6 +11,7 @@ class AppointmentService extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'modality',
         'description',
         'duration_minutes',
         'slot_duration_minutes',
@@ -19,6 +20,12 @@ class AppointmentService extends Model
         'price_visible',
         'is_active',
         'sort_order',
+    ];
+
+    const MODALITIES = [
+        'presencial' => 'Presencial',
+        'jitsi'      => 'Videoconferencia (Jitsi)',
+        'meet'       => 'Videoconferencia (Google Meet)',
     ];
 
     protected $casts = [
