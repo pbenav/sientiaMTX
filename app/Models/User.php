@@ -201,7 +201,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role_id', 'sort_order', 'google_id', 'google_email', 'google_token', 'google_refresh_token')
+            ->withPivot('role_id', 'sort_order', 'google_id', 'google_email', 'google_token', 'google_refresh_token', 'allow_appointments')
             ->withTimestamps();
     }
 
@@ -638,6 +638,21 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             },
             set: fn ($value) => $value ? encrypt($value) : null,
         );
+    }
+
+    /**
+     * Comprobar si el miembro tiene la funcionalidad de Cita Previa permitida en al menos un equipo.
+     */
+    public function hasAppointmentsEnabled(): bool
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        return $this->teams()
+            ->whereJsonContains('settings->has_appointments', true)
+            ->wherePivot('allow_appointments', true)
+            ->exists();
     }
 
 }

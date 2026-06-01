@@ -165,14 +165,16 @@ class TeamController extends Controller
             $validated['disk_quota'] = (int)($request->disk_quota_gb * 1024 * 1024 * 1024);
         }
 
-        // Proteger el estado Premium de WhatsApp para que solo un administrador global pueda modificarlo
+        // Proteger el estado Premium de WhatsApp y Citas Previas para que solo un administrador global pueda modificarlo
         if (isset($validated['settings'])) {
             $validated['settings'] = array_merge($team->settings ?? [], $validated['settings']);
             
             if (!auth()->user()->is_admin) {
                 $validated['settings']['has_whatsapp'] = $team->settings['has_whatsapp'] ?? false;
+                $validated['settings']['has_appointments'] = $team->settings['has_appointments'] ?? false;
             } else {
                 $validated['settings']['has_whatsapp'] = filter_var($validated['settings']['has_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $validated['settings']['has_appointments'] = filter_var($validated['settings']['has_appointments'] ?? false, FILTER_VALIDATE_BOOLEAN);
             }
         }
 
@@ -409,6 +411,40 @@ class TeamController extends Controller
         $user->update($validated);
 
         return back()->with('success', __('teams.member_updated'));
+    }
+
+    /**
+     * Update member's pre-appointment permissions
+     */
+    public function updateMemberAppointments(Request $request, Team $team, User $user)
+    {
+        $this->authorize('manageMembers', $team);
+
+        $team->members()->updateExistingPivot($user->id, [
+            'allow_appointments' => $request->boolean('allow_appointments')
+        ]);
+
+        return back()->with('success', 'Permisos de Cita Previa actualizados para el miembro.');
+    }
+
+    /**
+     * Habilitar o deshabilitar cita previa para TODOS los miembros del equipo masivamente
+     */
+    public function updateAllMembersAppointments(Request $request, Team $team)
+    {
+        $this->authorize('manageMembers', $team);
+
+        $allow = $request->boolean('allow');
+        $memberIds = $team->members()->pluck('users.id')->toArray();
+
+        if (!empty($memberIds)) {
+            $team->members()->updateExistingPivot($memberIds, [
+                'allow_appointments' => $allow
+            ]);
+        }
+
+        $statusText = $allow ? 'habilitado' : 'deshabilitado';
+        return back()->with('success', "Se ha {$statusText} el acceso al portal de citas previas para todos los miembros del equipo.");
     }
 
     /**

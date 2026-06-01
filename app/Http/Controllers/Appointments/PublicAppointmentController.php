@@ -16,16 +16,66 @@ class PublicAppointmentController extends Controller
 {
     public function __construct(private AppointmentAvailabilityService $availability) {}
 
-    /**
-     * Mapa público con todos los miembros con portal activo y coordenadas GPS.
-     */
     public function map()
     {
+        // 1. Obtener miembros con coordenadas GPS y habilitados por el coordinador
+        $rawMembers = User::whereNotNull('location_lat')
+            ->whereNotNull('location_lng')
+            ->with(['appointmentSettings', 'appointmentServices'])
+            ->get()
+            ->filter(fn($u) => $u->hasAppointmentsEnabled());
+
+        // 2. Inicializar de forma inteligente los que no tengan configuración o servicios
+        foreach ($rawMembers as $u) {
+            // Asegurar que tengan appointment_settings con is_public = true por defecto
+            if (!$u->appointmentSettings) {
+                $u->appointmentSettings()->create([
+                    'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
+                    'display_name' => $u->name,
+                    'is_public' => true,
+                    'default_slot_duration' => 15,
+                    'default_max_per_slot' => 1,
+                    'auto_create_task' => true,
+                    'email_confirmation' => true,
+                ]);
+                $u->unsetRelation('appointmentSettings'); // Forzar recarga de relación
+            }
+
+            // Asegurar que tengan al menos 1 servicio activo para que el portal sea funcional
+            if ($u->appointmentServices()->active()->count() === 0) {
+                $service = $u->appointmentServices()->create([
+                    'name' => 'Consulta General',
+                    'description' => 'Consulta o asesoramiento general de información.',
+                    'duration_minutes' => 15,
+                    'is_active' => true,
+                    'price' => null,
+                    'price_visible' => false,
+                ]);
+
+                // Crear horario por defecto de Lunes a Viernes de 09:00 a 14:00
+                for ($day = 1; $day <= 5; $day++) {
+                    \App\Models\AppointmentSchedule::create([
+                        'user_id' => $u->id,
+                        'service_id' => $service->id,
+                        'day_of_week' => $day,
+                        'start_time' => '09:00',
+                        'end_time' => '14:00',
+                        'slot_duration_minutes' => 15,
+                        'max_per_slot' => 1,
+                        'is_active' => true,
+                    ]);
+                }
+                $u->unsetRelation('appointmentServices'); // Forzar recarga de relación
+            }
+        }
+
+        // 3. Consultar la lista final limpia para el mapa público
         $members = User::whereHas('appointmentSettings', fn($q) => $q->where('is_public', true))
             ->whereNotNull('location_lat')
             ->whereNotNull('location_lng')
             ->with(['appointmentSettings', 'appointmentServices' => fn($q) => $q->active()])
             ->get()
+            ->filter(fn($u) => $u->hasAppointmentsEnabled())
             ->filter(fn($u) => $u->appointmentServices->isNotEmpty())
             ->map(fn($u) => [
                 'slug'         => $u->appointmentSettings->public_slug,
@@ -33,10 +83,17 @@ class PublicAppointmentController extends Controller
                 'lat'          => $u->location_lat,
                 'lng'          => $u->location_lng,
                 'services'     => $u->appointmentServices->count(),
-                'area'         => $u->working_area_name,
+                'area'         => $u->working_area_name ?: 'Área Territorial',
+                'teams'        => $u->teams()
+                    ->whereJsonContains('settings->has_appointments', true)
+                    ->wherePivot('allow_appointments', true)
+                    ->pluck('name')
+                    ->toArray(),
             ]);
 
-        return view('public.appointments.map', compact('members'));
+        $allTeams = $members->pluck('teams')->flatten()->unique()->sort()->values()->toArray();
+
+        return view('public.appointments.map', compact('members', 'allTeams'));
     }
 
     /**
@@ -49,6 +106,11 @@ class PublicAppointmentController extends Controller
             ->firstOrFail();
 
         $member   = $settings->user;
+
+        if (!$member->hasAppointmentsEnabled()) {
+            abort(404);
+        }
+
         $services = $member->appointmentServices()->active()->orderBy('sort_order')->get();
 
         return view('public.appointments.member', compact('settings', 'member', 'services'));
@@ -86,7 +148,7 @@ class PublicAppointmentController extends Controller
     {
         $settings = $service->user->appointmentSettings;
 
-        if (!$settings || !$settings->is_public) {
+        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabled()) {
             abort(404);
         }
 
@@ -103,7 +165,7 @@ class PublicAppointmentController extends Controller
     public function store(Request $request, AppointmentService $service)
     {
         $settings = $service->user->appointmentSettings;
-        if (!$settings || !$settings->is_public) {
+        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabled()) {
             abort(404);
         }
 

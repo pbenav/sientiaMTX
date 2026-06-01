@@ -15,7 +15,7 @@ class AppointmentSettingsController extends Controller
         $user     = auth()->user();
         $settings = $user->appointmentSettings ?? new AppointmentSettings(['user_id' => $user->id]);
         $expedientes = Expediente::where(function($q) use ($user) {
-            $q->whereHas('team', fn($tq) => $tq->whereHas('users', fn($uq) => $uq->where('user_id', $user->id)));
+            $q->whereHas('team', fn($tq) => $tq->whereHas('members', fn($uq) => $uq->where('users.id', $user->id)));
         })->orderBy('title')->get();
 
         return view('appointments.settings', compact('settings', 'expedientes'));
@@ -43,7 +43,17 @@ class AppointmentSettingsController extends Controller
             'default_expediente_id' => 'nullable|exists:expedientes,id',
             'auto_create_task'      => 'boolean',
             'email_confirmation'    => 'boolean',
+            'location_lat'          => 'nullable|numeric|between:-90,90',
+            'location_lng'          => 'nullable|numeric|between:-180,180',
         ]);
+
+        // Actualizar coordenadas en el modelo User (pertenecen a la tabla de usuarios)
+        $user->update([
+            'location_lat' => isset($data['location_lat']) ? (float)$data['location_lat'] : null,
+            'location_lng' => isset($data['location_lng']) ? (float)$data['location_lng'] : null,
+        ]);
+
+        unset($data['location_lat'], $data['location_lng']);
 
         // Limpiar slug: minúsculas sin espacios
         if (isset($data['public_slug'])) {

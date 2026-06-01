@@ -18,6 +18,11 @@
                     <x-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                         {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
                     </x-nav-link>
+                    @if(auth()->user()->hasAppointmentsEnabled())
+                    <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">
+                        Citas Previas
+                    </x-nav-link>
+                    @endif
                     <x-nav-link :href="route('media.index')" :active="request()->routeIs('media.index')">
                         {{ __('tasks.disk_quota') }}
                     </x-nav-link>
@@ -186,6 +191,11 @@
             <x-responsive-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                 {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
             </x-responsive-nav-link>
+            @if(auth()->user()->hasAppointmentsEnabled())
+            <x-responsive-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">
+                Citas Previas
+            </x-responsive-nav-link>
+            @endif
 
             @if (request()->route('team'))
                 @php

@@ -142,7 +142,7 @@ class Team extends Model
     {
         return $this->belongsToMany(User::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token', 'joined_at')
+            ->withPivot('role_id', 'google_id', 'google_token', 'google_refresh_token', 'joined_at', 'allow_appointments')
             ->orderBy('name');
     }
 

@@ -26,20 +26,22 @@
         </a>
     </div>
 
-    {{-- Separator --}}
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 shrink-0 opacity-40 mx-0.5" fill="none"
-        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
+    @if(isset($team) && $team)
+        {{-- Separator --}}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 shrink-0 opacity-40 mx-0.5" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
 
-    {{-- Current team --}}
-    <div class="flex items-center min-w-0 flex-shrink">
-        <a href="{{ route('teams.show', $team) }}"
-            class="text-violet-600 dark:text-violet-400 font-bold hover:underline truncate max-w-[8rem] sm:max-w-[12rem]"
-            title="{{ $team->name }}">
-            {{ $team->name }}
-        </a>
-    </div>
+        {{-- Current team --}}
+        <div class="flex items-center min-w-0 flex-shrink">
+            <a href="{{ route('teams.show', $team) }}"
+                class="text-violet-600 dark:text-violet-400 font-bold hover:underline truncate max-w-[8rem] sm:max-w-[12rem]"
+                title="{{ $team->name }}">
+                {{ $team->name }}
+            </a>
+        </div>
+    @endif
 
     @if ($currentPageLabel)
         {{-- Separator --}}

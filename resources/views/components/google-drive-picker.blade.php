@@ -148,7 +148,7 @@
                 @if(!$team) return; @endif
                 this.loading = true;
                 try {
-                    const response = await fetch('{{ $team ? route('teams.attachments.from-drive', [$team]) : '#' }}', {
+                    const response = await fetch('{{ ($team && $team->id) ? route('teams.attachments.from-drive', [$team]) : '#' }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

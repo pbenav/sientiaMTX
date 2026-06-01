@@ -32,7 +32,82 @@ class SurveyController extends Controller
             ->orderByDesc('published_at')
             ->paginate(12);
 
-        return view('surveys.index', compact('team', 'surveys'));
+        $members = collect();
+        $allTeams = [];
+
+        if (!$team) {
+            // Inicializar y obtener los miembros y equipos del mapa de citas
+            $rawMembers = \App\Models\User::whereNotNull('location_lat')
+                ->whereNotNull('location_lng')
+                ->with(['appointmentSettings', 'appointmentServices'])
+                ->get()
+                ->filter(fn($u) => $u->hasAppointmentsEnabled());
+
+            foreach ($rawMembers as $u) {
+                if (!$u->appointmentSettings) {
+                    $u->appointmentSettings()->create([
+                        'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
+                        'display_name' => $u->name,
+                        'is_public' => true,
+                        'default_slot_duration' => 15,
+                        'default_max_per_slot' => 1,
+                        'auto_create_task' => true,
+                        'email_confirmation' => true,
+                    ]);
+                    $u->unsetRelation('appointmentSettings');
+                }
+
+                if ($u->appointmentServices()->active()->count() === 0) {
+                    $service = $u->appointmentServices()->create([
+                        'name' => 'Consulta General',
+                        'description' => 'Consulta o asesoramiento general de información.',
+                        'duration_minutes' => 15,
+                        'is_active' => true,
+                        'price' => null,
+                        'price_visible' => false,
+                    ]);
+
+                    for ($day = 1; $day <= 5; $day++) {
+                        \App\Models\AppointmentSchedule::create([
+                            'user_id' => $u->id,
+                            'service_id' => $service->id,
+                            'day_of_week' => $day,
+                            'start_time' => '09:00',
+                            'end_time' => '14:00',
+                            'slot_duration_minutes' => 15,
+                            'max_per_slot' => 1,
+                            'is_active' => true,
+                        ]);
+                    }
+                    $u->unsetRelation('appointmentServices');
+                }
+            }
+
+            $members = \App\Models\User::whereHas('appointmentSettings', fn($q) => $q->where('is_public', true))
+                ->whereNotNull('location_lat')
+                ->whereNotNull('location_lng')
+                ->with(['appointmentSettings', 'appointmentServices' => fn($q) => $q->active()])
+                ->get()
+                ->filter(fn($u) => $u->hasAppointmentsEnabled())
+                ->filter(fn($u) => $u->appointmentServices->isNotEmpty())
+                ->map(fn($u) => [
+                    'slug'         => $u->appointmentSettings->public_slug,
+                    'display_name' => $u->appointmentSettings->display_name ?: $u->name,
+                    'lat'          => $u->location_lat,
+                    'lng'          => $u->location_lng,
+                    'services'     => $u->appointmentServices->count(),
+                    'area'         => $u->working_area_name ?: 'Área Territorial',
+                    'teams'        => $u->teams()
+                        ->whereJsonContains('settings->has_appointments', true)
+                        ->wherePivot('allow_appointments', true)
+                        ->pluck('name')
+                        ->toArray(),
+                ]);
+
+            $allTeams = $members->pluck('teams')->flatten()->unique()->sort()->values()->toArray();
+        }
+
+        return view('surveys.index', compact('team', 'surveys', 'members', 'allTeams'));
     }
 
     /**
@@ -131,8 +206,10 @@ class SurveyController extends Controller
     /**
      * Display a survey.
      */
-    public function show(?Team $team = null, Survey $survey)
+    public function show($team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
+
         $survey->load(['creator', 'questions.options' => function($q) {
             $q->withCount('votes');
         }]);
@@ -162,8 +239,9 @@ class SurveyController extends Controller
     /**
      * Show the form for editing a survey.
      */
-    public function edit(?Team $team = null, Survey $survey)
+    public function edit($team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('update', $survey);
         
         $survey->load('questions.options');
@@ -189,8 +267,9 @@ class SurveyController extends Controller
     /**
      * Update a survey.
      */
-    public function update(Request $request, ?Team $team = null, Survey $survey)
+    public function update(Request $request, $team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('update', $survey);
 
         $validated = $request->validate([
@@ -314,8 +393,9 @@ class SurveyController extends Controller
     /**
      * Vote on a survey.
      */
-    public function vote(Request $request, ?Team $team = null, Survey $survey)
+    public function vote(Request $request, $team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('view', $survey);
 
         if ($survey->is_closed) {
@@ -390,8 +470,9 @@ class SurveyController extends Controller
     /**
      * Close a survey.
      */
-    public function close(?Team $team = null, Survey $survey)
+    public function close($team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('update', $survey);
         $survey->update(['closed_at' => now()]);
         return back()->with('success', __('Encuesta cerrada.'));
@@ -400,8 +481,9 @@ class SurveyController extends Controller
     /**
      * Reactivate a survey.
      */
-    public function reactivate(?Team $team = null, Survey $survey)
+    public function reactivate($team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('update', $survey);
         $survey->update(['closed_at' => null]);
         return back()->with('success', __('Encuesta reactivada.'));
@@ -410,8 +492,9 @@ class SurveyController extends Controller
     /**
      * Remove a survey.
      */
-    public function destroy(?Team $team = null, Survey $survey)
+    public function destroy($team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('delete', $survey);
         $survey->delete();
         
@@ -424,8 +507,9 @@ class SurveyController extends Controller
     /**
      * Duplicate a survey to a different context.
      */
-    public function duplicate(Request $request, ?Team $team = null, Survey $survey)
+    public function duplicate(Request $request, $team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('duplicate', $survey);
 
         // For global promotion, only admin
@@ -467,8 +551,9 @@ class SurveyController extends Controller
     /**
      * Export a survey to JSON.
      */
-    public function exportJson(?Team $team = null, Survey $survey)
+    public function exportJson($team, $survey = null)
     {
+        $this->resolveParams($team, $survey);
         $this->authorize('view', $survey);
 
         $survey->load('questions.options');
@@ -564,5 +649,24 @@ class SurveyController extends Controller
             return redirect()->route($redirectRoute, $params)
                 ->with('success', __('Encuesta importada con éxito. Ahora puedes revisarla.'));
         });
+    }
+
+    /**
+     * Resolve and standardize $team and $survey parameters for both team-scoped and global routes.
+     */
+    private function resolveParams(&$team, &$survey)
+    {
+        if ($survey === null) {
+            $survey = $team;
+            $team = null;
+        }
+
+        if (!$survey instanceof Survey) {
+            $survey = Survey::findOrFail($survey);
+        }
+
+        if ($team && !$team instanceof Team) {
+            $team = Team::findOrFail($team);
+        }
     }
 }

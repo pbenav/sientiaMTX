@@ -33,7 +33,23 @@ class AppointmentServiceController extends Controller
             'sort_order'         => 'integer|min:0',
         ]);
 
-        auth()->user()->appointmentServices()->create($data);
+        $service = auth()->user()->appointmentServices()->create($data);
+
+        // Guardar horarios de disponibilidad
+        $schedules = $request->input('schedules', []);
+        foreach ($schedules as $dayOfWeek => $sched) {
+            if (isset($sched['is_active']) && $sched['is_active'] == '1') {
+                $service->schedules()->create([
+                    'user_id' => auth()->id(),
+                    'day_of_week' => $dayOfWeek,
+                    'start_time' => $sched['start_time'] ?? '09:00',
+                    'end_time' => $sched['end_time'] ?? '14:00',
+                    'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
+                    'max_per_slot' => $service->getEffectiveMaxPerSlot(),
+                    'is_active' => true,
+                ]);
+            }
+        }
 
         return redirect()->route('appointments.services.index')
             ->with('success', 'Servicio creado correctamente.');
@@ -62,6 +78,23 @@ class AppointmentServiceController extends Controller
         ]);
 
         $service->update($data);
+
+        // Actualizar horarios de disponibilidad
+        $service->schedules()->delete();
+        $schedules = $request->input('schedules', []);
+        foreach ($schedules as $dayOfWeek => $sched) {
+            if (isset($sched['is_active']) && $sched['is_active'] == '1') {
+                $service->schedules()->create([
+                    'user_id' => auth()->id(),
+                    'day_of_week' => $dayOfWeek,
+                    'start_time' => $sched['start_time'] ?? '09:00',
+                    'end_time' => $sched['end_time'] ?? '14:00',
+                    'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
+                    'max_per_slot' => $service->getEffectiveMaxPerSlot(),
+                    'is_active' => true,
+                ]);
+            }
+        }
 
         return redirect()->route('appointments.services.index')
             ->with('success', 'Servicio actualizado correctamente.');

@@ -141,8 +141,14 @@
         @endif
     </x-slot>
 
-            <!-- Main Content Card -->
-            <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden mb-12">
+            @if($isGlobal)
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 items-start">
+                <!-- Columna principal (Encuesta): 8 columnas en LG -->
+                <div class="lg:col-span-8 bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
+            @else
+                <!-- Main Content Card -->
+                <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden mb-12">
+            @endif
                 <!-- Status Banner -->
                 <div class="print-hide px-8 py-4 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800">
                     <div class="flex items-center gap-6">
@@ -582,6 +588,77 @@
                     @endif
                 </div>
             </div>
+            @if($isGlobal)
+                </div> <!-- Cierre del col-span-8 -->
+
+                <!-- Columna lateral (Organismo Emisor / Transparencia) -->
+                <div class="lg:col-span-4 space-y-6 print-hide">
+                    <!-- Tarjeta de Información Oficial del Canal Ciudadano -->
+                    <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-6 sm:p-8 flex flex-col gap-6">
+                        <!-- Cabecera Institucional -->
+                        <div class="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                            <div class="p-3 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-2xl shadow-sm">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5H4.5V21M3 21h18M12 6.75a.75.75 0 11-.75.75.75.75 0 01.75-.75z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Canal Ciudadano') }}</h3>
+                                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Consulta Pública y Transparencia') }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Organismo Promotor -->
+                        <div class="space-y-4">
+                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Entidad Promotora') }}</h4>
+                            <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100/50 dark:border-gray-800">
+                                <img src="{{ $survey->creator->profile_photo_url }}" class="w-12 h-12 rounded-full border border-white dark:border-gray-800 shadow-md">
+                                <div class="min-w-0 flex-1">
+                                    <span class="block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->name }}</span>
+                                    <span class="inline-flex items-center gap-1.5 text-[9px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest mt-1 bg-violet-50 dark:bg-violet-500/10 px-2 py-0.5 rounded-full">
+                                        {{ $survey->creator->working_area_name ?: __('Ayuntamiento General') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mapa Interactivo / Localización -->
+                        <div class="space-y-4">
+                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Ubicación del Centro') }}</h4>
+                            <div class="relative w-full h-[220px] rounded-[1.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-inner">
+                                <div id="promoter-map" class="w-full h-full"></div>
+                                <div class="absolute bottom-3 left-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 z-[1000] flex items-center gap-2.5">
+                                    <div class="p-1.5 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <span class="block text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->working_area_name ?: __('Ayuntamiento General') }}</span>
+                                        <span class="block text-[9px] font-bold text-gray-400 truncate">
+                                            @if($survey->creator->location_lat && $survey->creator->location_lng)
+                                                Lat: {{ number_format($survey->creator->location_lat, 4) }}, Lng: {{ number_format($survey->creator->location_lng, 4) }}
+                                            @else
+                                                {{ __('Ubicación Centralizada') }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nota de Privacidad y RGPD -->
+                        <div class="p-4 bg-emerald-50/50 dark:bg-emerald-500/5 rounded-2xl border border-emerald-100/50 dark:border-emerald-500/10 flex items-start gap-3">
+                            <div class="p-2 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-600/20 shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-widest mb-1">{{ __('Garantía de Confidencialidad') }}</span>
+                                <p class="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 font-bold leading-normal">
+                                    {{ __('Tus respuestas son totalmente anónimas y se procesan de acuerdo con el RGPD para la mejora continua de la gestión ciudadana.') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Cierre del grid -->
+            @endif
 
         </div>
     </div>
@@ -874,4 +951,66 @@
             }, { passive: true });
         })();
     </script>
+    @if ($isGlobal)
+        @push('styles')
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+                integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+            <style>
+                #promoter-map {
+                    height: 100%;
+                    width: 100%;
+                    z-index: 1;
+                }
+                .custom-promoter-pin {
+                    background: none;
+                    border: none;
+                }
+            </style>
+        @endpush
+
+        @push('scripts')
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const lat = {{ $survey->creator->location_lat ?: '40.416775' }};
+                    const lng = {{ $survey->creator->location_lng ?: '-3.703790' }};
+
+                    const map = L.map('promoter-map', {
+                        zoomControl: false,
+                        attributionControl: false
+                    }).setView([lat, lng], 13);
+
+                    const isDark = document.documentElement.classList.contains('dark');
+                    const cartoUrl = isDark ?
+                        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
+                        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+                    L.tileLayer(cartoUrl, {
+                        maxZoom: 20
+                    }).addTo(map);
+
+                    // Icono del PIN premium adaptativo
+                    const pinIcon = L.divIcon({
+                        html: `
+                            <div class="relative w-8 h-8 flex items-center justify-center">
+                                <span class="absolute w-6 h-6 bg-violet-500/35 rounded-full animate-ping opacity-75"></span>
+                                <div class="w-7.5 h-7.5 bg-gradient-to-tr from-violet-500 to-indigo-600 rounded-full border-2 border-white dark:border-gray-950 flex items-center justify-center text-white shadow-md">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5H4.5V21M3 21h18"/></svg>
+                                </div>
+                            </div>`,
+                        className: 'custom-promoter-pin',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    });
+
+                    L.marker([lat, lng], { icon: pinIcon }).addTo(map);
+
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 250);
+                });
+            </script>
+        @endpush
+    @endif
 </x-app-layout>

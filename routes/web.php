@@ -120,6 +120,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/members/bulk', [TeamController::class, 'bulkAddMembers'])->name('teams.addMembersBulk');
     Route::patch('/teams/{team}/members/{user}/role', [TeamController::class, 'updateMemberRole'])->name('teams.updateMemberRole');
     Route::patch('/teams/{team}/members/{user}/info', [TeamController::class, 'updateMemberInfo'])->name('teams.updateMemberInfo');
+    Route::patch('/teams/{team}/members/{user}/appointments', [TeamController::class, 'updateMemberAppointments'])->name('teams.updateMemberAppointments');
+    Route::patch('/teams/{team}/members-appointments-bulk', [TeamController::class, 'updateAllMembersAppointments'])->name('teams.updateAllMembersAppointments');
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.removeMember');
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamController::class, 'removeInvitation'])->name('teams.invitations.destroy');
     Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');
@@ -456,14 +458,11 @@ Route::get('/onlyoffice/download/{attachment}', [OnlyOfficeController::class, 'd
 Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');
 
 // --- Citas Previas — Panel de Gestión (autenticado) ---
-Route::middleware(['auth'])->prefix('mis-citas')->name('appointments.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::class])->prefix('mis-citas')->name('appointments.')->group(function () {
     // Dashboard y agenda
     Route::get('/', [\App\Http\Controllers\Appointments\AppointmentController::class, 'index'])->name('index');
     Route::get('/lista', [\App\Http\Controllers\Appointments\AppointmentController::class, 'list'])->name('list');
     Route::get('/agenda', [\App\Http\Controllers\Appointments\AppointmentController::class, 'agenda'])->name('agenda');
-    Route::get('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'show'])->name('show');
-    Route::patch('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'update'])->name('update');
-    Route::delete('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'destroy'])->name('destroy');
 
     // Servicios
     Route::prefix('servicios')->name('services.')->group(function () {
@@ -485,4 +484,9 @@ Route::middleware(['auth'])->prefix('mis-citas')->name('appointments.')->group(f
     // Configuración del portal
     Route::get('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'edit'])->name('settings');
     Route::patch('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'update'])->name('settings.update');
+
+    // Detalle y acciones de Citas (Wildcard al final para evitar capturar rutas estáticas)
+    Route::get('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'show'])->name('show');
+    Route::patch('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'update'])->name('update');
+    Route::delete('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'destroy'])->name('destroy');
 });
