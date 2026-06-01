@@ -31,6 +31,7 @@
             <div>
                 <label for="localizador" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Localizador Único</label>
                 <input type="text" name="localizador" id="localizador" required autofocus autocomplete="off"
+                       value="{{ old('localizador', $prefilledLocalizador ?? '') }}"
                        class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-lg font-mono font-black text-center uppercase text-gray-900 dark:text-white outline-none transition-all"
                        placeholder="EJ. MTXCITA-XXXXXXXX">
             </div>

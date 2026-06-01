@@ -58,7 +58,7 @@
     <!-- Botones de Acción -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
         @if(in_array($appointment->service->modality, ['jitsi', 'meet']))
-            <a href="{{ route('public.appointments.video.auth', $appointment) }}"
+            <a href="{{ route('public.appointments.video.auth', $appointment) }}?localizador={{ $appointment->localizador }}"
                class="flex items-center justify-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/20 active:scale-98 transition-all w-full sm:w-auto">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 Entrar a Videoconferencia

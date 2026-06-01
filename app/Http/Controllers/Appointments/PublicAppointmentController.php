@@ -301,13 +301,15 @@ class PublicAppointmentController extends Controller
     /**
      * Pantalla de autenticación para la videoconferencia.
      */
-    public function videoAuth(Appointment $appointment)
+    public function videoAuth(Request $request, Appointment $appointment)
     {
         if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
             abort(404);
         }
 
-        return view('public.appointments.video_auth', compact('appointment'));
+        $prefilledLocalizador = $request->query('localizador');
+
+        return view('public.appointments.video_auth', compact('appointment', 'prefilledLocalizador'));
     }
 
     /**
@@ -366,6 +368,9 @@ class PublicAppointmentController extends Controller
             return back()->withErrors(['localizador_search' => 'Esta cita no está configurada como videoconferencia (es presencial).']);
         }
 
-        return redirect()->route('public.appointments.video.auth', $appointment);
+        // Como ya lo escribió correctamente en la barra del mapa, le damos acceso directamente
+        session(['video_access_' . $appointment->id => true]);
+
+        return redirect()->route('public.appointments.video.room', $appointment);
     }
 }
