@@ -21,24 +21,27 @@ class AppointmentAvailabilityService
         $user        = $service->user;
         $dayOfWeek   = $date->dayOfWeek; // 0=Dom ... 6=Sáb
 
-        // Buscar horario aplicable: específico del servicio, o general del miembro
-        $schedule = AppointmentSchedule::where('user_id', $user->id)
+        // Buscar horarios aplicables: específicos del servicio, o generales del miembro
+        $schedules = AppointmentSchedule::where('user_id', $user->id)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_active', true)
             ->where(function ($q) use ($service) {
                 $q->where('service_id', $service->id)->orWhereNull('service_id');
             })
             ->orderByRaw('service_id IS NULL ASC') // específico primero
-            ->first();
+            ->get();
 
-        if (!$schedule) {
+        if ($schedules->isEmpty()) {
             return [];
         }
 
-        $slotMinutes = $schedule->slot_duration_minutes;
-        $maxPerSlot  = $schedule->max_per_slot;
-        $start       = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->start_time);
-        $end         = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->end_time);
+        // Si hay horarios específicos del servicio y generales a la vez, priorizamos los específicos
+        $hasSpecific = $schedules->contains(fn($s) => !is_null($s->service_id));
+        if ($hasSpecific) {
+            $schedules = $schedules->filter(fn($s) => !is_null($s->service_id));
+        }
+
+        $slots = [];
 
         // Citas ya reservadas en esa fecha para ese servicio
         $booked = Appointment::where('service_id', $service->id)
@@ -47,39 +50,52 @@ class AppointmentAvailabilityService
             ->get()
             ->groupBy('appointment_time');
 
-        // Bloqueos activos que cubren ese día
-        $blocks = AppointmentBlock::where('user_id', $user->id)
-            ->where(function ($q) use ($service) {
-                $q->where('service_id', $service->id)->orWhereNull('service_id');
-            })
-            ->where('start_datetime', '<=', $end)
-            ->where('end_datetime', '>=', $start)
-            ->get();
+        foreach ($schedules as $schedule) {
+            $slotMinutes = $schedule->slot_duration_minutes;
+            $maxPerSlot  = $schedule->max_per_slot;
+            $start       = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->start_time);
+            $end         = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->end_time);
 
-        $slots = [];
-        $current = $start->copy();
+            // Bloqueos activos que cubren esta franja horaria en concreto
+            $blocks = AppointmentBlock::where('user_id', $user->id)
+                ->where(function ($q) use ($service) {
+                    $q->where('service_id', $service->id)->orWhereNull('service_id');
+                })
+                ->where('start_datetime', '<=', $end)
+                ->where('end_datetime', '>=', $start)
+                ->get();
 
-        while ($current->copy()->addMinutes($service->duration_minutes) <= $end) {
-            $timeKey      = $current->format('H:i');
-            $slotEnd      = $current->copy()->addMinutes($slotMinutes);
-            $bookedCount  = $booked->get($timeKey . ':00', collect())->count();
+            $current = $start->copy();
 
-            // Comprobar si este tramo está bloqueado
-            $isBlocked = $blocks->contains(function ($block) use ($current, $slotEnd) {
-                return $block->start_datetime < $slotEnd && $block->end_datetime > $current;
-            });
+            while ($current->copy()->addMinutes($service->duration_minutes) <= $end) {
+                $timeKey      = $current->format('H:i');
+                $slotEnd      = $current->copy()->addMinutes($slotMinutes);
+                $bookedCount  = $booked->get($timeKey . ':00', collect())->count();
 
-            if (!$isBlocked) {
-                $slots[] = [
-                    'time'      => $timeKey,
-                    'available' => max(0, $maxPerSlot - $bookedCount),
-                    'booked'    => $bookedCount,
-                    'full'      => ($bookedCount >= $maxPerSlot),
-                ];
+                // Comprobar si este tramo está bloqueado
+                $isBlocked = $blocks->contains(function ($block) use ($current, $slotEnd) {
+                    return $block->start_datetime < $slotEnd && $block->end_datetime > $current;
+                });
+
+                if (!$isBlocked) {
+                    // Evitar duplicados si por algún motivo coinciden franjas
+                    $exists = collect($slots)->contains('time', $timeKey);
+                    if (!$exists) {
+                        $slots[] = [
+                            'time'      => $timeKey,
+                            'available' => max(0, $maxPerSlot - $bookedCount),
+                            'booked'    => $bookedCount,
+                            'full'      => ($bookedCount >= $maxPerSlot),
+                        ];
+                    }
+                }
+
+                $current->addMinutes($slotMinutes);
             }
-
-            $current->addMinutes($slotMinutes);
         }
+
+        // Ordenar tramos cronológicamente
+        usort($slots, fn($a, $b) => strcmp($a['time'], $b['time']));
 
         return $slots;
     }

@@ -39,15 +39,29 @@ class AppointmentServiceController extends Controller
         $schedules = $request->input('schedules', []);
         foreach ($schedules as $dayOfWeek => $sched) {
             if (isset($sched['is_active']) && $sched['is_active'] == '1') {
-                $service->schedules()->create([
-                    'user_id' => auth()->id(),
-                    'day_of_week' => $dayOfWeek,
-                    'start_time' => $sched['start_time'] ?? '09:00',
-                    'end_time' => $sched['end_time'] ?? '14:00',
-                    'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
-                    'max_per_slot' => $service->getEffectiveMaxPerSlot(),
-                    'is_active' => true,
-                ]);
+                if (isset($sched['tramos']) && is_array($sched['tramos'])) {
+                    foreach ($sched['tramos'] as $tramo) {
+                        $service->schedules()->create([
+                            'user_id' => auth()->id(),
+                            'day_of_week' => $dayOfWeek,
+                            'start_time' => $tramo['start_time'] ?? '09:00',
+                            'end_time' => $tramo['end_time'] ?? '14:00',
+                            'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
+                            'max_per_slot' => $service->getEffectiveMaxPerSlot(),
+                            'is_active' => true,
+                        ]);
+                    }
+                } else {
+                    $service->schedules()->create([
+                        'user_id' => auth()->id(),
+                        'day_of_week' => $dayOfWeek,
+                        'start_time' => $sched['start_time'] ?? '09:00',
+                        'end_time' => $sched['end_time'] ?? '14:00',
+                        'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
+                        'max_per_slot' => $service->getEffectiveMaxPerSlot(),
+                        'is_active' => true,
+                    ]);
+                }
             }
         }
 
@@ -84,15 +98,29 @@ class AppointmentServiceController extends Controller
         $schedules = $request->input('schedules', []);
         foreach ($schedules as $dayOfWeek => $sched) {
             if (isset($sched['is_active']) && $sched['is_active'] == '1') {
-                $service->schedules()->create([
-                    'user_id' => auth()->id(),
-                    'day_of_week' => $dayOfWeek,
-                    'start_time' => $sched['start_time'] ?? '09:00',
-                    'end_time' => $sched['end_time'] ?? '14:00',
-                    'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
-                    'max_per_slot' => $service->getEffectiveMaxPerSlot(),
-                    'is_active' => true,
-                ]);
+                if (isset($sched['tramos']) && is_array($sched['tramos'])) {
+                    foreach ($sched['tramos'] as $tramo) {
+                        $service->schedules()->create([
+                            'user_id' => auth()->id(),
+                            'day_of_week' => $dayOfWeek,
+                            'start_time' => $tramo['start_time'] ?? '09:00',
+                            'end_time' => $tramo['end_time'] ?? '14:00',
+                            'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
+                            'max_per_slot' => $service->getEffectiveMaxPerSlot(),
+                            'is_active' => true,
+                        ]);
+                    }
+                } else {
+                    $service->schedules()->create([
+                        'user_id' => auth()->id(),
+                        'day_of_week' => $dayOfWeek,
+                        'start_time' => $sched['start_time'] ?? '09:00',
+                        'end_time' => $sched['end_time'] ?? '14:00',
+                        'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
+                        'max_per_slot' => $service->getEffectiveMaxPerSlot(),
+                        'is_active' => true,
+                    ]);
+                }
             }
         }
 
