@@ -195,6 +195,7 @@
                     .catch(e => console.error('Error renaming group:', e));
                 },
                 deleteGroupChat(groupId) {
+                    const cleanGroupId = String(groupId).replace('group_', '');
                     Swal.fire({
                         title: '¿Eliminar Grupo?',
                         text: 'Esta acción borrará el grupo, todos sus mensajes y archivos adjuntos permanentemente. ¿Estás seguro?',
@@ -211,7 +212,7 @@
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            fetch(`/chat/group/${groupId}`, {
+                            fetch(`/chat/group/${cleanGroupId}`, {
                                 method: 'DELETE',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
@@ -222,7 +223,7 @@
                             .then(d => {
                                 if (d.success) {
                                     Swal.fire({ icon: 'success', title: 'Grupo eliminado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
-                                    if (this.member && String(this.member.id) === `group_${groupId}`) {
+                                    if (this.member && String(this.member.id) === `group_${cleanGroupId}`) {
                                         this.chatOpen = false;
                                         this.member = null;
                                         try { localStorage.removeItem('sientia_last_chat'); } catch(e) {}
