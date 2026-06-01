@@ -8,6 +8,7 @@ use App\Models\AppointmentService;
 use App\Models\AppointmentSettings;
 use App\Models\AppointmentVisitor;
 use App\Models\User;
+use App\Rules\DniNie;
 use App\Services\AppointmentAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -172,9 +173,9 @@ class PublicAppointmentController extends Controller
         $data = $request->validate([
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'required|string|max:150',
-            'dni'           => 'nullable|string|max:20',
-            'email'         => 'nullable|email|max:255',
-            'phone'         => 'nullable|string|max:20',
+            'dni'           => ['nullable', 'string', 'max:20', new DniNie],
+            'email'         => 'nullable|email:rfc,dns|max:255',
+            'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
             'city'          => 'nullable|string|max:100',
             'postal_code'   => 'nullable|string|max:10',
             'observations'  => 'nullable|string|max:2000',

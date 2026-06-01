@@ -124,20 +124,29 @@
 
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">DNI / NIE / Pasaporte</label>
-                    <input type="text" name="dni" value="{{ old('dni') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                    <input type="text" id="input-dni" name="dni" value="{{ old('dni') }}" autocomplete="off"
+                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           placeholder="12345678A, X1234567A...">
+                    <p id="hint-dni" class="mt-1 text-[10px] font-semibold hidden"></p>
+                    @error('dni') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Correo Electrónico</label>
-                    <input type="email" name="email" value="{{ old('email') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                    <input type="email" id="input-email" name="email" value="{{ old('email') }}"
+                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           placeholder="nombre@ejemplo.com">
+                    <p id="hint-email" class="mt-1 text-[10px] font-semibold hidden"></p>
+                    @error('email') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Teléfono Móvil</label>
-                    <input type="tel" name="phone" value="{{ old('phone') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                    <input type="tel" id="input-phone" name="phone" value="{{ old('phone') }}"
+                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           placeholder="+34 600 000 000">
+                    <p id="hint-phone" class="mt-1 text-[10px] font-semibold hidden"></p>
+                    @error('phone') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="md:col-span-8">
@@ -406,4 +415,109 @@
         }
     });
 </script>
+
+<script>
+    // ---- Validación en tiempo real: DNI/NIE, Email, Teléfono ----
+    (function () {
+        const DNI_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+
+        function setHint(hintEl, inputEl, msg, isError) {
+            hintEl.textContent = msg;
+            hintEl.className = 'mt-1 text-[10px] font-semibold ' + (isError ? 'text-red-500' : 'text-emerald-500');
+            hintEl.classList.remove('hidden');
+            inputEl.classList.toggle('border-red-400', isError);
+            inputEl.classList.toggle('dark:border-red-600', isError);
+            inputEl.classList.toggle('border-emerald-400', !isError);
+            inputEl.classList.toggle('dark:border-emerald-600', !isError);
+        }
+
+        function clearHint(hintEl, inputEl) {
+            hintEl.classList.add('hidden');
+            inputEl.classList.remove('border-red-400','dark:border-red-600','border-emerald-400','dark:border-emerald-600');
+        }
+
+        function isPassport(v) {
+            // Comienza por 2+ letras → pasaporte
+            return /^[A-Z]{2,}/i.test(v) && !/^[XYZ]\d{7}[A-Z]$/i.test(v);
+        }
+
+        function validateDni(v) {
+            v = v.toUpperCase().trim();
+            if (!/^\d{8}[A-Z]$/.test(v)) return false;
+            return v[8] === DNI_LETTERS[parseInt(v.slice(0, 8)) % 23];
+        }
+
+        function validateNie(v) {
+            v = v.toUpperCase().trim();
+            if (!/^[XYZ]\d{7}[A-Z]$/.test(v)) return false;
+            const map = { X: '0', Y: '1', Z: '2' };
+            const normalized = map[v[0]] + v.slice(1, 8);
+            return v[8] === DNI_LETTERS[parseInt(normalized) % 23];
+        }
+
+        // --- DNI/NIE ---
+        const dniInput = document.getElementById('input-dni');
+        const dniHint  = document.getElementById('hint-dni');
+        if (dniInput && dniHint) {
+            dniInput.addEventListener('input', function () {
+                const v = this.value.trim();
+                if (!v) { clearHint(dniHint, dniInput); return; }
+
+                if (isPassport(v) || v.length < 6) {
+                    // Parece pasaporte o demasiado corto → no validamos dígito de control
+                    setHint(dniHint, dniInput, '🛂 Detectado como pasaporte u otro documento', false);
+                    return;
+                }
+
+                const upper = v.toUpperCase();
+                if (/^[XYZ]/i.test(upper)) {
+                    validateNie(upper)
+                        ? setHint(dniHint, dniInput, '✓ NIE válido', false)
+                        : setHint(dniHint, dniInput, '✗ NIE no válido — revisa el dígito de control', true);
+                } else if (/^\d/.test(upper)) {
+                    validateDni(upper)
+                        ? setHint(dniHint, dniInput, '✓ DNI válido', false)
+                        : setHint(dniHint, dniInput, '✗ DNI no válido — revisa el número o la letra', true);
+                } else {
+                    setHint(dniHint, dniInput, '🛂 Detectado como pasaporte u otro documento', false);
+                }
+            });
+        }
+
+        // --- Email ---
+        const emailInput = document.getElementById('input-email');
+        const emailHint  = document.getElementById('hint-email');
+        if (emailInput && emailHint) {
+            emailInput.addEventListener('blur', function () {
+                const v = this.value.trim();
+                if (!v) { clearHint(emailHint, emailInput); return; }
+                const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+                valid
+                    ? setHint(emailHint, emailInput, '✓ Correo válido', false)
+                    : setHint(emailHint, emailInput, '✗ Formato de correo incorrecto', true);
+            });
+            emailInput.addEventListener('input', function () {
+                if (!this.value.trim()) clearHint(emailHint, emailInput);
+            });
+        }
+
+        // --- Teléfono ---
+        const phoneInput = document.getElementById('input-phone');
+        const phoneHint  = document.getElementById('hint-phone');
+        if (phoneInput && phoneHint) {
+            phoneInput.addEventListener('blur', function () {
+                const v = this.value.trim();
+                if (!v) { clearHint(phoneHint, phoneInput); return; }
+                const valid = /^(\+?[\d\s\-\.\(\)]{6,20})$/.test(v);
+                valid
+                    ? setHint(phoneHint, phoneInput, '✓ Teléfono válido', false)
+                    : setHint(phoneHint, phoneInput, '✗ Formato de teléfono incorrecto', true);
+            });
+            phoneInput.addEventListener('input', function () {
+                if (!this.value.trim()) clearHint(phoneHint, phoneInput);
+            });
+        }
+    })();
+</script>
 @endsection
+
