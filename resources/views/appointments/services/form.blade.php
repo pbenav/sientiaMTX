@@ -139,7 +139,8 @@
                             5 => 'Viernes',
                             6 => 'Sábado',
                             0 => 'Domingo',
-                               // Si es edición, obtenemos todos los schedules agrupados por day_of_week
+                        ];
+                        // Si es edición, obtenemos todos los schedules agrupados por day_of_week
                         $schedulesMap = $isEdit ? $service->schedules->groupBy('day_of_week') : collect();
                     @endphp
 
