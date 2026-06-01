@@ -268,10 +268,20 @@ class PublicAppointmentController extends Controller
             // Determinar el expediente
             $expedienteId = $settings->default_expediente_id;
 
-            // Crear la tarea
+            // Determinar la descripción de la tarea con enlace de videoconferencia si procede
+            $description = "**Visitante:** {$appointment->visitor->full_name}\n"
+                . "**Localizador:** {$appointment->localizador}\n"
+                . "**Servicio:** {$appointment->service->name}\n"
+                . "**Fecha:** {$appointment->appointment_date->format('d/m/Y')} a las {$appointment->appointment_time}";
+
+            if (in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+                $videoUrl = route('public.appointments.video.auth', $appointment) . '?localizador=' . $appointment->localizador;
+                $description .= "\n\n💻 **Videoconferencia:** [Iniciar Videoconferencia]({$videoUrl}) (Modalidad: " . ucfirst($appointment->service->modality) . ")";
+            }
+
             $task = \App\Models\Task::create([
                 'title'          => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
-                'description'    => "**Visitante:** {$appointment->visitor->full_name}\n**Localizador:** {$appointment->localizador}\n**Servicio:** {$appointment->service->name}\n**Fecha:** {$appointment->appointment_date->format('d/m/Y')} a las {$appointment->appointment_time}",
+                'description'    => $description,
                 'status'         => 'pending',
                 'priority'       => 'medium',
                 'due_date'       => $appointment->appointment_date,
