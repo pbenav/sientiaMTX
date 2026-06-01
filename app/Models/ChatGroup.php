@@ -32,4 +32,27 @@ class ChatGroup extends Model
     {
         return 'https://ui-avatars.com/api/?name=Grupo&color=10b981&background=ecfdf5';
     }
+
+    public function getNameAttribute($value): string
+    {
+        if (!$value || preg_match('/^Grupo de \d+ miembros$/i', $value)) {
+            $currentUserId = auth()->id();
+            $users = $this->users;
+            if ($users->isNotEmpty()) {
+                $names = $users->map(function($u) use ($currentUserId) {
+                    $firstName = explode(' ', trim($u->name))[0];
+                    return ($currentUserId && $u->id === $currentUserId) ? 'Tú' : $firstName;
+                });
+                
+                if ($currentUserId) {
+                    $me = $names->filter(fn($n) => $n === 'Tú');
+                    $others = $names->filter(fn($n) => $n !== 'Tú');
+                    $names = $me->merge($others);
+                }
+                
+                return $names->implode(', ');
+            }
+        }
+        return $value;
+    }
 }
