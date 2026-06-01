@@ -27,11 +27,7 @@
     <!-- Iframe de Jitsi o Link a Meet -->
     <div class="flex-1 bg-black relative">
         @if($appointment->service->modality === 'jitsi')
-            <iframe allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; autoplay"
-                    src="https://meet.jit.si/SientiaMTX-{{ $appointment->localizador }}#userInfo.displayName=%22{{ urlencode($appointment->visitor->full_name) }}%22&config.prejoinPageEnabled=false"
-                    class="w-full h-full border-0"
-                    id="jitsi-iframe">
-            </iframe>
+            <div id="jitsi-container" class="w-full h-full"></div>
         @elseif($appointment->service->modality === 'meet')
             <div class="flex items-center justify-center h-full flex-col text-center space-y-6">
                 <svg class="w-24 h-24 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -44,4 +40,46 @@
         @endif
     </div>
 </div>
+@endsection
+
+@section('scripts')
+@if($appointment->service->modality === 'jitsi')
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const domain = "meet.jit.si";
+            const options = {
+                roomName: "SientiaMTX-{{ $appointment->localizador }}",
+                width: "100%",
+                height: "100%",
+                parentNode: document.getElementById('jitsi-container'),
+                configOverwrite: {
+                    prejoinPageEnabled: false,
+                    disableDeepLinking: true, // Evita molestas pantallas en móvil para bajar la app
+                    startWithAudioMuted: false,
+                    startWithVideoMuted: false,
+                    enableWelcomePage: false,
+                    toolbarButtons: [
+                        'microphone', 'camera', 'closedcaptions', 'desktop', 'embedmeeting', 'fullscreen',
+                        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+                        'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+                        'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+                        'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+                        'security'
+                    ]
+                },
+                interfaceConfigOverwrite: {
+                    SHOW_JITSI_WATERMARK: false,
+                    SHOW_BRAND_WATERMARK: false,
+                    SHOW_POWERED_BY: false,
+                    DEFAULT_BACKGROUND: '#111827'
+                },
+                userInfo: {
+                    displayName: "{{ $appointment->visitor->full_name }}"
+                }
+            };
+            const api = new JitsiMeetExternalAPI(domain, options);
+        });
+    </script>
+@endif
 @endsection
