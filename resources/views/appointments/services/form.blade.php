@@ -39,7 +39,6 @@
                 </div>
                 <div class="p-6 space-y-5">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {{-- Nombre --}}
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="name">Nombre del Servicio *</label>
@@ -56,7 +55,7 @@
                                 $selectedModalities = old('modality', $service->modality ?? ['presencial']);
                                 if (!is_array($selectedModalities)) $selectedModalities = [$selectedModalities];
                             @endphp
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 @foreach(\App\Models\AppointmentService::MODALITIES as $key => $label)
                                     <label class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-cyan-500 transition-colors group">
                                         <input type="checkbox" name="modality[]" value="{{ $key }}"
@@ -68,7 +67,6 @@
                             </div>
                             @error('modality') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
-                    </div>
 
                     {{-- Descripción Markdown --}}
                     <div>
