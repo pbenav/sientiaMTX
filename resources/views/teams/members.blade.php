@@ -63,26 +63,24 @@
                         {{ __('teams.members') }}
                         ({{ $members->total() }})</h2>
                     
-                    @can('manageMembers', $team)
-                        @if(($team->settings['has_appointments'] ?? false) || auth()->user()->is_admin)
-                            <div class="flex items-center gap-2">
-                                <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
-                                    @csrf @method('PATCH')
-                                    <input type="hidden" name="allow" value="1">
-                                    <button type="submit" class="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all select-none">
-                                        Habilitar Citas a Todos
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
-                                    @csrf @method('PATCH')
-                                    <input type="hidden" name="allow" value="0">
-                                    <button type="submit" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none">
-                                        Deshabilitar Todos
-                                    </button>
-                                </form>
-                            </div>
-                        @endif
-                    @endcan
+                    @if(auth()->user()->is_admin)
+                        <div class="flex items-center gap-2">
+                            <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="allow" value="1">
+                                <button type="submit" class="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all select-none">
+                                    Habilitar Citas a Todos
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="allow" value="0">
+                                <button type="submit" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none">
+                                    Deshabilitar Todos
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Filters -->
@@ -304,19 +302,25 @@
                             </x-modal>
                         </div>
                         <div class="flex items-center gap-4 justify-end min-w-[200px]">
-                            @can('manageMembers', $team)
-                                @if(($team->settings['has_appointments'] ?? false) || auth()->user()->is_admin)
-                                    <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
-                                        @csrf @method('PATCH')
-                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir portal de Cita Previa a este miembro">
-                                            <input type="hidden" name="allow_appointments" value="0">
-                                            <input type="checkbox" name="allow_appointments" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_appointments ?? false) ? 'checked' : '' }}>
-                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
-                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Cita Previa</span>
-                                        </label>
-                                    </form>
+                            @if(auth()->user()->is_admin)
+                                <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
+                                    @csrf @method('PATCH')
+                                    <label class="relative inline-flex items-center cursor-pointer" title="Permitir portal de Cita Previa a este miembro">
+                                        <input type="hidden" name="allow_appointments" value="0">
+                                        <input type="checkbox" name="allow_appointments" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_appointments ?? false) ? 'checked' : '' }}>
+                                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                        <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Cita Previa</span>
+                                    </label>
+                                </form>
+                            @else
+                                @if($member->pivot->allow_appointments ?? false)
+                                    <span class="px-2.5 py-1 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-violet-150 dark:border-violet-800/80 shadow-sm shrink-0 select-none">
+                                        Cita Previa
+                                    </span>
                                 @endif
+                            @endif
 
+                            @can('manageMembers', $team)
                                 <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"
                                     class="shrink-0">
                                     @csrf @method('PATCH')

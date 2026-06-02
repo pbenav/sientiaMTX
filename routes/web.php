@@ -246,6 +246,8 @@ Route::middleware('auth')->group(function () {
     // Global Settings routes
     Route::middleware('can:admin')->group(function () {
         Route::get('/settings/teams', [\App\Http\Controllers\TeamController::class, 'indexAdmin'])->name('settings.teams');
+        Route::patch('/settings/teams/{team}/toggle-setting', [\App\Http\Controllers\TeamController::class, 'toggleSetting'])->name('settings.teams.toggle-setting');
+        Route::post('/settings/teams/bulk-settings', [\App\Http\Controllers\TeamController::class, 'bulkSettings'])->name('settings.teams.bulk-settings');
         Route::get('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'mailSettings'])->name('settings.mail');
         Route::post('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'updateMailSettings'])->name('settings.mail.update');
         Route::post('/settings/mail/test', [\App\Http\Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');

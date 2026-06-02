@@ -5,17 +5,23 @@
 @section('styles')
 <style>
     #map {
-        height: calc(100vh - 4rem - 3.5rem);
-        min-height: 450px;
+        height: 100%;
+        width: 100%;
+    }
+    footer {
+        display: none !important;
     }
 </style>
 @endsection
 
 @section('content')
-<div class="flex-grow grid grid-cols-1 lg:grid-cols-4 overflow-hidden h-[calc(100vh-4rem-3.5rem)]">
+<div x-data="{ viewMode: 'list' }" 
+     x-on:show-map.window="viewMode = 'map'"
+     x-effect="if (viewMode === 'map') { $nextTick(() => window.dispatchEvent(new CustomEvent('update-map-size'))); }" 
+     class="flex-grow grid grid-cols-1 lg:grid-cols-4 overflow-hidden h-[calc(100vh-4rem)] relative">
     
     <!-- Sidebar de Miembros -->
-    <div class="lg:col-span-1 bg-white dark:bg-gray-900 border-r border-gray-150 dark:border-gray-800 flex flex-col h-full z-10 shadow-lg">
+    <div :class="viewMode === 'list' ? 'flex' : 'hidden lg:flex'" class="lg:col-span-1 bg-white dark:bg-gray-900 border-r border-gray-150 dark:border-gray-800 flex-col h-full z-10 shadow-lg">
         <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
             <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Puntos de Atención') }}</h2>
             <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Selecciona un miembro en el mapa o en la lista para solicitar cita.') }}</p>
@@ -67,11 +73,16 @@
                                     @endforeach
                                 </div>
                             @endif
-                            <div class="flex items-center gap-3 mt-2 text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
-                                <span class="flex items-center gap-1">
+                            <div class="flex items-center justify-between gap-2 mt-2">
+                                <span class="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
                                     <svg class="w-3.5 h-3.5 text-cyan-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
                                     {{ $m['services'] }} {{ $m['services'] == 1 ? __('servicio') : __('servicios') }}
                                 </span>
+                                <a href="/citas/{{ $m['slug'] }}" 
+                                   onclick="event.stopPropagation()" 
+                                   class="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all select-none hover:scale-105 active:scale-95 shrink-0">
+                                    {{ __('Pedir Cita') }}
+                                </a>
                             </div>
                         </div>
                         <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 mt-1 self-center" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -88,7 +99,7 @@
     </div>
 
     <!-- Mapa Leaflet -->
-    <div class="lg:col-span-3 relative">
+    <div :class="viewMode === 'map' ? 'block' : 'hidden lg:block'" class="lg:col-span-3 relative h-full w-full">
         <div id="map" class="w-full h-full"></div>
         
         <!-- Acceso rápido a Videoconferencia -->
@@ -132,6 +143,22 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+    <!-- Botón flotante para alternar vista en móvil -->
+    <div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000]">
+        <button @click="viewMode = (viewMode === 'list' ? 'map' : 'list')" 
+                class="flex items-center gap-2 px-5 py-3 bg-cyan-600 dark:bg-cyan-500 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-2xl shadow-cyan-500/30 transition-all active:scale-95 select-none">
+            <span x-show="viewMode === 'list'" class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                {{ __('Ver Mapa') }}
+            </span>
+            <span x-show="viewMode === 'map'" class="flex items-center gap-2" x-cloak>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                {{ __('Ver Lista') }}
+            </span>
+        </button>
     </div>
 @endsection
 
@@ -270,15 +297,29 @@
                 const lng = parseFloat(this.getAttribute('data-lng'));
                 const slug = this.getAttribute('data-slug');
 
+                const isMobile = window.innerWidth < 1024;
+                if (isMobile) {
+                    window.dispatchEvent(new CustomEvent('show-map'));
+                }
+
                 if (!isNaN(lat) && !isNaN(lng)) {
-                    map.setView([lat, lng], 14, { animate: true, duration: 1 });
-                    
-                    const marker = markersMap.get(slug);
-                    if (marker && markersGroup.hasLayer(marker)) {
-                        marker.openPopup();
-                    }
+                    setTimeout(() => {
+                        map.setView([lat, lng], 14, { animate: true, duration: 1 });
+                        
+                        const marker = markersMap.get(slug);
+                        if (marker && markersGroup.hasLayer(marker)) {
+                            marker.openPopup();
+                        }
+                    }, isMobile ? 150 : 0);
                 }
             });
+        });
+
+        // Escuchar evento para recalcular tamaño del mapa (por ejemplo al cambiar de vista en móvil)
+        window.addEventListener('update-map-size', () => {
+            if (map) {
+                map.invalidateSize();
+            }
         });
 
         // Escuchar el cambio de tema para cambiar los estilos del mapa

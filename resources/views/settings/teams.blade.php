@@ -29,6 +29,53 @@
         <div class="max-w-7xl mx-auto">
             @include('settings.partials.tabs')
 
+            <!-- Bulk Actions Row -->
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </span>
+                    <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Acciones Masivas Globales</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
+                        @csrf
+                        <input type="hidden" name="setting" value="has_appointments">
+                        <input type="hidden" name="value" value="1">
+                        <button type="submit" class="px-4 py-2 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all shadow-sm">
+                            Habilitar Cita Previa a Todos
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
+                        @csrf
+                        <input type="hidden" name="setting" value="has_appointments">
+                        <input type="hidden" name="value" value="0">
+                        <button type="submit" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                            Deshabilitar Citas a Todos
+                        </button>
+                    </form>
+                    <span class="h-5 w-px bg-gray-200 dark:bg-gray-700 mx-1"></span>
+                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
+                        @csrf
+                        <input type="hidden" name="setting" value="has_whatsapp">
+                        <input type="hidden" name="value" value="1">
+                        <button type="submit" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40 border border-emerald-150 dark:border-emerald-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all shadow-sm">
+                            Habilitar WhatsApp a Todos
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
+                        @csrf
+                        <input type="hidden" name="setting" value="has_whatsapp">
+                        <input type="hidden" name="value" value="0">
+                        <button type="submit" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                            Deshabilitar WhatsApp a Todos
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div class="mb-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-sm">
                 <form action="{{ route('settings.teams') }}" method="GET" class="flex flex-wrap items-center gap-3">
                     <div class="relative flex-1 min-w-[250px]">
@@ -116,6 +163,8 @@
                                         </div>
                                     </a>
                                 </th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Cita Previa</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">WhatsApp</th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -161,24 +210,48 @@
                                             {{ $team->tasks_count }} tareas
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-right space-x-2">
-                                        <a href="{{ route('teams.edit', $team) }}" class="inline-flex items-center p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </a>
-                                        
-                                        <form action="{{ route('teams.destroy', $team) }}" method="POST" class="inline" id="delete-team-{{ $team->id }}">
+                                    <td class="px-6 py-4 text-center">
+                                        <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
                                             @csrf
-                                            @method('DELETE')
-                                            <button type="button" 
-                                                onclick="confirmDelete({{ $team->id }}, '{{ $team->name }}')"
-                                                class="inline-flex items-center p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
+                                            @method('PATCH')
+                                            <input type="hidden" name="setting" value="has_appointments">
+                                            <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Citas Previas para {{ $team->name }}">
+                                                <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
+                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                            </label>
                                         </form>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="setting" value="has_whatsapp">
+                                            <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar WhatsApp para {{ $team->name }}">
+                                                <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
+                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                            </label>
+                                        </form>
+                                    </td>
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center justify-end gap-1">
+                                            <a href="{{ route('teams.edit', $team) }}" class="inline-flex items-center p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </a>
+                                            
+                                            <form action="{{ route('teams.destroy', $team) }}" method="POST" class="inline" id="delete-team-{{ $team->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" 
+                                                    onclick="confirmDelete({{ $team->id }}, '{{ $team->name }}')"
+                                                    class="inline-flex items-center p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

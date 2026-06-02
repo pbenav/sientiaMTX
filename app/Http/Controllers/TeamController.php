@@ -418,7 +418,7 @@ class TeamController extends Controller
      */
     public function updateMemberAppointments(Request $request, Team $team, User $user)
     {
-        $this->authorize('manageMembers', $team);
+        $this->authorize('admin');
 
         $team->members()->updateExistingPivot($user->id, [
             'allow_appointments' => $request->boolean('allow_appointments')
@@ -432,7 +432,7 @@ class TeamController extends Controller
      */
     public function updateAllMembersAppointments(Request $request, Team $team)
     {
-        $this->authorize('manageMembers', $team);
+        $this->authorize('admin');
 
         $allow = $request->boolean('allow');
         $memberIds = $team->members()->pluck('users.id')->toArray();
@@ -736,5 +736,57 @@ class TeamController extends Controller
             'success' => true,
             'is_favorite' => !$isCurrentFavorite
         ]);
+    }
+
+    /**
+     * Alternar configuración individual (Premium) de un equipo (Solo Admin)
+     */
+    public function toggleSetting(Request $request, Team $team)
+    {
+        $this->authorize('admin');
+
+        $validated = $request->validate([
+            'setting' => 'required|string|in:has_appointments,has_whatsapp',
+        ]);
+
+        $setting = $validated['setting'];
+        $settings = $team->settings ?? [];
+        $currentValue = $settings[$setting] ?? false;
+        
+        $settings[$setting] = !$currentValue;
+        $team->update(['settings' => $settings]);
+
+        $label = $setting === 'has_appointments' ? 'Citas Previas' : 'WhatsApp';
+        $statusText = $settings[$setting] ? 'habilitada' : 'deshabilitada';
+
+        return back()->with('success', "Funcionalidad de {$label} {$statusText} para el equipo {$team->name}.");
+    }
+
+    /**
+     * Activar o desactivar una configuración en todos los equipos (Solo Admin)
+     */
+    public function bulkSettings(Request $request)
+    {
+        $this->authorize('admin');
+
+        $validated = $request->validate([
+            'setting' => 'required|string|in:has_appointments,has_whatsapp',
+            'value' => 'required|boolean',
+        ]);
+
+        $setting = $validated['setting'];
+        $value = (bool)$validated['value'];
+
+        $teams = Team::all();
+        foreach ($teams as $team) {
+            $settings = $team->settings ?? [];
+            $settings[$setting] = $value;
+            $team->update(['settings' => $settings]);
+        }
+
+        $label = $setting === 'has_appointments' ? 'Cita Previa' : 'WhatsApp';
+        $statusText = $value ? 'habilitado' : 'deshabilitado';
+
+        return back()->with('success', "Se ha {$statusText} el Portal de {$label} para todos los equipos del sistema.");
     }
 }

@@ -16,7 +16,7 @@ class EnsureAppointmentsAreEnabled
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user() && !$request->user()->hasAppointmentsEnabled()) {
-            return redirect()->route('dashboard')->with('warning', 'La funcionalidad de Citas Previas no está habilitada para tu cuenta. Por favor, solicita a tu coordinador de equipo que la active para tu perfil.');
+            return redirect()->route('dashboard')->with('warning', 'La funcionalidad de Citas Previas no está habilitada para tu cuenta. Por favor, solicita a un administrador global que la active para tu perfil.');
         }
 
         return $next($request);
