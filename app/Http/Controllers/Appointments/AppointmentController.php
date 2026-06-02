@@ -123,8 +123,17 @@ class AppointmentController extends Controller
         $appointment->update($data);
 
         // Actualizar la tarea si existe
-        if ($appointment->task && (isset($data['appointment_date']) || isset($data['appointment_time']))) {
-            $appointment->task->update(['due_date' => $appointment->appointment_date]);
+        if ($appointment->task) {
+            $taskData = [];
+            if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
+                $taskData['due_date'] = $appointment->appointment_date;
+            }
+            if (array_key_exists('expediente_id', $data)) {
+                $taskData['expediente_id'] = $data['expediente_id'];
+            }
+            if (!empty($taskData)) {
+                $appointment->task->update($taskData);
+            }
         }
 
         return back()->with('success', 'Cita actualizada correctamente.');

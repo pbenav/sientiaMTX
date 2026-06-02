@@ -299,7 +299,7 @@ class PublicAppointmentController extends Controller
             ]);
 
             // Asignar al miembro
-            $task->assignedUsers()->syncWithoutDetaching([
+            $task->assignedTo()->syncWithoutDetaching([
                 $member->id => [
                     'assigned_at'    => now(),
                     'assigned_by_id' => $member->id,
