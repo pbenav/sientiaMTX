@@ -154,10 +154,10 @@
         const isDark = document.documentElement.classList.contains('dark');
         const cartoUrl = isDark 
             ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            : 'https://mt1.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}';
 
         const tiles = L.tileLayer(cartoUrl, {
-            attribution: '© OpenStreetMap contributors, CartoDB',
+            attribution: isDark ? '© OpenStreetMap contributors, CartoDB' : '© Google Maps',
             maxZoom: 20
         }).addTo(map);
 
@@ -288,7 +288,7 @@
                     const isDark = document.documentElement.classList.contains('dark');
                     const newCartoUrl = isDark 
                         ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+                        : 'https://mt1.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}';
                     tiles.setUrl(newCartoUrl);
                 }
             });
