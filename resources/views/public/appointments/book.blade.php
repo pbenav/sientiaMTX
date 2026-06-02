@@ -243,7 +243,7 @@
 
                 <div class="lg:col-span-4 flex justify-center items-center">
                     <button type="submit" id="submit-btn" disabled
-                            class="w-full py-4 text-xs font-black uppercase tracking-widest text-white bg-gray-350 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none">
+                            class="w-full py-4 text-xs font-black uppercase tracking-widest text-white bg-gray-300 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none">
                         {{ __('Confirmar Reserva') }}
                     </button>
                 </div>
@@ -449,7 +449,7 @@
                 submitBtn.className = "w-full py-3.5 text-xs font-black uppercase tracking-widest text-white bg-cyan-600 hover:bg-cyan-500 rounded-2xl shadow-lg shadow-cyan-500/20 active:scale-98 transition-all cursor-pointer";
             } else {
                 submitBtn.disabled = true;
-                submitBtn.className = "w-full py-3.5 text-xs font-black uppercase tracking-widest text-white bg-gray-350 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none";
+                submitBtn.className = "w-full py-3.5 text-xs font-black uppercase tracking-widest text-white bg-gray-300 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none";
             }
         }
     });
