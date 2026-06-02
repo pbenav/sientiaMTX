@@ -44,17 +44,21 @@ class SurveyController extends Controller
                 ->filter(fn($u) => $u->hasAppointmentsEnabled());
 
             foreach ($rawMembers as $u) {
-                if (!$u->appointmentSettings) {
-                    $u->appointmentSettings()->create([
-                        'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
-                        'display_name' => $u->name,
-                        'is_public' => true,
-                        'default_slot_duration' => 15,
-                        'default_max_per_slot' => 1,
-                        'auto_create_task' => true,
-                        'email_confirmation' => true,
-                    ]);
-                    $u->unsetRelation('appointmentSettings');
+                if ($u->appointmentSettings->isEmpty()) {
+                    $team = $u->firstTeamWithAppointments();
+                    if ($team) {
+                        $u->appointmentSettings()->create([
+                            'team_id' => $team->id,
+                            'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
+                            'display_name' => $u->name,
+                            'is_public' => true,
+                            'default_slot_duration' => 15,
+                            'default_max_per_slot' => 1,
+                            'auto_create_task' => true,
+                            'email_confirmation' => true,
+                        ]);
+                        $u->unsetRelation('appointmentSettings');
+                    }
                 }
 
                 if ($u->appointmentServices()->active()->count() === 0) {
@@ -91,8 +95,8 @@ class SurveyController extends Controller
                 ->filter(fn($u) => $u->hasAppointmentsEnabled())
                 ->filter(fn($u) => $u->appointmentServices->isNotEmpty())
                 ->map(fn($u) => [
-                    'slug'         => $u->appointmentSettings->public_slug,
-                    'display_name' => $u->appointmentSettings->display_name ?: $u->name,
+                    'slug'         => $u->appointmentSettings->first()?->public_slug,
+                    'display_name' => $u->appointmentSettings->first()?->display_name ?: $u->name,
                     'lat'          => $u->location_lat,
                     'lng'          => $u->location_lng,
                     'services'     => $u->appointmentServices->count(),

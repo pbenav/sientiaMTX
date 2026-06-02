@@ -29,17 +29,21 @@ class PublicAppointmentController extends Controller
         // 2. Inicializar de forma inteligente los que no tengan configuración o servicios
         foreach ($rawMembers as $u) {
             // Asegurar que tengan appointment_settings con is_public = true por defecto
-            if (!$u->appointmentSettings) {
-                $u->appointmentSettings()->create([
-                    'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
-                    'display_name' => $u->name,
-                    'is_public' => true,
-                    'default_slot_duration' => 15,
-                    'default_max_per_slot' => 1,
-                    'auto_create_task' => true,
-                    'email_confirmation' => true,
-                ]);
-                $u->unsetRelation('appointmentSettings'); // Forzar recarga de relación
+            if ($u->appointmentSettings->isEmpty()) {
+                $team = $u->firstTeamWithAppointments();
+                if ($team) {
+                    $u->appointmentSettings()->create([
+                        'team_id' => $team->id,
+                        'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
+                        'display_name' => $u->name,
+                        'is_public' => true,
+                        'default_slot_duration' => 15,
+                        'default_max_per_slot' => 1,
+                        'auto_create_task' => true,
+                        'email_confirmation' => true,
+                    ]);
+                    $u->unsetRelation('appointmentSettings'); // Forzar recarga de relación
+                }
             }
 
             // Asegurar que tengan al menos 1 servicio activo para que el portal sea funcional
@@ -79,8 +83,8 @@ class PublicAppointmentController extends Controller
             ->filter(fn($u) => $u->hasAppointmentsEnabled())
             ->filter(fn($u) => $u->appointmentServices->isNotEmpty())
             ->map(fn($u) => [
-                'slug'         => $u->appointmentSettings->public_slug,
-                'display_name' => $u->appointmentSettings->display_name ?: $u->name,
+                'slug'         => $u->appointmentSettings->first()?->public_slug,
+                'display_name' => $u->appointmentSettings->first()?->display_name ?: $u->name,
                 'lat'          => $u->location_lat,
                 'lng'          => $u->location_lng,
                 'services'     => $u->appointmentServices->count(),
@@ -147,7 +151,7 @@ class PublicAppointmentController extends Controller
      */
     public function book(Request $request, AppointmentService $service)
     {
-        $settings = $service->user->appointmentSettings;
+        $settings = $service->user->appointmentSettingsForTeam($service->team_id);
 
         if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabled()) {
             abort(404);
@@ -165,7 +169,7 @@ class PublicAppointmentController extends Controller
      */
     public function store(Request $request, AppointmentService $service)
     {
-        $settings = $service->user->appointmentSettings;
+        $settings = $service->user->appointmentSettingsForTeam($service->team_id);
         if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabled()) {
             abort(404);
         }
