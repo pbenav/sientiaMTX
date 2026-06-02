@@ -49,7 +49,7 @@
 
     <!-- Header / Navbar del portal público -->
     <header class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="w-full mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
             <a href="{{ route('public.appointments.map') }}" class="flex items-center gap-2.5 group">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -78,7 +78,7 @@
 
     <!-- Footer -->
     <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-850 py-6 shrink-0 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-400 dark:text-gray-500 font-medium">
+        <div class="w-full mx-auto px-5 lg:px-8 text-center text-xs text-gray-400 dark:text-gray-500 font-medium">
             <p>© {{ date('Y') }} Sientia MTX. Conectando ciudadanos y miembros en tiempo real.</p>
             <p class="mt-1.5 flex items-center justify-center gap-3">
                 <a href="#" class="hover:underline">Privacidad</a>
