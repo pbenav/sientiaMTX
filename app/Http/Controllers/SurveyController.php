@@ -39,17 +39,22 @@ class SurveyController extends Controller
             // Inicializar y obtener los miembros y equipos del mapa de citas
             $rawMembers = \App\Models\User::whereNotNull('location_lat')
                 ->whereNotNull('location_lng')
-                ->with(['appointmentSettings', 'appointmentServices'])
                 ->get()
                 ->filter(fn($u) => $u->hasAppointmentsEnabled());
 
             foreach ($rawMembers as $u) {
-                if ($u->appointmentSettings->isEmpty()) {
-                    $team = $u->firstTeamWithAppointments();
-                    if ($team) {
+                $userTeams = $u->teams()
+                    ->whereJsonContains('settings->has_appointments', true)
+                    ->wherePivot('allow_appointments', true)
+                    ->get();
+
+                foreach ($userTeams as $t) {
+                    // Asegurar que tengan appointment_settings con is_public = true por defecto para este equipo
+                    $settingsExist = $u->appointmentSettings()->where('team_id', $t->id)->exists();
+                    if (!$settingsExist) {
                         $u->appointmentSettings()->create([
-                            'team_id' => $team->id,
-                            'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id,
+                            'team_id' => $t->id,
+                            'public_slug' => \Illuminate\Support\Str::slug($u->name) . '-' . $u->id . '-' . $t->id,
                             'display_name' => $u->name,
                             'is_public' => true,
                             'default_slot_duration' => 15,
@@ -57,56 +62,55 @@ class SurveyController extends Controller
                             'auto_create_task' => true,
                             'email_confirmation' => true,
                         ]);
-                        $u->unsetRelation('appointmentSettings');
                     }
-                }
 
-                if ($u->appointmentServices()->active()->count() === 0) {
-                    $service = $u->appointmentServices()->create([
-                        'name' => 'Consulta General',
-                        'description' => 'Consulta o asesoramiento general de información.',
-                        'duration_minutes' => 15,
-                        'is_active' => true,
-                        'price' => null,
-                        'price_visible' => false,
-                    ]);
-
-                    for ($day = 1; $day <= 5; $day++) {
-                        \App\Models\AppointmentSchedule::create([
-                            'user_id' => $u->id,
-                            'service_id' => $service->id,
-                            'day_of_week' => $day,
-                            'start_time' => '09:00',
-                            'end_time' => '14:00',
-                            'slot_duration_minutes' => 15,
-                            'max_per_slot' => 1,
+                    // Asegurar que tengan al menos 1 servicio activo para este equipo
+                    $servicesExist = $u->appointmentServices()->where('team_id', $t->id)->active()->exists();
+                    if (!$servicesExist) {
+                        $service = $u->appointmentServices()->create([
+                            'team_id' => $t->id,
+                            'name' => 'Consulta General',
+                            'description' => 'Consulta o asesoramiento general de información.',
+                            'duration_minutes' => 15,
                             'is_active' => true,
+                            'price' => null,
+                            'price_visible' => false,
                         ]);
+
+                        for ($day = 1; $day <= 5; $day++) {
+                            \App\Models\AppointmentSchedule::create([
+                                'user_id' => $u->id,
+                                'service_id' => $service->id,
+                                'day_of_week' => $day,
+                                'start_time' => '09:00',
+                                'end_time' => '14:00',
+                                'slot_duration_minutes' => 15,
+                                'max_per_slot' => 1,
+                                'is_active' => true,
+                            ]);
+                        }
                     }
-                    $u->unsetRelation('appointmentServices');
                 }
             }
 
-            $members = \App\Models\User::whereHas('appointmentSettings', fn($q) => $q->where('is_public', true))
-                ->whereNotNull('location_lat')
-                ->whereNotNull('location_lng')
-                ->with(['appointmentSettings', 'appointmentServices' => fn($q) => $q->active()])
+            // Consultar la lista de configuraciones públicas
+            $settings = \App\Models\AppointmentSettings::where('is_public', true)
+                ->whereHas('user', fn($q) => $q->whereNotNull('location_lat')->whereNotNull('location_lng'))
+                ->with(['user', 'team'])
                 ->get()
-                ->filter(fn($u) => $u->hasAppointmentsEnabled())
-                ->filter(fn($u) => $u->appointmentServices->isNotEmpty())
-                ->map(fn($u) => [
-                    'slug'         => $u->appointmentSettings->first()?->public_slug,
-                    'display_name' => $u->appointmentSettings->first()?->display_name ?: $u->name,
-                    'lat'          => $u->location_lat,
-                    'lng'          => $u->location_lng,
-                    'services'     => $u->appointmentServices->count(),
-                    'area'         => $u->working_area_name ?: 'Área Territorial',
-                    'teams'        => $u->teams()
-                        ->whereJsonContains('settings->has_appointments', true)
-                        ->wherePivot('allow_appointments', true)
-                        ->pluck('name')
-                        ->toArray(),
-                ]);
+                ->filter(fn($s) => $s->user->hasAppointmentsEnabled());
+
+            $members = $settings->map(fn($s) => [
+                'slug'         => $s->public_slug,
+                'display_name' => $s->display_name ?: $s->user->name,
+                'lat'          => $s->user->location_lat,
+                'lng'          => $s->user->location_lng,
+                'services'     => $s->user->appointmentServices()->where('team_id', $s->team_id)->active()->count(),
+                'area'         => $s->user->working_area_name ?: 'Área Territorial',
+                'teams'        => $s->team ? [$s->team->name] : [],
+            ])
+            ->filter(fn($item) => $item['services'] > 0)
+            ->values();
 
             $allTeams = $members->pluck('teams')->flatten()->unique()->sort()->values()->toArray();
         }
