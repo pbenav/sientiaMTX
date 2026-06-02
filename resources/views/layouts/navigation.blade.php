@@ -20,7 +20,18 @@
                     </x-nav-link>
                     @if(auth()->user()->hasAppointmentsEnabled())
                         @php
-                            $navTeam = request()->route('team') ?? auth()->user()->firstTeamWithAppointments();
+                            $routeTeam = request()->route('team');
+                            $navTeam = null;
+                            if ($routeTeam) {
+                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
+                                $pivot = auth()->user()->teams()->where('teams.id', $routeTeamId)->first()?->pivot;
+                                if ($pivot && $pivot->allow_appointments) {
+                                    $navTeam = $routeTeam;
+                                }
+                            }
+                            if (!$navTeam) {
+                                $navTeam = auth()->user()->firstTeamWithAppointments();
+                            }
                         @endphp
                         @if($navTeam)
                             <x-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
@@ -196,16 +207,27 @@
             <x-responsive-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                 {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
             </x-responsive-nav-link>
-            @if(auth()->user()->hasAppointmentsEnabled())
-                @php
-                    $navTeam = request()->route('team') ?? auth()->user()->firstTeamWithAppointments();
-                @endphp
-                @if($navTeam)
-                    <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
-                        Citas Previas
-                    </x-responsive-nav-link>
-                @endif
-            @endif
+                    @if(auth()->user()->hasAppointmentsEnabled())
+                        @php
+                            $routeTeam = request()->route('team');
+                            $navTeam = null;
+                            if ($routeTeam) {
+                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
+                                $pivot = auth()->user()->teams()->where('teams.id', $routeTeamId)->first()?->pivot;
+                                if ($pivot && $pivot->allow_appointments) {
+                                    $navTeam = $routeTeam;
+                                }
+                            }
+                            if (!$navTeam) {
+                                $navTeam = auth()->user()->firstTeamWithAppointments();
+                            }
+                        @endphp
+                        @if($navTeam)
+                            <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
+                                Citas Previas
+                            </x-responsive-nav-link>
+                        @endif
+                    @endif
 
             @if (request()->route('team'))
                 @php
