@@ -19,25 +19,29 @@
 
         <div class="flex items-center gap-3">
             @if($appointment->modality === 'jitsi')
-                <a href="https://meet.ffmuc.net/SientiaMTX-{{ $appointment->localizador }}" target="_blank"
-                   class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
+                <a href="https://meet.jit.si/SientiaMTX-{{ $appointment->localizador }}" target="_blank"
+                   class="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/30 animate-pulse">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    {{ __('Abrir en ventana externa') }}
+                    {{ __('Abrir sin límite de tiempo') }}
                 </a>
             @endif
 
             <a href="{{ route('public.appointments.confirm', $appointment->localizador) }}" 
                class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                {{ __('Salir de la sala') }}
+                {{ __('Salir') }}
             </a>
         </div>
     </div>
 
     <!-- Iframe de Jitsi o Link a Meet -->
-    <div class="flex-1 bg-black relative">
+    <div class="flex-1 bg-black relative flex flex-col">
         @if($appointment->modality === 'jitsi')
-            <div id="jitsi-container" class="w-full h-full"></div>
+            <div class="bg-indigo-950/80 text-indigo-200 text-xs text-center py-2 px-4 border-b border-indigo-900 shrink-0 flex items-center justify-center gap-3">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span><strong>Aviso:</strong> El modo integrado se desconectará en 5 minutos. Para sesiones más largas, usa el botón "Abrir sin límite de tiempo" superior.</span>
+            </div>
+            <div id="jitsi-container" class="w-full h-full flex-1"></div>
         @elseif($appointment->modality === 'meet')
             <div class="flex items-center justify-center h-full flex-col text-center space-y-6">
                 <svg class="w-24 h-24 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -54,10 +58,10 @@
 
 @section('scripts')
 @if($appointment->modality === 'jitsi')
-    <script src="https://meet.ffmuc.net/external_api.js"></script>
+    <script src="https://meet.jit.si/external_api.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const domain = "meet.ffmuc.net";
+            const domain = "meet.jit.si";
             const options = {
                 roomName: "SientiaMTX-{{ $appointment->localizador }}",
                 width: "100%",
