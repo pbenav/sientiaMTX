@@ -44,10 +44,10 @@
 
 @section('scripts')
 @if($appointment->modality === 'jitsi')
-    <script src="https://meet.jit.si/external_api.js"></script>
+    <script src="https://meet.ffmuc.net/external_api.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const domain = "meet.jit.si";
+            const domain = "meet.ffmuc.net";
             const options = {
                 roomName: "SientiaMTX-{{ $appointment->localizador }}",
                 width: "100%",
