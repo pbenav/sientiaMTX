@@ -419,7 +419,8 @@
                         <div id="map-members-list"
                             class="flex-grow overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
                             @forelse($members as $m)
-                                <div class="map-member-item p-4 hover:bg-violet-50/30 dark:hover:bg-violet-950/15 cursor-pointer transition-colors"
+                                <a href="/citas/{{ $m['slug'] }}" target="_blank"
+                                    class="map-member-item block p-4 hover:bg-violet-50/30 dark:hover:bg-violet-950/15 cursor-pointer transition-colors"
                                     data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}"
                                     data-slug="{{ $m['slug'] }}" data-name="{{ $m['display_name'] }}"
                                     data-area="{{ $m['area'] ?? '' }}"
@@ -439,7 +440,7 @@
                                                     {{ $m['area'] }}</p>
                                             @endif
                                             <div
-                                                class="flex items-center gap-2 mt-1.5 text-[9px] text-gray-400 dark:text-gray-550 font-bold">
+                                                class="flex items-center justify-between gap-2 mt-1.5 text-[9px] text-gray-400 dark:text-gray-555 font-bold">
                                                 <span class="flex items-center gap-1">
                                                     <svg class="w-3 h-3 text-violet-500 shrink-0" fill="none"
                                                         stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -449,6 +450,10 @@
                                                     {{ $m['services'] }}
                                                     {{ $m['services'] == 1 ? 'servicio' : 'servicios' }}
                                                 </span>
+                                                <!-- BOTON MAPA -->
+                                                <button type="button" class="locate-map-btn p-1 text-gray-455 hover:text-violet-600 dark:hover:text-violet-455 rounded-lg transition-colors mr-1" title="Ver en el mapa" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                                </button>
                                             </div>
                                         </div>
                                         <svg class="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 mt-1 self-center"
@@ -457,7 +462,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                                         </svg>
                                     </div>
-                                </div>
+                                </a>
                             @empty
                                 <div class="p-8 text-center">
                                     <p class="text-2xl mb-1">🗺️</p>
@@ -637,9 +642,13 @@
                 if (searchInput) searchInput.addEventListener('input', applyFilters);
                 if (teamFilter) teamFilter.addEventListener('change', applyFilters);
 
-                // Al hacer clic en un miembro
-                items.forEach(item => {
-                    item.addEventListener('click', function() {
+                // Interacción al hacer clic en el botón de localizar en el mapa
+                const locateButtons = document.querySelectorAll('.locate-map-btn');
+                locateButtons.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
                         const lat = parseFloat(this.getAttribute('data-lat'));
                         const lng = parseFloat(this.getAttribute('data-lng'));
                         const slug = this.getAttribute('data-slug');

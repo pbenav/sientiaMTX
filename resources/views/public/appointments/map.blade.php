@@ -48,13 +48,14 @@
         
         <div id="members-list" class="flex-grow overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
             @forelse($members as $m)
-                <div class="member-item p-4 hover:bg-cyan-50/30 dark:hover:bg-cyan-950/15 cursor-pointer transition-colors" 
-                     data-lat="{{ $m['lat'] }}" 
-                     data-lng="{{ $m['lng'] }}"
-                     data-slug="{{ $m['slug'] }}"
-                     data-name="{{ $m['display_name'] }}"
-                     data-area="{{ $m['area'] ?? '' }}"
-                     data-teams="{{ json_encode($m['teams'] ?? []) }}">
+                <a href="/citas/{{ $m['slug'] }}" 
+                   class="member-item block p-4 hover:bg-cyan-50/30 dark:hover:bg-cyan-950/15 cursor-pointer transition-colors" 
+                   data-lat="{{ $m['lat'] }}" 
+                   data-lng="{{ $m['lng'] }}"
+                   data-slug="{{ $m['slug'] }}"
+                   data-name="{{ $m['display_name'] }}"
+                   data-area="{{ $m['area'] ?? '' }}"
+                   data-teams="{{ json_encode($m['teams'] ?? []) }}">
                     <div class="flex items-start gap-3">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-400 to-blue-500 flex items-center justify-center text-white shrink-0 shadow-sm">
                             <span class="text-xs font-black uppercase">{{ substr($m['display_name'], 0, 2) }}</span>
@@ -78,16 +79,19 @@
                                     <svg class="w-3.5 h-3.5 text-cyan-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
                                     {{ $m['services'] }} {{ $m['services'] == 1 ? __('servicio') : __('servicios') }}
                                 </span>
-                                <a href="/citas/{{ $m['slug'] }}" 
-                                   onclick="event.stopPropagation()" 
-                                   class="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all select-none hover:scale-105 active:scale-95 shrink-0">
-                                    {{ __('Pedir Cita') }}
-                                </a>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                    </button>
+                                    <span class="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all select-none hover:scale-105 active:scale-95 shrink-0">
+                                        {{ __('Pedir Cita') }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 mt-1 self-center" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
-                </div>
+                </a>
             @empty
                 <div class="p-8 text-center">
                     <p class="text-3xl mb-2">🗺️</p>
@@ -290,9 +294,13 @@
         if (searchInput) searchInput.addEventListener('input', applyFilters);
         if (teamFilter) teamFilter.addEventListener('change', applyFilters);
 
-        // Interacción al hacer clic en un elemento de la lista lateral
-        items.forEach(item => {
-            item.addEventListener('click', function () {
+        // Interacción al hacer clic en el botón de localizar en el mapa
+        const locateButtons = document.querySelectorAll('.locate-map-btn');
+        locateButtons.forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
                 const lat = parseFloat(this.getAttribute('data-lat'));
                 const lng = parseFloat(this.getAttribute('data-lng'));
                 const slug = this.getAttribute('data-slug');
