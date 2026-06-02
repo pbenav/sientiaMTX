@@ -295,7 +295,7 @@ class PublicAppointmentController extends Controller
                 'due_date'       => $appointment->appointment_date,
                 'created_by_id'  => $member->id,
                 'expediente_id'  => $expedienteId,
-                'team_id'        => $member->favorite_team_id,
+                'team_id'        => $appointment->service->team_id ?? $member->favorite_team_id,
             ]);
 
             // Asignar al miembro

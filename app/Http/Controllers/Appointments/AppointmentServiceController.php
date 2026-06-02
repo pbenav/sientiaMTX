@@ -16,13 +16,27 @@ class AppointmentServiceController extends Controller
 
     public function create()
     {
-        return view('appointments.services.create');
+        $teams = auth()->user()->teams()
+            ->whereJsonContains('settings->has_appointments', true)
+            ->wherePivot('allow_appointments', true)
+            ->get();
+        return view('appointments.services.create', compact('teams'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'name'               => 'required|string|max:150',
+            'team_id'            => [
+                'required',
+                \Illuminate\Validation\Rule::exists('teams', 'id')->where(function ($query) {
+                    $query->whereJsonContains('settings->has_appointments', true);
+                }),
+                \Illuminate\Validation\Rule::exists('team_user', 'team_id')->where(function ($query) {
+                    $query->where('user_id', auth()->id())
+                          ->where('allow_appointments', true);
+                }),
+            ],
             'modality'           => 'required|array|min:1',
             'modality.*'         => 'string|in:presencial,jitsi,meet',
             'description'        => 'nullable|string',
@@ -74,7 +88,11 @@ class AppointmentServiceController extends Controller
     public function edit(AppointmentService $service)
     {
         $this->authorizeService($service);
-        return view('appointments.services.edit', compact('service'));
+        $teams = auth()->user()->teams()
+            ->whereJsonContains('settings->has_appointments', true)
+            ->wherePivot('allow_appointments', true)
+            ->get();
+        return view('appointments.services.edit', compact('service', 'teams'));
     }
 
     public function update(Request $request, AppointmentService $service)
@@ -83,6 +101,16 @@ class AppointmentServiceController extends Controller
 
         $data = $request->validate([
             'name'               => 'required|string|max:150',
+            'team_id'            => [
+                'required',
+                \Illuminate\Validation\Rule::exists('teams', 'id')->where(function ($query) {
+                    $query->whereJsonContains('settings->has_appointments', true);
+                }),
+                \Illuminate\Validation\Rule::exists('team_user', 'team_id')->where(function ($query) {
+                    $query->where('user_id', auth()->id())
+                          ->where('allow_appointments', true);
+                }),
+            ],
             'modality'           => 'required|array|min:1',
             'modality.*'         => 'string|in:presencial,jitsi,meet',
             'description'        => 'nullable|string',

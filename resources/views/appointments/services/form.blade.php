@@ -39,6 +39,22 @@
                 </div>
                 <div class="p-6 space-y-5">
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{-- Equipo --}}
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="team_id">Equipo Asociado *</label>
+                            <select id="team_id" name="team_id" required
+                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                <option value="" disabled {{ !old('team_id', $service->team_id ?? '') ? 'selected' : '' }}>Selecciona un equipo...</option>
+                                @foreach($teams as $team)
+                                    <option value="{{ $team->id }}" {{ old('team_id', $service->team_id ?? '') == $team->id ? 'selected' : '' }}>
+                                        {{ $team->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('team_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+
                         {{-- Nombre --}}
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="name">Nombre del Servicio *</label>
@@ -47,6 +63,7 @@
                                    placeholder="ej. Consulta General, Asesoramiento Técnico...">
                             @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
+                    </div>
 
                         {{-- Modalidades --}}
                         <div>

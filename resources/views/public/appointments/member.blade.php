@@ -52,6 +52,11 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-3 flex-wrap">
                             <h3 class="text-base font-black text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $service->name }}</h3>
+                            @if($service->team)
+                                <span class="text-[10px] font-black text-violet-750 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2 py-0.5 rounded-md border border-violet-100 dark:border-violet-900/50">
+                                    {{ $service->team->name }}
+                                </span>
+                            @endif
                             
                             <span class="text-[10px] font-black text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-2 py-0.5 rounded-md">
                                 ⏱ {{ $service->duration_minutes }} min

@@ -68,6 +68,9 @@
                         <div class="flex items-start justify-between gap-3 mb-3">
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-base font-black text-gray-900 dark:text-white truncate">{{ $service->name }}</h3>
+                                @if($service->team)
+                                    <p class="text-[9px] font-black uppercase text-violet-600 dark:text-violet-400 tracking-wider mt-0.5">{{ $service->team->name }}</p>
+                                @endif
                                 <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                     <span class="text-[10px] font-black text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-2 py-0.5 rounded-md">
                                         ⏱ {{ $service->duration_minutes }}min
