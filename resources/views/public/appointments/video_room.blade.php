@@ -19,7 +19,7 @@
 
         <div class="flex items-center gap-3">
             @if($appointment->modality === 'jitsi')
-                <a href="https://meet.jit.si/SientiaMTX-{{ $appointment->localizador }}" target="_blank"
+                <a href="https://meet.jit.si/SientiaMTX-{{ $appointment->localizador }}" target="_blank" id="btn-open-external"
                    class="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/30 animate-pulse">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     {{ __('Abrir sin límite de tiempo') }}
@@ -93,6 +93,22 @@
                 }
             };
             const api = new JitsiMeetExternalAPI(domain, options);
+            
+            // Cuando el usuario hace clic en "Abrir sin límite de tiempo"
+            const btnExternal = document.getElementById('btn-open-external');
+            if (btnExternal) {
+                btnExternal.addEventListener('click', function() {
+                    // Desconectamos el iframe actual para que la cámara/micro queden libres
+                    // y el usuario no se escuche doble
+                    api.dispose();
+                    document.getElementById('jitsi-container').innerHTML = 
+                        '<div class="flex flex-col items-center justify-center h-full text-gray-500 space-y-4">' +
+                        '<svg class="w-16 h-16 text-indigo-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>' +
+                        '<p class="text-sm font-bold text-indigo-200">Videollamada movida a una ventana externa</p>' +
+                        '<p class="text-xs">Puedes cerrar esta pantalla con total seguridad.</p>' +
+                        '</div>';
+                });
+            }
         });
     </script>
 @endif
