@@ -17,11 +17,21 @@
             </div>
         </div>
 
-        <a href="{{ route('public.appointments.confirm', $appointment->localizador) }}" 
-           class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            {{ __('Salir de la sala') }}
-        </a>
+        <div class="flex items-center gap-3">
+            @if($appointment->modality === 'jitsi')
+                <a href="https://meet.ffmuc.net/SientiaMTX-{{ $appointment->localizador }}" target="_blank"
+                   class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    {{ __('Abrir en ventana externa') }}
+                </a>
+            @endif
+
+            <a href="{{ route('public.appointments.confirm', $appointment->localizador) }}" 
+               class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                {{ __('Salir de la sala') }}
+            </a>
+        </div>
     </div>
 
     <!-- Iframe de Jitsi o Link a Meet -->
