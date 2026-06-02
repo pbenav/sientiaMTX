@@ -14,8 +14,8 @@
 
     <!-- Título -->
     <div>
-        <h1 class="text-3xl font-black text-gray-900 dark:text-white heading-font tracking-tight">Acceso a Videoconferencia</h1>
-        <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-2">Introduce el Localizador de tu cita para entrar a la sala.</p>
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white heading-font tracking-tight">{{ __('Acceso a Videoconferencia') }}</h1>
+        <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-2">{{ __('Introduce el Localizador de tu cita para entrar a la sala.') }}</p>
     </div>
 
     @if($errors->any())
@@ -29,17 +29,17 @@
         <form method="POST" action="{{ route('public.appointments.video.access', $appointment) }}" class="space-y-6">
             @csrf
             <div>
-                <label for="localizador" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Localizador Único</label>
+                <label for="localizador" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Localizador Único') }}</label>
                 <input type="text" name="localizador" id="localizador" required autofocus autocomplete="off"
                        value="{{ old('localizador', $prefilledLocalizador ?? '') }}"
                        class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-lg font-mono font-black text-center uppercase text-gray-900 dark:text-white outline-none transition-all"
-                       placeholder="EJ. MTXCITA-XXXXXXXX">
+                       placeholder="{{ __('EJ. MTXCITA-XXXXXXXX') }}">
             </div>
 
             <button type="submit"
                     class="w-full flex items-center justify-center gap-2 px-5 py-3.5 text-xs font-black uppercase tracking-widest text-white bg-cyan-600 hover:bg-cyan-500 rounded-2xl shadow-lg shadow-cyan-500/20 active:scale-98 transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                Acceder a la Sala
+                {{ __('Acceder a la Sala') }}
             </button>
         </form>
     </div>

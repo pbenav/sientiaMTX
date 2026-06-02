@@ -18,7 +18,7 @@ class AppointmentNewRequestMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '📅 Nueva Cita Previa — ' . $this->appointment->localizador,
+            subject: '📅 ' . __('Nueva Cita Previa') . ' — ' . $this->appointment->localizador,
         );
     }
 

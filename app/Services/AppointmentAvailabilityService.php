@@ -77,7 +77,10 @@ class AppointmentAvailabilityService
                     return $block->start_datetime < $slotEnd && $block->end_datetime > $current;
                 });
 
-                if (!$isBlocked) {
+                // Comprobar si el tramo es en el pasado
+                $isPast = $current->isPast();
+
+                if (!$isBlocked && !$isPast) {
                     // Evitar duplicados si por algún motivo coinciden franjas
                     $exists = collect($slots)->contains('time', $timeKey);
                     if (!$exists) {

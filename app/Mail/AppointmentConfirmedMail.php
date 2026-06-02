@@ -18,7 +18,7 @@ class AppointmentConfirmedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '✅ Cita Confirmada — ' . $this->appointment->localizador,
+            subject: '✅ ' . __('Cita Confirmada') . ' — ' . $this->appointment->localizador,
         );
     }
 

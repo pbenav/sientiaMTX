@@ -14,7 +14,7 @@ class LocaleController extends Controller
     /**
      * Available locales for the application.
      */
-    protected array $availableLocales = ['en', 'es'];
+    protected array $availableLocales = ['es', 'fr', 'en', 'ro', 'ar', 'wo'];
 
     /**
      * Switch the application locale.

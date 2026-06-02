@@ -68,7 +68,7 @@ Route::get('/invitations/{token}', [\App\Http\Controllers\TeamInvitationControll
 // Locale switcher
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
     ->name('locale.switch')
-    ->where('locale', 'en|es');
+    ->where('locale', 'es|fr|en|ro|ar|wo');
 
 
 Route::get('/dashboard', function () {

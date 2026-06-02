@@ -8,15 +8,15 @@
     <!-- Breadcrumb / Volver -->
     <a href="{{ route('public.appointments.member', $settings->public_slug) }}" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-        Volver a Servicios
+        {{ __('Volver a Servicios') }}
     </a>
 
     <!-- Información del servicio -->
     <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 p-6 shadow-sm flex items-center justify-between gap-6 flex-wrap">
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400 mb-1">Servicio Seleccionado</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400 mb-1">{{ __('Servicio Seleccionado') }}</p>
             <h1 class="text-xl font-black text-gray-900 dark:text-white heading-font tracking-tight">{{ $service->name }}</h1>
-            <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-0.5">con {{ $settings->display_name ?: $service->user->name }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-0.5">{{ __('con') }} {{ $settings->display_name ?: $service->user->name }}</p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
             <span class="text-xs font-black text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-3 py-1.5 rounded-xl">
@@ -24,7 +24,7 @@
             </span>
             @if($service->price !== null && $service->price_visible)
                 <span class="text-xs font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-xl">
-                    {{ $service->price > 0 ? '€' . number_format($service->price, 2) : 'Gratuito' }}
+                    {{ $service->price > 0 ? '€' . number_format($service->price, 2) : __('Gratuito') }}
                 </span>
             @endif
         </div>
@@ -34,7 +34,7 @@
         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 rounded-2xl p-4 text-sm font-bold flex items-start gap-3">
             <svg class="w-5 h-5 shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             <div class="flex-1">
-                <p class="font-black">Se han producido errores al procesar tu solicitud:</p>
+                <p class="font-black">{{ __('Se han producido errores al procesar tu solicitud:') }}</p>
                 <ul class="list-disc list-inside mt-1 font-semibold text-xs text-red-700 dark:text-red-400">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -53,7 +53,7 @@
             <!-- Calendario -->
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 overflow-hidden">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">1. Elige la fecha</h3>
+                    <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('1. Elige la fecha') }}</h3>
                     <div class="flex items-center gap-1">
                         <button type="button" id="prev-month" class="p-2 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-xl transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -81,16 +81,16 @@
 
             <!-- Horas disponibles -->
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 overflow-hidden">
-                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font mb-4">2. Selecciona la hora</h3>
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font mb-4">{{ __('2. Selecciona la hora') }}</h3>
                 
                 <div id="no-date-selected" class="p-6 text-center text-gray-450 dark:text-gray-550">
                     <p class="text-3xl mb-2">📅</p>
-                    <p class="text-xs font-semibold">Selecciona un día en el calendario de la izquierda para ver las horas disponibles.</p>
+                    <p class="text-xs font-semibold">{{ __('Selecciona un día en el calendario de la izquierda para ver las horas disponibles.') }}</p>
                 </div>
 
                 <div id="slots-loading" class="hidden p-6 text-center">
                     <div class="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    <p class="text-xs font-semibold text-gray-400 dark:text-gray-500">Buscando tramos libres...</p>
+                    <p class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ __('Buscando tramos libres...') }}</p>
                 </div>
 
                 <div id="slots-container" class="hidden grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
@@ -105,8 +105,8 @@
         <!-- Fila 2: Formulario del Ciudadano (Ancho Completo con Grid Multi-columna) -->
         <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 space-y-6">
             <div class="border-b border-gray-100 dark:border-gray-800 pb-3">
-                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">3. Tus Datos</h3>
-                <p class="text-[10px] text-gray-400 mt-0.5">Por favor, rellena tu información de contacto para confirmar la cita previa</p>
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('3. Tus Datos') }}</h3>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Por favor, rellena tu información de contacto para confirmar la cita previa') }}</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -115,32 +115,50 @@
                 @endphp
                 @if(count($modalities) > 1)
                     <div class="md:col-span-12">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Modalidad de la Cita *</label>
-                        <select name="modality" required
-                                class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-2.5">{{ __('Modalidad de la Cita') }} *</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                             @foreach($modalities as $mod)
-                                <option value="{{ $mod }}">{{ \App\Models\AppointmentService::MODALITIES[$mod] ?? ucfirst($mod) }}</option>
+                                <label class="relative flex items-center justify-center p-4 border border-gray-200 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20 transition-all group has-[:checked]:bg-cyan-50 has-[:checked]:dark:bg-cyan-900/30 has-[:checked]:border-cyan-500 has-[:checked]:dark:border-cyan-500">
+                                    <input type="radio" name="modality" value="{{ $mod }}" required class="peer sr-only">
+                                    <div class="text-center">
+                                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 peer-checked:bg-cyan-100 dark:peer-checked:bg-cyan-900 flex items-center justify-center mx-auto mb-2 text-gray-500 peer-checked:text-cyan-600 transition-colors">
+                                            @if($mod === 'presencial')
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                            @elseif($mod === 'jitsi')
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                            @else
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                            @endif
+                                        </div>
+                                        <p class="text-[11px] font-black text-gray-700 dark:text-gray-300 peer-checked:text-cyan-700 dark:peer-checked:text-cyan-400">
+                                            {{ __(\App\Models\AppointmentService::MODALITIES[$mod] ?? ucfirst($mod)) }}
+                                        </p>
+                                    </div>
+                                    <div class="absolute right-3 top-3 opacity-0 peer-checked:opacity-100 transition-opacity text-cyan-500">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    </div>
+                                </label>
                             @endforeach
-                        </select>
+                        </div>
                     </div>
                 @else
                     <input type="hidden" name="modality" value="{{ $modalities[0] }}">
                 @endif
 
                 <div class="md:col-span-6">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Nombre *</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Nombre') }} *</label>
                     <input type="text" name="first_name" required value="{{ old('first_name') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
                 
                 <div class="md:col-span-6">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Apellidos *</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Apellidos') }} *</label>
                     <input type="text" name="last_name" required value="{{ old('last_name') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">DNI / NIE / Pasaporte</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('DNI / NIE / Pasaporte') }}</label>
                     <input type="text" id="input-dni" name="dni" value="{{ old('dni') }}" autocomplete="off"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="12345678A, X1234567A...">
@@ -149,7 +167,7 @@
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Correo Electrónico</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Correo Electrónico') }}</label>
                     <input type="email" id="input-email" name="email" value="{{ old('email') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="nombre@ejemplo.com">
@@ -158,7 +176,7 @@
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Teléfono Móvil</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Teléfono Móvil') }}</label>
                     <input type="tel" id="input-phone" name="phone" value="{{ old('phone') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="+34 600 000 000">
@@ -168,25 +186,25 @@
 
                 <div class="md:col-span-8">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">
-                        Municipio
-                        <span id="geo-loading" class="hidden ml-2 text-cyan-500 normal-case tracking-normal font-semibold">⟳ Detectando ubicación...</span>
-                        <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 Rellenado por ubicación del servicio</span>
+                        {{ __('Municipio') }}
+                        <span id="geo-loading" class="hidden ml-2 text-cyan-500 normal-case tracking-normal font-semibold">⟳ {{ __('Detectando ubicación...') }}</span>
+                        <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 {{ __('Rellenado por ubicación del servicio') }}</span>
                     </label>
                     <input type="text" id="input-city" name="city" value="{{ old('city') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Código Postal</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Código Postal') }}</label>
                     <input type="text" id="input-postal" name="postal_code" value="{{ old('postal_code') }}"
                            class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-12">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Observaciones</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Observaciones') }}</label>
                     <textarea name="observations" rows="3"
                               class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
-                              placeholder="Indica de forma breve el motivo de tu consulta...">{{ old('observations') }}</textarea>
+                              placeholder="{{ __('Indica de forma breve el motivo de tu consulta...') }}">{{ old('observations') }}</textarea>
                 </div>
             </div>
         </div>
@@ -196,28 +214,28 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div class="lg:col-span-8 space-y-4">
                     <div class="border-b border-gray-100 dark:border-gray-800 pb-2 mb-2">
-                        <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">4. Consentimiento y GDPR</h3>
+                        <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('4. Consentimiento y GDPR') }}</h3>
                     </div>
                     
                     <div class="space-y-3">
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_data" value="1" required class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
                             <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 leading-tight">
-                                Acepto el tratamiento de mis datos personales únicamente con la finalidad de gestionar la reserva de cita previa conforme al RGPD. *
+                                {{ __('Acepto el tratamiento de mis datos personales únicamente con la finalidad de gestionar la reserva de cita previa conforme al RGPD.') }} *
                             </span>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_legal" value="1" required class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
                             <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 leading-tight">
-                                He leído y acepto el aviso legal y las condiciones de uso de este portal de citas públicas. *
+                                {{ __('He leído y acepto el aviso legal y las condiciones de uso de este portal de citas públicas.') }} *
                             </span>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_email" value="1" checked class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
                             <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 leading-tight">
-                                Deseo recibir una confirmación de cita en mi dirección de correo electrónico con los detalles y el localizador único.
+                                {{ __('Deseo recibir una confirmación de cita en mi dirección de correo electrónico con los detalles y el localizador único.') }}
                             </span>
                         </label>
                     </div>
@@ -226,7 +244,7 @@
                 <div class="lg:col-span-4 flex justify-center items-center">
                     <button type="submit" id="submit-btn" disabled
                             class="w-full py-4 text-xs font-black uppercase tracking-widest text-white bg-gray-350 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none">
-                        Confirmar Reserva
+                        {{ __('Confirmar Reserva') }}
                     </button>
                 </div>
             </div>

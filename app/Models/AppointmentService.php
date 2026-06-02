@@ -20,6 +20,7 @@ class AppointmentService extends Model
         'price_visible',
         'is_active',
         'sort_order',
+        'translations',
     ];
 
     const MODALITIES = [
@@ -33,7 +34,32 @@ class AppointmentService extends Model
         'price'         => 'decimal:2',
         'price_visible' => 'boolean',
         'is_active'     => 'boolean',
+        'translations'  => 'array',
     ];
+
+    /**
+     * Accesor para obtener el nombre traducido al idioma actual, o el original si no existe.
+     */
+    public function getNameAttribute($value)
+    {
+        $locale = app()->getLocale();
+        if ($locale !== 'es' && is_array($this->translations) && isset($this->translations[$locale]['name'])) {
+            return $this->translations[$locale]['name'];
+        }
+        return $value;
+    }
+
+    /**
+     * Accesor para obtener la descripción traducida, o la original si no existe.
+     */
+    public function getDescriptionAttribute($value)
+    {
+        $locale = app()->getLocale();
+        if ($locale !== 'es' && is_array($this->translations) && isset($this->translations[$locale]['description'])) {
+            return $this->translations[$locale]['description'];
+        }
+        return $value;
+    }
 
     public function user(): BelongsTo
     {
@@ -53,6 +79,17 @@ class AppointmentService extends Model
     public function blocks(): HasMany
     {
         return $this->hasMany(AppointmentBlock::class, 'service_id');
+    }
+
+    protected static function booted()
+    {
+        static::saved(function ($service) {
+            // Si cambian los textos o es nuevo
+            if ($service->wasChanged('name') || $service->wasChanged('description') || $service->wasRecentlyCreated) {
+                // Despachamos el job
+                \App\Jobs\TranslateAppointmentServiceJob::dispatch($service);
+            }
+        });
     }
 
     /**

@@ -19,15 +19,21 @@
                 </h1>
             </div>
         </div>
+    </div>
+    
+    <!-- Sub-Menú de Navegación -->
+    @include('appointments.partials.nav')
+
+    <!-- Action Buttons Row -->
+    <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
         <a href="{{ route('appointments.services.create') }}"
            class="flex items-center gap-2 text-xs bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-cyan-500/20 active:scale-95 group shrink-0">
             <svg class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            Nuevo Servicio
+            <span>Nuevo Servicio</span>
         </a>
     </div>
-    @include('appointments.partials.nav')
 </x-slot>
 
 <div class="py-8">

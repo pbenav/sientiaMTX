@@ -87,6 +87,7 @@
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Ciudadano</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Servicio</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Estado</th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Completada</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400"></th>
                             </tr>
                         </thead>
@@ -127,6 +128,18 @@
                                             @else bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 @endif">
                                             {{ $cita->status_label }}
                                         </span>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-center">
+                                        @if(!in_array($cita->status, ['cancelled', 'blocked']))
+                                            <form method="POST" action="{{ route('appointments.update', $cita) }}" x-data x-ref="form" class="inline-block" x-on:change="$refs.form.submit()">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="status" :value="$el.querySelector('input[type=checkbox]').checked ? 'completed' : 'confirmed'">
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" class="sr-only peer" {{ $cita->status === 'completed' ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                                </label>
+                                            </form>
+                                        @endif
                                     </td>
                                     <td class="px-5 py-3.5 text-right">
                                         <div class="flex items-center justify-end gap-3">

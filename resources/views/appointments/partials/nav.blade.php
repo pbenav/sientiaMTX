@@ -9,16 +9,25 @@
     ];
 @endphp
 
-<div class="mt-6 flex gap-2 overflow-x-auto pb-1">
-    @foreach($navItems as $item)
-        @php $active = request()->routeIs($item['route']); @endphp
-        <a href="{{ route($item['route']) }}"
-           class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all select-none whitespace-nowrap
-                  {{ $active ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
-            </svg>
-            {{ $item['label'] }}
-        </a>
-    @endforeach
+<div class="w-full mt-6 mb-4">
+<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm overflow-x-auto no-scrollbar gap-1.5">
+    <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-0.5">
+            @foreach($navItems as $item)
+                @php $active = request()->routeIs($item['route']); @endphp
+                <a href="{{ route($item['route']) }}"
+                   class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
+                          {{ $active 
+                              ? 'bg-white dark:bg-gray-800 text-cyan-600 dark:text-cyan-400 shadow-sm border border-gray-100 dark:border-gray-700' 
+                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60' }}"
+                   title="{{ $item['label'] }}">
+                    <svg class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="{{ $active ? '2.5' : '2' }}">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
+                    </svg>
+                    <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</div>
 </div>
