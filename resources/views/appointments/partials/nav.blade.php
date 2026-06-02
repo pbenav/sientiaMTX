@@ -15,7 +15,7 @@
         <div class="flex items-center gap-0.5">
             @foreach($navItems as $item)
                 @php $active = request()->routeIs($item['route']); @endphp
-                <a href="{{ route($item['route']) }}"
+                <a href="{{ route($item['route'], $team) }}"
                    class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
                           {{ $active 
                               ? 'bg-white dark:bg-gray-800 text-cyan-600 dark:text-cyan-400 shadow-sm border border-gray-100 dark:border-gray-700' 

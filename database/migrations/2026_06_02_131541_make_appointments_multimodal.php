@@ -21,8 +21,25 @@ return new class extends Migration
         });
 
         // Migrate data
-        \DB::statement("UPDATE appointment_services SET modalities = JSON_ARRAY(modality) WHERE modality IS NOT NULL");
-        \DB::statement("UPDATE appointments JOIN appointment_services ON appointments.service_id = appointment_services.id SET appointments.modality = appointment_services.modality");
+        if (DB::getDriverName() === 'sqlite') {
+            DB::table('appointment_services')->whereNotNull('modality')->get()->each(function ($service) {
+                DB::table('appointment_services')
+                    ->where('id', $service->id)
+                    ->update(['modalities' => json_encode([$service->modality])]);
+            });
+            
+            DB::table('appointments')->get()->each(function ($appointment) {
+                $service = DB::table('appointment_services')->where('id', $appointment->service_id)->first();
+                if ($service) {
+                    DB::table('appointments')
+                        ->where('id', $appointment->id)
+                        ->update(['modality' => $service->modality]);
+                }
+            });
+        } else {
+            \DB::statement("UPDATE appointment_services SET modalities = JSON_ARRAY(modality) WHERE modality IS NOT NULL");
+            \DB::statement("UPDATE appointments JOIN appointment_services ON appointments.service_id = appointment_services.id SET appointments.modality = appointment_services.modality");
+        }
 
         Schema::table('appointment_services', function (Blueprint $table) {
             $table->dropColumn('modality');
@@ -39,7 +56,17 @@ return new class extends Migration
             $table->string('old_modality')->nullable()->after('modality');
         });
         
-        \DB::statement("UPDATE appointment_services SET old_modality = JSON_UNQUOTE(JSON_EXTRACT(modality, '$[0]'))");
+        if (DB::getDriverName() === 'sqlite') {
+            DB::table('appointment_services')->get()->each(function ($service) {
+                $mods = json_decode($service->modality, true);
+                $first = is_array($mods) && count($mods) > 0 ? $mods[0] : null;
+                DB::table('appointment_services')
+                    ->where('id', $service->id)
+                    ->update(['old_modality' => $first]);
+            });
+        } else {
+            \DB::statement("UPDATE appointment_services SET old_modality = JSON_UNQUOTE(JSON_EXTRACT(modality, '$[0]'))");
+        }
         
         Schema::table('appointment_services', function (Blueprint $table) {
             $table->dropColumn('modality');

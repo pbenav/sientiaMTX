@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Appointments;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\AppointmentBlock;
-use App\Models\AppointmentSchedule;
 use App\Models\AppointmentService;
 use App\Models\AppointmentSettings;
-use App\Models\Expediente;
+use App\Models\Team;
 use App\Services\AppointmentAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,18 +19,20 @@ class AppointmentController extends Controller
     /**
      * Dashboard principal de citas previas del miembro.
      */
-    public function index()
+    public function index(Team $team)
     {
         $user     = auth()->user();
-        $settings = $user->appointmentSettings;
+        $settings = $user->appointmentSettings()->where('team_id', $team->id)->first();
 
         $upcoming = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->upcoming()
             ->with(['service', 'visitor'])
             ->take(10)
             ->get();
 
         $todayCitas = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->forDate(now()->toDateString())
             ->whereNotIn('status', ['cancelled', 'blocked'])
             ->with(['service', 'visitor'])
@@ -39,21 +40,23 @@ class AppointmentController extends Controller
             ->get();
 
         $totalThisMonth = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->whereYear('appointment_date', now()->year)
             ->whereMonth('appointment_date', now()->month)
             ->whereNotIn('status', ['cancelled', 'blocked'])
             ->count();
 
-        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth'));
+        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'team'));
     }
 
     /**
      * Lista completa de citas con filtros.
      */
-    public function list(Request $request)
+    public function list(Team $team, Request $request)
     {
         $user  = auth()->user();
         $query = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->with(['service', 'visitor'])
             ->orderByDesc('appointment_date')
             ->orderByDesc('appointment_time');
@@ -72,27 +75,33 @@ class AppointmentController extends Controller
         }
 
         $appointments = $query->paginate(20)->withQueryString();
-        $services     = $user->appointmentServices()->active()->get();
+        $services     = $user->appointmentServices()->where('team_id', $team->id)->active()->get();
 
-        return view('appointments.list', compact('appointments', 'services'));
+        return view('appointments.list', compact('appointments', 'services', 'team'));
     }
 
     /**
      * Muestra/edita una cita concreta.
      */
-    public function show(Appointment $appointment)
+    public function show(Team $team, Appointment $appointment)
     {
         $this->authorize('view', $appointment);
+        if ($appointment->service->team_id !== $team->id) {
+            abort(403);
+        }
         $appointment->load(['service', 'visitor', 'task', 'expediente']);
-        return view('appointments.show', compact('appointment'));
+        return view('appointments.show', compact('appointment', 'team'));
     }
 
     /**
      * Actualiza una cita (mover fecha/hora, notas, expediente).
      */
-    public function update(Request $request, Appointment $appointment)
+    public function update(Team $team, Request $request, Appointment $appointment)
     {
         $this->authorize('update', $appointment);
+        if ($appointment->service->team_id !== $team->id) {
+            abort(403);
+        }
 
         $data = $request->validate([
             'appointment_date'  => 'sometimes|date|after_or_equal:today',
@@ -142,9 +151,12 @@ class AppointmentController extends Controller
     /**
      * Cancela y elimina una cita.
      */
-    public function destroy(Appointment $appointment)
+    public function destroy(Team $team, Appointment $appointment)
     {
         $this->authorize('delete', $appointment);
+        if ($appointment->service->team_id !== $team->id) {
+            abort(403);
+        }
 
         $appointment->update([
             'status'       => 'cancelled',
@@ -169,13 +181,14 @@ class AppointmentController extends Controller
     /**
      * API: agenda semanal en JSON para la vista de calendario.
      */
-    public function agenda(Request $request)
+    public function agenda(Team $team, Request $request)
     {
         $user  = auth()->user();
         $start = Carbon::parse($request->get('start', now()->startOfWeek()));
         $end   = Carbon::parse($request->get('end', now()->endOfWeek()));
 
         $appointments = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->whereBetween('appointment_date', [$start->toDateString(), $end->toDateString()])
             ->with(['service', 'visitor'])
             ->get()
@@ -192,6 +205,10 @@ class AppointmentController extends Controller
             ]);
 
         $blocks = AppointmentBlock::where('user_id', $user->id)
+            ->where(function($q) use ($team) {
+                $q->whereNull('service_id')
+                  ->orWhereHas('service', fn($sq) => $sq->where('team_id', $team->id));
+            })
             ->where('end_datetime', '>=', $start)
             ->where('start_datetime', '<=', $end)
             ->get()

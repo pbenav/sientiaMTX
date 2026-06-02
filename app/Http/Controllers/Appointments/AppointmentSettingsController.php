@@ -5,25 +5,27 @@ namespace App\Http\Controllers\Appointments;
 use App\Http\Controllers\Controller;
 use App\Models\AppointmentSettings;
 use App\Models\Expediente;
+use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AppointmentSettingsController extends Controller
 {
-    public function edit()
+    public function edit(Team $team)
     {
         $user     = auth()->user();
-        $settings = $user->appointmentSettings ?? new AppointmentSettings(['user_id' => $user->id]);
-        $expedientes = Expediente::where(function($q) use ($user) {
-            $q->whereHas('team', fn($tq) => $tq->whereHas('members', fn($uq) => $uq->where('users.id', $user->id)));
-        })->orderBy('title')->get();
+        $settings = $user->appointmentSettings()->where('team_id', $team->id)->first()
+            ?? new AppointmentSettings(['user_id' => $user->id, 'team_id' => $team->id]);
+            
+        $expedientes = Expediente::where('team_id', $team->id)->orderBy('title')->get();
 
-        return view('appointments.settings', compact('settings', 'expedientes'));
+        return view('appointments.settings', compact('settings', 'expedientes', 'team'));
     }
 
-    public function update(Request $request)
+    public function update(Team $team, Request $request)
     {
         $user = auth()->user();
+        $currentSettings = $user->appointmentSettings()->where('team_id', $team->id)->first();
 
         $data = $request->validate([
             'public_slug'           => [
@@ -31,7 +33,7 @@ class AppointmentSettingsController extends Controller
                 'string',
                 'max:80',
                 'regex:/^[a-z0-9\-_]+$/',
-                Rule::unique('appointment_settings', 'public_slug')->ignore($user->appointmentSettings?->id),
+                Rule::unique('appointment_settings', 'public_slug')->ignore($currentSettings?->id),
             ],
             'display_name'          => 'nullable|string|max:150',
             'is_public'             => 'boolean',
@@ -47,7 +49,7 @@ class AppointmentSettingsController extends Controller
             'location_lng'          => 'nullable|numeric|between:-180,180',
         ]);
 
-        // Actualizar coordenadas en el modelo User (pertenecen a la tabla de usuarios)
+        // Actualizar coordenadas en el modelo User
         $user->update([
             'location_lat' => isset($data['location_lat']) ? (float)$data['location_lat'] : null,
             'location_lng' => isset($data['location_lng']) ? (float)$data['location_lng'] : null,
@@ -61,7 +63,7 @@ class AppointmentSettingsController extends Controller
         }
 
         $user->appointmentSettings()->updateOrCreate(
-            ['user_id' => $user->id],
+            ['user_id' => $user->id, 'team_id' => $team->id],
             $data
         );
 

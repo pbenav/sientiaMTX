@@ -3,7 +3,7 @@
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
-        <a href="{{ route('appointments.index') }}"
+        <a href="{{ route('appointments.index', $team) }}"
            class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -31,7 +31,7 @@
             </div>
         @endif
 
-        <form id="settings-form" method="POST" action="{{ route('appointments.settings.update') }}" class="space-y-6">
+        <form id="settings-form" method="POST" action="{{ route('appointments.settings.update', $team) }}" class="space-y-6">
             @csrf @method('PATCH')
 
             {{-- Identidad pública --}}
@@ -374,7 +374,7 @@
      :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
     {{-- Volver --}}
-    <a href="{{ route('appointments.index') }}"
+    <a href="{{ route('appointments.index', $team) }}"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
        onmouseover="this.style.color='#0891b2';this.style.background='#ecfeff'"
        onmouseout="this.style.color='#6b7280';this.style.background='transparent'">

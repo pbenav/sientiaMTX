@@ -30,11 +30,13 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'locale' => 'es',
+                'timezone' => 'Europe/Madrid',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect('/profile?tab=general');
 
         $user->refresh();
 
@@ -52,11 +54,13 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
+                'locale' => 'es',
+                'timezone' => 'Europe/Madrid',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect('/profile?tab=general');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
@@ -68,7 +72,7 @@ class ProfileTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->delete('/profile', [
-                'password' => 'password',
+                'password' => 'SecretPassword123!',
             ]);
 
         $response

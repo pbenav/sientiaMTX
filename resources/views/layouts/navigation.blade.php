@@ -19,9 +19,14 @@
                         {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
                     </x-nav-link>
                     @if(auth()->user()->hasAppointmentsEnabled())
-                    <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">
-                        Citas Previas
-                    </x-nav-link>
+                        @php
+                            $navTeam = request()->route('team') ?? auth()->user()->firstTeamWithAppointments();
+                        @endphp
+                        @if($navTeam)
+                            <x-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
+                                Citas Previas
+                            </x-nav-link>
+                        @endif
                     @endif
                     <x-nav-link :href="route('media.index')" :active="request()->routeIs('media.index')">
                         {{ __('tasks.disk_quota') }}
@@ -192,9 +197,14 @@
                 {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
             </x-responsive-nav-link>
             @if(auth()->user()->hasAppointmentsEnabled())
-            <x-responsive-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">
-                Citas Previas
-            </x-responsive-nav-link>
+                @php
+                    $navTeam = request()->route('team') ?? auth()->user()->firstTeamWithAppointments();
+                @endphp
+                @if($navTeam)
+                    <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
+                        Citas Previas
+                    </x-responsive-nav-link>
+                @endif
             @endif
 
             @if (request()->route('team'))

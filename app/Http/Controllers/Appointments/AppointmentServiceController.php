@@ -4,39 +4,29 @@ namespace App\Http\Controllers\Appointments;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppointmentService;
+use App\Models\Team;
 use Illuminate\Http\Request;
 
 class AppointmentServiceController extends Controller
 {
-    public function index()
+    public function index(Team $team)
     {
-        $services = auth()->user()->appointmentServices()->orderBy('sort_order')->get();
-        return view('appointments.services.index', compact('services'));
-    }
-
-    public function create()
-    {
-        $teams = auth()->user()->teams()
-            ->whereJsonContains('settings->has_appointments', true)
-            ->wherePivot('allow_appointments', true)
+        $services = auth()->user()->appointmentServices()
+            ->where('team_id', $team->id)
+            ->orderBy('sort_order')
             ->get();
-        return view('appointments.services.create', compact('teams'));
+        return view('appointments.services.index', compact('services', 'team'));
     }
 
-    public function store(Request $request)
+    public function create(Team $team)
+    {
+        return view('appointments.services.create', compact('team'));
+    }
+
+    public function store(Team $team, Request $request)
     {
         $data = $request->validate([
             'name'               => 'required|string|max:150',
-            'team_id'            => [
-                'required',
-                \Illuminate\Validation\Rule::exists('teams', 'id')->where(function ($query) {
-                    $query->whereJsonContains('settings->has_appointments', true);
-                }),
-                \Illuminate\Validation\Rule::exists('team_user', 'team_id')->where(function ($query) {
-                    $query->where('user_id', auth()->id())
-                          ->where('allow_appointments', true);
-                }),
-            ],
             'modality'           => 'required|array|min:1',
             'modality.*'         => 'string|in:presencial,jitsi,meet',
             'description'        => 'nullable|string',
@@ -49,6 +39,7 @@ class AppointmentServiceController extends Controller
             'sort_order'         => 'integer|min:0',
         ]);
 
+        $data['team_id'] = $team->id;
         $service = auth()->user()->appointmentServices()->create($data);
 
         // Guardar horarios de disponibilidad
@@ -81,36 +72,22 @@ class AppointmentServiceController extends Controller
             }
         }
 
-        return redirect()->route('appointments.services.index')
+        return redirect()->route('appointments.services.index', $team)
             ->with('success', 'Servicio creado correctamente.');
     }
 
-    public function edit(AppointmentService $service)
+    public function edit(Team $team, AppointmentService $service)
     {
-        $this->authorizeService($service);
-        $teams = auth()->user()->teams()
-            ->whereJsonContains('settings->has_appointments', true)
-            ->wherePivot('allow_appointments', true)
-            ->get();
-        return view('appointments.services.edit', compact('service', 'teams'));
+        $this->authorizeService($service, $team);
+        return view('appointments.services.edit', compact('service', 'team'));
     }
 
-    public function update(Request $request, AppointmentService $service)
+    public function update(Team $team, Request $request, AppointmentService $service)
     {
-        $this->authorizeService($service);
+        $this->authorizeService($service, $team);
 
         $data = $request->validate([
             'name'               => 'required|string|max:150',
-            'team_id'            => [
-                'required',
-                \Illuminate\Validation\Rule::exists('teams', 'id')->where(function ($query) {
-                    $query->whereJsonContains('settings->has_appointments', true);
-                }),
-                \Illuminate\Validation\Rule::exists('team_user', 'team_id')->where(function ($query) {
-                    $query->where('user_id', auth()->id())
-                          ->where('allow_appointments', true);
-                }),
-            ],
             'modality'           => 'required|array|min:1',
             'modality.*'         => 'string|in:presencial,jitsi,meet',
             'description'        => 'nullable|string',
@@ -123,6 +100,7 @@ class AppointmentServiceController extends Controller
             'sort_order'         => 'integer|min:0',
         ]);
 
+        $data['team_id'] = $team->id;
         $service->update($data);
 
         // Actualizar horarios de disponibilidad
@@ -156,13 +134,13 @@ class AppointmentServiceController extends Controller
             }
         }
 
-        return redirect()->route('appointments.services.index')
+        return redirect()->route('appointments.services.index', $team)
             ->with('success', 'Servicio actualizado correctamente.');
     }
 
-    public function destroy(AppointmentService $service)
+    public function destroy(Team $team, AppointmentService $service)
     {
-        $this->authorizeService($service);
+        $this->authorizeService($service, $team);
 
         if ($service->appointments()->whereNotIn('status', ['cancelled'])->exists()) {
             return back()->withErrors(['service' => 'No se puede eliminar un servicio con citas activas.']);
@@ -170,13 +148,13 @@ class AppointmentServiceController extends Controller
 
         $service->delete();
 
-        return redirect()->route('appointments.services.index')
+        return redirect()->route('appointments.services.index', $team)
             ->with('success', 'Servicio eliminado.');
     }
 
-    private function authorizeService(AppointmentService $service): void
+    private function authorizeService(AppointmentService $service, Team $team): void
     {
-        if ($service->user_id !== auth()->id()) {
+        if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {
             abort(403);
         }
     }

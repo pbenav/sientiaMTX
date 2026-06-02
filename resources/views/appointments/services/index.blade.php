@@ -4,7 +4,7 @@
 <x-slot name="header">
     <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
         <div class="flex items-start gap-4 min-w-0 flex-1">
-            <a href="{{ route('appointments.index') }}"
+            <a href="{{ route('appointments.index', $team) }}"
                class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -26,7 +26,7 @@
 
     <!-- Action Buttons Row -->
     <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-        <a href="{{ route('appointments.services.create') }}"
+        <a href="{{ route('appointments.services.create', $team) }}"
            class="flex items-center gap-2 text-xs bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-cyan-500/20 active:scale-95 group shrink-0">
             <svg class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -55,7 +55,7 @@
                 </div>
                 <h3 class="text-xl font-black text-gray-900 dark:text-white">Sin servicios definidos</h3>
                 <p class="text-gray-500 dark:text-gray-400 mt-2 mb-8 max-w-md">Crea los servicios que ofreces para que los ciudadanos puedan solicitar cita. Cada servicio tendrá su propia duración, descripción y disponibilidad.</p>
-                <a href="{{ route('appointments.services.create') }}" class="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
+                <a href="{{ route('appointments.services.create', $team) }}" class="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
                     Crear Primer Servicio
                 </a>
             </div>
@@ -99,12 +99,12 @@
                                 <span>{{ $service->appointments()->whereNotIn('status', ['cancelled'])->count() }} citas activas</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('appointments.services.edit', $service) }}"
+                                <a href="{{ route('appointments.services.edit', [$team, $service]) }}"
                                    class="p-2 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-xl transition-all"
                                    title="Editar servicio">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
-                                <form method="POST" action="{{ route('appointments.services.destroy', $service) }}"
+                                <form method="POST" action="{{ route('appointments.services.destroy', [$team, $service]) }}"
                                       onsubmit="return confirm('¿Eliminar este servicio? Solo se puede si no tiene citas activas.')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Eliminar servicio">

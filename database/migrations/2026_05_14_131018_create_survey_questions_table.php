@@ -57,19 +57,29 @@ return new class extends Migration
 
         // 5. Cleanup legacy columns and constraints
         Schema::table('survey_options', function (Blueprint $table) {
-            $table->dropForeign(['survey_id']);
-            $table->dropColumn('survey_id');
-            $table->unsignedBigInteger('question_id')->nullable(false)->change();
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropForeign(['survey_id']);
+                $table->dropColumn('survey_id');
+                $table->unsignedBigInteger('question_id')->nullable(false)->change();
+            } else {
+                $table->unsignedBigInteger('question_id')->nullable()->change();
+            }
         });
 
         Schema::table('survey_votes', function (Blueprint $table) {
-            $table->dropForeign(['survey_id']);
-            $table->dropColumn('survey_id');
-            $table->unsignedBigInteger('question_id')->nullable(false)->change();
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropForeign(['survey_id']);
+                $table->dropColumn('survey_id');
+                $table->unsignedBigInteger('question_id')->nullable(false)->change();
+            } else {
+                $table->unsignedBigInteger('question_id')->nullable()->change();
+            }
         });
 
         Schema::table('surveys', function (Blueprint $table) {
-            $table->dropColumn('type');
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropColumn('type');
+            }
         });
     }
 

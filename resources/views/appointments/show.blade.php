@@ -3,7 +3,7 @@
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
-        <a href="{{ route('appointments.list') }}"
+        <a href="{{ route('appointments.list', $team) }}"
            class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -142,7 +142,7 @@
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">📝 Notas Internas</p>
                     </div>
-                    <form method="POST" action="{{ route('appointments.update', $appointment) }}" class="p-6">
+                    <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}" class="p-6">
                         @csrf @method('PATCH')
                         <textarea name="member_notes" rows="3"
                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all resize-y"
@@ -165,7 +165,7 @@
                     </div>
                     <div class="p-5 space-y-3">
                         {{-- Cambiar estado --}}
-                        <form method="POST" action="{{ route('appointments.update', $appointment) }}">
+                        <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
                             @csrf @method('PATCH')
                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Estado</label>
                             <div class="flex gap-2">
@@ -180,7 +180,7 @@
 
                         {{-- Cancelar --}}
                         @if(!in_array($appointment->status, ['cancelled', 'blocked']))
-                            <form method="POST" action="{{ route('appointments.destroy', $appointment) }}"
+                            <form method="POST" action="{{ route('appointments.destroy', [$team, $appointment]) }}"
                                   onsubmit="return confirm('¿Cancelar esta cita? El ciudadano recibirá un email si consintió.')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl transition-all">

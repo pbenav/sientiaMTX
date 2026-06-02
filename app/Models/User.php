@@ -223,9 +223,15 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->withTimestamps();
     }
 
-    public function appointmentSettings(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function appointmentSettings(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasOne(AppointmentSettings::class);
+        return $this->hasMany(AppointmentSettings::class);
+    }
+
+    public function appointmentSettingsForTeam($team)
+    {
+        $teamId = $team instanceof Team ? $team->id : $team;
+        return $this->appointmentSettings()->where('team_id', $teamId)->first();
     }
 
     public function appointmentServices(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -649,6 +655,17 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->whereJsonContains('settings->has_appointments', true)
             ->wherePivot('allow_appointments', true)
             ->exists();
+    }
+
+    /**
+     * Obtener el primer equipo que tiene citas previas habilitadas para este usuario.
+     */
+    public function firstTeamWithAppointments(): ?\App\Models\Team
+    {
+        return $this->teams()
+            ->whereJsonContains('settings->has_appointments', true)
+            ->wherePivot('allow_appointments', true)
+            ->first();
     }
 
 }

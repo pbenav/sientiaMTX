@@ -3,7 +3,7 @@
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
-        <a href="{{ route('appointments.index') }}"
+        <a href="{{ route('appointments.index', $team) }}"
            class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -40,7 +40,7 @@
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-red-50/50 dark:bg-red-900/10">
                         <p class="text-xs font-black uppercase tracking-widest text-red-500">🚫 Nuevo Bloqueo</p>
                     </div>
-                    <form method="POST" action="{{ route('appointments.blocks.store') }}" class="p-6 space-y-4">
+                    <form method="POST" action="{{ route('appointments.blocks.store', $team) }}" class="p-6 space-y-4">
                         @csrf
 
                         <div>
@@ -129,7 +129,7 @@
                                         </span>
                                     @endif
                                 </div>
-                                <form method="POST" action="{{ route('appointments.blocks.destroy', $block) }}"
+                                <form method="POST" action="{{ route('appointments.blocks.destroy', [$team, $block]) }}"
                                       onsubmit="return confirm('¿Eliminar este bloqueo?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all opacity-0 group-hover:opacity-100">

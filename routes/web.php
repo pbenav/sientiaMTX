@@ -468,7 +468,7 @@ Route::get('/onlyoffice/download/{attachment}', [OnlyOfficeController::class, 'd
 Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');
 
 // --- Citas Previas — Panel de Gestión (autenticado) ---
-Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::class])->prefix('mis-citas')->name('appointments.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::class])->prefix('teams/{team}/mis-citas')->name('appointments.')->group(function () {
     // Dashboard y agenda
     Route::get('/', [\App\Http\Controllers\Appointments\AppointmentController::class, 'index'])->name('index');
     Route::get('/lista', [\App\Http\Controllers\Appointments\AppointmentController::class, 'list'])->name('list');

@@ -98,15 +98,13 @@ class AppointmentService extends Model
         });
     }
 
-    /**
-     * Duración efectiva: propia o heredada del setting del usuario.
-     */
     public function getEffectiveSlotDuration(): int
     {
         if ($this->slot_duration_minutes) {
             return $this->slot_duration_minutes;
         }
-        return $this->user->appointmentSettings?->default_slot_duration ?? 15;
+        $settings = $this->team ? $this->user->appointmentSettingsForTeam($this->team) : null;
+        return $settings?->default_slot_duration ?? 15;
     }
 
     /**
@@ -117,7 +115,8 @@ class AppointmentService extends Model
         if ($this->max_per_slot) {
             return $this->max_per_slot;
         }
-        return $this->user->appointmentSettings?->default_max_per_slot ?? 1;
+        $settings = $this->team ? $this->user->appointmentSettingsForTeam($this->team) : null;
+        return $settings?->default_max_per_slot ?? 1;
     }
 
     public function scopeActive($query)

@@ -34,7 +34,11 @@ class Setting extends Model
      */
     public static function get(string $key, $default = null, bool $ignoreEmpty = false)
     {
-        $setting = static::where('key', $key)->first();
+        try {
+            $setting = static::where('key', $key)->first();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return $default;
+        }
         
         if (!$setting) {
             return $default;

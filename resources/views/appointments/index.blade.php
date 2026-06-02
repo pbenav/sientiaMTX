@@ -32,7 +32,7 @@
                 <span>Ver Portal Público</span>
             </a>
         @endif
-        <a href="{{ route('appointments.settings') }}"
+        <a href="{{ route('appointments.settings', $team) }}"
            class="flex items-center gap-2 text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-xl transition-all font-black active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
             <span>Configuración</span>
@@ -52,7 +52,7 @@
                 <div>
                     <p class="text-sm font-black text-amber-800 dark:text-amber-300">Portal no configurado o no público</p>
                     <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">Para que los ciudadanos puedan solicitar citas, activa tu portal y configura un slug público.</p>
-                    <a href="{{ route('appointments.settings') }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300 hover:underline">
+                    <a href="{{ route('appointments.settings', $team) }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300 hover:underline">
                         Ir a Configuración →
                     </a>
                 </div>
@@ -148,7 +148,7 @@
                                     </span>
                                     
                                     @if(!in_array($cita->status, ['cancelled', 'blocked']))
-                                        <form method="POST" action="{{ route('appointments.update', $cita) }}" x-data x-ref="form" class="inline-block" x-on:change="$refs.form.submit()">
+                                        <form method="POST" action="{{ route('appointments.update', [$team, $cita]) }}" x-data x-ref="form" class="inline-block" x-on:change="$refs.form.submit()">
                                             @csrf @method('PATCH')
                                             <input type="hidden" name="status" :value="$el.querySelector('input[type=checkbox]').checked ? 'completed' : 'confirmed'">
                                             <label class="relative inline-flex items-center cursor-pointer mb-0">
@@ -172,11 +172,11 @@
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                     <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wide">🗓️ Próximas Citas</p>
-                    <a href="{{ route('appointments.list') }}" class="text-[10px] font-black text-cyan-600 dark:text-cyan-400 hover:underline">Ver todas →</a>
+                    <a href="{{ route('appointments.list', $team) }}" class="text-[10px] font-black text-cyan-600 dark:text-cyan-400 hover:underline">Ver todas →</a>
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($upcoming->skip($todayCitas->count() > 0 ? 0 : 0)->take(8) as $cita)
-                        <a href="{{ route('appointments.show', $cita) }}" class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                        <a href="{{ route('appointments.show', [$team, $cita]) }}" class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
                             <div class="w-14 text-center shrink-0">
                                 <p class="text-xs font-black text-gray-500 dark:text-gray-400 tabular-nums">{{ $cita->appointment_date->format('d/m') }}</p>
                                 <p class="text-sm font-black text-cyan-600 dark:text-cyan-400 tabular-nums leading-none">{{ substr($cita->appointment_time, 0, 5) }}</p>

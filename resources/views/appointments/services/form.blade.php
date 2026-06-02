@@ -1,11 +1,11 @@
-@php $isEdit = isset($service); $action = $isEdit ? route('appointments.services.update', $service) : route('appointments.services.store'); @endphp
+@php $isEdit = isset($service); $action = $isEdit ? route('appointments.services.update', [$team, $service]) : route('appointments.services.store', $team); @endphp
 
 <x-app-layout maxWidth="[1600px]">
 @section('title', $isEdit ? 'Editar Servicio — '.$service->name : 'Nuevo Servicio de Cita')
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
-        <a href="{{ route('appointments.services.index') }}"
+        <a href="{{ route('appointments.services.index', $team) }}"
            class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -39,20 +39,13 @@
                 </div>
                 <div class="p-6 space-y-5">
 
+                    <input type="hidden" name="team_id" value="{{ $team->id }}">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {{-- Equipo --}}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="team_id">Equipo Asociado *</label>
-                            <select id="team_id" name="team_id" required
-                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                <option value="" disabled {{ !old('team_id', $service->team_id ?? '') ? 'selected' : '' }}>Selecciona un equipo...</option>
-                                @foreach($teams as $team)
-                                    <option value="{{ $team->id }}" {{ old('team_id', $service->team_id ?? '') == $team->id ? 'selected' : '' }}>
-                                        {{ $team->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('team_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Equipo Asociado</label>
+                            <input type="text" disabled readonly value="{{ $team->name }}"
+                                   class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-500 dark:text-gray-400 outline-none cursor-not-allowed">
                         </div>
 
                         {{-- Nombre --}}
@@ -293,7 +286,7 @@
 
             {{-- Botones --}}
             <div class="flex items-center gap-3 justify-end">
-                <a href="{{ route('appointments.services.index') }}"
+                <a href="{{ route('appointments.services.index', $team) }}"
                    class="px-5 py-2.5 text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all">
                     Cancelar
                 </a>
@@ -322,7 +315,7 @@
      :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
     {{-- Volver --}}
-    <a href="{{ route('appointments.services.index') }}"
+    <a href="{{ route('appointments.services.index', $team) }}"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
        onmouseover="this.style.color='#0891b2';this.style.background='#ecfeff'"
        onmouseout="this.style.color='#6b7280';this.style.background='transparent'">

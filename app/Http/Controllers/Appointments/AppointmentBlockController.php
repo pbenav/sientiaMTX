@@ -6,22 +6,31 @@ use App\Http\Controllers\Controller;
 use App\Models\AppointmentBlock;
 use App\Models\AppointmentService;
 use App\Models\Appointment;
+use App\Models\Team;
 use Illuminate\Http\Request;
 
 class AppointmentBlockController extends Controller
 {
-    public function index()
+    public function index(Team $team)
     {
-        $blocks   = auth()->user()->appointmentBlocks()
+        $blocks = auth()->user()->appointmentBlocks()
+            ->where(function($q) use ($team) {
+                $q->whereNull('service_id')
+                  ->orWhereHas('service', fn($sq) => $sq->where('team_id', $team->id));
+            })
             ->orderBy('start_datetime')
             ->with('service')
             ->get();
-        $services = auth()->user()->appointmentServices()->active()->get();
 
-        return view('appointments.blocks.index', compact('blocks', 'services'));
+        $services = auth()->user()->appointmentServices()
+            ->where('team_id', $team->id)
+            ->active()
+            ->get();
+
+        return view('appointments.blocks.index', compact('blocks', 'services', 'team'));
     }
 
-    public function store(Request $request)
+    public function store(Team $team, Request $request)
     {
         $data = $request->validate([
             'service_id'       => 'nullable|exists:appointment_services,id',
@@ -31,32 +40,41 @@ class AppointmentBlockController extends Controller
             'notify_affected'  => 'boolean',
         ]);
 
-        // Verificar que el servicio pertenece al usuario si se especifica
+        // Verificar que el servicio pertenece al usuario y al equipo si se especifica
         if (!empty($data['service_id'])) {
             $service = AppointmentService::find($data['service_id']);
-            if ($service->user_id !== auth()->id()) abort(403);
+            if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {
+                abort(403);
+            }
         }
 
         $block = auth()->user()->appointmentBlocks()->create($data);
 
         // Si notify_affected, enviar emails a citas afectadas
         if ($block->notify_affected) {
-            $this->notifyAffectedAppointments($block);
+            $this->notifyAffectedAppointments($block, $team);
         }
 
         return back()->with('success', 'Tramo bloqueado correctamente.');
     }
 
-    public function destroy(AppointmentBlock $block)
+    public function destroy(Team $team, AppointmentBlock $block)
     {
-        if ($block->user_id !== auth()->id()) abort(403);
+        if ($block->user_id !== auth()->id()) {
+            abort(403);
+        }
+        if ($block->service_id && $block->service->team_id !== $team->id) {
+            abort(403);
+        }
+        
         $block->delete();
         return back()->with('success', 'Bloqueo eliminado.');
     }
 
-    private function notifyAffectedAppointments(AppointmentBlock $block): void
+    private function notifyAffectedAppointments(AppointmentBlock $block, Team $team): void
     {
         $query = Appointment::where('user_id', auth()->id())
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->where('appointment_date', '>=', $block->start_datetime->toDateString())
             ->where('appointment_date', '<=', $block->end_datetime->toDateString())
             ->whereNotIn('status', ['cancelled', 'blocked'])

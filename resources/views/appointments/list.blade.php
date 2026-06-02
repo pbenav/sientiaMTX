@@ -3,7 +3,7 @@
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
-        <a href="{{ route('appointments.index') }}"
+        <a href="{{ route('appointments.index', $team) }}"
            class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -33,7 +33,7 @@
 
         {{-- Filtros --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
-            <form method="GET" action="{{ route('appointments.list') }}" class="flex flex-wrap gap-3 items-end">
+            <form method="GET" action="{{ route('appointments.list', $team) }}" class="flex flex-wrap gap-3 items-end">
                 <div class="flex-1 min-w-[200px]">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Estado</label>
                     <select name="status" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
@@ -64,7 +64,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button type="submit" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black rounded-xl transition-all">Filtrar</button>
-                    <a href="{{ route('appointments.list') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-black rounded-xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700">Limpiar</a>
+                    <a href="{{ route('appointments.list', $team) }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-black rounded-xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700">Limpiar</a>
                 </div>
             </form>
         </div>
@@ -131,7 +131,7 @@
                                     </td>
                                     <td class="px-5 py-3.5 text-center">
                                         @if(!in_array($cita->status, ['cancelled', 'blocked']))
-                                            <form method="POST" action="{{ route('appointments.update', $cita) }}" x-data x-ref="form" class="inline-block" x-on:change="$refs.form.submit()">
+                                            <form method="POST" action="{{ route('appointments.update', [$team, $cita]) }}" x-data x-ref="form" class="inline-block" x-on:change="$refs.form.submit()">
                                                 @csrf @method('PATCH')
                                                 <input type="hidden" name="status" :value="$el.querySelector('input[type=checkbox]').checked ? 'completed' : 'confirmed'">
                                                 <label class="relative inline-flex items-center cursor-pointer">
@@ -149,7 +149,7 @@
                                                     💻 Iniciar
                                                 </a>
                                             @endif
-                                            <a href="{{ route('appointments.show', $cita) }}"
+                                            <a href="{{ route('appointments.show', [$team, $cita]) }}"
                                                class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline opacity-0 group-hover:opacity-100 transition-opacity">
                                                 Ver →
                                             </a>
