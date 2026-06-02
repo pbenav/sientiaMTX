@@ -13,6 +13,7 @@ class Appointment extends Model
         'user_id',
         'service_id',
         'visitor_id',
+        'modality',
         'appointment_date',
         'appointment_time',
         'slot_duration_minutes',

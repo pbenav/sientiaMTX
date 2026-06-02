@@ -115,8 +115,9 @@ class AppointmentController extends Controller
             }
         }
 
-        if (isset($data['status']) && $data['status'] === 'cancelled') {
+        if (isset($data['status']) && in_array($data['status'], ['cancelled', 'blocked'])) {
             $data['cancelled_at'] = now();
+            $this->deleteGoogleEvent($appointment);
         }
 
         $appointment->update($data);
@@ -140,6 +141,8 @@ class AppointmentController extends Controller
             'status'       => 'cancelled',
             'cancelled_at' => now(),
         ]);
+        
+        $this->deleteGoogleEvent($appointment);
 
         // Notificar al visitante si tiene email y consintió
         if ($appointment->visitor->email && $appointment->visitor->consent_email) {
@@ -195,5 +198,20 @@ class AppointmentController extends Controller
             'appointments' => $appointments,
             'blocks'       => $blocks,
         ]);
+    }
+
+    private function deleteGoogleEvent(Appointment $appointment): void
+    {
+        if ($appointment->google_event_id) {
+            try {
+                $googleService = new \App\Services\GoogleService();
+                if ($googleService->setTokenForUser($appointment->member)) {
+                    $googleService->deleteEvent($appointment->google_event_id);
+                    $appointment->update(['google_event_id' => null]);
+                }
+            } catch (\Throwable $e) {
+                \Log::error("Error eliminando cita en Google Calendar: " . $e->getMessage());
+            }
+        }
     }
 }

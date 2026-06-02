@@ -110,6 +110,23 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                @php
+                    $modalities = is_array($service->modality) ? $service->modality : [$service->modality];
+                @endphp
+                @if(count($modalities) > 1)
+                    <div class="md:col-span-12">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Modalidad de la Cita *</label>
+                        <select name="modality" required
+                                class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                            @foreach($modalities as $mod)
+                                <option value="{{ $mod }}">{{ \App\Models\AppointmentService::MODALITIES[$mod] ?? ucfirst($mod) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @else
+                    <input type="hidden" name="modality" value="{{ $modalities[0] }}">
+                @endif
+
                 <div class="md:col-span-6">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">Nombre *</label>
                     <input type="text" name="first_name" required value="{{ old('first_name') }}"

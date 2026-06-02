@@ -184,6 +184,7 @@ class PublicAppointmentController extends Controller
             'consent_legal' => 'required|accepted',
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|string',
+            'modality'         => 'required|string|in:presencial,jitsi,meet',
         ]);
 
         $date = Carbon::parse($data['appointment_date']);
@@ -219,11 +220,17 @@ class PublicAppointmentController extends Controller
             'appointment_time'    => $data['appointment_time'] . ':00',
             'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
             'status'              => 'confirmed',
+            'modality'            => $data['modality'],
         ]);
 
         // Generar tarea automática si está configurado
         if ($settings->auto_create_task) {
             $this->createTaskForAppointment($appointment, $settings);
+        }
+
+        // Sincronizar con Google Calendar si está habilitado
+        if ($settings->google_calendar_enabled && $service->user->google_token) {
+            $this->syncToGoogleCalendar($appointment);
         }
 
         // Email de confirmación al visitante (si consintió y tiene email)
@@ -272,11 +279,12 @@ class PublicAppointmentController extends Controller
             $description = "**Visitante:** {$appointment->visitor->full_name}\n"
                 . "**Localizador:** {$appointment->localizador}\n"
                 . "**Servicio:** {$appointment->service->name}\n"
+                . "**Modalidad:** " . \App\Models\AppointmentService::MODALITIES[$appointment->modality] . "\n"
                 . "**Fecha:** {$appointment->appointment_date->format('d/m/Y')} a las {$appointment->appointment_time}";
 
-            if (in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+            if (in_array($appointment->modality, ['jitsi', 'meet'])) {
                 $videoUrl = route('public.appointments.video.auth', $appointment) . '?localizador=' . $appointment->localizador;
-                $description .= "\n\n💻 **Videoconferencia:** [Iniciar Videoconferencia]({$videoUrl}) (Modalidad: " . ucfirst($appointment->service->modality) . ")";
+                $description .= "\n\n💻 **Videoconferencia:** [Iniciar Videoconferencia]({$videoUrl}) (Modalidad: " . ucfirst($appointment->modality) . ")";
             }
 
             $task = \App\Models\Task::create([
@@ -309,11 +317,49 @@ class PublicAppointmentController extends Controller
     }
 
     /**
+     * Sincronizar cita con Google Calendar.
+     */
+    protected function syncToGoogleCalendar(Appointment $appointment): void
+    {
+        try {
+            $member = $appointment->member;
+            $googleService = new \App\Services\GoogleService();
+            
+            if ($googleService->setTokenForUser($member)) {
+                $description = "Cita Previa: {$appointment->service->name}\n"
+                             . "Ciudadano: {$appointment->visitor->full_name}\n"
+                             . "Localizador: {$appointment->localizador}";
+
+                $eventData = [
+                    'summary' => '[CITA] ' . $appointment->visitor->full_name . ' - ' . $appointment->service->name,
+                    'description' => $description,
+                    'start' => [
+                        'dateTime' => $appointment->appointment_datetime->format(\DateTime::RFC3339),
+                        'timeZone' => config('app.timezone'),
+                    ],
+                    'end' => [
+                        'dateTime' => $appointment->end_datetime->format(\DateTime::RFC3339),
+                        'timeZone' => config('app.timezone'),
+                    ],
+                ];
+
+                $eventId = $googleService->createEvent($eventData);
+
+                if ($eventId) {
+                    $appointment->update(['google_event_id' => $eventId]);
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error("Error sincronizando cita con Google Calendar: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Pantalla de autenticación para la videoconferencia.
      */
     public function videoAuth(Request $request, Appointment $appointment)
     {
-        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+        if (!in_array($appointment->modality, ['jitsi', 'meet'])) {
             abort(404);
         }
 
@@ -327,7 +373,7 @@ class PublicAppointmentController extends Controller
      */
     public function videoAccess(Request $request, Appointment $appointment)
     {
-        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+        if (!in_array($appointment->modality, ['jitsi', 'meet'])) {
             abort(404);
         }
 
@@ -347,7 +393,7 @@ class PublicAppointmentController extends Controller
      */
     public function videoRoom(Appointment $appointment)
     {
-        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+        if (!in_array($appointment->modality, ['jitsi', 'meet'])) {
             abort(404);
         }
 
@@ -374,7 +420,7 @@ class PublicAppointmentController extends Controller
             return back()->withErrors(['localizador_search' => 'No se ha encontrado ninguna cita con ese localizador.']);
         }
 
-        if (!in_array($appointment->service->modality, ['jitsi', 'meet'])) {
+        if (!in_array($appointment->modality, ['jitsi', 'meet'])) {
             return back()->withErrors(['localizador_search' => 'Esta cita no está configurada como videoconferencia (es presencial).']);
         }
 

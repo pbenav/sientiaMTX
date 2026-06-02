@@ -30,14 +30,14 @@
         @endif
 
         {{-- Si es videoconferencia, banner de acceso rápido --}}
-        @if(in_array($appointment->service->modality, ['jitsi', 'meet']))
+        @if(in_array($appointment->modality, ['jitsi', 'meet']))
             <div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-150 dark:border-indigo-900/50 rounded-3xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/60 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                         <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-black text-indigo-950 dark:text-indigo-200">Esta cita es una Videoconferencia ({{ ucfirst($appointment->service->modality) }})</h3>
+                        <h3 class="text-sm font-black text-indigo-950 dark:text-indigo-200">Esta cita es una Videoconferencia ({{ ucfirst($appointment->modality) }})</h3>
                         <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Puedes unirte a la sala directamente. El ciudadano necesitará su localizador para acceder.</p>
                     </div>
                 </div>

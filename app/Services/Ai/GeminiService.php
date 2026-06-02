@@ -366,13 +366,10 @@ class GeminiService implements AiAssistantInterface
 
     public function generateMotivationalPhrase(int $taskCount, string $userName, string $locale): string
     {
-        $prompt = "Genera una frase motivacional corta (máximo 15 palabras) para empezar el día. ";
-        $prompt .= "El usuario tiene {$taskCount} tareas pendientes hoy. ";
-        $prompt .= "Nombre del usuario: {$userName}. ";
-        $prompt .= "Idioma: {$locale}. ";
-        $prompt .= "Instrucción MUY ESTRICTA: Escribe SOLO y ÚNICAMENTE la frase final para el usuario. NO uses markdown. NO des explicaciones. NO uses formato JSON. NO uses etiquetas de pensamiento. NADA de texto extra.";
+        $system = "Eres Ax.ia. Tu única función ahora es devolver una (1) sola frase motivacional corta. Ni saludos, ni json, ni markdown. Sólo la frase.";
+        $prompt = "El usuario {$userName} (idioma {$locale}) tiene {$taskCount} tareas pendientes hoy. Dame la frase motivacional corta sin añadir absolutamente nada de texto extra.";
 
-        $response = $this->callGemini($this->targetModel, [['text' => $prompt]]);
+        $response = $this->callGemini($this->targetModel, [['text' => $prompt]], false, $system);
         
         // Limpieza de etiquetas de pensamiento (modelos tipo thinking) y su contenido
         $response = preg_replace('/<think>.*?<\/think>/is', '', $response);

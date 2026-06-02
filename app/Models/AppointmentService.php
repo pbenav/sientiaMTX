@@ -29,6 +29,7 @@ class AppointmentService extends Model
     ];
 
     protected $casts = [
+        'modality'      => 'array',
         'price'         => 'decimal:2',
         'price_visible' => 'boolean',
         'is_active'     => 'boolean',

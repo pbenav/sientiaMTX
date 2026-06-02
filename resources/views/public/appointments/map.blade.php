@@ -92,7 +92,7 @@
         <div id="map" class="w-full h-full"></div>
         
         <!-- Acceso rápido a Videoconferencia -->
-        <div class="absolute top-4 left-4 z-[1000] bg-white/95 dark:bg-gray-900/95 p-5 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 w-80 backdrop-blur-sm transition-all hover:shadow-cyan-500/5">
+        <div class="absolute bottom-4 left-4 lg:top-4 lg:bottom-auto lg:left-4 z-[1000] bg-white/95 dark:bg-gray-900/95 p-5 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 w-[calc(100%-2rem)] max-w-sm lg:w-80 backdrop-blur-sm transition-all hover:shadow-cyan-500/5">
             <div class="flex items-center gap-2.5 mb-3">
                 <div class="w-7 h-7 bg-cyan-50 dark:bg-cyan-950/40 rounded-lg flex items-center justify-center text-cyan-500 border border-cyan-100 dark:border-cyan-900/50">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -177,7 +177,7 @@
                         <h4 class="font-black text-sm heading-font">${m.display_name}</h4>
                         ${m.area ? `<p class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase mt-0.5 tracking-wider">${m.area}</p>` : ''}
                         <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2 font-medium">${m.services} servicios disponibles</p>
-                        <a href="/citas/${m.slug}" class="block text-center mt-3 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm transition-all hover:scale-102 select-none">
+                        <a href="/citas/${m.slug}" class="block text-center mt-3 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white !text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm transition-all hover:scale-102 select-none">
                             Pedir Cita Previa
                         </a>
                     </div>

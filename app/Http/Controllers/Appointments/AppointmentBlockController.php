@@ -75,6 +75,7 @@ class AppointmentBlockController extends Controller
 
             if ($apptStart < $block->end_datetime && $apptEnd > $block->start_datetime) {
                 $appointment->update(['status' => 'blocked']);
+                $this->deleteGoogleEvent($appointment);
 
                 if ($appointment->visitor->email && $appointment->visitor->consent_email) {
                     try {
@@ -84,6 +85,21 @@ class AppointmentBlockController extends Controller
                         \Log::warning("Block cancel mail failed: " . $e->getMessage());
                     }
                 }
+            }
+        }
+    }
+
+    private function deleteGoogleEvent(Appointment $appointment): void
+    {
+        if ($appointment->google_event_id) {
+            try {
+                $googleService = new \App\Services\GoogleService();
+                if ($googleService->setTokenForUser($appointment->member)) {
+                    $googleService->deleteEvent($appointment->google_event_id);
+                    $appointment->update(['google_event_id' => null]);
+                }
+            } catch (\Throwable $e) {
+                \Log::error("Error eliminando cita en Google Calendar: " . $e->getMessage());
             }
         }
     }

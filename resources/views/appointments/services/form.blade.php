@@ -49,19 +49,22 @@
                             @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- Modalidad --}}
+                        {{-- Modalidades --}}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="modality">Modalidad *</label>
-                            <div class="relative">
-                                <select id="modality" name="modality" required
-                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all appearance-none pr-10 cursor-pointer">
-                                    <option value="presencial" {{ old('modality', $service->modality ?? '') == 'presencial' ? 'selected' : '' }}>Presencial</option>
-                                    <option value="jitsi" {{ old('modality', $service->modality ?? '') == 'jitsi' ? 'selected' : '' }}>Videoconferencia (Jitsi)</option>
-                                    <option value="meet" {{ old('modality', $service->modality ?? '') == 'meet' ? 'selected' : '' }}>Videoconferencia (Google Meet)</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                                </div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Modalidades soportadas *</label>
+                            @php
+                                $selectedModalities = old('modality', $service->modality ?? ['presencial']);
+                                if (!is_array($selectedModalities)) $selectedModalities = [$selectedModalities];
+                            @endphp
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                @foreach(\App\Models\AppointmentService::MODALITIES as $key => $label)
+                                    <label class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-cyan-500 transition-colors group">
+                                        <input type="checkbox" name="modality[]" value="{{ $key }}"
+                                               {{ in_array($key, $selectedModalities) ? 'checked' : '' }}
+                                               class="w-5 h-5 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 transition-colors">
+                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $label }}</span>
+                                    </label>
+                                @endforeach
                             </div>
                             @error('modality') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>

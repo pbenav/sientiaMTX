@@ -107,9 +107,9 @@
                                     <td class="px-5 py-3.5">
                                         <div class="flex flex-col">
                                             <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $cita->service->name }}</span>
-                                            @if(in_array($cita->service->modality, ['jitsi', 'meet']))
+                                            @if(in_array($cita->modality, ['jitsi', 'meet']))
                                                 <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase mt-0.5 tracking-wider">
-                                                    💻 Videocita ({{ ucfirst($cita->service->modality) }})
+                                                    💻 Videocita ({{ ucfirst($cita->modality) }})
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase mt-0.5 tracking-wider">
@@ -130,7 +130,7 @@
                                     </td>
                                     <td class="px-5 py-3.5 text-right">
                                         <div class="flex items-center justify-end gap-3">
-                                            @if($cita->status === 'confirmed' && in_array($cita->service->modality, ['jitsi', 'meet']))
+                                            @if($cita->status === 'confirmed' && in_array($cita->modality, ['jitsi', 'meet']))
                                                 <a href="{{ route('public.appointments.video.auth', $cita) }}?localizador={{ $cita->localizador }}" target="_blank"
                                                    class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase rounded-lg border border-indigo-150/40 dark:border-indigo-900/30 transition-all select-none">
                                                     💻 Iniciar
