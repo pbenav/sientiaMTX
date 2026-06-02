@@ -645,10 +645,6 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
      */
     public function hasAppointmentsEnabled(): bool
     {
-        if ($this->is_admin) {
-            return true;
-        }
-
         return $this->teams()
             ->whereJsonContains('settings->has_appointments', true)
             ->wherePivot('allow_appointments', true)
