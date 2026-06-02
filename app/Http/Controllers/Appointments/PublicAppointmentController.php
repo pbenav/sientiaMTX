@@ -48,29 +48,33 @@ class PublicAppointmentController extends Controller
 
             // Asegurar que tengan al menos 1 servicio activo para que el portal sea funcional
             if ($u->appointmentServices()->active()->count() === 0) {
-                $service = $u->appointmentServices()->create([
-                    'name' => 'Consulta General',
-                    'description' => 'Consulta o asesoramiento general de información.',
-                    'duration_minutes' => 15,
-                    'is_active' => true,
-                    'price' => null,
-                    'price_visible' => false,
-                ]);
-
-                // Crear horario por defecto de Lunes a Viernes de 09:00 a 14:00
-                for ($day = 1; $day <= 5; $day++) {
-                    \App\Models\AppointmentSchedule::create([
-                        'user_id' => $u->id,
-                        'service_id' => $service->id,
-                        'day_of_week' => $day,
-                        'start_time' => '09:00',
-                        'end_time' => '14:00',
-                        'slot_duration_minutes' => 15,
-                        'max_per_slot' => 1,
+                $team = $u->firstTeamWithAppointments();
+                if ($team) {
+                    $service = $u->appointmentServices()->create([
+                        'team_id' => $team->id,
+                        'name' => 'Consulta General',
+                        'description' => 'Consulta o asesoramiento general de información.',
+                        'duration_minutes' => 15,
                         'is_active' => true,
+                        'price' => null,
+                        'price_visible' => false,
                     ]);
+
+                    // Crear horario por defecto de Lunes a Viernes de 09:00 a 14:00
+                    for ($day = 1; $day <= 5; $day++) {
+                        \App\Models\AppointmentSchedule::create([
+                            'user_id' => $u->id,
+                            'service_id' => $service->id,
+                            'day_of_week' => $day,
+                            'start_time' => '09:00',
+                            'end_time' => '14:00',
+                            'slot_duration_minutes' => 15,
+                            'max_per_slot' => 1,
+                            'is_active' => true,
+                        ]);
+                    }
+                    $u->unsetRelation('appointmentServices'); // Forzar recarga de relación
                 }
-                $u->unsetRelation('appointmentServices'); // Forzar recarga de relación
             }
         }
 
