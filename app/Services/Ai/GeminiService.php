@@ -366,16 +366,20 @@ class GeminiService implements AiAssistantInterface
 
     public function generateMotivationalPhrase(int $taskCount, string $userName, string $locale): string
     {
-        $system = "Eres Ax.ia. Tu única función ahora es devolver una (1) sola frase motivacional corta. Ni saludos, ni json, ni markdown. Sólo la frase.";
-        $prompt = "El usuario {$userName} (idioma {$locale}) tiene {$taskCount} tareas pendientes hoy. Dame la frase motivacional corta sin añadir absolutamente nada de texto extra.";
+        $system = "Eres Ax.ia. Tu única función ahora es devolver una sola frase motivacional corta. DEBES envolver la frase final en etiquetas <frase> y </frase>.";
+        $prompt = "El usuario {$userName} (idioma {$locale}) tiene {$taskCount} tareas pendientes hoy. Escribe la frase motivacional. Recuerda envolver tu respuesta final en <frase>AQUÍ LA FRASE</frase>.";
 
         $response = $this->callGemini($this->targetModel, [['text' => $prompt]], false, $system);
         
-        // Limpieza de etiquetas de pensamiento (modelos tipo thinking) y su contenido
+        // Extraemos solo lo que esté dentro de <frase>
+        if (preg_match('/<frase>(.*?)<\/frase>/is', $response, $matches)) {
+            $response = $matches[1];
+        }
+
+        // Limpieza de seguridad por si no usó la etiqueta
         $response = preg_replace('/<think>.*?<\/think>/is', '', $response);
-        
-        // Limpieza de cualquier etiqueta [PAYLOAD] o basura que pueda añadir por costumbre
         $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/is', '', $response);
+        
         return trim(strip_tags($response));
     }
 
