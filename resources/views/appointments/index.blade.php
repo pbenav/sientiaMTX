@@ -10,6 +10,7 @@
     <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
         <div class="flex items-start gap-4 min-w-0 flex-1">
             <div class="min-w-0 flex-1">
+                @include('teams.partials.breadcrumb')
                 <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

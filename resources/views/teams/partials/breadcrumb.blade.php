@@ -11,6 +11,12 @@
         str_contains($routeName, 'teams.edit') => __('teams.settings'),
         str_contains($routeName, 'surveys') => 'Encuestas',
         str_contains($routeName, 'dashboard') => __('teams.eisenhower_matrix'),
+        str_contains($routeName, 'appointments.settings') => 'Configuración de Citas',
+        str_contains($routeName, 'appointments.services') => 'Servicios de Citas',
+        str_contains($routeName, 'appointments.blocks') => 'Bloqueos de Citas',
+        str_contains($routeName, 'appointments.list') => 'Listado de Citas',
+        str_contains($routeName, 'appointments.index') => 'Agenda de Citas',
+        str_contains($routeName, 'appointments.show') => 'Detalle de Cita',
         default => null,
     };
 @endphp

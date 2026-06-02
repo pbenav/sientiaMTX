@@ -7,12 +7,17 @@
         ['route' => 'appointments.blocks.index',  'label' => 'Bloqueos',   'icon' => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'],
         ['route' => 'appointments.settings',      'label' => 'Config.',    'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z'],
     ];
+
+    $userTeamsWithAppointments = auth()->user()->teams()
+        ->whereJsonContains('settings->has_appointments', true)
+        ->wherePivot('allow_appointments', true)
+        ->get();
 @endphp
 
 <div class="w-full mt-6 mb-4">
-<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm overflow-x-auto no-scrollbar gap-1.5">
-    <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-0.5">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm gap-3">
+        {{-- Menú de navegación --}}
+        <div class="flex items-center gap-0.5 overflow-x-auto no-scrollbar">
             @foreach($navItems as $item)
                 @php $active = request()->routeIs($item['route']); @endphp
                 <a href="{{ route($item['route'], $team) }}"
@@ -28,6 +33,39 @@
                 </a>
             @endforeach
         </div>
+
+        {{-- Selector de Equipo --}}
+        @if($userTeamsWithAppointments->count() > 1)
+            <div class="flex items-center gap-2 px-2 shrink-0 self-start lg:self-center">
+                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">{{ __('Equipo Activo:') }}</span>
+                <select onchange="window.location.href = this.value" 
+                        class="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer shadow-sm">
+                    @foreach($userTeamsWithAppointments as $t)
+                        @php
+                            // Generar la misma ruta pero con el team seleccionado
+                            $params = request()->route()->parameters();
+                            $params['team'] = $t->id;
+                            // Si en la ruta había algún otro modelo específico de un equipo que no pertenezca al nuevo,
+                            // (como un servicio o cita concreta), redirigimos al index del portal de citas del nuevo equipo
+                            // para evitar excepciones de scoped bindings/autorización de modelos ajenos.
+                            $routeName = request()->route()->getName();
+                            if (isset($params['service']) || isset($params['block']) || isset($params['appointment'])) {
+                                $routeName = 'appointments.index';
+                                $params = ['team' => $t->id];
+                            }
+                            $targetUrl = route($routeName, $params);
+                        @endphp
+                        <option value="{{ $targetUrl }}" {{ $team->id == $t->id ? 'selected' : '' }}>
+                            👥 {{ $t->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        @elseif($userTeamsWithAppointments->count() === 1)
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 dark:bg-gray-850/50 border border-gray-150 dark:border-gray-755 rounded-xl shrink-0 self-start lg:self-center shadow-sm">
+                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">{{ __('Equipo:') }}</span>
+                <span class="text-xs font-black text-cyan-600 dark:text-cyan-400">👥 {{ $team->name }}</span>
+            </div>
+        @endif
     </div>
-</div>
 </div>
