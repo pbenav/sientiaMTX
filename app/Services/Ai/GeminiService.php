@@ -366,21 +366,31 @@ class GeminiService implements AiAssistantInterface
 
     public function generateMotivationalPhrase(int $taskCount, string $userName, string $locale): string
     {
-        $system = "Eres Ax.ia. Tu única función ahora es devolver una sola frase motivacional corta. DEBES envolver la frase final en etiquetas <frase> y </frase>.";
-        $prompt = "El usuario {$userName} (idioma {$locale}) tiene {$taskCount} tareas pendientes hoy. Escribe la frase motivacional. Recuerda envolver tu respuesta final en <frase>AQUÍ LA FRASE</frase>.";
+        $system = "Eres Ax.ia. Tu única función ahora es motivar al usuario con una frase corta.";
+        $prompt = "El usuario {$userName} (idioma {$locale}) tiene {$taskCount} tareas pendientes hoy. Escribe la frase motivacional de máximo 15 palabras.";
 
-        $response = $this->callGemini($this->targetModel, [['text' => $prompt]], false, $system);
+        $schema = [
+            'type' => 'OBJECT',
+            'properties' => [
+                'phrase' => [
+                    'type' => 'STRING',
+                    'description' => 'La frase motivacional final.'
+                ]
+            ],
+            'required' => ['phrase']
+        ];
+
+        // Usamos el modelo, sin herramientas y pasamos el schema JSON
+        $response = $this->callGemini($this->targetModel, [['text' => $prompt]], false, $system, false, true, $schema);
         
-        // Extraemos solo lo que esté dentro de <frase>
-        if (preg_match('/<frase>(.*?)<\/frase>/is', $response, $matches)) {
-            $response = $matches[1];
+        $data = json_decode($response, true);
+        
+        if (json_last_error() === JSON_ERROR_NONE && isset($data['phrase'])) {
+            return trim($data['phrase']);
         }
 
-        // Limpieza de seguridad por si no usó la etiqueta
-        $response = preg_replace('/<think>.*?<\/think>/is', '', $response);
-        $response = preg_replace('/\[PAYLOAD\].*?\[\/PAYLOAD\]/is', '', $response);
-        
-        return trim(strip_tags($response));
+        // Fallback robusto en caso de que la API falle
+        return "¡Vamos {$userName}! Hoy es un gran día para avanzar en tus tareas.";
     }
 
     /**
@@ -538,7 +548,7 @@ class GeminiService implements AiAssistantInterface
     /**
      * Helper to make the HTTP request to the Gemini API with Tool Support.
      */
-    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null, bool $isToolCall = false, bool $forceNoTools = false): string
+    protected function callGemini(string $model, array $parts, bool $isFallback = false, ?string $systemInstruction = null, bool $isToolCall = false, bool $forceNoTools = false, ?array $jsonSchema = null): string
     {
         if (empty($this->apiKey)) {
             Log::error('Gemini API key is missing.');
@@ -572,6 +582,13 @@ class GeminiService implements AiAssistantInterface
         
         if ($supportsTools) {
             $payload['tools'] = $this->getToolsDefinition();
+        }
+
+        if ($jsonSchema) {
+            $payload['generationConfig'] = [
+                'responseMimeType' => 'application/json',
+                'responseSchema' => $jsonSchema
+            ];
         }
 
         try {
