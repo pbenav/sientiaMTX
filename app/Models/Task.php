@@ -82,6 +82,25 @@ class Task extends Model
                 $model->children()->each(fn (self $child) => $child->delete());
             }
         });
+
+        static::saved(function (self $model) {
+            // Sincronizar el estado de la tarea con las citas asociadas
+            if ($model->wasChanged('status')) {
+                $appointments = \App\Models\Appointment::where('task_id', $model->id)->get();
+                foreach ($appointments as $appointment) {
+                    $newStatus = null;
+                    if ($model->status === 'completed' && $appointment->status !== 'completed') {
+                        $newStatus = 'completed';
+                    } elseif (in_array($model->status, ['pending', 'in_progress']) && $appointment->status === 'completed') {
+                        $newStatus = 'confirmed';
+                    }
+
+                    if ($newStatus) {
+                        $appointment->update(['status' => $newStatus]);
+                    }
+                }
+            }
+        });
     }
 
 

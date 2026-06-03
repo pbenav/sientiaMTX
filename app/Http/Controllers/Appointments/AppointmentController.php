@@ -140,7 +140,19 @@ class AppointmentController extends Controller
             if (array_key_exists('expediente_id', $data)) {
                 $taskData['expediente_id'] = $data['expediente_id'];
             }
+            if (isset($data['status'])) {
+                if ($data['status'] === 'completed') {
+                    $taskData['status'] = 'completed';
+                    $taskData['progress_percentage'] = 100;
+                } elseif (in_array($data['status'], ['pending', 'confirmed'])) {
+                    if ($appointment->task->status === 'completed') {
+                        $taskData['status'] = 'in_progress';
+                        $taskData['progress_percentage'] = 0;
+                    }
+                }
+            }
             if (!empty($taskData)) {
+                // Update sin disparar eventos extraños
                 $appointment->task->update($taskData);
             }
         }
