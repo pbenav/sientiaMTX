@@ -49,10 +49,10 @@
                                 {{ url('/citas/') }}/
                             </span>
                             <input type="text" name="public_slug" value="{{ old('public_slug', $settings->public_slug ?? '') }}"
-                                   placeholder="tu-nombre-o-servicio"
+                                   placeholder="Dejar en blanco para autogenerar"
                                    class="flex-1 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm font-mono text-gray-900 dark:text-white outline-none">
                         </div>
-                        <p class="text-[10px] text-gray-400 mt-1.5">Solo letras minúsculas, números, guiones y guiones bajos. Ej: <span class="font-mono text-cyan-600">maria-garcia</span></p>
+                        <p class="text-[10px] text-gray-400 mt-1.5">Solo letras minúsculas, números y guiones. Si lo dejas en blanco, se generará uno automáticamente. Ej: <span class="font-mono text-cyan-600">maria-garcia</span></p>
                         @error('public_slug') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 

@@ -58,9 +58,11 @@ class AppointmentSettingsController extends Controller
 
         unset($data['location_lat'], $data['location_lng']);
 
-        // Limpiar slug: minúsculas sin espacios
-        if (isset($data['public_slug'])) {
+        // Limpiar slug o autogenerar
+        if (!empty($data['public_slug'])) {
             $data['public_slug'] = strtolower(trim($data['public_slug']));
+        } else {
+            $data['public_slug'] = \Illuminate\Support\Str::slug($user->name) . '-' . $user->id . '-' . $team->id;
         }
 
         $user->appointmentSettings()->updateOrCreate(
