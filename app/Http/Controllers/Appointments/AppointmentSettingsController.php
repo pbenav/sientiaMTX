@@ -47,6 +47,7 @@ class AppointmentSettingsController extends Controller
             'email_confirmation'    => 'boolean',
             'location_lat'          => 'nullable|numeric|between:-90,90',
             'location_lng'          => 'nullable|numeric|between:-180,180',
+            'jitsi_domain'          => 'nullable|string|max:100',
         ]);
 
         // Actualizar coordenadas en el modelo User

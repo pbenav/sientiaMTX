@@ -18,8 +18,11 @@
         </div>
 
         <div class="flex items-center gap-3">
+            @php
+                $jitsiDomain = $appointment->service->user->appointmentSettings->jitsi_domain ?? 'meet.jit.si';
+            @endphp
             @if($appointment->modality === 'jitsi')
-                <a href="https://meet.jit.si/SientiaMTX-{{ $appointment->localizador }}" target="_blank" id="btn-open-external"
+                <a href="https://{{ $jitsiDomain }}/SientiaMTX-{{ $appointment->localizador }}" target="_blank" id="btn-open-external"
                    class="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/30 animate-pulse">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     {{ __('Abrir sin límite de tiempo') }}
@@ -37,10 +40,12 @@
     <!-- Iframe de Jitsi o Link a Meet -->
     <div class="flex-1 bg-black relative flex flex-col">
         @if($appointment->modality === 'jitsi')
+            @if($jitsiDomain === 'meet.jit.si')
             <div class="bg-indigo-950/80 text-indigo-200 text-xs text-center py-2 px-4 border-b border-indigo-900 shrink-0 flex items-center justify-center gap-3">
                 <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span><strong>Aviso:</strong> El modo integrado se desconectará en 5 minutos. Para sesiones más largas, usa el botón "Abrir sin límite de tiempo" superior.</span>
+                <span><strong>Aviso:</strong> El modo integrado con meet.jit.si se desconectará en 5 minutos. Para sesiones largas, usa el botón superior.</span>
             </div>
+            @endif
             <div id="jitsi-container" class="w-full h-full flex-1"></div>
         @elseif($appointment->modality === 'meet')
             <div class="flex items-center justify-center h-full flex-col text-center space-y-6">
@@ -58,10 +63,10 @@
 
 @section('scripts')
 @if($appointment->modality === 'jitsi')
-    <script src="https://meet.jit.si/external_api.js"></script>
+    <script src="https://{{ $jitsiDomain }}/external_api.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const domain = "meet.jit.si";
+            const domain = "{{ $jitsiDomain }}";
             const options = {
                 roomName: "SientiaMTX-{{ $appointment->localizador }}",
                 width: "100%",

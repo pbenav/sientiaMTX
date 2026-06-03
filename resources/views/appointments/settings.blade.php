@@ -219,6 +219,18 @@
                         </label>
                     </div>
 
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-2">Servidor Jitsi Preferido (Videollamadas)</label>
+                        <select name="jitsi_domain" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            <option value="meet.jit.si" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.jit.si' ? 'selected' : '' }}>meet.jit.si (Oficial - Límite de 5 min integrado)</option>
+                            <option value="meet.ffmuc.net" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.ffmuc.net' ? 'selected' : '' }}>meet.ffmuc.net (Abierto - Sin límite incrustado - Falla en Firefox)</option>
+                        </select>
+                        <p class="text-[10px] text-gray-400 mt-2">
+                            El servidor <span class="font-bold">meet.jit.si</span> limita las llamadas incrustadas a 5 minutos, pero funciona bien para apertura externa. 
+                            El servidor <span class="font-bold">meet.ffmuc.net</span> permite incrustación sin límite, pero Firefox bloquea la ventana por seguridad. ¡Elige el que mejor se adapte a ti!
+                        </p>
+                    </div>
+
                     {{-- Expediente por defecto --}}
                     @if($expedientes->isNotEmpty())
                         <div>

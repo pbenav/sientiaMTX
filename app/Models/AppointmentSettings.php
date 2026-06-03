@@ -22,6 +22,7 @@ class AppointmentSettings extends Model
         'default_expediente_id',
         'auto_create_task',
         'email_confirmation',
+        'jitsi_domain',
     ];
 
     protected $casts = [
