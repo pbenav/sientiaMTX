@@ -658,6 +658,18 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     /**
+     * Comprobar si el miembro tiene la funcionalidad de Cita Previa permitida en un equipo específico.
+     */
+    public function hasAppointmentsEnabledForTeam(int $teamId): bool
+    {
+        return $this->teams()
+            ->where('teams.id', $teamId)
+            ->whereJsonContains('settings->has_appointments', true)
+            ->wherePivot('allow_appointments', true)
+            ->exists();
+    }
+
+    /**
      * Obtener el primer equipo que tiene citas previas habilitadas para este usuario.
      */
     public function firstTeamWithAppointments(): ?\App\Models\Team

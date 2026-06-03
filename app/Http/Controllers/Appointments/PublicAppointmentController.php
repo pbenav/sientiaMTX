@@ -84,7 +84,7 @@ class PublicAppointmentController extends Controller
             ->whereHas('user', fn($q) => $q->whereNotNull('location_lat')->whereNotNull('location_lng'))
             ->with(['user', 'team'])
             ->get()
-            ->filter(fn($s) => $s->user->hasAppointmentsEnabled());
+            ->filter(fn($s) => $s->user->hasAppointmentsEnabledForTeam($s->team_id));
 
         $members = $settings->map(fn($s) => [
             'slug'         => $s->public_slug,
@@ -114,7 +114,7 @@ class PublicAppointmentController extends Controller
 
         $member   = $settings->user;
 
-        if (!$member->hasAppointmentsEnabled()) {
+        if (!$member->hasAppointmentsEnabledForTeam($settings->team_id)) {
             abort(404);
         }
 
@@ -159,7 +159,7 @@ class PublicAppointmentController extends Controller
     {
         $settings = $service->user->appointmentSettingsForTeam($service->team_id);
 
-        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabled()) {
+        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabledForTeam($service->team_id)) {
             abort(404);
         }
 
@@ -176,7 +176,7 @@ class PublicAppointmentController extends Controller
     public function store(Request $request, AppointmentService $service)
     {
         $settings = $service->user->appointmentSettingsForTeam($service->team_id);
-        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabled()) {
+        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabledForTeam($service->team_id)) {
             abort(404);
         }
 

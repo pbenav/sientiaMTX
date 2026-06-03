@@ -101,7 +101,7 @@ class SurveyController extends Controller
                 ->whereHas('user', fn($q) => $q->whereNotNull('location_lat')->whereNotNull('location_lng'))
                 ->with(['user', 'team'])
                 ->get()
-                ->filter(fn($s) => $s->user->hasAppointmentsEnabled());
+                ->filter(fn($s) => $s->user->hasAppointmentsEnabledForTeam($s->team_id));
 
             $members = $settings->map(fn($s) => [
                 'slug'         => $s->public_slug,
