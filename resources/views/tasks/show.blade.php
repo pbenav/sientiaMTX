@@ -800,8 +800,10 @@
                                 } else {
                                     this.selectedMembers = checkboxes.map(c => c.value);
                                 }
-                            }
-                        }">
+                            },
+                            roadmapQuery: ''
+                        }"
+                        @roadmap-filter.window="roadmapQuery = $event.detail">
                         <!-- Bulk Actions Bar -->
                         <div x-show="selectedMembers.length > 0" 
                              x-transition:enter="transition ease-out duration-300"
@@ -865,7 +867,7 @@
                                     <th class="px-4 py-3 text-right">{{ __('tasks.actions') }}</th>
                                 </tr>
                             </thead>
-                            <tbody x-ref="roadmapBody" class="divide-y divide-gray-100 dark:divide-gray-800/60" x-data="{ roadmapQuery: '' }" @roadmap-filter.window="roadmapQuery = $event.detail">
+                            <tbody x-ref="roadmapBody" class="divide-y divide-gray-100 dark:divide-gray-800/60">
 
                                 @foreach ($instances as $inst)
                                     @php
@@ -886,9 +888,10 @@
                                     @endphp
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" 
                                         data-name="{{ strtolower($instMemberName) }}"
+                                        data-taskname="{{ strtolower($inst->name) }}"
                                         data-status="{{ $inst->status }}"
                                         data-time="{{ $instSeconds }}"
-                                        x-show="roadmapQuery === '' || '{{ strtolower($instMemberName) }}'.includes(roadmapQuery.toLowerCase()) || '{{ strtolower($inst->name) }}'.includes(roadmapQuery.toLowerCase())"
+                                        x-show="roadmapQuery === '' || $el.dataset.name.includes(roadmapQuery.toLowerCase()) || $el.dataset.taskname.includes(roadmapQuery.toLowerCase())"
                                         x-transition
                                         @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a, input')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
                                         
