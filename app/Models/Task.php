@@ -87,6 +87,16 @@ class Task extends Model
             // Sincronizar el estado de la tarea con las citas asociadas
             if ($model->wasChanged('status')) {
                 $appointments = \App\Models\Appointment::where('task_id', $model->id)->get();
+                
+                if ($appointments->isEmpty() && preg_match('/MTXCITA-[A-Z0-9]{8}/', $model->title, $matches)) {
+                    $localizador = $matches[0];
+                    $appointment = \App\Models\Appointment::where('localizador', $localizador)->first();
+                    if ($appointment) {
+                        $appointment->update(['task_id' => $model->id]);
+                        $appointments = collect([$appointment]);
+                    }
+                }
+
                 foreach ($appointments as $appointment) {
                     $newStatus = null;
                     if ($model->status === 'completed' && $appointment->status !== 'completed') {

@@ -1738,17 +1738,19 @@ class TaskController extends Controller
         $this->authorize('view', $team);
 
         $validated = $request->validate([
-            'task_ids' => 'required|array',
-            'task_ids.*' => 'exists:tasks,id',
-            'custom_message' => 'nullable|string|max:500'
+            'task_ids'      => 'required|array',
+            'task_ids.*'    => 'exists:tasks,id',
+            'custom_message'=> 'nullable|string|max:500'
         ]);
 
-        $tasks = Task::whereIn('id', $validated['task_ids'])->where('team_id', $team->id)->get();
-        $count = 0;
+        $tasks   = Task::whereIn('id', $validated['task_ids'])->where('team_id', $team->id)->get();
+        $sent    = 0;
+        $failed  = 0;
+        $skipped = 0;
 
         foreach ($tasks as $task) {
-            $type = 'collaborative';
-            $progress = $task->progress;
+            $type      = 'collaborative';
+            $progress  = $task->progress;
 
             if ($task->status === 'blocked') {
                 $type = 'unblocking';
@@ -1757,19 +1759,54 @@ class TaskController extends Controller
             }
 
             $recipientId = $request->input('user_id');
-            $recipient = $recipientId ? \App\Models\User::find($recipientId) : ($task->assignedUser ?: $task->creator);
+            $recipient   = $recipientId
+                ? \App\Models\User::find($recipientId)
+                : ($task->assignedUser ?: $task->creator);
 
-            if ($recipient) {
-                $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress, $validated['custom_message']));
+            if (!$recipient) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $recipient->notify(new \App\Notifications\TaskNudgeNotification(
+                    $task, $type, $progress, $validated['custom_message']
+                ));
                 $task->increment('nudge_count');
-                $count++;
+
+                // Auditoría: registrar en el historial de la tarea
+                $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action'  => 'bulk_nudge_sent',
+                    'notes'   => sprintf(
+                        'Recordatorio masivo enviado a %s%s',
+                        $recipient->name,
+                        !empty($validated['custom_message'])
+                            ? ' — Mensaje: "' . $validated['custom_message'] . '"'
+                            : ''
+                    ),
+                ]);
+
+                $sent++;
+            } catch (\Exception $e) {
+                \Log::error("bulkNudge: fallo al notificar usuario #{$recipient->id} en tarea #{$task->id}: " . $e->getMessage());
+                $failed++;
             }
         }
 
+        // Construir mensaje de respuesta claro
+        $parts = [];
+        if ($sent)    $parts[] = "{$sent} enviado(s)";
+        if ($skipped) $parts[] = "{$skipped} sin destinatario";
+        if ($failed)  $parts[] = "{$failed} fallido(s) (ver logs)";
+
         return response()->json([
-            'success' => true,
-            'message' => "Se han enviado {$count} recordatorios correctamente.",
-        ]);
+            'success' => $sent > 0,
+            'sent'    => $sent,
+            'failed'  => $failed,
+            'skipped' => $skipped,
+            'message' => implode(', ', $parts) ?: 'No se procesó ningún recordatorio.',
+        ], $failed > 0 && $sent === 0 ? 500 : 200);
     }
 
     /**

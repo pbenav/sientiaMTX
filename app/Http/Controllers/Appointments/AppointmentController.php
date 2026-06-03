@@ -132,7 +132,15 @@ class AppointmentController extends Controller
         $appointment->update($data);
 
         // Actualizar la tarea si existe
-        if ($appointment->task) {
+        $task = $appointment->task;
+        if (!$task && $appointment->localizador) {
+            $task = \App\Models\Task::where('title', 'like', "% — {$appointment->localizador}")->first();
+            if ($task) {
+                $appointment->update(['task_id' => $task->id]);
+            }
+        }
+
+        if ($task) {
             $taskData = [];
             if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
                 $taskData['due_date'] = $appointment->appointment_date;
@@ -145,15 +153,14 @@ class AppointmentController extends Controller
                     $taskData['status'] = 'completed';
                     $taskData['progress_percentage'] = 100;
                 } elseif (in_array($data['status'], ['pending', 'confirmed'])) {
-                    if ($appointment->task->status === 'completed') {
+                    if ($task->status === 'completed') {
                         $taskData['status'] = 'in_progress';
                         $taskData['progress_percentage'] = 0;
                     }
                 }
             }
             if (!empty($taskData)) {
-                // Update sin disparar eventos extraños
-                $appointment->task->update($taskData);
+                $task->update($taskData);
             }
         }
 
