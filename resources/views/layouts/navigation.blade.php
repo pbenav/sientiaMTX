@@ -24,8 +24,7 @@
                             $navTeam = null;
                             if ($routeTeam) {
                                 $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
-                                $pivot = auth()->user()->teams()->where('teams.id', $routeTeamId)->first()?->pivot;
-                                if ($pivot && $pivot->allow_appointments) {
+                                if (auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
                                     $navTeam = $routeTeam;
                                 }
                             }
@@ -58,7 +57,8 @@
                                 request()->routeIs('teams.forum.*') ||
                                 request()->routeIs('teams.expedientes.*') ||
                                 request()->routeIs('teams.members') ||
-                                request()->routeIs('teams.edit');
+                                request()->routeIs('teams.edit') ||
+                                request()->routeIs('appointments.*');
                         @endphp
                         @if ($isTeamRoute)
                             <div class="flex items-center ms-4">
@@ -96,6 +96,11 @@
                                         <x-dropdown-link :href="route('teams.expedientes.index', $currentTeamId)">
                                             {{ __('Expedientes') }}
                                         </x-dropdown-link>
+                                        @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
+                                            <x-dropdown-link :href="route('appointments.index', $currentTeamId)">
+                                                Citas Previas
+                                            </x-dropdown-link>
+                                        @endif
                                     </x-slot>
 
                                 </x-dropdown>
@@ -213,8 +218,7 @@
                             $navTeam = null;
                             if ($routeTeam) {
                                 $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
-                                $pivot = auth()->user()->teams()->where('teams.id', $routeTeamId)->first()?->pivot;
-                                if ($pivot && $pivot->allow_appointments) {
+                                if (auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
                                     $navTeam = $routeTeam;
                                 }
                             }
@@ -245,7 +249,8 @@
                         request()->routeIs('teams.forum.*') ||
                         request()->routeIs('teams.expedientes.*') ||
                         request()->routeIs('teams.members') ||
-                        request()->routeIs('teams.edit');
+                        request()->routeIs('teams.edit') ||
+                        request()->routeIs('appointments.*');
                 @endphp
                 @if ($isTeamRoute)
                     <div class="pl-6 bg-violet-50/50 dark:bg-violet-900/10 py-2 border-l-4 border-violet-500 my-1">
@@ -279,6 +284,11 @@
                         <x-responsive-nav-link :href="route('teams.kanban', $currentTeamId)" :active="request()->routeIs('teams.kanban')" class="text-sm">
                             {{ __('navigation.kanban') ?? 'Tablero Kanban' }}
                         </x-responsive-nav-link>
+                        @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
+                            <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">
+                                Citas Previas
+                            </x-responsive-nav-link>
+                        @endif
                     </div>
 
                 @endif

@@ -15,7 +15,7 @@
 
 {{ __('Puede gestionar esta y otras citas desde su panel de control.') }}
 
-<x-mail::button :url="route('appointments.list')" color="primary">
+<x-mail::button :url="route('appointments.list', $appointment->service->team_id)" color="primary">
 {{ __('Ver Mis Citas') }}
 </x-mail::button>
 

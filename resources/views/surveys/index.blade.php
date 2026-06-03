@@ -75,8 +75,16 @@
                             <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Encuestas') }}</span>
                         </button>
                         
-                        @if(auth()->user()->hasAppointmentsEnabled())
-                            <a href="{{ route('appointments.index', $team ?: auth()->user()->firstTeamWithAppointments()) }}"
+                        @php
+                            $targetTeam = null;
+                            if ($team && auth()->user()->hasAppointmentsEnabledForTeam($team->id)) {
+                                $targetTeam = $team;
+                            } else {
+                                $targetTeam = auth()->user()->firstTeamWithAppointments();
+                            }
+                        @endphp
+                        @if($targetTeam)
+                            <a href="{{ route('appointments.index', $targetTeam) }}"
                                 class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
                                 title="{{ __('Gestión de Citas Previas') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"

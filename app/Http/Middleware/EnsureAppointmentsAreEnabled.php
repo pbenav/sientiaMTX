@@ -19,9 +19,7 @@ class EnsureAppointmentsAreEnabled
             $team = $request->route('team');
             if ($team) {
                 $teamId = $team instanceof \App\Models\Team ? $team->id : $team;
-                $pivot = $request->user()->teams()->where('teams.id', $teamId)->first()?->pivot;
-                
-                if (!$pivot || !$pivot->allow_appointments) {
+                if (!$request->user()->hasAppointmentsEnabledForTeam($teamId)) {
                     return redirect()->route('dashboard')->with('warning', 'No tienes habilitada la gestión de citas en este equipo.');
                 }
             } else {
