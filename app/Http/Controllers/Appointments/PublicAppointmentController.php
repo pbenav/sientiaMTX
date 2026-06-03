@@ -246,7 +246,7 @@ class PublicAppointmentController extends Controller
         // Email de confirmación al visitante (si consintió y tiene email)
         if ($visitor->consent_email && $visitor->email && $settings->email_confirmation) {
             try {
-                \Mail::to($visitor->email)->send(new \App\Mail\AppointmentConfirmedMail($appointment));
+                \Mail::to($visitor->email)->locale(app()->getLocale())->send(new \App\Mail\AppointmentConfirmedMail($appointment));
             } catch (\Throwable $e) {
                 \Log::warning("AppointmentConfirmed mail failed: " . $e->getMessage());
             }
@@ -254,7 +254,7 @@ class PublicAppointmentController extends Controller
 
         // Email al miembro de nueva cita
         try {
-            \Mail::to($service->user->email)->send(new \App\Mail\AppointmentNewRequestMail($appointment));
+            \Mail::to($service->user->email)->locale($service->user->preferredLocale())->send(new \App\Mail\AppointmentNewRequestMail($appointment));
         } catch (\Throwable $e) {
             \Log::warning("AppointmentNewRequest mail failed: " . $e->getMessage());
         }
