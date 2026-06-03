@@ -28,7 +28,9 @@ class SurveyController extends Controller
 
         $surveys = $query
             ->with(['creator', 'questions'])
-            ->withCount('votes')
+            ->withCount(['votes as unique_voters_count' => function($q) {
+                $q->select(DB::raw('count(distinct user_id)'));
+            }])
             ->orderByDesc('published_at')
             ->paginate(12);
 
