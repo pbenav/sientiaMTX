@@ -404,6 +404,43 @@
                     .finally(() => this.isUploading = false);
                 },
 
+                deleteMessage(msgId) {
+                    Swal.fire({
+                        title: '¿Eliminar mensaje?',
+                        text: 'Esta acción no se puede deshacer.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Eliminar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                            cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`/chat/message/${msgId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(r => r.json())
+                            .then(d => {
+                                if (d.success) {
+                                    this.messages = this.messages.filter(m => m.id !== msgId);
+                                } else {
+                                    Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                }
+                            })
+                            .catch(e => console.error('Error deleting message:', e));
+                        }
+                    });
+                },
+
                 checkNewMessages() {
                     fetch('/comms/heartbeat?_=' + Date.now(), {
                         headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
@@ -2115,10 +2152,16 @@
                         <!-- My message -->
                         <template x-if="msg.sender === 'me'">
                             <div class="flex justify-end group relative my-1">
-                                <!-- Reply Button Me -->
-                                <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="opacity-0 group-hover:opacity-100 mr-2 my-auto p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Responder">
-                                    <svg class="w-4 h-4 transform -scale-x-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
-                                </button>
+                                <div class="opacity-0 group-hover:opacity-100 mr-2 my-auto flex items-center gap-1 transition-all">
+                                    <!-- Delete Button Me -->
+                                    <button @click="deleteMessage(msg.id)" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Eliminar mensaje">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                    <!-- Reply Button Me -->
+                                    <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Responder">
+                                        <svg class="w-4 h-4 transform -scale-x-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                    </button>
+                                </div>
 
                                 <div class="max-w-[75%] bg-emerald-600 text-white rounded-3xl rounded-tr-sm px-4 py-3 shadow-md relative">
                                     <!-- Quoted Context -->

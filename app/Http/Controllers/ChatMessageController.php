@@ -610,4 +610,26 @@ class ChatMessageController extends Controller
             return response()->json(['success' => false, 'message' => 'Error al crear la sala de Meet'], 500);
         }
     }
+
+    public function destroy($id): JsonResponse
+    {
+        $message = ChatMessage::findOrFail($id);
+
+        if ($message->sender_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        try {
+            if ($message->file_path) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($message->file_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($message->file_path);
+                }
+            }
+            $message->delete();
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('Error deleting chat message: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al eliminar el mensaje'], 500);
+        }
+    }
 }

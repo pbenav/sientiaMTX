@@ -448,6 +448,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/chat/group/{group}/rename', [\App\Http\Controllers\ChatMessageController::class, 'renameGroup'])->name('chat.group.rename');
     Route::delete('/chat/group/{group}', [\App\Http\Controllers\ChatMessageController::class, 'deleteGroup'])->name('chat.group.delete');
     Route::post('/chat/meet', [\App\Http\Controllers\ChatMessageController::class, 'startGoogleMeet'])->name('chat.meet');
+    Route::delete('/chat/message/{id}', [\App\Http\Controllers\ChatMessageController::class, 'destroy'])->name('chat.message.delete');
     Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });
 
