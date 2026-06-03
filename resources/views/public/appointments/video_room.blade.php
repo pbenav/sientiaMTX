@@ -19,7 +19,8 @@
 
         <div class="flex items-center gap-3">
             @php
-                $jitsiDomain = $appointment->service->user->appointmentSettings->jitsi_domain ?? 'meet.jit.si';
+                $settings = $appointment->service->user->appointmentSettings()->where('team_id', $appointment->service->team_id)->first();
+                $jitsiDomain = $settings->jitsi_domain ?? 'meet.jit.si';
             @endphp
             @if($appointment->modality === 'jitsi')
                 <a href="https://{{ $jitsiDomain }}/SientiaMTX-{{ $appointment->localizador }}" target="_blank" id="btn-open-external"
