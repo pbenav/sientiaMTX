@@ -432,6 +432,12 @@ Route::middleware('auth')->group(function () {
             $invitation->user()->decrement('invitations_left');
         }
 
+        // AUTO-ENROLL in team if linked to the VIP invitation
+        if ($invitation->team_id) {
+            $role = \App\Models\TeamRole::where('name', 'user')->first();
+            $invitation->team->members()->syncWithoutDetaching([$user->id => ['role_id' => $role->id ?? 3]]);
+        }
+
         return redirect()->route('dashboard')->with('success', __('¡Pase VIP canjeado con éxito! Tu cuenta ha sido aprobada.'));
     })->name('waitlist.redeem');
 

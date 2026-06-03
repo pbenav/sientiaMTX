@@ -58,26 +58,36 @@
 
         {{-- Selector de Equipo --}}
         @if($userTeamsWithAppointments->count() > 1)
-            <div class="flex items-center gap-2 px-2 shrink-0 self-start lg:self-center">
-                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">{{ __('Equipo:') }}</span>
-                <select onchange="window.location.href = this.value"
-                        class="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer shadow-sm">
-                    @foreach($userTeamsWithAppointments as $t)
-                        @php
-                            $params = request()->route()->parameters();
-                            $params['team'] = $t->id;
-                            $routeName = request()->route()->getName();
-                            if (isset($params['service']) || isset($params['block']) || isset($params['appointment'])) {
-                                $routeName = 'appointments.index';
-                                $params = ['team' => $t->id];
-                            }
-                            $targetUrl = route($routeName, $params);
-                        @endphp
-                        <option value="{{ $targetUrl }}" {{ $team->id == $t->id ? 'selected' : '' }}>
-                            👥 {{ $t->name }}
-                        </option>
-                    @endforeach
-                </select>
+            <div class="flex items-center shrink-0 self-start lg:self-center">
+                <x-dropdown align="right" width="60">
+                    <x-slot name="trigger">
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors shadow-sm focus:outline-none">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">{{ __('Equipo:') }}</span>
+                            <span class="text-xs font-black text-violet-600 dark:text-violet-400 whitespace-nowrap">👥 {{ $team->name }}</span>
+                            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        @foreach($userTeamsWithAppointments as $t)
+                            @if($t->id !== $team->id)
+                                @php
+                                    $params = request()->route()->parameters();
+                                    $params['team'] = $t->id;
+                                    $routeName = request()->route()->getName();
+                                    if (isset($params['service']) || isset($params['block']) || isset($params['appointment'])) {
+                                        $routeName = 'appointments.index';
+                                        $params = ['team' => $t->id];
+                                    }
+                                    $targetUrl = route($routeName, $params);
+                                @endphp
+                                <x-dropdown-link :href="$targetUrl">
+                                    👥 {{ $t->name }}
+                                </x-dropdown-link>
+                            @endif
+                        @endforeach
+                    </x-slot>
+                </x-dropdown>
             </div>
         @elseif($userTeamsWithAppointments->count() === 1)
             <div class="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 dark:bg-gray-850/50 border border-gray-150 dark:border-gray-755 rounded-xl shrink-0 self-start lg:self-center shadow-sm">

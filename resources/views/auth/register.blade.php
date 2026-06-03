@@ -13,7 +13,7 @@
         <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', request()->query('email'))"
                 required autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
@@ -90,7 +90,7 @@
             </x-primary-button>
         </div>
 
-        <input type="hidden" name="code" value="{{ request()->query('code') }}">
+        <input type="hidden" name="code" value="{{ old('code', request()->query('code')) }}">
         <input type="hidden" name="timezone" id="timezone" value="{{ config('app.timezone', 'UTC') }}">
         <script>
             try {

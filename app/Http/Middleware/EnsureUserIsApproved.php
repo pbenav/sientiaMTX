@@ -22,6 +22,7 @@ class EnsureUserIsApproved
         if ($requireApproval && auth()->check() && !auth()->user()->is_approved) {
             $allowedRoutes = [
                 'waitlist',
+                'waitlist.*',
                 'logout',
                 'privacy',
                 'terms',

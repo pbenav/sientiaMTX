@@ -64,6 +64,11 @@ class RegisteredUserController extends Controller
             }
         }
 
+        // Auto-aprobar al usuario si tiene invitaciones a equipos pendientes
+        if (\App\Models\TeamInvitation::where('email', $request->email)->exists()) {
+            $isApproved = true;
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
