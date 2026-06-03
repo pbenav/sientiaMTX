@@ -94,23 +94,32 @@
                         </div>
 
                         @if(!$invitation->used_at)
-                            <div x-data="{ copied: false }" class="w-full sm:w-auto">
-                                <button type="button" 
-                                    @click="
-                                        navigator.clipboard.writeText('{{ $regUrl }}');
-                                        copied = true;
-                                        setTimeout(() => copied = false, 2000);
-                                    "
-                                    :class="copied ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95">
-                                    <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.16-7.5-8.875a9.06 9.06 0 0 0-1.5-.124m-7.5 10.375c0 .621.504 1.125 1.125 1.125H6.75m11.25-1.125v-1.5m0 1.5h1.5m-1.5 0h-1.5m-2.25-4.5h.008v.008H12v-.008Z"></path>
-                                    </svg>
-                                    <svg x-show="copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
-                                    </svg>
-                                    <span x-text="copied ? '{{ __('Copiado') }}' : '{{ __('Copiar') }}'"></span>
-                                </button>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <div x-data="{ copied: false }" class="w-full sm:w-auto">
+                                    <button type="button" 
+                                        @click="
+                                            navigator.clipboard.writeText('{{ $regUrl }}');
+                                            copied = true;
+                                            setTimeout(() => copied = false, 2000);
+                                        "
+                                        :class="copied ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95">
+                                        <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.16-7.5-8.875a9.06 9.06 0 0 0-1.5-.124m-7.5 10.375c0 .621.504 1.125 1.125 1.125H6.75m11.25-1.125v-1.5m0 1.5h1.5m-1.5 0h-1.5m-2.25-4.5h.008v.008H12v-.008Z"></path>
+                                        </svg>
+                                        <svg x-show="copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+                                        </svg>
+                                        <span x-text="copied ? '{{ __('Copiado') }}' : '{{ __('Copiar') }}'"></span>
+                                    </button>
+                                </div>
+                                <form method="POST" action="{{ route('profile.invitations.destroy', $invitation) }}" class="w-full sm:w-auto">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-900/50 rounded-lg text-xs font-bold transition-all active:scale-95" title="{{ __('Eliminar invitación') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"></path></svg>
+                                    </button>
+                                </form>
                             </div>
                         @endif
                     </div>

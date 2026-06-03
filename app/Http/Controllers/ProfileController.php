@@ -533,6 +533,21 @@ class ProfileController extends Controller
     }
 
     /**
+     * Eliminar un pase VIP de invitación generado por el usuario (solo si no ha sido usado).
+     */
+    public function deleteInvitation(Request $request, \App\Models\Invitation $invitation): RedirectResponse
+    {
+        // Solo puede borrar sus propias invitaciones y solo si no han sido usadas
+        if ($invitation->user_id !== $request->user()->id || $invitation->used_at) {
+            return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('error', 'No puedes eliminar esta invitación.');
+        }
+
+        $invitation->delete();
+
+        return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('status', 'invitation-deleted');
+    }
+
+    /**
      * Log out a specific session remotely.
      */
     public function logoutSession(Request $request, $sessionId): RedirectResponse
