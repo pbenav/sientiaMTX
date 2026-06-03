@@ -59,6 +59,7 @@ class PublicAppointmentController extends Controller
                         'is_active' => true,
                         'price' => null,
                         'price_visible' => false,
+                        'modality' => ['presencial'],
                     ]);
 
                     // Crear horario por defecto de Lunes a Viernes de 09:00 a 14:00

@@ -589,8 +589,6 @@
                 </div>
             </div>
             @if($isGlobal)
-                </div> <!-- Cierre del col-span-8 -->
-
                 <!-- Columna lateral (Organismo Emisor / Transparencia) -->
                 <div class="lg:col-span-4 space-y-6 print-hide">
                     <!-- Tarjeta de Información Oficial del Canal Ciudadano -->
@@ -952,21 +950,18 @@
         })();
     </script>
     @if ($isGlobal)
-        @push('styles')
-            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-                integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-            <style>
-                #promoter-map {
-                    height: 100%;
-                    width: 100%;
-                    z-index: 1;
-                }
-                .custom-promoter-pin {
-                    background: none;
-                    border: none;
-                }
-            </style>
-        @endpush
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <style>
+            #promoter-map {
+                height: 100%;
+                width: 100%;
+                z-index: 1;
+            }
+            .custom-promoter-pin {
+                background: none;
+                border: none;
+            }
+        </style>
 
         @push('scripts')
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

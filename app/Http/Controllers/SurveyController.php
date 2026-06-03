@@ -77,6 +77,7 @@ class SurveyController extends Controller
                             'is_active' => true,
                             'price' => null,
                             'price_visible' => false,
+                            'modality' => ['presencial'],
                         ]);
 
                         for ($day = 1; $day <= 5; $day++) {

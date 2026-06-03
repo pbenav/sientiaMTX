@@ -51,8 +51,8 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 </div>
                 <div>
-                    <p class="text-sm font-black text-amber-800 dark:text-amber-300">Portal no configurado o no público</p>
-                    <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">Para que los ciudadanos puedan solicitar citas, activa tu portal y configura un slug público.</p>
+                    <p class="text-sm font-black text-amber-800 dark:text-amber-300">Tu perfil público no está activo</p>
+                    <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">Para que los ciudadanos puedan solicitarte citas, activa tu perfil público en la configuración.</p>
                     <a href="{{ route('appointments.settings', $team) }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300 hover:underline">
                         Ir a Configuración →
                     </a>
@@ -102,9 +102,9 @@
             {{-- Estado del portal --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group">
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Portal Público</p>
+                <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Mi Perfil Público</p>
                 <div class="flex items-center gap-3 mt-2">
-                    @if($settings && $settings->is_public && $settings->public_slug)
+                    @if($settings && $settings->is_public)
                         <span class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-black">
                             <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span> Activo
                         </span>
