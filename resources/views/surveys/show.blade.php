@@ -211,7 +211,7 @@
                                         <h4 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{{ $totalVotes }}</h4>
                                         <p class="text-[9px] font-bold text-emerald-500 mt-1 flex items-center gap-1">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                                            {{ __('Votos totales') }}
+                                            {{ __('Votantes únicos') }}
                                         </p>
                                     </div>
                                     <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">

@@ -233,7 +233,7 @@ class SurveyController extends Controller
             ->get()
             ->groupBy('question_id');
 
-        $totalVotes = $survey->votes()->distinct('user_id')->count();
+        $totalVotes = $survey->votes()->select('user_id')->distinct()->count('user_id');
         $showResults = $survey->show_results_before_voting || $survey->is_closed || $hasVoted;
 
         return view('surveys.show', compact(
