@@ -21,7 +21,7 @@
      class="flex-grow grid grid-cols-1 lg:grid-cols-4 overflow-hidden h-[calc(100vh-4rem)] relative">
     
     <!-- Sidebar de Miembros -->
-    <div :class="viewMode === 'list' ? 'flex' : 'hidden lg:flex'" class="lg:col-span-1 bg-white dark:bg-gray-900 border-r border-gray-150 dark:border-gray-800 flex-col h-full z-10 shadow-lg">
+    <div :class="viewMode === 'list' ? 'flex' : 'hidden lg:flex'" class="lg:col-span-1 min-h-0 bg-white dark:bg-gray-900 border-r border-gray-150 dark:border-gray-800 flex-col h-full z-10 shadow-lg">
         <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
             <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Puntos de Atención') }}</h2>
             <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Selecciona un miembro en el mapa o en la lista para solicitar cita.') }}</p>
@@ -46,7 +46,7 @@
             @endif
         </div>
         
-        <div id="members-list" class="flex-grow overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
+        <div id="members-list" class="flex-grow min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
             @forelse($members as $m)
                 <a href="/citas/{{ $m['slug'] }}" 
                    class="member-item block p-4 hover:bg-cyan-50/30 dark:hover:bg-cyan-950/15 cursor-pointer transition-colors" 
