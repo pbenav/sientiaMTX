@@ -33,7 +33,15 @@ class EnsureUserIsApproved
                 'team.*',
             ];
 
-            if (!$request->routeIs($allowedRoutes)) {
+            $isAllowed = false;
+            foreach ($allowedRoutes as $route) {
+                if ($request->routeIs($route)) {
+                    $isAllowed = true;
+                    break;
+                }
+            }
+
+            if (!$isAllowed) {
                 return redirect()->route('waitlist');
             }
         }
