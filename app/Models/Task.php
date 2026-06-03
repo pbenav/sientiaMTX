@@ -249,6 +249,12 @@ class Task extends Model
         return $this->belongsTo(Task::class, 'parent_id');
     }
 
+    // Relationship: A task can have an associated appointment
+    public function appointment(): HasOne
+    {
+        return $this->hasOne(Appointment::class, 'task_id');
+    }
+
     // Relationship: A task can have many subtasks or dependent tasks
     public function children(): HasMany
     {

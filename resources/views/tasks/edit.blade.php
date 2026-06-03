@@ -152,6 +152,30 @@
                         @endif
                     </div>
 
+                    <!-- Cita Previa Vinculada -->
+                    @if($task->appointment)
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
+                                {{ __('Cita Previa Vinculada') }}
+                            </label>
+                            <div class="flex items-center justify-between bg-cyan-50/30 dark:bg-cyan-900/10 p-3 rounded-xl border border-cyan-100 dark:border-cyan-800/50">
+                                <div class="flex items-center gap-3">
+                                    <span class="px-2 py-1 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300 rounded-md text-[10px] font-black uppercase font-mono">
+                                        {{ $task->appointment->localizador }}
+                                    </span>
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                        {{ in_array($task->appointment->modality, ['jitsi', 'meet']) ? 'Videoconferencia' : 'Presencial' }} - {{ $task->appointment->appointment_date->format('d/m/Y') }} {{ $task->appointment->appointment_time }}
+                                    </span>
+                                </div>
+                                @if(in_array($task->appointment->modality, ['jitsi', 'meet']))
+                                    <a href="{{ route('public.appointments.video.auth', $task->appointment) }}?localizador={{ $task->appointment->localizador }}" target="_blank" class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm hover:scale-105 transition-transform border border-cyan-100 dark:border-cyan-800/50">
+                                        💻 {{ __('Iniciar') }}
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Secondary grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                         <!-- Tarea Padre -->

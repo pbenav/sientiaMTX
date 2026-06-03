@@ -46,12 +46,55 @@
             </div>
         @endif
 
-        <!-- Action Buttons Row -->
-        <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3"
-            x-data="{ tab: 'surveys' }" @tab-changed.window="tab = $event.detail">
 
-            <!-- Botones de la pestaña de Encuestas -->
-            <div x-show="tab === 'surveys'" class="flex items-center gap-3" x-transition>
+    </x-slot>
+
+    <div class="space-y-6" x-data="{
+        currentTab: 'surveys',
+        search: '',
+        get filteredCount() {
+            return Array.from(document.querySelectorAll('.survey-card')).filter(card => card.style.display !== 'none').length;
+        }
+    }">
+
+        @if ($isGlobal)
+            <!-- Selector de Pestañas del Canal Ciudadano (Estilo Unificado con Mis Citas) -->
+            <div class="w-full mt-6 mb-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm gap-3">
+                    <div class="flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+                        <button type="button" @click="currentTab = 'surveys'; $dispatch('tab-changed', 'surveys')"
+                            :class="currentTab === 'surveys' 
+                                ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700' 
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60'"
+                            class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" :stroke-width="currentTab === 'surveys' ? '2.5' : '2'">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Encuestas') }}</span>
+                        </button>
+                        
+                        @if(auth()->user()->hasAppointmentsEnabled())
+                            <a href="{{ route('appointments.index', $team ?: auth()->user()->firstTeamWithAppointments()) }}"
+                                class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
+                                title="{{ __('Gestión de Citas Previas') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Gestión de Citas') }}</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Pestaña: Encuestas Colectivas -->
+        <div x-show="currentTab === 'surveys'" class="space-y-4">
+            <!-- Action Buttons for Surveys -->
+            <div class="flex flex-wrap items-center gap-3 pt-2">
                 @can('create', App\Models\Survey::class)
                     @if (!$isGlobal || auth()->user()->is_admin)
                         <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}"
@@ -88,64 +131,6 @@
                 @endcan
             </div>
 
-            <!-- Botones de la pestaña de Citas Previas -->
-            @if(auth()->user()->hasAppointmentsEnabled())
-                <div x-show="tab === 'map'" class="flex items-center gap-3" x-transition x-cloak>
-                    <a href="{{ route('appointments.settings', $team ?: auth()->user()->firstTeamWithAppointments()) }}"
-                        class="flex items-center gap-2 text-xs bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-cyan-500/20 active:scale-95 group">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>{{ __('Configurar Mis Citas y Servicios') }}</span>
-                    </a>
-                </div>
-            @endif
-        </div>
-    </x-slot>
-
-    <div class="space-y-6" x-data="{
-        currentTab: 'surveys',
-        search: '',
-        get filteredCount() {
-            return Array.from(document.querySelectorAll('.survey-card')).filter(card => card.style.display !== 'none').length;
-        }
-    }">
-
-        @if ($isGlobal)
-            <!-- Selector de Pestañas del Canal Ciudadano -->
-            <div class="flex items-center gap-2 border-b border-gray-150 dark:border-gray-800 pb-4">
-                <button type="button" @click="currentTab = 'surveys'; $dispatch('tab-changed', 'surveys')"
-                    :class="currentTab === 'surveys' ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' :
-                        'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'"
-                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all select-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                    Encuestas Colectivas
-                </button>
-                <button type="button"
-                    @click="currentTab = 'map'; $dispatch('tab-changed', 'map'); setTimeout(() => { if(window.intranetMap) window.intranetMap.invalidateSize() }, 100)"
-                    :class="currentTab === 'map' ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' :
-                        'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'"
-                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all select-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Portal de Citas Previas
-                </button>
-            </div>
-        @endif
-
-        <!-- Pestaña: Encuestas Colectivas -->
-        <div x-show="currentTab === 'surveys'" class="space-y-4">
             <!-- Filters and Search Bar -->
             <div
                 class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
@@ -373,317 +358,5 @@
                     {{ $surveys->links() }}
                 </div>
             @endif
-        </div>
-
-        @if ($isGlobal)
-            <!-- Pestaña: Portal de Citas Previas -->
-            <div x-show="currentTab === 'map'" class="space-y-4" x-cloak>
-                <div
-                    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm flex flex-col lg:flex-row h-[650px] z-10">
-
-                    <!-- Sidebar de Puntos de Atención -->
-                    <div
-                        class="lg:w-1/4 bg-gray-50/30 dark:bg-gray-900/30 border-r border-gray-150 dark:border-gray-850 flex flex-col h-full z-10">
-                        <div class="p-5 border-b border-gray-150 dark:border-gray-850">
-                            <h2
-                                class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">
-                                Red de Servicios</h2>
-                            <p class="text-[10px] text-gray-400 dark:text-gray-550 font-medium mt-1">Busca un miembro o
-                                punto de atención en el mapa interactivo.</p>
-
-                            <div class="relative mt-4">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input type="text" id="map-search-input" placeholder="Buscar técnico, área..."
-                                    class="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-xl text-xs font-bold text-gray-900 dark:text-white outline-none transition-all placeholder-gray-450 dark:placeholder-gray-500 shadow-sm">
-                            </div>
-
-                            @if (!empty($allTeams))
-                                <div class="mt-2">
-                                    <select id="map-team-filter"
-                                        class="w-full px-3 py-2 bg-white dark:bg-gray-955 border border-gray-200 dark:border-gray-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 outline-none transition-all cursor-pointer shadow-sm">
-                                        <option value="">🔍 Todos los equipos</option>
-                                        @foreach ($allTeams as $teamName)
-                                            <option value="{{ $teamName }}">👥 {{ $teamName }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div id="map-members-list"
-                            class="flex-grow overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
-                            @forelse($members as $m)
-                                <a href="/citas/{{ $m['slug'] }}" target="_blank"
-                                    class="map-member-item block p-4 hover:bg-violet-50/30 dark:hover:bg-violet-950/15 cursor-pointer transition-colors"
-                                    data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}"
-                                    data-slug="{{ $m['slug'] }}" data-name="{{ $m['display_name'] }}"
-                                    data-area="{{ $m['area'] ?? '' }}"
-                                    data-teams="{{ json_encode($m['teams'] ?? []) }}">
-                                    <div class="flex items-start gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-sm">
-                                            <span
-                                                class="text-xs font-black uppercase">{{ substr($m['display_name'], 0, 2) }}</span>
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <h3 class="text-xs font-black text-gray-900 dark:text-white truncate">
-                                                {{ $m['display_name'] }}</h3>
-                                            @if (!empty($m['area']))
-                                                <p
-                                                    class="text-[9px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mt-0.5">
-                                                    {{ $m['area'] }}</p>
-                                            @endif
-                                            <div
-                                                class="flex items-center justify-between gap-2 mt-1.5 text-[9px] text-gray-400 dark:text-gray-555 font-bold">
-                                                <span class="flex items-center gap-1">
-                                                    <svg class="w-3 h-3 text-violet-500 shrink-0" fill="none"
-                                                        stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
-                                                    </svg>
-                                                    {{ $m['services'] }}
-                                                    {{ $m['services'] == 1 ? 'servicio' : 'servicios' }}
-                                                </span>
-                                                <!-- BOTON MAPA -->
-                                                <button type="button" class="locate-map-btn p-1 text-gray-455 hover:text-violet-600 dark:hover:text-violet-455 rounded-lg transition-colors mr-1" title="Ver en el mapa" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <svg class="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 mt-1 self-center"
-                                            fill="none" stroke="currentColor" stroke-width="2.5"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </div>
-                                </a>
-                            @empty
-                                <div class="p-8 text-center">
-                                    <p class="text-2xl mb-1">🗺️</p>
-                                    <p class="text-xs font-bold text-gray-450 dark:text-gray-550">Sin miembros
-                                        geolocalizados</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <!-- Contenedor del Mapa -->
-                    <div class="lg:w-3/4 relative h-full">
-                        <div id="intranet-map" class="w-full h-full"></div>
-                    </div>
-
-                </div>
-            </div>
-        @endif
     </div>
 </x-app-layout>
-
-@if ($isGlobal)
-    @push('styles')
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-        <style>
-            #intranet-map {
-                height: 100%;
-                min-height: 400px;
-                width: 100%;
-            }
-
-            .custom-pin {
-                background: none;
-                border: none;
-            }
-        </style>
-    @endpush
-
-    @push('scripts')
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                // Coordenadas iniciales por defecto (España / Centro)
-                const defaultLat = 40.416775;
-                const defaultLng = -3.703790;
-
-                // Crear mapa
-                const map = L.map('intranet-map', {
-                    zoomControl: false
-                }).setView([defaultLat, defaultLng], 6);
-
-                window.intranetMap = map;
-
-                // Control de zoom en la esquina superior derecha
-                L.control.zoom({
-                    position: 'topright'
-                }).addTo(map);
-
-                // Tile layer elegante y adaptativo
-                const isDark = document.documentElement.classList.contains('dark');
-                const cartoUrl = isDark ?
-                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
-                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-
-                const tiles = L.tileLayer(cartoUrl, {
-                    attribution: '© OpenStreetMap contributors, CartoDB',
-                    maxZoom: 20
-                }).addTo(map);
-
-                // Icono premium de PIN de mapa
-                const pinIcon = L.divIcon({
-                    html: `
-                        <div class="relative w-8 h-8 flex items-center justify-center">
-                            <span class="absolute w-6 h-6 bg-cyan-500/35 rounded-full animate-ping opacity-75"></span>
-                            <div class="w-7.5 h-7.5 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full border-2 border-white dark:border-gray-950 flex items-center justify-center text-white shadow-md">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                            </div>
-                        </div>`,
-                    className: 'custom-pin',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -32]
-                });
-
-                const members = @json($members);
-                const markersGroup = L.featureGroup();
-                const markersMap = new Map();
-
-                // Añadir marcadores
-                members.forEach(m => {
-                    if (m.lat && m.lng) {
-                        const marker = L.marker([m.lat, m.lng], {
-                            icon: pinIcon
-                        });
-
-                        const popupContent = `
-                            <div class="p-3 text-gray-900 dark:text-white font-sans max-w-xs">
-                                <h4 class="font-black text-sm heading-font">${m.display_name}</h4>
-                                ${m.area ? `<p class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase mt-0.5 tracking-wider">${m.area}</p>` : ''}
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2 font-medium">${m.services} servicios disponibles</p>
-                                <a href="/citas/${m.slug}" target="_blank" class="block text-center mt-3 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm transition-all hover:scale-102 select-none">
-                                    Ver Ficha y Reservar &rarr;
-                                </a>
-                            </div>
-                        `;
-
-                        marker.bindPopup(popupContent);
-                        markersMap.set(m.slug, marker);
-                        marker.addTo(markersGroup);
-                    }
-                });
-
-                markersGroup.addTo(map);
-
-                // Ajustar vista inicial
-                if (members.length > 0) {
-                    map.fitBounds(markersGroup.getBounds(), {
-                        padding: [50, 50]
-                    });
-                }
-
-                // Filtro y Búsqueda Avanzada
-                const searchInput = document.getElementById('map-search-input');
-                const teamFilter = document.getElementById('map-team-filter');
-                const items = document.querySelectorAll('.map-member-item');
-
-                function applyFilters() {
-                    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-                    const selectedTeam = teamFilter ? teamFilter.value : '';
-
-                    const visibleBounds = L.latLngBounds();
-                    let visibleCount = 0;
-
-                    items.forEach(item => {
-                        const name = item.getAttribute('data-name').toLowerCase();
-                        const area = item.getAttribute('data-area').toLowerCase();
-                        const teams = JSON.parse(item.getAttribute('data-teams') || '[]');
-                        const slug = item.getAttribute('data-slug');
-                        const lat = parseFloat(item.getAttribute('data-lat'));
-                        const lng = parseFloat(item.getAttribute('data-lng'));
-
-                        const matchesSearch = name.includes(query) || area.includes(query) || teams.some(t => t
-                            .toLowerCase().includes(query));
-                        const matchesTeam = !selectedTeam || teams.includes(selectedTeam);
-
-                        const marker = markersMap.get(slug);
-
-                        if (matchesSearch && matchesTeam) {
-                            item.style.display = 'block';
-                            if (marker) {
-                                if (!markersGroup.hasLayer(marker)) {
-                                    markersGroup.addLayer(marker);
-                                }
-                                if (!isNaN(lat) && !isNaN(lng)) {
-                                    visibleBounds.extend([lat, lng]);
-                                    visibleCount++;
-                                }
-                            }
-                        } else {
-                            item.style.display = 'none';
-                            if (marker && markersGroup.hasLayer(marker)) {
-                                markersGroup.removeLayer(marker);
-                            }
-                        }
-                    });
-
-                    if (visibleCount > 0) {
-                        map.fitBounds(visibleBounds, {
-                            padding: [50, 50],
-                            maxZoom: 14
-                        });
-                    }
-                }
-
-                if (searchInput) searchInput.addEventListener('input', applyFilters);
-                if (teamFilter) teamFilter.addEventListener('change', applyFilters);
-
-                // Interacción al hacer clic en el botón de localizar en el mapa
-                const locateButtons = document.querySelectorAll('.locate-map-btn');
-                locateButtons.forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        const lat = parseFloat(this.getAttribute('data-lat'));
-                        const lng = parseFloat(this.getAttribute('data-lng'));
-                        const slug = this.getAttribute('data-slug');
-
-                        if (!isNaN(lat) && !isNaN(lng)) {
-                            map.setView([lat, lng], 14, {
-                                animate: true,
-                                duration: 1
-                            });
-
-                            const marker = markersMap.get(slug);
-                            if (marker && markersGroup.hasLayer(marker)) {
-                                marker.openPopup();
-                            }
-                        }
-                    });
-                });
-
-                // Cambio dinámico de Tile Layer con Dark Mode
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.attributeName === "class") {
-                            const isDark = document.documentElement.classList.contains('dark');
-                            const newCartoUrl = isDark ?
-                                'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
-                                'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-                            tiles.setUrl(newCartoUrl);
-                        }
-                    });
-                });
-
-                observer.observe(document.documentElement, {
-                    attributes: true
-                });
-            });
-        </script>
-    @endpush
-@endif

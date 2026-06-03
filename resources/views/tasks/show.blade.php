@@ -2224,6 +2224,32 @@
                 </div>
             @endif
 
+            <!-- Cita Previa Card -->
+            @if ($task->appointment)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('Cita Previa') }}</h4>
+                            <p class="text-xs font-bold text-gray-900 dark:text-white truncate">Loc: {{ $task->appointment->localizador }}</p>
+                        </div>
+                    </div>
+                    @if(in_array($task->appointment->modality, ['jitsi', 'meet']))
+                        <a href="{{ route('public.appointments.video.auth', $task->appointment) }}?localizador={{ $task->appointment->localizador }}" target="_blank" class="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-700 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 py-2 border border-cyan-100 dark:border-cyan-800/50 rounded-xl transition-all shadow-sm">
+                            💻 {{ __('Iniciar Videoconferencia') }}
+                        </a>
+                    @else
+                        <p class="w-full text-center text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 py-2 border border-gray-100 dark:border-gray-800/50 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                            🏢 {{ __('Modalidad Presencial') }}
+                        </p>
+                    @endif
+                </div>
+            @endif
+
             <!-- 8. Fechas Card -->
             @if ($task->due_date || $task->scheduled_date)
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">

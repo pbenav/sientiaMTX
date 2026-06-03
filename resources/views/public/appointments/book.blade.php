@@ -111,7 +111,12 @@
             
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                 @php
-                    $modalities = is_array($service->modality) ? $service->modality : [$service->modality];
+                    $rawModality = $service->modality;
+                    if (empty($rawModality)) {
+                        $modalities = ['presencial'];
+                    } else {
+                        $modalities = is_array($rawModality) ? $rawModality : [$rawModality];
+                    }
                 @endphp
                 @if(count($modalities) > 1)
                     <div class="md:col-span-12">
