@@ -107,8 +107,7 @@ class ChatCallController extends Controller
         }
 
         try {
-            $attendeeEmails = User::whereIn('id', $receivers)->pluck('email')->toArray();
-            $meetUri = $googleService->createMeetSpace($attendeeEmails);
+            $meetUri = $googleService->createMeetSpace();
 
             if (!$meetUri) {
                 return response()->json([
