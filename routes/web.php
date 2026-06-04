@@ -378,11 +378,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/ai/models', [\App\Http\Controllers\AiChatController::class, 'getAvailableModels'])->name('ai.models');
     Route::get('/ai/history', [\App\Http\Controllers\AiChatController::class, 'getHistory'])->name('ai.history');
     Route::post('/ai/ask', [\App\Http\Controllers\AiChatController::class, 'ask'])->name('ai.ask');
-    Route::post('/ai/undo', [\App\Http\Controllers\AiChatController::class, 'undoLastTransfer'])->name('ai.undo');
+    Route::post('/ai/undo', [\App\Http\Controllers\AiContentTransferController::class, 'undoLastTransfer'])->name('ai.undo');
     Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
-    Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferContent'])->name('ai.transfer');
-    Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiChatController::class, 'transferForumContent'])->name('ai.transfer_forum');
-    Route::post('/ai/transfer-global/{team?}', [\App\Http\Controllers\AiChatController::class, 'transferGlobalContent'])->name('ai.transfer_global');
+    Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferContent'])->name('ai.transfer');
+    Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferForumContent'])->name('ai.transfer_forum');
+    Route::post('/ai/transfer-global/{team?}', [\App\Http\Controllers\AiContentTransferController::class, 'transferGlobalContent'])->name('ai.transfer_global');
 
     // Time Tracking routes
     Route::prefix('time-logs')->name('time-logs.')->group(function () {
@@ -448,18 +448,18 @@ Route::middleware('auth')->group(function () {
     })->name('waitlist.redeem');
 
     // --- Internal Direct Chat and Video Conference ---
-    Route::get('/comms/heartbeat', [\App\Http\Controllers\ChatMessageController::class, 'check'])->name('chat.check');
-    Route::post('/comms/presence', [\App\Http\Controllers\ChatMessageController::class, 'presence'])->name('comms.presence');
-    Route::get('/chat/users', [\App\Http\Controllers\ChatMessageController::class, 'getUsers'])->name('chat.users');
+    Route::get('/comms/heartbeat', [\App\Http\Controllers\ChatPresenceController::class, 'check'])->name('chat.check');
+    Route::post('/comms/presence', [\App\Http\Controllers\ChatPresenceController::class, 'presence'])->name('comms.presence');
+    Route::get('/chat/users', [\App\Http\Controllers\ChatPresenceController::class, 'getUsers'])->name('chat.users');
     Route::get('/chat/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('chat.index');
     Route::post('/chat', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('chat.store');
-    Route::post('/chat/call', [\App\Http\Controllers\ChatMessageController::class, 'startCall'])->name('chat.call');
-    Route::post('/chat/group', [\App\Http\Controllers\ChatMessageController::class, 'createGroup'])->name('chat.group');
-    Route::get('/chat/groups/recent', [\App\Http\Controllers\ChatMessageController::class, 'getRecentGroups'])->name('chat.groups.recent');
-    Route::post('/chat/group/{group}/members', [\App\Http\Controllers\ChatMessageController::class, 'addGroupMember'])->name('chat.group.add-member');
-    Route::post('/chat/group/{group}/rename', [\App\Http\Controllers\ChatMessageController::class, 'renameGroup'])->name('chat.group.rename');
-    Route::delete('/chat/group/{group}', [\App\Http\Controllers\ChatMessageController::class, 'deleteGroup'])->name('chat.group.delete');
-    Route::post('/chat/meet', [\App\Http\Controllers\ChatMessageController::class, 'startGoogleMeet'])->name('chat.meet');
+    Route::post('/chat/call', [\App\Http\Controllers\ChatCallController::class, 'startCall'])->name('chat.call');
+    Route::post('/chat/group', [\App\Http\Controllers\ChatGroupController::class, 'createGroup'])->name('chat.group');
+    Route::get('/chat/groups/recent', [\App\Http\Controllers\ChatGroupController::class, 'getRecentGroups'])->name('chat.groups.recent');
+    Route::post('/chat/group/{group}/members', [\App\Http\Controllers\ChatGroupController::class, 'addGroupMember'])->name('chat.group.add-member');
+    Route::post('/chat/group/{group}/rename', [\App\Http\Controllers\ChatGroupController::class, 'renameGroup'])->name('chat.group.rename');
+    Route::delete('/chat/group/{group}', [\App\Http\Controllers\ChatGroupController::class, 'deleteGroup'])->name('chat.group.delete');
+    Route::post('/chat/meet', [\App\Http\Controllers\ChatCallController::class, 'startGoogleMeet'])->name('chat.meet');
     Route::delete('/chat/message/{id}', [\App\Http\Controllers\ChatMessageController::class, 'destroy'])->name('chat.message.delete');
     Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });
