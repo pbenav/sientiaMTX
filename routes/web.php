@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ForumController;
@@ -197,12 +198,12 @@ Route::middleware('auth')->group(function () {
     
     // Task Attachments
     Route::prefix('teams/{team}')->group(function () {
-        Route::post('tasks/{task}/attachments', [TaskController::class, 'uploadAttachment'])->name('teams.tasks.attachments.upload');
-        Route::get('attachments/{attachment}/download', [TaskController::class, 'downloadAttachment'])->name('teams.attachments.download');
-        Route::get('attachments/{attachment}/view', [TaskController::class, 'viewAttachment'])->name('teams.attachments.view');
-        Route::patch('attachments/{attachment}', [TaskController::class, 'updateAttachment'])->name('teams.attachments.update');
-        Route::delete('attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
-        Route::get('attachments/history/{attachment}', [TaskController::class, 'attachmentHistory'])->name('teams.attachments.history');
+        Route::post('tasks/{task}/attachments', [TaskAttachmentController::class, 'uploadAttachment'])->name('teams.tasks.attachments.upload');
+        Route::get('attachments/{attachment}/download', [TaskAttachmentController::class, 'downloadAttachment'])->name('teams.attachments.download');
+        Route::get('attachments/{attachment}/view', [TaskAttachmentController::class, 'viewAttachment'])->name('teams.attachments.view');
+        Route::patch('attachments/{attachment}', [TaskAttachmentController::class, 'updateAttachment'])->name('teams.attachments.update');
+        Route::delete('attachments/{attachment}', [TaskAttachmentController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
+        Route::get('attachments/history/{attachment}', [TaskAttachmentController::class, 'attachmentHistory'])->name('teams.attachments.history');
         Route::post('tasks/{task}/sync', [TaskController::class, 'syncToChildren'])->name('teams.tasks.sync-to-children')->withoutScopedBindings();
         
         // Private Notes
