@@ -518,7 +518,7 @@ class Task extends Model
             return;
         }
 
-        $currentProgress = (int)$this->progress_percentage;
+        $currentProgress = (int)$this->progress;
 
         if ($currentProgress === 100) {
             $type = 'done';
