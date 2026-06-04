@@ -183,11 +183,19 @@
                             <form method="POST" action="{{ route('appointments.destroy', [$team, $appointment]) }}"
                                   onsubmit="return confirm('¿Cancelar esta cita? El ciudadano recibirá un email si consintió.')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl transition-all">
+                                <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-amber-50 hover:bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900 rounded-xl transition-all">
                                     ❌ Cancelar Cita
                                 </button>
                             </form>
                         @endif
+
+                        <form method="POST" action="{{ route('appointments.forceDestroy', [$team, $appointment]) }}"
+                              onsubmit="return confirm('¿⚠️ ELIMINAR FÍSICAMENTE ESTA CITA? Esta acción no se puede deshacer y borrará la cita de la base de datos por completo.')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl transition-all">
+                                🗑️ Borrar Permanente
+                            </button>
+                        </form>
 
                         {{-- Google Calendar --}}
                         @php

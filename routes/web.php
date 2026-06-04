@@ -512,4 +512,5 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
     Route::get('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'show'])->name('show');
     Route::patch('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'update'])->name('update');
     Route::delete('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'destroy'])->name('destroy');
+    Route::delete('/{appointment}/force', [\App\Http\Controllers\Appointments\AppointmentController::class, 'forceDestroy'])->name('forceDestroy');
 });

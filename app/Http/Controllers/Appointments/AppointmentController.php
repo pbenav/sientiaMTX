@@ -198,6 +198,25 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Elimina físicamente una cita de la base de datos.
+     */
+    public function forceDestroy(Team $team, Appointment $appointment)
+    {
+        $this->authorize('delete', $appointment);
+        if ($appointment->service->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $this->deleteGoogleEvent($appointment);
+
+        // Si la cita tenía una tarea generada dinámicamente, se podría borrar o desenlazar.
+        // Aquí borramos la cita en cascada.
+        $appointment->delete();
+
+        return redirect()->route('appointments.list', $team)->with('success', 'Cita eliminada definitivamente.');
+    }
+
+    /**
      * API: agenda semanal en JSON para la vista de calendario.
      */
     public function agenda(Team $team, Request $request)
