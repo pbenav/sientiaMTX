@@ -254,18 +254,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'mailSettings'])->name('settings.mail');
         Route::post('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'updateMailSettings'])->name('settings.mail.update');
         Route::post('/settings/mail/test', [\App\Http\Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');
-        Route::get('/settings/users', [\App\Http\Controllers\SettingsController::class, 'users'])->name('settings.users');
+        Route::get('/settings/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('settings.users');
         Route::get('/settings/users/bulk-email', [\App\Http\Controllers\SettingsController::class, 'bulkEmailComposer'])->name('settings.users.bulk-email');
         Route::post('/settings/users/bulk-email', [\App\Http\Controllers\SettingsController::class, 'sendBulkEmail'])->name('settings.users.bulk-email.send');
-        Route::get('/settings/users/create', [\App\Http\Controllers\SettingsController::class, 'createUser'])->name('settings.users.create');
-        Route::post('/settings/users', [\App\Http\Controllers\SettingsController::class, 'storeUser'])->name('settings.users.store');
-        Route::post('/settings/users/{user}/toggle-admin', [\App\Http\Controllers\SettingsController::class, 'toggleAdmin'])->name('settings.users.toggle-admin');
-        Route::get('/settings/users/{user}/edit', [\App\Http\Controllers\SettingsController::class, 'editUser'])->name('settings.users.edit');
-        Route::put('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'updateUser'])->name('settings.users.update');
-        Route::delete('/settings/users/{user}', [\App\Http\Controllers\SettingsController::class, 'destroyUser'])->name('settings.users.destroy');
-        Route::post('/settings/users/{user}/force-logout', [\App\Http\Controllers\SettingsController::class, 'forceLogoutUser'])->name('settings.users.force-logout');
-        Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\SettingsController::class, 'acceptUserInvitation'])->name('settings.users.accept-invitation');
-        Route::post('/settings/users/{user}/approve', [\App\Http\Controllers\SettingsController::class, 'approveUser'])->name('settings.users.approve');
+        Route::get('/settings/users/create', [\App\Http\Controllers\AdminUserController::class, 'create'])->name('settings.users.create');
+        Route::post('/settings/users', [\App\Http\Controllers\AdminUserController::class, 'store'])->name('settings.users.store');
+        Route::post('/settings/users/{user}/toggle-admin', [\App\Http\Controllers\AdminUserController::class, 'toggleAdmin'])->name('settings.users.toggle-admin');
+        Route::get('/settings/users/{user}/edit', [\App\Http\Controllers\AdminUserController::class, 'edit'])->name('settings.users.edit');
+        Route::put('/settings/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'update'])->name('settings.users.update');
+        Route::delete('/settings/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('settings.users.destroy');
+        Route::post('/settings/users/{user}/force-logout', [\App\Http\Controllers\AdminUserController::class, 'forceLogout'])->name('settings.users.force-logout');
+        Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\AdminUserController::class, 'acceptInvitation'])->name('settings.users.accept-invitation');
+        Route::post('/settings/users/{user}/approve', [\App\Http\Controllers\AdminUserController::class, 'approve'])->name('settings.users.approve');
         
         // Legal Settings
         Route::get('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'legalSettings'])->name('settings.legal');
