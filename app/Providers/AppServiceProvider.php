@@ -107,5 +107,7 @@ class AppServiceProvider extends ServiceProvider
                 ? $rule->uncompromised() 
                 : $rule;
         });
+
+        \App\Models\Task::observe(\App\Observers\TaskObserver::class);
     }
 }
