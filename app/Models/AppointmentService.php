@@ -89,13 +89,7 @@ class AppointmentService extends Model
 
     protected static function booted()
     {
-        static::saved(function ($service) {
-            // Si cambian los textos o es nuevo
-            if ($service->wasChanged('name') || $service->wasChanged('description') || $service->wasRecentlyCreated) {
-                // Despachamos el job
-                \App\Jobs\TranslateAppointmentServiceJob::dispatch($service);
-            }
-        });
+        // Lifecycle events are now handled by App\Observers\AppointmentServiceObserver
     }
 
     public function getEffectiveSlotDuration(): int

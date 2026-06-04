@@ -14,14 +14,7 @@ class Setting extends Model
 
     protected static function booted()
     {
-        static::saved(function ($setting) {
-            if (auth()->check()) {
-                \App\Models\SecurityLog::log(
-                    'setting.updated',
-                    "Configuración modificada: '{$setting->key}'"
-                );
-            }
-        });
+        // Lifecycle events are now handled by App\Observers\SettingObserver
     }
 
     /**

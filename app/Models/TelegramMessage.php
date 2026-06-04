@@ -31,27 +31,7 @@ class TelegramMessage extends Model
 
     protected static function booted()
     {
-        static::created(function ($message) {
-            if ($message->file_size > 0 && $message->team) {
-                $message->team->increment('disk_used', $message->file_size);
-                // Refresh usage and check for alerts
-                $message->team->refresh()->checkStorageAlerts();
-            }
-        });
-
-        static::deleted(function ($message) {
-            if ($message->file_size > 0 && $message->team) {
-                $message->team->decrement('disk_used', max(0, $message->file_size));
-            }
-
-            // Eliminar archivos físicos
-            $paths = array_filter([$message->photo_path, $message->voice_path, $message->sticker_path]);
-            foreach ($paths as $path) {
-                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
-                }
-            }
-        });
+        // Lifecycle events are now handled by App\Observers\TelegramMessageObserver
     }
 
     public function team(): BelongsTo

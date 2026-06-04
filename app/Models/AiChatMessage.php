@@ -25,11 +25,7 @@ class AiChatMessage extends Model
 
     protected static function booted()
     {
-        static::deleting(function ($message) {
-            if ($message->file_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($message->file_path);
-            }
-        });
+        // Lifecycle events are now handled by App\Observers\AiChatMessageObserver
     }
 
     public function user()
