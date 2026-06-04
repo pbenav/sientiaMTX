@@ -270,7 +270,7 @@ class GoogleService
      * Tries the Meet API first (requires meetings.space.created scope).
      * Falls back to an ephemeral Calendar event if that scope is not yet granted.
      */
-    public function createMeetSpace(array $attendeeEmails = []): ?string
+    public function createMeetSpace(): ?string
     {
         // --- Attempt 1: Meet API (requires production-approved scope) ---
         try {
@@ -292,14 +292,15 @@ class GoogleService
         }
 
         // --- Attempt 2: Ephemeral Calendar event (Calendar scope already approved) ---
-        return $this->createMeetViaCalendar($attendeeEmails);
+        return $this->createMeetViaCalendar();
     }
 
     /**
-     * Create a temporary Google Calendar event just to obtain a Meet link.
+     * Create a temporary Google Calendar event just to obtain a Meet link,
+     * then immediately delete the event.
      * Uses the already-approved Calendar scope.
      */
-    private function createMeetViaCalendar(array $attendeeEmails = []): ?string
+    private function createMeetViaCalendar(): ?string
     {
         try {
             $service = new Calendar($this->client);
@@ -307,8 +308,8 @@ class GoogleService
             $now   = new \DateTime('now', new \DateTimeZone('UTC'));
             $end   = (clone $now)->modify('+1 hour');
 
-            $eventData = [
-                'summary' => 'Videollamada (sientiaMTX)',
+            $event = new \Google\Service\Calendar\Event([
+                'summary' => 'sientiaMTX Meet (efímero)',
                 'start'   => ['dateTime' => $now->format(\DateTime::RFC3339), 'timeZone' => 'UTC'],
                 'end'     => ['dateTime' => $end->format(\DateTime::RFC3339), 'timeZone' => 'UTC'],
                 'conferenceData' => [
@@ -317,17 +318,7 @@ class GoogleService
                         'conferenceSolutionKey' => ['type' => 'hangoutsMeet'],
                     ],
                 ],
-            ];
-
-            if (!empty($attendeeEmails)) {
-                $attendees = [];
-                foreach ($attendeeEmails as $email) {
-                    $attendees[] = ['email' => $email];
-                }
-                $eventData['attendees'] = $attendees;
-            }
-
-            $event = new \Google\Service\Calendar\Event($eventData);
+            ]);
 
             $created = $service->events->insert('primary', $event, [
                 'conferenceDataVersion' => 1,
@@ -336,7 +327,15 @@ class GoogleService
             // Extract Meet URL
             $meetUrl = $created->getConferenceData()?->getEntryPoints()[0]?->getUri() ?? null;
 
-            Log::info('GoogleService@createMeetViaCalendar: Meet URL obtained via Calendar', ['uri' => $meetUrl, 'event_id' => $created->getId()]);
+            // Clean up: delete the ephemeral event immediately
+            try {
+                $service->events->delete('primary', $created->getId());
+                Log::info('GoogleService@createMeetViaCalendar: ephemeral event deleted', ['event_id' => $created->getId()]);
+            } catch (\Exception $deleteErr) {
+                Log::warning('GoogleService@createMeetViaCalendar: could not delete ephemeral event: ' . $deleteErr->getMessage());
+            }
+
+            Log::info('GoogleService@createMeetViaCalendar: Meet URL obtained via Calendar', ['uri' => $meetUrl]);
             return $meetUrl;
         } catch (\Exception $e) {
             Log::error('GoogleService@createMeetViaCalendar error: ' . $e->getMessage());
