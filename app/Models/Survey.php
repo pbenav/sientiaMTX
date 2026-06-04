@@ -12,10 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
+use App\Traits\HasUuid;
 
 class Survey extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuid;
 
     /**
      * The attributes that are mass assignable.
@@ -53,16 +54,6 @@ class Survey extends Model
             'published_at' => 'datetime',
             'closed_at' => 'datetime',
         ];
-    }
-
-    protected static function boot(): void
-    {
-        parent::boot();
-        static::creating(function (self $model) {
-            if (empty($model->uuid)) {
-                $model->uuid = (string) Str::uuid();
-            }
-        });
     }
 
     // Relationships

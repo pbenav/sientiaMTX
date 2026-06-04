@@ -8,16 +8,6 @@ use Illuminate\Support\Str;
 class TaskObserver
 {
     /**
-     * Handle the Task "creating" event.
-     */
-    public function creating(Task $task): void
-    {
-        if (empty($task->uuid)) {
-            $task->uuid = (string) Str::uuid();
-        }
-    }
-
-    /**
      * Handle the Task "saving" event.
      */
     public function saving(Task $task): void

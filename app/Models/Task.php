@@ -17,11 +17,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
+use App\Traits\HasUuid;
 use App\Traits\HandlesEisenhowerMatrix;
 
 class Task extends Model
 {
-    use HasFactory, SoftDeletes, HandlesEisenhowerMatrix;
+    use HasFactory, SoftDeletes, HandlesEisenhowerMatrix, HasUuid;
 
     protected static function boot(): void
     {
