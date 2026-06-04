@@ -305,14 +305,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])->name('surveys.show');
         Route::get('/surveys/{survey}/edit', [\App\Http\Controllers\SurveyController::class, 'edit'])->name('surveys.edit');
         Route::patch('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])->name('surveys.update');
-        Route::post('/surveys/{survey}/vote', [\App\Http\Controllers\SurveyController::class, 'vote'])->name('surveys.vote');
-        Route::post('/surveys/{survey}/close', [\App\Http\Controllers\SurveyController::class, 'close'])->name('surveys.close');
-        Route::post('/surveys/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('surveys.reactivate');
+        Route::post('/surveys/{survey}/vote', [\App\Http\Controllers\SurveyActionController::class, 'vote'])->name('surveys.vote');
+        Route::post('/surveys/{survey}/close', [\App\Http\Controllers\SurveyActionController::class, 'close'])->name('surveys.close');
+        Route::post('/surveys/{survey}/reactivate', [\App\Http\Controllers\SurveyActionController::class, 'reactivate'])->name('surveys.reactivate');
         Route::delete('/surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('surveys.destroy');
         Route::get('/surveys/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('surveys.results');
-        Route::get('/surveys/{survey}/export-json', [\App\Http\Controllers\SurveyController::class, 'exportJson'])->name('surveys.export-json');
-        Route::post('/surveys/import-json', [\App\Http\Controllers\SurveyController::class, 'importJson'])->name('surveys.import-json');
-        Route::post('/surveys/{survey}/duplicate', [\App\Http\Controllers\SurveyController::class, 'duplicate'])->name('surveys.duplicate');
+        Route::get('/surveys/{survey}/export-json', [\App\Http\Controllers\SurveyExportController::class, 'exportJson'])->name('surveys.export-json');
+        Route::post('/surveys/import-json', [\App\Http\Controllers\SurveyExportController::class, 'importJson'])->name('surveys.import-json');
+        Route::post('/surveys/{survey}/duplicate', [\App\Http\Controllers\SurveyExportController::class, 'duplicate'])->name('surveys.duplicate');
     });
 
     // Global Surveys routes
@@ -323,14 +323,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])->name('show');
         Route::get('/{survey}/edit', [\App\Http\Controllers\SurveyController::class, 'edit'])->name('edit');
         Route::patch('/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])->name('update');
-        Route::post('/{survey}/vote', [\App\Http\Controllers\SurveyController::class, 'vote'])->name('vote');
-        Route::post('/{survey}/close', [\App\Http\Controllers\SurveyController::class, 'close'])->name('close');
-        Route::post('/{survey}/reactivate', [\App\Http\Controllers\SurveyController::class, 'reactivate'])->name('reactivate');
+        Route::post('/{survey}/vote', [\App\Http\Controllers\SurveyActionController::class, 'vote'])->name('vote');
+        Route::post('/{survey}/close', [\App\Http\Controllers\SurveyActionController::class, 'close'])->name('close');
+        Route::post('/{survey}/reactivate', [\App\Http\Controllers\SurveyActionController::class, 'reactivate'])->name('reactivate');
         Route::delete('/{survey}', [\App\Http\Controllers\SurveyController::class, 'destroy'])->name('destroy');
         Route::get('/{survey}/results', [\App\Http\Controllers\SurveyController::class, 'results'])->name('results');
-        Route::get('/{survey}/export-json', [\App\Http\Controllers\SurveyController::class, 'exportJson'])->name('export-json');
-        Route::post('/import-json', [\App\Http\Controllers\SurveyController::class, 'importJson'])->name('import-json');
-        Route::post('/{survey}/duplicate', [\App\Http\Controllers\SurveyController::class, 'duplicate'])->name('duplicate');
+        Route::get('/{survey}/export-json', [\App\Http\Controllers\SurveyExportController::class, 'exportJson'])->name('export-json');
+        Route::post('/import-json', [\App\Http\Controllers\SurveyExportController::class, 'importJson'])->name('import-json');
+        Route::post('/{survey}/duplicate', [\App\Http\Controllers\SurveyExportController::class, 'duplicate'])->name('duplicate');
     });
 
     // Google Services
