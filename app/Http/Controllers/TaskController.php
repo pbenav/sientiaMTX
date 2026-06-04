@@ -373,44 +373,9 @@ class TaskController extends Controller
     /**
      * Store a newly created task in storage
      */
-    public function store(Request $request, Team $team)
+    public function store(\App\Http\Requests\StoreTaskRequest $request, Team $team)
     {
-        if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
-        }
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high,critical',
-            'urgency' => 'required|in:low,medium,high,critical',
-            'scheduled_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
-            'assigned_to' => 'nullable|array',
-            'assigned_groups' => 'nullable|array',
-            'observations' => 'nullable|string',
-            'parent_id' => 'nullable|exists:tasks,id',
-            'visibility' => 'required|in:public,private',
-            'is_autoprogrammable' => 'nullable|boolean',
-            'autoprogram_settings' => 'nullable|array',
-            'matrix_order' => 'nullable|integer|min:0',
-            'skills' => 'nullable|array',
-            'skills.*' => 'integer|exists:skills,id',
-            'skill_id' => 'nullable|integer|exists:skills,id', // Legacy
-            'service_id' => 'nullable|integer|exists:services,id',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'file|max:' . (\Illuminate\Http\UploadedFile::getMaxFilesize() / 1024),
-            'assignment_mode' => 'nullable|string|in:shared,distributed',
-            'expediente_id' => 'nullable|exists:expedientes,id',
-            'is_timeline_locked' => 'nullable|boolean',
-        ]);
-
-        // Force validation: Dossier must belong to this team
-        if (!empty($validated['expediente_id'])) {
-            $existsInTeam = \DB::table('expedientes')->where('id', $validated['expediente_id'])->where('team_id', $team->id)->exists();
-            if (!$existsInTeam) {
-                $validated['expediente_id'] = null;
-            }
-        }
+        $validated = $request->validated();
 
         $hasAssignments = !empty($validated['assigned_to']) || !empty($validated['assigned_groups']);
         $assignmentMode = $request->input('assignment_mode', 'shared');
@@ -703,46 +668,9 @@ class TaskController extends Controller
     /**
      * Update the task in storage
      */
-    public function update(Request $request, Team $team, Task $task)
+    public function update(\App\Http\Requests\UpdateTaskRequest $request, Team $team, Task $task)
     {
-        if ($task->team_id !== $team->id) {
-            abort(404);
-        }
-
-        if (auth()->user()->cannot('view', $team) || auth()->user()->cannot('update', $task)) {
-            return response()->json(['success' => false, 'message' => __('No tienes permisos para modificar esta tarea.')], 403);
-        }
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high,critical',
-            'urgency' => 'required|in:low,medium,high,critical',
-            'status' => 'required|in:pending,in_progress,completed,cancelled,blocked',
-            'scheduled_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
-            'assigned_to' => 'nullable|array',
-            'assigned_groups' => 'nullable|array',
-            'observations' => 'nullable|string',
-            'parent_id' => 'nullable|exists:tasks,id',
-            'progress_percentage' => 'nullable|integer|min:0|max:100',
-            'created_by_id' => 'nullable|exists:users,id',
-            'visibility' => 'required|in:public,private',
-            'is_autoprogrammable' => 'nullable|boolean',
-            'autoprogram_settings' => 'nullable|array',
-            'skill_id' => 'nullable|integer|exists:skills,id',
-            'service_id' => 'nullable|integer|exists:services,id',
-            'assignment_mode' => 'nullable|string|in:shared,distributed',
-            'expediente_id' => 'nullable|exists:expedientes,id',
-            'is_timeline_locked' => 'nullable|boolean',
-        ]);
-
-        // Force validation: Dossier must belong to this team
-        if (!empty($validated['expediente_id'])) {
-            $existsInTeam = \DB::table('expedientes')->where('id', $validated['expediente_id'])->where('team_id', $team->id)->exists();
-            if (!$existsInTeam) {
-                $validated['expediente_id'] = null;
-            }
-        }
+        $validated = $request->validated();
 
         // Store old values for history
         $oldValues = $task->getAttributes();
