@@ -84,6 +84,11 @@ class Task extends Model
         });
 
         static::saved(function (self $model) {
+            // Sincronizar columna Kanban si el progreso o el estado cambió
+            if ($model->wasChanged(['status', 'progress_percentage'])) {
+                $model->syncKanbanColumn();
+            }
+
             // Sincronizar el estado de la tarea con las citas asociadas
             if ($model->wasChanged('status')) {
                 $appointments = \App\Models\Appointment::where('task_id', $model->id)->get();

@@ -307,7 +307,12 @@ class Team extends Model
         $this->syncDiskUsed();
         $this->refresh();
 
-        return ($this->disk_used + $bytes) <= $this->disk_quota;
+        $effectiveQuota = $this->disk_quota;
+        if (isset($this->settings['soft_disk_quota']) && $this->settings['soft_disk_quota'] > 0) {
+            $effectiveQuota = min($this->disk_quota, $this->settings['soft_disk_quota']);
+        }
+
+        return ($this->disk_used + $bytes) <= $effectiveQuota;
     }
 
     /**
@@ -315,8 +320,13 @@ class Team extends Model
      */
     public function getDiskUsagePercentageAttribute(): int
     {
-        if ($this->disk_quota <= 0) return 0;
-        return (int) min(100, round(($this->disk_used / $this->disk_quota) * 100));
+        $effectiveQuota = $this->disk_quota;
+        if (isset($this->settings['soft_disk_quota']) && $this->settings['soft_disk_quota'] > 0) {
+            $effectiveQuota = min($this->disk_quota, $this->settings['soft_disk_quota']);
+        }
+
+        if ($effectiveQuota <= 0) return 0;
+        return (int) min(100, round(($this->disk_used / $effectiveQuota) * 100));
     }
 
     /**

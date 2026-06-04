@@ -27,21 +27,19 @@ class ExpedienteController extends Controller
 
         $user = auth()->user();
 
-        // Privacy Filter logic
-        if (!$user->is_admin && !$team->isOwner($user) && !$team->isCoordinator($user)) {
-            $query->where(function ($q) use ($user) {
-                $q->where('visibility', 'public')
-                  ->orWhere('created_by_id', $user->id)
-                  ->orWhere('assigned_user_id', $user->id)
-                  ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
-                  ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
-                  ->orWhereHas('tasks', function ($sub) use ($user) {
-                      $sub->where('assigned_user_id', $user->id)
-                          ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
-                          ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-                  });
-            });
-        }
+        // Privacy Filter logic - Strict Privacy: Applied to ALL users regardless of role (Admin, Owner, Coordinator)
+        $query->where(function ($q) use ($user) {
+            $q->where('visibility', 'public')
+              ->orWhere('created_by_id', $user->id)
+              ->orWhere('assigned_user_id', $user->id)
+              ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
+              ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
+              ->orWhereHas('tasks', function ($sub) use ($user) {
+                  $sub->where('assigned_user_id', $user->id)
+                      ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
+                      ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+              });
+        });
 
         // Simple search if provided
         if ($request->has('search')) {
@@ -63,7 +61,7 @@ class ExpedienteController extends Controller
     public function create(Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $allExpedientes = $team->expedientes()->orderBy('title')->get();
@@ -79,7 +77,7 @@ class ExpedienteController extends Controller
     public function store(Request $request, Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $validated = $request->validate([
@@ -99,24 +97,7 @@ class ExpedienteController extends Controller
             'assigned_groups.*' => 'exists:groups,id',
         ]);
 
-        // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
-        $autoPublic = false;
-        if (($validated['visibility'] ?? 'private') === 'private') {
-            $hasOtherAssignee = false;
-            if ($request->filled('assigned_user_id') && (int)$request->assigned_user_id !== auth()->id()) {
-                $hasOtherAssignee = true;
-            }
-            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
-                $hasOtherAssignee = true;
-            }
-            if ($request->filled('assigned_groups') && count($request->assigned_groups) > 0) {
-                $hasOtherAssignee = true;
-            }
-            if ($hasOtherAssignee) {
-                $validated['visibility'] = 'public';
-                $autoPublic = true;
-            }
-        }
+        // No auto-public logic to allow private dossiers with assignments.
 
         $expediente = $team->expedientes()->create([
             'created_by_id' => Auth::id(),
@@ -165,12 +146,12 @@ class ExpedienteController extends Controller
     {
         // Ensure the expediente belongs to the team and user can view team
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
-        // Privacy Check for detailed view
+        // Privacy Check for detailed view - Strict Privacy applied to ALL users
         $user = auth()->user();
-        if ($expediente->visibility === 'private' && !$user->is_admin && !$team->isOwner($user) && !$team->isCoordinator($user)) {
+        if ($expediente->visibility === 'private') {
             // Check if user created it or is assigned directly to it or to its tasks
             $isCreator = $expediente->created_by_id === $user->id;
             
@@ -185,7 +166,8 @@ class ExpedienteController extends Controller
             })->exists();
             
             if (!$isCreator && !$isDirectlyAssigned && !$isTaskAssigned) {
-                abort(403, 'Este expediente es privado y solo es accesible para sus responsables y asignados.');
+                return redirect()->route('teams.expedientes.index', $team)
+                    ->with('warning', 'Este expediente es privado y solo es accesible de forma estricta para sus responsables y miembros asignados.');
             }
         }
 
@@ -219,7 +201,7 @@ class ExpedienteController extends Controller
     public function linkRelated(Request $request, Team $team, Expediente $expediente)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $validated = $request->validate([
@@ -241,7 +223,7 @@ class ExpedienteController extends Controller
     public function unlinkRelated(Team $team, Expediente $expediente, $related_id)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $currentIds = $expediente->relatedExpedientes()->pluck('expedientes.id')->toArray();
@@ -258,7 +240,7 @@ class ExpedienteController extends Controller
     public function linkTasks(Request $request, Team $team, Expediente $expediente)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $validated = $request->validate([
@@ -280,7 +262,7 @@ class ExpedienteController extends Controller
     public function unlinkTask(Team $team, Expediente $expediente, Task $task)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id || $task->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         // Safety check: Instance restriction
@@ -304,7 +286,7 @@ class ExpedienteController extends Controller
     public function edit(Team $team, Expediente $expediente)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $allExpedientes = $team->expedientes()
@@ -324,7 +306,7 @@ class ExpedienteController extends Controller
     public function update(Request $request, Team $team, Expediente $expediente)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $validated = $request->validate([
@@ -344,27 +326,7 @@ class ExpedienteController extends Controller
             'assigned_groups.*' => 'exists:groups,id',
         ]);
 
-        $autoPublic = false;
-        $visibility = $validated['visibility'] ?? $expediente->visibility;
-        if ($visibility === 'private') {
-            $hasOtherAssignee = false;
-            $targetAssignee = $request->has('assigned_user_id') ? $request->assigned_user_id : $expediente->assigned_user_id;
-            if ($targetAssignee && (int)$targetAssignee !== auth()->id()) {
-                $hasOtherAssignee = true;
-            }
-            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
-                $hasOtherAssignee = true;
-            }
-            if ($request->filled('assigned_groups') && count($request->assigned_groups) > 0) {
-                $hasOtherAssignee = true;
-            }
-
-            if ($hasOtherAssignee) {
-                $visibility = 'public';
-                $autoPublic = true;
-            }
-            $validated['visibility'] = $visibility;
-        }
+        // No auto-public logic to allow private dossiers with assignments.
 
         $expediente->update($validated);
 
@@ -401,7 +363,7 @@ class ExpedienteController extends Controller
     public function destroy(Team $team, Expediente $expediente)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
-            abort(403);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $expediente->delete();
@@ -420,7 +382,7 @@ class ExpedienteController extends Controller
         }
 
         if ($expediente->team_id !== $team->id) {
-            abort(404);
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $maxSizeKB = (int)ini_get('upload_max_filesize') * 1024;

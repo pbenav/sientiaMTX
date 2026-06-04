@@ -38,6 +38,11 @@ SientiaMTX no es solo una herramienta de gestión; es un ecosistema diseñado pa
 *   **Foros Anidados**: Hilos de discusión con soporte para citas, menciones y previsualización Markdown.
 *   **Notificaciones Inteligentes**: Integración total con Telegram para alertas Q1 y resúmenes matutinos.
 
+### 📆 Citas Previas y Portales de Servicio
+*   **Portales Públicos Integrados**: Páginas de reserva con URLs amigables, conectadas directamente al mapa organizativo.
+*   **Gestión de Citas Granular**: Definición de servicios, horarios de trabajo, pausas, duración y bloqueos de agenda.
+*   **Avisos y Confirmaciones**: Emisión de localizadores de cita (ej. `25C-B4A1`), notificaciones de estado y cancelación rápida.
+
 ### 🎮 Gamificación y Salud Laboral
 *   **Skill Tree**: Evolución de habilidades reales (Dev, Ops, Support, etc.) basada en tareas completadas.
 *   **Vital Energy**: Monitorización de la carga cognitiva para prevenir el burnout del equipo.
@@ -75,6 +80,7 @@ Este proyecto está alineado con las directrices del **Esquema Nacional de Segur
 *   **Autenticación Multifactor (MFA/2FA) Dual**: Soporte nativo para TOTP (Google Authenticator, Authy, etc.) y Correo Electrónico.
 *   **Logs de Auditoría de Seguridad**: Registro unificado e inmutable de accesos y eventos críticos en la base de datos (`security_logs`).
 *   **Encriptación en Reposo**: Cifrado automático AES-256-CBC de credenciales de integración de IA y tokens mediante el motor nativo de Laravel.
+*   **Deep Privacy (Privacidad Profunda)**: Aislamiento jerárquico estricto donde los expedientes y tareas privadas son 100% invisibles para propietarios o administradores, a menos que sean explícitamente asignados, asegurando máxima confidencialidad en ejecución.
 *   **Control de Roles y Cuotas**: Jerarquía de roles protegida y gestión estricta de cuotas de disco por equipo.
 *   **Validación de Membresía**: Protección de acceso a adjuntos de tareas y endpoints de archivos para evitar fugas de información.
 

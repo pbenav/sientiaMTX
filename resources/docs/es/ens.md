@@ -30,6 +30,11 @@ SientiaMTX mantiene un registro pormenorizado de las acciones que impactan la se
 *   Historial inmutable de cambios de estado en tareas y asignaciones.
 *   Aislamiento de sesiones en integraciones de terceros (Multi-sesión aislada en WhatsApp Bridge).
 
+### 5. Aislamiento Jerárquico (Deep Privacy)
+Garantizando el principio de **Mínimo Privilegio**:
+*   **Privacidad Estricta**: Los expedientes y tareas definidos como privados por sus creadores son completamente invisibles para Administradores, Propietarios (Owners) o Coordinadores que no estén explícitamente asignados al recurso. 
+*   **Blindaje contra Escalada**: Los permisos administrativos operan de forma separada al acceso a la información confidencial de los usuarios durante su ejecución laboral.
+
 ---
 
 ## ⚖️ Matriz de Adecuación ENS

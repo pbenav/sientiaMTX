@@ -416,24 +416,9 @@ class TaskController extends Controller
         $assignmentMode = $request->input('assignment_mode', 'shared');
         $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
 
-        // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
+        // La auto-publicación ha sido eliminada por completo.
+        // Las tareas privadas pueden tener múltiples colaboradores sin volverse públicas.
         $autoPublic = false;
-        if (($validated['visibility'] ?? 'private') === 'private') {
-            $hasOtherAssignee = false;
-            if ($request->filled('assigned_user_id') && (int)$request->assigned_user_id !== auth()->id()) {
-                $hasOtherAssignee = true;
-            }
-            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
-                $hasOtherAssignee = true;
-            }
-            if ($request->filled('assigned_groups')) {
-                $hasOtherAssignee = true;
-            }
-            if ($hasOtherAssignee) {
-                $validated['visibility'] = 'public';
-                $autoPublic = true;
-            }
-        }
 
         $task = $team->tasks()->create([
             'title' => $validated['title'],
@@ -763,33 +748,11 @@ class TaskController extends Controller
         $oldValues = $task->getAttributes();
         $statusChanged = $task->status !== ($validated['status'] ?? $task->status);
 
-        // AUTO-PUBLIC LOGIC: If private but assigned to others, make it public.
+        // La auto-publicación ha sido eliminada.
+        // Las tareas mantienen su visibilidad definida sin importar los colaboradores asignados.
         $autoPublic = false;
         $visibility = $validated['visibility'] ?? $task->visibility;
-        if ($visibility === 'private') {
-            $hasOtherAssignee = false;
-            // Check direct assignee in request OR current task if not in request
-            $targetAssignee = $request->has('assigned_user_id') ? $request->assigned_user_id : $task->assigned_user_id;
-            if ($targetAssignee && (int)$targetAssignee !== auth()->id()) {
-                $hasOtherAssignee = true;
-            }
-            
-            // Check collaborators (assigned_to array)
-            if ($request->filled('assigned_to') && collect($request->assigned_to)->reject(fn($id) => (int)$id === auth()->id())->isNotEmpty()) {
-                $hasOtherAssignee = true;
-            }
-            
-            // Check groups
-            if ($request->filled('assigned_groups') && count($request->assigned_groups) > 0) {
-                $hasOtherAssignee = true;
-            }
-
-            if ($hasOtherAssignee) {
-                $visibility = 'public';
-                $autoPublic = true;
-            }
-            $validated['visibility'] = $visibility;
-        }
+        $validated['visibility'] = $visibility;
 
         $task->update([
             'title' => array_key_exists('title', $validated) ? $validated['title'] : $task->title,

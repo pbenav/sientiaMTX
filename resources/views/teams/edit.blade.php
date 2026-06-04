@@ -37,7 +37,19 @@
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="{ tab: '{{ request('tab', 'general') }}' }">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="{ 
+        tab: '{{ request('tab', 'general') }}',
+        init() {
+            const scrollPos = sessionStorage.getItem('teamEditScrollPos');
+            if (scrollPos) {
+                setTimeout(() => window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' }), 10);
+                sessionStorage.removeItem('teamEditScrollPos');
+            }
+        },
+        saveScroll() {
+            sessionStorage.setItem('teamEditScrollPos', window.scrollY);
+        }
+    }">
         <div class="flex items-center gap-2 mb-8 bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 w-fit">
             <button @click="tab = 'general'" 
                 :class="tab === 'general' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
@@ -73,7 +85,7 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('teams.update', $team) }}" class="p-6 space-y-6">
+                <form method="POST" action="{{ route('teams.update', $team) }}" class="p-6 space-y-6" @submit="saveScroll">
                     @csrf @method('PATCH')
 
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
@@ -150,6 +162,74 @@
                                 </div>
                             </div>
 
+
+                        </div>
+
+                        <!-- Right Column: Integrations & Meta -->
+                        <div class="md:col-span-6 space-y-6">
+                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('teams.telegram_integration') }}</h3>
+                                </div>
+                                
+                                <div>
+                                    <x-input-label for="telegram_chat_id" :value="__('teams.telegram_chat_id')"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                    <x-text-input id="telegram_chat_id" name="telegram_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
+                                        :value="old('telegram_chat_id', $team->telegram_chat_id)" placeholder="-123456789" />
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">{{ __('teams.telegram_chat_id_description') }}</p>
+                                    <x-input-error :messages="$errors->get('telegram_chat_id')" class="mt-2" />
+                                </div>
+                            </div>
+
+                            @if(($team->settings['has_whatsapp'] ?? false) || auth()->user()->is_admin)
+                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Integración WhatsApp</h3>
+                                </div>
+                                
+                                <div>
+                                    <x-input-label for="whatsapp_chat_id" value="ID DE CHAT/NÚMERO DE WHATSAPP"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                    <x-text-input id="whatsapp_chat_id" name="whatsapp_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
+                                        :value="old('whatsapp_chat_id', $team->whatsapp_chat_id)" placeholder="34600123456" />
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Para vincular el grupo o número, pon el ID (ej: 1234567890@c.us). Los mensajes se recibirán en el widget de WhatsApp.</p>
+                                    <x-input-error :messages="$errors->get('whatsapp_chat_id')" class="mt-2" />
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Cuota Operativa (Coordinador) -->
+                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                                        </svg>
+                                    </span>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Cuota Operativa (Soft Limit)</h3>
+                                </div>
+                                
+                                <div>
+                                    <x-input-label for="soft_disk_quota_gb" value="Límite de Uso para el Equipo (GB)"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
+                                    <x-text-input id="soft_disk_quota_gb" name="soft_disk_quota_gb" type="number" step="0.1" min="0.1" max="{{ $team->disk_quota / 1024 / 1024 / 1024 }}" class="block w-full font-bold bg-white dark:bg-gray-800"
+                                        :value="old('soft_disk_quota_gb', isset($team->settings['soft_disk_quota']) ? $team->settings['soft_disk_quota'] / 1024 / 1024 / 1024 : $team->disk_quota / 1024 / 1024 / 1024)" />
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Límite operativo gestionable por el coordinador. Espacio físico máximo concedido por el Administrador: <strong class="text-gray-700 dark:text-gray-300">{{ number_format($team->disk_quota / 1024 / 1024 / 1024, 1) }} GB</strong>.</p>
+                                    <x-input-error :messages="$errors->get('soft_disk_quota_gb')" class="mt-2" />
+                                </div>
+                            </div>
+
                             @if(auth()->user()->is_admin)
                             <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
                                 <div class="flex items-center gap-2 mb-5">
@@ -194,51 +274,6 @@
                                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
                                         </label>
                                     </div>
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-
-                        <!-- Right Column: Integrations & Meta -->
-                        <div class="md:col-span-6 space-y-6">
-                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
-                                <div class="flex items-center gap-2 mb-5">
-                                    <span class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                        </svg>
-                                    </span>
-                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('teams.telegram_integration') }}</h3>
-                                </div>
-                                
-                                <div>
-                                    <x-input-label for="telegram_chat_id" :value="__('teams.telegram_chat_id')"
-                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
-                                    <x-text-input id="telegram_chat_id" name="telegram_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
-                                        :value="old('telegram_chat_id', $team->telegram_chat_id)" placeholder="-123456789" />
-                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">{{ __('teams.telegram_chat_id_description') }}</p>
-                                    <x-input-error :messages="$errors->get('telegram_chat_id')" class="mt-2" />
-                                </div>
-                            </div>
-
-                            @if(($team->settings['has_whatsapp'] ?? false) || auth()->user()->is_admin)
-                            <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
-                                <div class="flex items-center gap-2 mb-5">
-                                    <span class="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                        </svg>
-                                    </span>
-                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Integración WhatsApp</h3>
-                                </div>
-                                
-                                <div>
-                                    <x-input-label for="whatsapp_chat_id" value="ID DE CHAT/NÚMERO DE WHATSAPP"
-                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
-                                    <x-text-input id="whatsapp_chat_id" name="whatsapp_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
-                                        :value="old('whatsapp_chat_id', $team->whatsapp_chat_id)" placeholder="34600123456" />
-                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Para vincular el grupo o número, pon el ID (ej: 1234567890@c.us). Los mensajes se recibirán en el widget de WhatsApp.</p>
-                                    <x-input-error :messages="$errors->get('whatsapp_chat_id')" class="mt-2" />
                                 </div>
                             </div>
                             @endif
@@ -353,7 +388,7 @@
         <div x-show="tab === 'appearance'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2">
-                    <form action="{{ route('teams.update', $team) }}" method="POST" class="space-y-6">
+                    <form action="{{ route('teams.update', $team) }}" method="POST" class="space-y-6" @submit="saveScroll">
                         @csrf @method('PATCH')
                         <input type="hidden" name="name" value="{{ $team->name }}">
                         

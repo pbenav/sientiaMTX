@@ -142,4 +142,94 @@ class Expediente extends Model
     {
         return $this->hasMany(ExpedienteNote::class)->latest();
     }
+
+    /**
+     * Obtiene todos los usuarios que tienen acceso a este expediente.
+     */
+    public function getUsersWithAccess()
+    {
+        $team = $this->team;
+        if (!$team) {
+            return collect();
+        }
+
+        // Si es público, todos los miembros del equipo tienen acceso por defecto.
+        if ($this->visibility === 'public') {
+            $members = $team->members()->orderBy('name')->get();
+            foreach ($members as $member) {
+                if ($this->created_by_id === $member->id) {
+                    $member->access_reason = 'Creador';
+                } elseif ($this->assigned_user_id === $member->id) {
+                    $member->access_reason = 'Responsable';
+                } elseif ($team->created_by_id === $member->id) {
+                    $member->access_reason = 'Owner';
+                } elseif ($team->isCoordinator($member)) {
+                    $member->access_reason = 'Coordinador';
+                } elseif ($member->is_admin) {
+                    $member->access_reason = 'Admin';
+                } else {
+                    $member->access_reason = 'Miembro';
+                }
+            }
+            return $members;
+        }
+
+        // Si es privado, construimos la lista de usuarios con acceso con sus motivos correspondientes.
+        $usersMap = collect();
+
+        $addUser = function ($user, $reason) use (&$usersMap) {
+            if (!$user) return;
+            if (!$usersMap->has($user->id)) {
+                $user->access_reason = $reason;
+                $usersMap->put($user->id, $user);
+            }
+        };
+
+        // 1. Creador del expediente
+        if ($this->creator) {
+            $addUser($this->creator, 'Creador');
+        }
+
+        // 2. Responsable principal del expediente
+        if ($this->assignedUser) {
+            $addUser($this->assignedUser, 'Responsable');
+        }
+
+        // En modo estricto de privacidad (Deep Privacy), los Owners, Coordinadores y Admins NO tienen acceso
+        // a expedientes privados a menos que estén explícitamente asignados. Por tanto, no se incluyen implícitamente aquí.
+
+        // 6. Colaboradores asignados directamente al expediente
+        foreach ($this->assignedTo as $assignedUser) {
+            $addUser($assignedUser, 'Asignado');
+        }
+
+        // 7. Miembros de los grupos asignados directamente al expediente
+        // Lo extraemos directamente de las relaciones ya anidadas
+        foreach ($this->assignedGroups()->with('users')->get() as $group) {
+            foreach ($group->users as $groupUser) {
+                $addUser($groupUser, 'Grupo');
+            }
+        }
+
+        // 8. Miembros asignados a tareas vinculadas a este expediente
+        // Cargamos las tareas del expediente con todas sus relaciones para evitar leaks de ORM
+        $tasks = $this->tasks()->with(['assignedUser', 'assignedTo', 'assignedGroups.users'])->get();
+        
+        foreach ($tasks as $task) {
+            if ($task->assigned_user_id && $task->assignedUser) {
+                $addUser($task->assignedUser, 'Tarea');
+            }
+            foreach ($task->assignedTo as $tAssigned) {
+                $addUser($tAssigned, 'Tarea');
+            }
+            foreach ($task->assignedGroups as $taskGroup) {
+                foreach ($taskGroup->users as $tgUser) {
+                    $addUser($tgUser, 'Tarea');
+                }
+            }
+        }
+
+        return $usersMap->values()->sortBy('name');
+    }
 }
+

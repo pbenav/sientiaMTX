@@ -347,7 +347,7 @@
                                             <div class="absolute w-4 h-4 bg-white border-2 border-violet-500 rounded-full shadow-sm transition-all duration-300 pointer-events-none progress-thumb transform -translate-x-1/2" style="left: {{ $task->progress }}%; {{ $task->progress == 0 ? 'margin-left: 8px;' : ($task->progress == 100 ? 'margin-left: -8px;' : '') }}"></div>
                                             
                                             <!-- Interactive Invisible Slider (Touch Target) -->
-                                            <input type="range" min="0" max="100" value="{{ $task->progress }}" 
+                                            <input type="range" min="0" max="100" value="{{ $task->progress }}" autocomplete="off"
                                                 class="absolute w-full h-full opacity-0 cursor-pointer z-30 progress-slider"
                                                 data-task-id="{{ $task->id }}"
                                                 {{ $task->children()->count() > 0 ? 'disabled' : '' }}>

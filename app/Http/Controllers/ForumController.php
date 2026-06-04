@@ -66,32 +66,15 @@ class ForumController extends Controller
                 $query->latest()->limit(1);
             }])
             ->where(function($query) use ($userId, $isCoordinator, $showOrphaned) {
-                if ($isCoordinator) {
-                    return $query;
-                }
-                
                 if ($showOrphaned) {
                     return $query->whereNull('task_id');
                 }
 
+                // DEEP PRIVACY: Delegamos la seguridad íntegramente al Scope de Tareas.
+                // Eliminamos el bypass indiscriminado del Coordinador.
                 $query->whereNull('task_id')
-                      ->orWhereHas('task', function($q) use ($userId) {
-                          $q->withTrashed()
-                            ->where(function($sq) use ($userId) {
-                                $sq->where('created_by_id', $userId)
-                                  ->orWhere('assigned_user_id', $userId)
-                                  ->orWhereHas('assignedTo', function($q2) use ($userId) {
-                                      $q2->where('users.id', $userId);
-                                  })
-                                  ->orWhereHas('assignedGroups.users', function($q3) use ($userId) {
-                                      $q3->where('users.id', $userId);
-                                  })
-                                  // Also allow access if assigned to any child/subtask
-                                  ->orWhereHas('children', function($q4) use ($userId) {
-                                      $q4->where('assigned_user_id', $userId)
-                                        ->orWhereHas('assignedTo', fn($q5) => $q5->where('users.id', $userId));
-                                  });
-                            });
+                      ->orWhereHas('task', function($q) use ($isCoordinator) {
+                          $q->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
                       });
             })
             ->withCount('messages')
@@ -133,19 +116,13 @@ class ForumController extends Controller
             if ($validated['task_id']) {
                 $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
                 
-                // Privacy check for the task before linking a thread
+                // DEEP PRIVACY: Ensure user can actually view this task before linking
                 $isCoordinator = $team->isCoordinator(auth()->user());
-                $userId = auth()->id();
-                if (!$isCoordinator) {
-                    $hasAccess = $task->visibility === 'public' ||
-                                 $task->created_by_id === $userId ||
-                                 $task->assigned_user_id === $userId ||
-                                 $task->assignedTo->contains($userId) ||
-                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
-                    
-                    if (!$hasAccess) {
-                        abort(403, 'No puedes crear hilos para tareas privadas a las que no tienes acceso.');
-                    }
+                $taskQuery = \App\Models\Task::where('id', $task->id)->visibleTo(auth()->user(), $isCoordinator);
+                
+                if (!$taskQuery->exists()) {
+                    return redirect()->back()
+                        ->with('warning', 'Deep Privacy: No puedes crear hilos para tareas privadas a las que no tienes acceso.');
                 }
                 
                 // Force link to the root task
@@ -308,23 +285,13 @@ class ForumController extends Controller
             $task = $thread->task()->withTrashed()->first();
             
             if ($task) {
-                $userId = auth()->id();
+                // DEEP PRIVACY: Enforce strict access control via Task's visibility scope
                 $isCoordinator = $team->isCoordinator(auth()->user());
+                $taskQuery = \App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
 
-                if (!$isCoordinator) {
-                    $hasAccess = $task->created_by_id === $userId ||
-                                 $task->assigned_user_id === $userId ||
-                                 $task->assignedTo()->where('users.id', $userId)->exists() ||
-                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists() ||
-                                 $task->children()->where(function($q) use ($userId) {
-                                     $q->where('assigned_user_id', $userId)
-                                       ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId));
-                                 })->exists();
-
-                    if (!$hasAccess) {
-                        return redirect()->route('teams.forum.index', $team)
-                            ->with('warning', __('tasks.unauthorized_access') ?? 'No tienes permiso para ver este hilo privado.');
-                    }
+                if (!$taskQuery->exists()) {
+                    return redirect()->route('teams.forum.index', $team)
+                        ->with('warning', __('tasks.unauthorized_access') ?? 'Este hilo es confidencial. La Privacidad Profunda restringe su lectura únicamente a los involucrados.');
                 }
             }
         }
@@ -404,19 +371,13 @@ class ForumController extends Controller
             } else {
                 $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
 
-                // Privacy check for the task before linking
+                // DEEP PRIVACY: Validate access using the task's scope to prevent bypasses
                 $isCoordinator = $team->isCoordinator(auth()->user());
-                $userId = auth()->id();
-                if (!$isCoordinator) {
-                    $hasAccess = $task->visibility === 'public' ||
-                                 $task->created_by_id === $userId ||
-                                 $task->assigned_user_id === $userId ||
-                                 $task->assignedTo->contains($userId) ||
-                                 $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $userId))->exists();
-                    
-                    if (!$hasAccess) {
-                        abort(403, 'No tienes acceso a esa tarea privada.');
-                    }
+                $taskQuery = \App\Models\Task::where('id', $task->id)->visibleTo(auth()->user(), $isCoordinator);
+                
+                if (!$taskQuery->exists()) {
+                    return redirect()->back()
+                        ->with('warning', 'Deep Privacy: No tienes acceso a esa tarea confidencial, no puedes vincular el hilo.');
                 }
 
                 // Force link to root task

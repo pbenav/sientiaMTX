@@ -146,6 +146,7 @@ class TeamController extends Controller
             'telegram_chat_id' => 'nullable|string|max:255',
             'whatsapp_chat_id' => 'nullable|string|max:255',
             'settings' => 'nullable|array',
+            'soft_disk_quota_gb' => 'nullable|numeric|min:0.1',
         ];
 
         if (auth()->user()->is_admin) {
@@ -165,6 +166,16 @@ class TeamController extends Controller
             $validated['disk_quota'] = (int)($request->disk_quota_gb * 1024 * 1024 * 1024);
         }
 
+        if ($request->has('soft_disk_quota_gb') && $request->soft_disk_quota_gb !== null) {
+            $softLimitBytes = (int)($request->soft_disk_quota_gb * 1024 * 1024 * 1024);
+            // El soft limit no puede exceder el hard limit real del equipo
+            if ($softLimitBytes > $team->disk_quota) {
+                $softLimitBytes = $team->disk_quota;
+            }
+            $validated['settings'] = $validated['settings'] ?? $team->settings ?? [];
+            $validated['settings']['soft_disk_quota'] = $softLimitBytes;
+        }
+
         // Proteger el estado Premium de WhatsApp y Citas Previas para que solo un administrador global pueda modificarlo
         if (isset($validated['settings'])) {
             $validated['settings'] = array_merge($team->settings ?? [], $validated['settings']);
@@ -182,12 +193,8 @@ class TeamController extends Controller
 
         $team->update($validated);
 
-        // Si el usuario es administrador y no es miembro del equipo, volvemos a la gestión global
-        if (auth()->user()->is_admin && !$team->members()->where('user_id', auth()->id())->exists()) {
-            return redirect()->route('settings.teams')->with('success', __('teams.updated'));
-        }
-
-        return redirect()->route('teams.show', $team)
+        // Nos quedamos en la misma vista (edit) para no romper el flujo de trabajo del usuario
+        return redirect()->back()
             ->with('success', __('teams.updated'));
     }
 

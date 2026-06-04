@@ -565,11 +565,89 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            <!-- Miembros con Acceso -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">Miembros con Acceso</h3>
+                    @if($expediente->visibility === 'private')
+                        <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-100/50 dark:border-rose-800/30">
+                            🔒 Restringido
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-800/30">
+                            🌎 Todo el equipo
+                        </span>
+                    @endif
+                </div>
 
-            <!-- Rest of sidebar -->
+                <div class="space-y-3 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-850 pr-1">
+                    @php
+                        $usersWithAccess = $expediente->getUsersWithAccess();
+                    @endphp
+                    
+                    @foreach($usersWithAccess as $userWithAccess)
+                        <div class="flex items-center justify-between p-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <img src="{{ $userWithAccess->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($userWithAccess->name) }}" 
+                                     class="w-7 h-7 rounded-xl object-cover shrink-0 border border-gray-100 dark:border-gray-800 shadow-sm"
+                                     alt="{{ $userWithAccess->name }}">
+                                <div class="min-w-0">
+                                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate leading-tight">
+                                        {{ $userWithAccess->name }}
+                                    </span>
+                                    <span class="text-[9px] text-gray-400 dark:text-gray-500 block truncate">
+                                        {{ $userWithAccess->email }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="shrink-0 flex items-center gap-1">
+                                @if(($userWithAccess->access_reason ?? '') === 'Creador')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" title="Creador del Expediente">Creador</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Responsable')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" title="Responsable Principal">Responsable</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Owner')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" title="Propietario del Equipo">Owner</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Coordinador')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400" title="Coordinador del Equipo">Coordinador</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Admin')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400" title="Administrador Global">Admin</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Asignado')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/30" title="Colaborador Asignado">Asignado</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Grupo')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800/30" title="Acceso por Grupo Asignado">Grupo</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Tarea')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-850/30" title="Acceso por Tarea Vinculada">Tarea</span>
+                                @elseif(($userWithAccess->access_reason ?? '') === 'Miembro')
+                                    <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400" title="Miembro del Equipo (Acceso Público)">Miembro</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                @if($expediente->visibility === 'private')
+                    @php
+                        $assignedGroups = $expediente->assignedGroups;
+                    @endphp
+                    @if($assignedGroups->isNotEmpty())
+                        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Grupos Asignados</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach($assignedGroups as $group)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-100/50 dark:border-violet-800/30">
+                                        <svg class="w-3.5 h-3.5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        {{ $group->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                @endif
+            </div>
         </div>
     </div>
+
 
     <x-google-drive-picker :team="$team" />
 

@@ -35,24 +35,71 @@ class GDPRController extends Controller
                     'terms_accepted_at' => $user->terms_accepted_at,
                     'marketing_accepted_at' => $user->marketing_accepted_at,
                 ],
+                'work_routine' => [
+                    'start_time' => $user->work_start_time,
+                    'end_time' => $user->work_end_time,
+                    'location_lat' => $user->location_lat,
+                    'location_lng' => $user->location_lng,
+                ],
+                'notifications' => $user->notification_settings,
+                'telegram_username' => $user->telegram_username,
             ],
             'teams' => $user->teams()->get()->map(fn($team) => [
                 'name' => $team->name,
                 'role' => $user->getRole($team),
                 'joined_at' => $team->pivot->created_at,
             ]),
+            'skills' => $user->skills()->get()->map(fn($skill) => [
+                'name' => $skill->name,
+                'level' => $skill->pivot->level,
+                'total_xp' => $skill->pivot->total_xp,
+            ]),
+            'ai_preferences' => $user->aiPreferences()->get()->map(fn($pref) => [
+                'communication_style' => $pref->communication_style,
+                'tone' => $pref->tone,
+                'context_notes' => $pref->context_notes,
+            ]),
             'assigned_tasks' => $user->assignedTasks()->get()->map(fn($task) => [
                 'title' => $task->title,
                 'description' => $task->description,
                 'priority' => $task->priority,
                 'status' => $task->status,
+                'visibility' => $task->visibility,
                 'due_date' => $task->due_date,
             ]),
             'created_tasks' => $user->createdTasks()->get()->map(fn($task) => [
                 'title' => $task->title,
                 'description' => $task->description,
                 'status' => $task->status,
+                'visibility' => $task->visibility,
                 'created_at' => $task->created_at,
+            ]),
+            'expedientes' => \App\Models\Expediente::where(function($q) use ($user) {
+                $q->where('created_by_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id)
+                  ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id));
+            })->get()->map(fn($exp) => [
+                'code' => $exp->code,
+                'title' => $exp->title,
+                'status' => $exp->status,
+                'visibility' => $exp->visibility,
+                'role' => $exp->created_by_id === $user->id ? 'creator' : 'collaborator',
+                'created_at' => $exp->created_at,
+            ]),
+            'appointments_managed' => $user->appointments()->get()->map(fn($appt) => [
+                'localizador' => $appt->localizador,
+                'date' => $appt->date,
+                'time' => $appt->time,
+                'status' => $appt->status,
+                'client_name' => $appt->name,
+                'client_email' => $appt->email,
+            ]),
+            'appointments_as_client' => \App\Models\Appointment::where('email', $user->email)->get()->map(fn($appt) => [
+                'localizador' => $appt->localizador,
+                'date' => $appt->date,
+                'time' => $appt->time,
+                'status' => $appt->status,
+                'service' => $appt->service ? $appt->service->name : null,
             ]),
             'time_logs' => $user->timeLogs()->get()->map(fn($log) => [
                 'type' => $log->type,

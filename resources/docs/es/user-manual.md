@@ -45,15 +45,20 @@ Todas tus tareas se clasifican automáticamente en cuatro cuadrantes:
 
 ---
 
-## 📑 3. Crear y Gestionar Tareas
+## 📑 3. Expedientes y Tareas
 
-### Crear una tarea
+### Expedientes y Privacidad Profunda (Deep Privacy)
+Los **Expedientes** actúan como proyectos contenedores para agrupar tareas relacionadas.
+- **Expedientes Públicos**: Disponibles para que cualquier miembro del equipo colabore.
+- **Expedientes Privados (Deep Privacy)**: Un expediente privado es estrictamente confidencial. **Solo el creador y los miembros explícitamente asignados** pueden verlo. Gracias a la política de *Privacidad Profunda*, ni siquiera los Administradores o Coordinadores del equipo pueden husmear en expedientes o tareas privadas en los que no participan.
 
-1. Dentro de un equipo, haz clic en el botón **"+ Nueva Tarea"**.
+### Crear una Tarea
+
+1. Dentro de un equipo o un Expediente, haz clic en el botón **"+ Nueva Tarea"**.
 2. Rellena: título, descripción, prioridad y urgencia.
 3. Elige la **visibilidad**:
-   - **Pública**: La verá todo el equipo.
-   - **Privada**: Solo visible para ti (el creador).
+   - **Pública**: La verá el resto del equipo.
+   - **Privada**: Solo la verán el creador y los asignados. Mantendrá la Privacidad Profunda independientemente de la jerarquía administrativa.
 4. Asigna una **fecha límite** para activar el sistema de recordatorios.
 
 ### Estados de una Tarea
@@ -126,6 +131,16 @@ SientiaMTX incluye un sistema de alerta temprana para servicios críticos:
 - **Reportar Caída**: Informa al equipo si un servicio (ej. Google Drive) no funciona.
 - **Validación Colectiva**: Otros miembros confirman la incidencia para generar una alerta global.
 - **Bonus Centinela**: Recibe puntos de XP y Energía Vital por ayudar a monitorizar el ecosistema del equipo.
+
+---
+
+## 📆 10. Citas Previas y Servicios
+
+El sistema permite ofrecer agendas públicas de reserva para atención a clientes o soporte:
+- **Configuración de Disponibilidad**: Define tu horario de atención, descansos, antelación mínima y duración de las reuniones en la configuración de Citas Previas.
+- **Portal Público de Reservas**: Cada miembro (o el equipo global) puede compartir un enlace público optimizado donde los externos pueden agendar reuniones disponibles.
+- **Localizadores Únicos**: Al confirmarse la cita, el cliente recibe un localizador (ej. `25C-B4A1`) para seguimiento y eventual cancelación.
+- **Gestión Integrada**: Las citas reservadas aparecen en tu panel de control, notificándote y bloqueando tu horario automáticamente para evitar solapamientos.
 
 ---
 **Sientia MTX: Elevando la productividad mediante la IA y una experiencia de usuario excepcional.**
