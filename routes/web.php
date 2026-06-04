@@ -258,8 +258,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/mail', [\App\Http\Controllers\SettingsController::class, 'updateMailSettings'])->name('settings.mail.update');
         Route::post('/settings/mail/test', [\App\Http\Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');
         Route::get('/settings/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('settings.users');
-        Route::get('/settings/users/bulk-email', [\App\Http\Controllers\SettingsController::class, 'bulkEmailComposer'])->name('settings.users.bulk-email');
-        Route::post('/settings/users/bulk-email', [\App\Http\Controllers\SettingsController::class, 'sendBulkEmail'])->name('settings.users.bulk-email.send');
+        Route::get('/settings/users/bulk-email', [\App\Http\Controllers\BulkEmailController::class, 'create'])->name('settings.users.bulk-email');
+        Route::post('/settings/users/bulk-email', [\App\Http\Controllers\BulkEmailController::class, 'store'])->name('settings.users.bulk-email.send');
         Route::get('/settings/users/create', [\App\Http\Controllers\AdminUserController::class, 'create'])->name('settings.users.create');
         Route::post('/settings/users', [\App\Http\Controllers\AdminUserController::class, 'store'])->name('settings.users.store');
         Route::post('/settings/users/{user}/toggle-admin', [\App\Http\Controllers\AdminUserController::class, 'toggleAdmin'])->name('settings.users.toggle-admin');
@@ -271,15 +271,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/users/{user}/approve', [\App\Http\Controllers\AdminUserController::class, 'approve'])->name('settings.users.approve');
         
         // Legal Settings
-        Route::get('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'legalSettings'])->name('settings.legal');
-        Route::post('/settings/legal', [\App\Http\Controllers\SettingsController::class, 'updateLegalSettings'])->name('settings.legal.update');
+        Route::get('/settings/legal', [\App\Http\Controllers\LegalSettingsController::class, 'edit'])->name('settings.legal');
+        Route::post('/settings/legal', [\App\Http\Controllers\LegalSettingsController::class, 'update'])->name('settings.legal.update');
         Route::post('/settings/telegram/test', [\App\Http\Controllers\SettingsController::class, 'testTelegram'])->name('settings.telegram.test');
         Route::post('/settings/telegram/register', [\App\Http\Controllers\SettingsController::class, 'registerTelegramWebhook'])->name('settings.telegram.register');
         Route::get('/settings/whatsapp', [\App\Http\Controllers\WhatsappController::class, 'index'])->name('settings.whatsapp');
 
-        Route::get('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'appearanceSettings'])->name('settings.appearance');
-        Route::post('/settings/appearance', [\App\Http\Controllers\SettingsController::class, 'updateAppearanceSettings'])->name('settings.appearance.update');
-        Route::get('/settings/security', [\App\Http\Controllers\SettingsController::class, 'securityLogs'])->name('settings.security');
+        Route::get('/settings/appearance', [\App\Http\Controllers\AppearanceSettingsController::class, 'edit'])->name('settings.appearance');
+        Route::post('/settings/appearance', [\App\Http\Controllers\AppearanceSettingsController::class, 'update'])->name('settings.appearance.update');
+        Route::get('/settings/security', [\App\Http\Controllers\SecurityLogController::class, 'index'])->name('settings.security');
 
         Route::get('/settings/skills', [\App\Http\Controllers\SkillController::class, 'index'])->name('settings.skills');
         Route::post('/settings/skills', [\App\Http\Controllers\SkillController::class, 'store'])->name('settings.skills.store');

@@ -76,76 +76,7 @@ class SettingsController extends Controller
     }
 
 
-    /**
-     * Show the bulk email and team invitation composer.
-     */
-    public function bulkEmailComposer()
-    {
-        $teams = \App\Models\Team::orderBy('name')->get();
-        $roles = \App\Models\TeamRole::all();
-        return view('settings.bulk-email', compact('teams', 'roles'));
-    }
 
-    /**
-     * Handle queued sending of bulk emails/invitations.
-     */
-    public function sendBulkEmail(Request $request)
-    {
-        // Para la Fase 1 validamos campos y devolvemos un mensaje ilustrativo.
-        $request->validate([
-            'to' => 'required|string',
-            'subject' => 'required|string|max:255',
-            'body' => 'required|string',
-        ]);
-
-        $extractEmails = function($string) {
-            if (empty($string)) return [];
-            preg_match_all('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $string, $matches);
-            return array_values(array_unique(array_map('strtolower', $matches[0])));
-        };
-
-        $toEmails = $extractEmails($request->to);
-        $ccEmails = $extractEmails($request->cc);
-        $bccEmails = $extractEmails($request->bcc);
-
-        if (empty($toEmails)) {
-            return back()->with('error', __('No se encontraron correos válidos en la lista de destinatarios.'));
-        }
-
-        $isInvitation = $request->boolean('is_invitation');
-        $batchSize = $request->input('batch_size', 25);
-        $delayMinutes = $request->input('delay_minutes', 5);
-
-        if ($isInvitation) {
-            $request->validate([
-                'team_id' => 'required|exists:teams,id',
-                'role_id' => 'required|exists:team_roles,id',
-            ], [
-                'team_id.required' => 'Debes seleccionar un equipo para enviar invitaciones.',
-                'role_id.required' => 'Debes asignar un rol válido a los invitados.',
-            ]);
-        }
-
-        $chunks = array_chunk($toEmails, $batchSize);
-        $totalLotes = count($chunks);
-
-        foreach ($chunks as $index => $chunk) {
-            $delay = now()->addMinutes($index * $delayMinutes);
-            
-            \App\Jobs\SendBulkEmailJob::dispatch(
-                $chunk,
-                $request->subject,
-                $request->body,
-                $ccEmails,
-                $bccEmails,
-                $isInvitation,
-                $request->team_id,
-                $request->role_id
-            )->delay($delay);
-        }
-
-        return back()->with('success', __('¡El motor de envío ha arrancado! Se enviarán ' . count($toEmails) . ' correos divididos en ' . $totalLotes . ' lote(s).'));
-    }
     /**
      * Update the mail settings in the .env file.
      */
@@ -248,59 +179,7 @@ class SettingsController extends Controller
         }
     }
 
-    /**
-     * Show the legal settings form.
-     */
-    public function legalSettings()
-    {
-        $privacy = Setting::get('legal_privacy');
-        $terms = Setting::get('legal_terms');
-        $cookies = Setting::get('legal_cookies');
 
-        // Pre-load defaults if empty
-        if (empty($privacy)) {
-            $privacy = '<h1>Política de Privacidad</h1><p>En <strong>' . config('app.name', 'Sientia') . '</strong>, nos tomamos muy en serio la privacidad de tus datos. Esta Política de Privacidad describe cómo recopilamos, utilizamos y protegemos tu información personal.</p><h2>1. Identificación del Responsable</h2><p>El responsable del tratamiento de tus datos es <strong>[Nombre del Responsable / Empresa]</strong>.</p><h2>2. Datos que Recopilamos</h2><p>Recopilamos información de registro (nombre, email), datos de uso de la plataforma y preferencias de usuario.</p><h2>3. Finalidad del Tratamiento</h2><p>Tus datos se utilizan para gestionar tu acceso, sincronizar servicios autorizados y mejorar la experiencia de usuario.</p><h2>4. Tus Derechos</h2><p>Puedes ejercer tus derechos de acceso, rectificación, supresión y portabilidad en cualquier momento a través de tu perfil.</p><div class="bg-blue-50 p-4 rounded-xl">Última actualización: ' . now()->format('d/m/Y') . '</div>';
-        }
-
-        if (empty($terms)) {
-            $terms = '<h1>Términos de Servicio</h1><p>Bienvenido a <strong>' . config('app.name', 'Sientia') . '</strong>. Al utilizar nuestra plataforma, aceptas estos términos y condiciones.</p><h2>1. Registro</h2><p>Debes proporcionar información veraz y mantener la confidencialidad de tu cuenta.</p><h2>2. Normas de Uso</h2><p>No se permite el uso de la plataforma para actividades ilícitas o que interfieran con el servicio.</p><h2>3. Propiedad Intelectual</h2><p>El software y contenidos son propiedad de <strong>[Nombre del Responsable / Empresa]</strong>.</p><h2>4. Limitación de Responsabilidad</h2><p>SientiaMTX se ofrece "tal cual", sin garantías explícitas sobre la disponibilidad ininterrumpida.</p><div class="bg-blue-50 p-4 rounded-xl">Última actualización: ' . now()->format('d/m/Y') . '</div>';
-        }
-
-        if (empty($cookies)) {
-            $cookies = '<h1>Política de Cookies</h1><p>Utilizamos cookies propias y de terceros para mejorar tu experiencia.</p><h2>1. ¿Qué son las Cookies?</h2><p>Son pequeños archivos que se guardan en tu navegador para recordar tus preferencias.</p><h2>2. Cookies que usamos</h2><ul><li><strong>Técnicas:</strong> Necesarias para el funcionamiento.</li><li><strong>Personalización:</strong> Para recordar tus ajustes de tema e idioma.</li><li><strong>Terceros:</strong> Gestionadas por servicios como Google OAuth.</li></ul><h2>3. Gestión</h2><p>Puedes bloquear las cookies desde los ajustes de tu navegador.</p><div class="bg-blue-50 p-4 rounded-xl">Última actualización: ' . now()->format('d/m/Y') . '</div>';
-        }
-
-        return view('settings.legal', [
-            'privacy' => $privacy,
-            'terms' => $terms,
-            'cookies' => $cookies,
-        ]);
-    }
-
-    /**
-     * Update the legal settings in the database.
-     */
-    public function updateLegalSettings(Request $request)
-    {
-        $validated = $request->validate([
-            'legal_privacy' => 'nullable|string',
-            'legal_terms' => 'nullable|string',
-            'legal_cookies' => 'nullable|string',
-            'notify_changes' => 'nullable|boolean',
-        ]);
-
-        foreach (['legal_privacy', 'legal_terms', 'legal_cookies'] as $key) {
-            if (isset($validated[$key])) {
-                Setting::set($key, $validated[$key]);
-            }
-        }
-
-        if ($request->has('notify_changes')) {
-            Setting::set('legal_updated_at', now()->toDateTimeString());
-        }
-
-        return back()->with('success', __('notifications.config_saved'));
-    }
 
     /**
      * Send a test email.
@@ -386,74 +265,10 @@ class SettingsController extends Controller
         }
     }
 
-    /**
-     * Show the appearance settings form.
-     */
-    public function appearanceSettings()
-    {
-        return view('settings.appearance', [
-            'markdown' => [
-                'h1_size' => Setting::get('markdown_h1_size', '1.875rem'),
-                'h1_weight' => Setting::get('markdown_h1_weight', '800'),
-                'h2_size' => Setting::get('markdown_h2_size', '1.5rem'),
-                'h2_weight' => Setting::get('markdown_h2_weight', '700'),
-                'h3_size' => Setting::get('markdown_h3_size', '1.25rem'),
-                'h3_weight' => Setting::get('markdown_h3_weight', '600'),
-                'text_size' => Setting::get('markdown_text_size', '1rem'),
-                'accent_color' => Setting::get('markdown_accent_color', '#4f46e5'),
-                'bullet_color' => Setting::get('markdown_bullet_color', '#4f46e5'),
-                'bq_color' => Setting::get('markdown_bq_color', '#4f46e5'),
-                'bq_width' => Setting::get('markdown_bq_width', '4px'),
-            ]
-        ]);
-    }
-
-    /**
-     * Update the appearance settings.
-     */
-    public function updateAppearanceSettings(Request $request)
-    {
-        $validated = $request->validate([
-            'markdown_h1_size' => 'required|string|max:10',
-            'markdown_h1_weight' => 'required|string|max:10',
-            'markdown_h2_size' => 'required|string|max:10',
-            'markdown_h2_weight' => 'required|string|max:10',
-            'markdown_h3_size' => 'required|string|max:10',
-            'markdown_h3_weight' => 'required|string|max:10',
-            'markdown_text_size' => 'required|string|max:10',
-            'markdown_accent_color' => 'required|string|max:10',
-            'markdown_bullet_color' => 'required|string|max:10',
-            'markdown_bq_color' => 'required|string|max:10',
-            'markdown_bq_width' => 'required|string|max:10',
-        ]);
-
-        foreach ($validated as $key => $value) {
-            Setting::set($key, $value);
-        }
-
-        return back()->with('success', __('¡Ajustes de apariencia actualizados correctamente!'));
-    }
 
 
-    /**
-     * Show the security logs list.
-     */
-    public function securityLogs(Request $request)
-    {
-        $query = \App\Models\SecurityLog::with('user');
 
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('event', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('ip_address', 'like', "%{$search}%");
-            });
-        }
 
-        $logs = $query->orderBy('created_at', 'desc')->paginate(30)->withQueryString();
-
-        return view('settings.security', compact('logs', 'search'));
-    }
 
     protected function updateEnvMultiple(array $data)
     {
