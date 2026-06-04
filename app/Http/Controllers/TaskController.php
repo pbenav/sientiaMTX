@@ -493,245 +493,30 @@ class TaskController extends Controller
         $visibility = $validated['visibility'] ?? $task->visibility;
         $validated['visibility'] = $visibility;
 
-        $task->update([
-            'title' => array_key_exists('title', $validated) ? $validated['title'] : $task->title,
-            'description' => array_key_exists('description', $validated) ? $validated['description'] : $task->description,
-            'priority' => array_key_exists('priority', $validated) ? $validated['priority'] : $task->priority,
-            'urgency' => array_key_exists('urgency', $validated) ? $validated['urgency'] : $task->urgency,
-            'status' => array_key_exists('status', $validated) ? $validated['status'] : $task->status,
-            'scheduled_date' => array_key_exists('scheduled_date', $validated) ? $validated['scheduled_date'] : $task->scheduled_date,
-            'due_date' => array_key_exists('due_date', $validated) ? $validated['due_date'] : $task->due_date,
-            'observations' => array_key_exists('observations', $validated) ? $validated['observations'] : $task->observations,
-            'parent_id' => array_key_exists('parent_id', $validated) ? $validated['parent_id'] : $task->parent_id,
-            'progress_percentage' => array_key_exists('progress_percentage', $validated) ? $validated['progress_percentage'] : $task->progress_percentage,
-            'visibility' => array_key_exists('visibility', $validated) ? $validated['visibility'] : $task->visibility,
-            'is_autoprogrammable' => $request->has('is_autoprogrammable') ? $request->boolean('is_autoprogrammable') : $task->is_autoprogrammable,
-            'autoprogram_settings' => $request->has('autoprogram_settings') ? $request->input('autoprogram_settings') : $task->autoprogram_settings,
-            'is_out_of_skill_tree' => $request->boolean('is_out_of_skill_tree'),
-            'cognitive_load' => $request->input('cognitive_load', 1),
-            'is_backstage' => $request->boolean('is_backstage'),
-            'skill_id' => array_key_exists('skill_id', $validated) ? $validated['skill_id'] : $task->skill_id,
-            'service_id' => array_key_exists('service_id', $validated) ? $validated['service_id'] : $task->service_id,
-            'expediente_id' => ($task->parent_id && !$task->is_template) 
-                ? $task->expediente_id 
-                : (array_key_exists('expediente_id', $validated) ? $validated['expediente_id'] : $task->expediente_id),
-            'is_timeline_locked' => $request->boolean('is_timeline_locked'),
-        ]);
 
+        // Store old status for gamification check
+        $oldStatus = $oldValues['status'] ?? null;
+        $isCoordinator = $team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id;
 
-        if ($team->isCoordinator(auth()->user()) && isset($validated['created_by_id'])) {
-            $task->created_by_id = $validated['created_by_id'];
-            $task->save();
-        }
-
-        // Sync Skills
-        $skillIds = $request->skills ?? ($request->skill_id ? [$request->skill_id] : []);
-        $task->skills()->sync($skillIds);
-
-        // Propagate skills to instances if this is a template
-        if ($task->is_template) {
-            foreach($task->instances as $inst) {
-                $inst->skills()->sync($skillIds);
-            }
-        }
-
-        // Sync status based on progress
-        if ($task->progress_percentage == 100 && $task->status !== 'completed' && $task->status !== 'cancelled') {
-            $task->status = 'completed';
-            $task->save();
-        } elseif ($task->progress_percentage < 100 && $task->status === 'completed') {
-            $task->status = 'in_progress';
-            $task->save();
-        }
+        $taskService = app(\App\Services\TaskService::class);
+        $task = $taskService->updateTask(
+            $task,
+            $team,
+            $validated,
+            $request->all(),
+            $isCoordinator
+        );
 
         // Gamification: Award points if completed
-        if ($task->status === 'completed' && $oldValues['status'] !== 'completed') {
+        if ($task->status === 'completed' && $oldStatus !== 'completed') {
             $this->awardGamificationPoints($task);
             $task->notifyCoordinatorsIfCompleted();
         }
 
         // Notification for Blocked status
-        if ($task->status === 'blocked' && $oldValues['status'] !== 'blocked') {
-             $task->notifyCreatorAndCoordinators(new TaskEventNotification($task, 'blocked'));
+        if ($task->status === 'blocked' && $oldStatus !== 'blocked') {
+             $task->notifyCreatorAndCoordinators(new \App\Notifications\TaskEventNotification($task, 'blocked'));
         }
-
-        // Notification for Milestones
-        $oldProgress = (int) ($oldValues['progress_percentage'] ?? 0);
-        $newProgress = (int) ($task->progress_percentage ?? 0);
-
-        if ($newProgress >= 50 && $oldProgress < 50) {
-             $task->notifyCreatorAndCoordinators(new TaskEventNotification($task, 'milestone_50'));
-        }
-        if ($newProgress >= 75 && $oldProgress < 75) {
-             $task->notifyCreatorAndCoordinators(new TaskEventNotification($task, 'milestone_75'));
-        }
-
-        // Parent progress sync
-        if ($task->parent_id) {
-            $currentParent = $task->parent;
-            while ($currentParent) {
-                $currentParent->update(['progress_percentage' => $currentParent->progress]);
-                $currentParent = $currentParent->parent;
-            }
-        }
-
-        // SCENARIO B: Metadata Independence (Partial Sync)
-        // We preserve title and description independence, but sync core project skeleton attributes
-        // to ensure team alignment on deadlines and importance.
-        if ($task->is_template) {
-            $task->instances()->update([
-                'priority' => $task->priority,
-                'urgency' => $task->urgency,
-                'due_date' => $task->due_date,
-                'original_due_date' => $task->due_date,
-                'expediente_id' => $task->expediente_id, // Synchronize expediente too
-            ]);
-        }
-
-        // Log changes to history
-        $newValues = $task->getAttributes();
-        $changes = array_diff_assoc($newValues, $oldValues);
-
-        if (!empty($changes)) {
-            $task->histories()->create([
-                'user_id' => auth()->id(),
-                'action' => 'updated',
-                'old_values' => $oldValues,
-                'new_values' => $newValues,
-            ]);
-        }
-
-        // Only allow coordinators, managers or the owner to change assignments, visibility or core metadata
-        $isCoordinator = $team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id;
-
-        if ($request->has('title') && $isCoordinator) {
-            // Track previously assigned users to avoid double notifications in shared mode
-            $previousUserIds = $task->assignedTo()->pluck('users.id')->toArray();
-
-            $assignedTo = array_filter((array) $request->input('assigned_to', []), fn($v) => !is_null($v) && $v !== '');
-            $assignedGroups = array_filter((array) $request->input('assigned_groups', []), fn($v) => !is_null($v) && $v !== '');
-
-            $task->assignments()->delete();
-
-            foreach ($assignedTo as $userId) {
-                $task->assignments()->create([
-                    'user_id' => $userId,
-                    'assigned_by_id' => auth()->id(),
-                ]);
-            }
-
-            foreach ($assignedGroups as $groupId) {
-                $task->assignments()->create([
-                    'group_id' => $groupId,
-                    'assigned_by_id' => auth()->id(),
-                ]);
-            }
-
-            // Determine unique assigned users for notification logic
-            $userIds = collect($assignedTo);
-            foreach ($assignedGroups as $groupId) {
-                $group = $team->groups()->find($groupId);
-                if ($group) {
-                    $userIds = $userIds->merge($group->users->pluck('id'));
-                }
-            }
-            $uniqueUserIds = $userIds->unique();
-
-            // Determine if it should still be a template
-            $hasAssignments = !empty($assignedTo) || !empty($assignedGroups);
-            $assignmentMode = $request->input('assignment_mode', 'shared');
-            $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
-            $task->is_template = $isTemplate;
-            $task->save();
-
-            // Notify NEW users in Shared Mode
-            if (!$isTemplate) {
-                $newUserIds = $uniqueUserIds->diff($previousUserIds);
-                foreach ($newUserIds as $userId) {
-                    if ((int)$userId !== (int)auth()->id()) {
-                        try {
-                            \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($task, auth()->user()));
-                        } catch (\Exception $e) {
-                            \Log::error("Failed to send TaskAssignedNotification (update-shared): " . $e->getMessage());
-                        }
-                    }
-                }
-            }
-            
-            if ($isTemplate) {
-
-                // Sync instances
-                // Delete instances not belonging to the new user set (including orphaned null-assigned ones)
-                // ONLY delete instances that were previously assigned to users who are no longer in the set.
-                // We PROTECT "unassigned" subtasks (Project Skeleton / Manual Subtasks) by ignoring whereNull.
-                $task->instances()
-                    ->whereNotNull('assigned_user_id')
-                    ->where('metadata->is_occurrence', '!=', true) // Protect occurrences from distributed sync
-                    ->whereNotIn('assigned_user_id', $uniqueUserIds)
-                    ->get()
-                    ->each
-                    ->delete();
-
-                foreach ($uniqueUserIds as $userId) {
-                    if (!$task->instances()->where('assigned_user_id', $userId)->exists()) {
-                        $inst = $team->tasks()->create([
-                            'title'              => $task->title,
-                            'description'        => $task->description,
-                            'priority'           => $task->priority,
-                            'urgency'            => $task->urgency,
-                            'status'             => 'pending',
-                            'scheduled_date'     => $task->scheduled_date,
-                            'due_date'           => $task->due_date,
-                            'original_due_date'  => $task->due_date,
-                            'created_by_id'      => $task->created_by_id,
-                            'observations'       => null,
-                            'parent_id'          => $task->id,
-                            'is_template'        => false,
-                            'assigned_user_id'   => $userId,
-                            'expediente_id'      => $task->expediente_id,
-                            'is_out_of_skill_tree' => $task->is_out_of_skill_tree,
-                            'cognitive_load'     => $task->cognitive_load,
-                            'is_backstage'       => $task->is_backstage,
-                            'skill_id'           => $task->skill_id,
-                            'service_id'         => $task->service_id, // Add service_id as well just in case
-                            'visibility'         => 'private',
-                        ]);
-
-                        // Notify during update if new instance
-                        if ($userId !== auth()->id()) {
-                            try {
-                                \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($inst, auth()->user()));
-                            } catch (\Exception $e) {
-                                \Log::error("Failed to send TaskAssignedNotification: " . $e->getMessage());
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Not a template anymore: clean up
-                // Not a template anymore: clean up only if NOT an occurrence
-                $task->instances()
-                    ->whereNotNull('assigned_user_id')
-                    ->where('metadata->is_occurrence', '!=', true) // Protect occurrences
-                    ->get()
-                    ->each
-                    ->delete();
-                $task->assigned_user_id = null; // Mark as unassigned
-            }
-            $task->save();
-        }
-
-        // --- AUTOPROGRAMMING TRIGGER (Now at the end to ensure assignments are ready) ---
-        if ($task->is_autoprogrammable) {
-            $settings = $task->autoprogram_settings;
-            if (!isset($settings['next_occurrence_at']) || $task->wasChanged('scheduled_date')) {
-                $settings['next_occurrence_at'] = ($task->scheduled_date ? $task->scheduled_date->toDateTimeString() : now()->toDateTimeString());
-                $task->update(['autoprogram_settings' => $settings]);
-            }
-            $task->autoWakeup();
-        }
-
-        $task->syncKanbanColumn();
 
         return redirect()->route('teams.tasks.show', [$team, $task])
             ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.updated'));
