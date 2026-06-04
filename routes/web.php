@@ -5,6 +5,8 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskActionController;
+use App\Http\Controllers\TaskBulkController;
+use App\Http\Controllers\TaskExportController;
 use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LocaleController;
@@ -156,11 +158,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/teams/{team}/tasks/search', [TaskController::class, 'search'])->name('teams.tasks.search');
     Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');
     Route::get('/teams/{team}/tasks/quadrant', [TaskController::class, 'byQuadrant'])->name('tasks.byQuadrant');
-    Route::post('/teams/{team}/tasks/import-json', [TaskController::class, 'importJson'])->name('teams.tasks.import-json');
-    Route::patch('/teams/{team}/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('teams.tasks.bulk-update');
-    Route::delete('/teams/{team}/tasks/bulk-delete', [TaskController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
-    Route::post('/teams/{team}/tasks/bulk-merge', [TaskController::class, 'bulkMerge'])->name('teams.tasks.bulk-merge');
-    Route::post('/teams/{team}/tasks/purge-trash', [TaskController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
+    Route::post('/teams/{team}/tasks/import-json', [TaskExportController::class, 'importJson'])->name('teams.tasks.import-json');
+    Route::patch('/teams/{team}/tasks/bulk-update', [TaskBulkController::class, 'bulkUpdate'])->name('teams.tasks.bulk-update');
+    Route::delete('/teams/{team}/tasks/bulk-delete', [TaskBulkController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
+    Route::post('/teams/{team}/tasks/bulk-merge', [TaskBulkController::class, 'bulkMerge'])->name('teams.tasks.bulk-merge');
+    Route::post('/teams/{team}/tasks/purge-trash', [TaskBulkController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
     Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit', 'update', 'destroy']);
 
     // Override show/edit/update/destroy to avoid Scoped Binding and handle SoftDeletes
@@ -217,9 +219,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/bulk-nudge', [TaskActionController::class, 'bulkNudge'])->name('teams.tasks.bulk-nudge');
     Route::post('/teams/{team}/tasks/{task}/move', [TaskActionController::class, 'move'])->name('teams.tasks.move');
     Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskActionController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
-    Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
-    Route::post('/teams/{team}/tasks/{task}/clone', [TaskController::class, 'cloneTask'])->name('teams.tasks.clone');
-    Route::get('/teams/{team}/tasks/{task}/export-json', [TaskController::class, 'exportJson'])->name('teams.tasks.export-json');
+    Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskExportController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
+    Route::post('/teams/{team}/tasks/{task}/clone', [TaskExportController::class, 'cloneTask'])->name('teams.tasks.clone');
+    Route::get('/teams/{team}/tasks/{task}/export-json', [TaskExportController::class, 'exportJson'])->name('teams.tasks.export-json');
     Route::post('/teams/{team}/tasks/{task}/merge', [TaskController::class, 'merge'])->name('teams.tasks.merge');
     Route::get('/teams/{team}/gantt', [\App\Http\Controllers\GanttController::class, 'index'])->name('teams.gantt');
     Route::get('/teams/{team}/gantt/data', [\App\Http\Controllers\GanttController::class, 'data'])->name('teams.gantt.data');
