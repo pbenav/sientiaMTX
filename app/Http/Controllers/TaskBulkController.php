@@ -6,12 +6,13 @@ use App\Models\Team;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Traits\AwardsGamification;
+use App\Traits\ManagesTaskDeletion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TaskBulkController extends Controller
 {
-    use AwardsGamification;
+    use AwardsGamification, ManagesTaskDeletion;
 
     /**
      * Update multiple tasks at once
@@ -231,11 +232,9 @@ class TaskBulkController extends Controller
 
         $tasks = $trashedQuery->get();
 
-        $taskController = new TaskController();
-
         /** @var \App\Models\Task $taskToPurge */
         foreach ($tasks as $taskToPurge) {
-            $taskController->deepPurgeTask($taskToPurge);
+            $this->deepPurgeTask($taskToPurge);
         }
 
         return redirect()->back()->with('success', "Se han eliminado permanentemente $trashedCount tareas y sus registros asociados.");
