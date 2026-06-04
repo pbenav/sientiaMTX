@@ -309,7 +309,7 @@ class GoogleService
             $end   = (clone $now)->modify('+1 hour');
 
             $event = new \Google\Service\Calendar\Event([
-                'summary' => 'sientiaMTX Meet (efímero)',
+                'summary' => 'Videollamada (sientiaMTX)',
                 'start'   => ['dateTime' => $now->format(\DateTime::RFC3339), 'timeZone' => 'UTC'],
                 'end'     => ['dateTime' => $end->format(\DateTime::RFC3339), 'timeZone' => 'UTC'],
                 'conferenceData' => [
@@ -327,15 +327,7 @@ class GoogleService
             // Extract Meet URL
             $meetUrl = $created->getConferenceData()?->getEntryPoints()[0]?->getUri() ?? null;
 
-            // Clean up: delete the ephemeral event immediately
-            try {
-                $service->events->delete('primary', $created->getId());
-                Log::info('GoogleService@createMeetViaCalendar: ephemeral event deleted', ['event_id' => $created->getId()]);
-            } catch (\Exception $deleteErr) {
-                Log::warning('GoogleService@createMeetViaCalendar: could not delete ephemeral event: ' . $deleteErr->getMessage());
-            }
-
-            Log::info('GoogleService@createMeetViaCalendar: Meet URL obtained via Calendar', ['uri' => $meetUrl]);
+            Log::info('GoogleService@createMeetViaCalendar: Meet URL obtained via Calendar', ['uri' => $meetUrl, 'event_id' => $created->getId()]);
             return $meetUrl;
         } catch (\Exception $e) {
             Log::error('GoogleService@createMeetViaCalendar error: ' . $e->getMessage());
