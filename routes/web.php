@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\GroupController;
@@ -125,15 +126,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/teams/{team}/eisenhower', [TeamController::class, 'dashboard'])->name('teams.eisenhower');
     Route::get('/teams/{team}/active-network', [TeamController::class, 'activeNetwork'])->name('teams.active-network');
     Route::patch('/teams/{team}/quadrants/color', [TeamController::class, 'updateQuadrantColor'])->name('teams.quadrants.color');
-    Route::get('/teams/{team}/members', [TeamController::class, 'members'])->name('teams.members');
-    Route::post('/teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.addMember');
-    Route::post('/teams/{team}/members/bulk', [TeamController::class, 'bulkAddMembers'])->name('teams.addMembersBulk');
-    Route::patch('/teams/{team}/members/{user}/role', [TeamController::class, 'updateMemberRole'])->name('teams.updateMemberRole');
-    Route::patch('/teams/{team}/members/{user}/info', [TeamController::class, 'updateMemberInfo'])->name('teams.updateMemberInfo');
-    Route::patch('/teams/{team}/members/{user}/appointments', [TeamController::class, 'updateMemberAppointments'])->name('teams.updateMemberAppointments');
-    Route::patch('/teams/{team}/members-appointments-bulk', [TeamController::class, 'updateAllMembersAppointments'])->name('teams.updateAllMembersAppointments');
-    Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.removeMember');
-    Route::delete('/teams/{team}/invitations/{invitation}', [TeamController::class, 'removeInvitation'])->name('teams.invitations.destroy');
+    Route::get('/teams/{team}/members', [TeamMemberController::class, 'index'])->name('teams.members');
+    Route::post('/teams/{team}/members', [TeamMemberController::class, 'store'])->name('teams.addMember');
+    Route::post('/teams/{team}/members/bulk', [TeamMemberController::class, 'bulkStore'])->name('teams.addMembersBulk');
+    Route::patch('/teams/{team}/members/{user}/role', [TeamMemberController::class, 'updateRole'])->name('teams.updateMemberRole');
+    Route::patch('/teams/{team}/members/{user}/info', [TeamMemberController::class, 'updateInfo'])->name('teams.updateMemberInfo');
+    Route::patch('/teams/{team}/members/{user}/appointments', [TeamMemberController::class, 'updateAppointments'])->name('teams.updateMemberAppointments');
+    Route::patch('/teams/{team}/members-appointments-bulk', [TeamMemberController::class, 'updateAllAppointments'])->name('teams.updateAllMembersAppointments');
+    Route::delete('/teams/{team}/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.removeMember');
+    Route::delete('/teams/{team}/invitations/{invitation}', [TeamMemberController::class, 'destroyInvitation'])->name('teams.invitations.destroy');
     Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');
     Route::get('/teams/{team}/mentions', [TeamController::class, 'mentionUsers'])->name('teams.mentions');
     Route::post('/teams/{team}/favorite', [TeamController::class, 'toggleFavorite'])->name('teams.toggle-favorite');
