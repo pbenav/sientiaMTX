@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskActionController;
 use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LocaleController;
@@ -211,11 +212,11 @@ Route::middleware('auth')->group(function () {
         Route::post('tasks/{task}/private-notes', [\App\Http\Controllers\TaskNoteController::class, 'update'])->name('teams.tasks.private-notes.update');
     });
 
-    Route::post('/teams/{team}/tasks/{task}/nudge', [TaskController::class, 'nudge'])->name('teams.tasks.nudge');
-    Route::post('/teams/{team}/tasks/{task}/rate', [TaskController::class, 'rate'])->name('teams.tasks.rate');
-    Route::post('/teams/{team}/tasks/bulk-nudge', [TaskController::class, 'bulkNudge'])->name('teams.tasks.bulk-nudge');
-    Route::post('/teams/{team}/tasks/{task}/move', [TaskController::class, 'move'])->name('teams.tasks.move');
-    Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
+    Route::post('/teams/{team}/tasks/{task}/nudge', [TaskActionController::class, 'nudge'])->name('teams.tasks.nudge');
+    Route::post('/teams/{team}/tasks/{task}/rate', [TaskActionController::class, 'rate'])->name('teams.tasks.rate');
+    Route::post('/teams/{team}/tasks/bulk-nudge', [TaskActionController::class, 'bulkNudge'])->name('teams.tasks.bulk-nudge');
+    Route::post('/teams/{team}/tasks/{task}/move', [TaskActionController::class, 'move'])->name('teams.tasks.move');
+    Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskActionController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
     Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
     Route::post('/teams/{team}/tasks/{task}/clone', [TaskController::class, 'cloneTask'])->name('teams.tasks.clone');
     Route::get('/teams/{team}/tasks/{task}/export-json', [TaskController::class, 'exportJson'])->name('teams.tasks.export-json');
