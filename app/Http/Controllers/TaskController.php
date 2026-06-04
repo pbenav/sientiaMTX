@@ -51,7 +51,11 @@ class TaskController extends Controller
         ]);
 
         if ($filters['status'] ?? null) {
-            $query->where('status', $filters['status']);
+            if ($filters['status'] === 'trashed') {
+                $query->onlyTrashed();
+            } else {
+                $query->where('status', $filters['status']);
+            }
         }
 
         if ($filters['priority'] ?? null) {
