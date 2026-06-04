@@ -90,12 +90,12 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile/sessions/{sessionId}', [ProfileController::class, 'logoutSession'])->name('profile.sessions.logout');
+    Route::delete('/profile/sessions/{sessionId}', [\App\Http\Controllers\ProfileSessionController::class, 'destroy'])->name('profile.sessions.logout');
     
     // Multi-Factor Authentication (MFA / 2FA) Routes under ENS Guidelines
-    Route::post('/profile/two-factor/enable', [ProfileController::class, 'enableTwoFactor'])->name('profile.two-factor.enable');
-    Route::post('/profile/two-factor/confirm', [ProfileController::class, 'confirmTwoFactor'])->name('profile.two-factor.confirm');
-    Route::post('/profile/two-factor/disable', [ProfileController::class, 'disableTwoFactor'])->name('profile.two-factor.disable');
+    Route::post('/profile/two-factor/enable', [\App\Http\Controllers\TwoFactorAuthController::class, 'enable'])->name('profile.two-factor.enable');
+    Route::post('/profile/two-factor/confirm', [\App\Http\Controllers\TwoFactorAuthController::class, 'confirm'])->name('profile.two-factor.confirm');
+    Route::post('/profile/two-factor/disable', [\App\Http\Controllers\TwoFactorAuthController::class, 'disable'])->name('profile.two-factor.disable');
 
     Route::patch('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::patch('/profile/ai', [ProfileController::class, 'updateAi'])->name('profile.ai.update');
@@ -105,8 +105,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/unsubscribe', [\App\Http\Controllers\WebPushController::class, 'destroy'])->name('webpush.unsubscribe');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/telegram/test', [ProfileController::class, 'testTelegram'])->name('profile.telegram.test');
-    Route::post('/profile/invitations', [ProfileController::class, 'generateInvitation'])->name('profile.invitations.generate');
-    Route::delete('/profile/invitations/{invitation}', [ProfileController::class, 'deleteInvitation'])->name('profile.invitations.destroy');
+    Route::post('/profile/invitations', [\App\Http\Controllers\UserInvitationController::class, 'store'])->name('profile.invitations.generate');
+    Route::delete('/profile/invitations/{invitation}', [\App\Http\Controllers\UserInvitationController::class, 'destroy'])->name('profile.invitations.destroy');
     Route::post('/whatsapp/restart', [\App\Http\Controllers\WhatsappController::class, 'restart'])->name('whatsapp.restart');
     Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsappController::class, 'status'])->name('whatsapp.status');
     Route::get('/whatsapp/personal-status', [\App\Http\Controllers\WhatsappController::class, 'personalStatus'])->name('whatsapp.personal-status');
