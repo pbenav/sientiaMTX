@@ -270,7 +270,7 @@ class GoogleService
      * Tries the Meet API first (requires meetings.space.created scope).
      * Falls back to an ephemeral Calendar event if that scope is not yet granted.
      */
-    public function createMeetSpace(): ?string
+    public function createMeetSpace(array $attendeeEmails = []): ?string
     {
         // --- Attempt 1: Meet API (requires production-approved scope) ---
         try {
@@ -292,15 +292,14 @@ class GoogleService
         }
 
         // --- Attempt 2: Ephemeral Calendar event (Calendar scope already approved) ---
-        return $this->createMeetViaCalendar();
+        return $this->createMeetViaCalendar($attendeeEmails);
     }
 
     /**
-     * Create a temporary Google Calendar event just to obtain a Meet link,
-     * then immediately delete the event.
+     * Create a temporary Google Calendar event just to obtain a Meet link.
      * Uses the already-approved Calendar scope.
      */
-    private function createMeetViaCalendar(): ?string
+    private function createMeetViaCalendar(array $attendeeEmails = []): ?string
     {
         try {
             $service = new Calendar($this->client);
@@ -308,7 +307,7 @@ class GoogleService
             $now   = new \DateTime('now', new \DateTimeZone('UTC'));
             $end   = (clone $now)->modify('+1 hour');
 
-            $event = new \Google\Service\Calendar\Event([
+            $eventData = [
                 'summary' => 'Videollamada (sientiaMTX)',
                 'start'   => ['dateTime' => $now->format(\DateTime::RFC3339), 'timeZone' => 'UTC'],
                 'end'     => ['dateTime' => $end->format(\DateTime::RFC3339), 'timeZone' => 'UTC'],
@@ -318,7 +317,17 @@ class GoogleService
                         'conferenceSolutionKey' => ['type' => 'hangoutsMeet'],
                     ],
                 ],
-            ]);
+            ];
+
+            if (!empty($attendeeEmails)) {
+                $attendees = [];
+                foreach ($attendeeEmails as $email) {
+                    $attendees[] = ['email' => $email];
+                }
+                $eventData['attendees'] = $attendees;
+            }
+
+            $event = new \Google\Service\Calendar\Event($eventData);
 
             $created = $service->events->insert('primary', $event, [
                 'conferenceDataVersion' => 1,
