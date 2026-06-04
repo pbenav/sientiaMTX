@@ -360,10 +360,38 @@ class ExpedienteController extends Controller
     /**
      * Remove the specified expediente.
      */
-    public function destroy(Team $team, Expediente $expediente)
+    public function destroy(\Illuminate\Http\Request $request, Team $team, Expediente $expediente)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
+        }
+
+        if ($request->input('cascade_delete') === '1') {
+            // Delete tasks physically
+            $expediente->tasks()->each(function ($task) {
+                $task->forceDelete();
+            });
+
+            // Delete attachments physically
+            $expediente->attachments()->each(function ($attachment) {
+                if ($attachment->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($attachment->file_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($attachment->file_path);
+                }
+                $attachment->delete();
+            });
+
+            // Delete notes physically
+            $expediente->notes()->forceDelete();
+
+            // Delete associations
+            $expediente->assignments()->delete();
+            \Illuminate\Support\Facades\DB::table('expediente_related')->where('expediente_id', $expediente->id)->orWhere('related_id', $expediente->id)->delete();
+
+            // Physically delete expediente
+            $expediente->forceDelete();
+
+            return redirect()->route('teams.expedientes.index', $team)
+                ->with('success', 'Expediente y todo su contenido asociado eliminados de forma permanente.');
         }
 
         $expediente->delete();
