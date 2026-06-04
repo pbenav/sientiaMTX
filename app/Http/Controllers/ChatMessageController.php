@@ -201,7 +201,40 @@ class ChatMessageController extends Controller
 
     public function clear($identifier): JsonResponse
     {
-        return response()->json(['success' => true]);
+        $userId = auth()->id();
+        $isGroup = str_starts_with($identifier, 'group_');
+
+        try {
+            if ($isGroup) {
+                $groupId = (int) str_replace('group_', '', $identifier);
+                
+                $group = \App\Models\ChatGroup::find($groupId);
+                if (!$group || !$group->users()->where('user_id', $userId)->exists()) {
+                    return response()->json(['success' => false, 'message' => 'No autorizado o grupo no encontrado'], 403);
+                }
+
+                $messages = ChatMessage::where('chat_group_id', $groupId)->get();
+            } else {
+                $receiverId = (int) $identifier;
+                $messages = ChatMessage::where(function ($query) use ($userId, $receiverId) {
+                    $query->where('sender_id', $userId)->where('receiver_id', $receiverId);
+                })->orWhere(function ($query) use ($userId, $receiverId) {
+                    $query->where('sender_id', $receiverId)->where('receiver_id', $userId);
+                })->get();
+            }
+
+            foreach ($messages as $message) {
+                if ($message->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($message->file_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($message->file_path);
+                }
+                $message->delete();
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('Error clearing chat history: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al limpiar el historial'], 500);
+        }
     }
 
 

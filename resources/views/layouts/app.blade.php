@@ -441,6 +441,51 @@
                     });
                 },
 
+                clearChat() {
+                    if (!this.member || !this.member.id) return;
+                    
+                    Swal.fire({
+                        title: '🧹 ¿LIMPIAR CHAT?',
+                        text: 'Se eliminarán todos los mensajes de esta conversación de forma permanente.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, limpiar 🧹',
+                        cancelButtonText: 'Cancelar ❌',
+                        confirmButtonColor: '#e11d48',
+                        cancelButtonColor: '#4b5563',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-950 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0',
+                            cancelButton: 'rounded-2xl px-6 py-3.5 uppercase tracking-widest font-black text-[10px] focus:ring-0'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('/chat/clear/' + this.member.id, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Accept': 'application/json'
+                                }
+                            }).then(r => r.json())
+                            .then(d => {
+                                if(d.success) {
+                                    this.messages = [];
+                                    Swal.fire({
+                                        title: '¡Limpiado! 🧹',
+                                        text: 'El historial de chat se ha borrado.',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false,
+                                        customClass: {
+                                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-950 dark:text-white'
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                },
+
                 checkNewMessages() {
                     fetch('/comms/heartbeat?_=' + Date.now(), {
                         headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
