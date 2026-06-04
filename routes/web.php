@@ -24,7 +24,7 @@ Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookControlle
 Route::get('/telegram/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'Telegram webhook endpoint (POST only)'], 200));
 
 // WhatsApp Webhook (Public)
-Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappController::class, 'webhook'])->name('whatsapp.webhook');
+Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappWebhookController::class, 'webhook'])->name('whatsapp.webhook');
 Route::get('/whatsapp/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'WhatsApp webhook endpoint (POST only)'], 200));
 
 // --- Citas Previas — Portal Público (sin autenticación) ---
@@ -107,12 +107,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/telegram/test', [ProfileController::class, 'testTelegram'])->name('profile.telegram.test');
     Route::post('/profile/invitations', [\App\Http\Controllers\UserInvitationController::class, 'store'])->name('profile.invitations.generate');
     Route::delete('/profile/invitations/{invitation}', [\App\Http\Controllers\UserInvitationController::class, 'destroy'])->name('profile.invitations.destroy');
-    Route::post('/whatsapp/restart', [\App\Http\Controllers\WhatsappController::class, 'restart'])->name('whatsapp.restart');
-    Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsappController::class, 'status'])->name('whatsapp.status');
-    Route::get('/whatsapp/personal-status', [\App\Http\Controllers\WhatsappController::class, 'personalStatus'])->name('whatsapp.personal-status');
-    Route::post('/whatsapp/personal-restart', [\App\Http\Controllers\WhatsappController::class, 'personalRestart'])->name('whatsapp.personal-restart');
-    Route::get('/whatsapp/team-status', [\App\Http\Controllers\WhatsappController::class, 'teamStatus'])->name('whatsapp.team-status');
-    Route::post('/whatsapp/team-restart', [\App\Http\Controllers\WhatsappController::class, 'teamRestart'])->name('whatsapp.team-restart');
+    Route::post('/whatsapp/restart', [\App\Http\Controllers\WhatsappSessionController::class, 'restart'])->name('whatsapp.restart');
+    Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsappSessionController::class, 'status'])->name('whatsapp.status');
+    Route::get('/whatsapp/personal-status', [\App\Http\Controllers\WhatsappSessionController::class, 'personalStatus'])->name('whatsapp.personal-status');
+    Route::post('/whatsapp/personal-restart', [\App\Http\Controllers\WhatsappSessionController::class, 'personalRestart'])->name('whatsapp.personal-restart');
+    Route::get('/whatsapp/team-status', [\App\Http\Controllers\WhatsappSessionController::class, 'teamStatus'])->name('whatsapp.team-status');
+    Route::post('/whatsapp/team-restart', [\App\Http\Controllers\WhatsappSessionController::class, 'teamRestart'])->name('whatsapp.team-restart');
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnread'])->name('notifications.unread-count');
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::match(['get', 'patch'], '/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
@@ -371,7 +371,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/send', [\App\Http\Controllers\WhatsappChatController::class, 'sendMessage'])->name('send');
         Route::patch('/messages/{message}', [\App\Http\Controllers\WhatsappChatController::class, 'update'])->name('update');
         Route::delete('/messages/{message}', [\App\Http\Controllers\WhatsappChatController::class, 'destroy'])->name('delete');
-        Route::post('/sync', [\App\Http\Controllers\WhatsappController::class, 'sync'])->name('sync');
+        Route::post('/sync', [\App\Http\Controllers\WhatsappSyncController::class, 'sync'])->name('sync');
     });
 
     // --- AI Assistant ---
