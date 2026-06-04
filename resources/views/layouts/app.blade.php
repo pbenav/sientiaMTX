@@ -460,21 +460,24 @@
                             const lastMsg = data.unread[0];
                             
                             if (callMsg && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== callMsg.call_room)) {
-                                this.incomingCall = { room: callMsg.call_room, sender_id: callMsg.sender_id, sender_name: callMsg.sender_name, sender_photo: callMsg.sender_photo };
-                                this.startFlashAndSound();
-                                const isGoogleMeet = callMsg.call_room.startsWith('http');
-                                Swal.fire({
-                                    title: isGoogleMeet ? '🌐 GOOGLE MEET' : '🎥 LLAMADA ENTRANTE',
-                                    html: `<div class="flex flex-col items-center gap-4 py-2"><div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-xl relative"><img src="${callMsg.sender_photo}" class="w-full h-full rounded-[14px] object-cover"></div><div><p class="text-xs font-black uppercase">${callMsg.sender_name}</p><p class="text-xs font-bold mt-2">${isGoogleMeet ? '¡te invita a una reunión!' : '¡te está llamando!'}</p></div></div>`,
-                                    showCancelButton: true,
-                                    confirmButtonText: isGoogleMeet ? 'Unirse 🚀' : 'Contestar 👍',
-                                    confirmButtonColor: isGoogleMeet ? '#0ea5e9' : '#059669',
-                                    cancelButtonText: 'Ahora no 👎',
-                                    customClass: { popup: 'rounded-[2.5rem] dark:bg-gray-950 dark:text-white' }
-                                }).then((result) => {
-                                    if (result.isConfirmed) this.acceptCall();
-                                    else this.rejectCall();
-                                });
+                                this.rejectedCalls = this.rejectedCalls || [];
+                                if (!this.rejectedCalls.includes(callMsg.call_room)) {
+                                    this.incomingCall = { room: callMsg.call_room, sender_id: callMsg.sender_id, sender_name: callMsg.sender_name, sender_photo: callMsg.sender_photo };
+                                    this.startFlashAndSound();
+                                    const isGoogleMeet = callMsg.call_room.startsWith('http');
+                                    Swal.fire({
+                                        title: isGoogleMeet ? '🌐 GOOGLE MEET' : '🎥 LLAMADA ENTRANTE',
+                                        html: `<div class="flex flex-col items-center gap-4 py-2"><div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-xl relative"><img src="${callMsg.sender_photo}" class="w-full h-full rounded-[14px] object-cover"></div><div><p class="text-xs font-black uppercase">${callMsg.sender_name}</p><p class="text-xs font-bold mt-2">${isGoogleMeet ? '¡te invita a una reunión!' : '¡te está llamando!'}</p></div></div>`,
+                                        showCancelButton: true,
+                                        confirmButtonText: isGoogleMeet ? 'Unirse 🚀' : 'Contestar 👍',
+                                        confirmButtonColor: isGoogleMeet ? '#0ea5e9' : '#059669',
+                                        cancelButtonText: 'Ahora no 👎',
+                                        customClass: { popup: 'rounded-[2.5rem] dark:bg-gray-950 dark:text-white' }
+                                    }).then((result) => {
+                                        if (result.isConfirmed) this.acceptCall();
+                                        else this.rejectCall(callMsg.call_room);
+                                    });
+                                }
                             } else if (!callMsg && (!this.lastNotifiedMsgId || this.lastNotifiedMsgId !== lastMsg.id)) {
                                 this.lastNotifiedMsgId = lastMsg.id;
                                 if (this.chatSoundsEnabled) this.playMessageChime();
@@ -498,7 +501,14 @@
                     this.incomingCall = null;
                 },
 
-                rejectCall() { this.stopFlashAndSound(); this.incomingCall = null; },
+                rejectCall(room) { 
+                    if (room) {
+                        this.rejectedCalls = this.rejectedCalls || [];
+                        if (!this.rejectedCalls.includes(room)) this.rejectedCalls.push(room);
+                    }
+                    this.stopFlashAndSound(); 
+                    this.incomingCall = null; 
+                },
 
                 startFlashAndSound() {
                     if (this.titleInterval) clearInterval(this.titleInterval);
