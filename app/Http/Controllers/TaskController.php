@@ -600,98 +600,8 @@ class TaskController extends Controller
              return back()->with('warning', 'No tienes permisos suficientes para realizar esta operación.');
         }
 
-        \DB::transaction(function () use ($task, $targetTask) {
-             // 1. Combine content additively if source brings something new
-             $cleanSourceDesc = trim(strip_tags($task->description ?? ''));
-             $cleanTargetDesc = trim(strip_tags($targetTask->description ?? ''));
-             if ($cleanSourceDesc !== '' && strpos($cleanTargetDesc, $cleanSourceDesc) === false) {
-                 $targetTask->description = ($targetTask->description ?? '') . "\n\n--- [Fusionado desde: {$task->title}] ---\n\n" . $task->description;
-             }
-
-             $cleanSourceObs = trim(strip_tags($task->observations ?? ''));
-             $cleanTargetObs = trim(strip_tags($targetTask->observations ?? ''));
-             if ($cleanSourceObs !== '' && strpos($cleanTargetObs, $cleanSourceObs) === false) {
-                 $targetTask->observations = ($targetTask->observations ?? '') . "\n\n--- [Fusionado desde: {$task->title}] ---\n\n" . $task->observations;
-             }
-             $targetTask->save();
-
-             // 2. Reassign subtasks
-             $task->children()->update(['parent_id' => $targetTask->id]);
-
-             // 3. Transfer Time Logs
-             $task->timeLogs()->update(['task_id' => $targetTask->id]);
-
-             // 4. Transfer Morphic Attachments
-             \App\Models\TaskAttachment::where('attachable_type', Task::class)
-                 ->where('attachable_id', $task->id)
-                 ->update(['attachable_id' => $targetTask->id]);
-            
-             \App\Models\TaskAttachment::where('attachable_type', 'App\Models\Task')
-                 ->where('attachable_id', $task->id)
-                 ->update(['attachable_id' => $targetTask->id]);
-
-             // 5. Transfer Private Notes
-             $task->privateNotes()->update(['task_id' => $targetTask->id]);
-
-             // 6. Transfer Kudos
-             \App\Models\Kudo::where('task_id', $task->id)->update(['task_id' => $targetTask->id]);
-
-             // 7. Transfer Task History trail
-             $task->histories()->update(['task_id' => $targetTask->id]);
-
-             // 8. Merge Tags without duplication
-             foreach($task->tags as $tag) {
-                 $exists = $targetTask->tags()->where('tag', $tag->tag)->exists();
-                 if (!$exists) {
-                     $tag->update(['task_id' => $targetTask->id]);
-                 }
-             }
-
-             // 9. Merge User/Group Assignments ensuring uniqueness
-             foreach($task->assignments as $assignment) {
-                 $existsQuery = $targetTask->assignments();
-                 if ($assignment->user_id) {
-                     $existsQuery->where('user_id', $assignment->user_id);
-                 } else {
-                     $existsQuery->where('group_id', $assignment->group_id);
-                 }
-                 
-                 if (!$existsQuery->exists()) {
-                     $assignment->update(['task_id' => $targetTask->id]);
-                 }
-             }
-
-             // 10. Forum Thread resolution: Transfer messages or adopt orphan thread
-             $sourceThread = $task->forumThread;
-             if ($sourceThread) {
-                 $targetThread = $targetTask->forumThread;
-                 if ($targetThread) {
-                     $sourceThread->messages()->update(['forum_thread_id' => $targetThread->id]);
-                     $sourceThread->delete();
-                 } else {
-                     $sourceThread->update(['task_id' => $targetTask->id]);
-                 }
-             }
-
-             // 11. Calendar Event adoption
-             $sourceCal = $task->calendarEvent;
-             if ($sourceCal) {
-                 if (!$targetTask->calendarEvent()->exists()) {
-                     $sourceCal->update(['task_id' => $targetTask->id]);
-                 } else {
-                     $sourceCal->delete();
-                 }
-             }
-
-             // 12. Finally destroy source task tracking the history for destination
-             $targetTask->histories()->create([
-                 'user_id' => auth()->id(),
-                 'action' => 'task_merged',
-                 'notes' => "Tarea ID #{$task->id} ('{$task->title}') ha sido fusionada en esta tarea."
-             ]);
-
-             $task->delete();
-        });
+        $taskService = app(\App\Services\TaskService::class);
+        $taskService->mergeTasks($task, $targetTask);
 
         return redirect()->route('teams.tasks.show', [$team, $targetTask])
             ->with('success', 'La tarea ha sido fusionada y sus datos migrados correctamente.');
@@ -709,52 +619,22 @@ class TaskController extends Controller
             'value' => 'required'
         ]);
 
-        $tasks = Task::whereIn('id', $request->task_ids)
-            ->where('team_id', $team->id)
-            ->get();
+        $taskService = app(\App\Services\TaskService::class);
+        $result = $taskService->bulkUpdateTasks(
+            $team, 
+            $request->task_ids, 
+            $request->field, 
+            $request->value, 
+            auth()->user()
+        );
 
-        $updatedCount = 0;
-        $field = $request->field;
-        $value = $request->value;
-
-        foreach ($tasks as $task) {
-            if (auth()->user()->can('update', $task)) {
-                $oldValue = $task->{$field};
-                
-                // Special check for assignment: update visibility if needed
-                if ($field === 'assigned_user_id' && (int)$value !== auth()->id() && $task->visibility === 'private') {
-                    $task->visibility = 'public';
-                }
-
-                $task->update([$field => $value]);
-                
-                // If status changed to completed, award points
-                if ($field === 'status' && $value === 'completed' && $oldValue !== 'completed') {
-                    $this->awardGamificationPoints($task);
-                    $task->notifyCoordinatorsIfCompleted();
-                }
-
-                // If collaborator assigned, notify
-                if ($field === 'assigned_user_id' && (int)$value !== auth()->id() && $oldValue != $value) {
-                    try {
-                        \App\Models\User::find($value)?->notify(new \App\Notifications\TaskAssignedNotification($task, auth()->user()));
-                    } catch (\Exception $e) { /* Ignore notification errors */ }
-                }
-
-                // Log history
-                $task->histories()->create([
-                    'user_id' => auth()->id(),
-                    'action' => 'bulk_updated',
-                    'old_values' => [$field => $oldValue],
-                    'new_values' => [$field => $value],
-                    'notes' => "Actualización masiva de {$field}"
-                ]);
-
-                $updatedCount++;
-            }
+        // Gamification: Award points if status changed to completed
+        foreach ($result['completedTasks'] as $completedTask) {
+            $this->awardGamificationPoints($completedTask);
+            $completedTask->notifyCoordinatorsIfCompleted();
         }
 
-        return back()->with('success', "Se han actualizado {$updatedCount} tareas correctamente.");
+        return back()->with('success', "Se han actualizado {$result['count']} tareas correctamente.");
     }
 
     /**
