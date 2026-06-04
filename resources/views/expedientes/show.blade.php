@@ -75,6 +75,19 @@
                 </svg>
                 {{ __('Editar') }}
             </a>
+
+            @if(auth()->user()->isCoordinatorOf($team) || $expediente->created_by_id === auth()->id() || $team->owner->id === auth()->id())
+                <form action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" 
+                      onsubmit="return confirm('¿⚠️ ELIMINAR EXPEDIENTE?\n\nEl expediente se moverá a la papelera. Las tareas vinculadas mantendrán su relación pero el expediente dejará de ser accesible.')" 
+                      class="shrink-0">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-red-100 dark:hover:bg-red-900/40 active:scale-95 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Eliminar Expediente
+                    </button>
+                </form>
+            @endif
         </div>
     </x-slot>
 
