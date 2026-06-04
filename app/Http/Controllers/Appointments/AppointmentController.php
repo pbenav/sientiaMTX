@@ -209,8 +209,12 @@ class AppointmentController extends Controller
 
         $this->deleteGoogleEvent($appointment);
 
-        // Si la cita tenía una tarea generada dinámicamente, se podría borrar o desenlazar.
-        // Aquí borramos la cita en cascada.
+        // Eliminar la tarea asociada si existe
+        if ($appointment->task) {
+            $appointment->task->delete();
+        }
+
+        // Eliminar la cita físicamente
         $appointment->delete();
 
         return redirect()->route('appointments.list', $team)->with('success', 'Cita eliminada definitivamente.');
