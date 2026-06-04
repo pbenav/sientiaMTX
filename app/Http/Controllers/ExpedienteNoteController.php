@@ -47,7 +47,7 @@ class ExpedienteNoteController extends Controller
 
     public function destroy(Team $team, Expediente $expediente, ExpedienteNote $note)
     {
-        if ($note->user_id !== auth()->id() && !auth()->user()->isCoordinatorOf($team)) {
+        if ($note->user_id !== auth()->id() && !auth()->user()->isCoordinator($team)) {
             abort(403);
         }
 

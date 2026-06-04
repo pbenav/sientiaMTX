@@ -76,7 +76,7 @@
                 {{ __('Editar') }}
             </a>
 
-            @if(auth()->user()->isCoordinatorOf($team) || $expediente->created_by_id === auth()->id() || $team->owner->id === auth()->id())
+            @if(auth()->user()->isCoordinator($team) || $expediente->created_by_id === auth()->id() || $team->owner->id === auth()->id())
                 <form id="delete-expediente-form" action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" class="shrink-0">
                     @csrf
                     @method('DELETE')
@@ -473,7 +473,7 @@
                 <div class="space-y-3">
                     @php
                         $notes = $expediente->notes()->with('user')->get()->filter(function($note) use ($team) {
-                            return !$note->is_private || $note->user_id === auth()->id() || auth()->user()->isCoordinatorOf($team);
+                            return !$note->is_private || $note->user_id === auth()->id() || auth()->user()->isCoordinator($team);
                         });
                     @endphp
 
@@ -504,7 +504,7 @@
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                             </button>
                                         @endif
-                                        @if($note->user_id === auth()->id() || auth()->user()->isCoordinatorOf($team))
+                                        @if($note->user_id === auth()->id() || auth()->user()->isCoordinator($team))
                                             <form action="{{ route('teams.expedientes.notes.destroy', [$team, $expediente, $note]) }}" method="POST" onsubmit="return confirm('¿Eliminar esta nota?')" class="inline">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Eliminar nota">
