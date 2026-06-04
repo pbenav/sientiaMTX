@@ -394,7 +394,7 @@ class TaskController extends Controller
         );
 
         return redirect()->route('teams.tasks.show', [$team, $task])
-            ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.created'));
+            ->with('success', __('tasks.created'));
     }
 
     /**
@@ -519,7 +519,7 @@ class TaskController extends Controller
         }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
-            ->with($autoPublic ? 'warning' : 'success', $autoPublic ? __('tasks.auto_public_warning') : __('tasks.updated'));
+            ->with('success', __('tasks.updated'));
     }
 
     /**
