@@ -901,18 +901,18 @@
                                     {{ __('Google Drive') }}
                                 </button>
                             @endif
-                            <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="m-0 p-0 inline-block">
+                            <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="m-0 p-0 inline-block relative">
                                 @csrf
-                                <label class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2 cursor-pointer mb-0">
+                                <button type="button" class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2 pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                             d="M12 4v16m8-8H4" />
                                     </svg>
                                     {{ __('tasks.add_attachment') }}
-                                    <input type="file" id="attachment-input" name="files[]" multiple="multiple"
-                                        onchange="handleAttachmentUpload(this)" class="sr-only absolute w-0 h-0 overflow-hidden">
-                                </label>
+                                </button>
+                                <input type="file" id="attachment-input" name="files[]" multiple="multiple"
+                                    onchange="handleAttachmentUpload(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Adjuntar archivos">
                             </form>
                         </div>
                     </div>
@@ -1385,13 +1385,13 @@
                 }
 
                 // Restore scroll position after attachment upload
-                document.addEventListener("DOMContentLoaded", function() {
-                    const scrollpos = sessionStorage.getItem('task_edit_scrollpos');
-                    if (scrollpos) {
-                        window.scrollTo(0, parseInt(scrollpos));
-                        sessionStorage.removeItem('task_edit_scrollpos');
-                    }
-                });
+                const scrollpos = sessionStorage.getItem('task_edit_scrollpos');
+                if (scrollpos) {
+                    setTimeout(() => {
+                        window.scrollTo({ top: parseInt(scrollpos), behavior: 'instant' });
+                    }, 50);
+                    sessionStorage.removeItem('task_edit_scrollpos');
+                }
 
                 function parsePHPSize(size) {
                     const unit = size.slice(-1).toUpperCase();
