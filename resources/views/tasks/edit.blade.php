@@ -1061,9 +1061,9 @@
 
         <!-- Hidden Form for Attachment Upload (Outside Main Form) -->
         <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}"
-            method="POST" enctype="multipart/form-data" class="hidden">
+            method="POST" enctype="multipart/form-data" class="sr-only absolute w-0 h-0 overflow-hidden">
             @csrf
-            <input type="file" id="attachment-input" name="files[]" multiple
+            <input type="file" id="attachment-input" name="files[]" multiple="multiple"
                 onchange="handleAttachmentUpload(this)">
         </form>
 
