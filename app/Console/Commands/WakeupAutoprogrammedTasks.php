@@ -18,7 +18,9 @@ class WakeupAutoprogrammedTasks extends Command
             $this->cleanupFutureOccurrences();
         }
 
-        $tasks = Task::where('is_autoprogrammable', true)->get();
+        $tasks = Task::where('is_autoprogrammable', true)
+            ->where('status', '!=', 'completed')
+            ->get();
 
         foreach ($tasks as $task) {
             $settings = $task->autoprogram_settings;
