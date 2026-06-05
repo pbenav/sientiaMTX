@@ -885,29 +885,9 @@ class Task extends Model
      */
     public function getAllAttachmentsAttribute()
     {
-        $attachments = $this->attachments()
+        return $this->attachments()
             ->with('attachable') // eager load polymorphic relationship
             ->get();
-
-        // Add parent attachments if any
-        if ($this->parent_id) {
-            $parent = $this->parent()->with('attachments.attachable')->first();
-            if ($parent) {
-                $attachments = $attachments->merge($parent->attachments);
-            }
-        }
-
-        // Add children attachments recursively? Let's stay at primary descendants for now 
-        // to avoid performance issues in huge projects.
-        if ($this->children()->exists()) {
-            $childrenIds = $this->children()->pluck('id');
-            $childAttachments = \App\Models\TaskAttachment::where('attachable_type', \App\Models\Task::class)
-                ->whereIn('attachable_id', $childrenIds)
-                ->get();
-            $attachments = $attachments->merge($childAttachments);
-        }
-
-        return $attachments->unique('id');
     }
     /**
      * Notify creator and coordinators about a task event.
