@@ -1063,7 +1063,7 @@
         <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}"
             method="POST" enctype="multipart/form-data" class="hidden">
             @csrf
-            <input type="file" id="attachment-input" name="file"
+            <input type="file" id="attachment-input" name="files[]" multiple
                 onchange="handleAttachmentUpload(this)">
         </form>
 
@@ -1362,26 +1362,38 @@
                 }
 
                 window.handleAttachmentUpload = function(input) {
-                    const file = input.files[0];
-                    if (!file) return;
+                    const files = input.files;
+                    if (!files.length) return;
 
                     const limit = "{{ ini_get('upload_max_filesize') }}";
                     const limitBytes = parsePHPSize(limit);
 
-                    if (file.size > limitBytes) {
-                        Swal.fire({
-                            title: '{{ __('tasks.file_too_large') }}',
-                            text: '{{ __('tasks.file_exceed_limit', ['limit' => ':limit']) }}'.replace(':limit', limit),
-                            icon: 'error',
-                            background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
-                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
-                        });
-                        input.value = '';
-                        return;
+                    for (let i = 0; i < files.length; i++) {
+                        if (files[i].size > limitBytes) {
+                            Swal.fire({
+                                title: '{{ __('tasks.file_too_large') }}',
+                                text: '{{ __('tasks.file_exceed_limit', ['limit' => ':limit']) }}'.replace(':limit', limit),
+                                icon: 'error',
+                                background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                            });
+                            input.value = '';
+                            return;
+                        }
                     }
 
+                    sessionStorage.setItem('task_edit_scrollpos', window.scrollY);
                     document.getElementById('attachment-form').submit();
                 }
+
+                // Restore scroll position after attachment upload
+                document.addEventListener("DOMContentLoaded", function() {
+                    const scrollpos = sessionStorage.getItem('task_edit_scrollpos');
+                    if (scrollpos) {
+                        window.scrollTo(0, parseInt(scrollpos));
+                        sessionStorage.removeItem('task_edit_scrollpos');
+                    }
+                });
 
                 function parsePHPSize(size) {
                     const unit = size.slice(-1).toUpperCase();

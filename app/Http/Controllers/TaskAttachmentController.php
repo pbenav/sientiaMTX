@@ -23,53 +23,67 @@ class TaskAttachmentController extends Controller
         }
 
         $maxSizeKB = (int)ini_get('upload_max_filesize') * 1024;
-        $request->validate([
-            'file' => "required|file|max:$maxSizeKB",
-        ]);
+        
+        if ($request->hasFile('files')) {
+            $request->validate([
+                'files' => 'required|array',
+                'files.*' => "file|max:$maxSizeKB",
+            ]);
+            $files = $request->file('files');
+        } else {
+            $request->validate([
+                'file' => "required|file|max:$maxSizeKB",
+            ]);
+            $files = [$request->file('file')];
+        }
 
         $user = auth()->user();
-        $file = $request->file('file');
-        $size = $file->getSize();
+        $uploaded = 0;
 
-        // Check user quota
-        if (!$user->hasAvailableQuota($size)) {
-            return back()->with('error', 'Has excedido tu cuota de espacio en disco.');
+        foreach ($files as $file) {
+            $size = $file->getSize();
+
+            // Check user quota
+            if (!$user->hasAvailableQuota($size)) {
+                return back()->with('error', 'Has excedido tu cuota de espacio en disco.');
+            }
+
+            // Check TEAM quota
+            if (!$team->hasAvailableQuota($size)) {
+                return back()->with('error', '⚠️ El equipo ha alcanzado su límite de almacenamiento. Un coordinador debe liberar espacio antes de poder subir más archivos.');
+            }
+
+            $path = $file->store("attachments/task_{$task->id}", 'public');
+
+            $originalName = $file->getClientOriginalName();
+            $datePrefix = date('Y-m-d-');
+            $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
+            $attachment = $task->attachments()->create([
+                'user_id' => $user->id,
+                'file_name' => $fileName,
+                'file_path' => $path,
+                'file_size' => $size,
+                'mime_type' => $file->getMimeType(),
+            ]);
+
+            AttachmentLog::create([
+                'attachment_id' => $attachment->id,
+                'user_id' => $user->id,
+                'action' => 'upload',
+                'metadata' => [
+                    'original_name' => $originalName,
+                    'size' => $size
+                ],
+                'ip_address' => request()->ip()
+            ]);
+
+            // Update user disk usage
+            $user->increment('disk_used', $size);
+            $uploaded++;
         }
 
-        // Check TEAM quota
-        if (!$team->hasAvailableQuota($size)) {
-            return back()->with('error', '⚠️ El equipo ha alcanzado su límite de almacenamiento. Un coordinador debe liberar espacio antes de poder subir más archivos.');
-        }
-
-        $path = $file->store("attachments/task_{$task->id}", 'public');
-
-        $originalName = $file->getClientOriginalName();
-        $datePrefix = date('Y-m-d-');
-        $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
-
-        $attachment = $task->attachments()->create([
-            'user_id' => $user->id,
-            'file_name' => $fileName,
-            'file_path' => $path,
-            'file_size' => $size,
-            'mime_type' => $file->getMimeType(),
-        ]);
-
-        AttachmentLog::create([
-            'attachment_id' => $attachment->id,
-            'user_id' => $user->id,
-            'action' => 'upload',
-            'metadata' => [
-                'original_name' => $originalName,
-                'size' => $size
-            ],
-            'ip_address' => request()->ip()
-        ]);
-
-        // Update user disk usage
-        $user->increment('disk_used', $size);
-
-        return back()->with('success', 'Archivo adjuntado correctamente.');
+        return back()->with('success', "Se han adjuntado $uploaded archivo(s) correctamente.");
     }
 
     public function downloadAttachment(Team $team, TaskAttachment $attachment)
