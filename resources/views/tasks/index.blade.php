@@ -356,6 +356,15 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                 </span>
                                             @endif
+                                            @if ($task->is_autoprogrammable)
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-violet-600 bg-violet-50 dark:bg-violet-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-700/50" title="Plantilla de Autoprogramación">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                </span>
+                                            @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
+                                                <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-700/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                </a>
+                                            @endif
                                             @if ($task->visibility === 'private')
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded shadow-sm inline-flex items-center"
@@ -456,14 +465,36 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
-                                    @if($task->assignedUser)
-                                        <div class="flex items-center gap-2">
-                                            <img src="{{ $task->assignedUser->profile_photo_url }}" 
-                                                alt="{{ $task->assignedUser->name }}"
-                                                class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $task->assignedUser->name }}</span>
-                                        </div>
-                                    @else
+                                     @if($task->assignedUser)
+                                         <div class="flex items-center gap-2">
+                                             <img src="{{ $task->assignedUser->profile_photo_url }}" 
+                                                 alt="{{ $task->assignedUser->name }}"
+                                                 class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
+                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $task->assignedUser->name }}</span>
+                                         </div>
+                                     @elseif($task->assignedTo->count() > 0)
+                                         <div class="flex items-center gap-2">
+                                             <div class="flex -space-x-2">
+                                                 @foreach($task->assignedTo->take(3) as $u)
+                                                     <img src="{{ $u->profile_photo_url }}" alt="{{ $u->name }}" class="w-5 h-5 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800" title="{{ $u->name }}">
+                                                 @endforeach
+                                             </div>
+                                             @if($task->assignedTo->count() > 3)
+                                                 <span class="text-xs text-gray-500">+{{ $task->assignedTo->count() - 3 }}</span>
+                                             @elseif($task->assignedTo->count() === 1)
+                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{{ $task->assignedTo->first()->name }}</span>
+                                             @else
+                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $task->assignedTo->count() }} {{ __('tasks.members') ?? 'Miembros' }}</span>
+                                             @endif
+                                         </div>
+                                     @elseif($task->assignedGroups->count() > 0)
+                                         <div class="flex items-center gap-2">
+                                             <div class="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-white dark:border-gray-800 shrink-0">
+                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                             </div>
+                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{{ $task->assignedGroups->first()->name }}</span>
+                                         </div>
+                                     @else
                                         <div class="flex items-center gap-2 opacity-75">
                                             <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
                                                 alt="{{ $task->creator?->name ?? '?' }}"
@@ -564,6 +595,15 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                 </span>
                                             @endif
+                                            @if ($subtask->is_autoprogrammable)
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-violet-600 bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-700/50 flex items-center gap-1" title="Plantilla de Autoprogramación">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                </span>
+                                            @elseif (!$subtask->is_autoprogrammable && $subtask->parent && $subtask->parent->is_autoprogrammable)
+                                                <a href="{{ route('teams.tasks.show', [$team, $subtask->parent_id]) }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-700/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors flex items-center gap-1" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                </a>
+                                            @endif
                                             @if($maxProgress > 0 && $subtask->progress_percentage === $maxProgress)
                                                 <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 flex items-center gap-0.5 animate-pulse" title="{{ __('tasks.leading_progress') ?? 'Máximo progreso' }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
@@ -605,7 +645,19 @@
                                         {{ $subtask->creator?->name ?? '—' }}
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
-                                        {{ $subtask->assignedUser?->name ?? '—' }}
+                                        @if($subtask->assignedUser)
+                                            {{ $subtask->assignedUser->name }}
+                                        @elseif($subtask->assignedTo->count() > 0)
+                                            @if($subtask->assignedTo->count() === 1)
+                                                {{ $subtask->assignedTo->first()->name }}
+                                            @else
+                                                {{ $subtask->assignedTo->count() }} {{ __('tasks.members') ?? 'Miembros' }}
+                                            @endif
+                                        @elseif($subtask->assignedGroups->count() > 0)
+                                            {{ $subtask->assignedGroups->first()->name }}
+                                        @else
+                                            —
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">
                                         <div class="flex items-center gap-2">

@@ -1488,13 +1488,16 @@
                 
                 Swal.showLoading();
                 
-                fetch(`/teams/${teamId}/tasks/${taskId}/attachments/from-drive`, {
+                fetch(`{{ route('teams.attachments.from-drive', [$team]) }}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
+                        attachable_id: taskId,
+                        attachable_type: 'App\\Models\\Task',
                         file_id: file.id,
                         file_name: file.name,
                         web_view_link: file.webViewLink,
@@ -1515,6 +1518,9 @@
                     } else {
                         Swal.fire('Error', data.message || 'No se pudo vincular el archivo.', 'error');
                     }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Ha ocurrido un error en la conexión al vincular el archivo.', 'error');
                 });
             }
         </script>
