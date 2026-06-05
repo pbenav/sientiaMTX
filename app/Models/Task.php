@@ -689,7 +689,26 @@ class Task extends Model
                 }
                 break;
             case 'monthly':
-                $nextDate->addMonths($interval);
+                $monthlyType = $settings['monthly_type'] ?? 'date';
+                if ($monthlyType === 'ordinal') {
+                    $ordinal = $settings['monthly_ordinal'] ?? 'first';
+                    $day = $settings['monthly_day'] ?? 'monday';
+                    // Example: "first monday of +1 months"
+                    $nextDate->modify("{$ordinal} {$day} of +{$interval} months");
+                } else {
+                    $nextDate->addMonths($interval);
+                }
+                break;
+            case 'expression':
+                $expression = $settings['expression'] ?? '';
+                if (!empty($expression)) {
+                    try {
+                        $nextDate->modify($expression);
+                    } catch (\Exception $e) {
+                        // Fallback if invalid expression
+                        $nextDate->addDays($interval);
+                    }
+                }
                 break;
         }
 

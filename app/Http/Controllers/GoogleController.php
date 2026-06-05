@@ -179,6 +179,10 @@ class GoogleController extends Controller
         $tasksData = collect($tasks)->map(function($task) use ($teamId, $user) {
             $due = $task->getDue() ?: now()->toIso8601String();
             $title = $task->getTitle();
+            
+            // Remove Google Space/Doc context brackets e.g. "[Space Name] Task Title" -> "Task Title"
+            $title = preg_replace('/^\[.*?\]\s*/', '', $title);
+            
             $googleId = 'task:' . $task->id;
             
             // Robust matching: prioritized by google_task_id, then by title+date (ignoring exact time)
@@ -206,10 +210,14 @@ class GoogleController extends Controller
         // Combine and sort by date
         $combined = $eventsData->concat($tasksData)->sortBy('start');
 
+        $teamUser = $user->teams()->where('team_id', $teamId)->first();
+        $googleEmail = $teamUser ? $teamUser->pivot->google_email : null;
+
         return view('google.select-tasks', [
             'events' => $combined,
             'team' => $team,
-            'visibility' => $request->input('visibility', 'private')
+            'visibility' => $request->input('visibility', 'private'),
+            'googleEmail' => $googleEmail
         ]);
     }
 
@@ -240,7 +248,13 @@ class GoogleController extends Controller
             foreach ($allEvents as $event) {
                 if (in_array($event->id, $calendarIds)) {
                     $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
-                    $title = $event->getSummary();
+                    $fullTitle = $event->getSummary();
+                    $title = mb_strlen($fullTitle) > 250 ? mb_substr($fullTitle, 0, 247) . '...' : $fullTitle;
+                    
+                    $description = $event->getDescription() ?: '';
+                    if (mb_strlen($fullTitle) > 250) {
+                        $description = "Título original: " . $fullTitle . "\n\n" . $description;
+                    }
 
                     $existing = \App\Models\Task::where('team_id', $teamId)
                         ->where('created_by_id', $user->id)
@@ -252,7 +266,7 @@ class GoogleController extends Controller
                         $taskModel = \App\Models\Task::create([
                             'team_id' => $teamId,
                             'title' => $title,
-                            'description' => $event->getDescription() ?: '',
+                            'description' => $description,
                             'scheduled_date' => date('Y-m-d H:i:s', strtotime($start)),
                             'due_date' => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
                             'created_by_id' => $user->id,
@@ -261,6 +275,7 @@ class GoogleController extends Controller
                             'priority' => 'low',
                             'urgency' => 'low',
                             'status' => 'pending',
+                            'google_calendar_event_id' => $event->id,
                         ]);
                         $syncCount++;
                     }
@@ -275,7 +290,18 @@ class GoogleController extends Controller
             foreach ($allTasks as $task) {
                 if (in_array($task->id, $taskIds)) {
                     $due = $task->getDue() ?: now()->toIso8601String();
-                    $title = $task->getTitle();
+                    $fullTitle = $task->getTitle();
+                    
+                    // Remove Google Space/Doc context brackets e.g. "[Space Name] Task Title" -> "Task Title"
+                    $fullTitle = preg_replace('/^\[.*?\]\s*/', '', $fullTitle);
+                    
+                    $title = mb_strlen($fullTitle) > 250 ? mb_substr($fullTitle, 0, 247) . '...' : $fullTitle;
+
+                    $description = ($task->getNotes() ?: '');
+                    if (mb_strlen($fullTitle) > 250) {
+                        $description = "Título original: " . $fullTitle . "\n\n" . $description;
+                    }
+                    $description .= ($task->listTitle ? " [" . $task->listTitle . "]" : "");
 
                     $existing = \App\Models\Task::where('team_id', $teamId)
                         ->where('created_by_id', $user->id)
@@ -287,7 +313,7 @@ class GoogleController extends Controller
                         $taskModel = \App\Models\Task::create([
                             'team_id' => $teamId,
                             'title' => $title,
-                            'description' => ($task->getNotes() ?: '') . ($task->listTitle ? " [" . $task->listTitle . "]" : ""),
+                            'description' => $description,
                             'scheduled_date' => date('Y-m-d H:i:s', strtotime($due)),
                             'due_date' => date('Y-m-d H:i:s', strtotime($due)),
                             'created_by_id' => $user->id,
@@ -296,6 +322,8 @@ class GoogleController extends Controller
                             'priority' => 'low',
                             'urgency' => 'low',
                             'status' => $task->getStatus() === 'completed' ? 'completed' : 'pending',
+                            'google_task_id' => $task->id,
+                            'google_task_list_id' => '@default',
                         ]);
 
                         if ($taskModel->status === 'completed') {
@@ -308,7 +336,7 @@ class GoogleController extends Controller
             }
         }
 
-        return redirect()->route('teams.dashboard', $teamId)
+        return redirect()->route('teams.tasks.index', $teamId)
             ->with('success', __('google.import_success', ['count' => $syncCount]));
     }
 
@@ -341,6 +369,28 @@ class GoogleController extends Controller
         $user->save();
 
         return Redirect::route('profile.edit', ['tab' => 'integrations'])->with('status', 'google-disconnected');
+    }
+
+    /**
+     * Disconnect a task from Google Tasks/Calendar locally.
+     */
+    public function disconnectTask(\App\Models\Team $team, \App\Models\Task $task)
+    {
+        if ($task->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
+        }
+
+        $user = Auth::user();
+        if ($user->cannot('update', $task)) {
+            return redirect()->back()->with('warning', __('tasks.unauthorized_update'));
+        }
+
+        $task->update([
+            'google_task_id' => null,
+            'google_calendar_event_id' => null
+        ]);
+
+        return redirect()->back()->with('success', 'Tarea desconectada de Google correctamente.');
     }
 
     /**

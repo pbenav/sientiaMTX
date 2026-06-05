@@ -358,6 +358,7 @@
                 <div x-data="{
                     isAutoprogrammable: {{ old('is_autoprogrammable', $task->is_autoprogrammable) ? 'true' : 'false' }},
                     frequency: '{{ $freq }}',
+                    monthlyType: '{{ old('autoprogram_settings.monthly_type', $apSettings['monthly_type'] ?? 'date') }}',
                     labels: {
                         'daily': '{{ __('tasks.days') }}',
                         'weekly': '{{ __('tasks.weeks') }}',
@@ -451,6 +452,53 @@
                                     @endforeach
                                 </div>
                                 <p class="text-[9px] text-gray-400 italic">La tarea se generará en cada uno de los días seleccionados.</p>
+                            </div>
+                            <div x-show="frequency === 'monthly'" class="col-span-2 space-y-3 pb-2" x-transition x-cloak>
+                                <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{ __('Patrón Mensual') }}
+                                </label>
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <label class="relative flex items-center gap-3 cursor-pointer group">
+                                        <div class="relative flex items-center justify-center">
+                                            <input type="radio" name="autoprogram_settings[monthly_type]" value="date" x-model="monthlyType" class="peer sr-only">
+                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
+                                            <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('El mismo día del mes') }}</span>
+                                    </label>
+                                    <label class="relative flex items-center gap-3 cursor-pointer group">
+                                        <div class="relative flex items-center justify-center">
+                                            <input type="radio" name="autoprogram_settings[monthly_type]" value="ordinal" x-model="monthlyType" class="peer sr-only">
+                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
+                                            <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
+                                    </label>
+                                </div>
+                                
+                                <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
+                                    <span class="text-sm text-gray-500">{{ __('El') }}</span>
+                                    <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>{{ __('Primer') }}</option>
+                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>{{ __('Segundo') }}</option>
+                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>{{ __('Tercer') }}</option>
+                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>{{ __('Cuarto') }}</option>
+                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>{{ __('Último') }}</option>
+                                    </select>
+                                    <select name="autoprogram_settings[monthly_day]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                        <option value="monday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>{{ __('Lunes') }}</option>
+                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>{{ __('Martes') }}</option>
+                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>{{ __('Miércoles') }}</option>
+                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>{{ __('Jueves') }}</option>
+                                        <option value="friday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>{{ __('Viernes') }}</option>
+                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>{{ __('Sábado') }}</option>
+                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>{{ __('Domingo') }}</option>
+                                    </select>
+                                    <span class="text-sm text-gray-500">{{ __('del mes') }}</span>
+                                </div>
                             </div>
                             <div class="space-y-2">
                                 <label

@@ -4,7 +4,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="{{ route('teams.dashboard', $team) }}"
+                <a href="{{ route('teams.tasks.index', $team) }}"
                     class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -15,8 +15,10 @@
                     {{ __('google.select_to_import') }}
                 </h1>
             </div>
-            <div class="text-xs text-gray-400">
-                {{ $team->name }}
+            <div class="flex flex-col items-end">
+                <div class="text-xs font-medium text-gray-400">
+                    {{ $team->name }}
+                </div>
             </div>
         </div>
     </x-slot>
@@ -24,10 +26,26 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl rounded-3xl overflow-hidden transition-all">
-            <form action="{{ route('google.import') }}" method="POST">
+            <form action="{{ route('google.import') }}" method="POST" x-data="{ tab: 'task' }" :data-current-tab="tab" id="import-form">
                 @csrf
                 <input type="hidden" name="team_id" value="{{ $team->id }}">
                 <input type="hidden" name="visibility" value="{{ $visibility }}">
+
+                <!-- TABS -->
+                <div class="flex border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-900/50">
+                    <button type="button" @click="tab = 'task'" :class="tab === 'task' ? 'border-violet-500 text-violet-600 dark:text-violet-400 bg-white dark:bg-gray-800' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'" class="flex-1 py-4 px-1 text-center border-b-2 font-bold text-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        Google Tasks ({{ collect($events)->where('type', 'task')->count() }})
+                    </button>
+                    <button type="button" @click="tab = 'calendar'" :class="tab === 'calendar' ? 'border-violet-500 text-violet-600 dark:text-violet-400 bg-white dark:bg-gray-800' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'" class="flex-1 py-4 px-1 text-center border-b-2 font-bold text-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Eventos de Calendario ({{ collect($events)->where('type', 'calendar')->count() }})
+                    </button>
+                </div>
 
                 <div
                     class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -68,6 +86,8 @@
                 <div class="divide-y divide-gray-50 dark:divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
                     @forelse($events as $event)
                         <div class="event-item group relative px-8 py-5 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 transition-all cursor-pointer"
+                            x-show="tab === '{{ $event['type'] }}'"
+                            data-tab="{{ $event['type'] }}"
                             data-title="{{ strtolower($event['title']) }}"
                             data-description="{{ strtolower($event['description'] ?? '') }}"
                             onclick="toggleCheckbox('checkbox-{{ $event['id'] }}')">
@@ -145,10 +165,13 @@
                     class="px-8 py-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-3">
                     <button type="button" 
                         onclick="confirmDelete('google-disconnect-form', '{{ __('google.disconnect_confirm') }}')"
-                        class="px-5 py-2.5 text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-all uppercase tracking-wider mr-auto">
+                        class="px-5 py-2.5 text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-all uppercase tracking-wider mr-auto flex items-center gap-2">
                         {{ __('google.disconnect') }}
+                        @if(isset($googleEmail) && $googleEmail)
+                            <span class="text-[10px] font-mono opacity-75 normal-case bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-md">({{ $googleEmail }})</span>
+                        @endif
                     </button>
-                    <a href="{{ route('teams.dashboard', $team) }}"
+                    <a href="{{ route('teams.tasks.index', $team) }}"
                         class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all uppercase tracking-wider">
                         {{ __('Cancel') }}
                     </a>
@@ -222,8 +245,10 @@
             filterMode.addEventListener('change', applyFilter);
 
             document.getElementById('select-all').addEventListener('click', function() {
+                const currentTab = document.getElementById('import-form').getAttribute('data-current-tab');
                 const visibleCheckboxes = document.querySelectorAll(
-                    '.event-item:not(.hidden) input[name="events[]"]:not(:disabled)');
+                    '.event-item[data-tab="' + currentTab + '"]:not(.hidden) input[name="events[]"]:not(:disabled)'
+                );
                 const allChecked = Array.from(visibleCheckboxes).every(cb => cb.checked);
                 visibleCheckboxes.forEach(cb => cb.checked = !allChecked);
                 updateButtonState();

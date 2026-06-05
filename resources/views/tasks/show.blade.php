@@ -253,6 +253,22 @@
                                     </div>
                                 </button>
                             </form>
+                            @if ($task->google_task_id)
+                                <form action="{{ route('google.disconnect_task', [$team, $task]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                                        <div class="shrink-0 p-2 bg-gray-50 text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-gray-900 dark:text-white text-sm">Desconectar de Google Tasks</span>
+                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Romper el vínculo con Google Tasks</span>
+                                        </div>
+                                    </button>
+                                </form>
+                            @endif
 
                             <!-- Google Calendar -->
                             <form action="{{ route('google.export_calendar', [$team, $task]) }}" method="POST">
@@ -269,6 +285,22 @@
                                     </div>
                                 </button>
                             </form>
+                            @if ($task->google_calendar_event_id)
+                                <form action="{{ route('google.disconnect_task', [$team, $task]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
+                                        <div class="shrink-0 p-2 bg-gray-50 text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-gray-900 dark:text-white text-sm">Desconectar Calendario</span>
+                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Romper el vínculo con Google Calendar</span>
+                                        </div>
+                                    </button>
+                                </form>
+                            @endif
                         @endcan
                     </x-slot>
                 </x-dropdown>

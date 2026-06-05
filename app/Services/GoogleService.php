@@ -155,7 +155,7 @@ class GoogleService
                 $tasks = $service->tasks->listTasks($list->getId(), [
                     'maxResults' => $maxResults,
                     'showCompleted' => false,
-                    'dueMin' => date('c'), // Only future tasks
+                    'showAssigned' => true,
                 ]);
                 
                 foreach ($tasks->getItems() as $task) {

@@ -346,6 +346,16 @@
                                                    {{ $task->expediente->code }}
                                                 </a>
                                             @endif
+                                            @if ($task->google_task_id)
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-blue-200/50 dark:border-blue-700/50" title="Sincronizada con Google Tasks">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                                                </span>
+                                            @endif
+                                            @if ($task->google_calendar_event_id)
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-amber-200/50 dark:border-amber-700/50" title="Sincronizada con Google Calendar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                </span>
+                                            @endif
                                             @if ($task->visibility === 'private')
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded shadow-sm inline-flex items-center"
@@ -544,6 +554,16 @@
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
                                                 {{ $subtask->title }}
                                             </span>
+                                            @if ($subtask->google_task_id)
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 flex items-center gap-1" title="Sincronizada con Google Tasks">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                                                </span>
+                                            @endif
+                                            @if ($subtask->google_calendar_event_id)
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50 flex items-center gap-1" title="Sincronizada con Google Calendar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                </span>
+                                            @endif
                                             @if($maxProgress > 0 && $subtask->progress_percentage === $maxProgress)
                                                 <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 flex items-center gap-0.5 animate-pulse" title="{{ __('tasks.leading_progress') ?? 'Máximo progreso' }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
