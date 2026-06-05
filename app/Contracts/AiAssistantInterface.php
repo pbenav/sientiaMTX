@@ -30,6 +30,11 @@ interface AiAssistantInterface
     public function withForumContext(\App\Models\ForumThread $thread, ?\App\Models\ForumMessage $message = null): self;
 
     /**
+     * Set the conversation history.
+     */
+    public function withHistory(\Illuminate\Support\Collection $messages): self;
+
+    /**
      * Generate text based on a prompt.
      */
     public function generateText(string $prompt): string;

@@ -114,6 +114,19 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function withHistory(\Illuminate\Support\Collection $messages): self
+    {
+        $this->messagesHistory = [];
+        foreach ($messages as $msg) {
+            $role = $msg->role === 'ai' ? 'model' : 'user';
+            $this->messagesHistory[] = [
+                'role' => $role,
+                'parts' => [['text' => $msg->content]]
+            ];
+        }
+        return $this;
+    }
+
     public function withTasksContext($tasks): self
     {
         $this->tasksContext = $tasks;
@@ -567,12 +580,18 @@ class GeminiService implements AiAssistantInterface
         $url = "https://generativelanguage.googleapis.com/{$v}/{$finalModelPath}:generateContent?key={$this->apiKey}";
 
         if (!$isToolCall) {
+            $existingHistory = $this->messagesHistory;
             $this->messagesHistory = []; // Reset context for new top-level call if needed
             
             if ($systemInstruction) {
                 $this->messagesHistory[] = ['role' => 'user', 'parts' => [['text' => "NUEVA SESIÓN: " . $systemInstruction]]];
                 $this->messagesHistory[] = ['role' => 'model', 'parts' => [['text' => "Entendido. Aplicaré estas directrices a partir de ahora."]]];
             }
+            
+            foreach ($existingHistory as $hMsg) {
+                $this->messagesHistory[] = $hMsg;
+            }
+            
             $this->messagesHistory[] = ['role' => 'user', 'parts' => $parts];
         }
 

@@ -238,6 +238,24 @@ class AiChatController extends Controller
             }
         }
         
+        // Cargar el historial de la conversación (hasta 15 mensajes anteriores)
+        $history = AiChatMessage::where('user_id', $user->id)
+            ->where('team_id', $request->team_id)
+            ->latest()
+            ->limit(15) // Limitamos para no saturar el contexto
+            ->get()
+            ->reverse()
+            ->values();
+            
+        // Quitamos el mensaje que acabamos de crear (el prompt actual) porque lo enviamos como $prompt
+        $history = $history->filter(function($msg) use ($contentToStore) {
+            return $msg->content !== $contentToStore;
+        })->values();
+
+        if ($history->isNotEmpty()) {
+            $aiAssistant->withHistory($history);
+        }
+        
         $response = $aiAssistant->generateText($prompt);
         
         // --- RUTINA DE AUTO-CORRECCIÓN DE PAYLOADS CORRUPTOS ---

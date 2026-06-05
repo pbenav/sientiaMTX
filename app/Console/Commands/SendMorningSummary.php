@@ -94,6 +94,7 @@ class SendMorningSummary extends Command
                   });
             })
             ->whereIn('status', ['pending', 'in_progress'])
+            ->where('is_template', false)
             ->where(function($q) {
                 $q->whereDate('scheduled_date', '<=', now())
                   ->orWhereDate('due_date', '<=', now())
