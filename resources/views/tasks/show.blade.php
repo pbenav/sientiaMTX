@@ -1450,19 +1450,23 @@
                     <div class="flex flex-wrap items-center justify-end gap-2">
 
                         {{-- Botón: Subir archivo --}}
-                        <button type="button" onclick="document.getElementById('attachment-input').click()"
-                            class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold
+                        <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="m-0 p-0 inline-block">
+                            @csrf
+                            <label class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold
                                    bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400
                                    border border-violet-200 dark:border-violet-500/20
                                    hover:bg-violet-600 hover:text-white hover:border-violet-600
                                    dark:hover:bg-violet-500 dark:hover:text-white dark:hover:border-violet-500
                                    shadow-sm hover:shadow-violet-500/25 hover:shadow-md
-                                   transition-all duration-200 active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                            </svg>
-                            {{ __('tasks.add_attachment') }}
-                        </button>
+                                   transition-all duration-200 active:scale-95 cursor-pointer mb-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                </svg>
+                                {{ __('tasks.add_attachment') }}
+                                <input type="file" id="attachment-input" name="files[]" multiple
+                                    onchange="handleAttachmentUpload(this)" class="hidden">
+                            </label>
+                        </form>
 
                         {{-- Botón: Nuevo documento (dropdown) --}}
                         @can('update', $task)
@@ -1581,11 +1585,7 @@
                     </div>
                 </div>
 
-                <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}"
-                    method="POST" enctype="multipart/form-data" class="hidden">
-                    @csrf
-                    <input type="file" id="attachment-input" name="file" onchange="handleAttachmentUpload(this)">
-                </form>
+
 
                 @php $allAttachments = $task->all_attachments; @endphp
                 @if ($allAttachments->isEmpty())
@@ -2815,23 +2815,28 @@
             }
 
             async function handleAttachmentUpload(input) {
-                const file = input.files[0];
-                if (!file) return;
+                const files = input.files;
+                if (!files.length) return;
 
                 const limit = "{{ ini_get('upload_max_filesize') }}";
                 const limitBytes = parsePHPSize(limit);
 
+                let totalSize = 0;
+
                 // 1. Check PHP upload limit
-                if (file.size > limitBytes) {
-                    Swal.fire({
-                        title: '{{ __('Archivo demasiado grande') }}',
-                        text: `El archivo excede el límite de ${limit} configurado en el servidor.`,
-                        icon: 'error',
-                        background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
-                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
-                    });
-                    input.value = '';
-                    return;
+                for (let i = 0; i < files.length; i++) {
+                    totalSize += files[i].size;
+                    if (files[i].size > limitBytes) {
+                        Swal.fire({
+                            title: '{{ __('Archivo demasiado grande') }}',
+                            text: `El archivo ${files[i].name} excede el límite de ${limit} configurado en el servidor.`,
+                            icon: 'error',
+                            background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                        });
+                        input.value = '';
+                        return;
+                    }
                 }
 
                 // 2. Check team quota BEFORE uploading
@@ -2841,12 +2846,12 @@
                     });
                     if (res.ok) {
                         const quota = await res.json();
-                        if (file.size > quota.available_bytes) {
+                        if (totalSize > quota.available_bytes) {
                             const usedMB = (quota.disk_used / 1024 / 1024).toFixed(1);
                             const totalMB = (quota.disk_quota / 1024 / 1024).toFixed(1);
                             Swal.fire({
                                 title: '⚠️ Almacenamiento lleno',
-                                html: `El equipo ha alcanzado su límite de almacenamiento.<br><small style="opacity:.7">${usedMB} MB / ${totalMB} MB usados</small><br><br>Un coordinador debe liberar espacio antes de poder subir más archivos.`,
+                                html: `El equipo ha alcanzado su límite de almacenamiento o los archivos seleccionados exceden el espacio disponible.<br><small style="opacity:.7">${usedMB} MB / ${totalMB} MB usados</small><br><br>Un coordinador debe liberar espacio antes de poder subir más archivos.`,
                                 icon: 'warning',
                                 background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827',
@@ -2857,10 +2862,10 @@
                         }
                     }
                 } catch (e) {
-                    // If quota check fails, let the server handle it
                     console.warn('Quota pre-check failed, proceeding with upload.', e);
                 }
 
+                sessionStorage.setItem('task_show_scrollpos', window.scrollY);
                 document.getElementById('attachment-form').submit();
             }
 
@@ -2873,6 +2878,15 @@
                     case 'K': return value * 1024;
                     default: return value;
                 }
+            }
+
+            // Restore scroll position after attachment upload
+            const scrollpos = sessionStorage.getItem('task_show_scrollpos');
+            if (scrollpos) {
+                setTimeout(() => {
+                    window.scrollTo({ top: parseInt(scrollpos), behavior: 'instant' });
+                }, 50);
+                sessionStorage.removeItem('task_show_scrollpos');
             }
 
             // Inteligencia Premium: Recarga automática al volver de editar un documento en OnlyOffice
