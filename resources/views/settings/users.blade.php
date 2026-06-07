@@ -129,11 +129,12 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                                         <div class="flex items-center gap-3">
-                                            <img src="{{ $user->profile_photo_url }}" 
+                                            <img src="{{ $user->profile_photo_url }}"
                                                 alt="{{ $user->name }}"
-                                                class="w-8 h-8 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
+                                                class="w-8 h-8 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 {{ $isDemoMode ? 'demo-blur' : '' }}">
                                             <div class="flex flex-col">
-                                                <a href="{{ route('settings.users.edit', $user) }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                <a href="{{ route('settings.users.edit', $user) }}"
+                                                   class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors {{ $isDemoMode ? 'demo-text' : '' }}">
                                                     {{ $user->name }}
                                                 </a>
                                                 @if($user->invitations_left > 0)
@@ -148,7 +149,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $user->email }}
+                                        <span class="{{ $isDemoMode ? 'demo-text' : '' }}">{{ $user->email }}</span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap items-center gap-1.5">

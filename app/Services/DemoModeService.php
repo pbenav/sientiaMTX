@@ -87,25 +87,28 @@ class DemoModeService
 
     protected function maskName(string $value): string
     {
-        static $firstNames = [
-            'Alejandro','Beatriz','Carlos','Diana','Eduardo','Fátima',
-            'Gonzalo','Helena','Ignacio','Julia','Lucas','María',
-            'Nicolás','Olivia','Pablo','Raquel','Sergio','Teresa',
-            'Úrsula','Valentín','Xenia','Yaiza','Zara',
-        ];
-        static $lastNames = [
-            'García','Martínez','López','Sánchez','Fernández','González',
-            'Rodríguez','Pérez','Álvarez','Torres','Romero','Díaz',
-            'Morales','Castro','Vega','Ramos','Molina','Herrera',
-        ];
+        // Split into words (first name, last name, etc.) and scramble each part
+        // independently, preserving the word structure but making the result
+        // obviously NOT a real name (e.g. "Kxbprz Vlnjm" instead of "María López").
+        $words = explode(' ', trim($value));
 
-        // Use a deterministic seed based on the original so the same name
-        // always maps to the same demo name within a single request.
-        $seed = crc32($value);
-        $fn   = $firstNames[abs($seed) % count($firstNames)];
-        $ln   = $lastNames[abs($seed >> 4) % count($lastNames)];
+        $masked = array_map(function (string $word) {
+            if (mb_strlen($word) === 0) return '';
 
-        return "{$fn} {$ln}";
+            // Generate a random string of the same length using consonants only,
+            // then uppercase the first letter — clearly not a real word.
+            $consonants = 'bcdfghjklmnpqrstvwxyz';
+            $len        = mb_strlen($word);
+            $result     = '';
+            for ($i = 0; $i < $len; $i++) {
+                $result .= $consonants[random_int(0, mb_strlen($consonants) - 1)];
+            }
+
+            // Capitalize first character to preserve visual layout
+            return mb_strtoupper(mb_substr($result, 0, 1)) . mb_substr($result, 1);
+        }, $words);
+
+        return implode(' ', $masked);
     }
 
     protected function maskEmail(string $value): string
