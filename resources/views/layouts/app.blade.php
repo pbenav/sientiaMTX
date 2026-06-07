@@ -46,6 +46,23 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 
+    {{--
+        ┌─────────────────────────────────────────────────────────────────┐
+        │  CRITICAL INLINE STYLES — Must load before ANY external asset   │
+        │  Prevents Alpine.js "flash of unstyled content" (FOUC) on      │
+        │  mobile and slow connections where the Vite bundle arrives late  │
+        └─────────────────────────────────────────────────────────────────┘
+    --}}
+    <style>
+        /* Hide Alpine.js elements marked with x-cloak until Alpine initialises */
+        [x-cloak] { display: none !important; }
+
+        /* Pre-hide elements that are always hidden on load (open=false by default)
+           to prevent the FOUC before Alpine boots. These match the x-show
+           directives used in this layout. */
+        [data-fouc-hide] { display: none !important; }
+    </style>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1796,7 +1813,8 @@
             $currMessage = request()->route('message') ?? $message ?? null;
             $currMessageId = $currMessage ? (is_object($currMessage) ? $currMessage->id : $currMessage) : null;
         @endphp
-        <div x-show="!cleanMode" x-transition class="contents">
+        <div x-show="!cleanMode" x-cloak x-transition class="contents"
+             x-init="$el.removeAttribute('style')">
             @if($notifSettings['telegram'] ?? false)
                 @include('partials.telegram-widget')
             @endif
@@ -2033,7 +2051,8 @@
     
     @auth
         <x-task-quick-view-modal />
-        <div x-show="!cleanMode" x-transition class="contents">
+        <div x-show="!cleanMode" x-cloak x-transition class="contents"
+             x-init="$el.removeAttribute('style')">
             <x-quick-notes />
         </div>
         
