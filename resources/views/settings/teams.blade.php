@@ -11,7 +11,9 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Gestión de Equipos</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Administración global de todos los equipos del sistema.</p>
+                    <x-demo-hint>
+                        Permite la administración integral de todos los espacios de trabajo de la instancia. Desde este panel se pueden gestionar acciones masivas (como activar Citas Previas o integraciones de WhatsApp para múltiples equipos a la vez) y supervisar las métricas de carga y miembros.
+                    </x-demo-hint>
                 </div>
             </div>
             <div>

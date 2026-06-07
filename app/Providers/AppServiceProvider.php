@@ -61,8 +61,10 @@ class AppServiceProvider extends ServiceProvider
             return (bool) $user->is_admin;
         });
 
-        // Share demo mode status with all views so Blade can use $isDemoMode directly
-        View::share('isDemoMode', app(DemoModeService::class)->isActive());
+        // Evaluate demo mode lazily when views are rendered, so session is available
+        View::composer('*', function ($view) {
+            $view->with('isDemoMode', app(DemoModeService::class)->isActive());
+        });
 
         // Listen to Auth Events under ENS Guidelines
         \Illuminate\Support\Facades\Event::listen(

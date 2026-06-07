@@ -24,6 +24,9 @@
                     </svg>
                     Mis Citas Previas
                 </h1>
+                <x-demo-hint>
+                    Este es el <strong>Escritorio Principal de Citas</strong>. Aquí el equipo tiene una visión global del día, estadísticas de rendimiento y acceso rápido a la agenda. Cada miembro solo visualiza las estadísticas y citas de los servicios en los que está asignado.
+                </x-demo-hint>
             </div>
         </div>
     </div>

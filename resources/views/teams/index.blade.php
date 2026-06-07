@@ -17,6 +17,9 @@
                     <p class="text-[9px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-0.5">
                         {{ __('teams.title') }}
                     </p>
+                    <x-demo-hint>
+                        La vista principal de equipos centraliza todos los espacios de trabajo en los que participas. Desde aquí puedes acceder rápidamente al escritorio, foro, encuestas, expedientes, tareas o matriz de Eisenhower de cada equipo. Puedes reordenarlos arrastrando las tarjetas o marcar uno como favorito.
+                    </x-demo-hint>
                 </div>
             </div>
             <a href="{{ route('teams.create') }}"

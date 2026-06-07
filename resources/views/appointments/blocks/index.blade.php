@@ -17,7 +17,9 @@
                 </svg>
                 Bloqueos de Urgencia
             </h1>
-            <p class="text-xs text-gray-400 font-medium mt-1">Bloquea tramos horarios aunque haya citas ya programadas. Los ciudadanos serán notificados.</p>
+            <x-demo-hint>
+                Esta pantalla permite al equipo cerrar de emergencia tramos horarios en sus agendas (por baja médica repentina, reunión urgente, etc). A diferencia de la configuración normal del horario, un "bloqueo" sobrescribe cualquier disponibilidad e incluso puede cancelar y notificar automáticamente a los ciudadanos que ya tenían una cita programada en ese tramo.
+            </x-demo-hint>
         </div>
     </div>
     @include('appointments.partials.nav')

@@ -3,6 +3,9 @@
         <h2 class="font-bold text-xl text-white leading-tight heading">
             {{ __('Profile') }}
         </h2>
+        <x-demo-hint>
+            Desde tu perfil gestionas toda la información de tu cuenta, preferencias de notificaciones, seguridad avanzada (2FA y Passkeys), integraciones de inteligencia artificial y el historial de sesiones activas.
+        </x-demo-hint>
     </x-slot>
 
     <div class="py-12" x-data="{ activeTab: '{{ request('tab', 'general') }}' }">

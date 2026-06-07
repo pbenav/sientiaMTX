@@ -11,7 +11,9 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('Gestor de Envío Masivo & Invitaciones') }}</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Envía correos masivos o genera invitaciones con token único para nuevos miembros.') }}</p>
+                    <x-demo-hint>
+                        El Gestor de Envío Masivo permite notificar a grandes listas de usuarios o generar enlaces de registro con tokens únicos y seguros. Además, cuenta con un escudo anti-spam que encola y procesa los correos en segundo plano para proteger la reputación del servidor.
+                    </x-demo-hint>
                 </div>
             </div>
             <div>

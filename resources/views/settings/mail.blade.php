@@ -9,7 +9,9 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Configuración Global</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Administra los límites de la aplicación, servidores de correo e integraciones.</p>
+                <x-demo-hint>
+                    El panel de configuración principal permite definir los límites globales de la aplicación, gestionar integraciones de terceros y configurar los servidores de correo SMTP utilizados para las notificaciones automáticas de todo el sistema.
+                </x-demo-hint>
             </div>
         </div>
     </x-slot>
@@ -174,106 +176,7 @@
                                     </div>
                                 </div>
 
-                                {{-- ──────────────────────────────────────────────────── --}}
-                                {{-- MODO DEMOSTRACIÓN / PRIVACIDAD                      --}}
-                                {{-- ──────────────────────────────────────────────────── --}}
-                                <div class="md:col-span-3 flex flex-col gap-3 border-t border-gray-100 dark:border-gray-800 pt-6"
-                                     x-data="{ isDemoOn: {{ $demo_mode === 'on' ? 'true' : 'false' }} }">
 
-                                    {{-- Toggle con diseño tipo pill premium --}}
-                                    <div class="flex items-center justify-between gap-4 p-4 rounded-2xl
-                                                bg-gradient-to-r from-violet-50 to-purple-50
-                                                dark:from-violet-950/40 dark:to-purple-950/40
-                                                border border-violet-200 dark:border-violet-800/50
-                                                shadow-sm shadow-violet-100 dark:shadow-none">
-
-                                        <div class="flex items-start gap-3">
-                                            {{-- Icono animado --}}
-                                            <div class="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
-                                                        bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400"
-                                                 :class="isDemoOn ? 'animate-pulse' : ''">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-
-                                            <div>
-                                                <label for="demo_mode_toggle"
-                                                       class="text-sm font-bold text-gray-800 dark:text-gray-100 cursor-pointer">
-                                                    🎭 Modo Demostración / Privacidad
-                                                </label>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 max-w-prose leading-relaxed">
-                                                    Cuando está <strong>activo</strong>, los datos sensibles (nombres, emails,
-                                                    teléfonos, mensajes de chat, tokens de integraciones, etc.) se muestran
-                                                    difuminados o aleatorios. Los datos reales en la base de datos
-                                                    <strong>nunca se modifican</strong>. Ideal para demos y presentaciones.
-                                                </p>
-
-                                                {{-- Badge de estado --}}
-                                                <div class="mt-2 inline-flex items-center gap-1.5">
-                                                    <span class="w-1.5 h-1.5 rounded-full"
-                                                          :class="isDemoOn
-                                                              ? 'bg-violet-500 animate-pulse'
-                                                              : 'bg-gray-300 dark:bg-gray-600'">
-                                                    </span>
-                                                    <span class="text-[11px] font-semibold uppercase tracking-wider"
-                                                          :class="isDemoOn
-                                                              ? 'text-violet-600 dark:text-violet-400'
-                                                              : 'text-gray-400 dark:text-gray-500'">
-                                                        <span x-show="isDemoOn">Modo Demo ACTIVO</span>
-                                                        <span x-show="!isDemoOn">Modo Normal</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {{-- Switch tipo pill --}}
-                                        <div class="shrink-0">
-                                            <button type="button" id="demo_mode_toggle" role="switch"
-                                                    :aria-checked="isDemoOn.toString()"
-                                                    @click="isDemoOn = !isDemoOn"
-                                                    :class="isDemoOn
-                                                        ? 'bg-violet-600 shadow-violet-500/40'
-                                                        : 'bg-gray-200 dark:bg-gray-700'"
-                                                    class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full
-                                                           border-2 border-transparent transition-all duration-300 ease-in-out
-                                                           focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2
-                                                           dark:focus:ring-offset-gray-900 shadow-lg">
-                                                <span class="sr-only">Activar Modo Demostración</span>
-                                                <span aria-hidden="true"
-                                                      :class="isDemoOn ? 'translate-x-7' : 'translate-x-0'"
-                                                      class="pointer-events-none inline-block h-6 w-6 transform rounded-full
-                                                             bg-white shadow-md ring-0 transition-transform duration-300 ease-in-out">
-                                                </span>
-                                            </button>
-
-                                            {{-- Hidden input: sólo se envía cuando está activo --}}
-                                            <input type="hidden" name="demo_mode" value="off" />
-                                            <input x-show="isDemoOn" type="checkbox"
-                                                   name="demo_mode" value="on"
-                                                   :checked="isDemoOn"
-                                                   class="hidden" />
-                                        </div>
-                                    </div>
-
-                                    {{-- Aviso cuando está activo --}}
-                                    <div x-show="isDemoOn" x-transition x-cloak
-                                         class="flex items-start gap-3 p-3 rounded-xl
-                                                bg-amber-50 dark:bg-amber-900/20
-                                                border border-amber-200 dark:border-amber-800/50
-                                                text-xs text-amber-700 dark:text-amber-400">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>
-                                        <span>
-                                            <strong>Recuerda:</strong> el Modo Demo estará visible para todos los usuarios de la
-                                            plataforma. Desactívalo antes de usar la aplicación en producción con usuarios reales.
-                                        </span>
-                                    </div>
-                                </div>
-                                {{-- / MODO DEMOSTRACIÓN --}}
                             </div>
 
                             <div class="flex items-center justify-end pt-6 border-t border-gray-100 dark:border-gray-800">
@@ -329,9 +232,11 @@
 
                                 <!-- Host -->
                                 <div class="md:col-span-1">
-                                    <x-input-label for="MAIL_HOST" :value="__('SMTP Host')" />
-                                    <x-text-input id="MAIL_HOST" name="MAIL_HOST" type="text" class="mt-1 block w-full"
-                                        :value="old('MAIL_HOST', $config['host'])" required />
+                                     <x-input-label for="MAIL_HOST" :value="__('SMTP Host')" />
+                                    <x-text-input id="MAIL_HOST" name="MAIL_HOST" type="text" 
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}"
+                                        :value="old('MAIL_HOST', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($config['host'] ?? '', 'url') : $config['host'])" 
+                                        :readonly="$isDemoMode" required />
                                     <x-input-error :messages="$errors->get('MAIL_HOST')" class="mt-2" />
                                 </div>
 
@@ -347,7 +252,9 @@
                                 <div>
                                     <x-input-label for="MAIL_USERNAME" :value="__('Username')" />
                                     <x-text-input id="MAIL_USERNAME" name="MAIL_USERNAME" type="text"
-                                        class="mt-1 block w-full" :value="old('MAIL_USERNAME', $config['username'])" />
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}" 
+                                        :value="old('MAIL_USERNAME', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($config['username'] ?? '', 'email') : $config['username'])" 
+                                        :readonly="$isDemoMode" />
                                     <x-input-error :messages="$errors->get('MAIL_USERNAME')" class="mt-2" />
                                 </div>
 
@@ -355,7 +262,9 @@
                                 <div>
                                     <x-input-label for="MAIL_PASSWORD" :value="__('Password')" />
                                     <x-text-input id="MAIL_PASSWORD" name="MAIL_PASSWORD" type="password"
-                                        class="mt-1 block w-full" :value="old('MAIL_PASSWORD', $config['password'])" />
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}" 
+                                        :value="old('MAIL_PASSWORD', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($config['password'] ?? '', 'token') : $config['password'])" 
+                                        :readonly="$isDemoMode" />
                                     <x-input-error :messages="$errors->get('MAIL_PASSWORD')" class="mt-2" />
                                 </div>
 
@@ -363,7 +272,9 @@
                                 <div>
                                     <x-input-label for="MAIL_FROM_ADDRESS" :value="__('From Address')" />
                                     <x-text-input id="MAIL_FROM_ADDRESS" name="MAIL_FROM_ADDRESS" type="email"
-                                        class="mt-1 block w-full" :value="old('MAIL_FROM_ADDRESS', $config['from_address'])" required />
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}" 
+                                        :value="old('MAIL_FROM_ADDRESS', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($config['from_address'] ?? '', 'email') : $config['from_address'])" 
+                                        :readonly="$isDemoMode" required />
                                     <x-input-error :messages="$errors->get('MAIL_FROM_ADDRESS')" class="mt-2" />
                                 </div>
 
@@ -446,8 +357,10 @@
                                 <div>
                                     <x-input-label for="GOOGLE_CLIENT_ID" :value="__('Google Client ID')" />
                                     <x-text-input id="GOOGLE_CLIENT_ID" name="GOOGLE_CLIENT_ID" type="text"
-                                        class="mt-1 block w-full" :value="old('GOOGLE_CLIENT_ID', $google['client_id'])"
-                                        placeholder="xxxxx.apps.googleusercontent.com" />
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}" 
+                                        :value="old('GOOGLE_CLIENT_ID', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($google['client_id'] ?? '', 'token') : $google['client_id'])"
+                                        placeholder="xxxxx.apps.googleusercontent.com" 
+                                        :readonly="$isDemoMode" />
                                     <x-input-error :messages="$errors->get('GOOGLE_CLIENT_ID')" class="mt-2" />
                                 </div>
 
@@ -455,7 +368,10 @@
                                 <div>
                                     <x-input-label for="GOOGLE_CLIENT_SECRET" :value="__('Google Client Secret')" />
                                     <x-text-input id="GOOGLE_CLIENT_SECRET" name="GOOGLE_CLIENT_SECRET" type="password"
-                                        class="mt-1 block w-full" :value="old('GOOGLE_CLIENT_SECRET', $google['client_secret'])" placeholder="••••••••••••" />
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}" 
+                                        :value="old('GOOGLE_CLIENT_SECRET', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($google['client_secret'] ?? '', 'token') : $google['client_secret'])" 
+                                        placeholder="••••••••••••" 
+                                        :readonly="$isDemoMode" />
                                     <x-input-error :messages="$errors->get('GOOGLE_CLIENT_SECRET')" class="mt-2" />
                                 </div>
 
@@ -518,7 +434,7 @@
                                 </span>
                             </div>
                             <div class="space-y-1">
-                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ ($telegram['webhook_info']['url'] ?? null) ?: 'No registrada' }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ $isDemoMode ? app(\App\Services\DemoModeService::class)->mask(($telegram['webhook_info']['url'] ?? ''), 'url') : (($telegram['webhook_info']['url'] ?? null) ?: 'No registrada') }}</p>
                                 <p class="text-xs text-gray-600 dark:text-gray-400"><strong>Updates pendientes:</strong> {{ $pendingUpdates }}</p>
                                 @if($hasError)
                                     <p class="text-[10px] {{ $isActiveError ? 'text-red-600 dark:text-red-400 font-mono mt-2' : 'text-gray-400 mt-2 italic' }}">
@@ -544,8 +460,10 @@
                                 <div>
                                     <x-input-label for="TELEGRAM_BOT_TOKEN" :value="__('notifications.telegram_bot_token')" />
                                     <x-text-input id="TELEGRAM_BOT_TOKEN" name="TELEGRAM_BOT_TOKEN" type="password"
-                                        class="mt-1 block w-full" :value="old('TELEGRAM_BOT_TOKEN', $telegram['bot_token'])"
-                                        placeholder="123456789:ABCDefgh-IJKlmno..." />
+                                        class="mt-1 block w-full {{ $isDemoMode ? 'demo-text cursor-not-allowed bg-gray-50 dark:bg-gray-800/50' : '' }}" 
+                                        :value="old('TELEGRAM_BOT_TOKEN', $isDemoMode ? app(\App\Services\DemoModeService::class)->mask($telegram['bot_token'] ?? '', 'token') : $telegram['bot_token'])" 
+                                        placeholder="123456789:ABCDefgh-IJKlmno..." 
+                                        :readonly="$isDemoMode" />
                                     <x-input-error :messages="$errors->get('TELEGRAM_BOT_TOKEN')" class="mt-2" />
                                 </div>
 

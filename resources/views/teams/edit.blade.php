@@ -22,6 +22,9 @@
                         </svg>
                         {{ __('teams.edit') }}: {{ $team->name }}
                     </h1>
+                    <x-demo-hint>
+                        En la configuración del equipo, los administradores y coordinadores pueden personalizar el entorno de trabajo: definir integraciones de bots de Telegram y WhatsApp, ajustar la cuota de espacio en disco, configurar políticas de inactividad, establecer la personalidad visual o gestionar el traspaso de la propiedad.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

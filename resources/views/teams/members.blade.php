@@ -20,6 +20,9 @@
                         </svg>
                         {{ __('teams.members_of', ['name' => $team->name]) }}
                     </h1>
+                    <x-demo-hint>
+                        La gestión de miembros y grupos permite administrar los roles, permisos y agrupaciones del equipo. Puedes invitar usuarios, asignar habilidades con niveles de "expertise", visualizar la conexión en tiempo real y habilitar el acceso al portal de Cita Previa para usuarios externos.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

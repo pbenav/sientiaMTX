@@ -17,6 +17,9 @@
                 </svg>
                 Configuración del Portal de Citas
             </h1>
+            <x-demo-hint>
+                Aquí se configuran los parámetros globales del portal de citas del equipo: el enlace público al canal ciudadano, la ubicación GPS interactiva, automatismos de notificaciones y la creación de expedientes automáticos vinculados a las reservas.
+            </x-demo-hint>
         </div>
     </div>
     @include('appointments.partials.nav')

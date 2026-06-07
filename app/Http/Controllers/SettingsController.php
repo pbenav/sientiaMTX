@@ -147,11 +147,7 @@ class SettingsController extends Controller
                 unset($data['purge_warning_days']);
             }
 
-            // Demo Mode → persisted in .env as APP_DEMO_MODE
-            $demoValue = $request->has('demo_mode') ? 'on' : 'off';
-            $this->updateEnvMultiple(['APP_DEMO_MODE' => $demoValue]);
-            // Already written to .env — not added to $data to avoid double-write
-            if (isset($data['demo_mode'])) unset($data['demo_mode']);
+
 
             $updateExistingUsers = isset($data['update_existing_users']) || $request->has('update_existing_users');
             unset($data['update_existing_users']);

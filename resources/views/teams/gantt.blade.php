@@ -85,6 +85,9 @@
                         </svg>
                         {{ __('navigation.gantt') }}
                     </h1>
+                    <x-demo-hint>
+                        El diagrama de Gantt ofrece una perspectiva cronológica interactiva del proyecto. Permite arrastrar tareas para reprogramarlas, ajustar sus duraciones o evaluar la carga de trabajo diaria mediante la "Onda de Resiliencia".
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

@@ -11,7 +11,9 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('navigation.users') }}</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ __('Manage global user roles and access.') }}</p>
+                    <x-demo-hint>
+                        Este panel centraliza la gestión de todas las cuentas de usuario de la plataforma. Como SuperAdmin, puedes modificar sus niveles de acceso globales, auditar su nivel de actividad o forzar medidas de seguridad en el sistema.
+                    </x-demo-hint>
                 </div>
             </div>
             <div class="flex items-center gap-3">

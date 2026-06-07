@@ -4,13 +4,23 @@
     <x-slot name="header">
         <div class="flex items-center gap-3">
             <a href="{{ route('teams.index') }}"
-                class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
+                class="mt-1 p-2 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">{{ __('teams.create') }}</h1>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    {{ __('teams.create') }}
+                </h1>
+                <x-demo-hint>
+                    Asistente de creación de nuevos equipos. Un equipo funciona como un espacio de trabajo aislado con su propio calendario, gestor de tareas, expedientes, foro y ajustes (incluyendo integraciones exclusivas como WhatsApp o Telegram).
+                </x-demo-hint>
+            </div>
         </div>
     </x-slot>
 

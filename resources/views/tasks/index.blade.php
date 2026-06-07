@@ -20,6 +20,9 @@
                         </svg>
                         {{ __('navigation.task_list') }}
                     </h1>
+                    <x-demo-hint>
+                        El Gestor de Tareas es el corazón operativo del equipo. Permite crear plantillas maestras, instanciar subtareas, asignar responsables, gestionar prioridades y visualizar el progreso en tiempo real. Soporta actualizaciones masivas y sincronización bidireccional con Google Calendar y Tasks.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

@@ -20,6 +20,9 @@
                         </svg>
                         {{ __('teams.eisenhower_matrix') }}
                     </h1>
+                    <x-demo-hint>
+                        La matriz de Eisenhower (Priorización MTX) es una herramienta visual que clasifica automáticamente las tareas en cuatro cuadrantes según su urgencia e importancia. Permite a los coordinadores arrastrar y soltar tareas para reordenarlas estratégicamente y optimizar el tiempo del equipo.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

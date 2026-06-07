@@ -10,7 +10,9 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Ajustes de Apariencia</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Personaliza la estética visual de la plataforma y el renderizado de contenidos.</p>
+                <x-demo-hint>
+                    Controla y personaliza la estética visual de la plataforma. Permite definir la tipografía y paleta de colores para el renderizado de contenidos Markdown de forma global para toda la instancia.
+                </x-demo-hint>
             </div>
         </div>
     </x-slot>

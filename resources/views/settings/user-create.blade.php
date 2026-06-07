@@ -3,15 +3,23 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">
-                    <a href="{{ route('settings.users') }}"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mr-2">
-                        {{ __('navigation.users') }}
-                    </a> / {{ __('Create User') }}
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ __('Register a new user account manually.') }}</p>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">
+                        <a href="{{ route('settings.users') }}"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mr-2">
+                            {{ __('navigation.users') }}
+                        </a> / {{ __('Create User') }}
+                    </h1>
+                    <x-demo-hint>
+                        Formulario de registro manual de usuarios. Los nuevos usuarios creados aquí no pertenecerán a ningún equipo hasta que sean asignados o acepten una invitación.
+                    </x-demo-hint>
+                </div>
             </div>
         </div>
     </x-slot>

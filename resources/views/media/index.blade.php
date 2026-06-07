@@ -4,9 +4,19 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                    {{ __('tasks.disk_quota') }}
-                </h1>
+                <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">
+                        {{ __('tasks.disk_quota') }}
+                    </h1>
+                    <x-demo-hint>
+                        Panel de monitorización global del almacenamiento. Permite visualizar la cuota consumida de los servidores, ver el detalle de todos los archivos subidos, eliminarlos de forma forzada o acceder a las herramientas de purga y mantenimiento de cada equipo.
+                    </x-demo-hint>
+                </div>
             </div>
 
             @if(auth()->user()->is_admin || $teams->isNotEmpty())

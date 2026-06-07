@@ -35,6 +35,9 @@
                             {{ __('Encuestas') }}
                         @endif
                     </h1>
+                    <x-demo-hint>
+                        El módulo de encuestas facilita la toma de decisiones democráticas. Permite crear votaciones anónimas o públicas, definir restricciones temporales y visualizar resultados en tiempo real. Soporta importación/exportación de formatos y analíticas detalladas.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

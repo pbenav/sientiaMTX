@@ -8,7 +8,9 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Configuración Legal</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Define los términos de servicio, política de privacidad y cookies de la plataforma.</p>
+                <x-demo-hint>
+                    Define y actualiza de manera centralizada los Textos Legales: Términos de Servicio, Política de Privacidad y Cookies. La plataforma forzará automáticamente a los usuarios a aceptar los nuevos términos cuando se detecten cambios sustanciales.
+                </x-demo-hint>
             </div>
         </div>
     </x-slot>

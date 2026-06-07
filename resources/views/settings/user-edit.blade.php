@@ -3,15 +3,23 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">
-                    <a href="{{ route('settings.users') }}"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mr-2">
-                        {{ __('navigation.users') }}
-                    </a> / {{ __('Edit User') }}: {{ $user->name }}
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ __('Update user details and manage team invitations.') }}</p>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">
+                        <a href="{{ route('settings.users') }}"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mr-2">
+                            {{ __('navigation.users') }}
+                        </a> / {{ __('Edit User') }}: {{ $user->name }}
+                    </h1>
+                    <x-demo-hint>
+                        Panel avanzado de perfil. Permite a los administradores modificar datos de acceso, forzar cuotas, habilitar integraciones Premium (como WhatsApp Personal) o definir los turnos horarios del usuario.
+                    </x-demo-hint>
+                </div>
             </div>
         </div>
     </x-slot>

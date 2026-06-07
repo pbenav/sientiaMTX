@@ -12,8 +12,7 @@ namespace App\Services;
  * When the mode is active, sensitive data is masked or scrambled before
  * being shown in the UI, while the real data in the database is NEVER touched.
  *
- * Activated via the APP_DEMO_MODE=on variable in .env (readable through
- * config('settings.demo_mode')).
+ * Activated via the session variable 'privacy_mode' in the user's current session.
  */
 class DemoModeService
 {
@@ -28,7 +27,7 @@ class DemoModeService
      */
     public function isActive(): bool
     {
-        return strtolower((string) config('settings.demo_mode', 'off')) === 'on';
+        return session('privacy_mode', false) === true;
     }
 
     /**

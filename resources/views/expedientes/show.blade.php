@@ -33,6 +33,9 @@
                     <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
                         {{ $expediente->title }}
                     </h1>
+                    <x-demo-hint>
+                        La vista detallada de expediente funciona como una carpeta virtual unificada. Agrupa tareas relacionadas, archivos adjuntos (locales o Drive), notas privadas compartidas e hilos de discusión, manteniendo la trazabilidad del progreso y los permisos de acceso.
+                    </x-demo-hint>
                     
                     @php
                         $totalTasks = $expediente->rootTasks->count();

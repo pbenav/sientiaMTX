@@ -96,6 +96,9 @@
                         </svg>
                         {{ __('navigation.kanban') }}
                     </h1>
+                    <x-demo-hint>
+                        El tablero Kanban organiza las tareas en columnas personalizables, permitiendo un seguimiento visual del flujo de trabajo (Workflow). Puedes arrastrar tarjetas entre estados y actualizar su progreso rápidamente.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

@@ -8,7 +8,9 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('Documentación') }}</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ $menu[$slug] ?? $slug }}</p>
+                <x-demo-hint>
+                    El Centro de Documentación proporciona acceso rápido a todos los manuales de instalación, configuración y guías de uso del sistema. Estos documentos se renderizan dinámicamente a partir de archivos Markdown integrados en el código fuente.
+                </x-demo-hint>
             </div>
         </div>
     </x-slot>

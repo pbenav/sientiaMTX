@@ -276,6 +276,17 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit', ['tab' => 'integrations', 'team_id' => $validated['team_id']])->with('status', 'ai-updated');
     }
 
+    /**
+     * Toggle the Privacy/Demo mode for the current session.
+     */
+    public function togglePrivacyMode(Request $request): RedirectResponse
+    {
+        $currentState = session('privacy_mode', false);
+        session(['privacy_mode' => !$currentState]);
+        
+        return back()->with('status', 'privacy-mode-updated');
+    }
+
     public function testTelegram(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([

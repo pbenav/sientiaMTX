@@ -43,6 +43,9 @@
                     <h1 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
                         {{ __('tasks.detail') }}
                     </h1>
+                    <x-demo-hint>
+                        La ficha técnica de la tarea centraliza toda la ejecución: permite el registro de tiempos (Time-tracking), subdividir el trabajo mediante el desglose, sincronizar fechas con Google Calendar/Tasks y gestionar archivos asociados. Además, facilita la clonación y exportación de tareas (Portabilidad JSON).
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

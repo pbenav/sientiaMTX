@@ -17,6 +17,9 @@
                 </svg>
                 Todas las Citas
             </h1>
+            <x-demo-hint>
+                Este <strong>listado maestro</strong> ofrece una vista tabular avanzada con todos los expedientes de citas. Permite filtrar por fechas, servicios o estados, realizar aprobaciones, borrar citas permanentemente o iniciar videocitas directamente desde la tabla.
+            </x-demo-hint>
         </div>
     </div>
     @include('appointments.partials.nav')

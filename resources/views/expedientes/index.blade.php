@@ -19,6 +19,9 @@
                         </svg>
                         Gestión de Expedientes
                     </h1>
+                    <x-demo-hint>
+                        Los expedientes son contenedores lógicos que agrupan y estructuran conjuntos de tareas, notas y documentos relacionados con un mismo asunto o proyecto. Facilitan la trazabilidad y la gestión documental dentro del equipo.
+                    </x-demo-hint>
                 </div>
             </div>
             

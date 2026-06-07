@@ -18,6 +18,9 @@
                     </svg>
                     Mis Servicios
                 </h1>
+                <x-demo-hint>
+                    En esta sección configuras el <strong>catálogo de servicios</strong> que se ofrecerá al ciudadano. Puedes definir la duración, si son de pago y descripciones detalladas. Cada servicio configurado y activo aparecerá de forma automática en el portal de solicitud pública de citas.
+                </x-demo-hint>
             </div>
         </div>
     </div>

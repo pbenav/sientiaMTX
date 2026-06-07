@@ -21,6 +21,9 @@
                         </svg>
                         {{ __('forum.title') ?? 'Foro' }}
                     </h1>
+                    <x-demo-hint>
+                        El Foro del equipo es un espacio de debate organizado por hilos. Permite discutir ideas, vincular conversaciones a tareas concretas, adjuntar archivos desde Google Drive y mantener un registro permanente del conocimiento y las decisiones grupales.
+                    </x-demo-hint>
                 </div>
             </div>
         </div>

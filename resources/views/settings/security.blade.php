@@ -10,7 +10,9 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Auditoría de Seguridad (ENS)</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Historial unificado de trazabilidad de accesos y modificaciones críticas bajo el Esquema Nacional de Seguridad.</p>
+                <x-demo-hint>
+                    El módulo de Auditoría provee un historial unificado y no repudiable de la trazabilidad del sistema, registrando inicios de sesión, fallos de autenticación y modificaciones de permisos. Este registro es clave para cumplir con las normativas del Esquema Nacional de Seguridad (ENS).
+                </x-demo-hint>
             </div>
         </div>
     </x-slot>
