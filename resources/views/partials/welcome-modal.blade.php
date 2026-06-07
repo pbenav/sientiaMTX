@@ -9,7 +9,7 @@
 @endphp
 
 @if ($showWelcome && $greeting && $quote)
-    <div x-data="{ show: true }" 
+    <div x-data="{ show: !localStorage.getItem('sientia_welcome_seen') }" 
          x-show="show" 
          x-cloak
          class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
@@ -60,7 +60,7 @@
                 </div>
 
                 <!-- Action Button -->
-                <button @click="show = false" 
+                <button @click="show = false; localStorage.setItem('sientia_welcome_seen', 'true');" 
                         class="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-violet-500/25 transition-all duration-300 transform active:scale-[0.98]">
                     {{ __('¡Vamos a por ello!') }}
                 </button>

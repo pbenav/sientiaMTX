@@ -1,12 +1,53 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ 
+        open: false,
+        konami: { keys: [], code: ['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright','b','a'] }
+    }" 
+    @keydown.window="
+        konami.keys.push($event.key.toLowerCase());
+        if (konami.keys.length > konami.code.length) konami.keys.shift();
+        if (konami.keys.join(',') === konami.code.join(',')) {
+            konami.keys = [];
+            if (typeof confetti === 'undefined') {
+                let s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+                s.onload = () => confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, zIndex: 999999 });
+                document.head.appendChild(s);
+            } else {
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, zIndex: 999999 });
+            }
+        }
+    "
+    class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-violet-600 dark:text-violet-400" />
+                <div class="shrink-0 flex items-center relative" x-data="{ clicks: 0, timer: null }">
+                    <a href="{{ route('dashboard') }}" 
+                       @click.prevent="
+                           clicks++;
+                           clearTimeout(timer);
+                           if (clicks >= 5) {
+                               clicks = 0;
+                               if (typeof confetti === 'undefined') {
+                                   let s = document.createElement('script');
+                                   s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+                                   s.onload = () => confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, zIndex: 999999 });
+                                   document.head.appendChild(s);
+                               } else {
+                                   confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, zIndex: 999999 });
+                               }
+                           } else {
+                               timer = setTimeout(() => {
+                                   if (clicks > 0 && clicks < 5) {
+                                       window.location.href = '{{ route('dashboard') }}';
+                                   }
+                                   clicks = 0;
+                               }, 300);
+                           }
+                       ">
+                        <x-application-logo class="block h-9 w-auto fill-current text-violet-600 dark:text-violet-400 cursor-pointer" />
                     </a>
                 </div>
 

@@ -148,6 +148,15 @@ class Task extends Model
         return $this->hasMany(TaskHistory::class);
     }
 
+    public function getIsEffectivelyPrivateAttribute(): bool
+    {
+        $hasAssignees = $this->assigned_user_id !== null || 
+                        $this->assignedTo->isNotEmpty() || 
+                        $this->assignedGroups->isNotEmpty();
+        
+        return $hasAssignees || $this->visibility === 'private';
+    }
+
     // Relationship: A task has many tags
     public function tags(): HasMany
     {
@@ -353,24 +362,21 @@ class Task extends Model
                   ->orWhere('created_by_id', $user->id)
                   ->orWhere('assigned_user_id', $user->id);
             } else {
-                // 2. EJECUCIÓN (Miembros): Solo ven lo público donde participan y sus privadas
-                $q->where(function ($public) use ($user) {
-                    $public->where('visibility', 'public')
-                        ->where(function ($access) use ($user) {
-                            $access->where('created_by_id', $user->id)
-                                ->orWhere('assigned_user_id', $user->id)
-                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
-                                ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-                        });
+                // 2. EJECUCIÓN (Miembros): "Al vuelo". Ven las tareas si:
+                // - No tienen asignados y son explícitamente públicas
+                // - O si ellos mismos son el creador
+                // - O si están asignados directamente
+                // - O si un grupo suyo está asignado
+                $q->where(function ($unassigned) {
+                    $unassigned->whereNull('assigned_user_id')
+                               ->whereDoesntHave('assignedTo')
+                               ->whereDoesntHave('assignedGroups')
+                               ->where('visibility', 'public');
                 })
-                ->orWhere(function ($private) use ($user) {
-                    $private->where('visibility', 'private')
-                        ->where(function ($owner) use ($user) {
-                            $owner->where('created_by_id', $user->id)
-                                ->orWhere('assigned_user_id', $user->id)
-                                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id));
-                        });
-                });
+                ->orWhere('created_by_id', $user->id)
+                ->orWhere('assigned_user_id', $user->id)
+                ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
+                ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             }
         });
     }
@@ -403,14 +409,21 @@ class Task extends Model
                       ->orWhereNull('parent_id'); // SIEMPRE ver tareas raíz, aunque estén asignadas a mí
                 });
             } else {
-                // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado (No ve plantillas)
+                // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado Y las tareas puras (sin asignar a nadie)
                 $main->where('is_template', false)
                     ->where(function ($q) use ($user) {
                         $q->where('assigned_user_id', $user->id)
                           ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
+                          ->orWhereHas('assignedGroups', fn ($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
                           ->orWhere(function ($own) use ($user) {
                               $own->where('created_by_id', $user->id)
                                   ->whereNull('parent_id');
+                          })
+                          ->orWhere(function ($unassigned) {
+                              $unassigned->whereNull('assigned_user_id')
+                                         ->whereDoesntHave('assignedTo')
+                                         ->whereDoesntHave('assignedGroups')
+                                         ->where('visibility', 'public');
                           });
                     });
 
@@ -419,7 +432,8 @@ class Task extends Model
                 $main->whereDoesntHave('children', function ($q) use ($user) {
                     $q->where(function($sub) use ($user) {
                         $sub->where('assigned_user_id', $user->id)
-                            ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id));
+                            ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id))
+                            ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
                     });
                 });
 
@@ -450,12 +464,19 @@ class Task extends Model
         $query->where('is_template', false) // NUNCA mostrar planes maestros en Vistas Enfocadas (Matrix/Kanban)
             ->whereDoesntHave('children') // ELIMINAR FANTASMAS: Solo mostrar tareas finales (hojas), no contenedores u ocurrencias con hijos
             ->where(function ($q) use ($userId) {
-                // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado o raíces creadas por mí
+                // ENFOQUE SIEMPRE EN EJECUCIÓN: Ver lo que tengo asignado, raíces creadas por mí, o tareas sin asignar (públicas)
                 $q->where('assigned_user_id', $userId)
                   ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                  ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
                   ->orWhere(function($roots) use ($userId) {
                       $roots->whereNull('parent_id')
                             ->where('created_by_id', $userId);
+                  })
+                  ->orWhere(function ($unassigned) {
+                      $unassigned->whereNull('assigned_user_id')
+                                 ->whereDoesntHave('assignedTo')
+                                 ->whereDoesntHave('assignedGroups')
+                                 ->where('visibility', 'public');
                   });
             });
 

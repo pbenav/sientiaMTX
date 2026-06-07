@@ -2191,9 +2191,9 @@
                 <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
                     <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
                     <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full {{ $task->visibility === 'public' ? 'bg-violet-500' : 'bg-amber-500' }}"></div>
+                        <div class="w-2 h-2 rounded-full {{ !$task->is_effectively_private ? 'bg-violet-500' : 'bg-amber-500' }}"></div>
                         <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                            {{ $task->visibility === 'public' ? __('tasks.public') : __('tasks.private') }}
+                            {{ !$task->is_effectively_private ? __('tasks.public') : __('tasks.private') }}
                         </span>
                     </div>
                 </div>
@@ -3274,7 +3274,7 @@
         button.disabled = true;
         button.innerHTML = '<svg class="animate-spin h-3 w-3 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> GUARDANDO...';
 
-        fetch("{{ route('teams.tasks.private-notes.update', [$team, $task]) }}", {
+        fetch("{{ route('teams.tasks.private-notes.update', [$team, $personalInstance]) }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

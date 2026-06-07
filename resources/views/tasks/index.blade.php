@@ -368,7 +368,7 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                                 </a>
                                             @endif
-                                            @if ($task->visibility === 'private')
+                                            @if ($task->is_effectively_private)
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded shadow-sm inline-flex items-center"
                                                     title="{{ __('tasks.private') }}">

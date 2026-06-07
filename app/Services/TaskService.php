@@ -305,7 +305,7 @@ class TaskService
                 ]);
             }
 
-            if (isset($requestInputs['has_title']) && $isCoordinator) {
+            if (isset($requestInputs['title']) && $isCoordinator) {
                 $this->handleAssignmentsForUpdate($task, $team, $requestInputs);
             }
 

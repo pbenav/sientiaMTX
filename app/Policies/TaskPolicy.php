@@ -44,9 +44,6 @@ class TaskPolicy
             return false;
         }
 
-        // 2. PRIVACY RULE: If not explicitly public, only creator or assigned can view.
-        // This handles 'private' and also 'null' or unexpected values as private by default.
-        // Even coordinators are blocked if they are not part of it.
         $isCreator        = $user->id === $task->created_by_id;
         $isDirectAssigned = $user->id === $task->assigned_user_id;
         $isCollaborator   = $task->assignedTo()->where('users.id', $user->id)->exists();
@@ -55,38 +52,25 @@ class TaskPolicy
         })->exists();
         $isAssigned = $isDirectAssigned || $isCollaborator || $isGroupMember;
 
-        if ($task->visibility !== 'public') {
-            if ($isCreator || $isAssigned) {
-                \Log::info("TaskPolicy@view GRANTED [secure_participant] task#{$task->id} user#{$user->id} visibility={$task->visibility}");
+        $hasAssignees = $task->assigned_user_id !== null || $task->assignedTo()->count() > 0 || $task->assignedGroups()->count() > 0;
+        
+        $isTeamOwner = $task->team->created_by_id === $user->id;
+        $isManager   = $task->team->isManager($user);
+
+        // PRIVACIDAD "AL VUELO":
+        // Si tiene asignados O si está marcada como privada, es PRIVADA.
+        // Solo creador o asignados la ven (y managers si es plantilla).
+        if ($hasAssignees || $task->visibility === 'private') {
+            if ($isCreator || $isAssigned || ($isManager && $task->is_template)) {
                 return true;
             }
-            \Log::warning("TaskPolicy@view DENIED [strict_secure] task#{$task->id} user#{$user->id} visibility={$task->visibility}");
+            \Log::warning("TaskPolicy@view DENIED [private_task] task#{$task->id} user#{$user->id}");
             return false;
         }
 
-        // 3. PUBLIC Tasks:
-        // Coordinators, team owner or task creator can always view
-        $isTeamOwner = $task->team->created_by_id === $user->id;
-        $isManager   = $task->team->isManager($user);
-        
-        if ($isCreator || $isTeamOwner || $isManager || $isAssigned) {
-            return true;
-        }
-
-        // 4. Context access: If user has a personal instance of this task, they can view it.
-        // GUARD: Only applies to PUBLIC tasks — private instances protect their own visibility.
-        if ($task->visibility !== 'private' && $task->instances()->where('assigned_user_id', $user->id)->exists()) {
-            return true;
-        }
-
-        // 5. Project Visibility: Creators of the parent task can see their PUBLIC subtasks.
-        // GUARD: ONLY applies to public tasks — private subtasks are strictly personal.
-        if ($task->visibility === 'public' && $task->parent_id && $task->parent->created_by_id === $user->id) {
-            return true;
-        }
-
-        \Log::warning("TaskPolicy@view DENIED [all_checks_failed] task#{$task->id} user#{$user->id} team#{$task->team_id}");
-        return false;
+        // Si NO tiene asignados Y es pública, es PÚBLICA pura.
+        // Cualquier miembro del equipo puede verla.
+        return true;
     }
 
     public function update(User $user, Task $task): bool
@@ -97,26 +81,30 @@ class TaskPolicy
 
         $isCreator = $user->id === $task->created_by_id;
         $isAssigned = $user->id === $task->assigned_user_id ||
-                   $task->assignedTo()->where('users.id', $user->id)->exists();
+                   $task->assignedTo()->where('users.id', $user->id)->exists() ||
+                   $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists();
 
-        // STRICT PRIVACY: If private, even coordinators can't update unless creator or assigned
-        if ($task->visibility === 'private') {
-            return $isCreator || $isAssigned;
-        }
+        $hasAssignees = $task->assigned_user_id !== null || $task->assignedTo()->count() > 0 || $task->assignedGroups()->count() > 0;
 
         $isManager = $task->team->isManager($user);
         $isTeamOwner = $task->team->created_by_id === $user->id;
 
-        // RULE: Only authoritative roles can update Templates/Masters
+        // PRIVACIDAD "AL VUELO" (Update):
+        // Si tiene asignados O está marcada como privada, solo el creador o asignados pueden editar.
+        if ($hasAssignees || $task->visibility === 'private') {
+            if ($isCreator || $isAssigned || ($isManager && $task->is_template)) {
+                return true;
+            }
+            return false;
+        }
+
+        // Si es plantilla, la gestión es restringida
         if ($task->is_template) {
             return $isCreator || $isTeamOwner || $isManager;
         }
 
-        // RULE: Regular tasks/instances: Assignee, Creator, Managers, Collaborators or Public access
-        return $isCreator || 
-               $isTeamOwner ||
-               $isManager ||
-               $isAssigned;
+        // Si es pública pura (no plantilla, no asignada), cualquiera en el equipo puede reclamarla/editarla
+        return true;
     }
 
     public function delete(User $user, Task $task): bool

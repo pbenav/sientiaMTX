@@ -2967,6 +2967,114 @@
             }));
         });
     </script>
+    <!-- Letrero Flotante de Celebración (Tipo Banner de Feria/Fiesta) -->
+    <div x-data="{ 
+            showCelebration: false,
+            konami: { keys: [], code: ['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright','b','a'] }
+         }" 
+         @v1-celebration.window="showCelebration = true; setTimeout(() => showCelebration = false, 5000)"
+         @keydown.window="
+            konami.keys.push($event.key.toLowerCase());
+            if (konami.keys.length > konami.code.length) konami.keys.shift();
+            if (konami.keys.join(',') === konami.code.join(',')) {
+                konami.keys = [];
+                if (typeof window.triggerV1Celebration === 'function') window.triggerV1Celebration();
+            }
+         "
+         x-show="showCelebration"
+         x-cloak
+         class="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none px-4"
+         x-transition:enter="transition ease-out duration-700"
+         x-transition:enter-start="opacity-0 scale-75 rotate-3"
+         x-transition:enter-end="opacity-100 scale-100 rotate-0"
+         x-transition:leave="transition ease-in duration-1000"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-110">
+         
+         <div class="relative w-full max-w-4xl rounded-sm shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden text-center transform transition-all" style="background-color: #fdfaf3; border: 1px solid #e5e7eb;">
+            
+            <!-- Borde interior decorativo -->
+            <div class="absolute inset-2 border-2 border-dashed rounded-sm pointer-events-none" style="border-color: #d1c8b4;"></div>
+
+            <!-- Banderines SVG -->
+            <div class="absolute top-0 left-0 w-full h-24 opacity-90">
+                <svg width="100%" height="100%" viewBox="0 0 1000 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M-10,10 Q250,60 500,20" stroke="#6b7280" stroke-width="2" fill="none"/>
+                  <path d="M500,20 Q750,60 1010,10" stroke="#6b7280" stroke-width="2" fill="none"/>
+                  <polygon points="50,22 80,60 110,28" fill="#ef4444" />
+                  <polygon points="150,33 180,71 210,38" fill="#f59e0b" />
+                  <polygon points="250,40 280,78 310,43" fill="#3b82f6" />
+                  <polygon points="350,38 380,76 410,38" fill="#10b981" />
+                  <polygon points="450,26 480,64 510,22" fill="#8b5cf6" />
+                  <polygon points="550,22 580,60 610,26" fill="#ef4444" />
+                  <polygon points="650,34 680,72 710,38" fill="#f59e0b" />
+                  <polygon points="750,42 780,80 810,41" fill="#3b82f6" />
+                  <polygon points="850,35 880,73 910,31" fill="#10b981" />
+                  <polygon points="950,20 980,58 1010,12" fill="#8b5cf6" />
+                </svg>
+            </div>
+            
+            <div class="relative z-10 px-8 py-16 md:py-20 mt-4">
+                <h3 class="text-lg md:text-xl font-bold tracking-[0.3em] uppercase mb-3" style="font-family: 'Arial', sans-serif; color: #14b8a6;">
+                    Lanzamiento Oficial
+                </h3>
+                
+                <h2 class="text-5xl md:text-7xl font-bold mb-6 drop-shadow-sm" style="font-family: 'Georgia', serif; color: #453c38;">
+                    SientiaMTX <span style="color: #7c3aed;">v1.0.0</span>
+                </h2>
+                
+                <div class="inline-block border-y-2 py-3 mb-6 px-8" style="border-color: #d1c8b4;">
+                    <p class="text-xl md:text-2xl font-medium tracking-wider uppercase" style="color: #6b5c54;">
+                        Plataforma • Equipo • Éxito
+                    </p>
+                </div>
+                
+                <p class="text-lg italic max-w-lg mx-auto" style="color: #6b7280;">
+                    Gracias por acompañarnos y ser parte fundamental de este gran hito.
+                </p>
+                
+                <!-- Decoración inferior geométrica -->
+                <div class="absolute bottom-0 left-0 w-full h-4 flex">
+                    <div class="flex-1" style="background-color: #ef4444;"></div>
+                    <div class="flex-1" style="background-color: #14b8a6;"></div>
+                    <div class="flex-1" style="background-color: #f59e0b;"></div>
+                    <div class="flex-1" style="background-color: #ef4444;"></div>
+                    <div class="flex-1" style="background-color: #14b8a6;"></div>
+                    <div class="flex-1" style="background-color: #f59e0b;"></div>
+                    <div class="flex-1" style="background-color: #ef4444;"></div>
+                    <div class="flex-1" style="background-color: #14b8a6;"></div>
+                    <div class="flex-1" style="background-color: #f59e0b;"></div>
+                    <div class="flex-1" style="background-color: #ef4444;"></div>
+                </div>
+            </div>
+         </div>
+    </div>
+    
+    <script>
+        window.triggerV1Celebration = function() {
+            const fireConfetti = () => {
+                var duration = 4 * 1000;
+                var end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, zIndex: 999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
+                    confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, zIndex: 999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+                
+                // Disparar evento Alpine para mostrar el letrero
+                window.dispatchEvent(new CustomEvent('v1-celebration'));
+            };
+
+            if (typeof confetti === 'undefined') {
+                let s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+                s.onload = fireConfetti;
+                document.head.appendChild(s);
+            } else {
+                fireConfetti();
+            }
+        };
+    </script>
 </body>
 
 </html>
