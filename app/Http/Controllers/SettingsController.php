@@ -56,6 +56,7 @@ class SettingsController extends Controller
             ],
             'site_timezone' => \App\Models\Setting::get('site_timezone', 'Europe/Madrid', true),
             'timezones' => \DateTimeZone::listIdentifiers(),
+            'demo_mode' => config('settings.demo_mode', 'off'),
         ]);
     }
 
@@ -105,6 +106,7 @@ class SettingsController extends Controller
             'purge_inactive_enabled' => 'sometimes|boolean',
             'purge_inactive_days' => 'sometimes|numeric|min:1',
             'purge_warning_days' => 'sometimes|numeric|min:1',
+            'demo_mode' => 'sometimes|in:on,off',
         ]);
 
         try {
@@ -144,6 +146,12 @@ class SettingsController extends Controller
                 \App\Models\Setting::set('purge_warning_days', $data['purge_warning_days']);
                 unset($data['purge_warning_days']);
             }
+
+            // Demo Mode → persisted in .env as APP_DEMO_MODE
+            $demoValue = $request->has('demo_mode') ? 'on' : 'off';
+            $this->updateEnvMultiple(['APP_DEMO_MODE' => $demoValue]);
+            // Already written to .env — not added to $data to avoid double-write
+            if (isset($data['demo_mode'])) unset($data['demo_mode']);
 
             $updateExistingUsers = isset($data['update_existing_users']) || $request->has('update_existing_users');
             unset($data['update_existing_users']);

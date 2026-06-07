@@ -2,11 +2,25 @@
 
 namespace App\Models;
 
+use App\Traits\HasDemoMasking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AppointmentVisitor extends Model
 {
+    use HasDemoMasking;
+
+    protected array $demoSensitiveAttributes = [
+        'first_name'   => 'name',
+        'last_name'    => 'name',
+        'dni'          => 'token',
+        'email'        => 'email',
+        'phone'        => 'phone',
+        'city'         => 'text',
+        'postal_code'  => 'phone',
+        'observations' => 'text',
+        'ip_address'   => 'token',
+    ];
     protected $fillable = [
         'first_name',
         'last_name',

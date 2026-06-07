@@ -2,11 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\HasDemoMasking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatMessage extends Model
 {
+    use HasDemoMasking;
+
+    protected array $demoSensitiveAttributes = [
+        'message'   => 'text',
+        'file_name' => 'text',
+    ];
     protected $fillable = [
         'sender_id',
         'receiver_id',

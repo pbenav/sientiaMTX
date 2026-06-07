@@ -6,12 +6,19 @@
 
 namespace App\Models;
 
+use App\Traits\HasDemoMasking;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class WhatsappMessage extends Model
 {
-    use HasFactory;
+    use HasFactory, HasDemoMasking;
+
+    protected array $demoSensitiveAttributes = [
+        'author'          => 'name',
+        'text'            => 'text',
+        'reply_to_text'   => 'text',
+    ];
 
     protected $fillable = [
         'team_id',

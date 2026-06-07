@@ -6,11 +6,19 @@
 
 namespace App\Models;
 
+use App\Traits\HasDemoMasking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TelegramMessage extends Model
 {
+    use HasDemoMasking;
+
+    protected array $demoSensitiveAttributes = [
+        'author_name'     => 'name',
+        'text'            => 'text',
+        'reply_to_text'   => 'text',
+    ];
     protected $fillable = [
         'team_id',
         'user_id',

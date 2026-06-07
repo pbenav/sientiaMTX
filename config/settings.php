@@ -16,4 +16,17 @@ return [
     
     'kanban_completed_limit' => (int) env('KANBAN_COMPLETED_LIMIT', 10),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo / Privacy Mode
+    |--------------------------------------------------------------------------
+    |
+    | When set to 'on', all sensitive data (names, emails, phones, tokens,
+    | chat messages, etc.) will be masked or scrambled in the UI to allow
+    | safe demonstrations without exposing real user data.
+    |
+    */
+    'demo_mode' => env('APP_DEMO_MODE', 'off'),
+
 ];
+

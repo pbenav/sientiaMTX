@@ -7,6 +7,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\HasDemoMasking;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,7 +23,20 @@ use Laravel\Passkeys\PasskeyAuthenticatable;
 class User extends Authenticatable implements HasLocalePreference, PasskeyUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasPushSubscriptions, PasskeyAuthenticatable;
+    use HasFactory, Notifiable, HasPushSubscriptions, PasskeyAuthenticatable, HasDemoMasking;
+
+    /**
+     * Sensitive attributes to mask when Demo Mode is active.
+     * @var array<string, string>
+     */
+    protected array $demoSensitiveAttributes = [
+        'name'               => 'name',
+        'email'              => 'email',
+        'telegram_chat_id'   => 'id',
+        'telegram_username'  => 'name',
+        'working_area_name'  => 'text',
+        'last_ip'            => 'token',
+    ];
 
     /**
      * The attributes that are mass assignable.

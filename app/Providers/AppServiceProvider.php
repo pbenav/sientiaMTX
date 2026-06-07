@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Services\DemoModeService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -16,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(\App\Contracts\AiAssistantInterface::class, \App\Services\Ai\GeminiService::class);
+
+        // Register DemoModeService as a shared singleton
+        $this->app->singleton(DemoModeService::class, fn() => new DemoModeService());
 
         // Override Laravel Passkeys configuration generation to support Linux/Mobile QR hybrid flow
         $this->app->bind(
@@ -55,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin', function (\App\Models\User $user) {
             return (bool) $user->is_admin;
         });
+
+        // Share demo mode status with all views so Blade can use $isDemoMode directly
+        View::share('isDemoMode', app(DemoModeService::class)->isActive());
 
         // Listen to Auth Events under ENS Guidelines
         \Illuminate\Support\Facades\Event::listen(

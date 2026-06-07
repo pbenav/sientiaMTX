@@ -1032,6 +1032,60 @@
 }">
 
     <div id="app-root" class="min-h-screen flex flex-col">
+
+        {{-- ╔══════════════════════════════════════════════════════════════╗ --}}
+        {{-- ║            MODO DEMOSTRACIÓN — BANNER GLOBAL                ║ --}}
+        {{-- ║  Sólo visible cuando APP_DEMO_MODE=on en .env               ║ --}}
+        {{-- ╚══════════════════════════════════════════════════════════════╝ --}}
+        @if($isDemoMode)
+        <div id="demo-mode-banner"
+             class="relative z-[200] w-full flex items-center justify-center gap-3 px-4 py-2
+                    bg-gradient-to-r from-violet-700 via-purple-700 to-violet-700
+                    text-white text-xs font-bold tracking-wide shadow-lg shadow-violet-900/40
+                    overflow-hidden select-none">
+
+            {{-- Shimmer background animation --}}
+            <div class="absolute inset-0 opacity-20 bg-[length:200%_100%]
+                         bg-gradient-to-r from-transparent via-white to-transparent
+                         animate-[shimmer_3s_linear_infinite]"
+                 style="background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+                        background-size: 200% 100%;
+                        animation: shimmer 3s linear infinite;">
+            </div>
+
+            {{-- Pulsing dot --}}
+            <span class="relative flex h-2.5 w-2.5 shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
+            </span>
+
+            {{-- Text --}}
+            <span class="relative">
+                🎭 <strong>MODO DEMOSTRACIÓN ACTIVO</strong>
+                &nbsp;—&nbsp;
+                Los datos sensibles han sido enmascarados para proteger la privacidad de los usuarios.
+            </span>
+
+            {{-- Admin link to settings --}}
+            @auth
+                @can('admin')
+                <a href="{{ route('settings.mail') }}"
+                   class="relative ml-2 shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full
+                          bg-white/20 hover:bg-white/30 transition-colors duration-200 text-white/90
+                          hover:text-white text-[10px] font-black uppercase tracking-widest border border-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Configurar
+                </a>
+                @endcan
+            @endauth
+        </div>
+        @endif
+        {{-- / MODO DEMOSTRACIÓN BANNER --}}
+
         @include('partials.welcome-modal')
         @include('partials.work-schedule-modal')
     @include('layouts.navigation-sidebar')
