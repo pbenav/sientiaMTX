@@ -46,6 +46,12 @@ class AppointmentController extends Controller
             ->whereNotIn('status', ['cancelled', 'blocked'])
             ->count();
 
+        // Sync appointments shown with Google
+        $allShown = $upcoming->merge($todayCitas);
+        foreach ($allShown as $app) {
+            \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
+        }
+
         return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'team'));
     }
 
@@ -77,6 +83,10 @@ class AppointmentController extends Controller
         $appointments = $query->paginate(20)->withQueryString();
         $services     = $user->appointmentServices()->where('team_id', $team->id)->active()->get();
 
+        foreach ($appointments as $app) {
+            \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
+        }
+
         return view('appointments.list', compact('appointments', 'services', 'team'));
     }
 
@@ -90,6 +100,9 @@ class AppointmentController extends Controller
             abort(403);
         }
         $appointment->load(['service', 'visitor', 'task', 'expediente']);
+        
+        \App\Jobs\SyncAppointmentWithGoogleJob::dispatchSync($appointment);
+        
         return view('appointments.show', compact('appointment', 'team'));
     }
 
@@ -127,6 +140,7 @@ class AppointmentController extends Controller
         if (isset($data['status']) && in_array($data['status'], ['cancelled', 'blocked'])) {
             $data['cancelled_at'] = now();
             $this->deleteGoogleEvent($appointment);
+            $this->deleteGoogleTask($appointment);
         }
 
         $appointment->update($data);
@@ -183,6 +197,7 @@ class AppointmentController extends Controller
         ]);
         
         $this->deleteGoogleEvent($appointment);
+        $this->deleteGoogleTask($appointment);
 
         // Notificar al visitante si tiene email y consintió
         if ($appointment->visitor->email && $appointment->visitor->consent_email) {
@@ -208,6 +223,7 @@ class AppointmentController extends Controller
         }
 
         $this->deleteGoogleEvent($appointment);
+        $this->deleteGoogleTask($appointment);
 
         // Eliminar la tarea asociada si existe
         if ($appointment->task) {
@@ -279,6 +295,21 @@ class AppointmentController extends Controller
                 }
             } catch (\Throwable $e) {
                 \Log::error("Error eliminando cita en Google Calendar: " . $e->getMessage());
+            }
+        }
+    }
+
+    private function deleteGoogleTask(Appointment $appointment): void
+    {
+        if ($appointment->google_task_id) {
+            try {
+                $googleService = new \App\Services\GoogleService();
+                if ($googleService->setTokenForUser($appointment->member)) {
+                    $googleService->deleteTask('@default', $appointment->google_task_id);
+                    $appointment->update(['google_task_id' => null]);
+                }
+            } catch (\Throwable $e) {
+                \Log::error("Error eliminando tarea en Google Tasks: " . $e->getMessage());
             }
         }
     }

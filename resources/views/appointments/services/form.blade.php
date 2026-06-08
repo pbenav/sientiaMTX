@@ -119,7 +119,7 @@
                     </div>
 
                     {{-- Precio --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="price">Precio (€)</label>
                             <div class="relative">
@@ -130,7 +130,7 @@
                                        class="w-full pl-8 pr-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                         </div>
-                        <div class="flex flex-col gap-4 justify-end">
+                        <div class="flex flex-col gap-4 justify-center mt-2 sm:mt-0">
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <div class="relative">
                                     <input type="hidden" name="price_visible" value="0">
@@ -148,6 +148,28 @@
                                     <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                                 </div>
                                 <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Servicio activo y visible</span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex flex-col gap-4 justify-center mt-2 sm:mt-0">
+                            
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="relative">
+                                    <input type="hidden" name="sync_to_google_calendar" value="0">
+                                    <input type="checkbox" name="sync_to_google_calendar" value="1" {{ old('sync_to_google_calendar', $service->sync_to_google_calendar ?? false) ? 'checked' : '' }}
+                                           class="sr-only peer">
+                                    <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                                </div>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Exportar automáticamente a Google Calendar</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="relative">
+                                    <input type="hidden" name="sync_to_google_tasks" value="0">
+                                    <input type="checkbox" name="sync_to_google_tasks" value="1" {{ old('sync_to_google_tasks', $service->sync_to_google_tasks ?? false) ? 'checked' : '' }}
+                                           class="sr-only peer">
+                                    <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                                </div>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Exportar automáticamente a Google Tasks</span>
                             </label>
                         </div>
                     </div>

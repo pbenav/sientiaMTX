@@ -19,6 +19,8 @@ class AppointmentService extends Model
         'max_per_slot',
         'price',
         'price_visible',
+        'sync_to_google_calendar',
+        'sync_to_google_tasks',
         'is_active',
         'sort_order',
         'translations',
@@ -32,10 +34,12 @@ class AppointmentService extends Model
 
     protected $casts = [
         'modality'      => 'array',
-        'price'         => 'decimal:2',
-        'price_visible' => 'boolean',
-        'is_active'     => 'boolean',
-        'translations'  => 'array',
+        'price'                   => 'decimal:2',
+        'price_visible'           => 'boolean',
+        'sync_to_google_calendar' => 'boolean',
+        'sync_to_google_tasks'    => 'boolean',
+        'is_active'               => 'boolean',
+        'translations'            => 'array',
     ];
 
     /**

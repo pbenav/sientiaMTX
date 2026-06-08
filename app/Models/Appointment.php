@@ -22,6 +22,7 @@ class Appointment extends Model
         'task_id',
         'expediente_id',
         'google_event_id',
+        'google_task_id',
         'cancelled_at',
         'cancellation_reason',
     ];

@@ -238,9 +238,14 @@ class PublicAppointmentController extends Controller
             $this->createTaskForAppointment($appointment, $settings);
         }
 
-        // Sincronizar con Google Calendar si está habilitado
-        if ($settings->google_calendar_enabled && $service->user->google_token) {
+        // Sincronizar con Google Calendar si está habilitado en el servicio
+        if ($service->sync_to_google_calendar && $service->user->google_token) {
             $this->syncToGoogleCalendar($appointment);
+        }
+
+        // Sincronizar con Google Tasks si está habilitado en el servicio
+        if ($service->sync_to_google_tasks && $service->user->google_token) {
+            $this->syncToGoogleTasks($appointment);
         }
 
         // Email de confirmación al visitante (si consintió y tiene email)
@@ -361,6 +366,39 @@ class PublicAppointmentController extends Controller
             }
         } catch (\Throwable $e) {
             \Log::error("Error sincronizando cita con Google Calendar: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sincronizar cita con Google Tasks.
+     */
+    protected function syncToGoogleTasks(Appointment $appointment): void
+    {
+        try {
+            $member = $appointment->member;
+            $googleService = new \App\Services\GoogleService();
+            
+            if ($googleService->setTokenForUser($member)) {
+                $description = "Cita Previa: {$appointment->service->name}\n"
+                             . "Ciudadano: {$appointment->visitor->full_name}\n"
+                             . "Localizador: {$appointment->localizador}\n"
+                             . "Día: {$appointment->appointment_date->format('d/m/Y')}\n"
+                             . "Hora: {$appointment->appointment_time}";
+
+                $taskData = [
+                    'title' => '[CITA] ' . $appointment->visitor->full_name . ' - ' . $appointment->service->name,
+                    'notes' => $description,
+                    'due'   => $appointment->appointment_datetime->format(\DateTime::RFC3339),
+                ];
+
+                $taskId = $googleService->createTask($taskData);
+
+                if ($taskId) {
+                    $appointment->update(['google_task_id' => $taskId]);
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error("Error sincronizando cita con Google Tasks: " . $e->getMessage());
         }
     }
 

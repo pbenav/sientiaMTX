@@ -901,19 +901,14 @@
                                     {{ __('Google Drive') }}
                                 </button>
                             @endif
-                            <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="m-0 p-0 inline-block">
-                                @csrf
-                                <label class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2 cursor-pointer mb-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    {{ __('tasks.add_attachment') }}
-                                    <input type="file" id="attachment-input" name="files[]" multiple
-                                        onchange="handleAttachmentUpload(this)" class="hidden">
-                                </label>
-                            </form>
+                            <label for="attachment-input" class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-violet-600 dark:text-violet-400 text-xs font-bold px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-800 transition-all shadow-sm flex items-center gap-2 cursor-pointer mb-0 inline-flex">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                {{ __('tasks.add_attachment') }}
+                            </label>
                         </div>
                     </div>
 
@@ -1060,6 +1055,11 @@
             <form id="delete-task-form" method="POST" action="{{ route('teams.tasks.destroy', [$team, $task]) }}"
                 class="hidden">
                 @csrf @method('DELETE')
+            </form>
+
+            <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="hidden">
+                @csrf
+                <input type="file" id="attachment-input" name="files[]" multiple onchange="handleAttachmentUpload(this)">
             </form>
         </div>
 
