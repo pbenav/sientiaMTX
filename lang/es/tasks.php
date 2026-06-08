@@ -128,6 +128,7 @@ return [
 
     'groups' => 'Grupos',
     'assign_groups' => 'Asignar a grupos',
+    'members' => 'Miembros',
     'view_members' => 'Ver miembros',
     'eisenhower_matrix' => 'Matriz de Eisenhower',
     'view_gantt' => 'Ver Gantt',
