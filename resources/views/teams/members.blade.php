@@ -66,7 +66,7 @@
                         {{ __('teams.members') }}
                         ({{ $members->total() }})</h2>
                     
-                    @if(auth()->user()->is_admin)
+                    @can('manageMembers', $team)
                         <div class="flex items-center gap-2">
                             <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
                                 @csrf @method('PATCH')
@@ -83,7 +83,7 @@
                                 </button>
                             </form>
                         </div>
-                    @endif
+                    @endcan
                 </div>
 
                 <!-- Filters -->
@@ -305,23 +305,42 @@
                             </x-modal>
                         </div>
                         <div class="flex items-center gap-4 justify-end min-w-[200px]">
-                            @if(auth()->user()->is_admin)
-                                <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
-                                    @csrf @method('PATCH')
-                                    <label class="relative inline-flex items-center cursor-pointer" title="Permitir portal de Cita Previa a este miembro">
-                                        <input type="hidden" name="allow_appointments" value="0">
-                                        <input type="checkbox" name="allow_appointments" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_appointments ?? false) ? 'checked' : '' }}>
-                                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
-                                        <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Cita Previa</span>
-                                    </label>
-                                </form>
+                            @can('manageMembers', $team)
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
+                                        @csrf @method('PATCH')
+                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir portal de Cita Previa a este miembro">
+                                            <input type="hidden" name="allow_appointments" value="0">
+                                            <input type="checkbox" name="allow_appointments" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_appointments ?? false) ? 'checked' : '' }}>
+                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Cita Previa</span>
+                                        </label>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ route('teams.updateMemberMicrosites', [$team, $member]) }}" class="shrink-0">
+                                        @csrf @method('PATCH')
+                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir crear páginas web (Micrositios)">
+                                            <input type="hidden" name="allow_microsites" value="0">
+                                            <input type="checkbox" name="allow_microsites" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_microsites ?? false) ? 'checked' : '' }}>
+                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
+                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Micrositios</span>
+                                        </label>
+                                    </form>
+                                </div>
                             @else
-                                @if($member->pivot->allow_appointments ?? false)
-                                    <span class="px-2.5 py-1 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-violet-150 dark:border-violet-800/80 shadow-sm shrink-0 select-none">
-                                        Cita Previa
-                                    </span>
-                                @endif
-                            @endif
+                                <div class="flex items-center gap-1 shrink-0">
+                                    @if($member->pivot->allow_appointments ?? false)
+                                        <span class="px-2.5 py-1 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-violet-150 dark:border-violet-800/80 shadow-sm shrink-0 select-none">
+                                            Cita Previa
+                                        </span>
+                                    @endif
+                                    @if($member->pivot->allow_microsites ?? false)
+                                        <span class="px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-pink-150 dark:border-pink-800/80 shadow-sm shrink-0 select-none">
+                                            Micrositios
+                                        </span>
+                                    @endif
+                                </div>
+                            @endcan
 
                             @can('manageMembers', $team)
                                 <form method="POST" action="{{ route('teams.updateMemberRole', [$team, $member]) }}"

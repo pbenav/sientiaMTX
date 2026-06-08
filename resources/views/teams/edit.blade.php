@@ -254,28 +254,51 @@
                                         <x-input-error :messages="$errors->get('disk_quota_gb')" class="mt-2" />
                                     </div>
 
-                                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
-                                        <div>
-                                            <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">WhatsApp Integrado (Premium)</span>
-                                            <span class="text-[10px] text-gray-400 font-medium">Permitir vinculación de canal QR</span>
+                                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <!-- WhatsApp -->
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-3 flex flex-col justify-between gap-3">
+                                            <div>
+                                                <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">WhatsApp</span>
+                                                <span class="text-[9px] text-gray-400 font-medium">Vinculación canal QR</span>
+                                            </div>
+                                            <div class="flex justify-end mt-auto">
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="hidden" name="settings[has_whatsapp]" value="0">
+                                                    <input type="checkbox" name="settings[has_whatsapp]" value="1" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="hidden" name="settings[has_whatsapp]" value="0">
-                                            <input type="checkbox" name="settings[has_whatsapp]" value="1" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
-                                        </label>
-                                    </div>
 
-                                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
-                                        <div>
-                                            <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Portal Cita Previa (Premium)</span>
-                                            <span class="text-[10px] text-gray-400 font-medium">Permitir portal de citas en el equipo</span>
+                                        <!-- Citas Previas -->
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-3 flex flex-col justify-between gap-3">
+                                            <div>
+                                                <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Citas Previas</span>
+                                                <span class="text-[9px] text-gray-400 font-medium">Portal público</span>
+                                            </div>
+                                            <div class="flex justify-end mt-auto">
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="hidden" name="settings[has_appointments]" value="0">
+                                                    <input type="checkbox" name="settings[has_appointments]" value="1" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="hidden" name="settings[has_appointments]" value="0">
-                                            <input type="checkbox" name="settings[has_appointments]" value="1" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
-                                        </label>
+
+                                        <!-- Micrositios -->
+                                        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-3 flex flex-col justify-between gap-3">
+                                            <div>
+                                                <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Micrositios</span>
+                                                <span class="text-[9px] text-gray-400 font-medium">Mini webs públicas</span>
+                                            </div>
+                                            <div class="flex justify-end mt-auto">
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="hidden" name="settings[microsites_enabled]" value="0">
+                                                    <input type="checkbox" name="settings[microsites_enabled]" value="1" class="sr-only peer" {{ ($team->settings['microsites_enabled'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

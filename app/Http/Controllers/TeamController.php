@@ -410,7 +410,7 @@ class TeamController extends Controller
                     'lat' => (float)$u->location_lat,
                     'lng' => (float)$u->location_lng,
                     'count' => max(10, $u->experience_points / 2),
-                    'name' => $u->name,
+                    'name' => app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($u->getRawOriginal('name') ?? $u->name, 'name') : $u->name,
                     'area' => $u->working_area_name,
                     'radius' => (int)($u->impact_radius ?? 10) * 1000,
                     'is_working' => clone $u, // Hack to use isWorking correctly
@@ -484,7 +484,7 @@ class TeamController extends Controller
         $this->authorize('admin');
 
         $validated = $request->validate([
-            'setting' => 'required|string|in:has_appointments,has_whatsapp',
+            'setting' => 'required|string|in:has_appointments,has_whatsapp,microsites_enabled',
         ]);
 
         $setting = $validated['setting'];
@@ -494,7 +494,7 @@ class TeamController extends Controller
         $settings[$setting] = !$currentValue;
         $team->update(['settings' => $settings]);
 
-        $label = $setting === 'has_appointments' ? 'Citas Previas' : 'WhatsApp';
+        $label = $setting === 'has_appointments' ? 'Citas Previas' : ($setting === 'microsites_enabled' ? 'Micrositios' : 'WhatsApp');
         $statusText = $settings[$setting] ? 'habilitada' : 'deshabilitada';
 
         return back()->with('success', "Funcionalidad de {$label} {$statusText} para el equipo {$team->name}.");
@@ -508,7 +508,7 @@ class TeamController extends Controller
         $this->authorize('admin');
 
         $validated = $request->validate([
-            'setting' => 'required|string|in:has_appointments,has_whatsapp',
+            'setting' => 'required|string|in:has_appointments,has_whatsapp,microsites_enabled',
             'value' => 'required|boolean',
         ]);
 
@@ -522,7 +522,7 @@ class TeamController extends Controller
             $team->update(['settings' => $settings]);
         }
 
-        $label = $setting === 'has_appointments' ? 'Cita Previa' : 'WhatsApp';
+        $label = $setting === 'has_appointments' ? 'Citas Previas' : ($setting === 'microsites_enabled' ? 'Micrositios' : 'WhatsApp');
         $statusText = $value ? 'habilitado' : 'deshabilitado';
 
         return back()->with('success', "Se ha {$statusText} el Portal de {$label} para todos los equipos del sistema.");

@@ -237,6 +237,20 @@ class TeamMemberController extends Controller
     }
 
     /**
+     * Update member's microsites permissions
+     */
+    public function updateMicrosites(Request $request, Team $team, User $user)
+    {
+        $this->authorize('admin');
+
+        $team->members()->updateExistingPivot($user->id, [
+            'allow_microsites' => $request->boolean('allow_microsites')
+        ]);
+
+        return back()->with('success', 'Permisos de creación de Micrositios actualizados para el miembro.');
+    }
+
+    /**
      * Habilitar o deshabilitar cita previa para TODOS los miembros del equipo masivamente
      */
     public function updateAllAppointments(Request $request, Team $team)

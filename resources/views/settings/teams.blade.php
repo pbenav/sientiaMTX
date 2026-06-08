@@ -31,50 +31,101 @@
         <div class="max-w-7xl mx-auto">
             @include('settings.partials.tabs')
 
-            <!-- Bulk Actions Row -->
-            <div class="mb-6 flex flex-wrap items-center justify-between gap-4 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm">
-                <div class="flex items-center gap-2">
+            <!-- Bulk Actions -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-4">
                     <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                     </span>
-                    <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Acciones Masivas Globales</span>
+                    <h2 class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Acciones Masivas Globales</h2>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
-                        @csrf
-                        <input type="hidden" name="setting" value="has_appointments">
-                        <input type="hidden" name="value" value="1">
-                        <button type="submit" class="px-4 py-2 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all shadow-sm">
-                            Habilitar Cita Previa a Todos
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
-                        @csrf
-                        <input type="hidden" name="setting" value="has_appointments">
-                        <input type="hidden" name="value" value="0">
-                        <button type="submit" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                            Deshabilitar Citas a Todos
-                        </button>
-                    </form>
-                    <span class="h-5 w-px bg-gray-200 dark:bg-gray-700 mx-1"></span>
-                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
-                        @csrf
-                        <input type="hidden" name="setting" value="has_whatsapp">
-                        <input type="hidden" name="value" value="1">
-                        <button type="submit" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40 border border-emerald-150 dark:border-emerald-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all shadow-sm">
-                            Habilitar WhatsApp a Todos
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="inline">
-                        @csrf
-                        <input type="hidden" name="setting" value="has_whatsapp">
-                        <input type="hidden" name="value" value="0">
-                        <button type="submit" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                            Deshabilitar WhatsApp a Todos
-                        </button>
-                    </form>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Citas Previas -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Citas Previas</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-auto">
+                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                @csrf
+                                <input type="hidden" name="setting" value="has_appointments">
+                                <input type="hidden" name="value" value="1">
+                                <button type="submit" class="w-full px-2 py-2.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all shadow-sm">
+                                    Habilitar Todos
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                @csrf
+                                <input type="hidden" name="setting" value="has_appointments">
+                                <input type="hidden" name="value" value="0">
+                                <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                    Deshabilitar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Micrositios -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Micrositios</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-auto">
+                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                @csrf
+                                <input type="hidden" name="setting" value="microsites_enabled">
+                                <input type="hidden" name="value" value="1">
+                                <button type="submit" class="w-full px-2 py-2.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all shadow-sm">
+                                    Habilitar Todos
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                @csrf
+                                <input type="hidden" name="setting" value="microsites_enabled">
+                                <input type="hidden" name="value" value="0">
+                                <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                    Deshabilitar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp -->
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">WhatsApp Premium</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-auto">
+                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                @csrf
+                                <input type="hidden" name="setting" value="has_whatsapp">
+                                <input type="hidden" name="value" value="1">
+                                <button type="submit" class="w-full px-2 py-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-150 dark:border-emerald-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all shadow-sm">
+                                    Habilitar Todos
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                @csrf
+                                <input type="hidden" name="setting" value="has_whatsapp">
+                                <input type="hidden" name="value" value="0">
+                                <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                    Deshabilitar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -165,6 +216,7 @@
                                         </div>
                                     </a>
                                 </th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Micrositios</th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Cita Previa</th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">WhatsApp</th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
@@ -211,6 +263,17 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
                                             {{ $team->tasks_count }} tareas
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="setting" value="microsites_enabled">
+                                            <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Micrositios para {{ $team->name }}">
+                                                <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['microsites_enabled'] ?? false) ? 'checked' : '' }}>
+                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
+                                            </label>
+                                        </form>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">

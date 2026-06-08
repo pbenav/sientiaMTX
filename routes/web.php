@@ -17,6 +17,8 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\GDPRController;
 use App\Http\Controllers\GoogleDriveController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\Microsite\MicrositeController;
+use App\Http\Controllers\Microsite\PublicMicrositeController;
 use Illuminate\Support\Facades\Route;
 
 // Telegram Webhook (Public)
@@ -45,6 +47,10 @@ Route::prefix('citas')->name('public.appointments.')->group(function () {
     // Buscador de videocita por localizador (desde el portal principal)
     Route::post('/mi-videocita', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'findVideoAppointment'])->name('video.find');
 });
+
+// --- Directorio y Micrositios Públicos ---
+Route::get('/directorio', [PublicMicrositeController::class, 'directory'])->name('public.microsites.directory');
+Route::get('/p/{slug}', [PublicMicrositeController::class, 'show'])->name('public.microsites.show');
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
@@ -136,6 +142,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/members/{user}/role', [TeamMemberController::class, 'updateRole'])->name('teams.updateMemberRole');
     Route::patch('/teams/{team}/members/{user}/info', [TeamMemberController::class, 'updateInfo'])->name('teams.updateMemberInfo');
     Route::patch('/teams/{team}/members/{user}/appointments', [TeamMemberController::class, 'updateAppointments'])->name('teams.updateMemberAppointments');
+    Route::patch('/teams/{team}/members/{user}/microsites', [TeamMemberController::class, 'updateMicrosites'])->name('teams.updateMemberMicrosites');
     Route::patch('/teams/{team}/members-appointments-bulk', [TeamMemberController::class, 'updateAllAppointments'])->name('teams.updateAllMembersAppointments');
     Route::delete('/teams/{team}/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.removeMember');
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamMemberController::class, 'destroyInvitation'])->name('teams.invitations.destroy');
@@ -245,6 +252,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{service}', [ServiceController::class, 'update'])->name('teams.services.update');
         Route::delete('/{service}', [ServiceController::class, 'destroy'])->name('teams.services.destroy');
     });
+
+    // Micrositios (Backoffice)
+    Route::resource('teams.microsites', MicrositeController::class)->except(['show']);
     
     // Theme route
     Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');

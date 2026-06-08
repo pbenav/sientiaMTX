@@ -86,7 +86,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-[11px] font-black {{ ($status['status'] !== 'offline') ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase tracking-tight">
-                    {{ $member->name }} @if($isSelf) <span class="text-indigo-500 dark:text-indigo-400 lowercase italic">(tú)</span> @endif
+                    {{ app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($member->getRawOriginal('name') ?? $member->name, 'name') : $member->name }} @if($isSelf) <span class="text-indigo-500 dark:text-indigo-400 lowercase italic">(tú)</span> @endif
                 </p>
                 <p class="text-[9px] {{ $textClass }} tracking-tight">{{ $statusLabel }}</p>
                 @if(auth()->user()->is_admin && $member->last_ip)

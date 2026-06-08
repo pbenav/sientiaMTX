@@ -79,6 +79,27 @@
                             </x-nav-link>
                         @endif
                     @endif
+                    
+                    @if(auth()->user()->hasMicrositesEnabled())
+                        @php
+                            $routeTeam = request()->route('team');
+                            $navTeamMicro = null;
+                            if ($routeTeam) {
+                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
+                                if (auth()->user()->hasMicrositesEnabledForTeam($routeTeamId)) {
+                                    $navTeamMicro = $routeTeam;
+                                }
+                            }
+                            if (!$navTeamMicro) {
+                                $navTeamMicro = auth()->user()->firstTeamWithMicrosites();
+                            }
+                        @endphp
+                        @if($navTeamMicro)
+                            <x-nav-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')">
+                                Micrositios
+                            </x-nav-link>
+                        @endif
+                    @endif
                     <x-nav-link :href="route('media.index')" :active="request()->routeIs('media.index')">
                         {{ __('tasks.disk_quota') }}
                     </x-nav-link>
@@ -142,6 +163,11 @@
                                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                                             <x-dropdown-link :href="route('appointments.index', $currentTeamId)">
                                                 Citas Previas
+                                            </x-dropdown-link>
+                                        @endif
+                                        @if(auth()->user()->hasMicrositesEnabledForTeam($currentTeamId))
+                                            <x-dropdown-link :href="route('teams.microsites.index', $currentTeamId)">
+                                                Micrositios
                                             </x-dropdown-link>
                                         @endif
                                     </x-slot>
@@ -276,6 +302,27 @@
                         @endif
                     @endif
 
+                    @if(auth()->user()->hasMicrositesEnabled())
+                        @php
+                            $routeTeam = request()->route('team');
+                            $navTeamMicro = null;
+                            if ($routeTeam) {
+                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
+                                if (auth()->user()->hasMicrositesEnabledForTeam($routeTeamId)) {
+                                    $navTeamMicro = $routeTeam;
+                                }
+                            }
+                            if (!$navTeamMicro) {
+                                $navTeamMicro = auth()->user()->firstTeamWithMicrosites();
+                            }
+                        @endphp
+                        @if($navTeamMicro)
+                            <x-responsive-nav-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')">
+                                Micrositios
+                            </x-responsive-nav-link>
+                        @endif
+                    @endif
+
             @if (request()->route('team'))
                 @php
                     $currentTeamId = is_object(request()->route('team'))
@@ -332,6 +379,11 @@
                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                             <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">
                                 Citas Previas
+                            </x-responsive-nav-link>
+                        @endif
+                        @if(auth()->user()->hasMicrositesEnabledForTeam($currentTeamId))
+                            <x-responsive-nav-link :href="route('teams.microsites.index', $currentTeamId)" :active="request()->routeIs('teams.microsites.*')" class="text-sm">
+                                Micrositios
                             </x-responsive-nav-link>
                         @endif
                     </div>

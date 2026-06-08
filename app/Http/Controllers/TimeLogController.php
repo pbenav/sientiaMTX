@@ -166,7 +166,7 @@ class TimeLogController extends Controller
                 'lat' => (float)$u->location_lat,
                 'lng' => (float)$u->location_lng,
                 'count' => max(10, $u->experience_points / 2), // Intensity based on effort (min 10)
-                'name' => $u->name,
+                'name' => app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($u->getRawOriginal('name') ?? $u->name, 'name') : $u->name,
                 'area' => $u->working_area_name,
                 'radius' => (int)($u->impact_radius ?? 10) * 1000, // meters
                 'is_working' => clone $u, // Hack to use isWorking correctly
@@ -196,7 +196,7 @@ class TimeLogController extends Controller
                 'lng' => (float)$r->user->location_lng,
                 'type' => $r->type,
                 'service' => $r->service->name,
-                'user' => $r->user->name,
+                'user' => app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($r->user->getRawOriginal('name') ?? $r->user->name, 'name') : $r->user->name,
                 'time' => $r->created_at->diffForHumans()
             ])->values();
 

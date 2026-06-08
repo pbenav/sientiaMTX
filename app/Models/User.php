@@ -694,4 +694,38 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->first();
     }
 
+    /**
+     * Comprobar si el miembro tiene la funcionalidad de Micrositios permitida en al menos un equipo.
+     */
+    public function hasMicrositesEnabled(): bool
+    {
+        return $this->teams()
+            ->whereJsonContains('settings->microsites_enabled', true)
+            ->wherePivot('allow_microsites', true)
+            ->exists();
+    }
+
+    /**
+     * Comprobar si el miembro tiene la funcionalidad de Micrositios permitida en un equipo específico.
+     */
+    public function hasMicrositesEnabledForTeam(int $teamId): bool
+    {
+        return $this->teams()
+            ->where('teams.id', $teamId)
+            ->whereJsonContains('settings->microsites_enabled', true)
+            ->wherePivot('allow_microsites', true)
+            ->exists();
+    }
+
+    /**
+     * Obtener el primer equipo que tiene micrositios habilitados para este usuario.
+     */
+    public function firstTeamWithMicrosites(): ?\App\Models\Team
+    {
+        return $this->teams()
+            ->whereJsonContains('settings->microsites_enabled', true)
+            ->wherePivot('allow_microsites', true)
+            ->first();
+    }
+
 }

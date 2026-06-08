@@ -289,7 +289,7 @@
                                             </div>
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <h4 class="text-base font-black text-gray-900 dark:text-white truncate leading-tight">{{ $member->name }}</h4>
+                                            <h4 class="text-base font-black text-gray-900 dark:text-white truncate leading-tight">{{ app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($member->getRawOriginal('name') ?? $member->name, 'name') : $member->name }}</h4>
                                             <div class="flex items-center gap-1.5 mt-1">
                                                 <span class="inline-block px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-[9px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-tighter">{{ __('teams.' . ($member->getRole($team) ?? 'user')) }}</span>
                                                 <span class="text-[8px] font-black uppercase {{ 'text-'.$status['color'] }} tracking-widest">{{ $status['label'] }}</span>
