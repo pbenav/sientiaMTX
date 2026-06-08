@@ -1615,22 +1615,39 @@
                         $drawerViews = [
                             ['name' => 'Escritorio', 'route' => route('teams.time-reports', $drawerTeamId), 'active' => request()->routeIs('teams.time-reports')],
                             ['name' => __('forum.title') ?? 'Foro', 'route' => route('teams.forum.index', $drawerTeamId), 'active' => request()->routeIs('teams.forum.*')],
+                            ['divider' => true],
                             ['name' => 'Expedientes', 'route' => route('teams.expedientes.index', $drawerTeamId), 'active' => request()->routeIs('teams.expedientes.*')],
                             ['name' => __('navigation.task_list'), 'route' => route('teams.tasks.index', $drawerTeamId), 'active' => request()->routeIs('teams.tasks.*')],
                             ['name' => __('teams.eisenhower_matrix'), 'route' => route('teams.eisenhower', $drawerTeamId), 'active' => request()->routeIs('teams.eisenhower')],
                             ['name' => __('navigation.gantt'), 'route' => route('teams.gantt', $drawerTeamId), 'active' => request()->routeIs('teams.gantt')],
                             ['name' => __('navigation.kanban'), 'route' => route('teams.kanban', $drawerTeamId), 'active' => request()->routeIs('teams.kanban')],
-                            ['name' => __('teams.view_members'), 'route' => route('teams.members', $drawerTeamId), 'active' => request()->routeIs('teams.members')],
+                            ['divider' => true],
                             ['name' => __('Encuestas'), 'route' => route('teams.surveys.index', $drawerTeamId), 'active' => request()->routeIs('teams.surveys.*')],
+                        ];
+                        if (auth()->user()->hasAppointmentsEnabledForTeam($drawerTeamId)) {
+                            $drawerViews[] = [
+                                'name' => 'Citas Previas',
+                                'route' => route('appointments.index', $drawerTeamId),
+                                'active' => request()->routeIs('appointments.*')
+                            ];
+                        }
+                        $drawerViews[] = [
+                            'name' => __('teams.view_members'),
+                            'route' => route('teams.members', $drawerTeamId),
+                            'active' => request()->routeIs('teams.members')
                         ];
 
                     @endphp
                     @foreach($drawerViews as $dv)
-                        <a href="{{ $dv['route'] }}" @click="open = false"
-                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                                  {{ $dv['active'] ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                            {{ $dv['name'] }}
-                        </a>
+                        @if(isset($dv['divider']))
+                            <div class="border-t border-gray-100 dark:border-gray-800 my-1 mx-3"></div>
+                        @else
+                            <a href="{{ $dv['route'] }}" @click="open = false"
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                                      {{ $dv['active'] ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                                {{ $dv['name'] }}
+                            </a>
+                        @endif
                     @endforeach
                 </div>
                 @endif

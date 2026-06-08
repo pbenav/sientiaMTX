@@ -1,3 +1,7 @@
+<?php
+$content = file_get_contents('resources/views/teams/partials/view-switcher.blade.php');
+
+$newPhpBlock = <<< 'EOT'
 @php
     $teamId = $team->id;
     $isMatrix = request()->routeIs('teams.eisenhower');
@@ -90,39 +94,7 @@
         ];
     }
 @endphp
+EOT;
 
-<div class="w-full">
-<div class="flex w-full items-center bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm overflow-x-auto no-scrollbar gap-1.5">
-    {{-- Scrollable tab strip --}}
-    <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-0.5">
-            @foreach ($views as $index => $view)
-                @if (!empty($view['divider']))
-                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 mx-1 shrink-0"></div>
-                @endif
-                <a href="{{ $view['route'] }}"
-                    class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
-                        {{ $view['active']
-                            ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60' }}"
-                    title="{{ $view['name'] }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="{{ $view['active'] ? '2.5' : '2' }}">
-                        {!! $view['icon'] !!}
-                    </svg>
-                    <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $view['name'] }}</span>
-                </a>
-            @endforeach
-            {{-- Divider + toggle --}}
-            @if($isTaskList || $isKanban || $isGantt || $isMatrix)
-                <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
-                <div class="flex items-center gap-1 shrink-0 ml-1">
-                    @include('teams.partials.hide-completed-toggle')
-                    @include('teams.partials.subtasks-visibility-toggle')
-                </div>
-            @endif
-        </div>
-    </div>
-
-</div>
-</div>
+$content = preg_replace('/@php.*?@endphp/s', $newPhpBlock, $content);
+file_put_contents('resources/views/teams/partials/view-switcher.blade.php', $content);
