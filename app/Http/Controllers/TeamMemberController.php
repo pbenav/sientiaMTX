@@ -271,6 +271,26 @@ class TeamMemberController extends Controller
     }
 
     /**
+     * Habilitar o deshabilitar micrositios para TODOS los miembros del equipo masivamente
+     */
+    public function updateAllMicrosites(Request $request, Team $team)
+    {
+        $this->authorize('admin');
+
+        $allow = $request->boolean('allow');
+        $memberIds = $team->members()->pluck('users.id')->toArray();
+
+        if (!empty($memberIds)) {
+            $team->members()->updateExistingPivot($memberIds, [
+                'allow_microsites' => $allow
+            ]);
+        }
+
+        $statusText = $allow ? 'habilitado' : 'deshabilitado';
+        return back()->with('success', "Se ha {$statusText} el acceso a los micrositios para todos los miembros del equipo.");
+    }
+
+    /**
      * Remove a member from the team
      */
     public function destroy(Team $team, User $user)

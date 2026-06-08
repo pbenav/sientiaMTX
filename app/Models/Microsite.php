@@ -11,6 +11,14 @@ class Microsite extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected static function booted()
+    {
+        static::deleted(function ($microsite) {
+            $microsite->slug = $microsite->slug . '-deleted-' . time();
+            $microsite->saveQuietly();
+        });
+    }
+
     protected $fillable = [
         'team_id',
         'user_id',

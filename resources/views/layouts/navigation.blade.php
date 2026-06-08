@@ -59,46 +59,67 @@
                     <x-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                         {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
                     </x-nav-link>
-                    @if(auth()->user()->hasAppointmentsEnabled())
+                    @if(auth()->user()->hasAppointmentsEnabled() || auth()->user()->hasMicrositesEnabled())
                         @php
                             $routeTeam = request()->route('team');
+                            $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
+                            
                             $navTeam = null;
-                            if ($routeTeam) {
-                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
-                                if (auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
+                            if (auth()->user()->hasAppointmentsEnabled()) {
+                                if ($routeTeamId && auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
                                     $navTeam = $routeTeam;
                                 }
-                            }
-                            if (!$navTeam) {
-                                $navTeam = auth()->user()->firstTeamWithAppointments();
-                            }
-                        @endphp
-                        @if($navTeam)
-                            <x-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
-                                Citas Previas
-                            </x-nav-link>
-                        @endif
-                    @endif
-                    
-                    @if(auth()->user()->hasMicrositesEnabled())
-                        @php
-                            $routeTeam = request()->route('team');
-                            $navTeamMicro = null;
-                            if ($routeTeam) {
-                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
-                                if (auth()->user()->hasMicrositesEnabledForTeam($routeTeamId)) {
-                                    $navTeamMicro = $routeTeam;
+                                if (!$navTeam) {
+                                    $navTeam = auth()->user()->firstTeamWithAppointments();
                                 }
                             }
-                            if (!$navTeamMicro) {
-                                $navTeamMicro = auth()->user()->firstTeamWithMicrosites();
+
+                            $navTeamMicro = null;
+                            if (auth()->user()->hasMicrositesEnabled()) {
+                                if ($routeTeamId && auth()->user()->hasMicrositesEnabledForTeam($routeTeamId)) {
+                                    $navTeamMicro = $routeTeam;
+                                }
+                                if (!$navTeamMicro) {
+                                    $navTeamMicro = auth()->user()->firstTeamWithMicrosites();
+                                }
                             }
                         @endphp
-                        @if($navTeamMicro)
-                            <x-nav-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')">
-                                Micrositios
-                            </x-nav-link>
-                        @endif
+
+                        <div class="hidden sm:flex sm:items-center sm:ms-6">
+                            <x-dropdown align="left" width="48">
+                                <x-slot name="trigger">
+                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 {{ (request()->routeIs('appointments.*') || request()->routeIs('teams.microsites.*')) ? 'text-gray-900 border-b-2 border-violet-400 rounded-none' : '' }}">
+                                        <div>{{ __('Ciudadanía') }}</div>
+
+                                        <div class="ms-1">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </x-slot>
+
+                                <x-slot name="content">
+                                    @if($navTeam)
+                                        <x-dropdown-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                                                Citas Previas
+                                            </div>
+                                        </x-dropdown-link>
+                                    @endif
+                                    
+                                    @if($navTeamMicro)
+                                        <x-dropdown-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                                                Micrositios
+                                            </div>
+                                        </x-dropdown-link>
+                                    @endif
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
                     @endif
                     <x-nav-link :href="route('media.index')" :active="request()->routeIs('media.index')">
                         {{ __('tasks.disk_quota') }}
@@ -281,44 +302,51 @@
             <x-responsive-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                 {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
             </x-responsive-nav-link>
-                    @if(auth()->user()->hasAppointmentsEnabled())
+                    @if(auth()->user()->hasAppointmentsEnabled() || auth()->user()->hasMicrositesEnabled())
                         @php
                             $routeTeam = request()->route('team');
+                            $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
+                            
                             $navTeam = null;
-                            if ($routeTeam) {
-                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
-                                if (auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
+                            if (auth()->user()->hasAppointmentsEnabled()) {
+                                if ($routeTeamId && auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
                                     $navTeam = $routeTeam;
                                 }
-                            }
-                            if (!$navTeam) {
-                                $navTeam = auth()->user()->firstTeamWithAppointments();
-                            }
-                        @endphp
-                        @if($navTeam)
-                            <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
-                                Citas Previas
-                            </x-responsive-nav-link>
-                        @endif
-                    @endif
-
-                    @if(auth()->user()->hasMicrositesEnabled())
-                        @php
-                            $routeTeam = request()->route('team');
-                            $navTeamMicro = null;
-                            if ($routeTeam) {
-                                $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
-                                if (auth()->user()->hasMicrositesEnabledForTeam($routeTeamId)) {
-                                    $navTeamMicro = $routeTeam;
+                                if (!$navTeam) {
+                                    $navTeam = auth()->user()->firstTeamWithAppointments();
                                 }
                             }
-                            if (!$navTeamMicro) {
-                                $navTeamMicro = auth()->user()->firstTeamWithMicrosites();
+
+                            $navTeamMicro = null;
+                            if (auth()->user()->hasMicrositesEnabled()) {
+                                if ($routeTeamId && auth()->user()->hasMicrositesEnabledForTeam($routeTeamId)) {
+                                    $navTeamMicro = $routeTeam;
+                                }
+                                if (!$navTeamMicro) {
+                                    $navTeamMicro = auth()->user()->firstTeamWithMicrosites();
+                                }
                             }
                         @endphp
+                        
+                        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mt-2 border-t border-gray-100">
+                            Ciudadanía
+                        </div>
+                        
+                        @if($navTeam)
+                            <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')" class="pl-8">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+                                    Citas Previas
+                                </div>
+                            </x-responsive-nav-link>
+                        @endif
+
                         @if($navTeamMicro)
-                            <x-responsive-nav-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')">
-                                Micrositios
+                            <x-responsive-nav-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')" class="pl-8">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                                    Micrositios
+                                </div>
                             </x-responsive-nav-link>
                         @endif
                     @endif

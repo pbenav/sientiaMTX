@@ -45,17 +45,12 @@ class MicrositeController extends Controller
         $data['user_id'] = auth()->id();
         $data['is_published'] = $request->has('is_published');
         
-        if (isset($data['html_content'])) {
-            $data['html_content'] = clean($data['html_content']);
-        }
-        
-        if (isset($data['css_content'])) {
-            $data['css_content'] = strip_tags($data['css_content']);
-        }
+        // No purificamos el HTML ni el CSS porque rompería las clases de Tailwind y la estructura
+        // Al ser usuarios autenticados y con permiso de equipo, confiamos en su input de código.
 
         Microsite::create($data);
 
-        return redirect()->route('microsites.index', $team)->with('success', 'Micrositio creado correctamente.');
+        return redirect()->route('teams.microsites.index', $team)->with('success', 'Micrositio creado correctamente.');
     }
 
     public function edit(Team $team, Microsite $microsite)
@@ -76,17 +71,11 @@ class MicrositeController extends Controller
         $data = $request->validated();
         $data['is_published'] = $request->has('is_published');
 
-        if (isset($data['html_content'])) {
-            $data['html_content'] = clean($data['html_content']);
-        }
-        
-        if (isset($data['css_content'])) {
-            $data['css_content'] = strip_tags($data['css_content']);
-        }
+        // No purificamos el HTML ni el CSS para mantener las clases de Tailwind y estructura.
 
         $microsite->update($data);
 
-        return redirect()->route('microsites.index', $team)->with('success', 'Micrositio actualizado correctamente.');
+        return redirect()->route('teams.microsites.index', $team)->with('success', 'Micrositio actualizado correctamente.');
     }
 
     public function destroy(Team $team, Microsite $microsite)
@@ -97,6 +86,6 @@ class MicrositeController extends Controller
 
         $microsite->delete();
 
-        return redirect()->route('microsites.index', $team)->with('success', 'Micrositio eliminado correctamente.');
+        return redirect()->route('teams.microsites.index', $team)->with('success', 'Micrositio eliminado correctamente.');
     }
 }

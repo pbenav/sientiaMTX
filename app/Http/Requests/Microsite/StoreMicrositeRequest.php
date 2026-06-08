@@ -4,6 +4,7 @@ namespace App\Http\Requests\Microsite;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreMicrositeRequest extends FormRequest
 {
@@ -24,7 +25,7 @@ class StoreMicrositeRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:microsites,slug',
+            'slug' => ['required', 'string', 'max:255', Rule::unique('microsites', 'slug')->whereNull('deleted_at')],
             'html_content' => 'nullable|string',
             'css_content' => 'nullable|string',
             'is_published' => 'boolean',
@@ -39,10 +40,8 @@ class StoreMicrositeRequest extends FormRequest
     
     public function prepareForValidation()
     {
-        if ($this->has('slug')) {
-            $this->merge([
-                'slug' => \Illuminate\Support\Str::slug($this->slug),
-            ]);
-        }
+        $this->merge([
+            'slug' => \Illuminate\Support\Str::slug($this->slug ?: $this->title),
+        ]);
     }
 }

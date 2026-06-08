@@ -28,17 +28,11 @@
                     </svg>
                     Ver Página
                 </a>
-                <button type="submit" form="microsite-form" class="inline-flex items-center gap-2 px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-pink-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Guardar Cambios
-                </button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12 px-4">
+    <div class="pt-12 pb-32 px-4">
         <div class="max-w-5xl mx-auto">
             
             @if ($errors->any())
@@ -146,8 +140,8 @@
                                 Estilos CSS Personalizados
                                 <span class="px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded text-[10px] uppercase font-black">CSS</span>
                             </label>
-                            <textarea name="css_content" id="css_content" rows="8" placeholder="body { background-color: #f3f4f6; }"
-                                class="w-full bg-[#1e1e1e] border border-gray-700 rounded-xl px-4 py-3 text-gray-300 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-colors font-mono text-sm shadow-inner">{{ old('css_content', $microsite->css_content) }}</textarea>
+                            <textarea name="css_content" id="css_content" rows="8" placeholder="body { background-color: #f3f4f6; }&#10;.mi-clase { color: pink; }"
+                                class="w-full bg-[#1e1e1e] border border-gray-700 rounded-xl px-4 py-3 text-gray-300 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-colors font-mono text-sm shadow-inner resize-y">{{ old('css_content', $microsite->css_content) }}</textarea>
                             <p class="text-xs text-gray-500 mt-1">Se envolverá automáticamente en etiquetas &lt;style&gt;. No uses Javascript, será eliminado.</p>
                         </div>
 
@@ -156,9 +150,9 @@
                                 Contenido de la Página <span class="text-pink-500">*</span>
                                 <span class="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded text-[10px] uppercase font-black">HTML</span>
                             </label>
-                            <textarea name="html_content" id="html_content" rows="20" required placeholder="&lt;h1&gt;Hola Mundo&lt;/h1&gt;"
-                                class="w-full bg-[#1e1e1e] border border-gray-700 rounded-xl px-4 py-3 text-gray-300 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-colors font-mono text-sm shadow-inner">{{ old('html_content', $microsite->html_content) }}</textarea>
-                            <p class="text-xs text-gray-500 mt-1">Puedes usar HTML estándar y las clases CSS que hayas definido arriba. El contenido se purificará en el servidor por seguridad.</p>
+                            <textarea name="html_content" id="html_content" rows="20" required placeholder="&lt;div class=&quot;max-w-2xl mx-auto p-4&quot;&gt;&#10;  &lt;h1 class=&quot;text-3xl font-bold&quot;&gt;¡Hola Mundo!&lt;/h1&gt;&#10;  &lt;p&gt;Este es mi nuevo micrositio.&lt;/p&gt;&#10;&lt;/div&gt;"
+                                class="w-full bg-[#1e1e1e] border border-gray-700 rounded-xl px-4 py-3 text-gray-300 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-colors font-mono text-sm shadow-inner resize-y">{{ old('html_content', $microsite->html_content) }}</textarea>
+                            <p class="text-xs text-gray-500 mt-1">Puedes usar HTML estándar y las clases CSS de Tailwind que necesites. El código se renderizará tal cual lo escribas.</p>
                         </div>
                     </div>
                 </div>
@@ -166,4 +160,67 @@
             </form>
         </div>
     </div>
+
+    <!-- Floating Action Bar (Pill) -->
+    <div id="microsite-edit-floating-bar"
+         x-data="floatingDraggable"
+         @mousedown="startDrag"
+         @touchstart.passive="startDrag"
+         @window:mousemove="drag"
+         @window:touchmove.passive="drag"
+         @window:mouseup="stopDrag"
+         @window:touchend="stopDrag"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+         :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
+
+        {{-- Volver --}}
+        <a href="{{ route('teams.microsites.index', $team) }}"
+           class="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 px-3 py-1.5 rounded-xl transition-all">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <span>Volver</span>
+        </a>
+
+        <div class="w-px h-5 bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+
+        {{-- Título truncado --}}
+        <span class="text-xs font-black text-gray-800 dark:text-gray-200 max-w-[200px] truncate">
+            {{ $microsite->title }}
+        </span>
+
+        <div class="w-px h-5 bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+
+        {{-- Guardar --}}
+        <button type="button"
+                onclick="document.getElementById('microsite-form').submit()"
+                class="flex items-center gap-1.5 text-xs font-bold text-white bg-pink-500 hover:bg-pink-600 px-3 py-1.5 rounded-xl transition-all shadow-sm">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Guardar</span>
+        </button>
+    </div>
+
+    <script>
+        (function() {
+            const bar = document.getElementById('microsite-edit-floating-bar');
+
+            const checkScroll = (e) => {
+                const target = e.target === document ? document.documentElement : e.target;
+                const scrollY = target.scrollTop || 0;
+                const finalScroll = scrollY || window.scrollY || 0;
+                
+                if (finalScroll > 150) {
+                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                } else {
+                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                }
+            };
+
+            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+        })();
+    </script>
 </x-app-layout>

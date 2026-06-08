@@ -2,41 +2,124 @@
     @section('title', 'Gestión de Micrositios')
 
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-xl shadow-sm border border-pink-200 dark:border-pink-800/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
+            <div class="flex items-start gap-4 min-w-0 flex-1">
+                <a href="{{ route('teams.dashboard', $team) }}"
+                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Tus Micrositios</h1>
-                    <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
-                        <span class="font-medium text-pink-600 dark:text-pink-400">{{ $team->name }}</span>
-                    </div>
+                </a>
+                <div class="min-w-0 flex-1">
+                    @include('teams.partials.breadcrumb')
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        Tus Micrositios
+                    </h1>
                 </div>
             </div>
-            
-            <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('public.microsites.directory') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm font-bold rounded-xl transition-all shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                    Directorio Público
-                </a>
-                <a href="{{ route('teams.microsites.create', $team) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-pink-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Crear Micrositio
-                </a>
+        </div>
+
+        <div class="w-full mt-6 mb-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm gap-3">
+                <div class="flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+                    
+                    {{-- Escritorio --}}
+                    <a href="{{ route('teams.time-reports', $team) }}"
+                        class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
+                        title="{{ __('Escritorio') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+                        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Escritorio') }}</span>
+                    </a>
+
+                    {{-- Encuestas --}}
+                    <a href="{{ route('teams.surveys.index', $team) }}"
+                        class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
+                        title="{{ __('Encuestas') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Encuestas') }}</span>
+                    </a>
+
+                    {{-- Gestión de Citas --}}
+                    @if(auth()->user()->hasAppointmentsEnabledForTeam($team->id))
+                        <a href="{{ route('appointments.index', $team) }}"
+                            class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
+                            title="{{ __('Gestión de Citas') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Gestión de Citas') }}</span>
+                        </a>
+                    @endif
+
+                    {{-- Micrositios (Activo) --}}
+                    <span class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max bg-white dark:bg-gray-800 text-pink-600 dark:text-pink-400 shadow-sm border border-gray-100 dark:border-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Micrositios') }}</span>
+                    </span>
+
+                </div>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12 px-4">
-        <div class="max-w-7xl mx-auto space-y-6">
+    <div class="space-y-6" x-data="{ search: '' }">
             
+            <!-- Action Buttons for Microsites -->
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+                <a href="{{ route('teams.microsites.create', $team) }}" class="flex items-center gap-2 text-xs bg-pink-600 hover:bg-pink-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-pink-500/20 active:scale-95 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Crear Micrositio</span>
+                </a>
+
+                <a href="{{ route('public.microsites.directory') }}" target="_blank" class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span>Directorio Público</span>
+                </a>
+            </div>
+
+            <!-- Filters and Search Bar -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+                <div class="flex gap-4">
+                    <div class="relative flex-1 group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" x-model="search"
+                            placeholder="{{ __('Buscar por título o ruta...') }}" enterkeyhint="search"
+                            :class="search !== '' ?
+                                'bg-pink-50/50 dark:bg-pink-900/10 border-pink-300 dark:border-pink-800 ring-2 ring-pink-500/20' :
+                                'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'"
+                            class="w-full pl-10 pr-12 py-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 dark:text-white transition-all shadow-sm">
+                        <button x-show="search !== ''" @click="search = ''"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                            title="{{ __('Limpiar Filtros') }}" x-cloak>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
             @if($microsites->isEmpty())
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-12 text-center shadow-sm">
                     <div class="w-20 h-20 mx-auto bg-pink-50 dark:bg-pink-900/20 rounded-full flex items-center justify-center mb-6">
@@ -58,7 +141,8 @@
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($microsites as $microsite)
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all group flex flex-col h-full">
+                        <div x-show="search === '' || '{{ strtolower($microsite->title) }}'.includes(search.toLowerCase()) || '{{ strtolower($microsite->slug) }}'.includes(search.toLowerCase())"
+                            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all group flex flex-col h-full">
                             
                             <!-- Header de la tarjeta -->
                             <div class="p-6 pb-4 border-b border-gray-100 dark:border-gray-800/60 relative">
@@ -154,7 +238,6 @@
                 </div>
             @endif
 
-        </div>
     </div>
 
     @push('scripts')

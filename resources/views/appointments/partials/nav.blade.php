@@ -46,6 +46,29 @@
                 <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Citas Previas') }}</span>
             </span>
 
+            {{-- Nivel superior: Micrositios --}}
+            @if(auth()->user()->hasMicrositesEnabled())
+                @php
+                    $targetTeamMicro = null;
+                    if ($team && auth()->user()->hasMicrositesEnabledForTeam($team->id)) {
+                        $targetTeamMicro = $team;
+                    } else {
+                        $targetTeamMicro = auth()->user()->firstTeamWithMicrosites();
+                    }
+                @endphp
+                @if($targetTeamMicro)
+                    <a href="{{ route('teams.microsites.index', $targetTeamMicro) }}"
+                        class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
+                        title="{{ __('Gestión de Micrositios') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Micrositios') }}</span>
+                    </a>
+                @endif
+            @endif
+
             {{-- Divisor visual --}}
             <div class="w-px h-7 bg-gray-300 dark:bg-gray-600 mx-1 shrink-0"></div>
 

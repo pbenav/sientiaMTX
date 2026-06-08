@@ -186,6 +186,7 @@ class TeamController extends Controller
             } else {
                 $validated['settings']['has_whatsapp'] = filter_var($validated['settings']['has_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $validated['settings']['has_appointments'] = filter_var($validated['settings']['has_appointments'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $validated['settings']['microsites_enabled'] = filter_var($validated['settings']['microsites_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
             }
         }
 

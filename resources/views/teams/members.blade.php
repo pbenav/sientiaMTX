@@ -68,18 +68,34 @@
                     
                     @can('manageMembers', $team)
                         <div class="flex items-center gap-2">
+                            <!-- Citas Bulk Actions -->
                             <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="allow" value="1">
-                                <button type="submit" class="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all select-none">
-                                    Habilitar Citas a Todos
+                                <button type="submit" class="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all select-none" title="Habilitar Cita Previa a todos">
+                                    + Citas
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
+                            <!-- Micrositios Bulk Actions -->
+                            <form method="POST" action="{{ route('teams.updateAllMembersMicrosites', $team) }}">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="allow" value="1">
+                                <button type="submit" class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 dark:hover:bg-pink-900/40 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all select-none" title="Habilitar Micrositios a todos">
+                                    + Micrositios
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}" class="ml-2">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="allow" value="0">
-                                <button type="submit" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none">
-                                    Deshabilitar Todos
+                            </form>
+                            <form method="POST" action="{{ route('teams.updateAllMembersMicrosites', $team) }}">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="allow" value="0">
+                                <button type="button" onclick="
+                                    this.previousElementSibling.previousElementSibling.submit();
+                                    setTimeout(() => this.form.submit(), 100);
+                                " class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none" title="Deshabilitar todos los módulos a todos">
+                                    Revocar Todos
                                 </button>
                             </form>
                         </div>
@@ -763,4 +779,19 @@
             @endcan
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            // Persist scroll position across form submissions
+            document.addEventListener('DOMContentLoaded', function() {
+                const scrollPos = sessionStorage.getItem('teamMembersScrollPos');
+                if (scrollPos) {
+                    setTimeout(() => window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' }), 10);
+                }
+            });
+            window.addEventListener('beforeunload', () => {
+                sessionStorage.setItem('teamMembersScrollPos', window.scrollY);
+            });
+        </script>
+    @endpush
 </x-app-layout>

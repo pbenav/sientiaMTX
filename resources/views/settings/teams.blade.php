@@ -352,6 +352,17 @@
                 }
             });
         }
+
+        // Persist scroll position across form submissions
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollPos = sessionStorage.getItem('settingsTeamsScrollPos');
+            if (scrollPos) {
+                setTimeout(() => window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' }), 10);
+            }
+        });
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.setItem('settingsTeamsScrollPos', window.scrollY);
+        });
     </script>
     @endpush
 </x-app-layout>
