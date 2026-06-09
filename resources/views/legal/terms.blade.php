@@ -3,10 +3,10 @@
     {!! $content !!}
 @else
 
-<h1>Términos de Servicio de {{ config('app.name', 'Sientia') }}</h1>
+<h1>Términos de Servicio de {{ config('app.name', 'Sientia Open Source Lab') }}</h1>
 <p class="meta">Última actualización: <strong>{{ date('d/m/Y') }}</strong></p>
 
-<p>Los presentes Términos de Servicio (en adelante, el «Acuerdo» o los «Términos») rigen el acceso y uso de la plataforma de gestión de proyectos, comunicación y productividad <strong>{{ config('app.name', 'Sientia') }}</strong> (en adelante, el «Servicio»), proporcionada por <strong><span class="field">[Nombre o razón social de la Entidad]</span></strong> (en adelante, la «Empresa»).</p>
+<p>Los presentes Términos de Servicio (en adelante, el «Acuerdo» o los «Términos») rigen el acceso y uso de la plataforma de gestión de proyectos, comunicación y productividad <strong>{{ config('app.name', 'Sientia Open Source Lab') }}</strong> (en adelante, el «Servicio»), proporcionada por <strong><span class="field">[Nombre o razón social de la Entidad]</span></strong> (en adelante, la «Empresa»).</p>
 
 <p>Al acceder, registrarse o utilizar el Servicio, usted (el «Usuario» o el «Cliente») acepta quedar vinculado por estos Términos en su totalidad. Si no acepta estos Términos, no podrá acceder ni utilizar el Servicio.</p>
 

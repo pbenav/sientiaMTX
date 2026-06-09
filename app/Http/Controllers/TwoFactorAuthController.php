@@ -30,9 +30,9 @@ class TwoFactorAuthController extends Controller
             // Send the code via email
             try {
                 \Illuminate\Support\Facades\Mail::raw(
-                    "Tu código de verificación para activar la Autenticación de Doble Factor en Sientia es: {$code}. Este código expira en 10 minutos.",
+                    "Tu código de verificación para activar la Autenticación de Doble Factor en Sientia Open Source Lab es: {$code}. Este código expira en 10 minutos.",
                     function ($message) use ($user) {
-                        $message->to($user->email)->subject('Código de Verificación Sientia - MFA');
+                        $message->to($user->email)->subject('Código de Verificación Sientia Open Source Lab - MFA');
                     }
                 );
             } catch (\Exception $e) {

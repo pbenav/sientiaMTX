@@ -50,7 +50,7 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-lg tracking-tight leading-none">Asistente Ax.ia</h3>
-                    <span class="text-[10px] text-indigo-200 font-medium uppercase tracking-widest mt-0.5 block">Inteligencia Artificial Sientia</span>
+                    <span class="text-[10px] text-indigo-200 font-medium uppercase tracking-widest mt-0.5 block">Sientia Open Source Lab</span>
                 </div>
             </div>
             <div class="flex items-center space-x-1">
@@ -154,7 +154,7 @@
                     </div>
                 </div>
             </div>
-            <template x-for="(msg, index) in messages" :key="index">
+            <template x-for="(msg, index) in messages" :key="msg.id || ('local-' + index)">
                 <div class="flex flex-col w-full">
                     <!-- Event / System Message -->
                     <template x-if="msg.role === 'system'">
@@ -214,6 +214,27 @@
                                                 </div>
                                             </a>
                                         </template>
+                                    </div>
+                                </template>
+
+                                <!-- Quick Actions (User messages) -->
+                                <template x-if="msg.role === 'user'">
+                                    <div class="absolute -bottom-10 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="resendUserMessage(index)" 
+                                                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-indigo-500 dark:text-indigo-400" 
+                                                title="Repetir envío">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                        </button>
+                                        <button @click="editUserMessage(index)" 
+                                                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-amber-500 dark:text-amber-400" 
+                                                title="Editar mensaje">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                        </button>
+                                        <button @click="deleteUserMessage(index)" 
+                                                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-red-500 dark:text-red-400" 
+                                                title="Eliminar mensaje">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
                                     </div>
                                 </template>
                                 
@@ -406,7 +427,7 @@
             showHelp: false,
             input: '',
             messages: [
-                { role: 'ai', content: '¡Hola! Soy **Ax.ia**, tu asistente inteligente en Sientia. ¿En qué puedo ayudarte con tus tareas hoy?' }
+                { role: 'ai', content: '¡Hola! Soy **Ax.ia**, tu asistente inteligente en Sientia Open Source Lab. ¿En qué puedo ayudarte con tus tareas hoy?' }
             ],
             
             teamId: @json($teamId ?? null),
@@ -910,15 +931,31 @@
                 if (index <= 0) return;
                 const prevMsg = this.messages[index - 1];
                 if (!prevMsg || prevMsg.role !== 'user') return;
+                this._loadUserMessageIntoInput(prevMsg);
+            },
 
-                let plainText = prevMsg.content || '';
+            retryMessage(index) {
+                if (index <= 0) return;
+                const prevMsg = this.messages[index - 1];
+                if (!prevMsg || prevMsg.role !== 'user') return;
+                this._loadUserMessageIntoInput(prevMsg);
+                this.sendMessage();
+            },
+
+            _extractUserPlainText(msg) {
+                let plainText = msg.content || '';
                 plainText = plainText.replace(/^📁 \[Archivo:.*?\]\n\n/, '');
-                
-                this.input = plainText;
+                plainText = plainText.replace(/^🎤 \[Grabación de audio\]$/, '');
+                plainText = plainText.replace(/^📎 \[Archivo:.*?\]$/, '');
+                return plainText.trim();
+            },
+
+            _loadUserMessageIntoInput(msg) {
+                this.input = this._extractUserPlainText(msg);
                 this.pendingFile = null;
-                this.pendingReuseFilePath = null;
-                this.pendingReuseFileName = null;
-                
+                this.pendingReuseFilePath = msg.file_path || null;
+                this.pendingReuseFileName = msg.file_name || null;
+
                 this.$nextTick(() => {
                     const textarea = this.$refs.aiInput;
                     if (textarea) {
@@ -930,20 +967,73 @@
                 });
             },
 
-            retryMessage(index) {
-                if (index <= 0) return;
-                const prevMsg = this.messages[index - 1];
-                if (!prevMsg || prevMsg.role !== 'user') return;
-
-                let plainText = prevMsg.content || '';
-                plainText = plainText.replace(/^📁 \[Archivo:.*?\]\n\n/, '');
-
-                this.input = plainText;
-                this.pendingFile = null;
-                this.pendingReuseFilePath = prevMsg.file_path || null;
-                this.pendingReuseFileName = prevMsg.file_name || null;
-                
+            resendUserMessage(index) {
+                const msg = this.messages[index];
+                if (!msg || msg.role !== 'user' || this.loading) return;
+                this._loadUserMessageIntoInput(msg);
                 this.sendMessage();
+            },
+
+            async editUserMessage(index) {
+                const msg = this.messages[index];
+                if (!msg || msg.role !== 'user' || this.loading) return;
+
+                this._loadUserMessageIntoInput(msg);
+                await this._removeMessagePairAt(index, false);
+            },
+
+            async deleteUserMessage(index) {
+                const msg = this.messages[index];
+                if (!msg || msg.role !== 'user') return;
+
+                const result = await Swal.fire({
+                    title: '¿Eliminar mensaje?',
+                    text: 'Se eliminará este mensaje y la respuesta de la IA asociada.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Eliminar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    }
+                });
+
+                if (!result.isConfirmed) return;
+                await this._removeMessagePairAt(index, true);
+            },
+
+            async _removeMessagePairAt(index, showFeedback = true) {
+                const toDelete = [this.messages[index]];
+                if (this.messages[index + 1]?.role === 'ai') {
+                    toDelete.push(this.messages[index + 1]);
+                }
+
+                for (const msg of toDelete) {
+                    if (msg.id) {
+                        try {
+                            await fetch(`{{ url('/ai/messages') }}/${msg.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                }
+                            });
+                        } catch (e) {
+                            console.error('Error eliminando mensaje:', e);
+                        }
+                    }
+                }
+
+                const removeCount = toDelete.length;
+                this.messages.splice(index, removeCount);
+
+                if (showFeedback) {
+                    this.$nextTick(() => this.scrollToBottom());
+                }
             },
 
             async sendMessage() {
@@ -958,6 +1048,8 @@
                 // SAVE FOR RETRY
                 this.lastPrompt = userText;
                 this.lastFile = fileToSend;
+
+                const userMsgIndex = this.messages.length;
 
                 if (fileToSend) {
                     const localUrl = URL.createObjectURL(fileToSend);
@@ -1035,10 +1127,15 @@
                         this.lastFile = fileToSend;
                     }
 
+                if (data.user_message_id && this.messages[userMsgIndex]) {
+                    this.messages[userMsgIndex].id = data.user_message_id;
+                }
+
                 this.messages.push({ 
                     role: 'ai', 
                     content: data.message,
-                    is_error: isError
+                    is_error: isError,
+                    id: data.ai_message_id || null
                 });
                 if (data.current_model) this.currentModel = data.current_model;
                 this.retryCount = 0;

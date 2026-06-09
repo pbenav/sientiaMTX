@@ -123,7 +123,7 @@
                     {{-- Footer --}}
                     <div class="px-6 sm:px-10 py-5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-3 justify-between items-center">
                         <span class="text-xs text-gray-400 dark:text-gray-500">
-                            © {{ date('Y') }} Sientia Documentation
+                            © {{ date('Y') }} Sientia Open Source Lab Documentation
                         </span>
                         <button onclick="SientiaPrint.printPage()"
                             class="text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1.5">

@@ -84,7 +84,7 @@ class LegalController extends Controller
      */
     private function getDefaultLegalContent(string $type): ?string
     {
-        $app   = config('app.name', 'Sientia');
+        $app   = config('app.name', 'Sientia Open Source Lab');
         $email = config('mail.from.address', '[correo de contacto]');
         $field = fn(string $label) => '<span style="background:#fef9c3;border-radius:2px;padding:0 3px;font-style:italic;color:#92400e;font-size:0.85em;">[' . $label . ']</span>';
 

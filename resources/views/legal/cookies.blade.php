@@ -3,7 +3,7 @@
     {!! $content !!}
 @else
 
-<h1>Política de Cookies de {{ config('app.name', 'Sientia') }}</h1>
+<h1>Política de Cookies de {{ config('app.name', 'Sientia Open Source Lab') }}</h1>
 <p class="meta">Última actualización: <strong>{{ date('d/m/Y') }}</strong></p>
 
 <p>Esta Política de Cookies explica cómo utilizamos las cookies y tecnologías similares en nuestra plataforma.</p>

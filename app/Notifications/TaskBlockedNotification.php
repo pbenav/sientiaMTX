@@ -53,7 +53,7 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
                       "*Tarea*: {$this->task->title}\n" .
                       "*Reportado por*: {$this->reportedBy->name}\n\n" .
                       "Se requiere atención para desbloquear esta tarea.\n\n" .
-                      "[Abrir tarea en Sientia]({$url})"
+                      "[Abrir tarea en Sientia Open Source Lab]({$url})"
         ];
     }
 

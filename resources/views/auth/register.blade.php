@@ -73,7 +73,7 @@
                 </div>
                 <div class="ml-3 text-sm text-gray-600 dark:text-gray-400">
                     <label for="marketing">
-                        {{ __('Deseo recibir actualizaciones y noticias sobre Sientia (Opcional).') }}
+                        {{ __('Deseo recibir actualizaciones y noticias sobre Sientia Open Source Lab (Opcional).') }}
                     </label>
                 </div>
             </div>

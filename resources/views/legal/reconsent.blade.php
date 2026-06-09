@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Sientia') }} — {{ __('Consentimiento Legal Obligatorio') }}</title>
+    <title>{{ config('app.name', 'Sientia Open Source Lab') }} — {{ __('Consentimiento Legal Obligatorio') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,7 +116,7 @@
                             <input type="checkbox" name="marketing" id="marketing" class="w-5 h-5 rounded-lg border-gray-300 text-violet-600 focus:ring-violet-500 transition-all cursor-pointer">
                         </div>
                         <label for="marketing" class="text-sm font-medium text-gray-500 dark:text-gray-400 cursor-pointer">
-                            {{ __('Deseo recibir actualizaciones y noticias sobre Sientia (Opcional).') }}
+                            {{ __('Deseo recibir actualizaciones y noticias sobre Sientia Open Source Lab (Opcional).') }}
                         </label>
                     </div>
                 </div>

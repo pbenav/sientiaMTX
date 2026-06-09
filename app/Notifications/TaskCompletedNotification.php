@@ -52,7 +52,7 @@ class TaskCompletedNotification extends Notification implements ShouldQueue
             'text' => "✅ *¡TAREA COMPLETADA!*\n\n" .
                       "*Tarea*: {$this->task->title}\n" .
                       "*Finalizada por*: {$this->completedBy->name}\n\n" .
-                      "[Ver detalles en Sientia]({$url})"
+                      "[Ver detalles en Sientia Open Source Lab]({$url})"
         ];
     }
 

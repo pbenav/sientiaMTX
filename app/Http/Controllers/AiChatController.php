@@ -148,7 +148,7 @@ class AiChatController extends Controller
             }
         }
 
-        AiChatMessage::create([
+        $userMessage = AiChatMessage::create([
             'user_id' => $user->id,
             'team_id' => $request->team_id,
             'task_id' => $request->task_id,
@@ -328,7 +328,7 @@ class AiChatController extends Controller
         }
 
         // 2. Persist AI Message
-        AiChatMessage::create([
+        $aiMessage = AiChatMessage::create([
             'user_id' => $user->id,
             'team_id' => $request->team_id,
             'task_id' => $request->task_id,
@@ -338,8 +338,23 @@ class AiChatController extends Controller
 
         return response()->json([
             'message' => $response,
-            'current_model' => $aiAssistant->getTargetModel()
+            'current_model' => $aiAssistant->getTargetModel(),
+            'user_message_id' => $userMessage->id,
+            'ai_message_id' => $aiMessage->id,
         ]);
+    }
+
+    public function deleteMessage(Request $request, int $id)
+    {
+        $message = AiChatMessage::where('user_id', $request->user()->id)->findOrFail($id);
+
+        if ($message->file_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($message->file_path);
+        }
+
+        $message->delete();
+
+        return response()->json(['success' => true]);
     }
 
     public function clearHistory(Request $request)

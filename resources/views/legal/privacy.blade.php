@@ -3,10 +3,10 @@
     {!! $content !!}
 @else
 
-<h1>Política de Privacidad de {{ config('app.name', 'Sientia') }}</h1>
+<h1>Política de Privacidad de {{ config('app.name', 'Sientia Open Source Lab') }}</h1>
 <p class="meta">Última actualización: <strong>{{ date('d/m/Y') }}</strong></p>
 
-<p>En <strong>{{ config('app.name', 'Sientia') }}</strong>, nos comprometemos a proteger su privacidad. Esta Política explica cómo recopilamos, usamos y protegemos sus datos personales de acuerdo con el RGPD.</p>
+<p>En <strong>{{ config('app.name', 'Sientia Open Source Lab') }}</strong>, nos comprometemos a proteger su privacidad. Esta Política explica cómo recopilamos, usamos y protegemos sus datos personales de acuerdo con el RGPD.</p>
 
 <h2>1. Responsable del Tratamiento</h2>
 <ul>

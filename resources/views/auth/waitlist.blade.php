@@ -20,7 +20,7 @@
 
         <!-- Descripción cálida -->
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-            {!! __('¡Hola, <strong>:name</strong>! Sientia está creciendo con mucho mimo para garantizar un rendimiento óptimo. Tu cuenta ha sido registrada con éxito, pero se encuentra temporalmente en cola de espera para ser aprobada por el administrador en la próxima oleada.', ['name' => auth()->user()->name]) !!}
+            {!! __('¡Hola, <strong>:name</strong>! Sientia Open Source Lab está creciendo con mucho mimo para garantizar un rendimiento óptimo. Tu cuenta ha sido registrada con éxito, pero se encuentra temporalmente en cola de espera para ser aprobada por el administrador en la próxima oleada.', ['name' => auth()->user()->name]) !!}
         </p>
 
         <!-- Badge de Estado -->

@@ -111,7 +111,7 @@
                         </div>
                         <textarea name="body" id="email-body" required rows="12"
                             class="w-full flex-1 bg-transparent border-none focus:ring-0 outline-none p-2 text-sm font-normal text-gray-700 dark:text-gray-200 placeholder-gray-400 resize-y"
-                            placeholder="Hola,\n\nTe invitamos a formar parte de nuestro equipo en Sientia.\n\nHaz clic aquí para unirte: {enlace_invitacion}\n\n¡Un saludo!"></textarea>
+                            placeholder="Hola,\n\nTe invitamos a formar parte de nuestro equipo en Sientia Open Source Lab.\n\nHaz clic aquí para unirte: {enlace_invitacion}\n\n¡Un saludo!"></textarea>
                     </div>
                 </div>
 

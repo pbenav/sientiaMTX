@@ -51,7 +51,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             'text' => "📬 *¡NUEVA TAREA ASIGNADA!*\n\n" .
                       "*Tarea*: {$this->task->title}\n" .
                       "*Asignada por*: {$this->assignedBy->name}\n\n" .
-                      "[Ver detalles en Sientia]({$url})"
+                      "[Ver detalles en Sientia Open Source Lab]({$url})"
         ];
     }
 

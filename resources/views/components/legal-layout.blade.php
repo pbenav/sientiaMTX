@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="{{ $metaDescription ?? config('app.name', 'Sientia') . ' — ' . ($title ?? 'Documentos Legales') }}">
+    <meta name="description" content="{{ $metaDescription ?? config('app.name', 'Sientia Open Source Lab') . ' — ' . ($title ?? 'Documentos Legales') }}">
     <meta name="robots" content="index, follow">
-    <title>{{ config('app.name', 'Sientia') }} · {{ $title ?? 'Legal' }}</title>
+    <title>{{ config('app.name', 'Sientia Open Source Lab') }} · {{ $title ?? 'Legal' }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,7 +69,7 @@
         <div class="flex items-center gap-3">
             <a href="/" class="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                {{ config('app.name', 'Sientia') }}
+                {{ config('app.name', 'Sientia Open Source Lab') }}
             </a>
         </div>
         <nav class="flex items-center gap-1" aria-label="Documentos legales">
@@ -86,7 +86,7 @@
         </article>
 
         <footer class="mt-12 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-4 justify-between items-center" style="font-size:11px; color:#9ca3af;">
-            <span>© {{ date('Y') }} {{ config('app.name', 'Sientia') }}. Todos los derechos reservados.</span>
+            <span>© {{ date('Y') }} {{ config('app.name', 'Sientia Open Source Lab') }}. Todos los derechos reservados.</span>
             <div class="flex gap-3">
                 <a href="{{ route('terms') }}"   class="hover:text-violet-500 transition-colors">Términos</a>
                 <a href="{{ route('privacy') }}" class="hover:text-violet-500 transition-colors">Privacidad</a>

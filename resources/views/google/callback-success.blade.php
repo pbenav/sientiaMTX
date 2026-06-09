@@ -13,7 +13,7 @@
             </div>
         </div>
         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">¡Conexión Exitosa!</h2>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Ya puedes cerrar esta ventana. Sientia se actualizará automáticamente.</p>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Ya puedes cerrar esta ventana. Sientia Open Source Lab se actualizará automáticamente.</p>
         
         <button onclick="window.close()" class="w-full py-3 bg-gray-900 dark:bg-violet-600 text-white font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg">
             Cerrar ventana ahora

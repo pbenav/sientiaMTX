@@ -43,9 +43,9 @@ class TwoFactorLoginController extends Controller
 
             try {
                 \Illuminate\Support\Facades\Mail::raw(
-                    "Tu código de acceso para iniciar sesión en Sientia es: {$code}. Este código expira en 10 minutos.",
+                    "Tu código de acceso para iniciar sesión en Sientia Open Source Lab es: {$code}. Este código expira en 10 minutos.",
                     function ($message) use ($user) {
-                        $message->to($user->email)->subject('Código de Acceso Sientia - MFA');
+                        $message->to($user->email)->subject('Código de Acceso Sientia Open Source Lab - MFA');
                     }
                 );
             } catch (\Exception $e) {

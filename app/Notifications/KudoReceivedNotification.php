@@ -71,7 +71,7 @@ class KudoReceivedNotification extends Notification implements ShouldQueue
                       "*Motivo*: {$this->kudo->type}\n" .
                       "*Mensaje*: " . ($this->kudo->message ? "\"{$this->kudo->message}\"" : "Sin mensaje.") . "\n\n" .
                       "¡Sigue así! El equipo valora tu esfuerzo.\n\n" .
-                      "[Ver Dashboard en Sientia]({$url})"
+                      "[Ver Dashboard en Sientia Open Source Lab]({$url})"
         ];
     }
 

@@ -23,7 +23,7 @@
       "@@context" : "https://schema.org",
       "@@type" : "WebSite",
       "name" : "Sientia Open Labs",
-      "alternateName": ["sientiaMTX", "Sientia"],
+      "alternateName": ["sientiaMTX", "Sientia Open Source Lab"],
       "url" : "https://mtx.sientia.com/"
     }
     </script>
@@ -972,7 +972,7 @@
     <!-- FOOTER -->
     <footer>
         <p>
-            © {{ date('Y') }} <a href="https://www.sientia.com" style="color:white; font-weight: 700;">Sientia</a> · 
+            © {{ date('Y') }} <a href="https://www.sientia.com" style="color:white; font-weight: 700;">Sientia Open Source Lab</a> · 
             sientia<strong>MTX</strong> v{{ config('app.version', '0.0.1') }} ·
             {{ app()->getLocale() === 'es' ? 'MTX, Gantt y Kanban para equipos enfocados' : 'MTX, Gantt and Kanban for focused teams' }}
         </p>

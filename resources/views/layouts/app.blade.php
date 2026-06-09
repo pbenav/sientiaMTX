@@ -1841,7 +1841,7 @@
         <div
             class="max-w-none lg:{{ $maxWidth }} lg:mx-auto px-2 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
             <div class="mb-2 md:mb-0 flex items-center gap-2">
-                <span class="font-bold">© {{ date('Y') }} <a href="https://www.sientia.com" class="hover:underline hover:text-violet-600 transition-colors">Sientia</a></span>
+                <span class="font-bold">© {{ date('Y') }} <a href="https://www.sientia.com" class="hover:underline hover:text-violet-600 transition-colors">Sientia Open Source Lab</a></span>
                 <span class="mx-1">|</span>
                 <span>v{{ config('app.version', '1.0.0') }}</span>
                 <span class="mx-1">|</span>

@@ -718,7 +718,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-bold text-gray-900 dark:text-white">WhatsApp Bridge</h4>
-                        <p class="text-[10px] text-gray-400 font-medium">Vincula WhatsApp para recibir y enviar mensajes desde Sientia</p>
+                        <p class="text-[10px] text-gray-400 font-medium">Vincula WhatsApp para recibir y enviar mensajes desde Sientia Open Source Lab</p>
                     </div>
                 </div>
             </div>

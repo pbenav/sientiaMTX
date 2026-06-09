@@ -393,6 +393,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ai/ask', [\App\Http\Controllers\AiChatController::class, 'ask'])->name('ai.ask');
     Route::post('/ai/undo', [\App\Http\Controllers\AiContentTransferController::class, 'undoLastTransfer'])->name('ai.undo');
     Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
+    Route::delete('/ai/messages/{id}', [\App\Http\Controllers\AiChatController::class, 'deleteMessage'])->name('ai.delete-message');
     Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferContent'])->name('ai.transfer');
     Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferForumContent'])->name('ai.transfer_forum');
     Route::post('/ai/transfer-global/{team?}', [\App\Http\Controllers\AiContentTransferController::class, 'transferGlobalContent'])->name('ai.transfer_global');
