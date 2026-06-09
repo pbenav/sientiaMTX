@@ -69,5 +69,26 @@
         <p class="mt-1 opacity-60">Este contenido ha sido publicado por un usuario y no refleja necesariamente la opinión de Sientia MTX.</p>
     </footer>
 
+    <script>
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-ms-fullscreen]');
+            if (!btn) return;
+            const viewer = btn.closest('.ms-pdf-viewer');
+            if (!viewer) return;
+            if (document.fullscreenElement) {
+                document.exitFullscreen?.();
+            } else {
+                viewer.requestFullscreen?.().catch(function () {
+                    window.open(viewer.querySelector('.ms-pdf-frame')?.src || viewer.querySelector('iframe')?.src, '_blank');
+                });
+            }
+        });
+        document.addEventListener('fullscreenchange', function () {
+            document.querySelectorAll('[data-ms-fullscreen]').forEach(function (btn) {
+                btn.textContent = document.fullscreenElement ? '✕ Salir' : '⛶ Pantalla completa';
+            });
+        });
+    </script>
+
 </body>
 </html>

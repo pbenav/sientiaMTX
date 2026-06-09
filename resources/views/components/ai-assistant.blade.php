@@ -1237,10 +1237,11 @@
             buildMicrositePreviewSrcdoc(html, css) {
                 const usesTailwind = /\bclass="[^"]*\b(bg-|text-|flex|grid|p-\d|rounded-|shadow-)/.test(html);
                 const tailwindScript = usesTailwind ? '<script src="https://cdn.tailwindcss.com"><\/script>' : '';
-                const wrappedHtml = html.includes('ms-root') ? html : `<div class="ms-root">${html}</div>`;
+                let wrappedHtml = html.includes('ms-root') ? html : `<div class="ms-root">${html}</div>`;
                 const fullCss = (this.micrositeScaffoldCss || '') + '\n' + (css || '');
                 const escAttr = (s) => String(s).replace(/"/g, '&quot;');
-                return `${tailwindScript}<style>${escAttr(fullCss)}</style>${escAttr(wrappedHtml)}`;
+                const fsScript = '<script>document.addEventListener("click",function(e){var b=e.target.closest("[data-ms-fullscreen]");if(!b)return;var v=b.closest(".ms-pdf-viewer");if(!v)return;document.fullscreenElement?document.exitFullscreen():v.requestFullscreen();});<\/script>';
+                return `${tailwindScript}<style>${escAttr(fullCss)}</style>${escAttr(wrappedHtml)}${fsScript}`;
             },
 
             generatePayloadCard(content) {

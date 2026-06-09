@@ -403,6 +403,10 @@ class GeminiService implements AiAssistantInterface
         
         $systemInstruction .= "Instrucción final para {$userName}: Responde de inmediato a la petición. Si su energía es baja, sé empático y añade sutilmente la etiqueta secreta [RECHARGE] al final de tu contenido.";
 
+        if (preg_match('/micrositio|microsite|genera(?:r)?\s+(?:un\s+)?(?:sitio|p[aá]gina|web)/iu', $prompt)) {
+            $systemInstruction .= "\n\n⚡ REFUERZO ACTIVO — DISEÑO DE MICROSITIO: El usuario pide un micrositio. Responde con intent 'generate_microsite'. Aplica el design system ms-* (hero, secciones, tarjetas, botones). Si hay PDF adjunto, usa OBLIGATORIAMENTE la plantilla ms-pdf-viewer del system prompt. El resultado debe verse como una landing premium de agencia, no como un documento HTML básico.\n";
+        }
+
         // Añadimos el prompt del usuario
         $parts[] = ['text' => $prompt];
 
@@ -416,51 +420,78 @@ class GeminiService implements AiAssistantInterface
     {
         return <<<'MS'
 
-4. 'generate_microsite': Para GENERAR EL CÓDIGO de un micrositio web premium.
+4. 'generate_microsite': EXCLUSIVO para diseño de micrositios web premium de nivel agencia.
    Estructura JSON: {"intent": "generate_microsite", "html": "<fragmento HTML>", "css": "<CSS completo>"}
 
-ENTORNO DE RENDERIZADO (CRÍTICO — LÉELO ANTES DE GENERAR):
-- Tu HTML se inserta en <main> de una página Laravel. NO incluyas <html>, <head> ni <body>.
-- El CSS se inyecta en una etiqueta <style> separada. NO uses la etiqueta <style> dentro del JSON.
-- PROHIBIDO usar clases de Tailwind (bg-blue-500, text-white, flex, p-4, etc.) salvo petición EXPRESA del usuario.
-  Tailwind del host NO aplica a tu fragmento. Si el usuario pide Tailwind, incluye en el HTML:
-  <script src="https://cdn.tailwindcss.com"></script> como primer elemento.
-- Usa SIEMPRE CSS vanilla con clases semánticas propias (prefijo recomendado: ms-).
-- Envuelve TODO el contenido en: <div class="ms-root">...</div>
+═══ ENTORNO DE RENDERIZADO (CRÍTICO) ═══
+- HTML insertado en <main> de Laravel. PROHIBIDO <html>, <head>, <body>.
+- CSS en campo separado. PROHIBIDO etiqueta <style> dentro del JSON.
+- PROHIBIDO clases Tailwind (bg-*, text-*, flex, p-4…) salvo petición EXPRESA del usuario.
+  Si pide Tailwind: primer elemento del HTML → <script src="https://cdn.tailwindcss.com"></script>
+- Usa CSS vanilla + clases del design system ms-* (ya precargado en la plataforma).
+- Envuelve TODO en: <div class="ms-root">...</div>
 
-PALETA Y ESTILO (OBLIGATORIO):
-- Extrae del prompt del usuario colores, tono y estilo deseados (ej. corporativo azul, elegante oscuro, vibrante rosa).
-- Si no se indican colores, usa una paleta premium moderna (ej. índigo + slate, o emerald + zinc).
-- Define variables CSS en .ms-root { --ms-primary, --ms-bg, --ms-surface, --ms-text, --ms-text-muted, --ms-accent, --ms-radius, --ms-shadow }.
-- Aplica la paleta de forma coherente en hero, tarjetas, botones, enlaces y pies de sección.
+═══ DESIGN SYSTEM ms-* (ÚSALO — NO REINVENTES DESDE CERO) ═══
+Clases disponibles en la plataforma (puedes extenderlas en tu CSS):
+  .ms-container  → contenedor centrado max-width
+  .ms-hero       → cabecera impactante con gradiente (texto SIEMPRE blanco/claro)
+  .ms-section     → bloque de contenido con padding
+  .ms-section--alt → sección con fondo surface
+  .ms-card        → tarjeta elevada
+  .ms-btn .ms-btn--primary / .ms-btn--outline / .ms-btn--ghost
+  .ms-pdf-viewer  → visor PDF con toolbar y pantalla completa (OBLIGATORIO para PDFs)
 
-CHECKLIST DE ACCESIBILIDAD Y CONTRASTE (VERIFICA ANTES DE RESPONDER):
-- PROHIBIDO texto blanco (#fff, white) sobre fondos claros (blanco, gris claro, amarillo pálido).
-- PROHIBIDO texto oscuro sobre fondos oscuros sin contraste suficiente (ratio mínimo ~4.5:1).
-- Cada sección debe declarar explícitamente color de fondo Y color de texto en su CSS.
-- Enlaces y botones deben ser claramente distinguibles (color, subrayado o fondo).
-- Si usas gradientes, asegura legibilidad del texto (overlay oscuro/claro o text-shadow sutil).
+ESTRUCTURA HTML MÍNIMA RECOMENDADA:
+<div class="ms-root">
+  <header class="ms-hero"><div class="ms-container"><h1>Título</h1><p>Subtítulo</p></div></header>
+  <section class="ms-section"><div class="ms-container">...</div></section>
+  <section class="ms-section ms-section--alt"><div class="ms-container">...</div></section>
+</div>
 
-CALIDAD PREMIUM (OBLIGATORIO):
-- Tipografía: importa Google Fonts en CSS con @import url(...) al inicio (ej. Inter, Playfair Display, DM Sans).
-- Jerarquía visual clara: h1 impactante, subtítulos, párrafos con buen line-height (1.6–1.8).
-- Espaciado generoso (padding/margin), bordes redondeados, sombras suaves, transiciones en hover.
-- Diseño responsive con @media (max-width: 768px) para móvil.
-- Hero section atractiva, tarjetas con profundidad, CTAs visibles.
-- Si hay PDF/imagen adjunta, incrusta con <iframe> o <img> usando la URL exacta del contexto.
+═══ PALETA Y ESTILO (OBLIGATORIO) ═══
+- Extrae colores y tono del prompt del usuario (corporativo, elegante, vibrante, etc.).
+- Si no indica colores: paleta índigo + rosa accent sobre fondo claro, o modo oscuro slate + violeta.
+- Sobrescribe variables en .ms-root { --ms-primary, --ms-bg, --ms-surface, --ms-text, --ms-accent, … }.
+- NUNCA dejes secciones sin color de fondo y texto explícitos en CSS.
 
-ESTRUCTURA CSS MÍNIMA RECOMENDADA:
-.ms-root { /* variables + reset box-sizing + font-family + color base + background */ }
-.ms-hero { /* sección principal */ }
-.ms-section { /* bloques de contenido */ }
-.ms-card { /* tarjetas */ }
-.ms-btn { /* botones con hover */ }
+═══ CONTRASTE Y ACCESIBILIDAD (VERIFICA SIEMPRE) ═══
+- PROHIBIDO texto blanco sobre fondos claros (#fff, #f8fafc, amarillo pálido).
+- PROHIBIDO texto oscuro sobre fondos oscuros sin contraste ≥ 4.5:1.
+- .ms-hero SIEMPRE: fondo oscuro/degradado + color: #ffffff en h1, p y botones ghost.
+- Enlaces y botones claramente distinguibles.
 
-AUTO-REVISIÓN FINAL (hazla mentalmente antes de emitir el JSON):
-1. ¿Todas las clases del HTML están definidas en el CSS?
-2. ¿Hay contraste legible en cada combinación fondo/texto?
-3. ¿Funciona sin Tailwind ni librerías externas (salvo fuentes CDN)?
-4. ¿Refleja el estilo/colores pedidos por el usuario?
+═══ CALIDAD PREMIUM (NIVEL AGENCIA — OBLIGATORIO) ═══
+- Tipografía: @import Google Fonts al inicio del CSS (Playfair Display + DM Sans, o similar serif + sans).
+- Hero con titular grande (clamp), subtítulo legible, CTA opcional (.ms-btn--primary).
+- Secciones alternadas (fondo / surface), tarjetas con sombra, espaciado generoso (3–4rem).
+- Micro-interacciones: hover en botones y tarjetas (transform, shadow).
+- Responsive @media (max-width: 768px): tipografía fluida, padding reducido, PDF 60vh mínimo.
+- Evita páginas planas de solo texto: usa jerarquía visual, iconos Unicode (✦ ◆ →), separadores.
+
+═══ PDF / DOCUMENTOS ADJUNTOS (PLANTILLA OBLIGATORIA) ═══
+Si hay URL de PDF en el contexto, incrusta EXACTAMENTE con esta estructura (copia la URL tal cual):
+
+<div class="ms-pdf-viewer">
+  <div class="ms-pdf-toolbar">
+    <span class="ms-pdf-title">Nombre del documento</span>
+    <div class="ms-pdf-actions">
+      <button type="button" class="ms-btn ms-btn--ghost" data-ms-fullscreen>⛶ Pantalla completa</button>
+      <a href="URL_EXACTA_DEL_CONTEXTO" target="_blank" rel="noopener" class="ms-btn ms-btn--ghost">↗ Abrir en pestaña</a>
+    </div>
+  </div>
+  <iframe class="ms-pdf-frame" src="URL_EXACTA_DEL_CONTEXTO" title="Nombre del documento" allowfullscreen loading="lazy"></iframe>
+</div>
+
+- PROHIBIDO iframe PDF suelto sin ms-pdf-viewer (sin pantalla completa ni toolbar).
+- Altura mínima del iframe: 75vh (clase ms-pdf-frame ya lo define).
+- Imágenes: <img> con border-radius y sombra dentro de .ms-card.
+
+═══ AUTO-REVISIÓN FINAL (antes de emitir JSON) ═══
+1. ¿Parece una landing premium, no un informe Word convertido a HTML?
+2. ¿Todas las clases del HTML están en CSS o en el design system ms-*?
+3. ¿Contraste correcto en hero, secciones y tarjetas?
+4. ¿PDF con ms-pdf-viewer + data-ms-fullscreen + allowfullscreen?
+5. ¿Colores del prompt reflejados en --ms-* variables?
 
 MS;
     }
