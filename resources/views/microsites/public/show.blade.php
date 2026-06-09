@@ -16,14 +16,29 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- CSS del Micrositio -->
-    @if($microsite->css_content)
+    @if($usesTailwind ?? false)
+    <script src="https://cdn.tailwindcss.com"></script>
+    @endif
+
+    <!-- CSS del Micrositio (con scaffold premium y variables por defecto) -->
+    @if(!empty($cssContent) || $microsite->css_content)
     <style>
-        {!! $microsite->css_content !!}
+        {!! $cssContent ?? $microsite->css_content !!}
     </style>
     @endif
+
+    <style>
+        /* Aislar el micrositio del tema global (dark mode, colores heredados) */
+        .microsite-canvas {
+            isolation: isolate;
+            width: 100%;
+        }
+        .microsite-canvas .ms-root {
+            min-height: 50vh;
+        }
+    </style>
 </head>
-<body class="font-sans antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+<body class="font-sans antialiased min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
     
     <!-- Barra superior Sientia MTX (Opcional, para dar contexto de que es parte del portal) -->
     <div class="bg-gray-900 text-white py-2 px-4 shadow-md text-xs sm:text-sm flex justify-between items-center z-50 relative">
@@ -44,8 +59,8 @@
     </div>
 
     <!-- Contenido Principal del Micrositio -->
-    <main class="flex-1 w-full relative">
-        {!! $microsite->html_content !!}
+    <main class="microsite-canvas flex-1 w-full relative">
+        {!! $htmlContent ?? $microsite->html_content !!}
     </main>
 
     <!-- Footer Sientia MTX -->

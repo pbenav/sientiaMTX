@@ -466,6 +466,9 @@
             pendingFile: null,
             pendingReuseFilePath: null,
             pendingReuseFileName: null,
+            pendingReuseAttachmentId: null,
+
+            micrositeScaffoldCss: @json(app(\App\Services\Microsite\MicrositeContentService::class)->getBaseScaffoldCss()),
 
             cleanJson(content) {
                 if (!content) return '';
@@ -953,8 +956,9 @@
             _loadUserMessageIntoInput(msg) {
                 this.input = this._extractUserPlainText(msg);
                 this.pendingFile = null;
-                this.pendingReuseFilePath = msg.file_path || null;
+                this.pendingReuseFilePath = (msg.file_path && !msg.task_attachment_id) ? msg.file_path : null;
                 this.pendingReuseFileName = msg.file_name || null;
+                this.pendingReuseAttachmentId = msg.task_attachment_id || null;
 
                 this.$nextTick(() => {
                     const textarea = this.$refs.aiInput;
@@ -1044,6 +1048,7 @@
                 const fileToSend = this.pendingFile;
                 const reuseFilePathToSend = this.pendingReuseFilePath;
                 const reuseFileNameToSend = this.pendingReuseFileName;
+                const reuseAttachmentIdToSend = this.pendingReuseAttachmentId;
 
                 // SAVE FOR RETRY
                 this.lastPrompt = userText;
@@ -1082,7 +1087,7 @@
                     formData.append('prompt', userText);
                     formData.append('team_id', this.teamId || '');
                     formData.append('task_id', this.taskId || '');
-                    formData.append('attachment_id', this.attachmentId || '');
+                    formData.append('attachment_id', this.attachmentId || reuseAttachmentIdToSend || '');
                     formData.append('forum_thread_id', this.threadId || '');
                     formData.append('forum_message_id', this.messageId || '');
                     
@@ -1122,6 +1127,7 @@
                         this.pendingFile = null;
                         this.pendingReuseFilePath = null;
                         this.pendingReuseFileName = null;
+                        this.pendingReuseAttachmentId = null;
                     } else {
                         this.lastPrompt = userText;
                         this.lastFile = fileToSend;
@@ -1228,6 +1234,15 @@
                 return rendered;
             },
 
+            buildMicrositePreviewSrcdoc(html, css) {
+                const usesTailwind = /\bclass="[^"]*\b(bg-|text-|flex|grid|p-\d|rounded-|shadow-)/.test(html);
+                const tailwindScript = usesTailwind ? '<script src="https://cdn.tailwindcss.com"><\/script>' : '';
+                const wrappedHtml = html.includes('ms-root') ? html : `<div class="ms-root">${html}</div>`;
+                const fullCss = (this.micrositeScaffoldCss || '') + '\n' + (css || '');
+                const escAttr = (s) => String(s).replace(/"/g, '&quot;');
+                return `${tailwindScript}<style>${escAttr(fullCss)}</style>${escAttr(wrappedHtml)}`;
+            },
+
             generatePayloadCard(content) {
                 try {
                     const sanitizedContent = this.cleanJson(content);
@@ -1237,6 +1252,7 @@
                     if (data.intent === 'generate_microsite') {
                         const htmlCode = data.html || '';
                         const cssCode = data.css || '';
+                        const previewSrcdoc = this.buildMicrositePreviewSrcdoc(htmlCode, cssCode);
                         const htmlLines = htmlCode.split('\n').length;
                         const cssLines = cssCode.split('\n').length;
                         const uniqueId = 'ms_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
@@ -1272,7 +1288,7 @@
                                         <pre class="bg-gray-900/95 text-blue-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${cssCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
                                     </div>
                                     <div x-show="tab==='preview'" class="relative" style="display:none;">
-                                        <iframe id="${uniqueId}" srcdoc="<style>${cssCode.replace(/"/g, '&quot;')}</style>${htmlCode.replace(/"/g, '&quot;')}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white" style="height:200px;" sandbox="allow-same-origin"></iframe>
+                                        <iframe id="${uniqueId}" srcdoc="${previewSrcdoc}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white" style="height:280px;" sandbox="allow-scripts allow-same-origin"></iframe>
                                     </div>
                                 </div>
 

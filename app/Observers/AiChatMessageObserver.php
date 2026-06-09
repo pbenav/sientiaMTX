@@ -12,8 +12,6 @@ class AiChatMessageObserver
      */
     public function deleting(AiChatMessage $message): void
     {
-        if ($message->file_path) {
-            Storage::disk('public')->delete($message->file_path);
-        }
+        $message->deleteOwnedFile();
     }
 }

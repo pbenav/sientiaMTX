@@ -74,6 +74,70 @@ class TaskAttachment extends Model
     }
 
     /**
+     * Token permanente para enlaces públicos de incrustación (micrositios).
+     */
+    public function getEmbedToken(): string
+    {
+        return hash_hmac('sha256', (string) $this->id, (string) config('app.key'));
+    }
+
+    /**
+     * Ruta de la copia pública para micrositios (no sustituye al original).
+     */
+    public function getPublicCopyPath(): string
+    {
+        $basename = basename($this->file_path ?: $this->file_name);
+
+        return 'microsite_public/attachment_' . $this->id . '/' . $basename;
+    }
+
+    /**
+     * Crea una copia en microsite_public/ si no existe. Nunca modifica ni elimina el original.
+     */
+    public function ensurePublicCopy(): ?string
+    {
+        if ($this->storage_provider === 'google' || !$this->file_path) {
+            return null;
+        }
+
+        $copyPath = $this->getPublicCopyPath();
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($copyPath)) {
+            return $copyPath;
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($this->file_path)) {
+            return null;
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->makeDirectory(dirname($copyPath));
+        \Illuminate\Support\Facades\Storage::disk('public')->copy($this->file_path, $copyPath);
+
+        return $copyPath;
+    }
+
+    /**
+     * URL pública permanente para incrustar o enlazar el adjunto en micrositios.
+     */
+    public function getPublicEmbedUrl(): ?string
+    {
+        if ($this->storage_provider === 'google') {
+            return $this->web_view_link
+                ? str_replace('/view', '/preview', $this->web_view_link)
+                : null;
+        }
+
+        if (!$this->file_path) {
+            return null;
+        }
+
+        return route('public.attachments.embed', [
+            'attachment' => $this->id,
+            'token' => $this->getEmbedToken(),
+        ]);
+    }
+
+    /**
      * Check if the physical file exists in storage.
      */
     public function getExistsAttribute(): bool

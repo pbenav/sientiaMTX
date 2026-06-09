@@ -51,6 +51,7 @@ Route::prefix('citas')->name('public.appointments.')->group(function () {
 // --- Directorio y Micrositios Públicos ---
 Route::get('/directorio', [PublicMicrositeController::class, 'directory'])->name('public.microsites.directory');
 Route::get('/p/{slug}', [PublicMicrositeController::class, 'show'])->name('public.microsites.show');
+Route::get('/embed/files/{attachment}/{token}', [\App\Http\Controllers\PublicAttachmentController::class, 'embed'])->name('public.attachments.embed');
 
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {

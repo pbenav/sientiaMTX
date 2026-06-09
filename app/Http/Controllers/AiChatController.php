@@ -39,6 +39,7 @@ class AiChatController extends Controller
     {
         $messages = AiChatMessage::where('user_id', $request->user()->id)
             ->where('team_id', $request->team_id)
+            ->with('taskAttachment')
             ->latest()
             ->limit(20)
             ->get()
@@ -109,6 +110,7 @@ class AiChatController extends Controller
         $filePath = null;
         $fileName = null;
         $fileType = null;
+        $taskAttachmentId = null;
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
@@ -126,21 +128,46 @@ class AiChatController extends Controller
             $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
         } elseif ($request->reuse_file_path) {
             $rawPath = $request->reuse_file_path;
-            // Verificación de seguridad: Asegurar que el archivo pertenece a un mensaje previo del mismo usuario
-            $exists = AiChatMessage::where('user_id', $user->id)->where('file_path', $rawPath)->exists();
-            if ($exists) {
+
+            if (str_starts_with($rawPath, 'attachments/')) {
+                $taskAttachment = \App\Models\TaskAttachment::where('file_path', $rawPath)->first();
+                $team = $request->team_id ? \App\Models\Team::find($request->team_id) : null;
+
+                if ($taskAttachment && $team && $taskAttachment->canBeAccessedBy($user, $team)) {
+                    $fullPath = storage_path('app/public/' . $rawPath);
+                    if (file_exists($fullPath)) {
+                        $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath);
+                        $name = $request->reuse_file_name ?: $taskAttachment->file_name;
+
+                        $mockFile = new \Illuminate\Http\UploadedFile($fullPath, $name, $mimeType, null, true);
+                        $aiAssistant->withFile($mockFile);
+                        $aiAssistant->withAttachmentContext($taskAttachment);
+
+                        $taskAttachmentId = $taskAttachment->id;
+                        $fileName = $name;
+                        $fileType = $mimeType;
+
+                        if (!str_starts_with($prompt, "📁 [Archivo:")) {
+                            $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
+                        }
+                    }
+                }
+            } elseif (
+                AiChatMessage::isAiOwnedStoragePath($rawPath) &&
+                AiChatMessage::where('user_id', $user->id)->where('file_path', $rawPath)->exists()
+            ) {
                 $fullPath = storage_path('app/public/' . $rawPath);
                 if (file_exists($fullPath)) {
                     $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath);
                     $name = $request->reuse_file_name ?: basename($fullPath);
-                    
+
                     $mockFile = new \Illuminate\Http\UploadedFile($fullPath, $name, $mimeType, null, true);
                     $aiAssistant->withFile($mockFile);
-                    
+
                     $filePath = $rawPath;
                     $fileName = $name;
                     $fileType = $mimeType;
-                    
+
                     if (!str_starts_with($prompt, "📁 [Archivo:")) {
                         $contentToStore = "📁 [Archivo: " . $fileName . "]\n\n" . $prompt;
                     }
@@ -152,6 +179,7 @@ class AiChatController extends Controller
             'user_id' => $user->id,
             'team_id' => $request->team_id,
             'task_id' => $request->task_id,
+            'task_attachment_id' => $taskAttachmentId,
             'role' => 'user',
             'content' => $contentToStore,
             'file_path' => $filePath,
@@ -193,25 +221,14 @@ class AiChatController extends Controller
 
                 $aiAssistant->withAttachmentContext($attachment);
                 
-                // If no new file was uploaded, we link the existing attachment to the message
-                if (!$filePath) {
-                    $filePath = $attachment->file_path;
-                    $fileName = $attachment->file_name;
-                    $fileType = $attachment->mime_type;
-                    
-                    // Update the message we just created
-                    $userMessage = AiChatMessage::where('user_id', $user->id)
-                        ->where('role', 'user')
-                        ->latest()
-                        ->first();
-                    
-                    if ($userMessage) {
-                        $userMessage->update([
-                            'file_path' => $filePath,
-                            'file_name' => $fileName,
-                            'file_type' => $fileType,
-                        ]);
-                    }
+                // Referenciar el adjunto de tarea SIN reutilizar su file_path (evita borrado accidental al limpiar el chat)
+                if (!$filePath && !$taskAttachmentId) {
+                    $userMessage->update([
+                        'task_attachment_id' => $attachment->id,
+                        'file_name' => $attachment->file_name,
+                        'file_type' => $attachment->mime_type,
+                        'file_path' => null,
+                    ]);
                 }
             }
         }
@@ -348,10 +365,7 @@ class AiChatController extends Controller
     {
         $message = AiChatMessage::where('user_id', $request->user()->id)->findOrFail($id);
 
-        if ($message->file_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($message->file_path);
-        }
-
+        $message->deleteOwnedFile();
         $message->delete();
 
         return response()->json(['success' => true]);
@@ -367,7 +381,7 @@ class AiChatController extends Controller
             ->get();
 
         foreach ($messages as $msg) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($msg->file_path);
+            $msg->deleteOwnedFile();
         }
 
         AiChatMessage::where('user_id', $request->user()->id)

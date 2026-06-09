@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Microsite;
 
 use App\Http\Controllers\Controller;
 use App\Models\Microsite;
+use App\Services\Microsite\MicrositeContentService;
 use Illuminate\Http\Request;
 
 class PublicMicrositeController extends Controller
@@ -52,6 +53,11 @@ class PublicMicrositeController extends Controller
         // Increment views
         $microsite->increment('views');
 
-        return view('microsites.public.show', compact('microsite'));
+        $prepared = app(MicrositeContentService::class)->prepareMicrosite($microsite);
+        $htmlContent = $prepared['html'];
+        $cssContent = $prepared['css'];
+        $usesTailwind = $prepared['uses_tailwind'];
+
+        return view('microsites.public.show', compact('microsite', 'htmlContent', 'cssContent', 'usesTailwind'));
     }
 }

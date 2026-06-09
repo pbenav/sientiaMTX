@@ -297,13 +297,15 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Tipo: {$this->attachmentContext->mime_type}\n";
             $contextInfo .= "- Tamaño: " . number_format($this->attachmentContext->file_size / 1024, 2) . " KB\n";
             
-            // Proveer siempre una URL para que la IA sepa cómo incrustar o enlazar el archivo
-            if ($this->attachmentContext->storage_provider === 'google') {
-                $contextInfo .= "- URL para incrustar/enlazar: " . str_replace('/view', '/preview', $this->attachmentContext->web_view_link) . "\n";
-            } else {
-                try {
-                    $contextInfo .= "- URL para incrustar/enlazar: " . url(\Illuminate\Support\Facades\Storage::disk('public')->url($this->attachmentContext->file_path)) . "\n";
-                } catch (\Exception $e) {}
+            // Proveer siempre una URL pública permanente para micrositios
+            if ($this->attachmentContext->storage_provider !== 'google') {
+                $this->attachmentContext->ensurePublicCopy();
+            }
+
+            $embedUrl = $this->attachmentContext->getPublicEmbedUrl();
+            if ($embedUrl) {
+                $contextInfo .= "- URL para incrustar/enlazar (OBLIGATORIA, copiar exacta): {$embedUrl}\n";
+                $contextInfo .= "- ID del adjunto: {$this->attachmentContext->id}\n";
             }
             
             $mime = $this->attachmentContext->mime_type;
@@ -374,11 +376,11 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "1. 'simple_text': Para responder preguntas generales, análisis, resúmenes, explicaciones y traducciones. Estructura: {\"intent\": \"simple_text\", \"content\": \"Contenido en Markdown\"}.\n";
         $systemInstruction .= "2. 'search_results': Para mostrar resultados de búsqueda.\n";
         $systemInstruction .= "3. 'full_task': Para CREAR TAREAS nuevas (cuando el usuario lo pida, sugiera o cuando la tarea requiera ser registrada en el sistema). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título de la tarea\", \"description\": \"Resumen/Descripción breve\", \"observations\": \"Desarrollo paso a paso u observaciones detalladas\"}}.\n";
-        $systemInstruction .= "4. 'generate_microsite': Para GENERAR EL CÓDIGO de un micrositio web. Estructura: {\"intent\": \"generate_microsite\", \"html\": \"<código HTML puro sin html, head, ni body>\", \"css\": \"<código CSS puro sin etiqueta style>\"}. IMPORTANTE: NO uses Tailwind CSS a menos que el usuario lo pida expresamente (y en ese caso añade el CDN). Prefiere CSS Vanilla o estilos inline.\n\n";
+        $systemInstruction .= $this->getMicrositeDesignInstructions();
         
         $systemInstruction .= "ANÁLISIS DE DOCUMENTOS Y ARCHIVOS:\n";
         $systemInstruction .= "- Si se te proporciona un archivo adjunto o directo (multimodal o texto), PRIORIZA su lectura exhaustiva. Extrae conclusiones clave, listas ordenadas, resúmenes organizados o responde con total precisión técnica sobre el contenido del documento usando la intención 'simple_text'.\n";
-        $systemInstruction .= "- Si vas a generar un micrositio y necesitas mostrar, incrustar o enlazar el archivo adjunto, utiliza SIEMPRE la 'URL para incrustar/enlazar' proporcionada en el contexto del archivo (ej. dentro de un <iframe> o una etiqueta <a>). NUNCA inventes URLs locales para los archivos.\n\n";
+        $systemInstruction .= "- Si vas a generar un micrositio y necesitas mostrar, incrustar o enlazar el archivo adjunto, utiliza SIEMPRE la 'URL para incrustar/enlazar (OBLIGATORIA, copiar exacta)' del contexto, sin modificarla (ej. en <iframe src=\"...\"> o <a href=\"...\">). PROHIBIDO inventar rutas como /files/, /storage/ o usar solo el nombre del archivo.\n\n";
         
         $systemInstruction .= "CREACIÓN DE TAREAS:\n";
         $systemInstruction .= "- Si el usuario te pide crear, programar, generar, registrar o planificar una tarea, debes utilizar la intención 'full_task' para que el sistema la cree automáticamente. No te limites por estar dentro de una tarea de edición; si se solicita una nueva tarea, créala.\n\n";
@@ -405,6 +407,62 @@ class GeminiService implements AiAssistantInterface
         $parts[] = ['text' => $prompt];
 
         return $this->callGemini($this->targetModel, $parts, false, $systemInstruction);
+    }
+
+    /**
+     * Directrices de diseño premium para micrositios generados por Ax.ia.
+     */
+    protected function getMicrositeDesignInstructions(): string
+    {
+        return <<<'MS'
+
+4. 'generate_microsite': Para GENERAR EL CÓDIGO de un micrositio web premium.
+   Estructura JSON: {"intent": "generate_microsite", "html": "<fragmento HTML>", "css": "<CSS completo>"}
+
+ENTORNO DE RENDERIZADO (CRÍTICO — LÉELO ANTES DE GENERAR):
+- Tu HTML se inserta en <main> de una página Laravel. NO incluyas <html>, <head> ni <body>.
+- El CSS se inyecta en una etiqueta <style> separada. NO uses la etiqueta <style> dentro del JSON.
+- PROHIBIDO usar clases de Tailwind (bg-blue-500, text-white, flex, p-4, etc.) salvo petición EXPRESA del usuario.
+  Tailwind del host NO aplica a tu fragmento. Si el usuario pide Tailwind, incluye en el HTML:
+  <script src="https://cdn.tailwindcss.com"></script> como primer elemento.
+- Usa SIEMPRE CSS vanilla con clases semánticas propias (prefijo recomendado: ms-).
+- Envuelve TODO el contenido en: <div class="ms-root">...</div>
+
+PALETA Y ESTILO (OBLIGATORIO):
+- Extrae del prompt del usuario colores, tono y estilo deseados (ej. corporativo azul, elegante oscuro, vibrante rosa).
+- Si no se indican colores, usa una paleta premium moderna (ej. índigo + slate, o emerald + zinc).
+- Define variables CSS en .ms-root { --ms-primary, --ms-bg, --ms-surface, --ms-text, --ms-text-muted, --ms-accent, --ms-radius, --ms-shadow }.
+- Aplica la paleta de forma coherente en hero, tarjetas, botones, enlaces y pies de sección.
+
+CHECKLIST DE ACCESIBILIDAD Y CONTRASTE (VERIFICA ANTES DE RESPONDER):
+- PROHIBIDO texto blanco (#fff, white) sobre fondos claros (blanco, gris claro, amarillo pálido).
+- PROHIBIDO texto oscuro sobre fondos oscuros sin contraste suficiente (ratio mínimo ~4.5:1).
+- Cada sección debe declarar explícitamente color de fondo Y color de texto en su CSS.
+- Enlaces y botones deben ser claramente distinguibles (color, subrayado o fondo).
+- Si usas gradientes, asegura legibilidad del texto (overlay oscuro/claro o text-shadow sutil).
+
+CALIDAD PREMIUM (OBLIGATORIO):
+- Tipografía: importa Google Fonts en CSS con @import url(...) al inicio (ej. Inter, Playfair Display, DM Sans).
+- Jerarquía visual clara: h1 impactante, subtítulos, párrafos con buen line-height (1.6–1.8).
+- Espaciado generoso (padding/margin), bordes redondeados, sombras suaves, transiciones en hover.
+- Diseño responsive con @media (max-width: 768px) para móvil.
+- Hero section atractiva, tarjetas con profundidad, CTAs visibles.
+- Si hay PDF/imagen adjunta, incrusta con <iframe> o <img> usando la URL exacta del contexto.
+
+ESTRUCTURA CSS MÍNIMA RECOMENDADA:
+.ms-root { /* variables + reset box-sizing + font-family + color base + background */ }
+.ms-hero { /* sección principal */ }
+.ms-section { /* bloques de contenido */ }
+.ms-card { /* tarjetas */ }
+.ms-btn { /* botones con hover */ }
+
+AUTO-REVISIÓN FINAL (hazla mentalmente antes de emitir el JSON):
+1. ¿Todas las clases del HTML están definidas en el CSS?
+2. ¿Hay contraste legible en cada combinación fondo/texto?
+3. ¿Funciona sin Tailwind ni librerías externas (salvo fuentes CDN)?
+4. ¿Refleja el estilo/colores pedidos por el usuario?
+
+MS;
     }
 
     protected function isMultimodalMime(string $mime): bool
