@@ -16,21 +16,22 @@ class AiChatController extends Controller
     public function getAvailableModels(Request $request, AiAssistantInterface $aiService)
     {
         $aiService->forUser($request->user(), $request->team_id);
-        
-        // Si viene una clave en la request, la usamos para la consulta temporal
-        if ($request->api_key) {
-            // Necesitamos acceder a la propiedad protegida o añadir un setter
-            // Por ahora, si el servicio lo soporta, la inyectamos.
-            if (method_exists($aiService, 'setTemporaryKey')) {
-                $aiService->setTemporaryKey($request->api_key);
-            }
+
+        // Si viene una clave en la request, la sobreescribimos para hacer la consulta con ella
+        if ($request->api_key && method_exists($aiService, 'setTemporaryKey')) {
+            $aiService->setTemporaryKey($request->api_key);
+        }
+
+        // Limpiar el caché de sesión del modelo funcional para esta clave al solicitar refresco de modelos
+        if (method_exists($aiService, 'clearWorkingModelCache')) {
+            $aiService->clearWorkingModelCache();
         }
 
         $models = $aiService->listAvailableModels();
 
         return response()->json([
             'models' => $models,
-            'current_model' => $aiService->forUser($request->user(), $request->team_id)->getTargetModel()
+            'current_model' => $aiService->getTargetModel(), // Sin re-instanciar, usa el estado actual
         ]);
     }
 

@@ -273,6 +273,19 @@ class ProfileController extends Controller
             );
         }
 
+        // Limpiar el caché de sesión del modelo funcional para evitar que use un fallback obsoleto
+        if ($apiKey) {
+            session()->forget('ai_working_model_' . md5($apiKey));
+        }
+        $globalKey = $user->aiPreferences()->where('team_id', null)->first()?->api_key;
+        if ($globalKey) {
+            session()->forget('ai_working_model_' . md5($globalKey));
+        }
+        $configKey = config('services.gemini.key');
+        if ($configKey) {
+            session()->forget('ai_working_model_' . md5($configKey));
+        }
+
         return Redirect::route('profile.edit', ['tab' => 'integrations', 'team_id' => $validated['team_id']])->with('status', 'ai-updated');
     }
 

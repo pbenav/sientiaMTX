@@ -13,6 +13,7 @@
      @ai:transfer-direct.window="transferToTask($event.detail)"
      @ai:smart-inject.window="smartInject($event.detail)"
      @ai:inject-note.window="injectNote($event.detail)"
+     @ai:inject-microsite.window="injectMicrosite($event.detail)"
      @quicknote-state-changed.window="quickNotesVisible = $event.detail.anyVisible">
     
     <!-- Chat Window -->
@@ -1135,6 +1136,61 @@
                     const sanitizedContent = this.cleanJson(content);
                     const data = JSON.parse(sanitizedContent);
                     
+                    // 2.5 SPECIAL: MICROSITE GENERATOR
+                    if (data.intent === 'generate_microsite') {
+                        const htmlCode = data.html || '';
+                        const cssCode = data.css || '';
+                        const htmlLines = htmlCode.split('\n').length;
+                        const cssLines = cssCode.split('\n').length;
+                        const uniqueId = 'ms_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                        
+                        return `
+                        <div class="group/payload my-6 relative transition-all duration-500">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[2.5rem] blur opacity-20 group-hover/payload:opacity-40 transition duration-1000"></div>
+                            <div class="relative p-6 rounded-[2.5rem] bg-emerald-50/90 dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 shadow-2xl backdrop-blur-xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Micrositio generado por Ax.ia</span>
+                                            <div class="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">${htmlLines} líneas HTML · ${cssLines} líneas CSS</div>
+                                        </div>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[9px] font-black uppercase tracking-wider">● Listo</span>
+                                </div>
+                                
+                                <!-- Tabs HTML / CSS / Preview -->
+                                <div x-data="{ tab: 'html' }" class="mt-3">
+                                    <div class="flex gap-1 mb-3">
+                                        <button @click="tab='html'" :class="tab==='html' ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all">&lt;/&gt; HTML</button>
+                                        <button @click="tab='css'" :class="tab==='css' ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all">🎨 CSS</button>
+                                        <button @click="tab='preview'" :class="tab==='preview' ? 'bg-violet-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all">👁 Preview</button>
+                                    </div>
+                                    <div x-show="tab==='html'" class="relative">
+                                        <pre class="bg-gray-900/95 text-emerald-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                                    </div>
+                                    <div x-show="tab==='css'" class="relative" style="display:none;">
+                                        <pre class="bg-gray-900/95 text-blue-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${cssCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                                    </div>
+                                    <div x-show="tab==='preview'" class="relative" style="display:none;">
+                                        <iframe id="${uniqueId}" srcdoc="<style>${cssCode.replace(/"/g, '&quot;')}</style>${htmlCode.replace(/"/g, '&quot;')}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white" style="height:200px;" sandbox="allow-same-origin"></iframe>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-emerald-100/50 dark:border-slate-800">
+                                    <span class="text-[9px] font-bold text-emerald-500/80 mr-auto uppercase tracking-tighter italic">Crear o inyectar micrositio</span>
+                                    <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-microsite', { detail: { html: ${JSON.stringify(htmlCode).replace(/"/g, '&quot;')}, css: ${JSON.stringify(cssCode).replace(/"/g, '&quot;')} } }))" 
+                                            class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        <span>Crear Nuevo Sitio</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
                     // 3. SPECIAL: SEARCH RESULTS CARD
                     if (data.intent === 'search_results') {
                         let html = `
@@ -1619,6 +1675,12 @@
             </div>
             <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Encuesta</div>
             </button>
+            <button type="button" onclick="window._aiSelect1('microsite')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-pink-100 dark:border-pink-900/30 bg-white dark:bg-slate-900 hover:border-pink-600 transition-all text-center group">
+            <div class="w-12 h-12 rounded-2xl bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-pink-600 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            </div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Micrositio</div>
+            </button>
             </div>
             `,
             didOpen: () => {
@@ -1643,6 +1705,15 @@
             let teamId = this.teamId || 0;
             let surveyUrl = teamId ? `/teams/${teamId}/surveys/create` : `/global-surveys/create`;
             window.location.href = surveyUrl;
+            } else if (firstLevelSelection === 'microsite') {
+                let micrositeData = { html: rawPayload, css: '' };
+                try {
+                    const parsed = JSON.parse(rawPayload);
+                    if (parsed.html !== undefined || parsed.css !== undefined) {
+                        micrositeData = { html: parsed.html || '', css: parsed.css || '' };
+                    }
+                } catch (e) { /* si no es JSON, lo tratamos como HTML puro */ }
+                this.injectMicrosite(micrositeData);
             } else if (firstLevelSelection === 'current-task') {
             if (!this.taskId) {
                         const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
@@ -1701,6 +1772,118 @@
                         }
                     }
                 }
+            },
+
+            injectMicrosite(detail) {
+                const htmlField = document.getElementById('html_content');
+                const cssField = document.getElementById('css_content');
+                
+                // Modo 1: Si estamos en el editor de un micrositio, inyectamos directamente
+                if (htmlField || cssField) {
+                    if (htmlField) {
+                        htmlField.value = detail.html || '';
+                        htmlField.dispatchEvent(new Event('input', { bubbles: true }));
+                        // Soporte Alpine.js
+                        if (window.Alpine && htmlField._x_model) htmlField._x_model.set(detail.html || '');
+                    }
+                    if (cssField) {
+                        cssField.value = detail.css || '';
+                        cssField.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (window.Alpine && cssField._x_model) cssField._x_model.set(detail.css || '');
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Código Inyectado!',
+                        text: 'El HTML y CSS han sido inyectados en los campos del micrositio.',
+                        timer: 3000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'bottom-end'
+                    });
+                    return;
+                }
+
+                // Modo 2: No estamos en el editor → crear micrositio "al vuelo" vía AJAX
+                const isDark = document.documentElement.classList.contains('dark');
+                const htmlLines = (detail.html || '').split('\n').length;
+                const cssLines = (detail.css || '').split('\n').length;
+
+                Swal.fire({
+                    title: 'Crear Nuevo Micrositio',
+                    html: `
+                        <div style="text-align:left; font-size:13px; line-height:1.7;">
+                            <p style="margin-bottom:12px;">No estás en el editor de un micrositio. ¿Quieres crear uno nuevo con este contenido?</p>
+                            <div style="display:flex; gap:12px; margin-bottom:16px;">
+                                <div style="flex:1; padding:12px; border-radius:12px; background:${isDark ? '#1e293b' : '#f0fdf4'}; border:1px solid ${isDark ? '#334155' : '#bbf7d0'};">
+                                    <div style="font-weight:800; font-size:10px; text-transform:uppercase; color:#059669; letter-spacing:0.05em;">HTML</div>
+                                    <div style="font-size:18px; font-weight:900; color:${isDark ? '#fff' : '#111'};">${htmlLines} líneas</div>
+                                </div>
+                                <div style="flex:1; padding:12px; border-radius:12px; background:${isDark ? '#1e293b' : '#eff6ff'}; border:1px solid ${isDark ? '#334155' : '#bfdbfe'};">
+                                    <div style="font-weight:800; font-size:10px; text-transform:uppercase; color:#2563eb; letter-spacing:0.05em;">CSS</div>
+                                    <div style="font-size:18px; font-weight:900; color:${isDark ? '#fff' : '#111'};">${cssLines} líneas</div>
+                                </div>
+                            </div>
+                            <label style="font-weight:700; font-size:12px; display:block; margin-bottom:4px;">Título del micrositio:</label>
+                            <input id="swal-microsite-title" class="swal2-input" style="width:100%; font-size:13px;" placeholder="Mi Micrositio Ax.ia" value="Micrositio Ax.ia - ${new Date().toLocaleDateString('es-ES')}">
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '🚀 Crear Micrositio',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#059669',
+                    showLoaderOnConfirm: true,
+                    preConfirm: async () => {
+                        const title = document.getElementById('swal-microsite-title')?.value || 'Micrositio Ax.ia';
+                        try {
+                            const response = await fetch('{{ route("ai.microsites.quick-create") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    html: detail.html || '',
+                                    css: detail.css || '',
+                                    title: title,
+                                    team_id: this.teamId || null
+                                })
+                            });
+                            const data = await response.json();
+                            if (!response.ok) {
+                                throw new Error(data.message || 'Error del servidor');
+                            }
+                            return data;
+                        } catch (error) {
+                            Swal.showValidationMessage('Error: ' + error.message);
+                        }
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                }).then((result) => {
+                    if (result.isConfirmed && result.value?.success) {
+                        const data = result.value;
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Micrositio Creado!',
+                            html: `
+                                <div style="text-align:left; font-size:13px;">
+                                    <p><strong>${data.microsite.title}</strong> ha sido creado en el equipo <strong>${data.team.name}</strong>.</p>
+                                    <p style="margin-top:8px; font-size:11px; color:#6b7280;">Slug: <code>${data.microsite.slug}</code></p>
+                                </div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: '✏️ Ir al Editor',
+                            cancelButtonText: 'Cerrar',
+                            confirmButtonColor: '#059669',
+                        }).then((editResult) => {
+                            if (editResult.isConfirmed && data.edit_url) {
+                                window.location.href = data.edit_url;
+                            }
+                        });
+                    }
+                });
             },
 
             playNotification() {

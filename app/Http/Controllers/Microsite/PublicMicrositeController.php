@@ -32,6 +32,7 @@ class PublicMicrositeController extends Controller
             ->whereHas('team', function ($q) {
                 $q->where('settings->microsites_enabled', true);
             })
+            ->with('team')
             ->get();
 
         return view('microsites.public.directory', compact('microsites', 'mapMicrosites'));

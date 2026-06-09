@@ -27,6 +27,18 @@ class GeminiService implements AiAssistantInterface
     protected ?AiSearchService $searchService = null;
     protected array $messagesHistory = [];
 
+    /** Lista de modelos conocidos y fiables, en orden de preferencia */
+    protected const FALLBACK_MODELS = [
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-3.5-flash',
+        'gemini-flash-latest',
+        'gemini-2.5-pro',
+        'gemini-1.5-pro',
+        'gemini-pro-latest',
+    ];
+
     public function __construct()
     {
         // By default, use the app config key if available
@@ -40,6 +52,16 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
+    public function clearWorkingModelCache(): self
+    {
+        if (!empty($this->apiKey)) {
+            $cacheKey = 'ai_working_model_' . md5($this->apiKey);
+            session()->forget($cacheKey);
+            Log::info("Ax.ia: Limpiado caché de modelo funcional en sesión.");
+        }
+        return $this;
+    }
+
     public function forUser(User $user, ?int $teamId = null): self
     {
         $this->user = $user;
@@ -48,7 +70,8 @@ class GeminiService implements AiAssistantInterface
         $this->attachmentContext = null;
         $this->threadContext = null;
         $this->messageContext = null;
-        // Intentar obtener la mejor clave disponible
+
+        // 1. Obtener todas las preferencias del usuario ordenadas por relevancia
         $preferences = $user->aiPreferences()
             ->orderByRaw("CASE 
                 WHEN team_id = ? THEN 0 
@@ -58,32 +81,60 @@ class GeminiService implements AiAssistantInterface
 
         $keySource = "ARCHIVO .ENV / CONFIG (POR DEFECTO)";
         $modelSource = "ESTÁTICO (POR DEFECTO)";
+        $this->targetModel = 'gemini-1.5-flash'; // Modelo por defecto
 
-        // 1. Obtener primero el modelo global si no hay otro
-        $globalPref = $preferences->where('team_id', null)->first();
-        if ($globalPref && $globalPref->ai_model) {
-            $this->targetModel = $globalPref->ai_model;
-            $modelSource = "BASE DE DATOS (Global)";
+        // 2. Determinar el modelo más específico configurado
+        if ($teamId) {
+            $teamPref = $preferences->where('team_id', $teamId)->first();
+            if ($teamPref && !empty($teamPref->ai_model)) {
+                $this->targetModel = $teamPref->ai_model;
+                $modelSource = "BASE DE DATOS (Equipo {$teamId})";
+            }
         }
 
-        // 2. Buscar clave (empezando por la más específica)
-        foreach ($preferences as $pref) {
-            $key = $pref->api_key; 
-            
-            if (!empty($key)) {
-                $this->apiKey = (string) $key;
-                if ($pref->ai_model) {
-                    $this->targetModel = $pref->ai_model;
-                    $modelSource = "BASE DE DATOS (" . ($pref->team_id ? "Equipo {$pref->team_id}" : "Global") . ")";
-                }
-                $keySource = "BASE DE DATOS (Preferencia ID: {$pref->id}" . ($pref->team_id ? " - Equipo {$pref->team_id}" : " - Global") . ")";
-                break;
+        if ($modelSource === "ESTÁTICO (POR DEFECTO)") {
+            $globalPref = $preferences->where('team_id', null)->first();
+            if ($globalPref && !empty($globalPref->ai_model)) {
+                $this->targetModel = $globalPref->ai_model;
+                $modelSource = "BASE DE DATOS (Global)";
             }
+        }
+
+        // 3. Determinar la Clave API más específica configurada
+        if ($teamId) {
+            $teamPref = $preferences->where('team_id', $teamId)->first();
+            if ($teamPref && !empty($teamPref->api_key)) {
+                $this->apiKey = (string) $teamPref->api_key;
+                $keySource = "BASE DE DATOS (Preferencia ID: {$teamPref->id} - Equipo {$teamId})";
+            }
+        }
+
+        if (empty($this->apiKey)) {
+            $globalPref = $preferences->where('team_id', null)->first();
+            if ($globalPref && !empty($globalPref->api_key)) {
+                $this->apiKey = (string) $globalPref->api_key;
+                $keySource = "BASE DE DATOS (Preferencia ID: {$globalPref->id} - Global)";
+            }
+        }
+
+        if (empty($this->apiKey)) {
+            $this->apiKey = config('services.gemini.key') ?? '';
         }
 
         $maskedKey = $this->apiKey ? (substr($this->apiKey, 0, 4) . '....' . substr($this->apiKey, -4)) : 'VACÍA';
         Log::debug("Ax.ia: Usando clave desde {$keySource} [Key: {$maskedKey}]");
         Log::debug("Ax.ia: Usando modelo {$this->targetModel} [Fuente: {$modelSource}] para el contexto " . ($teamId ? "Equipo $teamId" : "Global"));
+
+        // Leer el modelo configurado por el usuario
+        $configuredModel = $this->targetModel;
+
+        // Comprobar si hay un modelo funcional cacheado en sesión para este usuario + api key
+        $cacheKey = 'ai_working_model_' . md5($this->apiKey);
+        $cachedWorkingModel = session($cacheKey);
+        if ($cachedWorkingModel && $cachedWorkingModel !== $configuredModel) {
+            Log::debug("Ax.ia: Usando modelo funcional cacheado en sesión: {$cachedWorkingModel} (configurado: {$configuredModel})");
+            $this->targetModel = $cachedWorkingModel;
+        }
 
         $this->userStats = $user->getAiContextStats();
 
@@ -313,7 +364,8 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "INTENCIONES DE PAYLOAD ADMITIDAS:\n";
         $systemInstruction .= "1. 'simple_text': Para responder preguntas generales, análisis, resúmenes, explicaciones y traducciones. Estructura: {\"intent\": \"simple_text\", \"content\": \"Contenido en Markdown\"}.\n";
         $systemInstruction .= "2. 'search_results': Para mostrar resultados de búsqueda.\n";
-        $systemInstruction .= "3. 'full_task': Para CREAR TAREAS nuevas (cuando el usuario lo pida, sugiera o cuando la tarea requiera ser registrada en el sistema). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título de la tarea\", \"description\": \"Resumen/Descripción breve\", \"observations\": \"Desarrollo paso a paso u observaciones detalladas\"}}.\n\n";
+        $systemInstruction .= "3. 'full_task': Para CREAR TAREAS nuevas (cuando el usuario lo pida, sugiera o cuando la tarea requiera ser registrada en el sistema). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título de la tarea\", \"description\": \"Resumen/Descripción breve\", \"observations\": \"Desarrollo paso a paso u observaciones detalladas\"}}.\n";
+        $systemInstruction .= "4. 'generate_microsite': Para GENERAR EL CÓDIGO de un micrositio web. Estructura: {\"intent\": \"generate_microsite\", \"html\": \"<código HTML puro sin html, head, ni body>\", \"css\": \"<código CSS puro sin etiqueta style>\"}. IMPORTANTE: NO uses Tailwind CSS a menos que el usuario lo pida expresamente (y en ese caso añade el CDN). Prefiere CSS Vanilla o estilos inline.\n\n";
         
         $systemInstruction .= "ANÁLISIS DE DOCUMENTOS Y ARCHIVOS:\n";
         $systemInstruction .= "- Si se te proporciona un archivo adjunto o directo (multimodal o texto), PRIORIZA su lectura exhaustiva. Extrae conclusiones clave, listas ordenadas, resúmenes organizados o responde con total precisión técnica sobre el contenido del documento usando la intención 'simple_text'.\n\n";
@@ -611,7 +663,7 @@ class GeminiService implements AiAssistantInterface
         }
 
         try {
-            $response = Http::timeout(60)->post($url, $payload);
+            $response = Http::timeout(25)->post($url, $payload);
             $status = $response->status();
             $errorBody = $response->json('error') ?? [];
             $errorMsg = $errorBody['message'] ?? 'Error desconocido';
@@ -663,51 +715,70 @@ class GeminiService implements AiAssistantInterface
                 return $this->callGemini($model, $parts, $isFallback, $systemInstruction, $isToolCall, true);
             }
             
-            // Si el error indica que este modelo no sirve (por cuota, carga o esquema), buscamos otro.
-            $shouldRetryWithAlternative = ($status === 429 || $status === 503 || $status === 400 || $status === 404);
+            // Si el error indica que este modelo no sirve (por cuota, carga, error de servidor o esquema), buscamos otro.
+            $shouldRetryWithAlternative = ($status >= 400 && $status !== 401);
             
             if ($shouldRetryWithAlternative && !$isFallback) {
-                $available = $this->listAvailableModels();
-                
-                // 1. Primero probamos los candidatos "VIPS" por ser los más estables
-                $vips = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro-latest'];
-                
-                // 2. Si fallan, añadiremos el resto de modelos disponibles como "reserva"
-                $allOtherModels = array_map(fn($m) => $m['id'], $available);
-                $fullCandidateList = array_unique(array_merge($vips, $allOtherModels));
-
-                foreach ($fullCandidateList as $candidate) {
-                    if ($candidate === $cleanId) continue; // No repetir el que acaba de fallar
-                    
-                    // Verificar si el candidato está en su lista real (si no era VIP)
-                    $isAvailable = false;
-                    foreach ($available as $avail) {
-                        if ($avail['id'] === $candidate) {
-                            $isAvailable = true;
-                            break;
-                        }
-                    }
-                    
-                    if ($isAvailable) {
-                        Log::warning("Ax.ia: Resiliencia activada. Probando modelo alternativo: {$candidate}...");
-                        // Si el fallo original fue por tools, probamos el alternativo también sin tools para asegurar
-                        $res = $this->callGemini($candidate, $parts, true, $systemInstruction, false, $forceNoTools);
-                        
-                        // Si el rescate funciona, devolvemos la respuesta inmediatamente y SIN notas
-                        if (!str_contains($res, 'Lo siento, ha ocurrido un error')) {
-                            return $res;
-                        }
-                    }
-                }
+                return $this->handleFallback($model, $parts, $systemInstruction, $forceNoTools, "Error HTTP {$status}: {$errorMsg}");
             }
 
-            // Si llegamos aquí tras el barrido, realmente nada funciona
-            Log::error("Ax.ia: Fallo crítico absoluto tras intentar con todos los modelos. Último error: {$errorMsg}");
-            return "Lo siento, ha ocurrido un error crítico. He intentado usar todos tus modelos disponibles pero ninguno ha respondido correctamente en este momento.\n\nDetalle: `{$errorMsg}`";
+            // Si llegamos aquí tras el barrido o es un 401, realmente nada funciona
+            Log::error("Ax.ia: Fallo crítico absoluto tras intentar con el modelo {$model}. Último error: {$errorMsg}");
+            return "Lo siento, ha ocurrido un error crítico. He intentado usar el modelo pero no ha respondido correctamente en este momento.\n\nDetalle: `{$errorMsg}`";
 
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            // Timeout o error de red
+            Log::warning("Ax.ia: Timeout/conexión con {$model}: " . $e->getMessage());
+            if (!$isFallback) {
+                return $this->handleFallback($model, $parts, $systemInstruction, $forceNoTools, "Timeout de red: " . $e->getMessage());
+            }
+            return "Lo siento, el servicio de IA no ha respondido a tiempo. El modelo '{$model}' puede no existir o estar caído. Ax.ia ha intentado alternativas pero ninguna ha respondido.";
+        
         } catch (\Exception $e) {
             Log::error('Gemini API Exception: ' . $e->getMessage());
+            if (!$isFallback) {
+                return $this->handleFallback($model, $parts, $systemInstruction, $forceNoTools, "Excepción inesperada: " . $e->getMessage());
+            }
             return "Lo siento, el servicio de inteligencia artificial no está disponible en este momento por un error de conexión.";
         }
+    }
+
+    /**
+     * Intenta recuperar la petición usando modelos alternativos en caso de fallo crítico.
+     */
+    protected function handleFallback(string $failedModel, array $parts, ?string $systemInstruction, bool $forceNoTools, string $errorMsg): string
+    {
+        $cleanFailedModel = preg_replace('/^models\//', '', $failedModel);
+        Log::warning("Ax.ia: Activando protocolo de resiliencia tras fallo en '{$failedModel}'. Detalle: {$errorMsg}");
+
+        $candidatesFromApi = [];
+        try {
+            $available = $this->listAvailableModels();
+            $candidatesFromApi = array_map(fn($m) => $m['id'], $available);
+        } catch (\Exception $ignored) { /* Ignorar fallos al listar modelos */ }
+
+        $fullCandidateList = array_unique(array_merge(self::FALLBACK_MODELS, $candidatesFromApi));
+
+        foreach ($fullCandidateList as $candidate) {
+            if ($candidate === $cleanFailedModel) {
+                continue;
+            }
+
+            Log::warning("Ax.ia: Probando modelo alternativo de resiliencia: {$candidate}...");
+            $res = $this->callGemini($candidate, $parts, true, $systemInstruction, false, $forceNoTools);
+            
+            // Si la respuesta no contiene indicación de fallo crítico
+            if (!str_contains($res, 'Lo siento, ha ocurrido un error') && !str_contains($res, 'no está disponible') && !str_contains($res, 'no ha respondido a tiempo')) {
+                // ✅ ¡Este modelo funciona! Guardarlo en sesión para las próximas peticiones
+                $cacheKey = 'ai_working_model_' . md5($this->apiKey);
+                session([$cacheKey => $candidate]);
+                $this->targetModel = $candidate;
+                Log::info("Ax.ia: Modelo de resiliencia funcional cacheado en sesión: {$candidate}");
+                return $res;
+            }
+        }
+
+        Log::error("Ax.ia: Fallo crítico absoluto. Ninguno de los modelos alternativos respondió.");
+        return "Lo siento, el servicio de IA no ha respondido a tiempo o ha fallado. El modelo '{$failedModel}' puede no existir, no estar disponible o estar caído. Ax.ia ha intentado recuperarse con modelos alternativos pero ninguno ha respondido.";
     }
 }

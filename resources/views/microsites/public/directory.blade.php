@@ -1,4 +1,4 @@
-@extends('layouts.public_appointments')
+@extends('layouts.public_microsites')
 
 @section('title', 'Directorio de Micrositios')
 

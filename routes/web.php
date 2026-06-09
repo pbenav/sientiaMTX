@@ -396,6 +396,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferContent'])->name('ai.transfer');
     Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferForumContent'])->name('ai.transfer_forum');
     Route::post('/ai/transfer-global/{team?}', [\App\Http\Controllers\AiContentTransferController::class, 'transferGlobalContent'])->name('ai.transfer_global');
+    Route::post('/ai/microsites/quick-create', [\App\Http\Controllers\Microsite\AiMicrositeController::class, 'quickCreate'])->name('ai.microsites.quick-create');
 
     // Time Tracking routes
     Route::prefix('time-logs')->name('time-logs.')->group(function () {

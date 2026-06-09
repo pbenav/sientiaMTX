@@ -50,6 +50,11 @@ interface AiAssistantInterface
     public function simplifyText(string $complexText): string;
 
     /**
+     * Clear the cached working model for this service key.
+     */
+    public function clearWorkingModelCache(): self;
+
+    /**
      * List all available models from the provider.
      */
     public function listAvailableModels(): array;

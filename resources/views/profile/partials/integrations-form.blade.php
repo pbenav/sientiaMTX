@@ -245,10 +245,23 @@
                     <div class="space-y-2">
                         <div class="flex items-center justify-between px-1">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Seleccionado</label>
-                            <span x-show="loadingModels" class="flex h-2 w-2 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span x-show="loadingModels" class="flex h-2 w-2 relative">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                                </span>
+                                <button type="button"
+                                    @click="fetchModels()"
+                                    :disabled="loadingModels || !apiKey"
+                                    :class="(loadingModels || !apiKey) ? 'opacity-30 cursor-not-allowed' : 'hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20'"
+                                    class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-gray-400 transition-all text-[9px] font-black uppercase tracking-widest"
+                                    title="Actualizar lista de modelos disponibles">
+                                    <svg class="w-2.5 h-2.5" :class="loadingModels ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Actualizar
+                                </button>
+                            </div>
                         </div>
                         <select name="ai_model" x-model="aiModel" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-violet-500">
                             <!-- Estado Sin Clave -->
@@ -275,6 +288,14 @@
                                 <option value="">❌ No se encontraron modelos (Revisa tu clave)</option>
                             </template>
                         </select>
+                        <template x-if="apiKey && !loadingModels && availableModels.length > 0 && aiModel && !availableModels.some(m => m.id === aiModel)">
+                            <p class="text-[9px] text-amber-600 dark:text-amber-400 font-bold mt-2 flex items-start gap-1">
+                                <svg class="w-3 h-3 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span>El modelo seleccionado no está disponible en tu cuenta. Se usará el sistema de resiliencia automática (fallback).</span>
+                            </p>
+                        </template>
                     </div>
                 </div>
 
