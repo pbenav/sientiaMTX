@@ -297,6 +297,15 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Tipo: {$this->attachmentContext->mime_type}\n";
             $contextInfo .= "- Tamaño: " . number_format($this->attachmentContext->file_size / 1024, 2) . " KB\n";
             
+            // Proveer siempre una URL para que la IA sepa cómo incrustar o enlazar el archivo
+            if ($this->attachmentContext->storage_provider === 'google') {
+                $contextInfo .= "- URL para incrustar/enlazar: " . str_replace('/view', '/preview', $this->attachmentContext->web_view_link) . "\n";
+            } else {
+                try {
+                    $contextInfo .= "- URL para incrustar/enlazar: " . url(\Illuminate\Support\Facades\Storage::disk('public')->url($this->attachmentContext->file_path)) . "\n";
+                } catch (\Exception $e) {}
+            }
+            
             $mime = $this->attachmentContext->mime_type;
             $canSendAsMedia = $this->isMultimodalMime($mime);
 
@@ -368,7 +377,8 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "4. 'generate_microsite': Para GENERAR EL CÓDIGO de un micrositio web. Estructura: {\"intent\": \"generate_microsite\", \"html\": \"<código HTML puro sin html, head, ni body>\", \"css\": \"<código CSS puro sin etiqueta style>\"}. IMPORTANTE: NO uses Tailwind CSS a menos que el usuario lo pida expresamente (y en ese caso añade el CDN). Prefiere CSS Vanilla o estilos inline.\n\n";
         
         $systemInstruction .= "ANÁLISIS DE DOCUMENTOS Y ARCHIVOS:\n";
-        $systemInstruction .= "- Si se te proporciona un archivo adjunto o directo (multimodal o texto), PRIORIZA su lectura exhaustiva. Extrae conclusiones clave, listas ordenadas, resúmenes organizados o responde con total precisión técnica sobre el contenido del documento usando la intención 'simple_text'.\n\n";
+        $systemInstruction .= "- Si se te proporciona un archivo adjunto o directo (multimodal o texto), PRIORIZA su lectura exhaustiva. Extrae conclusiones clave, listas ordenadas, resúmenes organizados o responde con total precisión técnica sobre el contenido del documento usando la intención 'simple_text'.\n";
+        $systemInstruction .= "- Si vas a generar un micrositio y necesitas mostrar, incrustar o enlazar el archivo adjunto, utiliza SIEMPRE la 'URL para incrustar/enlazar' proporcionada en el contexto del archivo (ej. dentro de un <iframe> o una etiqueta <a>). NUNCA inventes URLs locales para los archivos.\n\n";
         
         $systemInstruction .= "CREACIÓN DE TAREAS:\n";
         $systemInstruction .= "- Si el usuario te pide crear, programar, generar, registrar o planificar una tarea, debes utilizar la intención 'full_task' para que el sistema la cree automáticamente. No te limites por estar dentro de una tarea de edición; si se solicita una nueva tarea, créala.\n\n";
