@@ -231,13 +231,13 @@
 
                 @php
                     $maxWeight = collect($actionHeat)->max('weight') ?: 1;
-                    $maxUserWeight = collect($actionHeat)->max('user_weight') ?: 1;
+                    $maxUserWeightRaw = collect($actionHeat)->max('user_weight') ?: 1;
+                    $maxUserWeight = max($maxUserWeightRaw * 1.2, $maxWeight * 0.4);
                     $width = 100 / ($daysInMonth - 1);
                     $pts = []; $upts = [];
                     foreach($actionHeat as $day => $d) {
-                        $h = ($d['weight'] / $maxWeight) * 100;
-                        // Normalización optimizada (90% max height for aesthetics)
-                        $uh = ($d['user_weight'] / $maxUserWeight) * 90;
+                        $h = ($d['weight'] / $maxWeight) * 85;
+                        $uh = ($d['user_weight'] / $maxUserWeight) * 60;
                         $pts[] = ($day-1)*$width . ',' . (100-$h);
                         $upts[] = ($day-1)*$width . ',' . (100-$uh);
                     }
@@ -249,7 +249,7 @@
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full overflow-visible">
                         <defs><linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:rgba(124, 58, 237, 0.3)"/><stop offset="100%" style="stop-color:rgba(59, 130, 246, 0.05)"/></linearGradient></defs>
                         <path id="wave-team-path" d="{{$pathData}}" fill="url(#waveGradient)" class="transition-all duration-1000" />
-                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_6px_rgba(16,185,129,0.9)] transition-all duration-1000" />
+                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_3px_rgba(16,185,129,0.4)] transition-all duration-1000" />
                     </svg>
                     <div class="absolute inset-0 flex items-end gap-px">
                         @for($i=1; $i<=$daysInMonth; $i++)
@@ -503,14 +503,15 @@
                 };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
-            const uMax = Math.max(...heat.filter(h=>h).map(h=>h.uweight)) || 1;
+            const uMaxRaw = Math.max(...heat.filter(h=>h).map(h=>h.uweight)) || 1;
+            const uMax = Math.max(uMaxRaw * 1.2, max * 0.4);
             
             const wFact = 100/(days-1);
             let pts = [], upts = [];
             for(let i=1; i<=days; i++) {
                 const x = (i-1)*wFact;
-                const h = (heat[i].weight/max)*100;
-                const uh = (heat[i].uweight/uMax)*90;
+                const h = (heat[i].weight/max)*85;
+                const uh = (heat[i].uweight/uMax)*60;
                 
                 pts.push(`${x},${100-h}`); 
                 upts.push(`${x},${100-uh}`);
@@ -701,30 +702,29 @@
                 }
             }
 
+            let clickTimer = null;
             document.addEventListener('click', e => {
                 const wrapper = e.target.closest('.bar-wrapper');
                 if (wrapper && !wasDragging) {
                     const id = wrapper.dataset.id;
                     const task = allTasks.find(t => t.id == id);
                     if (task) {
-                        if (task.has_children) {
-                            (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
-                            refreshGanttDisplay();
-                        } else {
-                            // On mobile/tablet, a single click on a leaf task should go to details
+                        if (clickTimer) {
+                            // Si ya hay un timer, significa que es el segundo clic (doble clic)
+                            clearTimeout(clickTimer);
+                            clickTimer = null;
                             window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                        } else {
+                            // Iniciar el timer para esperar un posible segundo clic
+                            clickTimer = setTimeout(() => {
+                                clickTimer = null;
+                                // Si pasa el tiempo sin otro clic, es un clic simple
+                                if (task.has_children) {
+                                    (collapsedTasks.has(task.id) ? collapsedTasks.delete(task.id) : collapsedTasks.add(task.id));
+                                    refreshGanttDisplay();
+                                }
+                            }, 250); // 250ms de margen para el doble clic
                         }
-                    }
-                }
-            });
-
-            document.addEventListener('dblclick', e => {
-                const wrapper = e.target.closest('.bar-wrapper');
-                if (wrapper) {
-                    const id = wrapper.dataset.id;
-                    const task = allTasks.find(t => t.id == id);
-                    if (task) {
-                        window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
                     }
                 }
             });
