@@ -2290,14 +2290,20 @@
                         </div>
                     </div>
 
-                    <!-- Video Call Button (Sientia) -->
-                    <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="Iniciar Videollamada Sientia">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+                    <!-- Video Call Button (Google Meet) -->
+                    <button @click="startGoogleMeet()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="Crear Google Meet Rápido">
+                        <svg viewBox="0 0 24 24" class="w-5 h-5">
+                            <path fill="#ea4335" d="M24 10.5V13.5L19 18V6L24 10.5Z"/>
+                            <path fill="#4285f4" d="M0 6a4 4 0 014-4h10v5H5v10H0V6z"/>
+                            <path fill="#34a853" d="M0 18a4 4 0 004 4h10v-5H5V7H0v11z"/>
+                            <path fill="#fbbc04" d="M14 2H8V7H14V2Z"/>
+                            <path fill="#34a853" d="M14 17H8V22H14V17Z"/>
+                        </svg>
                     </button>
 
-                    <!-- Video Call Button (Google Meet) -->
-                    <button @click="startGoogleMeet()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-sky-500 rounded-xl transition-colors" title="Crear Google Meet Rápido">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <!-- Video Call Button (Jitsi) -->
+                    <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="Iniciar Videollamada Sientia">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
                     </button>
                     
                     <!-- Clear Chat Button -->

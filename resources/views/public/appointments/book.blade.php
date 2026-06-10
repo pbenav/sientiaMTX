@@ -116,6 +116,14 @@
                         $modalities = ['presencial'];
                     } else {
                         $modalities = is_array($rawModality) ? $rawModality : [$rawModality];
+                        $order = array_keys(\App\Models\AppointmentService::MODALITIES);
+                        usort($modalities, function($a, $b) use ($order) {
+                            $posA = array_search($a, $order);
+                            $posB = array_search($b, $order);
+                            if ($posA === false) $posA = 999;
+                            if ($posB === false) $posB = 999;
+                            return $posA <=> $posB;
+                        });
                     }
                 @endphp
                 @if(count($modalities) > 1)
@@ -129,6 +137,14 @@
                                         <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 peer-checked:bg-cyan-100 dark:peer-checked:bg-cyan-900 flex items-center justify-center mx-auto mb-2 text-gray-500 peer-checked:text-cyan-600 transition-colors">
                                             @if($mod === 'presencial')
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                            @elseif($mod === 'meet')
+                                                <svg viewBox="0 0 24 24" class="w-4 h-4">
+                                                    <path fill="#ea4335" d="M24 10.5V13.5L19 18V6L24 10.5Z"/>
+                                                    <path fill="#4285f4" d="M0 6a4 4 0 014-4h10v5H5v10H0V6z"/>
+                                                    <path fill="#34a853" d="M0 18a4 4 0 004 4h10v-5H5V7H0v11z"/>
+                                                    <path fill="#fbbc04" d="M14 2H8V7H14V2Z"/>
+                                                    <path fill="#34a853" d="M14 17H8V22H14V17Z"/>
+                                                </svg>
                                             @elseif($mod === 'jitsi')
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                             @else

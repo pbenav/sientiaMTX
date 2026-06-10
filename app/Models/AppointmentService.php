@@ -28,8 +28,8 @@ class AppointmentService extends Model
 
     const MODALITIES = [
         'presencial' => 'Presencial',
-        'jitsi'      => 'Videoconferencia (Jitsi)',
         'meet'       => 'Videoconferencia (Google Meet)',
+        'jitsi'      => 'Videoconferencia (Jitsi)',
     ];
 
     protected $casts = [
