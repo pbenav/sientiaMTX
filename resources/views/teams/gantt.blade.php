@@ -222,17 +222,24 @@
                         <div class="flex items-center gap-2 px-2 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100/50 dark:border-emerald-900/20">
                             <div class="w-2 h-0.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.8)]"></div>
                             <span class="text-emerald-600 dark:text-emerald-400">Propia</span>
-                            <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black inline-block">
-                                x12.0
-                            </span>
+                            
+                            <div class="flex items-center gap-1.5 border-l border-emerald-200/50 dark:border-emerald-800/50 pl-2 ml-1">
+                                <input type="range" id="wave-amplifier" min="5" max="30" step="5" value="15" 
+                                       title="Ajustar amplificación visual"
+                                       class="w-16 h-1 bg-emerald-200/50 dark:bg-emerald-800/50 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                       oninput="document.getElementById('user-scale-badge').innerText = 'x' + parseFloat(this.value).toFixed(1); renderActionWave();">
+                                <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black inline-block min-w-[32px] text-center">
+                                    x15.0
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 @php
                     $maxWeight = collect($actionHeat)->max('weight') ?: 1;
-                    // Usamos un factor de amplificación fijo x12.0 para la visualización
-                    $amplificationFactor = 12.0;
+                    // Usamos un factor de amplificación dinámico (por defecto 15.0) para la visualización inicial en PHP
+                    $amplificationFactor = 15.0;
                     $width = 100 / ($daysInMonth - 1);
                     $pts = []; $upts = [];
                     foreach($actionHeat as $day => $d) {
@@ -504,7 +511,8 @@
                 };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
-            const amplificationFactor = 12.0;
+            const ampInput = document.getElementById('wave-amplifier');
+            const amplificationFactor = ampInput ? parseFloat(ampInput.value) : 15.0;
             
             const wFact = 100/(days-1);
             let pts = [], upts = [];
@@ -539,10 +547,10 @@
             document.getElementById('wave-team-path')?.setAttribute('d', `M0,100 L${pts.join(' L')} L100,100 Z`);
             document.getElementById('wave-user-line')?.setAttribute('d', `M${upts.join(' L')}`);
             
-            // El badge visualizador siempre mostrará el factor de amplificación fijo
+            // El badge visualizador se actualiza al mover el slider (oninput),
+            // pero nos aseguramos de que esté visible.
             const scaleBadge = document.getElementById('user-scale-badge');
             if (scaleBadge) {
-                scaleBadge.innerText = 'x12.0';
                 scaleBadge.classList.remove('hidden');
                 scaleBadge.classList.add('inline-block');
             }
