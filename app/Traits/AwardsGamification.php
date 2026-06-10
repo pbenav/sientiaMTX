@@ -47,16 +47,14 @@ trait AwardsGamification
             $xp += $raceBonusXp;
         }
 
-        // --- Rediseño de Energía SientiaMTX ---
-        // Antes: Drain asfixiante de $multiplier * 5.
-        // Ahora: Drain suave de $multiplier * 2 y recompensa fija de +5 por "cerrar el círculo".
-        // FIX: Si el usuario olvidó detener el contador, no lo castigamos con drenaje excesivo.
-        // El drenaje está basado en la CARGA COGNITIVA, no en el tiempo real, lo cual ya protege 
-        // contra olvidos de cronómetro. No obstante, aumentamos la recompensa por completitud 
-        // si la carga es alta para balancear el esfuerzo.
+        // --- Ajuste de Energía SientiaMTX ---
+        // Se ha ajustado el drain para que realizar tareas realmente cueste energía (y no se quede siempre al 100%).
+        // Drain basado en la CARGA COGNITIVA ($multiplier * 4).
+        // Se mantiene una pequeña recompensa psicológica por completitud (+2), pero el balance neto para casi
+        // cualquier tarea será negativo, reflejando el cansancio real de trabajar.
         
-        $energyDrain = $multiplier * 2; 
-        $energyGainCompletion = 5 + ($multiplier > 3 ? 2 : 0); // Bonus energy for high load tasks
+        $energyDrain = $multiplier * 4; 
+        $energyGainCompletion = 2 + ($multiplier > 3 ? 1 : 0); // Pequeño bonus psicológico
         $netEnergyChange = $energyGainCompletion - $energyDrain;
 
         if ($task->is_out_of_skill_tree) {
