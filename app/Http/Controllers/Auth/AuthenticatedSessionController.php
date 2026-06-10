@@ -49,7 +49,8 @@ class AuthenticatedSessionController extends Controller
             $intended = session('url.intended');
             $blacklist = [
                 'telegram', 'webhook', 'chat', 'status', 'active-network', 
-                'unread-count', 'messages', 'notifications', 'gantt/data', 'api'
+                'unread-count', 'messages', 'notifications', 'gantt/data', 'api',
+                'download', 'attachment'
             ];
             foreach ($blacklist as $item) {
                 if (str_contains(strtolower($intended), $item)) {

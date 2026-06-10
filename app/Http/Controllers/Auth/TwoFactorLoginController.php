@@ -127,6 +127,22 @@ class TwoFactorLoginController extends Controller
         // Clear session variables
         $request->session()->forget(['login.id', 'login.remember']);
 
+        // Prevent accidental redirection to AJAX/JSON background-polling endpoints or webhooks or downloads
+        if (session()->has('url.intended')) {
+            $intended = session('url.intended');
+            $blacklist = [
+                'telegram', 'webhook', 'chat', 'status', 'active-network', 
+                'unread-count', 'messages', 'notifications', 'gantt/data', 'api',
+                'download', 'attachment'
+            ];
+            foreach ($blacklist as $item) {
+                if (str_contains(strtolower($intended), $item)) {
+                    session()->forget('url.intended');
+                    break;
+                }
+            }
+        }
+
         // Handle welcome modal preference
         if ($user->show_welcome_messages) {
             $request->session()->put('show_welcome_modal', true);
