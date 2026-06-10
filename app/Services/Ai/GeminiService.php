@@ -376,6 +376,7 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "1. 'simple_text': Para responder preguntas generales, análisis, resúmenes, explicaciones y traducciones. Estructura: {\"intent\": \"simple_text\", \"content\": \"Contenido en Markdown\"}.\n";
         $systemInstruction .= "2. 'search_results': Para mostrar resultados de búsqueda.\n";
         $systemInstruction .= "3. 'full_task': Para CREAR TAREAS nuevas (cuando el usuario lo pida, sugiera o cuando la tarea requiera ser registrada en el sistema). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título de la tarea\", \"description\": \"Resumen/Descripción breve\", \"observations\": \"Desarrollo paso a paso u observaciones detalladas\"}}.\n";
+        $systemInstruction .= "4. 'generate_survey': Para diseñar o generar ENCUESTAS cuando el usuario lo solicite. Estructura JSON: {\"intent\": \"generate_survey\", \"survey_data\": [{\"title\": \"Pregunta 1\", \"type\": \"single_choice|multiple_choice|rating|text\", \"options\": [\"A\", \"B\"], \"is_required\": true}]}.\n";
         $systemInstruction .= $this->getMicrositeDesignInstructions();
         
         $systemInstruction .= "ANÁLISIS DE DOCUMENTOS Y ARCHIVOS:\n";

@@ -14,6 +14,7 @@
      @ai:smart-inject.window="smartInject($event.detail)"
      @ai:inject-note.window="injectNote($event.detail)"
      @ai:inject-microsite.window="injectMicrosite($event.detail)"
+     @ai:inject-survey.window="injectSurvey($event.detail)"
      @quicknote-state-changed.window="quickNotesVisible = $event.detail.anyVisible">
     
     <!-- Chat Window -->
@@ -644,6 +645,22 @@
                 });
             },
 
+            injectSurvey(detail) {
+                const jsonStr = detail.json;
+                // Si ya estamos en la página de creación de encuestas, enviamos el evento para que la página lo procese
+                if (window.location.pathname.includes('/surveys/create')) {
+                    const surveyComp = document.querySelector('[x-data="surveyManager()"]');
+                    if (surveyComp && surveyComp.__x && surveyComp.__x.$data) {
+                        surveyComp.__x.$data.processImportedJSON(jsonStr);
+                        this.open = false; // Cerramos el asistente para que vea la página
+                    }
+                } else {
+                    // Si no estamos en la página, guardamos en localstorage y redirigimos
+                    localStorage.setItem('ai_pending_survey_json', jsonStr);
+                    window.location.href = this.teamId ? `/teams/${this.teamId}/surveys/create` : '/global-surveys/create';
+                }
+            },
+
             async clearHistory() {
                 const result = await Swal.fire({
                     title: '¿Borrar historial?',
@@ -1249,6 +1266,44 @@
                     const sanitizedContent = this.cleanJson(content);
                     const data = JSON.parse(sanitizedContent);
                     
+                    // 2.4 SPECIAL: SURVEY GENERATOR
+                    if (data.intent === 'generate_survey') {
+                        const surveyJson = JSON.stringify(data.survey_data, null, 2);
+                        const numQuestions = data.survey_data && Array.isArray(data.survey_data) ? data.survey_data.length : 0;
+                        
+                        return `
+                        <div class="group/payload my-6 relative transition-all duration-500">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-fuchsia-500 to-pink-600 rounded-[2.5rem] blur opacity-20 group-hover/payload:opacity-40 transition duration-1000"></div>
+                            <div class="relative p-6 rounded-[2.5rem] bg-fuchsia-50/90 dark:bg-slate-900 border border-fuchsia-100 dark:border-slate-800 shadow-2xl backdrop-blur-xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-fuchsia-600 flex items-center justify-center text-white shadow-lg shadow-fuchsia-500/30">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-fuchsia-600 dark:text-fuchsia-400">Encuesta generada por Ax.ia</span>
+                                            <div class="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">${numQuestions} preguntas diseñadas</div>
+                                        </div>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full bg-fuchsia-100 dark:bg-fuchsia-900/40 text-fuchsia-700 dark:text-fuchsia-300 text-[9px] font-black uppercase tracking-wider">● Lista</span>
+                                </div>
+                                
+                                <div class="mt-3 relative">
+                                    <pre class="bg-gray-900/95 text-fuchsia-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${surveyJson.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                                </div>
+
+                                <div class="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-fuchsia-100/50 dark:border-slate-800">
+                                    <span class="text-[9px] font-bold text-fuchsia-500/80 mr-auto uppercase tracking-tighter italic">Llevar al creador de encuestas</span>
+                                    <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-survey', { detail: { json: ${JSON.stringify(JSON.stringify(data.survey_data)).replace(/"/g, '&quot;')} } }))" 
+                                            class="px-6 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        <span>Inyectar Encuesta</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
                     // 2.5 SPECIAL: MICROSITE GENERATOR
                     if (data.intent === 'generate_microsite') {
                         const htmlCode = data.html || '';
