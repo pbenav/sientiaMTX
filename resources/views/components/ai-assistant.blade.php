@@ -31,15 +31,16 @@
         :style="`width: ${dimensions.width}px; height: ${dimensions.height}px; display: ${open ? 'flex' : 'none'} !important;`"
         class="mb-4 max-w-[90vw] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto relative"
     >
-        <!-- Tirador de redimensionamiento -->
-        <div class="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize z-50 p-2 flex items-end justify-end opacity-30 hover:opacity-100 transition-opacity"
-             @mousedown.stop.prevent="startResize($event)"
-             @touchstart.stop.prevent="startResize($event)">
-            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="18" y1="13" x2="13" y2="18" />
-            </svg>
-        </div>
+        <!-- Tiradores de redimensionamiento (Top, Right, Top-Right) -->
+        <div class="absolute top-0 right-0 w-5 h-5 cursor-nesw-resize z-[60]"
+             @mousedown.stop.prevent="startResize($event, 'both')"
+             @touchstart.stop.prevent="startResize($event, 'both')"></div>
+        <div class="absolute top-5 right-0 bottom-0 w-2 cursor-ew-resize z-[60]"
+             @mousedown.stop.prevent="startResize($event, 'right')"
+             @touchstart.stop.prevent="startResize($event, 'right')"></div>
+        <div class="absolute top-0 left-0 right-5 h-2 cursor-ns-resize z-[60]"
+             @mousedown.stop.prevent="startResize($event, 'top')"
+             @touchstart.stop.prevent="startResize($event, 'top')"></div>
 
         <!-- Header -->
         <div @mousedown="startDrag($event)" @touchstart="startDrag($event)" class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center cursor-grab active:cursor-grabbing shrink-0 shadow-lg relative z-30">
@@ -746,14 +747,13 @@
                 }, 50);
             },
 
-            startResize(e) {
+            startResize(e, mode = 'both') {
                 this.isResizing = true;
                 const event = e.type.includes('touch') ? e.touches[0] : e;
                 const initialX = event.clientX;
                 const initialY = event.clientY;
                 const initialWidth = this.dimensions.width;
                 const initialHeight = this.dimensions.height;
-                const initialPosY = this.pos.y;
                 
                 const onMouseMove = (moveEvent) => {
                     if (!this.isResizing) return;
@@ -762,18 +762,17 @@
                     const deltaX = mevent.clientX - initialX;
                     const deltaY = mevent.clientY - initialY;
 
-                    this.dimensions.width = initialWidth + deltaX;
-                    this.dimensions.height = initialHeight + deltaY;
-                    
-                    // CRITICAL: Ajustar pos.y para que crezca hacia abajo
-                    this.pos.y = initialPosY + deltaY;
+                    if (mode === 'both' || mode === 'right') {
+                        this.dimensions.width = initialWidth + deltaX;
+                    }
+                    if (mode === 'both' || mode === 'top') {
+                        // Al estar anclado abajo, restamos deltaY para que crezca hacia arriba
+                        this.dimensions.height = initialHeight - deltaY;
+                    }
                     
                     // Límites
                     if (this.dimensions.width < 320) this.dimensions.width = 320;
-                    if (this.dimensions.height < 400) {
-                        this.dimensions.height = 400;
-                        this.pos.y = initialPosY + (400 - initialHeight);
-                    }
+                    if (this.dimensions.height < 400) this.dimensions.height = 400;
                 };
                 
                 const onMouseUp = () => {
