@@ -173,5 +173,9 @@
     "Marking this will require all users to re-accept terms upon their next login or dashboard access.": "Marcar esto requerirá que todos los usuarios vuelvan a aceptar los términos en su próximo inicio de sesión o acceso al tablero.",
     "Save Legal Texts": "Guardar Textos Legales",
     "Note on Customization": "Nota sobre la personalización",
-    "The changes made here will be reflected instantly on the public legal pages. If a field is left empty, the system will use the default template text.": "Los cambios realizados aquí se reflejarán instantáneamente en las páginas legales públicas. Si un campo se deja vacío, el sistema utilizará el texto de la plantilla predeterminada."
+    "The changes made here will be reflected instantly on the public legal pages. If a field is left empty, the system will use the default template text.": "Los cambios realizados aquí se reflejarán instantáneamente en las páginas legales públicas. Si un campo se deja vacío, el sistema utilizará el texto de la plantilla predeterminada.",
+    "Showing": "Mostrando",
+    "to": "a",
+    "of": "de",
+    "results": "resultados"
 }
