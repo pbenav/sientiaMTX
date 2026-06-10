@@ -48,19 +48,19 @@ Team resilience is also built through mutual support. Every time another team me
 ---
 
 ## 4. Vital Energy Management (Flow)
-Energy is a dynamic resource that ranges between 0 and 100. The calculation has been redesigned to avoid suffocating exhaustion and reward "closing the circle".
+Energy is a dynamic resource that ranges between 0 and 100. The calculation has been adjusted to realistically reflect the mental wear of working.
 
 ### The Net Balance:
 Instead of being based on real time (which punishes forgotten timers), the system uses Cognitive Load to predict wear:
 
-1. **Effort Drain:** `Cognitive Load * 2` (Energy consumed while working).
-2. **Closing Reward:** `+5` fixed points when marked as completed.
-3. **High Load Bonus:** If Cognitive Load is > 3, an extra `+2` reward points are added.
+1. **Effort Drain:** `Cognitive Load * 4` (Energy significantly consumed while working).
+2. **Closing Reward:** `+2` fixed points when marked as completed (psychological bonus).
+3. **High Load Bonus:** If Cognitive Load is > 3, an extra `+1` reward point is added.
 
 **Flow example (Load 5):**
-- Drain: `-10` (5 * 2)
-- Reward: `+7` (5 + 2)
-- **Result:** Net loss of `-3` energy.
+- Drain: `-20` (5 * 4)
+- Reward: `+3` (2 + 1)
+- **Result:** Net loss of `-17` energy.
 
 ---
 

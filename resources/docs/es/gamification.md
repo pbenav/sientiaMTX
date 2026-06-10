@@ -48,19 +48,19 @@ La resiliencia del equipo también se construye mediante el apoyo mutuo. Cada ve
 ---
 
 ## 4. Gestión de Energía Vital (Flow)
-La energía es un recurso dinámico que oscila entre 0 y 100. El cálculo se ha rediseñado para evitar el agotamiento asfixiante y premiar la "finalización del círculo".
+La energía es un recurso dinámico que oscila entre 0 y 100. El cálculo se ha ajustado para reflejar de forma realista el desgaste mental que supone trabajar.
 
 ### El Balance Neto:
 En lugar de basarse en el tiempo real (que castiga olvidos del cronómetro), el sistema utiliza la Carga Cognitiva para predecir el desgaste:
 
-1. **Drenaje por Esfuerzo:** `Carga Cognitiva * 2` (Energía que se consume al trabajar).
-2. **Recompensa por Cierre:** `+5` puntos fijos al marcar como completada.
-3. **Bonus por Alta Carga:** Si la Carga Cognitiva es > 3, se añaden `+2` puntos extra de recompensa.
+1. **Drenaje por Esfuerzo:** `Carga Cognitiva * 4` (Energía que se consume de forma significativa al trabajar).
+2. **Recompensa por Cierre:** `+2` puntos fijos al marcar como completada (bonus psicológico).
+3. **Bonus por Alta Carga:** Si la Carga Cognitiva es > 3, se añade `+1` punto extra de recompensa.
 
 **Ejemplo de flujo (Carga 5):**
-- Desgaste: `-10` (5 * 2)
-- Recompensa: `+7` (5 + 2)
-- **Resultado:** Pérdida neta de `-3` de energía.
+- Desgaste: `-20` (5 * 4)
+- Recompensa: `+3` (2 + 1)
+- **Resultado:** Pérdida neta de `-17` de energía.
 
 ---
 
