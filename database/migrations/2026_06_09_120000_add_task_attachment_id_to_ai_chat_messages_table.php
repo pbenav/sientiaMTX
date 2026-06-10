@@ -9,11 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ai_chat_messages', function (Blueprint $table) {
-            $table->foreignId('task_attachment_id')
-                ->nullable()
-                ->after('task_id')
-                ->constrained('task_attachments')
-                ->nullOnDelete();
+            if (!Schema::hasColumn('ai_chat_messages', 'task_attachment_id')) {
+                $table->foreignId('task_attachment_id')
+                    ->nullable()
+                    ->after('task_id')
+                    ->constrained('task_attachments')
+                    ->nullOnDelete();
+            }
         });
     }
 

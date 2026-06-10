@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('team_user', function (Blueprint $table) {
-            $table->boolean('allow_microsites')->default(false)->after('allow_appointments');
+            if (!Schema::hasColumn('team_user', 'allow_microsites')) {
+                $table->boolean('allow_microsites')->default(false)->after('allow_appointments');
+            }
         });
     }
 
