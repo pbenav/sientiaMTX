@@ -447,6 +447,14 @@
             lastPrompt: '',
             lastFile: null,
             retryCount: 0,
+            retrying: false,
+            soothingInterval: null,
+            soothingTexts: [
+                "Esto está tomando un poco más de lo habitual debido a la carga de los servidores...",
+                "Sigo aquí, procesando los datos para darte la mejor respuesta posible...",
+                "Casi listo, las redes cuánticas están ajustando sus engranajes...",
+                "La conexión parece estar algo lenta hoy, pero no me rindo..."
+            ],
 
             // Notification Audio
             audio: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
@@ -1057,9 +1065,11 @@
                 }
             },
 
-            async sendMessage() {
-                this.syncContext(); // Safe final verify before dispatch
-                if (this.input.trim() === '' && !this.pendingFile && !this.pendingReuseFilePath) return;
+            async sendMessage(isRetry = false) {
+                if (!isRetry) {
+                    this.syncContext(); // Safe final verify before dispatch
+                    if (this.input.trim() === '' && !this.pendingFile && !this.pendingReuseFilePath) return;
+                }
                 
                 const userText = this.input.trim();
                 const fileToSend = this.pendingFile;
@@ -1071,33 +1081,52 @@
                 this.lastPrompt = userText;
                 this.lastFile = fileToSend;
 
-                const userMsgIndex = this.messages.length;
+                let userMsgIndex = this.messages.length;
 
-                if (fileToSend) {
-                    const localUrl = URL.createObjectURL(fileToSend);
-                    const isAudio = fileToSend.type.startsWith('audio/');
-                    this.messages.push({ 
-                        role: 'user', 
-                        content: userText || (isAudio ? '🎤 [Grabación de audio]' : `📎 [Archivo: ${fileToSend.name}]`),
-                        file_url: localUrl,
-                        file_name: fileToSend.name,
-                        file_type: fileToSend.type,
-                        is_local: true
-                    });
-                } else if (reuseFilePathToSend) {
-                    this.messages.push({
-                        role: 'user',
-                        content: `📁 [Archivo: ${reuseFileNameToSend || 'Reutilizado'}]\n\n` + userText,
-                        file_name: reuseFileNameToSend,
-                        file_path: reuseFilePathToSend
-                    });
-                } else if (userText) {
-                    this.messages.push({ role: 'user', content: userText });
+                if (!isRetry) {
+                    if (fileToSend) {
+                        const localUrl = URL.createObjectURL(fileToSend);
+                        const isAudio = fileToSend.type.startsWith('audio/');
+                        this.messages.push({ 
+                            role: 'user', 
+                            content: userText || (isAudio ? '🎤 [Grabación de audio]' : `📎 [Archivo: ${fileToSend.name}]`),
+                            file_url: localUrl,
+                            file_name: fileToSend.name,
+                            file_type: fileToSend.type,
+                            is_local: true
+                        });
+                    } else if (reuseFilePathToSend) {
+                        this.messages.push({
+                            role: 'user',
+                            content: `📁 [Archivo: ${reuseFileNameToSend || 'Reutilizado'}]\n\n` + userText,
+                            file_name: reuseFileNameToSend,
+                            file_path: reuseFilePathToSend
+                        });
+                    } else if (userText) {
+                        this.messages.push({ role: 'user', content: userText });
+                    }
+                } else {
+                    userMsgIndex = this.messages.length - 1; // It's already there
                 }
 
                 this.loading = true;
+                this.retrying = false;
                 this.isSendingFile = !!fileToSend || !!reuseFilePathToSend;
                 this.scrollToBottom();
+
+                let soothingIndex = 0;
+                if (this.soothingInterval) clearInterval(this.soothingInterval);
+                this.soothingInterval = setInterval(() => {
+                    if (this.loading && soothingIndex < this.soothingTexts.length) {
+                        this.messages.push({
+                            role: 'ai',
+                            content: '⏳ *' + this.soothingTexts[soothingIndex] + '*',
+                            is_soothing: true
+                        });
+                        this.scrollToBottom();
+                        soothingIndex++;
+                    }
+                }, 10000); // 10 seconds
 
                 try {
                     const formData = new FormData();
@@ -1173,16 +1202,32 @@
             } catch (error) {
                 console.error('AI Assistant Error:', error);
                 
-                // KEEP PROMPT ON ERROR but give feedback
-                this.messages.push({ 
-                    role: 'ai', 
-                    content: '⚠️ No se pudo procesar tu solicitud. El texto se ha mantenido en la caja de abajo. Detalle: ' + error.message,
-                    is_error: true
-                });
+                if (this.retryCount < 1) {
+                    this.retryCount++;
+                    this.retrying = true;
+                    this.messages.push({
+                        role: 'ai',
+                        content: '🔄 Hubo un micro-corte o saturación. Reintentando la consulta de forma transparente...',
+                        is_soothing: true
+                    });
+                    this.scrollToBottom();
+                    setTimeout(() => this.sendMessage(true), 2000);
+                } else {
+                    // KEEP PROMPT ON ERROR but give feedback
+                    this.messages.push({ 
+                        role: 'ai', 
+                        content: '⚠️ No se pudo procesar tu solicitud. El texto se ha mantenido en la caja de abajo. Detalle: ' + error.message,
+                        is_error: true
+                    });
+                }
             } finally {
-                this.loading = false;
-                this.isSendingFile = false;
-                this.scrollToBottom();
+                if (!this.retrying) {
+                    if (this.soothingInterval) clearInterval(this.soothingInterval);
+                    this.messages = this.messages.filter(m => !m.is_soothing);
+                    this.loading = false;
+                    this.isSendingFile = false;
+                    this.scrollToBottom();
+                }
             }
         },
 

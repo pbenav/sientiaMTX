@@ -368,7 +368,7 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                                 </a>
                                             @endif
-                                            @if ($task->is_effectively_private)
+                                            @if ($task->privacy_level === 'private')
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded shadow-sm inline-flex items-center"
                                                     title="{{ __('tasks.private') }}">
@@ -381,16 +381,26 @@
                                                     </svg>
                                                     {{ __('tasks.private') }}
                                                 </span>
-                                            @else
+                                            @elseif ($task->privacy_level === 'semi-private')
                                                 <span
-                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded shadow-sm inline-flex items-center"
-                                                    title="{{ __('tasks.public') }}">
+                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded shadow-sm inline-flex items-center"
+                                                    title="{{ __('Compartida con varios miembros') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg"
                                                         class="h-2.5 w-2.5 mr-0.5" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="3"
                                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                    {{ __('Semiprivada') }}
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded shadow-sm inline-flex items-center"
+                                                    title="{{ __('tasks.public') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
                                                     {{ __('tasks.public') }}
                                                 </span>

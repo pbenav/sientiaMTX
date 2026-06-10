@@ -2191,10 +2191,22 @@
                 <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
                     <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('tasks.visibility') }}</span>
                     <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full {{ !$task->is_effectively_private ? 'bg-violet-500' : 'bg-amber-500' }}"></div>
-                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                            {{ !$task->is_effectively_private ? __('tasks.public') : __('tasks.private') }}
-                        </span>
+                        @if($task->privacy_level === 'private')
+                            <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                                {{ __('tasks.private') }}
+                            </span>
+                        @elseif($task->privacy_level === 'semi-private')
+                            <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                                {{ __('Semiprivada') }}
+                            </span>
+                        @else
+                            <div class="w-2 h-2 rounded-full bg-violet-500"></div>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                                {{ __('tasks.public') }}
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
