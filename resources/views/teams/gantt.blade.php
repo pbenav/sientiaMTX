@@ -232,12 +232,12 @@
                 @php
                     $maxWeight = collect($actionHeat)->max('weight') ?: 1;
                     $maxUserWeightRaw = collect($actionHeat)->max('user_weight') ?: 1;
-                    $maxUserWeight = max($maxUserWeightRaw * 1.2, $maxWeight * 0.4);
+                    $maxUserWeight = max($maxUserWeightRaw * 1.5, $maxWeight * 0.15);
                     $width = 100 / ($daysInMonth - 1);
                     $pts = []; $upts = [];
                     foreach($actionHeat as $day => $d) {
                         $h = ($d['weight'] / $maxWeight) * 85;
-                        $uh = ($d['user_weight'] / $maxUserWeight) * 60;
+                        $uh = ($d['user_weight'] / $maxUserWeight) * 75;
                         $pts[] = ($day-1)*$width . ',' . (100-$h);
                         $upts[] = ($day-1)*$width . ',' . (100-$uh);
                     }
@@ -249,7 +249,7 @@
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full overflow-visible">
                         <defs><linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:rgba(124, 58, 237, 0.3)"/><stop offset="100%" style="stop-color:rgba(59, 130, 246, 0.05)"/></linearGradient></defs>
                         <path id="wave-team-path" d="{{$pathData}}" fill="url(#waveGradient)" class="transition-all duration-1000" />
-                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_3px_rgba(16,185,129,0.4)] transition-all duration-1000" />
+                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_4px_rgba(16,185,129,0.6)] transition-all duration-1000" />
                     </svg>
                     <div class="absolute inset-0 flex items-end gap-px">
                         @for($i=1; $i<=$daysInMonth; $i++)
@@ -504,14 +504,14 @@
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
             const uMaxRaw = Math.max(...heat.filter(h=>h).map(h=>h.uweight)) || 1;
-            const uMax = Math.max(uMaxRaw * 1.2, max * 0.4);
+            const uMax = Math.max(uMaxRaw * 1.5, max * 0.15);
             
             const wFact = 100/(days-1);
             let pts = [], upts = [];
             for(let i=1; i<=days; i++) {
                 const x = (i-1)*wFact;
                 const h = (heat[i].weight/max)*85;
-                const uh = (heat[i].uweight/uMax)*60;
+                const uh = (heat[i].uweight/uMax)*75;
                 
                 pts.push(`${x},${100-h}`); 
                 upts.push(`${x},${100-uh}`);
