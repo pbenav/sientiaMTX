@@ -29,7 +29,7 @@
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-90 translate-y-10"
         :style="`width: ${dimensions.width}px; height: ${dimensions.height}px; display: ${open ? 'flex' : 'none'} !important;`"
-        class="mb-4 max-w-[90vw] max-h-[85vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto relative"
+        class="mb-4 max-w-[95vw] max-h-[98vh] bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden ring-1 ring-black/5 pointer-events-auto relative"
     >
         <!-- Tirador de redimensionamiento -->
         <div class="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize z-50 p-2 flex items-end justify-end opacity-30 hover:opacity-100 transition-opacity"
