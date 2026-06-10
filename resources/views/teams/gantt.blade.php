@@ -222,8 +222,8 @@
                         <div class="flex items-center gap-2 px-2 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100/50 dark:border-emerald-900/20">
                             <div class="w-2 h-0.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.8)]"></div>
                             <span class="text-emerald-600 dark:text-emerald-400">Propia</span>
-                            <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black {{ $scaleFactor > 1.2 ? 'inline-block' : 'hidden' }}">
-                                x{{$scaleFactor}}
+                            <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black inline-block">
+                                x12.0
                             </span>
                         </div>
                     </div>
@@ -231,15 +231,14 @@
 
                 @php
                     $maxWeight = collect($actionHeat)->max('weight') ?: 1;
-                    $maxUserWeightRaw = collect($actionHeat)->max('user_weight') ?: 1;
-                    // Se usa casi en exclusiva el máximo del usuario para que las diferencias entre días se noten mucho,
-                    // pero con un pequeño tope basado en el equipo para que 1 tarea no dispare la onda si el equipo hizo 100.
-                    $maxUserWeight = max($maxUserWeightRaw, $maxWeight * 0.05);
+                    // Usamos un factor de amplificación fijo x12.0 para la visualización
+                    $amplificationFactor = 12.0;
                     $width = 100 / ($daysInMonth - 1);
                     $pts = []; $upts = [];
                     foreach($actionHeat as $day => $d) {
                         $h = ($d['weight'] / $maxWeight) * 85;
-                        $uh = ($d['user_weight'] / $maxUserWeight) * 85;
+                        $uh = ($d['user_weight'] / $maxWeight) * $amplificationFactor * 85;
+                        if ($uh > 95) $uh = 95; // Tope para que no se salga de la pantalla
                         $pts[] = ($day-1)*$width . ',' . (100-$h);
                         $upts[] = ($day-1)*$width . ',' . (100-$uh);
                     }
@@ -505,15 +504,15 @@
                 };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
-            const uMaxRaw = Math.max(...heat.filter(h=>h).map(h=>h.uweight)) || 1;
-            const uMax = Math.max(uMaxRaw, max * 0.05);
+            const amplificationFactor = 12.0;
             
             const wFact = 100/(days-1);
             let pts = [], upts = [];
             for(let i=1; i<=days; i++) {
                 const x = (i-1)*wFact;
                 const h = (heat[i].weight/max)*85;
-                const uh = (heat[i].uweight/uMax)*85;
+                let uh = (heat[i].uweight/max)*amplificationFactor*85;
+                if (uh > 95) uh = 95;
                 
                 pts.push(`${x},${100-h}`); 
                 upts.push(`${x},${100-uh}`);
@@ -540,18 +539,12 @@
             document.getElementById('wave-team-path')?.setAttribute('d', `M0,100 L${pts.join(' L')} L100,100 Z`);
             document.getElementById('wave-user-line')?.setAttribute('d', `M${upts.join(' L')}`);
             
-            // Dynamically update dynamic scaling visual indicator in legend
+            // El badge visualizador siempre mostrará el factor de amplificación fijo
             const scaleBadge = document.getElementById('user-scale-badge');
             if (scaleBadge) {
-                const factor = (uMax > 0 && max > uMax) ? (max / uMax).toFixed(1) : 1;
-                if (factor > 1.2) {
-                    scaleBadge.innerText = 'x' + factor;
-                    scaleBadge.classList.remove('hidden');
-                    scaleBadge.classList.add('inline-block');
-                } else {
-                    scaleBadge.classList.add('hidden');
-                    scaleBadge.classList.remove('inline-block');
-                }
+                scaleBadge.innerText = 'x12.0';
+                scaleBadge.classList.remove('hidden');
+                scaleBadge.classList.add('inline-block');
             }
         }
 
