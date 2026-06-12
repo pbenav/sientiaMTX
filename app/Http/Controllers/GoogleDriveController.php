@@ -41,7 +41,7 @@ class GoogleDriveController extends Controller
     /**
      * Upload an existing local attachment to Google Drive
      */
-    public function uploadToDrive(Team $team, TaskAttachment $attachment)
+    public function uploadToDrive(Team $team, TaskAttachment $attachment, Request $request)
     {
         if ($attachment->attachable_type === Task::class && $attachment->attachable->team_id !== $team->id) {
             return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
@@ -86,8 +86,11 @@ class GoogleDriveController extends Controller
         }
 
         try {
-            // 2. Get/Create Sientia Folder in Drive for this Team account
-            $folderId = $this->driveService->getOrCreateSientiaFolder($user, $team->id);
+            // 2. Get/Create Sientia Folder in Drive for this Team account, or use requested folder
+            $folderId = $request->input('folder_id');
+            if (!$folderId) {
+                $folderId = $this->driveService->getOrCreateSientiaFolder($user, $team->id);
+            }
 
             // 3. Upload to Drive
             $result = $this->driveService->uploadFileFromPath($user, $localPath, $attachment->file_name, $folderId, $team->id);

@@ -935,6 +935,8 @@
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                                                     <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
                                                 </svg>
+                                            @elseif(str_starts_with($attachment->mime_type ?? '', 'image/'))
+                                                <img src="{{ route('teams.attachments.view', [$team, $attachment]) }}" alt="Preview" class="w-full h-full object-cover rounded-xl" />
                                             @else
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -982,6 +984,16 @@
                                             </svg>
                                         </button>
 
+                                        @if($attachment->storage_provider !== 'google' && $isGoogleLinked)
+                                            <button type="button" 
+                                                onclick="openDriveUploadPicker({{ $attachment->id }})"
+                                                class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
+                                                title="Subir a Google Drive">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
+                                                </svg>
+                                            </button>
+                                        @endif
                                         <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
                                             class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:text-violet-400 dark:hover:bg-violet-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 transition-all shadow-sm"
                                             title="{{ __('tasks.download') }}">
@@ -1531,6 +1543,118 @@
                 })
                 .catch(error => {
                     Swal.fire('Error', 'Ha ocurrido un error en la conexión al vincular el archivo.', 'error');
+                });
+            }
+
+            function openDriveUploadPicker(attachmentId, folderId = 'root') {
+                Swal.fire({
+                    title: 'Selecciona la carpeta destino',
+                    html: `
+                        <div class="flex flex-col gap-4">
+                            <div id="drive-upload-contents" class="max-h-64 overflow-y-auto flex flex-col gap-1 text-left">
+                                <div class="flex items-center justify-center py-8">
+                                    <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    width: '32rem',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Subir aquí',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    didOpen: () => {
+                        loadDriveUploadFolder(folderId, attachmentId);
+                    },
+                    preConfirm: () => {
+                        const currentFolder = document.getElementById('drive-upload-contents').dataset.currentFolder || 'root';
+                        uploadAttachmentToDrive(attachmentId, currentFolder);
+                    },
+                    background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                });
+            }
+
+            function loadDriveUploadFolder(folderId, attachmentId) {
+                const container = document.getElementById('drive-upload-contents');
+                container.dataset.currentFolder = folderId;
+                const teamId = '{{ $team->id }}';
+                
+                fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.files) {
+                            container.innerHTML = '<p class="text-center py-4 text-gray-500">No se pudieron cargar las carpetas.</p>';
+                            return;
+                        }
+
+                        container.innerHTML = '';
+                        
+                        if (folderId !== 'root') {
+                            const backBtn = document.createElement('button');
+                            backBtn.className = 'flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors text-blue-600 font-bold w-full text-left';
+                            backBtn.innerHTML = `<span>⬅️</span> <span>Ir a la raíz</span>`;
+                            backBtn.onclick = () => loadDriveUploadFolder('root', attachmentId);
+                            container.appendChild(backBtn);
+                        }
+
+                        const folders = data.files.filter(f => f.mimeType === 'application/vnd.google-apps.folder');
+
+                        if (folders.length === 0) {
+                            container.innerHTML += '<p class="text-center py-8 text-gray-500 italic">No hay subcarpetas en este nivel. Aún así puedes subir el archivo aquí.</p>';
+                        }
+
+                        folders.forEach(file => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'flex items-center justify-between p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all group text-left border border-transparent hover:border-blue-100 dark:hover:border-blue-800 w-full';
+                            
+                            btn.innerHTML = `
+                                <div class="flex items-center gap-3 overflow-hidden">
+                                    <span class="text-lg grow-0">📁</span>
+                                    <div class="flex flex-col overflow-hidden">
+                                        <span class="text-sm font-bold truncate">${file.name}</span>
+                                    </div>
+                                </div>
+                                <span class="text-blue-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Entrar</span>
+                            `;
+
+                            btn.onclick = () => loadDriveUploadFolder(file.id, attachmentId);
+                            container.appendChild(btn);
+                        });
+                    });
+            }
+
+            function uploadAttachmentToDrive(attachmentId, folderId) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/teams/{{ $team->id }}/attachments/${attachmentId}/to-drive`;
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                form.appendChild(csrfInput);
+
+                const folderInput = document.createElement('input');
+                folderInput.type = 'hidden';
+                folderInput.name = 'folder_id';
+                folderInput.value = folderId;
+                form.appendChild(folderInput);
+
+                document.body.appendChild(form);
+                
+                Swal.fire({
+                    title: 'Subiendo...',
+                    text: 'Moviendo el archivo a Google Drive',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        form.submit();
+                    }
                 });
             }
         </script>
