@@ -394,6 +394,8 @@
                                     ])>
                                         @if($attachment->storage_provider === 'google')
                                             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6.92 12.29c-.28.43-.67.77-1.15.97-.47.2-1 .29-1.56.29-.55 0-1.09-.09-1.56-.29-.47-.2-.86-.54-1.15-.97-.28-.44-.43-.96-.43-1.55 0-.58.15-1.1.43-1.53.29-.43.67-.76 1.15-.96.47-.2 1.01-.29 1.56-.29.56 0 1.09.1 1.56.29.47.2.86.53 1.15.96.28.43.43.95.43 1.53.01.59-.14 1.11-.43 1.55z"/></svg>
+                                        @elseif(str_starts_with($attachment->mime_type ?? '', 'image/'))
+                                            <img src="{{ route('teams.attachments.view', [$team, $attachment]) }}" alt="Preview" class="w-full h-full object-cover rounded-xl" />
                                         @else
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                         @endif

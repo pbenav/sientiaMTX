@@ -1619,6 +1619,8 @@
                                                 <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
                                                 <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                                             </svg>
+                                        @elseif(str_starts_with($attachment->mime_type ?? '', 'image/'))
+                                            <img src="{{ route('teams.attachments.view', [$team, $attachment]) }}" alt="Preview" class="w-full h-full object-cover rounded-lg" />
                                         @else
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">

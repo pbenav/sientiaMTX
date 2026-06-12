@@ -900,6 +900,13 @@
                                     </svg>
                                     Subir seleccionados
                                 </button>
+                                <button type="button" id="select-all-btn" onclick="toggleSelectAllAttachments()"
+                                    class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold px-4 py-2 rounded-xl border border-transparent transition-all shadow-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Seleccionar todos
+                                </button>
                                 <button type="button" onclick="openDrivePicker()"
                                     class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 text-xs font-bold px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
@@ -1554,6 +1561,16 @@
                 .catch(error => {
                     Swal.fire('Error', 'Ha ocurrido un error en la conexión al vincular el archivo.', 'error');
                 });
+            }
+
+            function toggleSelectAllAttachments() {
+                const checkboxes = document.querySelectorAll('.drive-mass-upload-cb');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                
+                checkboxes.forEach(cb => {
+                    cb.checked = !allChecked;
+                });
+                toggleMassUploadButton();
             }
 
             function toggleMassUploadButton() {
