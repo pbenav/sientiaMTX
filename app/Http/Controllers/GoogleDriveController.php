@@ -44,37 +44,37 @@ class GoogleDriveController extends Controller
     public function uploadToDrive(Team $team, TaskAttachment $attachment, Request $request)
     {
         if ($attachment->attachable_type === Task::class && $attachment->attachable->team_id !== $team->id) {
-            return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Este adjunto no pertenece a este equipo.']) : back()->with('warning', 'Este adjunto no pertenece a este equipo.');
         }
 
         if ($attachment->attachable_type === \App\Models\ForumMessage::class && $attachment->attachable->thread->team_id !== $team->id) {
-            return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Este adjunto no pertenece a este equipo.']) : back()->with('warning', 'Este adjunto no pertenece a este equipo.');
         }
 
         if ($attachment->attachable_type === \App\Models\Expediente::class && $attachment->attachable->team_id !== $team->id) {
-            return back()->with('warning', 'Este adjunto no pertenece a este equipo.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Este adjunto no pertenece a este equipo.']) : back()->with('warning', 'Este adjunto no pertenece a este equipo.');
         }
 
         $user = auth()->user();
 
         if ($attachment->attachable_type === Task::class && $user->cannot('view', $attachment->attachable)) {
-            return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'No tienes permiso para gestionar este archivo.']) : back()->with('warning', 'No tienes permiso para gestionar este archivo.');
         }
 
         if ($attachment->attachable_type === \App\Models\ForumMessage::class && $user->cannot('view', $attachment->attachable->thread->team)) {
-            return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'No tienes permiso para gestionar este archivo.']) : back()->with('warning', 'No tienes permiso para gestionar este archivo.');
         }
 
         if ($attachment->attachable_type === \App\Models\Expediente::class && $user->cannot('view', $attachment->attachable->team)) {
-            return back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'No tienes permiso para gestionar este archivo.']) : back()->with('warning', 'No tienes permiso para gestionar este archivo.');
         }
 
         if (!$this->isTeamLinked($user, $team)) {
-            return back()->with('error', 'Este equipo no tiene vinculada una cuenta de Google Workspace.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Este equipo no tiene vinculada una cuenta de Google Workspace.']) : back()->with('error', 'Este equipo no tiene vinculada una cuenta de Google Workspace.');
         }
 
         if ($attachment->storage_provider === 'google') {
-            return back()->with('info', 'Este archivo ya está en Google Drive.');
+            return $request->wantsJson() ? response()->json(['success' => true, 'message' => 'Este archivo ya está en Google Drive.']) : back()->with('info', 'Este archivo ya está en Google Drive.');
         }
 
         // 1. Get local file path
@@ -82,7 +82,7 @@ class GoogleDriveController extends Controller
         
         if (!file_exists($localPath)) {
             Log::error('Local file not found for Drive migration: ' . $localPath);
-            return back()->with('error', 'El archivo local no existe o no se puede encontrar.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'El archivo local no existe o no se puede encontrar.']) : back()->with('error', 'El archivo local no existe o no se puede encontrar.');
         }
 
         try {
@@ -116,14 +116,14 @@ class GoogleDriveController extends Controller
                     'ip_address' => request()->ip()
                 ]);
 
-                return back()->with('success', 'Archivo movido a Google Drive correctamente.');
+                return $request->wantsJson() ? response()->json(['success' => true, 'message' => 'Archivo movido a Google Drive correctamente.']) : back()->with('success', 'Archivo movido a Google Drive correctamente.');
             }
 
-            return back()->with('error', 'Hubo un error al subir el archivo a Google Drive.');
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Hubo un error al subir el archivo a Google Drive.']) : back()->with('error', 'Hubo un error al subir el archivo a Google Drive.');
 
         } catch (\Exception $e) {
             Log::error('Drive Migration Error: ' . $e->getMessage());
-            return back()->with('error', 'Error en la migración: ' . $e->getMessage());
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Error en la migración: ' . $e->getMessage()]) : back()->with('error', 'Error en la migración: ' . $e->getMessage());
         }
     }
 

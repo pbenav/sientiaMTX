@@ -893,6 +893,13 @@
                                 $isGoogleLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
                             @endphp
                             @if($isGoogleLinked)
+                                <button type="button" id="mass-upload-btn" onclick="openDriveUploadPicker('mass')"
+                                    class="hidden bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl border border-transparent transition-all shadow-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
+                                    </svg>
+                                    Subir seleccionados
+                                </button>
                                 <button type="button" onclick="openDrivePicker()"
                                     class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 text-xs font-bold px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
@@ -929,6 +936,9 @@
                                 <div
                                     class="group flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100/50 dark:border-gray-700/50 rounded-2xl hover:border-violet-200 dark:hover:border-violet-500 transition-all shadow-sm">
                                     <div class="flex items-center gap-4 min-w-0">
+                                        @if($attachment->storage_provider !== 'google' && $isGoogleLinked)
+                                            <input type="checkbox" value="{{ $attachment->id }}" class="drive-mass-upload-cb w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all" onclick="toggleMassUploadButton()">
+                                        @endif
                                         <div
                                             class="w-11 h-11 rounded-xl bg-white dark:bg-gray-950 flex items-center justify-center {{ $attachment->storage_provider === 'google' ? 'text-blue-500' : 'text-violet-600 dark:text-violet-400' }} shadow-sm border border-gray-100/50 dark:border-gray-800/50 shrink-0 transition-colors">
                                             @if($attachment->storage_provider === 'google')
@@ -1546,7 +1556,19 @@
                 });
             }
 
-            function openDriveUploadPicker(attachmentId, folderId = 'root') {
+            function toggleMassUploadButton() {
+                const checked = document.querySelectorAll('.drive-mass-upload-cb:checked').length;
+                const btn = document.getElementById('mass-upload-btn');
+                if (btn) {
+                    if (checked > 0) {
+                        btn.classList.remove('hidden');
+                    } else {
+                        btn.classList.add('hidden');
+                    }
+                }
+            }
+
+            function openDriveUploadPicker(attachmentIdOrMass, folderId = 'root') {
                 Swal.fire({
                     title: 'Selecciona la carpeta destino',
                     html: `
@@ -1567,11 +1589,11 @@
                     showCancelButton: true,
                     cancelButtonText: 'Cancelar',
                     didOpen: () => {
-                        loadDriveUploadFolder(folderId, attachmentId);
+                        loadDriveUploadFolder(folderId, attachmentIdOrMass);
                     },
                     preConfirm: () => {
                         const currentFolder = document.getElementById('drive-upload-contents').dataset.currentFolder || 'root';
-                        uploadAttachmentToDrive(attachmentId, currentFolder);
+                        uploadAttachmentToDrive(attachmentIdOrMass, currentFolder);
                     },
                     background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                     color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
@@ -1628,35 +1650,63 @@
                     });
             }
 
-            function uploadAttachmentToDrive(attachmentId, folderId) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/teams/{{ $team->id }}/attachments/${attachmentId}/to-drive`;
-                
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                form.appendChild(csrfInput);
+            async function uploadAttachmentToDrive(attachmentIdOrMass, folderId) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                let idsToUpload = [];
 
-                const folderInput = document.createElement('input');
-                folderInput.type = 'hidden';
-                folderInput.name = 'folder_id';
-                folderInput.value = folderId;
-                form.appendChild(folderInput);
+                if (attachmentIdOrMass === 'mass') {
+                    document.querySelectorAll('.drive-mass-upload-cb:checked').forEach(cb => {
+                        idsToUpload.push(cb.value);
+                    });
+                } else {
+                    idsToUpload.push(attachmentIdOrMass);
+                }
 
-                document.body.appendChild(form);
-                
+                if (idsToUpload.length === 0) return;
+
                 Swal.fire({
                     title: 'Subiendo...',
-                    text: 'Moviendo el archivo a Google Drive',
+                    html: `Moviendo <b>0</b> de <b>${idsToUpload.length}</b> archivos a Google Drive`,
                     allowOutsideClick: false,
-                    didOpen: () => {
+                    didOpen: async () => {
                         Swal.showLoading();
-                        form.submit();
+                        let completed = 0;
+                        
+                        for (const id of idsToUpload) {
+                            const formData = new FormData();
+                            formData.append('_token', csrfToken);
+                            formData.append('folder_id', folderId);
+
+                            try {
+                                const response = await fetch(`/teams/{{ $team->id }}/attachments/${id}/to-drive`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json'
+                                    },
+                                    body: formData
+                                });
+                                const data = await response.json();
+                                if (!data.success) {
+                                    console.error('Error migrating file ' + id + ':', data.message);
+                                }
+                            } catch (e) {
+                                console.error('Network error migrating file ' + id, e);
+                            }
+                            completed++;
+                            Swal.getHtmlContainer().innerHTML = `Moviendo <b>${completed}</b> de <b>${idsToUpload.length}</b> archivos a Google Drive`;
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Completado',
+                            text: 'Los archivos seleccionados han sido movidos a Drive.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
                     }
                 });
             }
+
         </script>
     @endpush
 
