@@ -2292,12 +2292,15 @@
 
                     <!-- Video Call Button (Google Meet) -->
                     <button @click="startGoogleMeet()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="Crear Google Meet Rápido">
-                        <svg viewBox="0 0 24 24" class="w-5 h-5">
-                            <path fill="#ea4335" d="M24 10.5V13.5L19 18V6L24 10.5Z"/>
-                            <path fill="#4285f4" d="M0 6a4 4 0 014-4h10v5H5v10H0V6z"/>
-                            <path fill="#34a853" d="M0 18a4 4 0 004 4h10v-5H5V7H0v11z"/>
-                            <path fill="#fbbc04" d="M14 2H8V7H14V2Z"/>
-                            <path fill="#34a853" d="M14 17H8V22H14V17Z"/>
+                        <svg class="w-5 h-5" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(0, 45.4)">
+                                <path d="m289.6 256 49.9 57 67.1 42.9 11.7-99.6-11.7-97.3-68.4 37.7z" fill="#00832d"/>
+                                <path d="M0 346.7v84.8c0 19.4 15.7 35.1 35.1 35.1h84.8l17.6-64.1-17.6-55.8-58.2-17.6z" fill="#0066da"/>
+                                <path d="M119.9 45.4 0 165.3l61.7 17.6 58.2-17.6 17.3-55.1z" fill="#e94235"/>
+                                <path d="M119.9 165.3H0v181.4h119.9z" fill="#2684fc"/>
+                                <path d="M483.3 96.2 406.6 159v196.9l77 63.1c11.5 9 28.4.8 28.4-13.9V109.7c0-14.8-17.2-22.9-28.7-13.5M289.6 256v90.7H119.9v119.9h251.6c19.4 0 35.1-15.7 35.1-35.1v-75.6z" fill="#00ac47"/>
+                                <path d="M371.5 45.4H119.9v119.9h169.7V256l117-96.9V80.5c0-19.4-15.7-35.1-35.1-35.1" fill="#ffba00"/>
+                            </g>
                         </svg>
                     </button>
 
