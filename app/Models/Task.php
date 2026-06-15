@@ -767,6 +767,18 @@ class Task extends Model
      */
     protected function spawnInstancesForOccurrence(Task $occurrence): void
     {
+        if (!$this->is_template) {
+            $assignments = $this->assignments()->get();
+            foreach ($assignments as $assignment) {
+                $occurrence->assignments()->create([
+                    'user_id' => $assignment->user_id,
+                    'group_id' => $assignment->group_id,
+                    'assigned_by_id' => $assignment->assigned_by_id,
+                ]);
+            }
+            return;
+        }
+
         $assignments = $this->assignments()->get();
         $userIds = collect();
 

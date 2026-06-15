@@ -927,8 +927,9 @@
 
                                 @foreach ($instances as $inst)
                                     @php
-                                        $instMember = $inst->assignedUser;
-                                        $instMemberName = $instMember?->name ?? '—';
+                                        $isSimulated = isset($inst->is_simulated) && $inst->is_simulated;
+                                        $instMember = $isSimulated ? $inst->assignedUser : ($inst->assignedUser ?? $inst->assignedTo->first());
+                                        $instMemberName = $instMember?->name ?? 'Múltiples asignados';
                                         $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
                                         $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
                                         $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
@@ -938,7 +939,6 @@
                                         $joinedAt = $teamMember?->pivot?->joined_at;
                                         $joinedDate = ($joinedAt instanceof \Carbon\Carbon) ? $joinedAt->format('d/m/Y') : null;
 
-                                        $isSimulated = isset($inst->is_simulated) && $inst->is_simulated;
                                         $subtasksCount = $isSimulated ? 0 : $inst->children()->count();
                                         $subtasksDone = $isSimulated ? 0 : $inst->children()->where('status', 'completed')->count();
                                     @endphp
