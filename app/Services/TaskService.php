@@ -171,12 +171,13 @@ class TaskService
         $uniqueUserIds = $userIds->unique();
 
         foreach ($uniqueUserIds as $userId) {
-            if (in_array($userId, $validated['assigned_to'] ?? [])) {
+            if ($userId) {
                 $task->assignments()->create([
                     'user_id' => $userId,
                     'assigned_by_id' => auth()->id(),
                 ]);
             }
+
 
             if ($isTemplate) {
                 $this->createDistributedInstance($task, $team, $userId, $skillIds);
@@ -330,22 +331,6 @@ class TaskService
         $assignedTo = array_filter((array) ($inputs['assigned_to'] ?? []), fn($v) => !is_null($v) && $v !== '');
         $assignedGroups = array_filter((array) ($inputs['assigned_groups'] ?? []), fn($v) => !is_null($v) && $v !== '');
 
-        $task->assignments()->delete();
-
-        foreach ($assignedTo as $userId) {
-            $task->assignments()->create([
-                'user_id' => $userId,
-                'assigned_by_id' => auth()->id(),
-            ]);
-        }
-
-        foreach ($assignedGroups as $groupId) {
-            $task->assignments()->create([
-                'group_id' => $groupId,
-                'assigned_by_id' => auth()->id(),
-            ]);
-        }
-
         $userIds = collect($assignedTo);
         foreach ($assignedGroups as $groupId) {
             $group = $team->groups()->find($groupId);
@@ -355,7 +340,25 @@ class TaskService
         }
         $uniqueUserIds = $userIds->unique();
 
-        $hasAssignments = !empty($assignedTo) || !empty($assignedGroups);
+        $task->assignments()->delete();
+
+        foreach ($uniqueUserIds as $userId) {
+            if ($userId) {
+                $task->assignments()->create([
+                    'user_id' => $userId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
+
+        foreach ($assignedGroups as $groupId) {
+            $task->assignments()->create([
+                'group_id' => $groupId,
+                'assigned_by_id' => auth()->id(),
+            ]);
+        }
+
+        $hasAssignments = !empty($uniqueUserIds) || !empty($assignedGroups);
         $assignmentMode = $inputs['assignment_mode'] ?? 'shared';
         $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
         

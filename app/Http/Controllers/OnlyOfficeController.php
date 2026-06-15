@@ -51,7 +51,7 @@ class OnlyOfficeController extends Controller
         // Usa la IP interna si está configurada para que OnlyOffice conecte directamente por LAN.
         // IMPORTANTE: Usa config() no env() para que funcione con config:cache activo.
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        $downloadUrl = $baseUrl . '/onlyoffice/download/' . $attachment->id;
+        $downloadUrl = $baseUrl . '/onlyoffice/download/' . $attachment->id . '?v=' . $key;
         $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
 
 
