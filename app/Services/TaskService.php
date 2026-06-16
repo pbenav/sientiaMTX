@@ -358,7 +358,7 @@ class TaskService
             ]);
         }
 
-        $hasAssignments = !empty($uniqueUserIds) || !empty($assignedGroups);
+        $hasAssignments = $uniqueUserIds->isNotEmpty() || !empty($assignedGroups);
         $assignmentMode = $inputs['assignment_mode'] ?? 'shared';
         $isTemplate = $hasAssignments && $assignmentMode === 'distributed';
         
@@ -375,7 +375,10 @@ class TaskService
         if ($isTemplate) {
             $task->instances()
                 ->whereNotNull('assigned_user_id')
-                ->where('metadata->is_occurrence', '!=', true)
+                ->where(function($q) {
+                    $q->whereNull('metadata->is_occurrence')
+                      ->orWhere('metadata->is_occurrence', '!=', true);
+                })
                 ->whereNotIn('assigned_user_id', $uniqueUserIds)
                 ->get()
                 ->each
@@ -389,7 +392,10 @@ class TaskService
         } else {
             $task->instances()
                 ->whereNotNull('assigned_user_id')
-                ->where('metadata->is_occurrence', '!=', true)
+                ->where(function($q) {
+                    $q->whereNull('metadata->is_occurrence')
+                      ->orWhere('metadata->is_occurrence', '!=', true);
+                })
                 ->get()
                 ->each
                 ->delete();
