@@ -12,8 +12,8 @@ class AppointmentServiceObserver
      */
     public function saved(AppointmentService $service): void
     {
-        // Si cambian los textos o es nuevo
-        if ($service->wasChanged('name') || $service->wasChanged('description') || $service->wasRecentlyCreated) {
+        // Si cambian los textos, campos personalizados o es nuevo
+        if ($service->wasChanged('name') || $service->wasChanged('description') || $service->wasChanged('custom_fields') || $service->wasRecentlyCreated) {
             // Despachamos el job
             TranslateAppointmentServiceJob::dispatch($service);
         }

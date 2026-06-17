@@ -43,6 +43,17 @@ class TranslateAppointmentServiceJob implements ShouldQueue
             $prompt .= "Descripción: " . $description . "\n";
         }
 
+        $customFields = $this->service->getRawOriginal('custom_fields');
+        $customFieldsArray = is_string($customFields) ? json_decode($customFields, true) : $customFields;
+        if (!empty($customFieldsArray)) {
+            $prompt .= "Campos personalizados (traduce solo el 'name' y asócialo al 'id'):\n";
+            foreach ($customFieldsArray as $cf) {
+                if (isset($cf['id']) && isset($cf['name'])) {
+                    $prompt .= "- ID: {$cf['id']} | Nombre: {$cf['name']}\n";
+                }
+            }
+        }
+
         $prompt .= "\nIdiomas destino:\n";
         foreach ($locales as $code => $lang) {
             $prompt .= "- {$code} ({$lang})\n";
@@ -58,7 +69,14 @@ class TranslateAppointmentServiceJob implements ShouldQueue
                         'type' => 'OBJECT',
                         'properties' => [
                             'name' => ['type' => 'STRING'],
-                            'description' => ['type' => 'STRING']
+                            'description' => ['type' => 'STRING'],
+                            'custom_fields' => [
+                                'type' => 'OBJECT',
+                                'description' => 'Mapa de ID del campo a nombre traducido (ej: "field_123": "ID Card")',
+                                'additionalProperties' => [
+                                    'type' => 'STRING'
+                                ]
+                            ]
                         ],
                         'required' => ['name']
                     ]

@@ -68,6 +68,31 @@ class AppointmentService extends Model
         return $value;
     }
 
+    /**
+     * Accesor para obtener los campos personalizados con sus nombres traducidos, si existen.
+     */
+    public function getCustomFieldsAttribute($value)
+    {
+        $fields = is_string($value) ? json_decode($value, true) : $value;
+        
+        if (!is_array($fields) || empty($fields)) {
+            return $fields;
+        }
+
+        $locale = app()->getLocale();
+        if ($locale !== 'es' && is_array($this->translations) && isset($this->translations[$locale]['custom_fields'])) {
+            $translatedFields = $this->translations[$locale]['custom_fields'];
+            
+            foreach ($fields as &$field) {
+                if (isset($field['id']) && isset($translatedFields[$field['id']])) {
+                    $field['name'] = $translatedFields[$field['id']];
+                }
+            }
+        }
+        
+        return $fields;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
