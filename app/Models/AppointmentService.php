@@ -24,6 +24,7 @@ class AppointmentService extends Model
         'is_active',
         'sort_order',
         'translations',
+        'custom_fields',
     ];
 
     const MODALITIES = [
@@ -40,6 +41,7 @@ class AppointmentService extends Model
         'sync_to_google_tasks'    => 'boolean',
         'is_active'               => 'boolean',
         'translations'            => 'array',
+        'custom_fields'           => 'array',
     ];
 
     /**

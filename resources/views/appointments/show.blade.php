@@ -136,6 +136,30 @@
                         @endif
                     </div>
                 </div>
+                {{-- Campos Personalizados --}}
+                @if(!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields))
+                <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">📝 Información Adicional</p>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        @foreach($appointment->service->custom_fields as $field)
+                            @if(isset($appointment->custom_fields_values[$field['id']]) && $appointment->custom_fields_values[$field['id']] !== '')
+                                <div class="{{ $field['type'] === 'textarea' ? 'sm:col-span-2' : '' }}">
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ $field['name'] }}</p>
+                                    @if($field['type'] === 'textarea')
+                                        <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 p-3 rounded-xl whitespace-pre-wrap">{{ $appointment->custom_fields_values[$field['id']] }}</p>
+                                    @elseif($field['type'] === 'date')
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->custom_fields_values[$field['id']])->format('d/m/Y') }}</p>
+                                    @else
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $appointment->custom_fields_values[$field['id']] }}</p>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
                 {{-- Notas del miembro --}}
                 <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">

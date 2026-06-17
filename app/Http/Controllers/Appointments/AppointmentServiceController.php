@@ -37,7 +37,17 @@ class AppointmentServiceController extends Controller
             'price_visible'      => 'boolean',
             'is_active'          => 'boolean',
             'sort_order'         => 'integer|min:0',
+            'custom_fields'      => 'nullable|array',
+            'custom_fields.*.type' => 'nullable|string|in:text,textarea,number,date',
         ]);
+
+        // Asegurar que is_required sea booleano
+        if (isset($data['custom_fields'])) {
+            $data['custom_fields'] = array_values(array_map(function ($field) {
+                $field['is_required'] = isset($field['is_required']) && $field['is_required'] == '1';
+                return $field;
+            }, $data['custom_fields']));
+        }
 
         $data['team_id'] = $team->id;
         $service = auth()->user()->appointmentServices()->create($data);
@@ -98,7 +108,19 @@ class AppointmentServiceController extends Controller
             'price_visible'      => 'boolean',
             'is_active'          => 'boolean',
             'sort_order'         => 'integer|min:0',
+            'custom_fields'      => 'nullable|array',
+            'custom_fields.*.type' => 'nullable|string|in:text,textarea,number,date',
         ]);
+
+        // Asegurar que is_required sea booleano
+        if (isset($data['custom_fields'])) {
+            $data['custom_fields'] = array_values(array_map(function ($field) {
+                $field['is_required'] = isset($field['is_required']) && $field['is_required'] == '1';
+                return $field;
+            }, $data['custom_fields']));
+        } else {
+            $data['custom_fields'] = [];
+        }
 
         $data['team_id'] = $team->id;
         $service->update($data);

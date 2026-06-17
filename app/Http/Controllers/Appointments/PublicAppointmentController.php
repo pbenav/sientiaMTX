@@ -180,7 +180,7 @@ class PublicAppointmentController extends Controller
             abort(404);
         }
 
-        $data = $request->validate([
+        $validationRules = [
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'required|string|max:150',
             'dni'           => ['nullable', 'string', 'max:20', new DniNie],
@@ -195,7 +195,24 @@ class PublicAppointmentController extends Controller
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|string',
             'modality'         => 'required|string|in:presencial,jitsi,meet',
-        ]);
+        ];
+
+        if (!empty($service->custom_fields)) {
+            $validationRules['custom_fields_values'] = 'nullable|array';
+            foreach ($service->custom_fields as $field) {
+                $rule = $field['is_required'] ? 'required' : 'nullable';
+                if ($field['type'] === 'number') {
+                    $rule .= '|numeric';
+                } elseif ($field['type'] === 'date') {
+                    $rule .= '|date';
+                } else {
+                    $rule .= '|string|max:2000';
+                }
+                $validationRules['custom_fields_values.' . $field['id']] = $rule;
+            }
+        }
+
+        $data = $request->validate($validationRules);
 
         $date = Carbon::parse($data['appointment_date']);
 
@@ -231,6 +248,7 @@ class PublicAppointmentController extends Controller
             'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
             'status'              => 'confirmed',
             'modality'            => $data['modality'],
+            'custom_fields_values' => $data['custom_fields_values'] ?? null,
         ]);
 
         // Generar tarea automática si está configurado
@@ -296,6 +314,16 @@ class PublicAppointmentController extends Controller
                 . "**Servicio:** {$appointment->service->name}\n"
                 . "**Modalidad:** " . \App\Models\AppointmentService::MODALITIES[$appointment->modality] . "\n"
                 . "**Fecha:** {$appointment->appointment_date->format('d/m/Y')} a las {$appointment->appointment_time}";
+
+            if (!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields)) {
+                $description .= "\n\n**Información Adicional:**\n";
+                foreach ($appointment->service->custom_fields as $field) {
+                    $val = $appointment->custom_fields_values[$field['id']] ?? '';
+                    if (!empty($val)) {
+                        $description .= "- **{$field['name']}:** {$val}\n";
+                    }
+                }
+            }
 
             if (in_array($appointment->modality, ['jitsi', 'meet'])) {
                 $videoUrl = route('public.appointments.video.auth', $appointment) . '?localizador=' . $appointment->localizador;

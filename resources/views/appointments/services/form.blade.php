@@ -176,6 +176,82 @@
                 </div>
             </div>
 
+            {{-- Campos Personalizados --}}
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
+                 x-data="{
+                    fields: {{ old('custom_fields') ? json_encode(old('custom_fields')) : (isset($service) && $service->custom_fields ? json_encode($service->custom_fields) : '[]') }},
+                    addField() {
+                        this.fields.push({
+                            id: 'field_' + Math.random().toString(36).substr(2, 9),
+                            name: '',
+                            type: 'text',
+                            is_required: false
+                        });
+                    },
+                    removeField(index) {
+                        this.fields.splice(index, 1);
+                    }
+                 }">
+                <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">📝 Campos Personalizados de Información</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Configura los campos que los clientes o miembros deberán rellenar al crear la cita.</p>
+                    </div>
+                    <button type="button" @click="addField()"
+                            class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100/50 px-3.5 py-2 rounded-xl transition-all active:scale-95 border border-cyan-150 dark:border-cyan-900/30">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Añadir Campo
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div x-show="fields.length === 0" class="text-center py-6">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay campos personalizados configurados.</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <template x-for="(field, index) in fields" :key="field.id">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-150 dark:border-gray-800">
+                                
+                                <input type="hidden" :name="'custom_fields['+index+'][id]'" :value="field.id">
+                                
+                                <div class="w-full sm:flex-1">
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">Nombre del Campo *</label>
+                                    <input type="text" :name="'custom_fields['+index+'][name]'" x-model="field.name" required placeholder="Ej: Código de paciente"
+                                           class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                </div>
+                                
+                                <div class="w-full sm:w-48">
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">Tipo *</label>
+                                    <select :name="'custom_fields['+index+'][type]'" x-model="field.type" required
+                                            class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                        <option value="text">Texto corto</option>
+                                        <option value="textarea">Texto largo</option>
+                                        <option value="number">Número</option>
+                                        <option value="date">Fecha</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center gap-3 mt-4 sm:mt-0 sm:pt-5">
+                                    <label class="flex items-center gap-2 cursor-pointer group shrink-0">
+                                        <input type="hidden" :name="'custom_fields['+index+'][is_required]'" value="0">
+                                        <input type="checkbox" :name="'custom_fields['+index+'][is_required]'" value="1" x-model="field.is_required"
+                                               class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 transition-colors">
+                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Obligatorio</span>
+                                    </label>
+                                    
+                                    <button type="button" @click="removeField(index)"
+                                            class="p-2 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/25 rounded-xl transition-all active:scale-90"
+                                            title="Eliminar campo">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                                
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
             {{-- Horario y Disponibilidad Semanal --}}
             @php
                 $days = [

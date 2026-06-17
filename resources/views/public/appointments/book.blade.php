@@ -235,6 +235,35 @@
             </div>
         </div>
 
+        <!-- Fila 2.5: Información Adicional (Campos Personalizados) -->
+        @if(!empty($service->custom_fields))
+        <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 space-y-6">
+            <div class="border-b border-gray-100 dark:border-gray-800 pb-3">
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('Información Adicional') }}</h3>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Por favor, completa los siguientes campos requeridos por el servicio') }}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                @foreach($service->custom_fields as $field)
+                    <div class="md:col-span-12 lg:col-span-6">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ $field['name'] }} @if($field['is_required']) * @endif</label>
+                        @if($field['type'] === 'textarea')
+                            <textarea name="custom_fields_values[{{ $field['id'] }}]" {{ $field['is_required'] ? 'required' : '' }} rows="3"
+                                      class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
+                                      >{{ old('custom_fields_values.' . $field['id']) }}</textarea>
+                        @else
+                            <input type="{{ $field['type'] === 'number' ? 'number' : ($field['type'] === 'date' ? 'date' : 'text') }}" 
+                                   name="custom_fields_values[{{ $field['id'] }}]" 
+                                   value="{{ old('custom_fields_values.' . $field['id']) }}" 
+                                   {{ $field['is_required'] ? 'required' : '' }}
+                                   class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                        @endif
+                        @error('custom_fields_values.' . $field['id']) <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <!-- Fila 3: Consentimientos GDPR y Envío (Ancho Completo de 12 Columnas para Simetría) -->
         <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">

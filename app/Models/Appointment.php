@@ -25,11 +25,13 @@ class Appointment extends Model
         'google_task_id',
         'cancelled_at',
         'cancellation_reason',
+        'custom_fields_values',
     ];
 
     protected $casts = [
-        'appointment_date' => 'date',
-        'cancelled_at'     => 'datetime',
+        'appointment_date'     => 'date',
+        'cancelled_at'         => 'datetime',
+        'custom_fields_values' => 'array',
     ];
 
     const STATUSES = [
