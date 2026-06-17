@@ -59,27 +59,39 @@ class TranslateAppointmentServiceJob implements ShouldQueue
             $prompt .= "- {$code} ({$lang})\n";
         }
 
+        $languageSchema = [
+            'type' => 'OBJECT',
+            'properties' => [
+                'name' => ['type' => 'STRING'],
+                'description' => ['type' => 'STRING'],
+                'custom_fields' => [
+                    'type' => 'ARRAY',
+                    'description' => 'Lista de campos personalizados traducidos.',
+                    'items' => [
+                        'type' => 'OBJECT',
+                        'properties' => [
+                            'id' => ['type' => 'STRING', 'description' => 'ID original del campo'],
+                            'name' => ['type' => 'STRING', 'description' => 'Nombre traducido del campo']
+                        ],
+                        'required' => ['id', 'name']
+                    ]
+                ]
+            ],
+            'required' => ['name']
+        ];
+
+        $translationsProperties = [];
+        foreach ($locales as $code => $lang) {
+            $translationsProperties[$code] = $languageSchema;
+        }
+
         $schema = [
             'type' => 'OBJECT',
             'properties' => [
                 'translations' => [
                     'type' => 'OBJECT',
                     'description' => 'Mapa de idiomas (claves: en, fr, ro, ar, wo)',
-                    'additionalProperties' => [
-                        'type' => 'OBJECT',
-                        'properties' => [
-                            'name' => ['type' => 'STRING'],
-                            'description' => ['type' => 'STRING'],
-                            'custom_fields' => [
-                                'type' => 'OBJECT',
-                                'description' => 'Mapa de ID del campo a nombre traducido (ej: "field_123": "ID Card")',
-                                'additionalProperties' => [
-                                    'type' => 'STRING'
-                                ]
-                            ]
-                        ],
-                        'required' => ['name']
-                    ]
+                    'properties' => $translationsProperties
                 ]
             ],
             'required' => ['translations']
@@ -98,7 +110,20 @@ class TranslateAppointmentServiceJob implements ShouldQueue
                 
                 foreach ($locales as $code => $lang) {
                     if (isset($data['translations'][$code])) {
-                        $currentTranslations[$code] = $data['translations'][$code];
+                        $langData = $data['translations'][$code];
+                        
+                        // Convertir array de custom_fields a mapa (id => name) para el accesor
+                        if (isset($langData['custom_fields']) && is_array($langData['custom_fields'])) {
+                            $mappedFields = [];
+                            foreach ($langData['custom_fields'] as $cf) {
+                                if (isset($cf['id']) && isset($cf['name'])) {
+                                    $mappedFields[$cf['id']] = $cf['name'];
+                                }
+                            }
+                            $langData['custom_fields'] = $mappedFields;
+                        }
+                        
+                        $currentTranslations[$code] = $langData;
                     }
                 }
                 
