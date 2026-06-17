@@ -529,6 +529,16 @@ MS;
         return $this->callGemini($this->targetModel, [['text' => $prompt]]);
     }
 
+    public function generateStructuredData(string $prompt, array $schema, string $systemInstruction = ''): array
+    {
+        $response = $this->callGemini($this->targetModel, [['text' => $prompt]], false, $systemInstruction, false, true, $schema);
+        $data = json_decode($response, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+            return $data;
+        }
+        return [];
+    }
+
     public function generateMotivationalPhrase(int $taskCount, string $userName, string $locale): string
     {
         $system = "Eres Ax.ia. Tu única función ahora es motivar al usuario con una frase corta.";

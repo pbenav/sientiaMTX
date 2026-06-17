@@ -89,23 +89,10 @@ class TranslateAppointmentServiceJob implements ShouldQueue
         $gemini->forUser($this->service->user);
         
         try {
-            // Pasamos el schema JSON a callGemini (GeminiService.php linea 384)
-            // Espera, callGemini en GeminiService es protected.
-            // Wait, I should use generateText but how to pass JSON schema? generateText does not take schema.
-            // Oh, wait, in GeminiService, generateText returns the string. It includes:
-            // $systemInstruction .= "REGLA DE FORMATO: Casi todas tus respuestas deben ser un JSON envuelto en [PAYLOAD]."
-            // Let's just ask it to return a clean JSON.
-            $response = $gemini->generateText("Por favor, devuelve UNICAMENTE un JSON (sin etiquetas [PAYLOAD] ni markdown extra) con las traducciones: \n" . $prompt);
+            $system = "Eres un asistente traductor. Devuelve exactamente el JSON solicitado según el esquema de salida.";
+            $data = $gemini->generateStructuredData($prompt, $schema, $system);
             
-            if (str_contains($response, '[PAYLOAD]')) {
-                $response = str_replace(['[PAYLOAD]', '[/PAYLOAD]'], '', $response);
-            }
-            if (str_starts_with(trim($response), '```json')) {
-                $response = preg_replace('/```json\s*(.*?)\s*```/s', '$1', trim($response));
-            }
-
-            $data = json_decode(trim($response), true);
-            if (json_last_error() === JSON_ERROR_NONE && isset($data['translations'])) {
+            if (!empty($data) && isset($data['translations'])) {
                 // Preservar traducciones previas si existieran
                 $currentTranslations = $this->service->translations ?? [];
                 
