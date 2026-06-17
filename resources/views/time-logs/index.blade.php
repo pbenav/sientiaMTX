@@ -808,6 +808,15 @@
                                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
                                     <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->sender->name ?? 'Anónimo' }}</span>
+                                    @if($kudo->type)
+                                        <div class="flex flex-wrap gap-1 mt-1 mb-1.5">
+                                            @foreach(explode(', ', $kudo->type) as $category)
+                                                <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400 border border-violet-200/50 dark:border-violet-800/50">
+                                                    {{ $category }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     <p class="text-xs text-gray-500 italic mt-1 break-words">"{{ $kudo->message }}"</p>
                                 </div>
                             </div>
@@ -830,6 +839,15 @@
                                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
                                     <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->receiver->name ?? 'Anónimo' }}</span>
+                                    @if($kudo->type)
+                                        <div class="flex flex-wrap gap-1 mt-1 mb-1.5">
+                                            @foreach(explode(', ', $kudo->type) as $category)
+                                                <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400 border border-violet-200/50 dark:border-violet-800/50">
+                                                    {{ $category }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     <p class="text-xs text-gray-500 italic mt-1 break-words">"{{ $kudo->message }}"</p>
                                 </div>
                             </div>
