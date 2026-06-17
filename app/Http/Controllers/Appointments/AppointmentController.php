@@ -79,6 +79,18 @@ class AppointmentController extends Controller
         if ($request->filled('date_to')) {
             $query->where('appointment_date', '<=', $request->date_to);
         }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('localizador', 'like', "%{$search}%")
+                  ->orWhereHas('visitor', function($vq) use ($search) {
+                      $vq->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%")
+                         ->orWhere('dni', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
 
         $appointments = $query->paginate(20)->withQueryString();
         $services     = $user->appointmentServices()->where('team_id', $team->id)->active()->get();
@@ -88,6 +100,52 @@ class AppointmentController extends Controller
         }
 
         return view('appointments.list', compact('appointments', 'services', 'team'));
+    }
+
+    /**
+     * Acciones globales para múltiples citas (completar, cancelar, borrar).
+     */
+    public function bulk(Team $team, Request $request)
+    {
+        $request->validate([
+            'appointment_ids' => 'required|array',
+            'appointment_ids.*' => 'exists:appointments,id',
+            'bulk_action' => 'required|in:complete,cancel,delete',
+        ]);
+
+        $appointments = Appointment::whereIn('id', $request->appointment_ids)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
+            ->get();
+
+        foreach ($appointments as $appointment) {
+            $this->authorize('update', $appointment);
+
+            if ($request->bulk_action === 'complete') {
+                $appointment->update(['status' => 'completed']);
+                if ($appointment->task) {
+                    $appointment->task->update(['status' => 'completed', 'progress_percentage' => 100]);
+                }
+            } elseif ($request->bulk_action === 'cancel') {
+                $appointment->update(['status' => 'cancelled', 'cancelled_at' => now()]);
+                $this->deleteGoogleEvent($appointment);
+                $this->deleteGoogleTask($appointment);
+                if ($appointment->visitor->email && $appointment->visitor->consent_email) {
+                    try {
+                        \Mail::to($appointment->visitor->email)
+                            ->send(new \App\Mail\AppointmentCancelledMail($appointment));
+                    } catch (\Throwable $e) {}
+                }
+            } elseif ($request->bulk_action === 'delete') {
+                $this->deleteGoogleEvent($appointment);
+                $this->deleteGoogleTask($appointment);
+                if ($appointment->task) {
+                    $appointment->task->delete();
+                }
+                $appointment->delete();
+            }
+        }
+
+        return back()->with('success', 'Acción masiva ejecutada correctamente en ' . $appointments->count() . ' citas.');
     }
 
     /**

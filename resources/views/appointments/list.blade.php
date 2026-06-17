@@ -39,6 +39,11 @@
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
             <form method="GET" action="{{ route('appointments.list', $team) }}" class="flex flex-wrap gap-3 items-end">
                 <div class="flex-1 min-w-[200px]">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Buscador</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Localizador, nombre, DNI..."
+                           class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                </div>
+                <div class="flex-1 min-w-[200px]">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Estado</label>
                     <select name="status" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                         <option value="">Todos</option>
@@ -74,7 +79,8 @@
         </div>
 
         {{-- Tabla --}}
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm overflow-hidden">
+        <div x-data="{ count: 0, updateCount() { this.count = document.querySelectorAll('.bulk-cb:checked').length; }, toggleAll(e) { document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = e.target.checked); this.updateCount(); } }" 
+             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm overflow-hidden">
             @if($appointments->isEmpty())
                 <div class="p-16 text-center">
                     <p class="text-5xl mb-4">📭</p>
@@ -82,10 +88,26 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">No hay citas que coincidan con los filtros seleccionados.</p>
                 </div>
             @else
+                <form method="POST" action="{{ route('appointments.bulk', $team) }}" id="bulk-form" class="hidden">
+                    @csrf
+                </form>
+
+                <div class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 px-5 py-3 flex items-center justify-between transition-all" x-show="count > 0" style="display: none;" x-cloak>
+                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400"><span x-text="count"></span> seleccionadas</span>
+                    <div class="flex gap-2">
+                        <button type="submit" name="bulk_action" value="complete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400 rounded-lg transition-colors">Completar</button>
+                        <button type="submit" name="bulk_action" value="cancel" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">Cancelar</button>
+                        <button type="submit" name="bulk_action" value="delete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg transition-colors" onclick="return confirm('¿⚠️ ATENCIÓN: Eliminar permanentemente las citas seleccionadas? Esta acción no se puede deshacer.')">Borrar</button>
+                    </div>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr class="text-left border-b border-gray-100 dark:border-gray-800">
+                                <th class="px-5 py-4 w-12 text-center">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="toggleAll">
+                                </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Localizador</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Fecha</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Ciudadano</th>
@@ -98,6 +120,9 @@
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach($appointments as $cita)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                    <td class="px-5 py-3.5 text-center">
+                                        <input type="checkbox" name="appointment_ids[]" value="{{ $cita->id }}" form="bulk-form" class="bulk-cb w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="updateCount()">
+                                    </td>
                                     <td class="px-5 py-3.5 font-mono text-xs font-bold text-gray-600 dark:text-gray-400">
                                         {{ $cita->localizador }}
                                     </td>

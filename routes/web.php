@@ -501,6 +501,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
     // Dashboard y agenda
     Route::get('/', [\App\Http\Controllers\Appointments\AppointmentController::class, 'index'])->name('index');
     Route::get('/lista', [\App\Http\Controllers\Appointments\AppointmentController::class, 'list'])->name('list');
+    Route::post('/bulk', [\App\Http\Controllers\Appointments\AppointmentController::class, 'bulk'])->name('bulk');
     Route::get('/agenda', [\App\Http\Controllers\Appointments\AppointmentController::class, 'agenda'])->name('agenda');
 
     // Servicios
