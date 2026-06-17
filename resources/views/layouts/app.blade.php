@@ -3100,6 +3100,127 @@
                 fireConfetti();
             }
         };
+
+        // Interceptores y reemplazos globales para modernizar alert() y confirm() con SweetAlert2
+        (function() {
+            // Sobrescribir window.alert nativo
+            window.alert = function(message) {
+                Swal.fire({
+                    title: 'Aviso',
+                    text: message,
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#0ea5e9',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0'
+                    }
+                });
+            };
+
+            // Interceptar clicks con confirm inline en fase de captura
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[onclick*="confirm("]');
+                if (target) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    
+                    const onclickAttr = target.getAttribute('onclick');
+                    const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
+                    const message = match ? match[1] : '¿Estás seguro?';
+                    
+                    const isDanger = message.toLowerCase().includes('eliminar') || 
+                                     message.toLowerCase().includes('borrar') || 
+                                     message.toLowerCase().includes('cancelar') ||
+                                     message.toLowerCase().includes('physical') || 
+                                     message.toLowerCase().includes('físicamente') || 
+                                     message.includes('⚠️');
+                    
+                    Swal.fire({
+                        title: isDanger ? '¿Estás seguro?' : 'Confirmación',
+                        text: message,
+                        icon: isDanger ? 'warning' : 'question',
+                        showCancelButton: true,
+                        confirmButtonText: isDanger ? 'Sí, proceder' : 'Aceptar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: isDanger ? '#e11d48' : '#0ea5e9',
+                        cancelButtonColor: '#6b7280',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0',
+                            cancelButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const originalOnclick = target.getAttribute('onclick');
+                            target.removeAttribute('onclick');
+                            
+                            if (target.type === 'submit' && target.form) {
+                                if (target.name) {
+                                    const hiddenInput = document.createElement('input');
+                                    hiddenInput.type = 'hidden';
+                                    hiddenInput.name = target.name;
+                                    hiddenInput.value = target.value || '';
+                                    target.form.appendChild(hiddenInput);
+                                }
+                                target.form.dataset.swalConfirmed = 'true';
+                                target.form.submit();
+                            } else {
+                                target.click();
+                            }
+                            
+                            setTimeout(() => target.setAttribute('onclick', originalOnclick), 50);
+                        }
+                    });
+                }
+            }, true);
+
+            // Interceptar submits con onsubmit="confirm(...)" inline en fase de captura
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.dataset.swalConfirmed) {
+                    delete form.dataset.swalConfirmed;
+                    return;
+                }
+                
+                const onsubmitAttr = form.getAttribute('onsubmit');
+                if (onsubmitAttr && onsubmitAttr.includes('confirm(')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    
+                    const match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
+                    const message = match ? match[1] : '¿Estás seguro de que deseas continuar?';
+                    
+                    const isDanger = message.toLowerCase().includes('eliminar') || 
+                                     message.toLowerCase().includes('borrar') || 
+                                     message.toLowerCase().includes('cancelar') ||
+                                     message.toLowerCase().includes('physical') || 
+                                     message.toLowerCase().includes('físicamente') || 
+                                     message.includes('⚠️');
+                    
+                    Swal.fire({
+                        title: isDanger ? '¿Estás seguro?' : 'Confirmación',
+                        text: message,
+                        icon: isDanger ? 'warning' : 'question',
+                        showCancelButton: true,
+                        confirmButtonText: isDanger ? 'Sí, proceder' : 'Aceptar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: isDanger ? '#e11d48' : '#0ea5e9',
+                        cancelButtonColor: '#6b7280',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0',
+                            cancelButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.dataset.swalConfirmed = 'true';
+                            form.submit();
+                        }
+                    });
+                }
+            }, true);
+        })();
     </script>
 </body>
 

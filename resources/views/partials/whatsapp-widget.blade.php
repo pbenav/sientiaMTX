@@ -472,11 +472,7 @@
                     }, 1000);
                 } catch (err) {
                     console.error("No se pudo acceder al micrófono:", err);
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({ icon: 'error', title: '¡Atención!', text: 'No se pudo acceder al micrófono. Comprueba los permisos del navegador.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
-                    } else {
-                        alert("Error: No se pudo acceder al micrófono.");
-                    }
+                    Swal.fire({ icon: 'error', title: '¡Atención!', text: 'No se pudo acceder al micrófono. Comprueba los permisos del navegador.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
                 }
             },
 
@@ -763,29 +759,21 @@
                             errorMessage = errorData.errors.message[0];
                         }
                         
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: '¡Atención!',
-                                text: errorMessage,
-                                confirmButtonColor: '#10b981'
-                            });
-                        } else {
-                            alert('⚠️ Error al enviar: ' + errorMessage);
-                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: '¡Atención!',
+                            text: errorMessage,
+                            confirmButtonColor: '#10b981'
+                        });
                     }
                 } catch (e) {
                     console.error('Error enviando:', e);
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error de Red',
-                            text: 'No se pudo conectar con el servidor. Reintenta en unos instantes.',
-                            confirmButtonColor: '#10b981'
-                        });
-                    } else {
-                        alert('⚠️ Error de conexión al servidor.');
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Red',
+                        text: 'No se pudo conectar con el servidor. Reintenta en unos instantes.',
+                        confirmButtonColor: '#10b981'
+                    });
                 }
             },
             async updateMsg() {
@@ -821,24 +809,23 @@
                 }
             },
             async deleteMsg(msgId) {
-                let confirmDel = false;
-                if (typeof Swal !== 'undefined') {
-                    const result = await Swal.fire({
-                        title: '¿Borrar mensaje?',
-                        text: "Se eliminará de WhatsApp y del historial.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar'
-                    });
-                    confirmDel = result.isConfirmed;
-                } else {
-                    confirmDel = confirm('¿Borrar mensaje? Se eliminará de WhatsApp y del historial.');
-                }
+                const result = await Swal.fire({
+                    title: '¿Borrar mensaje?',
+                    text: 'Se eliminará de WhatsApp y del historial.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#e11d48',
+                    cancelButtonColor: '#6b7280',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0',
+                        cancelButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0'
+                    }
+                });
 
-                if (!confirmDel) return;
+                if (!result.isConfirmed) return;
                 
                 try {
                     const url = '{{ route("whatsapp.chat.delete", ":id") }}'.replace(':id', msgId);
@@ -855,11 +842,7 @@
                     } else {
                         const error = await response.json();
                         const msg = error.error || 'No se pudo borrar';
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({ icon: 'error', title: 'Error', text: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                        } else {
-                            alert('Error: ' + msg);
-                        }
+                        Swal.fire({ icon: 'error', title: 'Error', text: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                     }
                 } catch (e) {
                     console.error('Error deleting message:', e);
@@ -894,11 +877,7 @@
                     } else {
                         const err = await response.json();
                         const text = err.error || 'No se pudo sincronizar en este momento.';
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({ icon: 'warning', title: 'Aviso', text: text, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
-                        } else {
-                            alert('Aviso: ' + text);
-                        }
+                        Swal.fire({ icon: 'warning', title: 'Aviso', text: text, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
                     }
                 } catch (e) {
                     console.error('Error sincronizando:', e);

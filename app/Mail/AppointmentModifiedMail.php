@@ -9,25 +9,21 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentCancelledMail extends Mailable
+class AppointmentModifiedMail extends Mailable
 {
     use Queueable, SerializesModels;
-    public function __construct(
-        public Appointment $appointment,
-        public ?string $reason = null
-    ) {
-        $this->reason = $reason ?? $appointment->cancellation_reason;
-    }
+
+    public function __construct(public Appointment $appointment) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '❌ Cita Cancelada — ' . $this->appointment->localizador,
+            subject: '⚠️ ' . __('Cita Modificada') . ' — ' . $this->appointment->localizador,
         );
     }
 
     public function content(): Content
     {
-        return new Content(markdown: 'mail.appointments.cancelled');
+        return new Content(markdown: 'mail.appointments.modified');
     }
 }

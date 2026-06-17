@@ -78,6 +78,10 @@
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-2V1.5h-1.5V3h-9V1.5H5.5V3h-2C2.67 3 2 3.67 2 4.5v15C2 20.33 2.67 21 3.5 21h16c.83 0 1.5-.67 1.5-1.5v-15c0-.83-.67-1.5-1.5-1.5zm0 16.5h-16V9h16v10.5zM3.5 7.5h16V4.5h-16V7.5z"/></svg>
             {{ __('Añadir a Calendar') }}
         </a>
+        <a href="{{ route('public.appointments.edit', $appointment->localizador) }}"
+           class="px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-50 hover:bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 rounded-xl transition-all w-full sm:w-auto">
+            ✏️ {{ __('Modificar Cita') }}
+        </a>
 
         <a href="{{ route('public.appointments.map') }}" 
            class="px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all w-full sm:w-auto">

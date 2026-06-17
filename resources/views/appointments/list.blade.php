@@ -96,8 +96,8 @@
                     <span class="text-xs font-bold text-gray-600 dark:text-gray-400"><span x-text="count"></span> seleccionadas</span>
                     <div class="flex gap-2">
                         <button type="submit" name="bulk_action" value="complete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400 rounded-lg transition-colors">Completar</button>
-                        <button type="submit" name="bulk_action" value="cancel" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">Cancelar</button>
-                        <button type="submit" name="bulk_action" value="delete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg transition-colors" onclick="return confirm('¿⚠️ ATENCIÓN: Eliminar permanentemente las citas seleccionadas? Esta acción no se puede deshacer.')">Borrar</button>
+                        <button type="button" onclick="confirmBulkCancel()" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">Cancelar</button>
+                        <button type="button" onclick="confirmBulkDelete()" class="px-3 py-1.5 text-xs font-black bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg transition-colors">Borrar</button>
                     </div>
                 </div>
 
@@ -180,12 +180,12 @@
                                                 </a>
                                             @endif
                                             <a href="{{ route('appointments.show', [$team, $cita]) }}"
-                                               class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                               class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline">
                                                 Ver →
                                             </a>
-                                            <form method="POST" action="{{ route('appointments.forceDestroy', [$team, $cita]) }}" class="inline-block opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" onsubmit="return confirm('¿⚠️ ELIMINAR FÍSICAMENTE ESTA CITA? Se borrará permanentemente junto con su tarea asociada.')">
+                                            <form method="POST" action="{{ route('appointments.forceDestroy', [$team, $cita]) }}" class="inline-block">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Borrar Permanente">
+                                                <button type="button" onclick="confirmSingleDelete(event, this.form)" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Borrar Permanente">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                 </button>
                                             </form>
@@ -203,4 +203,118 @@
         </div>
     </div>
 </div>
+
+<script>
+    function confirmSingleDelete(event, form) {
+        event.preventDefault();
+        Swal.fire({
+            title: '¿Eliminar físicamente esta cita?',
+            text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo, junto con su tarea asociada.',
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800',
+                confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md',
+                cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+
+    function confirmBulkDelete() {
+        Swal.fire({
+            title: '¿Eliminar permanentemente las seleccionadas?',
+            text: '⚠️ ATENCIÓN: Esta acción no se puede deshacer. Se borrarán todas las citas seleccionadas de la base de datos por completo. Indique a continuación el motivo de la anulación definitiva para el correo de los ciudadanos (opcional).',
+            input: 'textarea',
+            inputPlaceholder: 'Escriba el motivo de la eliminación definitiva aquí...',
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, borrar todas',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md',
+                cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3',
+                input: 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 rounded-2xl text-xs font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/20 !mx-auto !w-[90%] !my-4 h-24 p-3'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('bulk-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'bulk_action';
+                actionInput.value = 'delete';
+                form.appendChild(actionInput);
+
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'cancellation_reason';
+                reasonInput.value = result.value || '';
+                form.appendChild(reasonInput);
+                document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'appointment_ids[]';
+                    idInput.value = cb.value;
+                    form.appendChild(idInput);
+                });
+
+                form.submit();
+            }
+        });
+    }
+
+    function confirmBulkCancel() {
+        Swal.fire({
+            title: '¿Cancelar las citas seleccionadas?',
+            text: 'Indique a continuación el motivo de la cancelación masiva (opcional). Los ciudadanos correspondientes recibirán esta información por email si prestaron su consentimiento.',
+            input: 'textarea',
+            inputPlaceholder: 'Escriba el motivo de la cancelación aquí...',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar citas',
+            cancelButtonText: 'No, mantener',
+            customClass: {
+                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md',
+                cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3',
+                input: 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 rounded-2xl text-xs font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/20 !mx-auto !w-[90%] !my-4 h-24 p-3'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('bulk-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'bulk_action';
+                actionInput.value = 'cancel';
+                form.appendChild(actionInput);
+
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'cancellation_reason';
+                reasonInput.value = result.value || '';
+                form.appendChild(reasonInput);
+                
+                document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'appointment_ids[]';
+                    idInput.value = cb.value;
+                    form.appendChild(idInput);
+                });
+
+                form.submit();
+            }
+        });
+    }
+</script>
 </x-app-layout>
+
+

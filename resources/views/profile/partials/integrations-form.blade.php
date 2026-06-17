@@ -533,7 +533,22 @@
                     await this.checkStatus();
                 },
                 async restartSession() {
-                    if (!confirm('¿Deseas desvincular o reiniciar tu cuenta de WhatsApp Personal?')) return;
+                    const result = await Swal.fire({
+                        title: '¿Desvincular WhatsApp?',
+                        text: '¿Deseas desvincular o reiniciar tu cuenta de WhatsApp Personal?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, desvincular',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#e11d48',
+                        cancelButtonColor: '#6b7280',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0',
+                            cancelButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0'
+                        }
+                    });
+                    if (!result.isConfirmed) return;
                     try {
                         await fetch('{{ route('whatsapp.personal-restart') }}', {
                             method: 'POST',

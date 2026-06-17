@@ -525,4 +525,126 @@ class PublicAppointmentController extends Controller
 
         return redirect()->route('public.appointments.video.room', $appointment);
     }
+
+    public function edit(string $localizador)
+    {
+        $appointment = Appointment::where('localizador', $localizador)
+            ->with(['service', 'visitor'])
+            ->firstOrFail();
+
+        $service = $appointment->service;
+        $settings = $service->user->appointmentSettingsForTeam($service->team_id);
+
+        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabledForTeam($service->team_id)) {
+            abort(404);
+        }
+
+        $date = Carbon::parse($appointment->appointment_date);
+        $slots = $this->availability->getSlotsForDate($service, $date);
+
+        return view('public.appointments.edit', compact('appointment', 'service', 'settings', 'slots'));
+    }
+
+    public function update(Request $request, string $localizador)
+    {
+        $appointment = Appointment::where('localizador', $localizador)
+            ->with(['service', 'visitor'])
+            ->firstOrFail();
+
+        $service = $appointment->service;
+        $settings = $service->user->appointmentSettingsForTeam($service->team_id);
+        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabledForTeam($service->team_id)) {
+            abort(404);
+        }
+
+        $validationRules = [
+            'first_name'    => 'required|string|max:100',
+            'last_name'     => 'required|string|max:150',
+            'dni'           => ['nullable', 'string', 'max:20', new DniNie],
+            'email'         => 'nullable|email:rfc,dns|max:255',
+            'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
+            'city'          => 'nullable|string|max:100',
+            'postal_code'   => 'nullable|string|max:10',
+            'observations'  => 'nullable|string|max:2000',
+            'consent_email' => 'boolean',
+            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_time' => 'required|string',
+            'modality'         => 'required|string|in:presencial,jitsi,meet',
+        ];
+
+        if (!empty($service->custom_fields)) {
+            $validationRules['custom_fields_values'] = 'nullable|array';
+            foreach ($service->custom_fields as $field) {
+                $rule = $field['is_required'] ? 'required' : 'nullable';
+                if ($field['type'] === 'number') {
+                    $rule .= '|numeric';
+                } elseif ($field['type'] === 'date') {
+                    $rule .= '|date';
+                } else {
+                    $rule .= '|string|max:2000';
+                }
+                $validationRules['custom_fields_values.' . $field['id']] = $rule;
+            }
+        }
+
+        $data = $request->validate($validationRules);
+
+        $newDate = Carbon::parse($data['appointment_date']);
+        $newTime = $data['appointment_time'];
+
+        $isOwnSlot = $appointment->appointment_date->eq($newDate) && $appointment->appointment_time === $newTime . ':00';
+
+        if (!$isOwnSlot && !$this->availability->isSlotAvailable($service, $newDate, $newTime)) {
+            return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
+        }
+
+        $originalDate = $appointment->appointment_date;
+        $originalTime = $appointment->appointment_time;
+
+        $appointment->visitor->update([
+            'first_name'    => $data['first_name'],
+            'last_name'     => $data['last_name'],
+            'dni'           => $data['dni'] ?? null,
+            'email'         => $data['email'] ?? null,
+            'phone'         => $data['phone'] ?? null,
+            'city'          => $data['city'] ?? null,
+            'postal_code'   => $data['postal_code'] ?? null,
+            'observations'  => $data['observations'] ?? null,
+            'consent_email' => $request->boolean('consent_email'),
+        ]);
+
+        $appointment->update([
+            'appointment_date'    => $newDate->toDateString(),
+            'appointment_time'    => $newTime . ':00',
+            'modality'            => $data['modality'],
+            'custom_fields_values' => $data['custom_fields_values'] ?? null,
+        ]);
+
+        if ($appointment->task) {
+            $appointment->task->update([
+                'title'    => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
+                'due_date' => $appointment->appointment_date,
+            ]);
+        }
+
+        if ($appointment->google_event_id || $appointment->google_task_id) {
+            \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($appointment);
+        }
+
+        $dateChanged = !$originalDate->eq($newDate);
+        $timeChanged = $originalTime !== $newTime . ':00';
+
+        if (($dateChanged || $timeChanged) && $appointment->visitor->consent_email && $appointment->visitor->email) {
+            try {
+                \Mail::to($appointment->visitor->email)
+                    ->locale(app()->getLocale())
+                    ->send(new \App\Mail\AppointmentModifiedMail($appointment));
+            } catch (\Throwable $e) {
+                \Log::warning("AppointmentModified mail failed from public update: " . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('public.appointments.confirm', $appointment->localizador)
+            ->with('success', '¡Cita modificada correctamente!');
+    }
 }

@@ -510,11 +510,7 @@
                         this.recordingTime++;
                     }, 1000);
                 } catch (err) {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({ icon: 'error', title: 'Micrófono denegado', text: 'No se pudo acceder al micrófono.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
-                    } else {
-                        alert("Error: No se pudo acceder al micrófono.");
-                    }
+                    Swal.fire({ icon: 'error', title: 'Micrófono denegado', text: 'No se pudo acceder al micrófono.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                 }
             },
 
@@ -885,19 +881,15 @@
                         }
 
                         const errorData = await response.json();
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error al enviar a Telegram',
-                                text: errorData.error || 'No se pudo enviar el mensaje.',
-                                toast: true,
-                                position: 'top-end',
-                                timer: 5000,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            alert(errorData.error || 'No se pudo enviar el mensaje.');
-                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al enviar a Telegram',
+                            text: errorData.error || 'No se pudo enviar el mensaje.',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 5000,
+                            showConfirmButton: false
+                        });
                     }
                 } catch (e) {
                     console.error('Error enviando:', e);
@@ -948,24 +940,23 @@
                 }
             },
             async deleteMsg(msgId) {
-                let confirmDel = false;
-                if (typeof Swal !== 'undefined') {
-                    const result = await Swal.fire({
-                        title: '¿Borrar mensaje?',
-                        text: "Se eliminará de Telegram y del historial.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar'
-                    });
-                    confirmDel = result.isConfirmed;
-                } else {
-                    confirmDel = confirm('¿Borrar mensaje? Se eliminará de Telegram y del historial.');
-                }
+                const result = await Swal.fire({
+                    title: '¿Borrar mensaje?',
+                    text: 'Se eliminará de Telegram y del historial.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#e11d48',
+                    cancelButtonColor: '#6b7280',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0',
+                        cancelButton: 'rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:ring-0'
+                    }
+                });
 
-                if (!confirmDel) return;
+                if (!result.isConfirmed) return;
                 
                 try {
                     const url = '{{ route("telegram.chat.delete", ":id") }}'.replace(':id', msgId);
@@ -981,11 +972,7 @@
                         this.messages = this.messages.filter(m => m.id !== msgId);
                     } else {
                         const error = await response.json();
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({ icon: 'error', title: 'Error', text: error.error || 'No se pudo borrar', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
-                        } else {
-                            alert('Error: ' + (error.error || 'No se pudo borrar'));
-                        }
+                        Swal.fire({ icon: 'error', title: 'Error', text: error.error || 'No se pudo borrar', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                     }
                 } catch (e) {
                     console.error('Error deleting message:', e);

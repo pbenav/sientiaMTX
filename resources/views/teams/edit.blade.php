@@ -611,29 +611,23 @@
                         await this.checkStatus();
                     },
                     async restartSession() {
-                        let confirmed = false;
                         const textMsg = '¿Deseas desvincular o reiniciar la cuenta de WhatsApp corporativa de este Equipo?';
-                        if (typeof Swal !== 'undefined') {
-                            const result = await Swal.fire({
-                                title: '¿Desvincular Cuenta?',
-                                text: textMsg,
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#ef4444',
-                                cancelButtonColor: '#6b7280',
-                                confirmButtonText: 'Sí, desvincular',
-                                cancelButtonText: 'Cancelar',
-                                customClass: {
-                                    popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
-                                    confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
-                                    cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
-                                }
-                            });
-                            confirmed = result.isConfirmed;
-                        } else {
-                            confirmed = confirm(textMsg);
-                        }
-                        if (!confirmed) return;
+                        const result = await Swal.fire({
+                            title: '¿Desvincular Cuenta?',
+                            text: textMsg,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Sí, desvincular',
+                            cancelButtonText: 'Cancelar',
+                            customClass: {
+                                popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                                confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                                cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                            }
+                        });
+                        if (!result.isConfirmed) return;
                         try {
                             await fetch('{{ route('whatsapp.team-restart') }}', {
                                 method: 'POST',
@@ -766,31 +760,25 @@
         <script>
             function confirmAction(formId, message, type = 'danger') {
                 const color = type === 'warning' ? '#f59e0b' : '#ef4444';
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: '¿Estás seguro?',
-                        text: message,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: color,
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Confirmar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: {
-                            popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
-                            confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
-                            cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            document.getElementById(formId).submit();
-                        }
-                    });
-                } else {
-                    if (confirm(message)) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: color,
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                        cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         document.getElementById(formId).submit();
                     }
-                }
+                });
             }
 
             function confirmDelete(formId, message) {

@@ -126,7 +126,11 @@ class AppointmentController extends Controller
                     $appointment->task->update(['status' => 'completed', 'progress_percentage' => 100]);
                 }
             } elseif ($request->bulk_action === 'cancel') {
-                $appointment->update(['status' => 'cancelled', 'cancelled_at' => now()]);
+                $appointment->update([
+                    'status'              => 'cancelled',
+                    'cancelled_at'        => now(),
+                    'cancellation_reason' => $request->input('cancellation_reason'),
+                ]);
                 $this->deleteGoogleEvent($appointment);
                 $this->deleteGoogleTask($appointment);
                 if ($appointment->visitor->email && $appointment->visitor->consent_email) {
@@ -138,6 +142,12 @@ class AppointmentController extends Controller
             } elseif ($request->bulk_action === 'delete') {
                 $this->deleteGoogleEvent($appointment);
                 $this->deleteGoogleTask($appointment);
+                if ($appointment->visitor->email && $appointment->visitor->consent_email) {
+                    try {
+                        \Mail::to($appointment->visitor->email)
+                            ->send(new \App\Mail\AppointmentCancelledMail($appointment, $request->input('cancellation_reason') ?: 'Cita anulada y eliminada permanentemente del sistema por la administración.'));
+                    } catch (\Throwable $e) {}
+                }
                 if ($appointment->task) {
                     $appointment->task->delete();
                 }
@@ -195,6 +205,9 @@ class AppointmentController extends Controller
             }
         }
 
+        $originalDate = $appointment->appointment_date;
+        $originalTime = $appointment->appointment_time;
+
         if (isset($data['status']) && in_array($data['status'], ['cancelled', 'blocked'])) {
             $data['cancelled_at'] = now();
             $this->deleteGoogleEvent($appointment);
@@ -203,7 +216,20 @@ class AppointmentController extends Controller
 
         $appointment->update($data);
 
-        // Actualizar la tarea si existe
+        // Si cambió la fecha o la hora, y el visitante consintió el email, le notificamos
+        $dateChanged = isset($data['appointment_date']) && Carbon::parse($data['appointment_date'])->ne($originalDate);
+        $timeChanged = isset($data['appointment_time']) && $data['appointment_time'] . ':00' !== $originalTime;
+
+        if (($dateChanged || $timeChanged) && $appointment->visitor->consent_email && $appointment->visitor->email) {
+            try {
+                \Mail::to($appointment->visitor->email)
+                    ->locale(app()->getLocale())
+                    ->send(new \App\Mail\AppointmentModifiedMail($appointment));
+            } catch (\Throwable $e) {
+                \Log::warning("AppointmentModified mail failed: " . $e->getMessage());
+            }
+        }
+
         $task = $appointment->task;
         if (!$task && $appointment->localizador) {
             $task = \App\Models\Task::where('title', 'like', "% — {$appointment->localizador}")->first();
@@ -242,7 +268,7 @@ class AppointmentController extends Controller
     /**
      * Cancela y elimina una cita.
      */
-    public function destroy(Team $team, Appointment $appointment)
+    public function destroy(Team $team, Appointment $appointment, Request $request)
     {
         $this->authorize('delete', $appointment);
         if ($appointment->service->team_id !== $team->id) {
@@ -250,10 +276,10 @@ class AppointmentController extends Controller
         }
 
         $appointment->update([
-            'status'       => 'cancelled',
-            'cancelled_at' => now(),
+            'status'              => 'cancelled',
+            'cancelled_at'        => now(),
+            'cancellation_reason' => $request->input('cancellation_reason'),
         ]);
-        
         $this->deleteGoogleEvent($appointment);
         $this->deleteGoogleTask($appointment);
 
@@ -273,7 +299,7 @@ class AppointmentController extends Controller
     /**
      * Elimina físicamente una cita de la base de datos.
      */
-    public function forceDestroy(Team $team, Appointment $appointment)
+    public function forceDestroy(Team $team, Appointment $appointment, Request $request)
     {
         $this->authorize('delete', $appointment);
         if ($appointment->service->team_id !== $team->id) {
@@ -282,6 +308,16 @@ class AppointmentController extends Controller
 
         $this->deleteGoogleEvent($appointment);
         $this->deleteGoogleTask($appointment);
+
+        // Notificar al visitante antes de eliminarla físicamente
+        if ($appointment->visitor->email && $appointment->visitor->consent_email) {
+            try {
+                \Mail::to($appointment->visitor->email)
+                    ->send(new \App\Mail\AppointmentCancelledMail($appointment, $request->input('cancellation_reason') ?: 'Cita anulada y eliminada permanentemente del sistema por la administración.'));
+            } catch (\Throwable $e) {
+                \Log::warning("AppointmentCancelled mail failed on forceDestroy: " . $e->getMessage());
+            }
+        }
 
         // Eliminar la tarea asociada si existe
         if ($appointment->task) {

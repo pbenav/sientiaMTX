@@ -54,19 +54,28 @@
             <div class="lg:col-span-2 space-y-5">
 
                 {{-- Datos de la cita --}}
-                <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div x-data="{ editing: false, appointment_date: '{{ $appointment->appointment_date->toDateString() }}', appointment_time: '{{ substr($appointment->appointment_time, 0, 5) }}' }"
+                     class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">📅 Datos de la Cita</p>
-                        <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg
-                            @if($appointment->status === 'confirmed') bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
-                            @elseif($appointment->status === 'cancelled') bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400
-                            @elseif($appointment->status === 'completed') bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400
-                            @elseif($appointment->status === 'blocked') bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400
-                            @else bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 @endif">
-                            {{ $appointment->status_label }}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <button @click="editing = !editing" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400 border border-cyan-150 dark:border-cyan-900/50 rounded-lg transition-all active:scale-95">
+                                <span x-show="!editing">✏️ Editar Cita</span>
+                                <span x-show="editing" x-cloak>✕ Cancelar</span>
+                            </button>
+                            <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg
+                                @if($appointment->status === 'confirmed') bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
+                                @elseif($appointment->status === 'cancelled') bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400
+                                @elseif($appointment->status === 'completed') bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400
+                                @elseif($appointment->status === 'blocked') bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400
+                                @else bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 @endif">
+                                {{ $appointment->status_label }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="p-6 grid grid-cols-2 gap-5">
+
+                    <!-- Vista de lectura -->
+                    <div x-show="!editing" class="p-6 grid grid-cols-2 gap-5">
                         <div>
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Fecha</p>
                             <p class="text-lg font-black text-gray-900 dark:text-white">{{ $appointment->appointment_date->format('d/m/Y') }}</p>
@@ -84,6 +93,32 @@
                             <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $appointment->slot_duration_minutes }} minutos</p>
                         </div>
                     </div>
+
+                    <!-- Formulario de Edición -->
+                    <form x-show="editing" x-cloak method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}" class="p-6 space-y-4">
+                        @csrf @method('PATCH')
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Fecha *</label>
+                                <input type="date" name="appointment_date" x-model="appointment_date" required min="{{ date('Y-m-d') }}"
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Hora *</label>
+                                <input type="text" name="appointment_time" x-model="appointment_time" placeholder="HH:MM" required
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                            <button type="button" @click="editing = false" class="px-4 py-2 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl transition-all">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl transition-all shadow-md">
+                                Guardar cambios
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
                 {{-- Datos del ciudadano --}}
@@ -201,11 +236,9 @@
                                 <button type="submit" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black rounded-xl transition-all">OK</button>
                             </div>
                         </form>
-
                         {{-- Cancelar --}}
                         @if(!in_array($appointment->status, ['cancelled', 'blocked']))
-                            <form method="POST" action="{{ route('appointments.destroy', [$team, $appointment]) }}"
-                                  onsubmit="return confirm('¿Cancelar esta cita? El ciudadano recibirá un email si consintió.')">
+                            <form method="POST" id="cancel-appointment-form" action="{{ route('appointments.destroy', [$team, $appointment]) }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-amber-50 hover:bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900 rounded-xl transition-all">
                                     ❌ Cancelar Cita
@@ -213,8 +246,7 @@
                             </form>
                         @endif
 
-                        <form method="POST" action="{{ route('appointments.forceDestroy', [$team, $appointment]) }}"
-                              onsubmit="return confirm('¿⚠️ ELIMINAR FÍSICAMENTE ESTA CITA? Esta acción no se puede deshacer y borrará la cita de la base de datos por completo.')">
+                        <form method="POST" id="delete-appointment-form" action="{{ route('appointments.forceDestroy', [$team, $appointment]) }}">
                             @csrf @method('DELETE')
                             <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl transition-all">
                                 🗑️ Borrar Permanente
@@ -246,18 +278,21 @@
                         @if($appointment->task)
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Tarea Asociada</p>
-                                <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{{ $appointment->task->title }}</p>
+                                <a href="{{ route('teams.tasks.show', [$team, $appointment->task]) }}" 
+                                   class="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors truncate block">
+                                    {{ $appointment->task->title }}
+                                </a>
                             </div>
                         @endif
                         @if($appointment->expediente)
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Expediente</p>
-                                <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">
+                                <a href="{{ route('teams.expedientes.show', [$team, $appointment->expediente]) }}" 
+                                   class="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors truncate block">
                                     [{{ $appointment->expediente->code }}] {{ $appointment->expediente->title }}
-                                </p>
+                                </a>
                             </div>
                         @endif
-
                         <div class="pt-3 border-t border-gray-100 dark:border-gray-800">
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Consentimientos GDPR</p>
                             <div class="space-y-1.5">
@@ -278,7 +313,75 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cancelForm = document.getElementById('cancel-appointment-form');
+        if (cancelForm) {
+            cancelForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¿Cancelar cita previa?',
+                    text: 'Indique a continuación el motivo de la cancelación (opcional). El ciudadano recibirá esta información por email si prestó su consentimiento.',
+                    input: 'textarea',
+                    inputPlaceholder: 'Escriba el motivo de la cancelación aquí...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, cancelar cita',
+                    cancelButtonText: 'No, mantener',
+                    customClass: {
+                        popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                        confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md',
+                        cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3',
+                        input: 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 rounded-2xl text-xs font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/20 !mx-auto !w-[90%] !my-4 h-24 p-3'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const reasonInput = document.createElement('input');
+                        reasonInput.type = 'hidden';
+                        reasonInput.name = 'cancellation_reason';
+                        reasonInput.value = result.value || '';
+                        cancelForm.appendChild(reasonInput);
+                        cancelForm.submit();
+                    }
+                });
+            });
+        }
+
+        const deleteForm = document.getElementById('delete-appointment-form');
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¿Eliminar permanentemente?',
+                    text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo. Indique a continuación el motivo de la anulación definitiva para el correo del ciudadano (opcional).',
+                    input: 'textarea',
+                    inputPlaceholder: 'Escriba el motivo del borrado definitivo aquí...',
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, borrar del todo',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                        confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md',
+                        cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3',
+                        input: 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 rounded-2xl text-xs font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/20 !mx-auto !w-[90%] !my-4 h-24 p-3'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const reasonInput = document.createElement('input');
+                        reasonInput.type = 'hidden';
+                        reasonInput.name = 'cancellation_reason';
+                        reasonInput.value = result.value || '';
+                        deleteForm.appendChild(reasonInput);
+                        deleteForm.submit();
+                    }
+                });
+            });
+        }
+    });
+</script>
 </x-app-layout>
