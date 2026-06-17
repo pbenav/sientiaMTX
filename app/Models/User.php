@@ -19,11 +19,21 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
 
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
-
 class User extends Authenticatable implements HasLocalePreference, PasskeyUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasPushSubscriptions, PasskeyAuthenticatable, HasDemoMasking;
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            if (!$user->is_admin) {
+                foreach ($user->createdTeams as $team) {
+                    $team->forceDelete();
+                }
+            }
+        });
+    }
 
     /**
      * Sensitive attributes to mask when Demo Mode is active.
