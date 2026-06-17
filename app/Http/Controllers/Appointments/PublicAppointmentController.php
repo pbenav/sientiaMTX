@@ -373,6 +373,16 @@ class PublicAppointmentController extends Controller
                              . "Ciudadano: {$appointment->visitor->full_name}\n"
                              . "Localizador: {$appointment->localizador}";
 
+                if (!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields)) {
+                    $description .= "\n\nInformación Adicional:\n";
+                    foreach ($appointment->service->custom_fields as $field) {
+                        $val = $appointment->custom_fields_values[$field['id']] ?? '';
+                        if (!empty($val)) {
+                            $description .= "- {$field['name']}: {$val}\n";
+                        }
+                    }
+                }
+
                 $eventData = [
                     'summary' => '[CITA] ' . $appointment->visitor->full_name . ' - ' . $appointment->service->name,
                     'description' => $description,
@@ -412,6 +422,16 @@ class PublicAppointmentController extends Controller
                              . "Localizador: {$appointment->localizador}\n"
                              . "Día: {$appointment->appointment_date->format('d/m/Y')}\n"
                              . "Hora: {$appointment->appointment_time}";
+
+                if (!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields)) {
+                    $description .= "\n\nInformación Adicional:\n";
+                    foreach ($appointment->service->custom_fields as $field) {
+                        $val = $appointment->custom_fields_values[$field['id']] ?? '';
+                        if (!empty($val)) {
+                            $description .= "- {$field['name']}: {$val}\n";
+                        }
+                    }
+                }
 
                 $taskData = [
                     'title' => '[CITA] ' . $appointment->visitor->full_name . ' - ' . $appointment->service->name,
