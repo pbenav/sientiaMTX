@@ -77,7 +77,7 @@ class TranslateAppointmentServiceJob implements ShouldQueue
                     ]
                 ]
             ],
-            'required' => ['name']
+            'required' => ['name', 'custom_fields']
         ];
 
         $translationsProperties = [];
