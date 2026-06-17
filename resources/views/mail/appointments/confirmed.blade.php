@@ -12,6 +12,15 @@
 - **{{ __('Servicio:') }}** {{ $appointment->service->name ?? __('Cita General') }}
 - **{{ __('Modalidad:') }}** {{ in_array($appointment->modality ?? 'presencial', ['jitsi', 'meet']) ? __('Videoconferencia') : __('Presencial') }}
 
+@if(!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields))
+**{{ __('Información Adicional:') }}**
+@foreach($appointment->service->custom_fields as $field)
+@if(!empty($appointment->custom_fields_values[$field['id']]))
+- **{{ $field['name'] }}:** {{ $field['type'] === 'date' ? \Carbon\Carbon::parse($appointment->custom_fields_values[$field['id']])->format('d/m/Y') : $appointment->custom_fields_values[$field['id']] }}
+@endif
+@endforeach
+
+@endif
 @if(in_array($appointment->modality ?? 'presencial', ['jitsi', 'meet']))
 {{ __('Puede acceder a la sala de videoconferencia en el momento de la cita utilizando su localizador y documento de identidad en nuestro portal.') }}
 
