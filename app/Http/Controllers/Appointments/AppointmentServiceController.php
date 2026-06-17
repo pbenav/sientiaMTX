@@ -38,7 +38,10 @@ class AppointmentServiceController extends Controller
             'is_active'          => 'boolean',
             'sort_order'         => 'integer|min:0',
             'custom_fields'      => 'nullable|array',
+            'custom_fields.*.id' => 'required_with:custom_fields|string',
+            'custom_fields.*.name' => 'required_with:custom_fields|string|max:150',
             'custom_fields.*.type' => 'nullable|string|in:text,textarea,number,date',
+            'custom_fields.*.is_required' => 'nullable|boolean',
         ]);
 
         // Asegurar que is_required sea booleano
@@ -109,7 +112,10 @@ class AppointmentServiceController extends Controller
             'is_active'          => 'boolean',
             'sort_order'         => 'integer|min:0',
             'custom_fields'      => 'nullable|array',
+            'custom_fields.*.id' => 'required_with:custom_fields|string',
+            'custom_fields.*.name' => 'required_with:custom_fields|string|max:150',
             'custom_fields.*.type' => 'nullable|string|in:text,textarea,number,date',
+            'custom_fields.*.is_required' => 'nullable|boolean',
         ]);
 
         // Asegurar que is_required sea booleano

@@ -179,7 +179,7 @@
             {{-- Campos Personalizados --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
                  x-data="{
-                    fields: {{ old('custom_fields') ? json_encode(old('custom_fields')) : (isset($service) && $service->custom_fields ? json_encode($service->custom_fields) : '[]') }},
+                    fields: {{ old('custom_fields') ? json_encode(array_values(old('custom_fields'))) : ((isset($service) && is_array($service->custom_fields)) ? json_encode(array_values($service->custom_fields)) : '[]') }},
                     addField() {
                         this.fields.push({
                             id: 'field_' + Math.random().toString(36).substr(2, 9),
