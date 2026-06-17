@@ -38,7 +38,7 @@
     "SMTP Server Settings": "Ajustes del Servidor SMTP",
     "Configure how the application sends automated emails.": "Configura cómo la aplicación envía correos automáticos.",
     "Mailer": "Controlador (Mailer)",
-    "Encryption (tls/ssl)": "Cifrado (tls/ssl)",
+    "Encryption (tls\/ssl)": "Cifrado (tls\/ssl)",
     "SMTP Host": "Servidor SMTP",
     "Port": "Puerto",
     "Username": "Usuario",
@@ -177,5 +177,7 @@
     "Showing": "Mostrando",
     "to": "a",
     "of": "de",
-    "results": "resultados"
+    "results": "resultados",
+    "Información Adicional": "Información Adicional",
+    "Por favor, completa los siguientes campos requeridos por el servicio": "Por favor, completa los siguientes campos requeridos por el servicio"
 }
