@@ -27,7 +27,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     protected static function booted()
     {
         static::deleting(function ($user) {
-            if (!$user->is_admin) {
+            if (!$user->is_admin && $user->email !== 'demo@sientia.com') {
                 foreach ($user->createdTeams as $team) {
                     $team->forceDelete();
                 }

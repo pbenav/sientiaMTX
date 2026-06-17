@@ -59,6 +59,7 @@ class PurgeInactiveAccountsCommand extends Command
         // - Last login is before cutoff OR (Last login is null AND created_at is before cutoff)
         // - Warning NOT sent yet
         $usersToWarn = User::where('is_admin', false)
+            ->where('email', '!=', 'demo@sientia.com')
             ->whereNull('inactive_warning_sent_at')
             ->where(function($query) use ($inactivityCutoff) {
                 $query->where('last_login_at', '<', $inactivityCutoff)
@@ -85,14 +86,18 @@ class PurgeInactiveAccountsCommand extends Command
                 }
             }
         }
+
+        // --- PART 2: PURGE EXPIRED ACCOUNTS ---
         // Users who:
         // - Are not admins
         // - HAVE a warning timestamp
         // - Warning timestamp was longer ago than the warningDays limit
         $usersToPurge = User::where('is_admin', false)
+            ->where('email', '!=', 'demo@sientia.com')
             ->whereNotNull('inactive_warning_sent_at')
             ->where('inactive_warning_sent_at', '<', $warningExpirationCutoff)
             ->get();
+
         $this->info("Detected " . $usersToPurge->count() . " expired users qualifying for COMPLETE PURGE.");
         foreach ($usersToPurge as $user) {
             $this->error("!!! PURGING ACCOUNT: {$user->email} (Warned on: {$user->inactive_warning_sent_at->toDateString()}) !!!");

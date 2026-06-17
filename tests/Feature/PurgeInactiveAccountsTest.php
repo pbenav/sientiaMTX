@@ -57,6 +57,14 @@ class PurgeInactiveAccountsTest extends TestCase
             'created_at' => Carbon::now()->subDays(40),
         ]);
 
+        // 4. Crear el usuario demo (creado hace 50 días, last_login_at nulo)
+        $demoUser = User::factory()->create([
+            'email' => 'demo@sientia.com',
+            'is_admin' => false,
+            'last_login_at' => null,
+            'created_at' => Carbon::now()->subDays(50),
+        ]);
+
         // Ejecutar el comando para enviar avisos
         $this->artisan('app:purge-inactive-accounts')
             ->assertSuccessful();
@@ -66,9 +74,9 @@ class PurgeInactiveAccountsTest extends TestCase
             return $mail->hasTo($inactiveNullLoginUser->email);
         });
 
-        // Verificar que no se envió a los usuarios activos ni admins
-        Mail::assertNotSent(InactiveUserWarningMail::class, function ($mail) use ($activeUser, $adminUser) {
-            return $mail->hasTo($activeUser->email) || $mail->hasTo($adminUser->email);
+        // Verificar que no se envió a los usuarios activos, admins ni demo
+        Mail::assertNotSent(InactiveUserWarningMail::class, function ($mail) use ($activeUser, $adminUser, $demoUser) {
+            return $mail->hasTo($activeUser->email) || $mail->hasTo($adminUser->email) || $mail->hasTo($demoUser->email);
         });
 
         // Refrescar el usuario para comprobar que se guardó la fecha del aviso
@@ -79,6 +87,10 @@ class PurgeInactiveAccountsTest extends TestCase
         $inactiveNullLoginUser->inactive_warning_sent_at = Carbon::now()->subDays(6);
         $inactiveNullLoginUser->save();
 
+        // Si intentamos simular que por algún error el usuario demo tuviera un warning sent timestamp antiguo
+        $demoUser->inactive_warning_sent_at = Carbon::now()->subDays(10);
+        $demoUser->save();
+
         $this->artisan('app:purge-inactive-accounts')
             ->assertSuccessful();
 
@@ -88,8 +100,9 @@ class PurgeInactiveAccountsTest extends TestCase
         // Verificar que el equipo propiedad de dicho usuario fue eliminado en cascada
         $this->assertDatabaseMissing('teams', ['id' => $team->id]);
 
-        // Verificar que los usuarios activos y admins siguen existiendo
+        // Verificar que los usuarios activos, admins y demo siguen existiendo
         $this->assertDatabaseHas('users', ['id' => $activeUser->id]);
         $this->assertDatabaseHas('users', ['id' => $adminUser->id]);
+        $this->assertDatabaseHas('users', ['id' => $demoUser->id]);
     }
 }
