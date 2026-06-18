@@ -60,21 +60,23 @@ class PurgeInactiveAccountsCommand extends Command
         // - Warning NOT sent yet
         $usersToWarn = User::where('is_admin', false)
             ->where('email', '!=', 'demo@sientia.com')
-            ->whereNull('inactive_warning_sent_at')
-            ->where(function($query) use ($inactivityCutoff) {
-                $query->where('last_login_at', '<', $inactivityCutoff)
-                      ->orWhere(function($q) use ($inactivityCutoff) {
-                          $q->whereNull('last_login_at')
-                            ->where('created_at', '<', $inactivityCutoff);
+            ->where(function ($query) use ($inactivityCutoff) {
+                $query->where('last_activity_at', '<', $inactivityCutoff)
+                      ->orWhere(function ($q) use ($inactivityCutoff) {
+                          $q->whereNull('last_activity_at')->where('last_login_at', '<', $inactivityCutoff);
+                      })
+                      ->orWhere(function ($q) use ($inactivityCutoff) {
+                          $q->whereNull('last_activity_at')->whereNull('last_login_at')->where('created_at', '<', $inactivityCutoff);
                       });
             })
+            ->whereNull('inactive_warning_sent_at')
             ->get();
 
         $this->info("Detected " . $usersToWarn->count() . " users qualifying for NEW warning notification.");
 
         foreach ($usersToWarn as $user) {
-            $lastLoginStr = $user->last_login_at ? $user->last_login_at->toDateString() : 'Nunca (Creado: ' . $user->created_at->toDateString() . ')';
-            $this->line("- Sending warning to: {$user->email} (Last Login: {$lastLoginStr})");
+            $lastSeen = $user->last_activity_at ?? $user->last_login_at ?? $user->created_at;
+            $this->line("- Sending warning to: {$user->email} (Last Seen: " . ($lastSeen ? $lastSeen->toDateString() : 'N/A') . ")");
             
             if (!$dryRun) {
                 try {

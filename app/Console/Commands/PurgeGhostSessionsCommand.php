@@ -92,15 +92,13 @@ class PurgeGhostSessionsCommand extends Command
                     $this->line("<info>[TIMELOGS]</info> Closed {$closedLogs} ghost timers for User ID: {$user->id} ({$user->name}).");
                 }
 
-                // 2. User is a "ghost" if their timestamps say they are active
-                if ($user->last_activity_at !== null || $user->last_login_at !== null) {
-                    $user->last_activity_at = null;
-                    $user->last_login_at = null;
-                    // NUCLEAR FIX: Invalidate their Remember Token so their browser stops auto-logging them back in!
-                    $user->remember_token = null; 
+                // 2. User is a "ghost" if their timestamps say they are active but they have no session.
+                // We backdate last_activity_at to the cutoff to mark them offline without losing their historical activity data.
+                if ($user->last_activity_at !== null && $user->last_activity_at->greaterThan($cutoff)) {
+                    $user->last_activity_at = $cutoff->copy()->subSecond();
                     $user->save();
                     $resetCount++;
-                    $this->line("<info>[CLEARED]</info> User ID: {$user->id} ({$user->name}) - Force set to Offline & Revoked RememberMe token.");
+                    $this->line("<info>[CLEARED]</info> User ID: {$user->id} ({$user->name}) - Backdated activity to mark as Offline.");
                 }
             }
         }

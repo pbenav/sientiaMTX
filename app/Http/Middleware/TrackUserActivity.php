@@ -94,6 +94,10 @@ class TrackUserActivity
                 // AUTO-RESET DE AVISO DE PURGA: Si el usuario accede y tenía un aviso de eliminación pendiente, lo cancelamos.
                 if ($user->inactive_warning_sent_at) {
                     $user->inactive_warning_sent_at = null;
+                    
+                    if (!$isPollRequest && $request->hasSession()) {
+                        $request->session()->flash('success', '¡Qué alegría volver a verte! Tu cuenta ha sido reactivada con éxito. Gracias por seguir con nosotros.');
+                    }
                 }
 
                 // Initialize last_login_at if it was null
