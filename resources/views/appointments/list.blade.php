@@ -183,9 +183,9 @@
                                                class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline">
                                                 Ver →
                                             </a>
-                                            <form method="POST" action="{{ route('appointments.forceDestroy', [$team, $cita]) }}" class="inline-block">
+                                            <form id="delete-appointment-{{ $cita->id }}" method="POST" action="{{ route('appointments.forceDestroy', [$team, $cita]) }}" class="inline-block">
                                                 @csrf @method('DELETE')
-                                                <button type="button" onclick="confirmSingleDelete(event, this.form)" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Borrar Permanente">
+                                                <button type="button" onclick="confirmSingleDelete(event, '{{ $cita->id }}')" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Borrar Permanente">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                 </button>
                                             </form>
@@ -205,23 +205,32 @@
 </div>
 
 <script>
-    function confirmSingleDelete(event, form) {
+    function confirmSingleDelete(event, id) {
         event.preventDefault();
+        const form = document.getElementById(`delete-appointment-${id}`);
         Swal.fire({
             title: '¿Eliminar físicamente esta cita?',
-            text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo, junto con su tarea asociada.',
+            text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo, junto con su tarea asociada. Indique a continuación el motivo de la anulación definitiva para el correo del ciudadano (opcional).',
+            input: 'textarea',
+            inputPlaceholder: 'Escriba el motivo de la eliminación definitiva aquí...',
             icon: 'error',
             showCancelButton: true,
             confirmButtonText: 'Sí, borrar',
             cancelButtonText: 'Cancelar',
             customClass: {
-                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800',
+                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
                 confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md',
-                cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3'
+                cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3',
+                input: 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 rounded-2xl text-xs font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/20 !mx-auto !w-[90%] !my-4 h-24 p-3'
             },
             buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'cancellation_reason';
+                reasonInput.value = result.value || '';
+                form.appendChild(reasonInput);
                 form.submit();
             }
         });

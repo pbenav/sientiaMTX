@@ -786,11 +786,28 @@
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = `/teams/{{ $team->id }}/attachments/${id}`;
-                        form.innerHTML = `
-                            <input type="hidden" name="_method" value="PATCH">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="file_name" value="${result.value}">
-                        `;
+                        
+                        // Add CSRF token safely
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfInput);
+
+                        // Add Method override safely
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'PATCH';
+                        form.appendChild(methodInput);
+
+                        // Add File Name safely
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'hidden';
+                        fileInput.name = 'file_name';
+                        fileInput.value = result.value;
+                        form.appendChild(fileInput);
+
                         document.body.appendChild(form);
                         form.submit();
                     }
