@@ -932,8 +932,15 @@
                         <tbody class="divide-y divide-gray-50">
                             @foreach($workdayLogs as $log)
                                 <tr>
-                                    <td class="px-6 py-4 text-sm font-bold text-gray-900">{{ $log->start_at->translatedFormat('d M Y') }}</td>
-                                    <td class="px-6 py-4 text-right text-xs font-black">{{ $log->end_at ? floor($log->start_at->diffInMinutes($log->end_at) / 60).'h '.($log->start_at->diffInMinutes($log->end_at) % 60).'m' : 'Activa' }}</td>
+                                    <td class="px-6 py-4 text-sm font-bold text-gray-900">{{ $log->date->translatedFormat('d M Y') }}</td>
+                                    <td class="px-6 py-4 text-right text-xs font-black">
+                                        <div class="flex items-center justify-end gap-2">
+                                            @if($log->is_active)
+                                                <span class="text-[9px] font-black uppercase text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Activa</span>
+                                            @endif
+                                            <span>{{ floor($log->total_minutes / 60).'h '.($log->total_minutes % 60).'m' }}</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -163,12 +163,32 @@ class TimeLogController extends Controller
         ->limit($effortLimit)
         ->get();
 
-        // Get my recent workdays
+        // Get my recent workdays grouped by day
         $workdayLogs = $user->timeLogs()
             ->where('type', 'workday')
             ->orderBy('start_at', 'desc')
-            ->limit($presenceLimit)
-            ->get();
+            ->get()
+            ->groupBy(function($log) {
+                return $log->start_at->format('Y-m-d');
+            })
+            ->map(function($logs, $date) {
+                $totalMinutes = 0;
+                $isActive = false;
+                foreach($logs as $log) {
+                    if (!$log->end_at) {
+                        $isActive = true;
+                        $totalMinutes += floor($log->start_at->diffInMinutes(now()));
+                    } else {
+                        $totalMinutes += floor($log->start_at->diffInMinutes($log->end_at));
+                    }
+                }
+                return (object)[
+                    'date' => \Carbon\Carbon::parse($date),
+                    'total_minutes' => $totalMinutes,
+                    'is_active' => $isActive
+                ];
+            })
+            ->take($presenceLimit);
         $team->load(['members.timeLogs' => function($q) {
             $q->whereNull('end_at');
         }]);
