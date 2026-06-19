@@ -318,6 +318,17 @@
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div class="md:col-span-2 flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div>
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 block">Activar Sincronización</span>
+                        <span class="text-[10px] text-gray-500">Si está activo, tus inicios y cierres de jornada se replicarán.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="hidden" name="sync_with_cth" value="0">
+                        <input type="checkbox" name="sync_with_cth" value="1" {{ old('sync_with_cth', $user->sync_with_cth) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
+                    </label>
+                </div>
                 <div>
                     <x-input-label for="cth_api_url" value="URL del Servidor CTH" class="text-[9px] font-bold uppercase text-gray-400" />
                     <x-text-input id="cth_api_url" name="cth_api_url" type="url" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Ej: https://cth.midominio.com" :value="old('cth_api_url', $user->cth_api_url)" />

@@ -32,63 +32,32 @@ class SyncWorkdayWithCth implements ShouldQueue
      */
     public function handle(): void
     {
-        if (!$this->user->cth_api_url || !$this->user->cth_api_token) {
+        if (!$this->user->sync_with_cth || !$this->user->cth_api_url || !$this->user->cth_api_token) {
             return;
         }
 
-        $apiUrl = rtrim($this->user->cth_api_url, '/');
+        // Use global S2S config for transparent sync if token is missing
+        $apiUrl = rtrim($this->user->cth_api_url ?? config('services.cth.url'), '/');
+        $secret = config('services.cth.secret');
         
+        if (!$apiUrl || !$secret) {
+            Log::warning('CTH Sync: Missing S2S configuration in .env');
+            return;
+        }
+
         try {
-            // First, get the current status in CTH
-            $statusResponse = Http::withToken($this->user->cth_api_token)
+            $clockResponse = Http::withHeaders(['X-S2S-Secret' => $secret])
                 ->acceptJson()
-                ->post($apiUrl . '/api/status', [
-                    'user_code' => $this->user->cth_user_code,
-                    'work_center_code' => $this->user->cth_work_center_code,
+                ->post($apiUrl . '/api/s2s/sync-workday', [
+                    'email' => $this->user->email,
+                    'action' => $this->mtxAction,
                 ]);
 
-            if (!$statusResponse->successful()) {
-                Log::warning('CTH Sync: Failed to get status from CTH', ['user' => $this->user->id, 'response' => $statusResponse->body()]);
-                return;
-            }
-
-            $cthData = $statusResponse->json('data');
-            $cthNextAction = $cthData['action'] ?? null;
-            $cthCanClock = $cthData['can_clock'] ?? false;
-
-            // Determine if we need to hit the /api/clock endpoint
-            $shouldClock = false;
-            $requestPayload = [
-                'user_code' => $this->user->cth_user_code,
-                'work_center_code' => $this->user->cth_work_center_code,
-            ];
-
-            if ($this->mtxAction === 'start') {
-                // If MTX wants to start, and CTH next action is 'clock_in' or 'confirm_exceptional_clock_in'
-                if (in_array($cthNextAction, ['clock_in', 'confirm_exceptional_clock_in']) && $cthCanClock) {
-                    $shouldClock = true;
-                }
-            } elseif ($this->mtxAction === 'stop') {
-                // If MTX wants to stop, and CTH next action is 'clock_out' or 'working_options'
-                if (in_array($cthNextAction, ['clock_out', 'working_options'])) {
-                    $shouldClock = true;
-                }
-            }
-
-            if ($shouldClock) {
-                $clockResponse = Http::withToken($this->user->cth_api_token)
-                    ->acceptJson()
-                    ->post($apiUrl . '/api/clock', $requestPayload);
-
-                if (!$clockResponse->successful()) {
-                    Log::error('CTH Sync: Failed to clock in CTH', ['user' => $this->user->id, 'response' => $clockResponse->body()]);
-                } else {
-                    Log::info('CTH Sync: Successfully synced ' . $this->mtxAction . ' to CTH', ['user' => $this->user->id]);
-                }
+            if (!$clockResponse->successful()) {
+                Log::error('CTH Sync: Failed to clock in CTH via S2S', ['user' => $this->user->id, 'response' => $clockResponse->body()]);
             } else {
-                Log::info('CTH Sync: Skipped sync because CTH is already in the desired state', ['user' => $this->user->id, 'mtx_action' => $this->mtxAction, 'cth_action' => $cthNextAction]);
+                Log::info('CTH Sync: Successfully synced ' . $this->mtxAction . ' to CTH via S2S', ['user' => $this->user->id]);
             }
-
         } catch (\Exception $e) {
             Log::error('CTH Sync Exception: ' . $e->getMessage(), ['user' => $this->user->id]);
         }

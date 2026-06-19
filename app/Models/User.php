@@ -92,6 +92,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         'work_start_time_2',
         'work_end_time_2',
         'work_days_2',
+        'sync_with_cth',
         'cth_api_url',
         'cth_api_token',
         'cth_user_code',
@@ -141,6 +142,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             'two_factor_confirmed_at' => 'datetime',
             'work_days_1' => 'array',
             'work_days_2' => 'array',
+            'sync_with_cth' => 'boolean',
         ];
     }
 
