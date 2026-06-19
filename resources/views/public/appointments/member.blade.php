@@ -28,6 +28,19 @@
                 @endif
                 <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-1">{{ __('Miembro verificado de Sientia MTX') }}</p>
             </div>
+            <div class="shrink-0 sm:ml-auto flex flex-col items-center">
+                @php
+                    $qrUrl = route('public.appointments.member', $member->slug);
+                    $qrCodeSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->margin(1)->color(8, 145, 178)->generate($qrUrl);
+                    $qrCodeSmall = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(48)->margin(0)->color(8, 145, 178)->generate($qrUrl);
+                @endphp
+                <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-cita-{{ $member->slug }}.svg" 
+                   class="block p-1 bg-white border border-gray-200 dark:border-gray-700 hover:border-cyan-500 rounded-xl shadow-sm transition-all hover:scale-105 group/qr"
+                   title="{{ __('Descargar código QR de Cita Previa') }}">
+                    {!! $qrCodeSmall !!}
+                </a>
+                <span class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 mt-1">{{ __('Escanear') }}</span>
+            </div>
         </div>
 
         @if($settings->welcome_text)

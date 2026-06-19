@@ -48,7 +48,18 @@
             </span>
             <span class="font-semibold">{{ $microsite->team->name }}</span>
         </div>
-        <div>
+        <div class="flex items-center gap-4">
+            @php
+                $qrUrl = route('public.microsites.show', $microsite->slug);
+                $qrCodeSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->margin(1)->color(219, 39, 119)->generate($qrUrl);
+                $qrCodeSmall = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(24)->margin(0)->color(255, 255, 255)->backgroundColor(17, 24, 39)->generate($qrUrl);
+            @endphp
+            <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-micrositio-{{ $microsite->slug }}.svg" 
+               class="p-1 border border-gray-700 hover:border-pink-500 rounded-md flex items-center justify-center transition-all group"
+               title="{{ __('Descargar código QR') }}">
+                {!! $qrCodeSmall !!}
+            </a>
+            
             <a href="{{ route('public.microsites.directory') }}" class="hover:text-pink-400 transition-colors flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
