@@ -49,6 +49,24 @@ class AppointmentVisitor extends Model
 
     public function getFullNameAttribute(): string
     {
-        return trim("{$this->first_name} {$this->last_name}");
+        $fullName = trim("{$this->first_name} {$this->last_name}");
+        
+        // Transliterar on-the-fly si tiene caracteres árabes y no ha sido transliterado previamente
+        if (preg_match('/\p{Arabic}/u', $fullName) && !preg_match('/\([a-zA-Z\s]+\)/', $fullName)) {
+            if (class_exists(\Transliterator::class)) {
+                $transliterator = \Transliterator::create('Any-Latin; Latin-ASCII');
+                $latin = $transliterator ? $transliterator->transliterate($fullName) : \Illuminate\Support\Str::transliterate($fullName);
+            } else {
+                $latin = \Illuminate\Support\Str::transliterate($fullName);
+            }
+            $latin = preg_replace('/[^a-zA-Z\s]/', '', $latin);
+            $latin = ucwords(strtolower(trim($latin)));
+            
+            if ($latin) {
+                return $fullName . ' (' . $latin . ')';
+            }
+        }
+        
+        return $fullName;
     }
 }

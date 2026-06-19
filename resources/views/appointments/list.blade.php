@@ -108,11 +108,36 @@
                                 <th class="px-5 py-4 w-12 text-center">
                                     <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="toggleAll">
                                 </th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Localizador</th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Fecha</th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Ciudadano</th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Servicio</th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Estado</th>
+                                @php
+                                    $sort_by = request('sort_by', 'appointment_date');
+                                    $sort_dir = request('sort_dir', 'desc');
+                                    $next_dir = $sort_dir === 'asc' ? 'desc' : 'asc';
+                                @endphp
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'localizador', 'sort_dir' => $sort_by === 'localizador' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
+                                        Localizador @if($sort_by === 'localizador') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                    </a>
+                                </th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'appointment_date', 'sort_dir' => $sort_by === 'appointment_date' ? $next_dir : 'desc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
+                                        Fecha @if($sort_by === 'appointment_date') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                    </a>
+                                </th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'visitor', 'sort_dir' => $sort_by === 'visitor' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
+                                        Ciudadano @if($sort_by === 'visitor') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                    </a>
+                                </th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'service', 'sort_dir' => $sort_by === 'service' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
+                                        Servicio @if($sort_by === 'service') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                    </a>
+                                </th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'status', 'sort_dir' => $sort_by === 'status' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
+                                        Estado @if($sort_by === 'status') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                    </a>
+                                </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Completada</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400"></th>
                             </tr>
