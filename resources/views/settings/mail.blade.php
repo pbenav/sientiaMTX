@@ -519,8 +519,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <x-input-label for="CTH_API_URL" value="URL del Servidor CTH" />
-                                    <x-text-input id="CTH_API_URL" name="CTH_API_URL" type="url" class="mt-1 block w-full bg-gray-50" :value="$cth['url']" placeholder="https://cth.sientia.com/api/mtx" />
-                                    <p class="text-[11px] text-gray-400 mt-2">La URL base de la API de CTH (ej: https://cth.sientia.com/api/mtx).</p>
+                                    <x-text-input id="CTH_API_URL" name="CTH_API_URL" type="url" class="mt-1 block w-full bg-gray-50" :value="$cth['url']" placeholder="https://cth.sientia.com" />
+                                    <p class="text-[11px] text-gray-400 mt-2">La URL base de CTH (ej: https://cth.sientia.com). No incluyas rutas al final.</p>
                                     <x-input-error :messages="$errors->get('CTH_API_URL')" class="mt-2" />
                                 </div>
                                 
