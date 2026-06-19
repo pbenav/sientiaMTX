@@ -35,7 +35,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('profile.save') }}</x-primary-button>
+            <x-primary-button>{{ __('Guardar Cambios') }}</x-primary-button>
 
             @if (session('status') === 'password-updated')
                 <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 5000)"
