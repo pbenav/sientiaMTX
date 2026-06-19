@@ -65,4 +65,58 @@ class S2SIntegrationController extends Controller
             return response()->json(['message' => 'Server error'], 500);
         }
     }
+
+    public function syncHistory(Request $request)
+    {
+        $secret = config('services.cth.secret');
+        if (!$secret || $request->header('X-S2S-Secret') !== $secret) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $events = $request->input('events', []);
+        $fromDateStr = $request->input('from_date');
+        
+        if (!$fromDateStr) {
+            return response()->json(['message' => 'from_date is required'], 400);
+        }
+        
+        $fromDate = \Carbon\Carbon::parse($fromDateStr)->setTimezone(config('app.timezone'));
+
+        // Group events by email
+        $eventsByEmail = collect($events)->groupBy('email');
+        
+        \DB::beginTransaction();
+        try {
+            foreach ($eventsByEmail as $email => $userEvents) {
+                $user = User::where('email', $email)->first();
+                if (!$user || !$user->sync_with_cth) {
+                    continue;
+                }
+
+                // Delete all workday logs for this user from the fromDate onwards
+                $user->timeLogs()
+                    ->where('type', 'workday')
+                    ->where('start_at', '>=', $fromDate)
+                    ->delete();
+
+                // Insert the new logs
+                foreach ($userEvents as $ev) {
+                    $startAt = \Carbon\Carbon::parse($ev['start_at'])->setTimezone(config('app.timezone'));
+                    $endAt = $ev['end_at'] ? \Carbon\Carbon::parse($ev['end_at'])->setTimezone(config('app.timezone')) : null;
+                    
+                    $user->timeLogs()->create([
+                        'type' => 'workday',
+                        'start_at' => $startAt,
+                        'end_at' => $endAt,
+                    ]);
+                }
+            }
+            \DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            Log::error('S2S MTX History Sync Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Server error'], 500);
+        }
+    }
 }
