@@ -19,7 +19,7 @@ class S2SIntegrationController extends Controller
         $email = $request->input('email');
         $action = $request->input('action'); // 'start' or 'stop'
         $timestampStr = $request->input('timestamp');
-        $timestamp = $timestampStr ? \Carbon\Carbon::parse($timestampStr) : now();
+        $timestamp = $timestampStr ? \Carbon\Carbon::parse($timestampStr)->setTimezone(config('app.timezone')) : now();
 
         $user = User::where('email', $email)->first();
         if (!$user || !$user->sync_with_cth) {
