@@ -926,6 +926,13 @@
                             </select>
                         </form>
                     </div>
+                    
+                    @if($workdayLogs->count() > 0)
+                    <div class="px-6 py-4 border-b border-gray-50">
+                        <canvas id="presenceChart" height="60"></canvas>
+                    </div>
+                    @endif
+
                     <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar">
                         <table class="w-full text-left">
                         <thead class="bg-gray-50"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400">Fecha</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 text-right">Total</th></tr></thead>
@@ -1535,6 +1542,64 @@
             dock.addEventListener('mouseenter', () => { if (!isDragging) dock.style.cursor = 'grab'; });
             dock.addEventListener('mousedown', () => { dock.style.cursor = 'grabbing'; });
             dock.addEventListener('mouseup', () => { dock.style.cursor = 'grab'; });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('presenceChart');
+            if (ctx) {
+                const logsData = @json($workdayLogs->map(function($log) {
+                    return [
+                        'date' => $log->date->translatedFormat('d M'),
+                        'hours' => round($log->total_minutes / 60, 2)
+                    ];
+                })->reverse()->values());
+                
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: logsData.map(d => d.date),
+                        datasets: [{
+                            label: 'Horas Trabajadas',
+                            data: logsData.map(d => d.hours),
+                            backgroundColor: '#10b981',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let hours = Math.floor(context.raw);
+                                        let minutes = Math.round((context.raw - hours) * 60);
+                                        return `${hours}h ${minutes}m`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                display: false
+                            },
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: {
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#9ca3af'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         });
     </script>
 </x-app-layout>
