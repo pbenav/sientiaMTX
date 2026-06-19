@@ -299,6 +299,48 @@
             </div>
         </div>
 
+        <!-- CTH Integration -->
+        <div class="p-6 bg-cyan-50/50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-800/50 space-y-5">
+            <div class="flex items-center gap-2">
+                <span class="p-1.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </span>
+                <div>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400">Integración con Sientia CTH</h3>
+                    <span class="text-[9px] text-gray-400 font-medium block uppercase tracking-wider mt-0.5">Sincroniza tus fichajes y jornada automáticamente</span>
+                </div>
+            </div>
+            
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                Introduce las credenciales de tu portal de Sientia CTH para que cuando inicies o cierres jornada desde aquí, el fichaje se registre también automáticamente en tu cuenta de CTH.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div>
+                    <x-input-label for="cth_api_url" value="URL del Servidor CTH" class="text-[9px] font-bold uppercase text-gray-400" />
+                    <x-text-input id="cth_api_url" name="cth_api_url" type="url" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Ej: https://cth.midominio.com" :value="old('cth_api_url', $user->cth_api_url)" />
+                    <x-input-error class="mt-2" :messages="$errors->get('cth_api_url')" />
+                </div>
+                <div>
+                    <x-input-label for="cth_api_token" value="Token API de Acceso (Sanctum)" class="text-[9px] font-bold uppercase text-gray-400" />
+                    <x-text-input id="cth_api_token" name="cth_api_token" type="password" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="••••••••" :value="old('cth_api_token', $user->cth_api_token)" />
+                    <x-input-error class="mt-2" :messages="$errors->get('cth_api_token')" />
+                </div>
+                <div>
+                    <x-input-label for="cth_user_code" value="Tu Código de Usuario en CTH" class="text-[9px] font-bold uppercase text-gray-400" />
+                    <x-text-input id="cth_user_code" name="cth_user_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Ej: USER-123" :value="old('cth_user_code', $user->cth_user_code)" />
+                    <x-input-error class="mt-2" :messages="$errors->get('cth_user_code')" />
+                </div>
+                <div>
+                    <x-input-label for="cth_work_center_code" value="Código de tu Centro de Trabajo" class="text-[9px] font-bold uppercase text-gray-400" />
+                    <x-text-input id="cth_work_center_code" name="cth_work_center_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Opcional. Ej: WC-MADRID" :value="old('cth_work_center_code', $user->cth_work_center_code)" />
+                    <x-input-error class="mt-2" :messages="$errors->get('cth_work_center_code')" />
+                </div>
+            </div>
+        </div>
+
         <!-- Welcome Messages Toggle -->
         <div class="flex items-center gap-3 bg-violet-50/50 dark:bg-violet-900/10 p-4 rounded-2xl border border-violet-100 dark:border-violet-800 group hover:shadow-md transition-all duration-300">
             <div class="flex-1">

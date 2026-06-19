@@ -92,6 +92,10 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         'work_start_time_2',
         'work_end_time_2',
         'work_days_2',
+        'cth_api_url',
+        'cth_api_token',
+        'cth_user_code',
+        'cth_work_center_code',
         'two_factor_secret',
         'two_factor_confirmed_at',
         'two_factor_method',
@@ -108,6 +112,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         'remember_token',
         'google_token',
         'google_refresh_token',
+        'cth_api_token',
         'two_factor_secret',
     ];
 
