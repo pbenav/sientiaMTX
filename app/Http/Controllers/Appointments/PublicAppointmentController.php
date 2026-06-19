@@ -335,7 +335,7 @@ class PublicAppointmentController extends Controller
                 'description'    => $description,
                 'status'         => 'pending',
                 'priority'       => 'medium',
-                'due_date'       => $appointment->appointment_date,
+                'due_date'       => $appointment->end_datetime,
                 'created_by_id'  => $member->id,
                 'expediente_id'  => $expedienteId,
                 'team_id'        => $appointment->service->team_id ?? $member->favorite_team_id,
@@ -623,7 +623,7 @@ class PublicAppointmentController extends Controller
         if ($appointment->task) {
             $appointment->task->update([
                 'title'    => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
-                'due_date' => $appointment->appointment_date,
+                'due_date' => $appointment->end_datetime,
             ]);
         }
 

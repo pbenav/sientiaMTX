@@ -241,7 +241,7 @@ class AppointmentController extends Controller
         if ($task) {
             $taskData = [];
             if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
-                $taskData['due_date'] = $appointment->appointment_date;
+                $taskData['due_date'] = $appointment->end_datetime;
             }
             if (array_key_exists('expediente_id', $data)) {
                 $taskData['expediente_id'] = $data['expediente_id'];
