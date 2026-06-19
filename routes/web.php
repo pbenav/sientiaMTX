@@ -29,6 +29,9 @@ Route::get('/telegram/webhook', fn() => response()->json(['status' => 'ok', 'inf
 Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappWebhookController::class, 'webhook'])->name('whatsapp.webhook');
 Route::get('/whatsapp/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'WhatsApp webhook endpoint (POST only)'], 200));
 
+// S2S Integration (CTH -> MTX)
+Route::post('/api/s2s/sync-workday', [\App\Http\Controllers\Api\S2SIntegrationController::class, 'syncWorkday'])->name('api.s2s.sync-workday');
+
 // --- Citas Previas — Portal Público (sin autenticación) ---
 Route::prefix('citas')->name('public.appointments.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'map'])->name('map');

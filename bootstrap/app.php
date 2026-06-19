@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '/whatsapp/webhook',
             '/passkeys/login', // Cryptographically secure, resilient to session swaps
             '/onlyoffice/callback/*',
+            '/api/s2s/sync-workday',
         ]);
 
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy

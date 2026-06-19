@@ -54,4 +54,9 @@ return [
         'enabled' => env('WHATSAPP_ENABLED', true),
     ],
 
+    'cth' => [
+        'url' => env('CTH_API_URL'),
+        'secret' => env('CTH_S2S_SECRET'),
+    ],
+
 ];
