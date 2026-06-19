@@ -37,7 +37,7 @@
                 <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-cita-{{ $settings->public_slug }}.svg" 
                    class="block p-1 bg-white border border-gray-200 dark:border-gray-700 hover:border-cyan-500 rounded-xl shadow-sm transition-all hover:scale-105 group/qr"
                    title="{{ __('Descargar código QR de Cita Previa') }}">
-                    {!! $qrCodeSmall !!}
+                    {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
                 </a>
                 <span class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 mt-1">{{ __('Escanear') }}</span>
             </div>

@@ -89,7 +89,7 @@
                                        class="p-0.5 bg-white border border-gray-200 dark:border-gray-700 hover:border-cyan-500 rounded-lg shadow-sm transition-all hover:scale-110"
                                        title="{{ __('Descargar código QR') }}"
                                        onclick="event.stopPropagation();">
-                                        {!! $qrCodeSmall !!}
+                                        {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
                                     </a>
 
                                     <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">

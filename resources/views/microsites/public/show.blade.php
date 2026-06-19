@@ -57,7 +57,7 @@
             <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-micrositio-{{ $microsite->slug }}.svg" 
                class="p-1 border border-gray-700 hover:border-pink-500 rounded-md flex items-center justify-center transition-all group"
                title="{{ __('Descargar código QR') }}">
-                {!! $qrCodeSmall !!}
+                {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
             </a>
             
             <a href="{{ route('public.microsites.directory') }}" class="hover:text-pink-400 transition-colors flex items-center gap-1">

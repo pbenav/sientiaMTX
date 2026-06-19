@@ -70,7 +70,7 @@
                                        class="p-0.5 bg-white border border-gray-200 dark:border-gray-700 hover:border-pink-500 rounded-lg shadow-sm transition-all hover:scale-110"
                                        title="{{ __('Descargar código QR') }}"
                                        onclick="event.stopPropagation();">
-                                        {!! $qrCodeSmall !!}
+                                        {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
                                     </a>
                                 @if($m->latitude && $m->longitude)
                                         <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m->latitude }}" data-lng="{{ $m->longitude }}" data-slug="{{ $m->slug }}">
