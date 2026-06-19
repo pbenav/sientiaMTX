@@ -55,11 +55,13 @@ class SyncWorkdayWithCth implements ShouldQueue
 
             if (!$clockResponse->successful()) {
                 Log::error('CTH Sync: Failed to clock in CTH via S2S', ['user' => $this->user->id, 'response' => $clockResponse->body()]);
+                $this->user->notify(new \App\Notifications\CthSyncFailedNotification($this->mtxAction, 'El servidor CTH rechazó la petición'));
             } else {
                 Log::info('CTH Sync: Successfully synced ' . $this->mtxAction . ' to CTH via S2S', ['user' => $this->user->id]);
             }
         } catch (\Exception $e) {
             Log::error('CTH Sync Exception: ' . $e->getMessage(), ['user' => $this->user->id]);
+            $this->user->notify(new \App\Notifications\CthSyncFailedNotification($this->mtxAction, 'El servidor CTH no está disponible'));
         }
     }
 }

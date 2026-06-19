@@ -46,6 +46,26 @@
             this.loading = false;
             // Dispatch event to update task buttons if any
             window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: this.working } }));
+            
+            if (data.syncing_cth) {
+                if (typeof window.Swal !== 'undefined') {
+                    window.Swal.fire({
+                        toast: true,
+                        position: 'bottom-end',
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        icon: 'info',
+                        title: this.working ? 'Iniciando Jornada' : 'Deteniendo Jornada',
+                        text: 'Sincronizando con CTH en segundo plano...',
+                        customClass: {
+                            popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl rounded-2xl',
+                            title: 'text-sm font-bold text-gray-800 dark:text-white',
+                            htmlContainer: 'text-xs text-gray-500 dark:text-gray-400'
+                        }
+                    });
+                }
+            }
         });
     },
     

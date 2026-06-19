@@ -20,6 +20,7 @@ class TimeLogController extends Controller
     {
         $user = auth()->user();
         $activeLog = $user->activeWorkdayLog();
+        $syncingCth = false;
 
         if ($activeLog) {
             $activeLog->update(['end_at' => now()]);
@@ -31,13 +32,15 @@ class TimeLogController extends Controller
             }
 
             // Sync with CTH
-            if ($user->cth_api_url && $user->cth_api_token) {
+            if ($user->sync_with_cth) {
                 \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'stop');
+                $syncingCth = true;
             }
 
             return response()->json([
                 'status' => 'stopped',
-                'message' => __('Workday stopped successfully.')
+                'message' => __('Workday stopped successfully.'),
+                'syncing_cth' => $syncingCth
             ]);
         }
 
@@ -47,13 +50,15 @@ class TimeLogController extends Controller
         ]);
 
         // Sync with CTH
-        if ($user->cth_api_url && $user->cth_api_token) {
+        if ($user->sync_with_cth) {
             \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'start');
+            $syncingCth = true;
         }
 
         return response()->json([
             'status' => 'started',
-            'message' => __('Workday started successfully.')
+            'message' => __('Workday started successfully.'),
+            'syncing_cth' => $syncingCth
         ]);
     }
 
