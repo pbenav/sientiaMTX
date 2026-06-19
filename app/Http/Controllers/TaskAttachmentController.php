@@ -156,6 +156,68 @@ class TaskAttachmentController extends Controller
         return back()->with('success', 'Archivo renombrado correctamente.');
     }
 
+    public function replaceAttachmentContent(Request $request, Team $team, TaskAttachment $attachment)
+    {
+        $this->authorize('update', $attachment);
+
+        if ($attachment->storage_provider !== 'local') {
+            return response()->json(['success' => false, 'message' => 'Solo se pueden editar archivos locales.'], 400);
+        }
+
+        $request->validate([
+            'file' => 'required|file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
+        ]);
+
+        $newFile = $request->file('file');
+        $user = auth()->user();
+        
+        $oldSize = $attachment->file_size;
+        $newSize = $newFile->getSize();
+
+        // Check storage limit if size increases
+        if ($newSize > $oldSize && $user->disk_used + ($newSize - $oldSize) > $user->disk_limit) {
+            return response()->json(['success' => false, 'message' => __('teams.storage_limit_exceeded')], 403);
+        }
+
+        // Store new file
+        $path = 'attachments/' . $team->id . '/' . date('Y/m');
+        $fileName = \Str::uuid() . '.' . $newFile->getClientOriginalExtension();
+        $storedPath = $newFile->storeAs($path, $fileName, 'public');
+
+        // Delete old file
+        if (\Storage::disk('public')->exists($attachment->file_path)) {
+            \Storage::disk('public')->delete($attachment->file_path);
+        }
+
+        // Update database
+        $attachment->update([
+            'file_path' => $storedPath,
+            'file_size' => $newSize,
+            'mime_type' => $newFile->getMimeType(),
+        ]);
+
+        // Adjust user storage
+        $user->disk_used = $user->disk_used - $oldSize + $newSize;
+        $user->save();
+
+        AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'edit',
+            'metadata' => [
+                'old_size' => $oldSize,
+                'new_size' => $newSize
+            ],
+            'ip_address' => request()->ip()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'attachment' => $attachment
+        ]);
+    }
+
+
     public function destroyAttachment(Team $team, TaskAttachment $attachment)
     {
         $this->authorize('delete', $attachment);

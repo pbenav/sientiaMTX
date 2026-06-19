@@ -210,8 +210,37 @@
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let i = 0; i < items.length; i++) {
             if (items[i].type.indexOf('image') !== -1) {
+                e.preventDefault();
                 const blob = items[i].getAsFile();
-                this.uploadFile(blob);
+                
+                if (typeof window.openGlobalImageEditor === 'function') {
+                    window.openGlobalImageEditor(blob, (editedFile) => {
+                        this.uploadFile(editedFile);
+                    });
+                } else {
+                    this.uploadFile(blob);
+                }
+            }
+        }
+    },
+
+    handleDrop(e) {
+        if (!this.uploadUrl) return;
+        
+        const items = e.dataTransfer.items;
+        if (!items) return;
+        
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                
+                if (typeof window.openGlobalImageEditor === 'function') {
+                    window.openGlobalImageEditor(blob, (editedFile) => {
+                        this.uploadFile(editedFile);
+                    });
+                } else {
+                    this.uploadFile(blob);
+                }
             }
         }
     },
@@ -370,6 +399,8 @@
                     @input="handleInput($event)"
                     @keydown="handleKeyDown($event)"
                     @paste="handlePaste($event)"
+                    @drop.prevent="handleDrop($event)"
+                    @dragover.prevent=""
                     @scroll="updateMentionPosition()"
                     {{ $required ? 'required' : '' }}
                 ></textarea>

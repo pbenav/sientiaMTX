@@ -31,31 +31,38 @@ class TaskAttachmentPolicy
             return true;
         }
 
-        // Extraer la tarea a la que pertenece el adjunto
-        $task = $attachment->attachable;
-        if (!$task || !($task instanceof Task)) {
+        // Obtener el modelo padre (Task, ForumMessage, Expediente)
+        $attachable = $attachment->attachable;
+        if (!$attachable) {
             return false;
         }
 
-        // 3. Creador / Dueño Supremo del Equipo
-        if ($task->team && $task->team->created_by_id === $user->id) {
-            return true;
+        $team = $attachment->getTeam();
+
+        // Si es el creador del equipo o coordinador/manager
+        if ($team) {
+            if ($team->created_by_id === $user->id) {
+                return true;
+            }
+            if ($team->isCoordinator($user) || $team->isManager($user)) {
+                return true;
+            }
         }
 
-        // 4. Coordinadores y Managers del equipo (Filosofía A - Jerarquía y Seguridad)
-        if ($task->team && ($task->team->isCoordinator($user) || $task->team->isManager($user))) {
-            return true;
+        // Lógica específica por tipo
+        if ($attachable instanceof \App\Models\Task) {
+            if ($user->id === $attachable->created_by_id) {
+                return true;
+            }
+        } elseif ($attachable instanceof \App\Models\ForumMessage) {
+            if ($user->id === $attachable->user_id) {
+                return true;
+            }
+        } elseif ($attachable instanceof \App\Models\Expediente) {
+            if ($user->id === $attachable->created_by_id) {
+                return true;
+            }
         }
-
-        // 5. El creador de la Tarea / Plan Maestro (Dueño del contenedor)
-        if ($user->id === $task->created_by_id) {
-            return true;
-        }
-
-        // ── PREPARADO PARA FUTURAS FILOSOFÍAS ──
-        // Si en el futuro quieres activar la opción B (Cualquier asignado) mediante una configuración:
-        // $isAssigned = $user->id === $task->assigned_user_id || $task->assignedTo()->where('users.id', $user->id)->exists();
-        // if ($isAssigned && $task->team->settings->attachment_policy === 'open') { return true; }
 
         return false;
     }

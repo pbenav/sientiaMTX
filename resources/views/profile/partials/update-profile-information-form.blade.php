@@ -21,19 +21,48 @@
 
             <div class="flex flex-col sm:flex-row items-center gap-6">
                 <!-- Photo Preview -->
-                <div class="relative group">
+                <div class="relative group" x-data="{
+                    openEditor() {
+                        if ($refs.photo.files.length === 0) return;
+                        
+                        let file = $refs.photo.files[0];
+                        
+                        // Check if it's an image
+                        if (!file.type.startsWith('image/')) {
+                            // If not an image, just preview directly or error
+                            this.previewLocalFile(file);
+                            return;
+                        }
+
+                        // Call global image editor
+                        if (typeof window.openGlobalImageEditor === 'function') {
+                            window.openGlobalImageEditor(file, (editedFile, base64) => {
+                                // Create a new FileList containing the edited file
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(editedFile);
+                                $refs.photo.files = dataTransfer.files;
+                                
+                                // Show preview
+                                photoName = editedFile.name;
+                                photoPreview = base64;
+                            });
+                        } else {
+                            // Fallback if editor is not available
+                            this.previewLocalFile(file);
+                        }
+                    },
+                    previewLocalFile(file) {
+                        photoName = file.name;
+                        let reader = new FileReader();
+                        reader.onload = (e) => {
+                            photoPreview = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }">
                     <input type="file" class="hidden" x-ref="photo"
-                        x-on:change="
-                            if ($refs.photo.files.length > 0) {
-                                photoName = $refs.photo.files[0].name;
-                                let reader = new FileReader();
-                                reader.onload = (e) => {
-                                    photoPreview = e.target.result;
-                                };
-                                reader.readAsDataURL($refs.photo.files[0]);
-                            }
-                        "
-                        name="photo">
+                        x-on:change="openEditor()"
+                        name="photo" accept="image/*">
                     
                     <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl ring-2 ring-violet-500/20 transition-transform group-hover:scale-105 duration-300">
                         <!-- Current Photo -->

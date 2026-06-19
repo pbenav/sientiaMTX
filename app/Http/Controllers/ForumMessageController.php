@@ -371,7 +371,50 @@ class ForumMessageController extends Controller
         ]);
     }
 
-    /**
+        public function replaceInlineImage(Request $request, Team $team)
+    {
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json(['message' => __('teams.unauthorized_access')], 403);
+        }
+
+        $request->validate([
+            'image' => 'required|image|max:10240', // Max 10MB
+            'path' => 'required|string',
+        ]);
+
+        $path = $request->input('path');
+        
+        // Extract the path from the URL
+        $parsedUrl = parse_url($path, PHP_URL_PATH);
+        
+        // Ensure path contains /storage/forum/ to prevent Path Traversal
+        if (!$parsedUrl || !str_contains($parsedUrl, '/storage/forum/')) {
+            return response()->json(['message' => 'Ruta de imagen inválida'], 400);
+        }
+        
+        // Convert public URL path to storage relative path
+        // e.g. /storage/forum/file.png -> forum/file.png
+        $relativePath = substr($parsedUrl, strpos($parsedUrl, '/storage/') + 9);
+        
+        // Ensure file exists in the public disk
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+            return response()->json(['message' => 'Imagen original no encontrada'], 404);
+        }
+
+        // Overwrite the file
+        $request->file('image')->storeAs(
+            dirname($relativePath),
+            basename($relativePath),
+            'public'
+        );
+
+        return response()->json([
+            'success' => true,
+            'url' => asset('storage/' . $relativePath) . '?t=' . time(),
+        ]);
+    }
+
+/**
      * Alternar el voto (votar/desvotar) en un mensaje del foro.
      */
     public function voteToggle(Team $team, ForumMessage $message)

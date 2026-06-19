@@ -1022,6 +1022,16 @@
                                             </svg>
                                         </a>
                                         @can('delete', $attachment)
+                                            @if($attachment->storage_provider === 'local' && str_starts_with($attachment->mime_type, 'image/'))
+                                                <button type="button"
+                                                    onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.attachments.view', [$team, $attachment]) }}')"
+                                                    class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 transition-all shadow-sm"
+                                                    title="{{ __('Editar Imagen') }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
+                                                </button>
+                                            @endif
                                             <button type="button"
                                                 onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
                                                 class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
@@ -1330,9 +1340,6 @@
                                             '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
                                             escape(data.assignee) + 
                                         '</span>' +
-                                    '</div>' +
-                                '</div>';
-                            },
                             item: function(data, escape) {
                                 return '<div class="flex items-center gap-2">' + 
                                     '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
@@ -1342,6 +1349,52 @@
                             }
                         }
                     });
+                    });
+                }
+
+                window.editAttachmentImage = function(id, url) {
+                    if (typeof window.openGlobalImageEditor === 'function') {
+                        window.openGlobalImageEditor(url, (editedFile) => {
+                            const formData = new FormData();
+                            formData.append('file', editedFile);
+                            
+                            Swal.fire({
+                                title: 'Guardando...',
+                                text: 'Actualizando la imagen en el servidor',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            fetch(`/teams/{{ $team->id }}/attachments/${id}/replace`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '¡Actualizada!',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    throw new Error(data.message || 'Error al guardar la imagen');
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire('Error', error.message, 'error');
+                            });
+                        });
+                    }
                 }
 
                 window.renameAttachment = function(id, currentName) {

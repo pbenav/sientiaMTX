@@ -1734,6 +1734,16 @@
                                         </svg>
                                     </a>
                                     @can('delete', $attachment)
+                                        @if($attachment->storage_provider === 'local' && str_starts_with($attachment->mime_type, 'image/'))
+                                            <button type="button"
+                                                onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.attachments.view', [$team, $attachment]) }}')"
+                                                class="p-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-all"
+                                                title="{{ __('Editar Imagen') }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+</svg>
+                                            </button>
+                                        @endif
                                         <button type="button"
                                             onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
                                             class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
@@ -2743,6 +2753,49 @@
                             });
                         }
                     });
+            function editAttachmentImage(id, url) {
+                if (typeof window.openGlobalImageEditor === 'function') {
+                    window.openGlobalImageEditor(url, (editedFile) => {
+                        const formData = new FormData();
+                        formData.append('file', editedFile);
+                        
+                        Swal.fire({
+                            title: 'Guardando...',
+                            text: 'Actualizando la imagen en el servidor',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        fetch(`/teams/{{ $team->id }}/attachments/${id}/replace`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Actualizada!',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message || 'Error al guardar la imagen');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', error.message, 'error');
+                        });
+                    });
+                }
             }
 
             function renameAttachment(id, currentName) {

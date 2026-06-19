@@ -1181,16 +1181,40 @@
 
             // Local Files
             if (fileInput && fileInput.files.length > 0) {
-                Array.from(fileInput.files).forEach(file => {
+                Array.from(fileInput.files).forEach((file, fileIndex) => {
+                    const isImage = file.type.startsWith('image/');
                     const div = document.createElement('div');
-                    div.className = 'flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
+                    div.className = 'flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
+                    
+                    let imagePreview = '';
+                    if (isImage) {
+                        const objectUrl = URL.createObjectURL(file);
+                        imagePreview = `<div class="w-8 h-8 rounded-lg overflow-hidden shrink-0"><img src="${objectUrl}" class="w-full h-full object-cover"></div>`;
+                    } else {
+                        imagePreview = `<div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-gray-400 font-mono text-[9px] shrink-0">${file.name.split('.').pop().toUpperCase()}</div>`;
+                    }
+
                     div.innerHTML = `
-                        <div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-gray-400 font-mono text-[9px]">
-                            ${file.name.split('.').pop().toUpperCase()}
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            ${imagePreview}
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">${file.name}</span>
+                                <span class="text-[10px] text-gray-400">${(file.size / 1024).toFixed(1)} KB</span>
+                            </div>
                         </div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">${file.name}</span>
-                            <span class="text-[10px] text-gray-400">${(file.size / 1024).toFixed(1)} KB</span>
+                        <div class="flex items-center gap-1">
+                            ${isImage ? `
+                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50 dark:hover:bg-violet-900/30" title="Editar Imagen">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                            ` : ''}
+                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50 dark:hover:bg-red-900/30" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
                     `;
                     list.appendChild(div);
@@ -1202,6 +1226,32 @@
             selectedDriveFiles.splice(index, 1);
             document.getElementById('drive_attachments_input').value = JSON.stringify(selectedDriveFiles);
             renderFilesUI(document.querySelector('input[name="attachments[]"]'));
+        }
+
+        window.removeLocalFile = function(index) {
+            const input = document.querySelector('input[name="attachments[]"]');
+            const dataTransfer = new DataTransfer();
+            Array.from(input.files).forEach((file, i) => {
+                if (i !== index) dataTransfer.items.add(file);
+            });
+            input.files = dataTransfer.files;
+            renderFilesUI(input);
+        }
+
+        window.editLocalFile = function(index) {
+            const input = document.querySelector('input[name="attachments[]"]');
+            const file = input.files[index];
+            if (typeof window.openGlobalImageEditor === 'function') {
+                window.openGlobalImageEditor(file, (editedFile) => {
+                    const dataTransfer = new DataTransfer();
+                    Array.from(input.files).forEach((f, i) => {
+                        if (i === index) dataTransfer.items.add(editedFile);
+                        else dataTransfer.items.add(f);
+                    });
+                    input.files = dataTransfer.files;
+                    renderFilesUI(input);
+                });
+            }
         }
 
         function parsePHPSize(size) {

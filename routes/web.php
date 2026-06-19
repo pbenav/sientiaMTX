@@ -209,6 +209,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/forum/messages/{message}', [ForumMessageController::class, 'destroy'])->name('teams.forum.messages.destroy');
     Route::post('/teams/{team}/forum/messages/{message}/vote', [ForumMessageController::class, 'voteToggle'])->name('teams.forum.messages.vote');
     Route::post('/teams/{team}/forum/upload-image', [ForumMessageController::class, 'uploadImage'])->name('teams.forum.upload_image');
+    Route::post('/teams/{team}/forum/replace-inline-image', [ForumMessageController::class, 'replaceInlineImage'])->name('teams.forum.replace_inline_image');
     Route::post('/teams/{team}/forum/upload-attachment', [ForumMessageController::class, 'uploadAttachment'])->name('teams.forum.upload_attachment');
     
     // Task Attachments
@@ -217,6 +218,7 @@ Route::middleware('auth')->group(function () {
         Route::get('attachments/{attachment}/download', [TaskAttachmentController::class, 'downloadAttachment'])->name('teams.attachments.download');
         Route::get('attachments/{attachment}/view', [TaskAttachmentController::class, 'viewAttachment'])->name('teams.attachments.view');
         Route::patch('attachments/{attachment}', [TaskAttachmentController::class, 'updateAttachment'])->name('teams.attachments.update');
+        Route::post('attachments/{attachment}/replace', [TaskAttachmentController::class, 'replaceAttachmentContent'])->name('teams.attachments.replace');
         Route::delete('attachments/{attachment}', [TaskAttachmentController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
         Route::get('attachments/history/{attachment}', [TaskAttachmentController::class, 'attachmentHistory'])->name('teams.attachments.history');
         Route::post('tasks/{task}/sync', [TaskController::class, 'syncToChildren'])->name('teams.tasks.sync-to-children')->withoutScopedBindings();

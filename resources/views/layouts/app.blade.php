@@ -2142,6 +2142,7 @@
             }
         }, true);
     </script>
+    <x-image-editor />
     @stack('modals')
     @stack('scripts')
     @if(($notifSettings['telegram'] ?? false) || (config('services.whatsapp.enabled', true) && ($notifSettings['whatsapp'] ?? false)))

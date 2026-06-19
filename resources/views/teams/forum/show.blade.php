@@ -761,6 +761,52 @@
                 }
             }
 
+            
+            window.editAttachmentImage = function(id, url) {
+                if (typeof window.openGlobalImageEditor === 'function') {
+                    window.openGlobalImageEditor(url, (editedFile) => {
+                        const formData = new FormData();
+                        formData.append('file', editedFile);
+                        
+                        Swal.fire({
+                            title: 'Guardando...',
+                            text: 'Actualizando la imagen en el servidor',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        fetch(`/teams/{{ $team->id }}/attachments/${id}/replace`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Actualizada!',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message || 'Error al guardar la imagen');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', error.message, 'error');
+                        });
+                    });
+                }
+            }
+
             window.renameAttachment = function(id, currentName) {
                 Swal.fire({
                     title: 'Renombrar Archivo',
