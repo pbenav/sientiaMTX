@@ -221,10 +221,14 @@ class PublicAppointmentController extends Controller
             return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
         }
 
+        // Traducir caracteres árabes si existen
+        $firstName = $this->transliterateArabic($data['first_name']);
+        $lastName = $this->transliterateArabic($data['last_name']);
+
         // Crear visitante
         $visitor = AppointmentVisitor::create([
-            'first_name'    => $data['first_name'],
-            'last_name'     => $data['last_name'],
+            'first_name'    => $firstName,
+            'last_name'     => $lastName,
             'dni'           => $data['dni'] ?? null,
             'email'         => $data['email'] ?? null,
             'phone'         => $data['phone'] ?? null,
@@ -601,9 +605,13 @@ class PublicAppointmentController extends Controller
         $originalDate = $appointment->appointment_date;
         $originalTime = $appointment->appointment_time;
 
+        // Traducir caracteres árabes si existen
+        $firstName = $this->transliterateArabic($data['first_name']);
+        $lastName = $this->transliterateArabic($data['last_name']);
+
         $appointment->visitor->update([
-            'first_name'    => $data['first_name'],
-            'last_name'     => $data['last_name'],
+            'first_name'    => $firstName,
+            'last_name'     => $lastName,
             'dni'           => $data['dni'] ?? null,
             'email'         => $data['email'] ?? null,
             'phone'         => $data['phone'] ?? null,
@@ -646,5 +654,35 @@ class PublicAppointmentController extends Controller
 
         return redirect()->route('public.appointments.confirm', $appointment->localizador)
             ->with('success', '¡Cita modificada correctamente!');
+    }
+
+    /**
+     * Helper to add a Latin transliteration to Arabic names.
+     */
+    protected function transliterateArabic(?string $text): ?string
+    {
+        if (!$text) {
+            return $text;
+        }
+
+        if (preg_match('/\p{Arabic}/u', $text)) {
+            // Utilizamos el transliterador para convertir caracteres árabes a latinos
+            if (class_exists(\Transliterator::class)) {
+                $transliterator = \Transliterator::create('Any-Latin; Latin-ASCII');
+                $latin = $transliterator ? $transliterator->transliterate($text) : \Illuminate\Support\Str::transliterate($text);
+            } else {
+                $latin = \Illuminate\Support\Str::transliterate($text);
+            }
+            
+            // Limpiamos caracteres extraños (como tildes o comillas que pueda generar la transliteración)
+            $latin = preg_replace('/[^a-zA-Z\s]/', '', $latin);
+            $latin = ucwords(strtolower(trim($latin)));
+            
+            if ($latin) {
+                return trim($text) . ' (' . $latin . ')';
+            }
+        }
+
+        return trim($text);
     }
 }
