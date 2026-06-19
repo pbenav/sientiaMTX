@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '/passkeys/login', // Cryptographically secure, resilient to session swaps
             '/onlyoffice/callback/*',
             '/api/s2s/sync-workday',
+            '/api/s2s/sync-history',
         ]);
 
         $middleware->trustProxies(at: '*'); // Confía en tu servidor Proxy
