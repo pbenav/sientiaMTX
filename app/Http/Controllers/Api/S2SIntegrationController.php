@@ -18,6 +18,8 @@ class S2SIntegrationController extends Controller
 
         $email = $request->input('email');
         $action = $request->input('action'); // 'start' or 'stop'
+        $timestampStr = $request->input('timestamp');
+        $timestamp = $timestampStr ? \Carbon\Carbon::parse($timestampStr) : now();
 
         $user = User::where('email', $email)->first();
         if (!$user || !$user->sync_with_cth) {
@@ -28,17 +30,17 @@ class S2SIntegrationController extends Controller
             $activeLog = $user->activeWorkdayLog();
 
             if ($action === 'stop' && $activeLog) {
-                $activeLog->update(['end_at' => now()]);
+                $activeLog->update(['end_at' => $timestamp]);
                 
                 // Auto-stop active task if workday ends
                 $activeTaskLog = $user->activeTaskLog();
                 if ($activeTaskLog) {
-                    $activeTaskLog->update(['end_at' => now()]);
+                    $activeTaskLog->update(['end_at' => $timestamp]);
                 }
             } elseif ($action === 'start' && !$activeLog) {
                 $user->timeLogs()->create([
                     'type' => 'workday',
-                    'start_at' => now(),
+                    'start_at' => $timestamp,
                 ]);
             }
 
