@@ -39,10 +39,6 @@ class ProfileUpdateRequest extends FormRequest
             'work_days_2' => ['nullable', 'array'],
             'work_days_2.*' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])],
             'sync_with_cth' => ['nullable', 'boolean'],
-            'cth_api_url' => ['nullable', 'string', 'url', 'max:255'],
-            'cth_api_token' => ['nullable', 'string'],
-            'cth_user_code' => ['nullable', 'string', 'max:255'],
-            'cth_work_center_code' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -56,11 +52,6 @@ class ProfileUpdateRequest extends FormRequest
                 'work_days_1' => $this->input('work_days_1', []),
                 'work_days_2' => $this->input('work_days_2', []),
             ]);
-            
-            // Si limpian la contraseña y ya había una guardada, no la sobreescribimos
-            if (empty($this->input('cth_api_token'))) {
-                $this->request->remove('cth_api_token');
-            }
         }
     }
 }

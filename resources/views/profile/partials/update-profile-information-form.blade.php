@@ -329,26 +329,6 @@
                         <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                     </label>
                 </div>
-                <div>
-                    <x-input-label for="cth_api_url" value="URL del Servidor CTH" class="text-[9px] font-bold uppercase text-gray-400" />
-                    <x-text-input id="cth_api_url" name="cth_api_url" type="url" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Ej: https://cth.midominio.com" :value="old('cth_api_url', $user->cth_api_url)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('cth_api_url')" />
-                </div>
-                <div>
-                    <x-input-label for="cth_api_token" value="Token API de Acceso (Sanctum)" class="text-[9px] font-bold uppercase text-gray-400" />
-                    <x-text-input id="cth_api_token" name="cth_api_token" type="password" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="••••••••" :value="old('cth_api_token', $user->cth_api_token)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('cth_api_token')" />
-                </div>
-                <div>
-                    <x-input-label for="cth_user_code" value="Tu Código de Usuario en CTH" class="text-[9px] font-bold uppercase text-gray-400" />
-                    <x-text-input id="cth_user_code" name="cth_user_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Ej: USER-123" :value="old('cth_user_code', $user->cth_user_code)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('cth_user_code')" />
-                </div>
-                <div>
-                    <x-input-label for="cth_work_center_code" value="Código de tu Centro de Trabajo" class="text-[9px] font-bold uppercase text-gray-400" />
-                    <x-text-input id="cth_work_center_code" name="cth_work_center_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" placeholder="Opcional. Ej: WC-MADRID" :value="old('cth_work_center_code', $user->cth_work_center_code)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('cth_work_center_code')" />
-                </div>
             </div>
         </div>
 
