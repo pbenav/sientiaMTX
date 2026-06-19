@@ -32,12 +32,12 @@ class SyncWorkdayWithCth implements ShouldQueue
      */
     public function handle(): void
     {
-        if (!$this->user->sync_with_cth || !$this->user->cth_api_url || !$this->user->cth_api_token) {
+        if (!$this->user->sync_with_cth) {
             return;
         }
 
-        // Use global S2S config for transparent sync if token is missing
-        $apiUrl = rtrim($this->user->cth_api_url ?? config('services.cth.url'), '/');
+        // Use global S2S config for transparent sync
+        $apiUrl = rtrim(config('services.cth.url'), '/');
         $secret = config('services.cth.secret');
         
         if (!$apiUrl || !$secret) {
