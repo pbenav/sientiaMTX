@@ -29,13 +29,28 @@ class S2SIntegrationController extends Controller
         try {
             $activeLog = $user->activeWorkdayLog();
 
-            if ($action === 'stop' && $activeLog) {
-                $activeLog->update(['end_at' => $timestamp]);
-                
-                // Auto-stop active task if workday ends
+            if ($action === 'delete_active' && $activeLog) {
+                $activeLog->delete();
                 $activeTaskLog = $user->activeTaskLog();
                 if ($activeTaskLog) {
-                    $activeTaskLog->update(['end_at' => $timestamp]);
+                    $activeTaskLog->update(['end_at' => now()]);
+                }
+            } elseif ($action === 'stop' && $activeLog) {
+                // If the stop timestamp is before the active log started, the event was likely deleted in CTH
+                if ($timestampStr && $timestamp->lt(\Carbon\Carbon::parse($activeLog->start_at))) {
+                    $activeLog->delete();
+                    $activeTaskLog = $user->activeTaskLog();
+                    if ($activeTaskLog) {
+                        $activeTaskLog->update(['end_at' => now()]);
+                    }
+                } else {
+                    $activeLog->update(['end_at' => $timestamp]);
+                    
+                    // Auto-stop active task if workday ends
+                    $activeTaskLog = $user->activeTaskLog();
+                    if ($activeTaskLog) {
+                        $activeTaskLog->update(['end_at' => $timestamp]);
+                    }
                 }
             } elseif ($action === 'start' && !$activeLog) {
                 $user->timeLogs()->create([
