@@ -30,6 +30,11 @@ class TimeLogController extends Controller
                 $activeTaskLog->update(['end_at' => now()]);
             }
 
+            // Sync with CTH
+            if ($user->cth_api_url && $user->cth_api_token) {
+                \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'stop');
+            }
+
             return response()->json([
                 'status' => 'stopped',
                 'message' => __('Workday stopped successfully.')
@@ -40,6 +45,11 @@ class TimeLogController extends Controller
             'type' => 'workday',
             'start_at' => now(),
         ]);
+
+        // Sync with CTH
+        if ($user->cth_api_url && $user->cth_api_token) {
+            \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'start');
+        }
 
         return response()->json([
             'status' => 'started',
