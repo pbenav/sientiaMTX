@@ -1112,6 +1112,7 @@
                                 :label="null"
                                 rows="6"
                                 placeholder="Escribe aquí tus notas personales sobre esta tarea... Nadie más podrá verlas."
+                                :upload-url="route('teams.forum.upload_image', $team)"
                             />
                         </div>
                         <div class="mt-3 flex justify-end">
