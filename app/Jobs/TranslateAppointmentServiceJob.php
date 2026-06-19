@@ -34,7 +34,7 @@ class TranslateAppointmentServiceJob implements ShouldQueue
             return;
         }
 
-        $locales = ['en' => 'Inglés', 'fr' => 'Francés', 'ro' => 'Rumano', 'ar' => 'Árabe', 'wo' => 'Wolof'];
+        $locales = ['en' => 'Inglés', 'fr' => 'Francés', 'ro' => 'Rumano', 'ar' => 'Árabe Marroquí (Darija)', 'wo' => 'Wolof'];
 
         $prompt = "Traduce exactamente los siguientes textos a los idiomas especificados en formato JSON estricto.\n";
         $prompt .= "Textos originales en Español:\n";
