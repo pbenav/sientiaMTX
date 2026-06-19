@@ -274,6 +274,36 @@ class SettingsController extends Controller
 
 
 
+    public function integrations()
+    {
+        return view('settings.integrations', [
+            'cth' => [
+                'url' => config('services.cth.url'),
+                'secret' => config('services.cth.secret'),
+            ]
+        ]);
+    }
+
+    public function updateIntegrations(Request $request)
+    {
+        $data = $request->validate([
+            'CTH_API_URL' => 'sometimes|nullable|url',
+            'CTH_S2S_SECRET' => 'sometimes|nullable|string',
+        ]);
+
+        try {
+            $this->updateEnvMultiple($data);
+
+            if (app()->configurationIsCached()) {
+                Artisan::call('config:clear');
+            }
+
+            return back()->with('success', __('notifications.config_saved'));
+        } catch (\Exception $e) {
+            return back()->with('error', __('Error updating .env file: ') . $e->getMessage());
+        }
+    }
+
     protected function updateEnvMultiple(array $data)
     {
         $path = base_path('.env');
