@@ -144,7 +144,7 @@
                     <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wide">📅 Agenda de Hoy</p>
                     <span class="text-[10px] font-black text-cyan-600 bg-cyan-50 dark:bg-cyan-900/30 dark:text-cyan-400 px-2.5 py-1 rounded-lg">{{ $todayCitas->count() }} citas</span>
                 </div>
-                <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
                     @forelse($todayCitas as $cita)
                         <div class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                             <div class="w-14 text-center shrink-0">
@@ -191,7 +191,7 @@
                     <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wide">🗓️ Próximas Citas</p>
                     <a href="{{ route('appointments.list', $team) }}" class="text-[10px] font-black text-cyan-600 dark:text-cyan-400 hover:underline">Ver todas →</a>
                 </div>
-                <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
                     @forelse($upcoming->skip($todayCitas->count() > 0 ? 0 : 0)->take(8) as $cita)
                         <a href="{{ route('appointments.show', [$team, $cita]) }}" class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
                             <div class="w-14 text-center shrink-0">
