@@ -122,7 +122,7 @@
         
         <!-- Acceso rápido a Videoconferencia -->
         <div x-data="{ open: false }" 
-             class="absolute bottom-4 left-4 lg:top-4 lg:bottom-auto lg:left-4 z-[1000] bg-white/95 dark:bg-gray-900/95 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 w-[calc(100%-2rem)] max-w-sm lg:w-80 backdrop-blur-sm transition-all overflow-hidden">
+             class="absolute top-4 left-4 right-4 lg:right-auto z-[1000] bg-white/95 dark:bg-gray-900/95 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 w-[calc(100%-2rem)] max-w-sm lg:w-80 backdrop-blur-sm transition-all overflow-hidden">
             
             <!-- Cabecera (Siempre visible, actúa como botón de toggle) -->
             <div @click="open = !open" class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
