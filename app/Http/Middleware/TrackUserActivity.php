@@ -65,8 +65,17 @@ class TrackUserActivity
                 $shouldKeepAlive = $keepAlive && $isWorking;
 
                 if (!$shouldKeepAlive && $hasTimedOut) {
-                    // Auto-stop any active time logs (workday and task) on auto-logout
-                    $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
+                    // Check if there are other active sessions for this user before auto-stopping timers
+                    $activeSessionsCount = \Illuminate\Support\Facades\DB::table('sessions')
+                        ->where('user_id', $user->id)
+                        ->where('id', '!=', $request->session()->getId())
+                        ->where('last_activity', '>=', now()->subMinutes($inactivityLimit)->getTimestamp())
+                        ->count();
+
+                    if ($activeSessionsCount === 0) {
+                        // Auto-stop any active time logs (workday and task) only if this was their last active session
+                        $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
+                    }
 
                     Auth::guard('web')->logout();
 

@@ -106,8 +106,16 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         if ($user) {
-            // Auto-stop any active time logs (workday and task) on logout
-            $user->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
+            // Check if there are other active sessions for this user before auto-stopping timers
+            $activeSessionsCount = \Illuminate\Support\Facades\DB::table('sessions')
+                ->where('user_id', $user->id)
+                ->where('id', '!=', session()->getId())
+                ->count();
+
+            if ($activeSessionsCount === 0) {
+                // Auto-stop any active time logs (workday and task) only if this was their last active session
+                $user->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
+            }
         }
 
         Auth::guard('web')->logout();
