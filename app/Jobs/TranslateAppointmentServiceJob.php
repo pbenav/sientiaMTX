@@ -91,7 +91,8 @@ class TranslateAppointmentServiceJob implements ShouldQueue
                 'translations' => [
                     'type' => 'OBJECT',
                     'description' => 'Mapa de idiomas (claves: en, fr, ro, ar, wo)',
-                    'properties' => $translationsProperties
+                    'properties' => $translationsProperties,
+                    'required' => array_keys($locales)
                 ]
             ],
             'required' => ['translations']

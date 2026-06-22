@@ -41,6 +41,7 @@ class DocumentationController extends Controller
         $menu = [
             'es' => [
                 'installation'      => 'Instalación',
+                'custom-domains'    => 'Dominios Personalizados (White-label)',
                 'telegram'          => 'Configuración Telegram',
                 'whatsapp'          => 'Configuración WhatsApp',
                 'onlyoffice-laravel' => 'OnlyOffice — Laravel (MTX)',
@@ -53,6 +54,7 @@ class DocumentationController extends Controller
             ],
             'en' => [
                 'installation'      => 'Installation',
+                'custom-domains'    => 'Custom Domains (White-label)',
                 'telegram'          => 'Telegram Setup',
                 'whatsapp'          => 'WhatsApp Setup',
                 'onlyoffice-laravel' => 'OnlyOffice — Laravel (MTX)',
