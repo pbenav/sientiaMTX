@@ -340,7 +340,16 @@
         // Escuchar evento para recalcular tamaño del mapa (por ejemplo al cambiar de vista en móvil)
         window.addEventListener('update-map-size', () => {
             if (map) {
-                map.invalidateSize();
+                setTimeout(() => {
+                    map.invalidateSize();
+                    
+                    // Recalcular los bounds ahora que el contenedor del mapa tiene tamaño real
+                    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                    const selectedTeam = teamFilter ? teamFilter.value : '';
+                    if (!query && !selectedTeam && members.length > 0) {
+                        map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+                    }
+                }, 150);
             }
         });
 
