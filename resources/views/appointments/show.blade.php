@@ -1,6 +1,23 @@
 <x-app-layout maxWidth="[1600px]">
 @section('title', 'Cita '.$appointment->localizador)
 
+@php
+    $nextAppointment = App\Models\Appointment::whereHas('service', function($q) use ($team) {
+            $q->where('team_id', $team->id);
+        })
+        ->where(function ($query) use ($appointment) {
+            $query->where('appointment_date', '>', $appointment->appointment_date)
+                  ->orWhere(function ($q) use ($appointment) {
+                      $q->where('appointment_date', $appointment->appointment_date)
+                        ->where('appointment_time', '>', $appointment->appointment_time);
+                  });
+        })
+        ->whereNotIn('status', ['cancelled', 'blocked'])
+        ->orderBy('appointment_date')
+        ->orderBy('appointment_time')
+        ->first();
+@endphp
+
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
         <a href="{{ route('appointments.list', $team) }}"
@@ -59,6 +76,12 @@
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">📅 Datos de la Cita</p>
                         <div class="flex items-center gap-2">
+                            @if($appointment->task)
+                                <div class="mr-2 border-r border-gray-200 dark:border-gray-700 pr-4">
+                                    @include('tasks.partials.task-timer-button', ['task' => $appointment->task])
+                                </div>
+                            @endif
+
                             <button @click="editing = !editing" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400 border border-cyan-150 dark:border-cyan-900/50 rounded-lg transition-all active:scale-95">
                                 <span x-show="!editing">✏️ Editar Cita</span>
                                 <span x-show="editing" x-cloak>✕ Cancelar</span>
@@ -71,6 +94,14 @@
                                 @else bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 @endif">
                                 {{ $appointment->status_label }}
                             </span>
+
+                            @if($nextAppointment)
+                                <a href="{{ route('appointments.show', [$team, $nextAppointment]) }}" 
+                                   class="ml-2 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/20 dark:hover:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-150 dark:border-violet-800/50 rounded-lg transition-all flex items-center gap-1 shadow-sm">
+                                    Siguiente
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                                </a>
+                            @endif
                         </div>
                     </div>
 
@@ -313,44 +344,6 @@
                     </div>
                 </div>
 
-                @if($appointment->task)
-                    {{-- Tiempo Dedicado Card --}}
-                    <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                        <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                            <p class="text-xs font-black uppercase tracking-widest text-gray-400">⏱️ Tiempo en Tarea</p>
-                        </div>
-                        <div class="p-5">
-                            <div class="flex items-center justify-between">
-                                <div x-data="{ 
-                                    active: {{ auth()->user()->isTrackingTask($appointment->task->id) ? 'true' : 'false' }},
-                                    seconds: {{ auth()->user()->getTaskTrackingSeconds($appointment->task->id) }},
-                                    totalToday: '{{ $appointment->task->totalTrackedTimeTodayHuman() }}',
-                                    
-                                    get formatted() {
-                                        const h = Math.floor(this.seconds / 3600);
-                                        const m = Math.floor((this.seconds % 3600) / 60);
-                                        const s = this.seconds % 60;
-                                        return [h,m,s].map(v => v.toString().padStart(2, '0')).join(':');
-                                    },
-                                    init() {
-                                        if (this.active) {
-                                            setInterval(() => { this.seconds++ }, 1000);
-                                        }
-                                    }
-                                }" class="flex-1">
-                                    <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight mb-0.5" x-text="formatted">00:00:00</div>
-                                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">
-                                        Total hoy: <span class="text-gray-600 dark:text-gray-300" x-text="totalToday">0m</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="shrink-0">
-                                    @include('tasks.partials.task-timer-button', ['task' => $appointment->task])
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
             </div>
     </div>
 </div>
