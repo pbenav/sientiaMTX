@@ -61,6 +61,24 @@ class AppointmentController extends Controller
     public function list(Team $team, Request $request)
     {
         $user  = auth()->user();
+
+        // Persistencia de filtros
+        $filterKeys = ['status', 'service_id', 'date_from', 'date_to', 'search', 'sort_by', 'sort_dir'];
+        
+        if (!$request->anyFilled($filterKeys) && !$request->hasAny($filterKeys)) {
+            $sessionFilters = session("appointments_filters_{$team->id}", []);
+            if (!empty($sessionFilters)) {
+                $request->merge($sessionFilters);
+            } else {
+                $request->merge([
+                    'date_from' => now()->toDateString(),
+                    'date_to'   => now()->addDays(5)->toDateString(),
+                ]);
+            }
+        } else {
+            session(["appointments_filters_{$team->id}" => $request->only($filterKeys)]);
+        }
+
         $query = Appointment::where('user_id', $user->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->with(['service', 'visitor']);

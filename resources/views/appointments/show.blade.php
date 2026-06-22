@@ -5,16 +5,9 @@
     $nextAppointment = App\Models\Appointment::whereHas('service', function($q) use ($team) {
             $q->where('team_id', $team->id);
         })
-        ->where(function ($query) use ($appointment) {
-            $query->where('appointment_date', '>', $appointment->appointment_date)
-                  ->orWhere(function ($q) use ($appointment) {
-                      $q->where('appointment_date', $appointment->appointment_date)
-                        ->where('appointment_time', '>', $appointment->appointment_time);
-                  });
-        })
+        ->where('created_at', '>', $appointment->created_at)
         ->whereNotIn('status', ['cancelled', 'blocked'])
-        ->orderBy('appointment_date')
-        ->orderBy('appointment_time')
+        ->orderBy('created_at', 'asc')
         ->first();
 @endphp
 
