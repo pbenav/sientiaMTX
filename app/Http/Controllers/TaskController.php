@@ -215,7 +215,7 @@ class TaskController extends Controller
         }
 
         if (auth()->user()->cannot('view', $task)) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', 'La tarea no está accesible o es privada.');
+            return redirect()->back(302, [], route('teams.dashboard', $team))->with('warning', 'La tarea no está accesible o es privada.');
         }
 
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments', 'attachments.logs.user']);
@@ -251,7 +251,7 @@ class TaskController extends Controller
         }
 
         if (auth()->user()->cannot('update', $task)) {
-            return redirect()->route('teams.tasks.show', [$team, $task])
+            return redirect()->back(302, [], route('teams.tasks.show', [$team, $task]))
                 ->with('warning', __('No tienes permisos para modificar esta tarea privada.'));
         }
 

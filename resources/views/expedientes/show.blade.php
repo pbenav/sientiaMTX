@@ -246,6 +246,41 @@
                         </select>
                     </div>
 
+                    @php
+                        $taskCounts = [
+                            'pending' => $expediente->rootTasks->where('status', 'pending')->count(),
+                            'in_progress' => $expediente->rootTasks->where('status', 'in_progress')->count(),
+                            'completed' => $expediente->rootTasks->where('status', 'completed')->count(),
+                            'blocked' => $expediente->rootTasks->where('status', 'blocked')->count(),
+                        ];
+                    @endphp
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                        @if($taskCounts['pending'] > 0)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-gray-50 border border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" @click="statusFilter = 'pending'">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                {{ $taskCounts['pending'] }} Pendientes
+                            </span>
+                        @endif
+                        @if($taskCounts['in_progress'] > 0)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-blue-50 border border-blue-100 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors" @click="statusFilter = 'in_progress'">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                {{ $taskCounts['in_progress'] }} En Progreso
+                            </span>
+                        @endif
+                        @if($taskCounts['completed'] > 0)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-50 border border-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors" @click="statusFilter = 'completed'">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                {{ $taskCounts['completed'] }} Completadas
+                            </span>
+                        @endif
+                        @if($taskCounts['blocked'] > 0)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-red-50 border border-red-100 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" @click="statusFilter = 'blocked'">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                {{ $taskCounts['blocked'] }} Bloqueadas
+                            </span>
+                        @endif
+                    </div>
+
                     <div class="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
                         @foreach($expediente->rootTasks as $task)
                             @php
