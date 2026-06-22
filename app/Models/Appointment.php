@@ -116,7 +116,7 @@ class Appointment extends Model
     public function scopeUpcoming($query)
     {
         return $query->where('appointment_date', '>=', now()->toDateString())
-                     ->whereNotIn('status', ['cancelled', 'blocked'])
+                     ->whereNotIn('status', ['cancelled', 'blocked', 'completed'])
                      ->orderBy('appointment_date')
                      ->orderBy('appointment_time');
     }

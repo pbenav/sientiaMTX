@@ -68,14 +68,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
             {{-- Citas hoy --}}
-            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Citas Hoy</p>
-                <div class="flex items-baseline gap-2">
-                    <h3 class="text-4xl font-black text-cyan-600 dark:text-cyan-400 tabular-nums">{{ $todayCitas->count() }}</h3>
-                    <span class="text-xs font-bold text-gray-400 uppercase">programadas</span>
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Citas Hoy</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-4xl font-black text-cyan-600 dark:text-cyan-400 tabular-nums">{{ $todayCitas->count() }}</h3>
+                        <span class="text-xs font-bold text-gray-400 uppercase">total</span>
+                    </div>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-3 font-medium">{{ now()->format('d \d\e F, Y') }}</p>
+                <div class="mt-4 flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ $todayCitas->where('status', 'completed')->count() }} completadas</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ $todayCitas->where('status', '!=', 'completed')->count() }} pendientes</span>
+                    </div>
+                </div>
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             </div>
 
             {{-- Próxima cita --}}
