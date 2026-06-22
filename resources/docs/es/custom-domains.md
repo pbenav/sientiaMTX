@@ -1,20 +1,20 @@
 # Mapeo de Dominio Personalizado (Custom Domains / CNAME)
 
-Para permitir que Sientia MTX se ejecute bajo un dominio o subdominio distinto al principal (por ejemplo, mantener una URL antigua como `decitas.zafarraya.es` mientras el servicio se aloja en `mtx.sientia.com`), la mejor práctica técnica es configurar un **Mapeo de Dominio** mediante registros DNS CNAME y ServerAliases.
+Para permitir que Sientia MTX se ejecute bajo un dominio o subdominio distinto al principal (por ejemplo, mantener una URL antigua como `<dominio-requerido>` mientras el servicio se aloja en `<dominio-real>`), la mejor práctica técnica es configurar un **Mapeo de Dominio** mediante registros DNS CNAME y ServerAliases.
 
-Esta aproximación (conocida como White-label o Marca Blanca) permite mantener intacto el SEO, la URL visible para el ciudadano y, lo más importante, **evita usar Iframes**, los cuales son bloqueados activamente por las políticas de privacidad de los navegadores modernos (Safari, Firefox, Chrome), impidiendo el uso de sesiones, traducciones de idiomas y provocando errores de seguridad (Error 419 XSRF).
+Esta aproximación (conocida como White-label o Marca Blanca) permite mantener intacto el SEO, la URL visible para el usuario final y, lo más importante, **evita usar Iframes**, los cuales son bloqueados activamente por las políticas de privacidad de los navegadores modernos (Safari, Firefox, Chrome), impidiendo el uso de sesiones, traducciones de idiomas y provocando errores de seguridad (Error 419 XSRF).
 
 A continuación, se detalla el proceso paso a paso:
 
 ## Paso 1: Configurar los registros DNS (En el proveedor del dominio)
 
-El propietario del dominio origen (ej. `zafarraya.es`) debe modificar sus registros DNS para que apunten al servidor donde está instalado Sientia MTX.
+El propietario del dominio origen debe modificar sus registros DNS para que apunten al servidor donde está instalado Sientia MTX.
 
 1. Accede al panel de control de tu proveedor de dominio (GoDaddy, DonDominio, Cloudflare, etc.).
 2. Dirígete a la gestión de la **Zona DNS**.
-3. Crea o edita el registro del subdominio (ej. `decitas`).
+3. Crea o edita el registro del subdominio (ej. `citas`).
 4. Configura el registro como **Tipo CNAME**.
-5. En el campo **Valor/Destino**, introduce el dominio de Sientia MTX (ej. `mtx.sientia.com`).
+5. En el campo **Valor/Destino**, introduce el dominio de Sientia MTX (ej. `<dominio-real>`).
 
 *Nota: Si estás configurando un dominio principal (ej. `midominio.com`) y tu proveedor no permite CNAME en el directorio raíz (Apex), deberás usar un registro tipo **A** apuntando a la dirección IP pública del servidor de Sientia.*
 
@@ -31,7 +31,7 @@ server {
     listen 443 ssl;
     
     # Añade el nuevo dominio separándolo por espacios
-    server_name mtx.sientia.com decitas.zafarraya.es;
+    server_name <dominio-real> <dominio-requerido>;
     
     # ... resto de la configuración de Laravel (root, index, etc) ...
 }
@@ -46,9 +46,9 @@ Edita el archivo del VirtualHost (usualmente en `/etc/apache2/sites-available/si
 
 ```apache
 <VirtualHost *:80>
-    ServerName mtx.sientia.com
+    ServerName <dominio-real>
     # Añade la directiva ServerAlias
-    ServerAlias decitas.zafarraya.es
+    ServerAlias <dominio-requerido>
     
     # ... resto de la configuración ...
 </VirtualHost>
@@ -66,14 +66,14 @@ Si utilizas **Certbot**, ejecuta el siguiente comando en el servidor de Sientia:
 
 **Nginx:**
 ```bash
-sudo certbot --nginx -d mtx.sientia.com -d decitas.zafarraya.es
+sudo certbot --nginx -d <dominio-real> -d <dominio-requerido>
 ```
 
 **Apache:**
 ```bash
-sudo certbot --apache -d mtx.sientia.com -d decitas.zafarraya.es
+sudo certbot --apache -d <dominio-real> -d <dominio-requerido>
 ```
 
 ## Resultado Final
 
-Una vez los DNS se propaguen (puede tardar desde unos minutos hasta un par de horas), cualquier ciudadano que visite `https://decitas.zafarraya.es` verá exactamente la misma aplicación y portal de citas que en Sientia MTX, pero su navegador mostrará su dominio original. El sistema funcionará como First-Party, sin bloqueos de cookies y con todas las funcionalidades habilitadas.
+Una vez los DNS se propaguen (puede tardar desde unos minutos hasta un par de horas), cualquier usuario que visite `https://<dominio-requerido>` verá exactamente la misma aplicación y portal que en `<dominio-real>`, pero su navegador mostrará su dominio original. El sistema funcionará como First-Party, sin bloqueos de cookies y con todas las funcionalidades habilitadas.
