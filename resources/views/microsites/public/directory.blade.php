@@ -37,15 +37,16 @@
         
         <div id="microsites-list" class="flex-grow min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
             @forelse($microsites as $m)
-                <a href="{{ route('public.microsites.show', $m->slug) }}" 
-                   target="_blank"
+                <div onclick="if(!event.target.closest('a') && !event.target.closest('button')) window.open('{{ route('public.microsites.show', $m->slug) }}', '_blank')" 
                    class="microsite-item block p-4 hover:bg-pink-50/30 dark:hover:bg-pink-950/15 cursor-pointer transition-colors">
                     <div class="flex items-start gap-3">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 flex items-center justify-center text-white shrink-0 shadow-sm">
                             <span class="text-xs font-black uppercase">{{ substr($m->title, 0, 2) }}</span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-sm font-black text-gray-900 dark:text-white truncate">{{ $m->title }}</h3>
+                            <h3 class="text-sm font-black text-gray-900 dark:text-white truncate">
+                                <a href="{{ route('public.microsites.show', $m->slug) }}" target="_blank" class="hover:underline">{{ $m->title }}</a>
+                            </h3>
                             <p class="text-[10px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider mt-0.5">{{ $m->team->name }}</p>
                             
                             @if($m->city)
@@ -82,7 +83,7 @@
                         </div>
                         <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 mt-1 self-center" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
-                </a>
+                </div>
             @empty
                 <div class="p-8 text-center">
                     <p class="text-3xl mb-2">🌐</p>
@@ -103,21 +104,21 @@
     <div :class="viewMode === 'map' ? 'block' : 'hidden lg:block'" class="lg:col-span-3 relative h-full w-full">
         <div id="map" class="w-full h-full"></div>
     </div>
-</div>
 
-<!-- Botón flotante para alternar vista en móvil -->
-<div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000]">
-    <button @click="viewMode = (viewMode === 'list' ? 'map' : 'list')" 
-            class="flex items-center gap-2 px-5 py-3 bg-pink-600 dark:bg-pink-500 hover:bg-pink-500 dark:hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-2xl shadow-pink-500/30 transition-all active:scale-95 select-none">
-        <span x-show="viewMode === 'list'" class="flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-            {{ __('Ver Mapa') }}
-        </span>
-        <span x-show="viewMode === 'map'" class="flex items-center gap-2" x-cloak>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-            {{ __('Ver Lista') }}
-        </span>
-    </button>
+    <!-- Botón flotante para alternar vista en móvil -->
+    <div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000]">
+        <button @click="viewMode = (viewMode === 'list' ? 'map' : 'list')" 
+                class="flex items-center gap-2 px-5 py-3 bg-pink-600 dark:bg-pink-500 hover:bg-pink-500 dark:hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-2xl shadow-pink-500/30 transition-all active:scale-95 select-none">
+            <span x-show="viewMode === 'list'" class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                {{ __('Ver Mapa') }}
+            </span>
+            <span x-show="viewMode === 'map'" class="flex items-center gap-2" x-cloak>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                {{ __('Ver Lista') }}
+            </span>
+        </button>
+    </div>
 </div>
 @endsection
 

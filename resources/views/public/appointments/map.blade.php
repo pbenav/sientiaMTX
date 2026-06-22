@@ -48,7 +48,7 @@
         
         <div id="members-list" class="flex-grow min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-850">
             @forelse($members as $m)
-                <a href="/citas/{{ $m['slug'] }}" 
+                <div onclick="if(!event.target.closest('a') && !event.target.closest('button')) window.location.href='/citas/{{ $m['slug'] }}'" 
                    class="member-item block p-4 hover:bg-cyan-50/30 dark:hover:bg-cyan-950/15 cursor-pointer transition-colors" 
                    data-lat="{{ $m['lat'] }}" 
                    data-lng="{{ $m['lng'] }}"
@@ -61,7 +61,9 @@
                             <span class="text-xs font-black uppercase">{{ substr($m['display_name'], 0, 2) }}</span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-sm font-black text-gray-900 dark:text-white truncate">{{ $m['display_name'] }}</h3>
+                            <h3 class="text-sm font-black text-gray-900 dark:text-white truncate">
+                                <a href="/citas/{{ $m['slug'] }}" class="hover:underline">{{ $m['display_name'] }}</a>
+                            </h3>
                             @if(!empty($m['area']))
                                 <p class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mt-0.5">{{ $m['area'] }}</p>
                             @endif
@@ -95,15 +97,15 @@
                                     <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                     </button>
-                                    <span class="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all select-none hover:scale-105 active:scale-95 shrink-0">
+                                    <a href="/citas/{{ $m['slug'] }}" class="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all select-none hover:scale-105 active:scale-95 shrink-0">
                                         {{ __('Pedir Cita') }}
-                                    </span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
                         <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 mt-1 self-center" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
-                </a>
+                </div>
             @empty
                 <div class="p-8 text-center">
                     <p class="text-3xl mb-2">🗺️</p>
@@ -159,8 +161,8 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
-</div>
 
     <!-- Botón flotante para alternar vista en móvil -->
     <div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000]">
@@ -176,6 +178,7 @@
             </span>
         </button>
     </div>
+</div>
 @endsection
 
 @section('scripts')
