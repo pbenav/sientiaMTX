@@ -70,7 +70,13 @@
             {{-- Citas hoy --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between">
                 <div>
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Citas Hoy</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">
+                        @if($selectedDate == now()->toDateString())
+                            Citas Hoy
+                        @else
+                            Citas del {{ \Carbon\Carbon::parse($selectedDate)->format('d/m/Y') }}
+                        @endif
+                    </p>
                     <div class="flex items-baseline gap-2">
                         <h3 class="text-4xl font-black text-cyan-600 dark:text-cyan-400 tabular-nums">{{ $todayCitas->count() }}</h3>
                         <span class="text-xs font-bold text-gray-400 uppercase">total</span>
@@ -104,14 +110,40 @@
             </div>
 
             {{-- Este mes --}}
-            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Este Mes</p>
-                <div class="flex items-baseline gap-2">
-                    <h3 class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $totalThisMonth }}</h3>
-                    <span class="text-xs font-bold text-gray-400 uppercase">citas</span>
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Este Mes</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $totalThisMonth }}</h3>
+                        <span class="text-xs font-bold text-gray-400 uppercase">total</span>
+                    </div>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-3 font-medium">{{ now()->format('F Y') }}</p>
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    @php
+                        $completedCount = $monthAppointments['completed'] ?? 0;
+                        $confirmedCount = $monthAppointments['confirmed'] ?? 0;
+                        $pendingCount = $monthAppointments['pending'] ?? 0;
+                    @endphp
+                    @if($completedCount > 0)
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]"></span>
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ $completedCount }} comp</span>
+                    </div>
+                    @endif
+                    @if($confirmedCount > 0)
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ $confirmedCount }} conf</span>
+                    </div>
+                    @endif
+                    @if($pendingCount > 0)
+                    <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ $pendingCount }} pend</span>
+                    </div>
+                    @endif
+                </div>
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             </div>
 
             {{-- Estado del portal --}}
@@ -153,9 +185,14 @@
 
             {{-- Citas de hoy --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                    <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wide">📅 Agenda de Hoy</p>
-                    <span class="text-[10px] font-black text-cyan-600 bg-cyan-50 dark:bg-cyan-900/30 dark:text-cyan-400 px-2.5 py-1 rounded-lg">{{ $todayCitas->count() }} citas</span>
+                <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                        <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wide">📅 Agenda del Día</p>
+                        <span class="text-[10px] font-black text-cyan-600 bg-cyan-50 dark:bg-cyan-900/30 dark:text-cyan-400 px-2.5 py-1 rounded-lg">{{ $todayCitas->count() }} citas</span>
+                    </div>
+                    <form method="GET" action="{{ route('appointments.index', $team) }}" class="flex items-center">
+                        <input type="date" name="date" value="{{ $selectedDate }}" onchange="this.form.submit()" class="text-xs border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-lg py-1 px-2 text-gray-600 dark:text-gray-300 shadow-sm focus:ring-cyan-500 focus:border-cyan-500 cursor-pointer">
+                    </form>
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
                     @forelse($todayCitas as $cita)

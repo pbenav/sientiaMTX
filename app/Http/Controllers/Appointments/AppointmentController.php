@@ -19,10 +19,12 @@ class AppointmentController extends Controller
     /**
      * Dashboard principal de citas previas del miembro.
      */
-    public function index(Team $team)
+    public function index(Team $team, Request $request)
     {
         $user     = auth()->user();
         $settings = $user->appointmentSettings()->where('team_id', $team->id)->first();
+        
+        $selectedDate = $request->get('date', now()->toDateString());
 
         $upcoming = Appointment::where('user_id', $user->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
@@ -33,19 +35,24 @@ class AppointmentController extends Controller
 
         $todayCitas = Appointment::where('user_id', $user->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
-            ->forDate(now()->toDateString())
+            ->forDate($selectedDate)
             ->whereNotIn('status', ['cancelled', 'blocked'])
             ->with(['service', 'visitor'])
             ->orderBy('appointment_time', 'asc')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        $totalThisMonth = Appointment::where('user_id', $user->id)
+        $monthAppointments = Appointment::where('user_id', $user->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->whereYear('appointment_date', now()->year)
             ->whereMonth('appointment_date', now()->month)
             ->whereNotIn('status', ['cancelled', 'blocked'])
-            ->count();
+            ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        $totalThisMonth = array_sum($monthAppointments);
 
         // Sync appointments shown with Google
         $allShown = $upcoming->merge($todayCitas);
@@ -53,7 +60,7 @@ class AppointmentController extends Controller
             \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
         }
 
-        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'team'));
+        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'monthAppointments', 'team', 'selectedDate'));
     }
 
     /**
