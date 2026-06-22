@@ -115,9 +115,18 @@
             </div>
 
             {{-- Estado del portal --}}
+            @if($settings && $settings->public_slug)
+            <a href="{{ route('public.appointments.member', $settings->public_slug) }}" target="_blank" class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group block hover:border-cyan-200 dark:hover:border-cyan-800 transition-colors">
+            @else
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group">
+            @endif
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Mi Perfil Público</p>
+                <div class="flex items-start justify-between">
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Mi Perfil Público</p>
+                    @if($settings && $settings->public_slug)
+                        <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    @endif
+                </div>
                 <div class="flex items-center gap-3 mt-2">
                     @if($settings && $settings->is_public)
                         <span class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-black">
@@ -132,7 +141,11 @@
                 @if($settings && $settings->public_slug)
                     <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-2 font-mono font-bold truncate">/citas/{{ $settings->public_slug }}</p>
                 @endif
+            @if($settings && $settings->public_slug)
+            </a>
+            @else
             </div>
+            @endif
         </div>
 
         {{-- Agenda del día y próximas citas --}}
