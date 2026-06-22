@@ -36,7 +36,7 @@ class AppointmentController extends Controller
             ->forDate(now()->toDateString())
             ->whereNotIn('status', ['cancelled', 'blocked'])
             ->with(['service', 'visitor'])
-            ->orderBy('appointment_time')
+            ->orderBy('created_at', 'asc')
             ->get();
 
         $totalThisMonth = Appointment::where('user_id', $user->id)
