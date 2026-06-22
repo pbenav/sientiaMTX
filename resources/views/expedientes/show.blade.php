@@ -173,7 +173,7 @@
             </div>
 
             <!-- Card: Tasks placeholder -->
-            <div x-data="{ showLinkBox: false }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+            <div x-data="{ showLinkBox: false, search: '', statusFilter: 'all', expanded: {} }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                     <h3 class="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
                         <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
@@ -230,7 +230,23 @@
                         </a>
                     </div>
                 @else
-                    <div class="space-y-3" x-data="{ expanded: {} }">
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-center">
+                        <div class="relative flex-1 w-full">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input x-model="search" type="text" placeholder="Buscar por título..." class="w-full pl-9 text-xs rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                        </div>
+                        <select x-model="statusFilter" class="w-full sm:w-auto text-xs rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors cursor-pointer">
+                            <option value="all">Todos los estados</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="in_progress">En Progreso</option>
+                            <option value="completed">Completadas</option>
+                            <option value="blocked">Bloqueadas</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
                         @foreach($expediente->rootTasks as $task)
                             @php
                                 $statusClasses = [
@@ -242,7 +258,7 @@
                                 $badgeClass = $statusClasses[$task->status] ?? $statusClasses['default'];
                                 $hasChildren = $task->children->count() > 0;
                             @endphp
-                            <div class="flex flex-col gap-1">
+                            <div class="flex flex-col gap-1" x-show="(statusFilter === 'all' || statusFilter === '{{ $task->status }}') && '{{ addslashes(strtolower(str_replace(["\r", "\n"], ' ', $task->title))) }}'.includes(search.toLowerCase())">
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gray-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 rounded-2xl border border-gray-100 hover:border-violet-200 dark:border-gray-800 dark:hover:border-violet-900/50 transition-all group shadow-sm hover:shadow-md">
                                     
                                     <div class="flex items-center gap-3 min-w-0 flex-1">
