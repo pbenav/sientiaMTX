@@ -312,6 +312,45 @@
                         </div>
                     </div>
                 </div>
+
+                @if($appointment->task)
+                    {{-- Tiempo Dedicado Card --}}
+                    <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                            <p class="text-xs font-black uppercase tracking-widest text-gray-400">⏱️ Tiempo en Tarea</p>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex items-center justify-between">
+                                <div x-data="{ 
+                                    active: {{ auth()->user()->isTrackingTask($appointment->task->id) ? 'true' : 'false' }},
+                                    seconds: {{ auth()->user()->getTaskTrackingSeconds($appointment->task->id) }},
+                                    totalToday: '{{ $appointment->task->totalTrackedTimeTodayHuman() }}',
+                                    
+                                    get formatted() {
+                                        const h = Math.floor(this.seconds / 3600);
+                                        const m = Math.floor((this.seconds % 3600) / 60);
+                                        const s = this.seconds % 60;
+                                        return [h,m,s].map(v => v.toString().padStart(2, '0')).join(':');
+                                    },
+                                    init() {
+                                        if (this.active) {
+                                            setInterval(() => { this.seconds++ }, 1000);
+                                        }
+                                    }
+                                }" class="flex-1">
+                                    <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight mb-0.5" x-text="formatted">00:00:00</div>
+                                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">
+                                        Total hoy: <span class="text-gray-600 dark:text-gray-300" x-text="totalToday">0m</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="shrink-0">
+                                    @include('tasks.partials.task-timer-button', ['task' => $appointment->task])
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
     </div>
 </div>
