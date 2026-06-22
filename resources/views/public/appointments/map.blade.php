@@ -162,7 +162,6 @@
             </div>
         </div>
         </div>
-    </div>
 
     <!-- Botón flotante para alternar vista en móvil -->
     <div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000]">
