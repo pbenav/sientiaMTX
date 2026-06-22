@@ -83,15 +83,9 @@ class PurgeGhostSessionsCommand extends Command
                 ->where('user_id', $user->id)
                 ->exists();
 
-            // Logic: If user has NO running session, they cannot be working. 
-            // We must close their active timers and reset their timestamps.
+            // Logic: If user has NO running session, they might still be working in an integrated app (like CTH).
+            // We must NOT close their active timers automatically, but we can reset their MTX "online" timestamps if needed.
             if (!$hasActiveSession) {
-                // 1. Close any active TimeLogs
-                $closedLogs = $user->timeLogs()->whereNull('end_at')->update(['end_at' => Carbon::createFromTimestamp($user->last_activity_at?->timestamp ?? now()->timestamp)]);
-                if ($closedLogs > 0) {
-                    $this->line("<info>[TIMELOGS]</info> Closed {$closedLogs} ghost timers for User ID: {$user->id} ({$user->name}).");
-                }
-
                 // 2. User is a "ghost" if their timestamps say they are active but they have no session.
                 // We backdate last_activity_at to the cutoff to mark them offline without losing their historical activity data.
                 if ($user->last_activity_at !== null && $user->last_activity_at->greaterThan($cutoff)) {
