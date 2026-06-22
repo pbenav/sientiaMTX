@@ -124,7 +124,8 @@ class Appointment extends Model
                      })
                      ->whereNotIn('status', ['cancelled', 'blocked', 'completed'])
                      ->orderBy('appointment_date')
-                     ->orderBy('appointment_time');
+                     ->orderBy('appointment_time')
+                     ->orderBy('created_at', 'asc');
     }
 
     public function scopeForDate($query, string $date)

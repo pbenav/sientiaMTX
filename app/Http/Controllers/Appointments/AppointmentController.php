@@ -36,6 +36,7 @@ class AppointmentController extends Controller
             ->forDate(now()->toDateString())
             ->whereNotIn('status', ['cancelled', 'blocked'])
             ->with(['service', 'visitor'])
+            ->orderBy('appointment_time', 'asc')
             ->orderBy('created_at', 'asc')
             ->get();
 
