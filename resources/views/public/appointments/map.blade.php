@@ -337,17 +337,51 @@
             });
         });
 
+        // Marcador de la ubicación del usuario
+        let userLocationMarker = null;
+        map.on('locationfound', function(e) {
+            if (userLocationMarker) {
+                map.removeLayer(userLocationMarker);
+            }
+            userLocationMarker = L.circleMarker(e.latlng, {
+                radius: 8,
+                fillColor: "#0ea5e9",
+                color: "#ffffff",
+                weight: 3,
+                opacity: 1,
+                fillOpacity: 1
+            }).addTo(map);
+            userLocationMarker.bindPopup('<p class="font-bold text-xs text-center text-gray-900">Tu ubicación</p>');
+            
+            // Forzar un zoom de 11 (aprox 20km) alrededor del usuario
+            map.setView(e.latlng, 11);
+        });
+
         // Escuchar evento para recalcular tamaño del mapa (por ejemplo al cambiar de vista en móvil)
         window.addEventListener('update-map-size', () => {
             if (map) {
                 setTimeout(() => {
                     map.invalidateSize();
                     
-                    // Recalcular los bounds ahora que el contenedor del mapa tiene tamaño real
                     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
                     const selectedTeam = teamFilter ? teamFilter.value : '';
-                    if (!query && !selectedTeam && members.length > 0) {
-                        map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+                    
+                    if (!query && !selectedTeam) {
+                        if (window.innerWidth < 1024) {
+                            // En móvil, intentar localizar al usuario
+                            map.locate();
+                            
+                            // Si falla, volver al comportamiento por defecto (encuadrar todos los marcadores)
+                            map.once('locationerror', function(e) {
+                                if (members.length > 0) {
+                                    map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+                                }
+                            });
+                        } else {
+                            if (members.length > 0) {
+                                map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+                            }
+                        }
                     }
                 }, 150);
             }
