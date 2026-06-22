@@ -498,7 +498,6 @@
                     </div>
                 @endif
             </div>
-        </div>
 
             <!-- Card: Notes -->
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
