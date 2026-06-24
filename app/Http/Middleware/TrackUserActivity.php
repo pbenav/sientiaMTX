@@ -74,7 +74,13 @@ class TrackUserActivity
 
                     if ($activeSessionsCount === 0) {
                         // Auto-stop any active time logs (workday and task) only if this was their last active session
-                        $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
+                        if ($user->sync_with_cth) {
+                            // CTH manda para el control horario. A menos que el usuario pulse explícitamente el botón Terminar de MTX,
+                            // la jornada (workday) no se cierra. Solo detenemos la tarea activa (task), entendiéndose en CTH como cambio de puesto.
+                            $user->timeLogs()->where('type', 'task')->whereNull('end_at')->update(['end_at' => $now]);
+                        } else {
+                            $user->timeLogs()->whereNull('end_at')->update(['end_at' => $now]);
+                        }
                     }
 
                     Auth::guard('web')->logout();
