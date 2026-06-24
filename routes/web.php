@@ -120,6 +120,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/telegram/test', [ProfileController::class, 'testTelegram'])->name('profile.telegram.test');
     Route::post('/profile/invitations', [\App\Http\Controllers\UserInvitationController::class, 'store'])->name('profile.invitations.generate');
     Route::delete('/profile/invitations/{invitation}', [\App\Http\Controllers\UserInvitationController::class, 'destroy'])->name('profile.invitations.destroy');
+    Route::post('/profile/invitations/{user}/reset', [\App\Http\Controllers\UserInvitationController::class, 'reset'])->name('profile.invitations.reset');
     Route::post('/whatsapp/restart', [\App\Http\Controllers\WhatsappSessionController::class, 'restart'])->name('whatsapp.restart');
     Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsappSessionController::class, 'status'])->name('whatsapp.status');
     Route::get('/whatsapp/personal-status', [\App\Http\Controllers\WhatsappSessionController::class, 'personalStatus'])->name('whatsapp.personal-status');

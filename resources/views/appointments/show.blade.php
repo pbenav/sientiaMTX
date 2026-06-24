@@ -5,8 +5,9 @@
     $nextAppointment = App\Models\Appointment::whereHas('service', function($q) use ($team) {
             $q->where('team_id', $team->id);
         })
+        ->where('appointment_date', $appointment->appointment_date)
         ->where('created_at', '>', $appointment->created_at)
-        ->whereNotIn('status', ['cancelled', 'blocked'])
+        ->whereNotIn('status', ['completed', 'cancelled', 'blocked'])
         ->orderBy('created_at', 'asc')
         ->first();
 @endphp
@@ -247,6 +248,17 @@
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">⚡ Acciones</p>
                     </div>
                     <div class="p-5 space-y-3">
+                        {{-- Marcar Completada --}}
+                        @if($appointment->status !== 'completed')
+                            <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 rounded-xl transition-all shadow-sm active:scale-95">
+                                    ✓ Marcar Completada
+                                </button>
+                            </form>
+                        @endif
+
                         {{-- Cambiar estado --}}
                         <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
                             @csrf @method('PATCH')

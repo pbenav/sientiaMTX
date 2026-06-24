@@ -70,6 +70,11 @@ class AppointmentController extends Controller
     {
         $user  = auth()->user();
 
+        if ($request->has('clear')) {
+            session()->forget("appointments_filters_{$team->id}");
+            return redirect()->route('appointments.list', $team);
+        }
+
         // Persistencia de filtros
         $filterKeys = ['status', 'service_id', 'date_from', 'date_to', 'search', 'sort_by', 'sort_dir'];
         
@@ -80,7 +85,9 @@ class AppointmentController extends Controller
             } else {
                 $request->merge([
                     'date_from' => now()->toDateString(),
-                    'date_to'   => now()->addDays(5)->toDateString(),
+                    'date_to'   => now()->toDateString(),
+                    'sort_by'   => 'created_at',
+                    'sort_dir'  => 'asc',
                 ]);
             }
         } else {
@@ -91,12 +98,12 @@ class AppointmentController extends Controller
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->with(['service', 'visitor']);
 
-        $sortBy = $request->get('sort_by', 'appointment_date');
-        $sortDir = $request->get('sort_dir', 'desc') === 'asc' ? 'asc' : 'desc';
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'asc') === 'desc' ? 'desc' : 'asc';
 
         if ($sortBy === 'appointment_date') {
             $query->orderBy('appointment_date', $sortDir)->orderBy('appointment_time', $sortDir);
-        } elseif ($sortBy === 'localizador' || $sortBy === 'status') {
+        } elseif ($sortBy === 'created_at' || $sortBy === 'localizador' || $sortBy === 'status') {
             $query->orderBy($sortBy, $sortDir);
         } elseif ($sortBy === 'visitor') {
             $query->join('appointment_visitors', 'appointments.visitor_id', '=', 'appointment_visitors.id')
@@ -107,7 +114,7 @@ class AppointmentController extends Controller
                   ->orderBy('appointment_services.name', $sortDir)
                   ->select('appointments.*');
         } else {
-            $query->orderBy('appointment_date', 'desc')->orderBy('appointment_time', 'desc');
+            $query->orderBy('created_at', 'asc');
         }
 
         if ($request->filled('status')) {

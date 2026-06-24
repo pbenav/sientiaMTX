@@ -50,4 +50,19 @@ class UserInvitationController extends Controller
 
         return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('status', 'invitation-deleted');
     }
+
+    /**
+     * Resetear el contador de invitaciones del usuario a su valor por defecto (5).
+     * Solo para administradores.
+     */
+    public function reset(Request $request, \App\Models\User $user): RedirectResponse
+    {
+        if (!$request->user()->can('admin')) {
+            return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('error', 'No tienes permisos para realizar esta acción.');
+        }
+
+        $user->update(['invitations_left' => 5]);
+
+        return Redirect::route('profile.edit', ['tab' => 'invitations_vip'])->with('status', 'invitations-reset')->with('success', __('El contador de invitaciones se ha restablecido a 5.'));
+    }
 }

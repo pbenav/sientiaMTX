@@ -179,9 +179,10 @@
 
 @php
     $currentTeamForEditor = request()->route('team');
+    $currentTeamIdForEditor = is_object($currentTeamForEditor) ? $currentTeamForEditor->id : $currentTeamForEditor;
 @endphp
 
-@if($currentTeamForEditor)
+@if($currentTeamIdForEditor)
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Run periodically or on DOM mutations to catch newly rendered markdown?
@@ -218,7 +219,7 @@
                                     }
                                 });
 
-                                fetch(`{{ route('teams.forum.replace_inline_image', $currentTeamForEditor->id) }}`, {
+                                fetch(`{{ route('teams.forum.replace_inline_image', $currentTeamIdForEditor) }}`, {
                                     method: 'POST',
                                     headers: {
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

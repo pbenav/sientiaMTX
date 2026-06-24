@@ -217,17 +217,59 @@ class TaskActionController extends Controller
         $this->authorize('view', $team);
 
         $validated = $request->validate([
-            'task_ids'      => 'required|array',
+            'task_ids'      => 'nullable|array',
             'task_ids.*'    => 'exists:tasks,id',
+            'targets'       => 'nullable|array',
+            'targets.*'     => 'string',
             'custom_message'=> 'nullable|string|max:500'
         ]);
 
-        $tasks   = Task::whereIn('id', $validated['task_ids'])->where('team_id', $team->id)->get();
+        $targets = $request->input('targets', []);
+        $taskIds = $request->input('task_ids', []);
+
+        // Convertir todo a una lista de pares ['task_id' => ..., 'user_id' => ...]
+        $items = [];
+        $seen = [];
+        foreach ($targets as $target) {
+            $parts = explode(':', $target);
+            if (!empty($parts[0])) {
+                $tId = $parts[0];
+                $uId = isset($parts[1]) && $parts[1] !== '' ? $parts[1] : null;
+                $key = $tId . '_' . ($uId ?: 'none');
+                if (!isset($seen[$key])) {
+                    $items[] = ['task_id' => $tId, 'user_id' => $uId];
+                    $seen[$key] = true;
+                    $seen[$tId . '_none'] = true;
+                }
+            }
+        }
+        foreach ($taskIds as $tId) {
+            $uId = $request->input('user_id');
+            $key = $tId . '_' . ($uId ?: 'none');
+            if (!isset($seen[$key])) {
+                $items[] = ['task_id' => $tId, 'user_id' => $uId];
+                $seen[$key] = true;
+            }
+        }
+
+        if (empty($items)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se han especificado tareas para notificar.'
+            ], 400);
+        }
+
         $sent    = 0;
         $failed  = 0;
         $skipped = 0;
 
-        foreach ($tasks as $task) {
+        foreach ($items as $item) {
+            $task = Task::where('id', $item['task_id'])->where('team_id', $team->id)->first();
+            if (!$task) {
+                $skipped++;
+                continue;
+            }
+
             $type      = 'collaborative';
             $progress  = $task->progress;
 
@@ -237,10 +279,10 @@ class TaskActionController extends Controller
                 $type = 'deadline';
             }
 
-            $recipientId = $request->input('user_id');
+            $recipientId = $item['user_id'];
             $recipient   = $recipientId
                 ? \App\Models\User::find($recipientId)
-                : ($task->assignedUser ?: $task->creator);
+                : ($task->assignedUser ?: ($task->assignedTo->first() ?: $task->creator));
 
             if (!$recipient) {
                 $skipped++;
@@ -249,7 +291,7 @@ class TaskActionController extends Controller
 
             try {
                 $recipient->notify(new \App\Notifications\TaskNudgeNotification(
-                    $task, $type, $progress, $validated['custom_message']
+                    $task, $type, $progress, $validated['custom_message'] ?? null
                 ));
                 $task->increment('nudge_count');
 

@@ -974,24 +974,52 @@ class Task extends Model
             return;
         }
 
-        // Conditions: 
-        // 1. Shared task (more than 1 assigned member)
-        // 2. Supervised (created by a coordinator)
+        $actor = auth()->user() ?? $this->assignedUser ?? $this->creator;
+        $actorId = $actor ? $actor->id : null;
         
-        $isShared = $this->assignedTo()->count() > 1;
-        $isSupervised = $this->team->isCoordinator($this->creator);
+        $recipients = collect();
 
-        if ($isShared || $isSupervised) {
-            $actor = auth()->user() ?? $this->assignedUser ?? $this->creator;
-            $actorId = $actor ? $actor->id : null;
-
-            $coordinators = $this->team->coordinators()
-                ->when($actorId, fn($q) => $q->where('users.id', '!=', $actorId))
-                ->get();
-
-            foreach ($coordinators as $coordinator) {
-                $coordinator->notify(new \App\Notifications\TaskCompletedNotification($this, $actor));
+        // 1. TAREAS PRIVADAS ('private')
+        // La completación de tareas privadas no debe molestar a nadie, solo a implicados directos si la completó otra persona.
+        if ($this->visibility === 'private') {
+            if ($this->creator && $this->creator->id !== $actorId) {
+                $recipients->push($this->creator);
             }
+            if ($this->assignedUser && $this->assignedUser->id !== $actorId) {
+                $recipients->push($this->assignedUser);
+            }
+        } 
+        // 2. TAREAS SEMIPRIVADAS ('semiprivate')
+        // Si es semiprivada y Plan Maestro (is_template), se notifica al resto del equipo. Si es colaborativa normal, no se molesta.
+        elseif ($this->visibility === 'semiprivate') {
+            if ($this->is_template) {
+                $members = $this->team->members()->where('users.id', '!=', $actorId)->get();
+                $recipients = $recipients->merge($members);
+            } else {
+                if ($this->creator && $this->creator->id !== $actorId) {
+                    $recipients->push($this->creator);
+                }
+            }
+        } 
+        // 3. TAREAS PÚBLICAS ('public')
+        // Si es Plan Maestro o supervisada por coordinador, se avisa a coordinadores. Si no, solo al creador si la completó otro.
+        else {
+            if ($this->is_template || $this->team->isCoordinator($this->creator)) {
+                $coordinators = $this->team->coordinators()
+                    ->when($actorId, fn($q) => $q->where('users.id', '!=', $actorId))
+                    ->get();
+                $recipients = $recipients->merge($coordinators);
+            } else {
+                if ($this->creator && $this->creator->id !== $actorId) {
+                    $recipients->push($this->creator);
+                }
+            }
+        }
+
+        $recipients = $recipients->unique('id');
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new \App\Notifications\TaskCompletedNotification($this, $actor));
         }
     }
     /**

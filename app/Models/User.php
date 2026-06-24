@@ -214,6 +214,8 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             'quiet_hours_start' => '22:00',
             'quiet_hours_end' => '08:00',
             'notify_before_hours' => 2,
+            'notify_scheduled_tasks' => true,
+            'notify_scheduled_before_minutes' => 15,
             'morning_summary' => true,
             'morning_summary_time' => '08:00',
             'morning_summary_weekends' => true,

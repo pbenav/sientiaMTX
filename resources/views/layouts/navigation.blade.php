@@ -100,6 +100,13 @@
                                 </x-slot>
 
                                 <x-slot name="content">
+                                    <x-dropdown-link :href="route('global-surveys.index')" :active="request()->routeIs('global-surveys.*')">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                            Encuestas Globales
+                                        </div>
+                                    </x-dropdown-link>
+
                                     @if($navTeam)
                                         <x-dropdown-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
                                             <div class="flex items-center gap-2">
@@ -179,7 +186,7 @@
                                         </x-dropdown-link>
                                         <div class="border-t border-gray-100 dark:border-gray-800"></div>
                                         <x-dropdown-link :href="route('teams.surveys.index', $currentTeamId)">
-                                            Encuestas
+                                            Encuestas del Equipo
                                         </x-dropdown-link>
                                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                                             <x-dropdown-link :href="route('appointments.index', $currentTeamId)">
@@ -332,6 +339,13 @@
                             Ciudadanía
                         </div>
                         
+                        <x-responsive-nav-link :href="route('global-surveys.index')" :active="request()->routeIs('global-surveys.*')" class="pl-8">
+                            <div class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                Encuestas Globales
+                            </div>
+                        </x-responsive-nav-link>
+                        
                         @if($navTeam)
                             <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')" class="pl-8">
                                 <div class="flex items-center gap-2">
@@ -402,7 +416,7 @@
                         </x-responsive-nav-link>
                         <div class="border-t border-violet-200 dark:border-violet-800/50 my-1 mx-4"></div>
                         <x-responsive-nav-link :href="route('teams.surveys.index', $currentTeamId)" :active="request()->routeIs('teams.surveys.*')" class="text-sm">
-                            Encuestas
+                            Encuestas del Equipo
                         </x-responsive-nav-link>
                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                             <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">

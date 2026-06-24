@@ -409,19 +409,12 @@ document.addEventListener('alpine:init', () => {
         },
 
         showAll() {
-            this.notes.forEach(n => {
-                if (n.is_hidden) {
-                    n.is_hidden = false;
-                    this.updateNote(n);
-                }
-            });
-            this.notes = [...this.notes]; // Force reactivity
-            window.dispatchEvent(new CustomEvent('quicknote-state-changed', { detail: { anyVisible: true } }));
+            this.toggleAll(false);
         },
 
-        toggleAll() {
-            const anyVisible = this.notes.some(n => !n.is_hidden);
-            const newState = anyVisible; // true si vamos a ocultar
+        toggleAll(forceState = null) {
+            const hasAnyHidden = this.notes.some(n => n.is_hidden);
+            const newState = typeof forceState === 'boolean' ? forceState : !hasAnyHidden;
             
             this.notes = this.notes.map(n => {
                 n.is_hidden = newState;
@@ -553,7 +546,7 @@ document.addEventListener('alpine:init', () => {
         hideAll() {
             const anyVisible = this.notes.some(n => !n.is_hidden);
             if (anyVisible) {
-                this.toggleAll();
+                this.toggleAll(true);
             }
         },
 

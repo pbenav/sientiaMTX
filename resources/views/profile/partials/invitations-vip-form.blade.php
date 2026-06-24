@@ -13,15 +13,28 @@
 
     <!-- Contador de Invitaciones Restantes -->
     <div class="p-5 bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/20 dark:to-fuchsia-950/20 rounded-2xl border border-violet-100 dark:border-violet-900/40 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300">
-        <div>
-            <div class="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-1">{{ __('Invitaciones Disponibles') }}</div>
-            <div class="text-4xl font-extrabold text-gray-900 dark:text-white flex items-baseline gap-1.5">
-                {{ auth()->user()->invitations_left }}
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ __('restantes') }}</span>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+            <div>
+                <div class="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-1">{{ __('Invitaciones Disponibles') }}</div>
+                <div class="text-4xl font-extrabold text-gray-900 dark:text-white flex items-baseline gap-1.5">
+                    {{ $user->invitations_left }}
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ __('restantes') }}</span>
+                </div>
             </div>
+            @can('admin')
+                <form method="POST" action="{{ route('profile.invitations.reset', $user) }}" class="mt-1 sm:mt-2">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-900/50 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm whitespace-nowrap" title="{{ __('Solo para administradores: Restablece el contador a 5') }}">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
+                        </svg>
+                        {{ __('Resetear (Admin)') }}
+                    </button>
+                </form>
+            @endcan
         </div>
         
-        <form method="POST" action="{{ route('profile.invitations.generate') }}" class="flex flex-col sm:flex-row items-end gap-3">
+        <form method="POST" action="{{ route('profile.invitations.generate') }}" class="flex flex-col sm:flex-row items-end gap-3 w-full sm:w-auto">
             @csrf
             
             @if($manageableTeams->count() > 0)
@@ -39,8 +52,8 @@
             @endif
 
             <button type="submit" 
-                @if(auth()->user()->invitations_left <= 0) disabled @endif
-                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] whitespace-nowrap">
+                @if($user->invitations_left <= 0) disabled @endif
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] whitespace-nowrap">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
                 </svg>

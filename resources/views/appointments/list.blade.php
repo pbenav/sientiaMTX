@@ -73,7 +73,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button type="submit" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black rounded-xl transition-all">Filtrar</button>
-                    <a href="{{ route('appointments.list', $team) }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-black rounded-xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700">Limpiar</a>
+                    <a href="{{ route('appointments.list', $team) }}?clear=1" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-black rounded-xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700">Limpiar</a>
                 </div>
             </form>
         </div>
@@ -109,8 +109,8 @@
                                     <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="toggleAll">
                                 </th>
                                 @php
-                                    $sort_by = request('sort_by', 'appointment_date');
-                                    $sort_dir = request('sort_dir', 'desc');
+                                    $sort_by = request('sort_by', 'created_at');
+                                    $sort_dir = request('sort_dir', 'asc');
                                     $next_dir = $sort_dir === 'asc' ? 'desc' : 'asc';
                                 @endphp
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
@@ -144,7 +144,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach($appointments as $cita)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                                <tr onclick="if(!event.target.closest('input, button, a, label, form')) window.location.href='{{ route('appointments.show', [$team, $cita]) }}'" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group cursor-pointer">
                                     <td class="px-5 py-3.5 text-center">
                                         <input type="checkbox" name="appointment_ids[]" value="{{ $cita->id }}" form="bulk-form" class="bulk-cb w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="updateCount()">
                                     </td>

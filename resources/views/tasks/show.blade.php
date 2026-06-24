@@ -871,7 +871,7 @@
                                     <span x-text="selectedMembers.length"></span> {{ __('seleccionados') }}
                                 </span>
                             </div>
-                            <button @click="nudgeUser(selectedMembers)" 
+                            <button type="button" @click.prevent.stop="nudgeUser(selectedMembers)" 
                                     x-show="selectedMembers.length > 0"
                                     class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -2447,8 +2447,8 @@
     @push('scripts')
         <script>
             function nudgeUser(taskIds, userId = null) {
-                const isBulk = Array.isArray(taskIds);
-                const ids = isBulk ? taskIds : [taskIds];
+                const isBulk = Array.isArray(taskIds) || (taskIds && typeof taskIds === 'object' && taskIds.length !== undefined);
+                const ids = isBulk ? Array.from(taskIds) : [taskIds];
                 
                 Swal.fire({
                     title: isBulk ? '¿Enviar recordatorio masivo?' : '¿Enviar recordatorio?',
@@ -2470,19 +2470,33 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const customMessage = result.value;
-                        const url = isBulk ? `/teams/{{ $team->id }}/tasks/bulk-nudge` : `/teams/{{ $team->id }}/tasks/${taskIds}/nudge`;
-                        const payload = isBulk ? { targets: ids, custom_message: customMessage } : { custom_message: customMessage };
+                        const url = isBulk ? `{{ route('teams.tasks.bulk-nudge', $team) }}` : `{{ route('teams.tasks.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
+                        const cleanTaskIds = ids.map(target => target.toString().split(':')[0]);
+                        const payload = isBulk ? { targets: ids, task_ids: cleanTaskIds, custom_message: customMessage } : { custom_message: customMessage };
                         if (userId) payload.user_id = userId;
 
                         fetch(url, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
                             body: JSON.stringify(payload)
                         })
-                        .then(response => response.json())
+                        .then(async response => {
+                            const contentType = response.headers.get('content-type');
+                            if (!contentType || !contentType.includes('application/json')) {
+                                const text = await response.text();
+                                console.error('Non-JSON response:', text);
+                                throw new Error('El servidor no devolvió una respuesta JSON válida. Verifica la conexión o la URL del dominio.');
+                            }
+                            const data = await response.json();
+                            if (!response.ok) {
+                                throw new Error(data.message || data.error || 'Error en la petición al servidor.');
+                            }
+                            return data;
+                        })
                         .then(data => {
                             if (data.success) {
                                 Swal.fire({
@@ -2503,7 +2517,8 @@
                             }
                         })
                         .catch(error => {
-                            Swal.fire('Error', 'Ocurrió un error en la conexión.', 'error');
+                            console.error('Nudge Error:', error);
+                            Swal.fire('Error', error.message || 'Ocurrió un error en la conexión.', 'error');
                         });
                     }
                 });

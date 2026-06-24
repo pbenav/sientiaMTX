@@ -94,34 +94,6 @@
 
 
         <!-- Quiet Hours -->
-        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">
-                        {{ __('notifications.quiet_hours') }}
-                    </h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ __('notifications.quiet_hours_desc') }}
-                    </p>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="quiet_hours_enabled" name="quiet_hours_enabled" value="1" {{ ($settings['quiet_hours_enabled'] ?? false) ? 'checked' : '' }}
-                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <x-input-label for="quiet_hours_start" :value="__('notifications.quiet_hours_start')" />
-                    <x-text-input id="quiet_hours_start" name="quiet_hours_start" type="time" class="mt-1 block w-full" :value="old('quiet_hours_start', $settings['quiet_hours_start'] ?? '22:00')" />
-                </div>
-                <div>
-                    <x-input-label for="quiet_hours_end" :value="__('notifications.quiet_hours_end')" />
-                    <x-text-input id="quiet_hours_end" name="quiet_hours_end" type="time" class="mt-1 block w-full" :value="old('quiet_hours_end', $settings['quiet_hours_end'] ?? '08:00')" />
-                </div>
-            </div>
-        </div>
-
         <!-- Chat Alerts & Sounds -->
         <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between">
@@ -136,6 +108,89 @@
                 <div class="flex items-center">
                     <input type="checkbox" id="chat_sounds" name="chat_sounds" value="1" {{ ($settings['chat_sounds'] ?? true) ? 'checked' : '' }}
                         class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas Críticas (Antelación) -->
+        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">
+                        🚨 {{ __('Antelación para Alertas Críticas') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Para tareas Urgentes e Importantes (Q1), avísame con antelación al vencimiento.') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
+                <x-input-label for="notify_before_hours" :value="__('Margen de aviso previo')" />
+                <p class="text-[10px] text-gray-500 mb-2">{{ __('Define el número de horas de antelación con el que deseas ser notificado.') }}</p>
+                <div class="flex items-center gap-4 mt-1">
+                    <x-text-input id="notify_before_hours" name="notify_before_hours" type="number" class="block w-24 bg-white dark:bg-gray-900" :value="old('notify_before_hours', $settings['notify_before_hours'] ?? 2)" min="0" max="168" />
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('horas de antelación') }}</span>
+                </div>
+                <x-input-error class="mt-2" :messages="$errors->get('notify_before_hours')" />
+            </div>
+        </div>
+
+        <!-- Aviso de Inicio de Tareas Programadas -->
+        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800" x-data="{ notifyScheduled: {{ ($settings['notify_scheduled_tasks'] ?? true) ? 'true' : 'false' }} }">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">
+                        ⏳ {{ __('Aviso de Inicio de Tareas Programadas') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Enviar una notificación cuando una tarea programada en el futuro (fecha de programación) alcance su momento de ponerse en funcionamiento.') }}
+                    </p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="notify_scheduled_tasks" name="notify_scheduled_tasks" value="1" {{ ($settings['notify_scheduled_tasks'] ?? true) ? 'checked' : '' }}
+                        x-model="notifyScheduled"
+                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+                </div>
+            </div>
+
+            <div :class="notifyScheduled ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale-[0.5]'" class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
+                <x-input-label for="notify_scheduled_before_minutes" :value="__('Antelación al aviso de inicio')" />
+                <p class="text-[10px] text-gray-500 mb-2">{{ __('Tiempo de antelación con el que deseas recibir el aviso antes de que llegue la fecha/hora exacta programada.') }}</p>
+                <div class="flex items-center gap-4 mt-1">
+                    <x-text-input id="notify_scheduled_before_minutes" name="notify_scheduled_before_minutes" type="number" class="block w-24 bg-white dark:bg-gray-900" :value="old('notify_scheduled_before_minutes', $settings['notify_scheduled_before_minutes'] ?? 15)" min="0" max="1440" />
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('minutos de antelación') }}</span>
+                </div>
+                <x-input-error class="mt-2" :messages="$errors->get('notify_scheduled_before_minutes')" />
+            </div>
+        </div>
+
+        <!-- Quiet Hours -->
+        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800" x-data="{ quietHours: {{ ($settings['quiet_hours_enabled'] ?? false) ? 'true' : 'false' }} }">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">
+                        🌙 {{ __('notifications.quiet_hours') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('notifications.quiet_hours_desc') }}
+                    </p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="quiet_hours_enabled" name="quiet_hours_enabled" value="1" {{ ($settings['quiet_hours_enabled'] ?? false) ? 'checked' : '' }}
+                        x-model="quietHours"
+                        class="w-6 h-6 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 shadow-sm transition-all cursor-pointer">
+                </div>
+            </div>
+
+            <div :class="quietHours ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale-[0.5]'" class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
+                <div>
+                    <x-input-label for="quiet_hours_start" :value="__('notifications.quiet_hours_start')" />
+                    <x-text-input id="quiet_hours_start" name="quiet_hours_start" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900" :value="old('quiet_hours_start', $settings['quiet_hours_start'] ?? '22:00')" />
+                </div>
+                <div>
+                    <x-input-label for="quiet_hours_end" :value="__('notifications.quiet_hours_end')" />
+                    <x-text-input id="quiet_hours_end" name="quiet_hours_end" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900" :value="old('quiet_hours_end', $settings['quiet_hours_end'] ?? '08:00')" />
                 </div>
             </div>
         </div>
@@ -161,7 +216,7 @@
             <div :class="morningSummaryEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale-[0.5]'" class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all">
                 <div>
                     <x-input-label for="morning_summary_time" :value="__('Hora de envío')" />
-                    <x-text-input id="morning_summary_time" name="morning_summary_time" type="time" class="mt-1 block w-full" :value="old('morning_summary_time', $settings['morning_summary_time'] ?? '08:00')" />
+                    <x-text-input id="morning_summary_time" name="morning_summary_time" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900" :value="old('morning_summary_time', $settings['morning_summary_time'] ?? '08:00')" />
                     <p class="text-[10px] text-gray-500 mt-1">{{ __('Elige la hora de la mañana a la que prefieres recibir tu resumen diario.') }}</p>
                 </div>
                 
@@ -171,17 +226,6 @@
                     <x-input-label for="morning_summary_weekends" :value="__('Incluir Fines de Semana')" class="cursor-pointer" />
                 </div>
             </div>
-        </div>
-
-        <!-- Alertas de Tiempo (Antelación) -->
-        <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
-            <x-input-label for="notify_before_hours" :value="__('Antelación para Alertas Críticas')" />
-            <p class="text-[10px] text-gray-500 mb-2">{{ __('Para tareas Urgentes e Importantes (Q1), avísame con este tiempo de antelación al vencimiento.') }}</p>
-            <div class="flex items-center gap-4 mt-1">
-                <x-text-input id="notify_before_hours" name="notify_before_hours" type="number" class="block w-24" :value="old('notify_before_hours', $settings['notify_before_hours'] ?? 2)" min="0" max="168" />
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('horas de antelación') }}</span>
-            </div>
-            <x-input-error class="mt-2" :messages="$errors->get('notify_before_hours')" />
         </div>
 
 
