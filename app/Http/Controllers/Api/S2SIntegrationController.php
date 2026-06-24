@@ -52,11 +52,19 @@ class S2SIntegrationController extends Controller
                         $activeTaskLog->update(['end_at' => $timestamp]);
                     }
                 }
-            } elseif ($action === 'start' && !$activeLog) {
-                $user->timeLogs()->create([
-                    'type' => 'workday',
-                    'start_at' => $timestamp,
-                ]);
+            } elseif ($action === 'start') {
+                if (!$activeLog) {
+                    $user->timeLogs()->create([
+                        'type' => 'workday',
+                        'start_at' => $timestamp,
+                    ]);
+                } else {
+                    // CTH es la verdad absoluta para el control horario. Si MTX ya tenía un registro activo,
+                    // alineamos el start_at de MTX con el timestamp oficial de CTH.
+                    if ($timestampStr && $timestamp->ne(\Carbon\Carbon::parse($activeLog->start_at))) {
+                        $activeLog->update(['start_at' => $timestamp]);
+                    }
+                }
             }
 
             return response()->json(['success' => true]);
