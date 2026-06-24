@@ -2754,6 +2754,8 @@
                             });
                         }
                     });
+            }
+
             function editAttachmentImage(id, url) {
                 if (typeof window.openGlobalImageEditor === 'function') {
                     window.openGlobalImageEditor(url, (editedFile) => {
