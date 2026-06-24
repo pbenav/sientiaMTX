@@ -241,6 +241,13 @@ class AppointmentController extends Controller
             'member_notes'      => 'nullable|string|max:2000',
             'expediente_id'     => 'nullable|exists:expedientes,id',
             'cancellation_reason' => 'nullable|string|max:500',
+            'visitor_full_name' => 'nullable|string|max:255',
+            'visitor_dni'       => 'nullable|string|max:50',
+            'visitor_email'     => 'nullable|email|max:255',
+            'visitor_phone'     => 'nullable|string|max:50',
+            'visitor_city'      => 'nullable|string|max:255',
+            'visitor_postal_code' => 'nullable|string|max:50',
+            'visitor_observations' => 'nullable|string|max:2000',
         ]);
 
         // Si cambia fecha/hora, revalidar disponibilidad
@@ -265,6 +272,18 @@ class AppointmentController extends Controller
         }
 
         $appointment->update($data);
+
+        if ($request->has('visitor_full_name')) {
+            $appointment->visitor->update([
+                'full_name'    => $request->input('visitor_full_name'),
+                'dni'          => $request->input('visitor_dni'),
+                'email'        => $request->input('visitor_email'),
+                'phone'        => $request->input('visitor_phone'),
+                'city'         => $request->input('visitor_city'),
+                'postal_code'  => $request->input('visitor_postal_code'),
+                'observations' => $request->input('visitor_observations'),
+            ]);
+        }
 
         // Si cambió la fecha o la hora, y el visitante consintió el email, le notificamos
         $dateChanged = isset($data['appointment_date']) && Carbon::parse($data['appointment_date'])->ne($originalDate);

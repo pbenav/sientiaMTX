@@ -147,11 +147,17 @@
                 </div>
 
                 {{-- Datos del ciudadano --}}
-                <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                    <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                <div x-data="{ editingVisitor: false }" class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">👤 Datos del Ciudadano</p>
+                        <button @click="editingVisitor = !editingVisitor" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400 border border-cyan-150 dark:border-cyan-900/50 rounded-lg transition-all active:scale-95">
+                            <span x-show="!editingVisitor">✏️ Editar Ciudadano</span>
+                            <span x-show="editingVisitor" x-cloak>✕ Cancelar</span>
+                        </button>
                     </div>
-                    <div class="p-6 grid grid-cols-2 gap-4">
+
+                    <!-- Vista de lectura -->
+                    <div x-show="!editingVisitor" class="p-6 grid grid-cols-2 gap-4">
                         <div>
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Nombre completo</p>
                             <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $appointment->visitor->full_name }}</p>
@@ -195,6 +201,57 @@
                         </div>
                         @endif
                     </div>
+
+                    <!-- Formulario de Edición -->
+                    <form x-show="editingVisitor" x-cloak method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}" class="p-6 space-y-4">
+                        @csrf @method('PATCH')
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Nombre Completo *</label>
+                                <input type="text" name="visitor_full_name" value="{{ $appointment->visitor->full_name }}" required
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">DNI / NIE</label>
+                                <input type="text" name="visitor_dni" value="{{ $appointment->visitor->dni }}"
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Email</label>
+                                <input type="email" name="visitor_email" value="{{ $appointment->visitor->email }}"
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Teléfono</label>
+                                <input type="text" name="visitor_phone" value="{{ $appointment->visitor->phone }}"
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Localidad / Ciudad</label>
+                                <input type="text" name="visitor_city" value="{{ $appointment->visitor->city }}"
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Código Postal</label>
+                                <input type="text" name="visitor_postal_code" value="{{ $appointment->visitor->postal_code }}"
+                                       class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Observaciones</label>
+                                <textarea name="visitor_observations" rows="3"
+                                          class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all resize-y">{{ $appointment->visitor->observations }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                            <button type="button" @click="editingVisitor = false" class="px-4 py-2 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl transition-all">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl transition-all shadow-md">
+                                Guardar ciudadano
+                            </button>
+                        </div>
+                    </form>
                 </div>
                 {{-- Campos Personalizados --}}
                 @if(!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields))
