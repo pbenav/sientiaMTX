@@ -954,7 +954,7 @@
                                         @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                         <td class="px-4 py-4" onclick="event.stopPropagation()">
                                             <input type="checkbox" 
-                                                   value="{{ $isSimulated ? $task->id : $inst->id }}" 
+                                                   value="{{ ($isSimulated ? $task->id : $inst->id) . ':' . ($isSimulated ? $inst->user_id : ($inst->assigned_user_id ?? '')) }}" 
                                                    x-model="selectedMembers" 
                                                    class="member-checkbox rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer"
                                                    {{ $inst->status === 'completed' ? 'disabled' : '' }}>
@@ -2471,7 +2471,7 @@
                     if (result.isConfirmed) {
                         const customMessage = result.value;
                         const url = isBulk ? `/teams/{{ $team->id }}/tasks/bulk-nudge` : `/teams/{{ $team->id }}/tasks/${taskIds}/nudge`;
-                        const payload = isBulk ? { task_ids: ids, custom_message: customMessage } : { custom_message: customMessage };
+                        const payload = isBulk ? { targets: ids, custom_message: customMessage } : { custom_message: customMessage };
                         if (userId) payload.user_id = userId;
 
                         fetch(url, {
