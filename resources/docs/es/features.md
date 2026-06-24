@@ -1,4 +1,4 @@
-# Sientia MTX: Guía Maestra de Funcionalidades (v0.9.9.RC1)
+# Sientia MTX: Guía Maestra de Funcionalidades (v1.0.2)
 
 SientiaMTX es un ecosistema de productividad de alto rendimiento que fusiona la metodología de Eisenhower con Inteligencia Artificial avanzada.
 

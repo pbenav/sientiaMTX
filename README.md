@@ -1,4 +1,4 @@
-# 🚀 SientiaMTX (v0.9.9RC4)
+# 🚀 SientiaMTX (v1.0.2)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/pbenav/cth-mobile/main/assets/icon/icon.png" width="150" alt="SientiaMTX Logo">
@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GNU%20AGPLv3-blue.svg" alt="License"></a>
   <a href="https://laravel.com"><img src="https://img.shields.io/badge/Framework-Laravel%2011-red.svg" alt="Laravel"></a>
   <img src="https://img.shields.io/badge/status-Stable-emerald.svg" alt="Status">
-  <img src="https://img.shields.io/badge/version-1.0.0--GA-violet.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.0.2--GA-violet.svg" alt="Version">
 </p>
 
 ---
@@ -22,6 +22,16 @@
 SientiaMTX no es solo una herramienta de gestión; es un ecosistema diseñado para maximizar el **Flow** del equipo. Al combinar la **Matriz de Eisenhower** con un asistente de **Inteligencia Artificial (Ax.ia)**, el sistema no solo organiza tareas, sino que ayuda a entender el valor real de cada acción.
 
 ## ✨ Características Principales
+
+### 🌟 Novedades Recientes (v1.0.2)
+*   **Recordatorios Masivos (Bulk Nudge)**: Notificación avanzada y simultánea a múltiples miembros con identificación granular `task_id:user_id`.
+*   **Mapeo de Dominios (CNAME)**: Soporte completo para dominios personalizados eliminando problemas de XSRF y sesiones en iframes.
+*   **Internacionalización Global**: Compatibilidad nativa con modo RTL (ej. Árabe/Darija) y traducción automática por IA de servicios.
+*   **Campos Personalizados (Custom Fields)**: Definición de campos dinámicos multilingües en el flujo de reserva de citas previas.
+*   **Gestión Centralizada CTH/MTX**: Gestión segura de secretos (S2S) y sincronización desatendida del historial (`mtx:sync-history --y`).
+*   **Estabilidad PHP 8.4 y Livewire 3**: Optimización de carga, solución de relaciones en base de datos y recuperación de contraseña en Kiosk.
+*   **Cumplimiento RGPD**: Ciclo de vida automatizado con cron diario para la limpieza de eventos históricos.
+*   **Micrositios IA**: Flujo mejorado con renderizado directo de ficheros públicos y vista previa integrada de Google Drive.
 
 ### 🧠 IA Ax.ia (Gemini Integration)
 *   **Voz a Texto**: Transcripción instantánea de notas de voz en notas de texto.

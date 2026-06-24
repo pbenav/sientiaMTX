@@ -1843,7 +1843,7 @@
             <div class="mb-2 md:mb-0 flex items-center gap-2">
                 <span class="font-bold">© {{ date('Y') }} <a href="https://www.sientia.com" class="hover:underline hover:text-violet-600 transition-colors">Sientia Open Source Lab</a></span>
                 <span class="mx-1">|</span>
-                <span>v{{ config('app.version', '1.0.0') }}</span>
+                <span>v{{ config('app.version', '1.0.2') }}</span>
                 <span class="mx-1">|</span>
                 <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank"
                     class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Licencia AGPL v3</a>
@@ -3047,7 +3047,7 @@
                 </h3>
                 
                 <h2 class="text-5xl md:text-7xl font-bold mb-6 drop-shadow-sm" style="font-family: 'Georgia', serif; color: #453c38;">
-                    SientiaMTX <span style="color: #7c3aed;">v1.0.0</span>
+                    SientiaMTX <span style="color: #7c3aed;">v1.0.2</span>
                 </h2>
                 
                 <div class="inline-block border-y-2 py-3 mb-6 px-8" style="border-color: #d1c8b4;">
