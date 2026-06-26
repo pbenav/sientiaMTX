@@ -6,9 +6,9 @@
             $q->where('team_id', $team->id);
         })
         ->where('appointment_date', $appointment->appointment_date)
-        ->where('created_at', '>', $appointment->created_at)
-        ->whereNotIn('status', ['completed', 'cancelled', 'blocked'])
-        ->orderBy('created_at', 'asc')
+        ->where('appointment_time', '>', $appointment->appointment_time)
+        ->where('status', 'confirmed')
+        ->orderBy('appointment_time', 'asc')
         ->first();
 @endphp
 
