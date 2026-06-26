@@ -98,9 +98,9 @@ class TaskPolicy
             return false;
         }
 
-        // Si es plantilla, la gestión es restringida
+        // Si es plantilla, la gestión es permitida para creadores, asignados y managers
         if ($task->is_template) {
-            return $isCreator || $isTeamOwner || $isManager;
+            return $isCreator || $isAssigned || $isTeamOwner || $isManager;
         }
 
         // Si es pública pura (no plantilla, no asignada), cualquiera en el equipo puede reclamarla/editarla
@@ -113,8 +113,14 @@ class TaskPolicy
             return $user->id === $task->created_by_id;
         }
 
-        // Only creator or team owner/manager can delete
-        return $user->id === $task->created_by_id || 
+        $isCreator = $user->id === $task->created_by_id;
+        $isDirectAssigned = $user->id === $task->assigned_user_id;
+        $isCollaborator = $task->assignedTo()->where('users.id', $user->id)->exists();
+        $isGroupMember = $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists();
+        $isAssigned = $isDirectAssigned || $isCollaborator || $isGroupMember;
+
+        // Allow creator, assigned users, team owner, or coordinators to delete
+        return $isCreator || $isAssigned || 
                $task->team->created_by_id === $user->id ||
                $task->team->isCoordinator($user);
     }

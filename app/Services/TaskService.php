@@ -291,6 +291,7 @@ class TaskService
                     'due_date' => $task->due_date,
                     'original_due_date' => $task->due_date,
                     'expediente_id' => $task->expediente_id,
+                    'created_by_id' => $task->created_by_id,
                 ]);
             }
 

@@ -429,22 +429,23 @@ class Task extends Model
                 });
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado Y las tareas puras (sin asignar a nadie)
-                $main->where('is_template', false)
-                    ->where(function ($q) use ($user) {
-                        $q->where('assigned_user_id', $user->id)
-                          ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
-                          ->orWhereHas('assignedGroups', fn ($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
-                          ->orWhere(function ($own) use ($user) {
-                              $own->where('created_by_id', $user->id)
-                                  ->whereNull('parent_id');
-                          })
-                          ->orWhere(function ($unassigned) {
-                              $unassigned->whereNull('assigned_user_id')
-                                         ->whereDoesntHave('assignedTo')
-                                         ->whereDoesntHave('assignedGroups')
-                                         ->where('visibility', 'public');
-                          });
-                    });
+                // Permitimos ver plantillas y tareas autoprogramables si el usuario es creador o está asignado explícitamente.
+                $main->where(function ($q) use ($user) {
+                    $q->where('assigned_user_id', $user->id)
+                      ->orWhereHas('assignedTo', fn ($as) => $as->where('users.id', $user->id))
+                      ->orWhereHas('assignedGroups', fn ($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
+                      ->orWhere(function ($own) use ($user) {
+                          $own->where('created_by_id', $user->id)
+                              ->whereNull('parent_id');
+                      })
+                      ->orWhere(function ($unassigned) {
+                          $unassigned->where('is_template', false)
+                                     ->whereNull('assigned_user_id')
+                                     ->whereDoesntHave('assignedTo')
+                                     ->whereDoesntHave('assignedGroups')
+                                     ->where('visibility', 'public');
+                      });
+                });
 
                 // DEDUPLICACIÓN EN EJECUCIÓN (Miembro): Si ve la hija, ocultamos el padre
                 // Reforzamos para que compruebe tanto asignación directa como pivot en los hijos
@@ -455,9 +456,6 @@ class Task extends Model
                             ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
                     });
                 });
-
-                // NO MOSTRAR TAREAS MAESTRAS: Si es la raíz autoprogramable, la ocultamos para ver solo sus ocurrencias
-                $main->where(fn($q) => $q->where('is_autoprogrammable', false)->orWhereNull('is_autoprogrammable'));
             }
         });
 
