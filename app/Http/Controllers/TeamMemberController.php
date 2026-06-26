@@ -227,7 +227,7 @@ class TeamMemberController extends Controller
      */
     public function updateAppointments(Request $request, Team $team, User $user)
     {
-        $this->authorize('admin');
+        $this->authorize('manageMembers', $team);
 
         $team->members()->updateExistingPivot($user->id, [
             'allow_appointments' => $request->boolean('allow_appointments')
@@ -241,7 +241,7 @@ class TeamMemberController extends Controller
      */
     public function updateMicrosites(Request $request, Team $team, User $user)
     {
-        $this->authorize('admin');
+        $this->authorize('manageMembers', $team);
 
         $team->members()->updateExistingPivot($user->id, [
             'allow_microsites' => $request->boolean('allow_microsites')
@@ -255,15 +255,17 @@ class TeamMemberController extends Controller
      */
     public function updateAllAppointments(Request $request, Team $team)
     {
-        $this->authorize('admin');
+        $this->authorize('manageMembers', $team);
 
         $allow = $request->boolean('allow');
         $memberIds = $team->members()->pluck('users.id')->toArray();
 
         if (!empty($memberIds)) {
-            $team->members()->updateExistingPivot($memberIds, [
-                'allow_appointments' => $allow
-            ]);
+            foreach ($memberIds as $id) {
+                $team->members()->updateExistingPivot($id, [
+                    'allow_appointments' => $allow
+                ]);
+            }
         }
 
         $statusText = $allow ? 'habilitado' : 'deshabilitado';
@@ -275,19 +277,42 @@ class TeamMemberController extends Controller
      */
     public function updateAllMicrosites(Request $request, Team $team)
     {
-        $this->authorize('admin');
+        $this->authorize('manageMembers', $team);
 
         $allow = $request->boolean('allow');
         $memberIds = $team->members()->pluck('users.id')->toArray();
 
         if (!empty($memberIds)) {
-            $team->members()->updateExistingPivot($memberIds, [
-                'allow_microsites' => $allow
-            ]);
+            foreach ($memberIds as $id) {
+                $team->members()->updateExistingPivot($id, [
+                    'allow_microsites' => $allow
+                ]);
+            }
         }
 
         $statusText = $allow ? 'habilitado' : 'deshabilitado';
         return back()->with('success', "Se ha {$statusText} el acceso a los micrositios para todos los miembros del equipo.");
+    }
+
+    /**
+     * Deshabilitar todos los módulos (citas y micrositios) para TODOS los miembros del equipo masivamente
+     */
+    public function revokeAllPermissions(Request $request, Team $team)
+    {
+        $this->authorize('manageMembers', $team);
+
+        $memberIds = $team->members()->pluck('users.id')->toArray();
+
+        if (!empty($memberIds)) {
+            foreach ($memberIds as $id) {
+                $team->members()->updateExistingPivot($id, [
+                    'allow_appointments' => false,
+                    'allow_microsites' => false
+                ]);
+            }
+        }
+
+        return back()->with('success', "Se han revocado todos los accesos (Citas Previas y Micrositios) para todos los miembros del equipo.");
     }
 
     /**

@@ -152,6 +152,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/members/{user}/microsites', [TeamMemberController::class, 'updateMicrosites'])->name('teams.updateMemberMicrosites');
     Route::patch('/teams/{team}/members-appointments-bulk', [TeamMemberController::class, 'updateAllAppointments'])->name('teams.updateAllMembersAppointments');
     Route::patch('/teams/{team}/members-microsites-bulk', [TeamMemberController::class, 'updateAllMicrosites'])->name('teams.updateAllMembersMicrosites');
+    Route::patch('/teams/{team}/members-revoke-all-bulk', [TeamMemberController::class, 'revokeAllPermissions'])->name('teams.revokeAllMembersPermissions');
     Route::delete('/teams/{team}/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.removeMember');
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamMemberController::class, 'destroyInvitation'])->name('teams.invitations.destroy');
     Route::post('/teams/order', [TeamController::class, 'updateOrder'])->name('teams.update-order');

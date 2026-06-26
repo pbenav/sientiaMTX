@@ -84,17 +84,9 @@
                                     + Micrositios
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}" class="ml-2">
+                            <form method="POST" action="{{ route('teams.revokeAllMembersPermissions', $team) }}" class="ml-2">
                                 @csrf @method('PATCH')
-                                <input type="hidden" name="allow" value="0">
-                            </form>
-                            <form method="POST" action="{{ route('teams.updateAllMembersMicrosites', $team) }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="allow" value="0">
-                                <button type="button" onclick="
-                                    this.previousElementSibling.previousElementSibling.submit();
-                                    setTimeout(() => this.form.submit(), 100);
-                                " class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none" title="Deshabilitar todos los módulos a todos">
+                                <button type="submit" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none" title="Deshabilitar todos los módulos a todos">
                                     Revocar Todos
                                 </button>
                             </form>

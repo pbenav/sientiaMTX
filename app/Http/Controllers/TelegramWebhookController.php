@@ -25,6 +25,16 @@ class TelegramWebhookController extends Controller
         }
 
         $update = $request->all();
+
+        // Validar integridad y evitar ataques de replay (Anti-replay protection)
+        $updateId = $update['update_id'] ?? null;
+        if ($updateId) {
+            $cacheKey = "tg_update_{$updateId}";
+            if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                return response()->json(['error' => 'Duplicate update'], 409);
+            }
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, 3600);
+        }
         
         // Determinar si es un mensaje nuevo o editado (soporta mensajes de grupo y posts de canal/hilo)
         $isEdit = isset($update['edited_message']) || isset($update['edited_channel_post']);

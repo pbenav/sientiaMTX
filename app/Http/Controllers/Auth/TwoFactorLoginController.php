@@ -37,7 +37,7 @@ class TwoFactorLoginController extends Controller
 
         // If the method is email, generate and send the code on load if not already sent
         if ($user->two_factor_method === 'email' && !$request->session()->has('login.email_code')) {
-            $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $request->session()->put('login.email_code', $code);
             $request->session()->put('login.email_code_expires_at', now()->addMinutes(10));
 

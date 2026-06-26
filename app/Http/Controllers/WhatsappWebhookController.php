@@ -19,6 +19,15 @@ class WhatsappWebhookController extends Controller
             return response()->json(['status' => 'disabled']);
         }
 
+        $secret = config('services.whatsapp.webhook_secret');
+        if ($secret && $request->header('X-Signature')) {
+            $expectedSignature = hash_hmac('sha256', $request->getContent(), $secret);
+            if ($request->header('X-Signature') !== $expectedSignature) {
+                Log::warning('Firma X-Signature inválida en WhatsApp Webhook desde IP: ' . $request->ip());
+                return response()->json(['error' => 'Invalid signature'], 401);
+            }
+        }
+
         $payload = $request->all();
         
         $from = $payload['from'] ?? null;

@@ -26,13 +26,27 @@ class TaskBulkController extends Controller
             'value' => 'required'
         ]);
 
+        // Verificación individual de permisos por tarea
+        $user = auth()->user();
+        $validTaskIds = [];
+        foreach ($request->task_ids as $taskId) {
+            $task = Task::find($taskId);
+            if ($task && $user->can('update', $task)) {
+                $validTaskIds[] = $taskId;
+            }
+        }
+
+        if (empty($validTaskIds)) {
+            return back()->with('warning', 'No tienes permisos para actualizar las tareas seleccionadas.');
+        }
+
         $taskService = app(\App\Services\TaskService::class);
         $result = $taskService->bulkUpdateTasks(
             $team, 
-            $request->task_ids, 
+            $validTaskIds, 
             $request->field, 
             $request->value, 
-            auth()->user()
+            $user
         );
 
         // Gamification: Award points if status changed to completed

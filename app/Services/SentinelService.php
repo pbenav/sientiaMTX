@@ -33,7 +33,6 @@ class SentinelService
         try {
             $startTime = microtime(true);
             $response = Http::timeout(10)
-                ->withoutVerifying()
                 ->withHeaders([
                     'User-Agent' => 'Sientia Sentinel/1.0 (Health Checker)'
                 ])

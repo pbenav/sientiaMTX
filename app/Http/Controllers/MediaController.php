@@ -42,15 +42,22 @@ class MediaController extends Controller
      */
     public function download(TaskAttachment $attachment)
     {
-        if ($attachment->user_id !== auth()->id()) {
+        if ($attachment->user_id !== auth()->id() && !auth()->user()->is_admin) {
             abort(403);
         }
 
-        if (!Storage::disk('public')->exists($attachment->file_path)) {
+        $disk = Storage::disk('public');
+        if (!$disk->exists($attachment->file_path)) {
             return back()->with('error', 'El archivo físico no se encuentra en el servidor. Contacte con el administrador.');
         }
 
-        return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+        // Evitar ataques de Path Traversal asegurando que el archivo resida dentro del disco de almacenamiento esperado
+        $fullPath = $disk->path($attachment->file_path);
+        if (!str_starts_with(realpath($fullPath), realpath($disk->path('')))) {
+            abort(403);
+        }
+
+        return $disk->download($attachment->file_path, $attachment->file_name);
     }
 
     /**

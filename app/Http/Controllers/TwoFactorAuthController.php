@@ -23,7 +23,7 @@ class TwoFactorAuthController extends Controller
 
         if ($method === 'email') {
             // Generate a random 6-digit code for verification
-            $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $request->session()->put('profile.mfa_email_code', $code);
             $request->session()->put('profile.mfa_email_expires_at', now()->addMinutes(10));
 
