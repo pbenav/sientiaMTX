@@ -81,7 +81,7 @@ class ChatGroupController extends Controller
                     'last_active' => $lastActive,
                     'last_message' => $lastMessage ? [
                         'text' => $lastMessage->message,
-                        'time' => $lastMessage->created_at->timezone($user->timezone ?? 'Europe/Madrid')->format('H:i'),
+                        'time' => $lastMessage->created_at->timezone($user->timezone ?? 'Europe/Madrid')->format('d/m/Y H:i'),
                         'sender_name' => $lastMessage->sender?->name,
                     ] : null,
                 ];
