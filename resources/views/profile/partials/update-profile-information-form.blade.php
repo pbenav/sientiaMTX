@@ -335,6 +335,17 @@
                         <x-input-label for="cth_api_url" value="Servidor CTH (URL API)" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
                         <x-text-input id="cth_api_url" name="cth_api_url" type="url" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_api_url', $user->cth_api_url)" placeholder="https://cth.tuservidor.com/api" />
                         <span class="text-[10px] text-gray-400 block mt-1">Especifica la URL base del API de tu instancia de Sientia CTH.</span>
+                        
+                        <!-- Information Banner: Fallback & Email Identification -->
+                        <div class="mt-3 p-3.5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center gap-3 text-cyan-800 dark:text-cyan-200 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600 dark:text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="text-[11px] leading-relaxed">
+                                <strong class="text-cyan-900 dark:text-white font-black">💡 Servidor por Defecto:</strong> Si dejas este campo vacío, el sistema te identificará automáticamente por tu <strong>correo electrónico ({{ $user->email }})</strong> y utilizará el servidor CTH corporativo principal configurado en la plataforma (<code class="bg-cyan-500/20 px-1 py-0.5 rounded text-cyan-900 dark:text-cyan-100 font-mono">{{ config('services.cth.url') ?: 'https://cth.sientia.es' }}</code>).
+                            </div>
+                        </div>
+
                         <x-input-error class="mt-2" :messages="$errors->get('cth_api_url')" />
                     </div>
 
