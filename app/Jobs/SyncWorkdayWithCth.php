@@ -36,8 +36,8 @@ class SyncWorkdayWithCth implements ShouldQueue
             return;
         }
 
-        // Use global S2S config for transparent sync
-        $apiUrl = rtrim(config('services.cth.url'), '/');
+        // Use user-specific CTH API URL if defined, otherwise fallback to global S2S config
+        $apiUrl = rtrim($this->user->cth_api_url ?: config('services.cth.url'), '/');
         $secret = config('services.cth.secret');
         
         if (!$apiUrl || !$secret) {
@@ -64,6 +64,8 @@ class SyncWorkdayWithCth implements ShouldQueue
                 ->post($apiUrl . '/api/s2s/sync-workday', [
                     'email' => $this->user->email,
                     'action' => $this->mtxAction,
+                    'user_code' => $this->user->cth_user_code,
+                    'work_center_code' => $this->user->cth_work_center_code,
                 ]);
 
             if (!$clockResponse->successful()) {

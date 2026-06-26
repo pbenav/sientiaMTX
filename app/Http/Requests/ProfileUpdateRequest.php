@@ -39,6 +39,9 @@ class ProfileUpdateRequest extends FormRequest
             'work_days_2' => ['nullable', 'array'],
             'work_days_2.*' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])],
             'sync_with_cth' => ['nullable', 'boolean'],
+            'cth_api_url' => ['nullable', 'string', 'url', 'max:255'],
+            'cth_user_code' => ['nullable', 'string', 'max:50'],
+            'cth_work_center_code' => ['nullable', 'string', 'max:50'],
         ];
     }
 

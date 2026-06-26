@@ -300,7 +300,7 @@
         </div>
 
         <!-- CTH Integration -->
-        <div class="p-6 bg-cyan-50/50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-800/50 space-y-5">
+        <div class="p-6 bg-cyan-50/50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-800/50 space-y-5" x-data="{ syncEnabled: {{ old('sync_with_cth', $user->sync_with_cth) ? 'true' : 'false' }} }">
             <div class="flex items-center gap-2">
                 <span class="p-1.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -317,17 +317,40 @@
                 Introduce las credenciales de tu portal de Sientia CTH para que cuando inicies o cierres jornada desde aquí, el fichaje se registre también automáticamente en tu cuenta de CTH.
             </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div class="md:col-span-2 flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div class="space-y-4 pt-2">
+                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div>
                         <span class="text-sm font-bold text-gray-700 dark:text-gray-300 block">Activar Sincronización</span>
                         <span class="text-[10px] text-gray-500">Si está activo, tus inicios y cierres de jornada se replicarán.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="hidden" name="sync_with_cth" value="0">
-                        <input type="checkbox" name="sync_with_cth" value="1" {{ old('sync_with_cth', $user->sync_with_cth) ? 'checked' : '' }} class="sr-only peer">
+                        <input type="checkbox" name="sync_with_cth" value="1" x-model="syncEnabled" class="sr-only peer">
                         <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                     </label>
+                </div>
+
+                <div x-show="syncEnabled" x-collapse class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-cyan-100 dark:border-cyan-800/50">
+                    <div class="md:col-span-2">
+                        <x-input-label for="cth_api_url" value="Servidor CTH (URL API)" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
+                        <x-text-input id="cth_api_url" name="cth_api_url" type="url" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_api_url', $user->cth_api_url)" placeholder="https://cth.tuservidor.com/api" />
+                        <span class="text-[10px] text-gray-400 block mt-1">Especifica la URL base del API de tu instancia de Sientia CTH.</span>
+                        <x-input-error class="mt-2" :messages="$errors->get('cth_api_url')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="cth_user_code" value="Código Numpad / PIN de Usuario" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
+                        <x-text-input id="cth_user_code" name="cth_user_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_user_code', $user->cth_user_code)" placeholder="Ej. 4829" />
+                        <span class="text-[10px] text-gray-400 block mt-1">El PIN numérico que utilizas para fichar en el Numpad de CTH.</span>
+                        <x-input-error class="mt-2" :messages="$errors->get('cth_user_code')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="cth_work_center_code" value="Código Centro de Trabajo (Opcional)" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
+                        <x-text-input id="cth_work_center_code" name="cth_work_center_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_work_center_code', $user->cth_work_center_code)" placeholder="Ej. CEN-01" />
+                        <span class="text-[10px] text-gray-400 block mt-1">Código del centro si estás asignado a una delegación o Punto Vuela específico.</span>
+                        <x-input-error class="mt-2" :messages="$errors->get('cth_work_center_code')" />
+                    </div>
                 </div>
             </div>
         </div>
