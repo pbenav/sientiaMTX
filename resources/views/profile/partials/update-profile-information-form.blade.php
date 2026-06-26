@@ -359,7 +359,7 @@
                     <div>
                         <x-input-label for="cth_work_center_code" value="Código Centro de Trabajo (Opcional)" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
                         <x-text-input id="cth_work_center_code" name="cth_work_center_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_work_center_code', $user->cth_work_center_code)" placeholder="Ej. CEN-01" />
-                        <span class="text-[10px] text-gray-400 block mt-1">Código del centro si estás asignado a una delegación o Punto Vuela específico.</span>
+                        <span class="text-[10px] text-gray-400 block mt-1">Código del centro si estás asignado a una delegación o algún centro de trabajo en concreto.</span>
                         <x-input-error class="mt-2" :messages="$errors->get('cth_work_center_code')" />
                     </div>
                 </div>
