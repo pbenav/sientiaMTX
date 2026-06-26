@@ -86,7 +86,7 @@ class AppointmentController extends Controller
                 $request->merge([
                     'date_from' => now()->toDateString(),
                     'date_to'   => now()->toDateString(),
-                    'sort_by'   => 'created_at',
+                    'sort_by'   => 'appointment_date',
                     'sort_dir'  => 'asc',
                 ]);
             }
@@ -98,7 +98,7 @@ class AppointmentController extends Controller
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->with(['service', 'visitor']);
 
-        $sortBy = $request->get('sort_by', 'created_at');
+        $sortBy = $request->get('sort_by', 'appointment_date');
         $sortDir = $request->get('sort_dir', 'asc') === 'desc' ? 'desc' : 'asc';
 
         if ($sortBy === 'appointment_date') {
@@ -114,7 +114,7 @@ class AppointmentController extends Controller
                   ->orderBy('appointment_services.name', $sortDir)
                   ->select('appointments.*');
         } else {
-            $query->orderBy('created_at', 'asc');
+            $query->orderBy('appointment_date', 'asc')->orderBy('appointment_time', 'asc');
         }
 
         if ($request->filled('status')) {
