@@ -18,9 +18,94 @@
 
     // Preferencias de Notificaciones (para los toggles)
     $notifSettings = $user->notification_settings ?? $user->defaultNotificationSettings();
+
+    // Estructurar datos para Alpine
+    $contextsData = [
+        'global' => [
+            'id' => '',
+            'name' => 'Mi Configuración Global (Base)',
+            'type' => 'global',
+            'api_key' => $prefs->get('global')->api_key ?? '',
+            'ai_model' => $prefs->get('global')->ai_model ?? '',
+            'mood_tracking_enabled' => (bool)($prefs->get('global')->mood_tracking_enabled ?? false),
+            'smart_matching_opt_in' => (bool)($prefs->get('global')->smart_matching_opt_in ?? false),
+            'google_connected' => false,
+            'google_email' => '',
+        ]
+    ];
+
+    foreach($teams as $team) {
+        $p = $prefs->get($team->id);
+        $contextsData[$team->id] = [
+            'id' => $team->id,
+            'name' => $team->name,
+            'type' => 'team',
+            'api_key' => $p->api_key ?? '',
+            'ai_model' => $p->ai_model ?? '',
+            'mood_tracking_enabled' => (bool)($p->mood_tracking_enabled ?? false),
+            'smart_matching_opt_in' => (bool)($p->smart_matching_opt_in ?? false),
+            'google_connected' => !empty($team->pivot->google_token),
+            'google_email' => $team->pivot->google_email ?? '',
+        ];
+    }
 @endphp
 
-<section class="space-y-12">
+<section class="space-y-12" x-data="{
+    contexts: {{ json_encode($contextsData) }},
+    activeContextId: null,
+    showModal: false,
+    loadingModels: false,
+    availableModels: [],
+    form: {
+        team_id: '',
+        api_key: '',
+        ai_model: '',
+        mood_tracking_enabled: false,
+        smart_matching_opt_in: false,
+        apply_to_all: false
+    },
+    
+    openModal(id) {
+        this.activeContextId = id;
+        const current = this.contexts[id];
+        this.form.team_id = current.id;
+        this.form.api_key = current.api_key || '';
+        this.form.ai_model = current.ai_model || '';
+        this.form.mood_tracking_enabled = !!current.mood_tracking_enabled;
+        this.form.smart_matching_opt_in = !!current.smart_matching_opt_in;
+        this.form.apply_to_all = false;
+        this.showModal = true;
+        this.fetchModels();
+    },
+
+    closeModal() {
+        this.showModal = false;
+        this.activeContextId = null;
+    },
+
+    async fetchModels() {
+        const keyToUse = this.form.api_key || this.contexts['global'].api_key || '';
+        if (!keyToUse || keyToUse.length < 10) {
+            this.availableModels = [];
+            return;
+        }
+        this.loadingModels = true;
+        try {
+            const response = await fetch(`{{ route('ai.models') }}?team_id=${this.form.team_id}&api_key=${keyToUse}`);
+            const data = await response.json();
+            this.availableModels = data.models || [];
+        } catch (e) {
+            console.error('Error fetching models:', e);
+        } finally {
+            this.loadingModels = false;
+        }
+    },
+
+    getActiveContext() {
+        return this.contexts[this.activeContextId] || null;
+    }
+}">
+
     <!-- Encabezado de la sección -->
     <div class="border-b border-gray-200 dark:border-gray-800 pb-5">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -29,310 +114,289 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
                 </svg>
             </span>
-            <span>Cuentas e Integraciones por Perfil y Equipo</span>
+            <span>Listado General de Integraciones e IA (CRUD)</span>
         </h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Gestiona de forma unificada y visual las conexiones de Google Workspace y las configuraciones de IA (Gemini) para tu cuenta global y para cada uno de tus equipos.
+            Resumen unificado de tus credenciales de IA (Google Gemini) y enlaces con Google Workspace. Haz clic en <strong class="text-gray-700 dark:text-gray-300">"Configurar"</strong> en cualquier elemento para gestionar sus claves y preferencias.
         </p>
     </div>
 
-    <!-- ================= 🌍 1. MI CONFIGURACIÓN GLOBAL ================= -->
-    @php
-        $globalPref = $prefs->get('global');
-    @endphp
-    <div class="p-8 bg-gradient-to-br from-violet-50/50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-800/50 border border-violet-100 dark:border-violet-900/30 rounded-3xl shadow-sm space-y-6">
-        <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">🌍</span>
-                <div>
-                    <h4 class="text-base font-bold text-gray-900 dark:text-white tracking-tight" style="font-family: 'Space Grotesk', sans-serif">Mi Configuración Global (Base)</h4>
-                    <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Se aplicará por defecto a los equipos sin clave personalizada</p>
-                </div>
-            </div>
-            <span class="px-3 py-1 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 text-[10px] font-black uppercase rounded-full border border-violet-200 dark:border-violet-800">Cuenta Global</span>
-        </div>
-
-        <form method="POST" action="{{ route('profile.ai.update') }}" class="space-y-6"
-              x-data="{
-                  apiKey: '{{ addslashes($globalPref->api_key ?? '') }}',
-                  aiModel: '{{ addslashes($globalPref->ai_model ?? '') }}',
-                  moodTrackingEnabled: {{ ($globalPref->mood_tracking_enabled ?? false) ? 'true' : 'false' }},
-                  smartMatchingOptIn: {{ ($globalPref->smart_matching_opt_in ?? false) ? 'true' : 'false' }},
-                  availableModels: [],
-                  loadingModels: false,
-                  init() {
-                      this.fetchModels();
-                      this.$watch('apiKey', () => this.fetchModels());
-                  },
-                  async fetchModels() {
-                      if (!this.apiKey || this.apiKey.length < 10) {
-                          this.availableModels = [];
-                          return;
-                      }
-                      this.loadingModels = true;
-                      try {
-                          const response = await fetch(`{{ route('ai.models') }}?team_id=&api_key=${this.apiKey}`);
-                          const data = await response.json();
-                          this.availableModels = data.models || [];
-                      } catch (e) {
-                          console.error('Error fetching models:', e);
-                      } finally {
-                          this.loadingModels = false;
-                      }
-                  }
-              }">
-            @csrf
-            @method('PATCH')
-            <input type="hidden" name="team_id" value="">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Clave API Gemini Global</label>
-                    <input name="api_key" type="password" x-model="apiKey" class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner" placeholder="••••••••••••••••">
-                    <p class="text-[10px] text-gray-400 italic px-1">Clave maestra de Google Gemini AI para tu perfil.</p>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between px-1">
-                        <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Global Seleccionado</label>
-                        <div class="flex items-center gap-2">
-                            <span x-show="loadingModels" class="flex h-2 w-2 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
-                            </span>
-                            <button type="button" @click="fetchModels()" :disabled="loadingModels || !apiKey" :class="(loadingModels || !apiKey) ? 'opacity-30 cursor-not-allowed' : 'hover:text-violet-600'" class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-gray-400 transition-all text-[9px] font-black uppercase tracking-widest">
-                                <svg class="w-2.5 h-2.5" :class="loadingModels ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                Actualizar
+    <!-- ================= 📊 TABLA CRUD COMPACTA ================= -->
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase text-gray-400 tracking-widest">
+                        <th class="py-4 px-6">Contexto / Espacio</th>
+                        <th class="py-4 px-6">Google Workspace</th>
+                        <th class="py-4 px-6">Modelo Gemini (IA)</th>
+                        <th class="py-4 px-6">Toggles Activos</th>
+                        <th class="py-4 px-6 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs text-gray-600 dark:text-gray-300">
+                    
+                    <!-- 1. FILA GLOBAL -->
+                    <tr class="hover:bg-violet-50/20 dark:hover:bg-violet-900/10 transition-colors">
+                        <td class="py-4 px-6 font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                            <span class="text-xl">🌍</span>
+                            <div>
+                                <span class="block text-sm" style="font-family: 'Space Grotesk', sans-serif">Mi Configuración Global</span>
+                                <span class="text-[9px] text-violet-600 dark:text-violet-400 font-black uppercase tracking-wider">Perfil Base Maestro</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-gray-400 italic text-[11px]">
+                            <span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg text-[10px] font-bold">No aplicable a global</span>
+                        </td>
+                        <td class="py-4 px-6 font-medium">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full {{ ($contextsData['global']['api_key'] ?? '') ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                                <span class="font-mono text-[11px] {{ ($contextsData['global']['ai_model'] ?? '') ? 'text-violet-600 dark:text-violet-400 font-bold' : 'text-gray-400' }}">
+                                    {{ ($contextsData['global']['ai_model'] ?? '') ?: 'gemini-1.5-flash (Por defecto)' }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $contextsData['global']['mood_tracking_enabled'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Energía</span>
+                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $contextsData['global']['smart_matching_opt_in'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Smart</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-right space-x-2">
+                            <button @click="openModal('global')" type="button" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-xl hover:scale-105 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 inline-flex">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                Configurar
                             </button>
-                        </div>
-                    </div>
-                    <select name="ai_model" x-model="aiModel" class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner">
-                        <template x-if="!apiKey">
-                            <option value="">⚠️ Primero introduce tu Clave API</option>
-                        </template>
-                        <template x-if="apiKey && loadingModels">
-                            <option value="">⏳ Conectando con Google Gemini...</option>
-                        </template>
-                        <template x-if="apiKey && !loadingModels && availableModels.length > 0">
-                            <optgroup label="Modelos disponibles en tu cuenta">
-                                <template x-for="model in availableModels" :key="model.id">
-                                    <option :value="model.id" x-text="model.display_name" :selected="aiModel === model.id"></option>
-                                </template>
-                            </optgroup>
-                        </template>
-                        <template x-if="apiKey && !loadingModels && availableModels.length === 0">
-                            <option value="">❌ No se encontraron modelos (Revisa tu clave)</option>
-                        </template>
-                    </select>
-                </div>
-            </div>
+                        </td>
+                    </tr>
 
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <div class="flex flex-wrap gap-6">
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="moodTrackingEnabled" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                        <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
-                    </label>
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="smartMatchingOptIn" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                        <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
-                    </label>
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" name="apply_to_all" value="1" class="w-5 h-5 rounded-lg border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-600 focus:ring-amber-500">
-                        <span class="text-[10px] font-black text-amber-600 uppercase group-hover:text-amber-700 transition-colors">💥 Aplicar a TODOS mis equipos</span>
-                    </label>
-                </div>
-                <button type="submit" :disabled="loadingModels" :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-2xl transition-all shadow-lg">
-                    <span x-show="!loadingModels">Guardar Global</span>
-                    <span x-show="loadingModels">Cargando...</span>
-                </button>
-            </div>
-        </form>
+                    <!-- 2. FILAS DE EQUIPOS -->
+                    @foreach($teams as $team)
+                        @php
+                            $c = $contextsData[$team->id];
+                        @endphp
+                        <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-colors">
+                            <td class="py-4 px-6 font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-700 dark:text-gray-300 shadow-inner shrink-0">
+                                    {{ mb_substr($team->name, 0, 2) }}
+                                </div>
+                                <div>
+                                    <span class="block text-sm" style="font-family: 'Space Grotesk', sans-serif">{{ $team->name }}</span>
+                                    <span class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Espacio de Equipo</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                @if($c['google_connected'])
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-[11px] font-bold border border-emerald-100 dark:border-emerald-800">
+                                        <svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                        <span>{{ $c['google_email'] }}</span>
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg text-[10px] font-medium">
+                                        Sin vincular
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-4 px-6 font-medium">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full {{ $c['api_key'] ? 'bg-violet-500' : 'bg-gray-300 dark:bg-gray-700' }}"></span>
+                                    <span class="font-mono text-[11px] {{ $c['ai_model'] ? 'text-violet-600 dark:text-violet-400 font-bold' : 'text-gray-400' }}">
+                                        {{ $c['ai_model'] ?: 'Heredado (Global)' }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex gap-1.5">
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $c['mood_tracking_enabled'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Energía</span>
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $c['smart_matching_opt_in'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Smart</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-right space-x-2 shrink-0">
+                                <a href="{{ url('/teams/' . $team->id . '/time-reports') }}" class="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-black uppercase text-gray-600 dark:text-gray-400 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 transition-all inline-flex items-center gap-1 shadow-sm">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                                    Equipo
+                                </a>
+                                <button @click="openModal('{{ $team->id }}')" type="button" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-xl hover:scale-105 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 inline-flex">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    Configurar
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- ================= 👥 2. LISTADO DE EQUIPOS ================= -->
-    <div class="space-y-8">
-        @foreach($teams as $team)
-            @php
-                $teamPref = $prefs->get($team->id);
-                $isGoogleConnected = !empty($team->pivot->google_token);
-                $googleEmail = $team->pivot->google_email ?? '';
-            @endphp
-            <div class="p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm space-y-8 transition-all hover:shadow-md">
+    <!-- ================= 🛠️ MODAL DE EDICIÓN (CRUD) ================= -->
+    <template x-if="showModal && getActiveContext()">
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div @click.outside="closeModal()" class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[2.5rem] shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-8 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100">
                 
-                <!-- Encabezado del Equipo -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+                <!-- Header del Modal -->
+                <div class="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xl font-bold text-gray-700 dark:text-gray-300 shadow-inner">
-                            {{ mb_substr($team->name, 0, 2) }}
-                        </div>
+                        <span class="text-3xl" x-text="getActiveContext().type === 'global' ? '🌍' : '👥'"></span>
                         <div>
-                            <h4 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight" style="font-family: 'Space Grotesk', sans-serif">
-                                Equipo: {{ $team->name }}
-                            </h4>
-                            <p class="text-[11px] text-gray-400 font-medium">Gestión independiente de integraciones para este espacio</p>
+                            <h4 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight" style="font-family: 'Space Grotesk', sans-serif" x-text="'Configurar: ' + getActiveContext().name"></h4>
+                            <p class="text-xs text-gray-400 font-medium" x-text="getActiveContext().type === 'global' ? 'Preferencias globales de tu cuenta' : 'Ajustes dedicados de integración para este equipo'"></p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3 shrink-0">
-                        <a href="{{ url('/teams/' . $team->id . '/time-reports') }}" class="px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-black uppercase text-gray-600 dark:text-gray-400 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 transition-all flex items-center gap-1.5 shadow-sm">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                            Ir al equipo
-                        </a>
-                    </div>
+                    <button @click="closeModal()" type="button" class="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
 
-                <!-- Sección A: Google Workspace del Equipo -->
-                <div class="p-6 bg-gray-50/60 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                    <div class="flex items-center gap-4">
-                        <div class="p-2.5 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700">
-                            <svg class="w-7 h-7" viewBox="0 0 48 48">
-                                <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/><path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/><path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-bold text-gray-900 dark:text-white">Google Workspace</h5>
-                            @if($isGoogleConnected)
-                                <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 mt-0.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                                    <span>{{ $googleEmail }}</span>
-                                </p>
-                            @else
-                                <p class="text-[11px] text-gray-400 font-medium mt-0.5">Calendario, Drive y Tareas sin vincular</p>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3 shrink-0">
-                        @if($isGoogleConnected)
-                            <a href="{{ route('google.sync') }}?team_id={{ $team->id }}" class="px-4 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                Sincronizar / Importar
-                            </a>
-                            <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                            <form method="POST" action="{{ route('google.disconnect') }}?team_id={{ $team->id }}">
-                                @csrf
-                                <button type="submit" class="text-[10px] text-gray-400 hover:text-rose-600 font-bold uppercase transition-colors">Desvincular</button>
-                            </form>
-                        @else
-                            <button @click="window.openGoogleAuth({{ $team->id }})" type="button" class="px-6 py-2.5 bg-violet-600 text-white text-[11px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-violet-500/20">
-                                Vincular Google Workspace
-                            </button>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Sección B: Motor Gemini del Equipo -->
-                <form method="POST" action="{{ route('profile.ai.update') }}" class="space-y-6"
-                      x-data="{
-                          apiKey: '{{ addslashes($teamPref->api_key ?? '') }}',
-                          aiModel: '{{ addslashes($teamPref->ai_model ?? '') }}',
-                          moodTrackingEnabled: {{ ($teamPref->mood_tracking_enabled ?? false) ? 'true' : 'false' }},
-                          smartMatchingOptIn: {{ ($teamPref->smart_matching_opt_in ?? false) ? 'true' : 'false' }},
-                          availableModels: [],
-                          loadingModels: false,
-                          init() {
-                              this.fetchModels();
-                              this.$watch('apiKey', () => this.fetchModels());
-                          },
-                          async fetchModels() {
-                              const keyToUse = this.apiKey || '{{ addslashes($globalPref->api_key ?? '') }}';
-                              if (!keyToUse || keyToUse.length < 10) {
-                                  this.availableModels = [];
-                                  return;
-                              }
-                              this.loadingModels = true;
-                              try {
-                                  const response = await fetch(`{{ route('ai.models') }}?team_id={{ $team->id }}&api_key=${keyToUse}`);
-                                  const data = await response.json();
-                                  this.availableModels = data.models || [];
-                              } catch (e) {
-                                  console.error('Error fetching models:', e);
-                              } finally {
-                                  this.loadingModels = false;
-                              }
-                          }
-                      }">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="team_id" value="{{ $team->id }}">
+                <!-- Body del Modal (Scrollable) -->
+                <div class="p-6 sm:p-8 overflow-y-auto space-y-8 flex-1">
                     
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 flex items-center justify-center bg-violet-100 dark:bg-violet-900/50 rounded-xl text-violet-600 shrink-0">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-bold text-gray-900 dark:text-white">Motor Gemini de Equipo</h5>
-                            <p class="text-[10px] text-gray-400 font-medium">Configura la potencia de tu asistente Ax.ia para este equipo</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Clave API Gemini (Opcional)</label>
-                            <input name="api_key" type="password" x-model="apiKey" class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner" placeholder="••••••••••••••••">
-                            <p class="text-[10px] text-gray-400 italic px-1">Si lo dejas vacío, se utilizará tu Clave Global.</p>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between px-1">
-                                <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Seleccionado</label>
-                                <div class="flex items-center gap-2">
-                                    <span x-show="loadingModels" class="flex h-2 w-2 relative">
-                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
-                                    </span>
-                                    <button type="button" @click="fetchModels()" :disabled="loadingModels" class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-gray-400 hover:text-violet-600 transition-all text-[9px] font-black uppercase tracking-widest">
-                                        <svg class="w-2.5 h-2.5" :class="loadingModels ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <!-- Tarjeta Google Workspace (Sólo en Modal de Equipo) -->
+                    <template x-if="getActiveContext().type === 'team'">
+                        <div class="p-6 bg-gray-50/80 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-2.5 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 shrink-0">
+                                        <svg class="w-7 h-7" viewBox="0 0 48 48">
+                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/><path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/><path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                                         </svg>
-                                        Actualizar
-                                    </button>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-bold text-gray-900 dark:text-white">Google Workspace</h5>
+                                        <template x-if="getActiveContext().google_connected">
+                                            <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
+                                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                <span x-text="getActiveContext().google_email"></span>
+                                            </p>
+                                        </template>
+                                        <template x-if="!getActiveContext().google_connected">
+                                            <p class="text-[11px] text-gray-400 font-medium mt-0.5">Sin vincular con Google Drive / Calendar</p>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 shrink-0">
+                                    <template x-if="getActiveContext().google_connected">
+                                        <div class="flex items-center gap-3">
+                                            <a :href="'{{ route('google.sync') }}?team_id=' + getActiveContext().id" class="px-4 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                                Sincronizar
+                                            </a>
+                                            <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                            <form method="POST" :action="'{{ route('google.disconnect') }}?team_id=' + getActiveContext().id">
+                                                @csrf
+                                                <button type="submit" class="text-[10px] text-gray-400 hover:text-rose-600 font-bold uppercase transition-colors">Desvincular</button>
+                                            </form>
+                                        </div>
+                                    </template>
+                                    <template x-if="!getActiveContext().google_connected">
+                                        <button @click="window.openGoogleAuth(getActiveContext().id)" type="button" class="px-6 py-2.5 bg-violet-600 text-white text-[11px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-violet-500/20">
+                                            Vincular Google Workspace
+                                        </button>
+                                    </template>
                                 </div>
                             </div>
-                            <select name="ai_model" x-model="aiModel" class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner">
-                                <option value="">🌐 Usar modelo por defecto / Global</option>
-                                <template x-if="loadingModels">
-                                    <option value="">⏳ Conectando con Google Gemini...</option>
-                                </template>
-                                <template x-if="!loadingModels && availableModels.length > 0">
-                                    <optgroup label="Modelos disponibles">
-                                        <template x-for="model in availableModels" :key="model.id">
-                                            <option :value="model.id" x-text="model.display_name" :selected="aiModel === model.id"></option>
-                                        </template>
-                                    </optgroup>
-                                </template>
-                                <template x-if="!loadingModels && availableModels.length === 0">
-                                    <option value="">⚠️ Introduce una clave para cargar más modelos</option>
-                                </template>
-                            </select>
                         </div>
-                    </div>
+                    </template>
 
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <div class="flex flex-wrap gap-6">
-                            <label class="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="moodTrackingEnabled" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                                <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="smartMatchingOptIn" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                                <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
-                            </label>
+                    <!-- Formulario IA Gemini -->
+                    <form method="POST" action="{{ route('profile.ai.update') }}" id="modal-ai-form" class="space-y-6">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="team_id" :value="form.team_id">
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 flex items-center justify-center bg-violet-100 dark:bg-violet-900/50 rounded-xl text-violet-600 shrink-0">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-bold text-gray-900 dark:text-white">Motor IA Gemini</h5>
+                                <p class="text-[10px] text-gray-400 font-medium">Ajusta la potencia y el modelo cognitivo para este espacio</p>
+                            </div>
                         </div>
-                        <button type="submit" :disabled="loadingModels" :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase rounded-2xl transition-all shadow-lg">
-                            <span x-show="!loadingModels">Guardar Ajustes de Equipo</span>
-                            <span x-show="loadingModels">Cargando...</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        @endforeach
-    </div>              </button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Clave API Gemini</label>
+                                <input name="api_key" type="password" x-model="form.api_key" @input.debounce.500ms="fetchModels()" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner" placeholder="••••••••••••••••">
+                                <p class="text-[10px] text-gray-400 italic px-1" x-text="getActiveContext().type === 'global' ? 'Clave maestra de Google Gemini AI para tu perfil.' : 'Si lo dejas vacío, se utilizará tu Clave Global.'"></p>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between px-1">
+                                    <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Seleccionado</label>
+                                    <div class="flex items-center gap-2">
+                                        <span x-show="loadingModels" class="flex h-2 w-2 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                                        </span>
+                                        <button type="button" @click="fetchModels()" :disabled="loadingModels" class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-gray-400 hover:text-violet-600 transition-all text-[9px] font-black uppercase tracking-widest">
+                                            <svg class="w-2.5 h-2.5" :class="loadingModels ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            Actualizar
+                                        </button>
+                                    </div>
+                                </div>
+                                <select name="ai_model" x-model="form.ai_model" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner">
+                                    <template x-if="getActiveContext().type === 'team'">
+                                        <option value="">🌐 Usar modelo por defecto / Global</option>
+                                    </template>
+                                    <template x-if="getActiveContext().type === 'global' && !form.api_key">
+                                        <option value="">⚠️ Introduce una clave para cargar modelos</option>
+                                    </template>
+                                    <template x-if="loadingModels">
+                                        <option value="">⏳ Conectando con Google Gemini...</option>
+                                    </template>
+                                    <template x-if="!loadingModels && availableModels.length > 0">
+                                        <optgroup label="Modelos disponibles">
+                                            <template x-for="model in availableModels" :key="model.id">
+                                                <option :value="model.id" x-text="model.display_name" :selected="form.ai_model === model.id"></option>
+                                            </template>
+                                        </optgroup>
+                                    </template>
+                                    <template x-if="!loadingModels && availableModels.length === 0 && (form.api_key || getActiveContext().type === 'team')">
+                                        <option value="">⚠️ No se encontraron modelos o usa clave global</option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <div class="flex flex-wrap gap-6">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="form.mood_tracking_enabled" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
+                                    <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="form.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
+                                    <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
+                                </label>
+                                <template x-if="getActiveContext().type === 'global'">
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" name="apply_to_all" value="1" x-model="form.apply_to_all" class="w-5 h-5 rounded-lg border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-600 focus:ring-amber-500">
+                                        <span class="text-[10px] font-black text-amber-600 uppercase group-hover:text-amber-700 transition-colors">💥 Aplicar a TODOS mis equipos</span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </form>
-        </div>
 
-        <!-- 🔌 SISTEMAS DE CHAT (Habilitar / Deshabilitar) -->
+                <!-- Footer del Modal -->
+                <div class="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-4">
+                    <button @click="closeModal()" type="button" class="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-black uppercase text-[10px] rounded-2xl hover:bg-gray-300 dark:hover:bg-gray-700 transition-all">
+                        Cancelar
+                    </button>
+                    <button @click="document.getElementById('modal-ai-form').submit()" type="button" :disabled="loadingModels" :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-2xl transition-all shadow-lg">
+                        <span x-show="!loadingModels">Guardar Cambios</span>
+                        <span x-show="loadingModels">Cargando...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</section>
+
+<!-- 🔌 SISTEMAS DE CHAT (Habilitar / Deshabilitar) -->
         <div id="chat-systems" class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
             <div class="flex items-center gap-4">
                 <div class="p-2 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-500">
