@@ -215,7 +215,7 @@ class TaskController extends Controller
         }
 
         if (auth()->user()->cannot('view', $task)) {
-            return redirect()->back(302, [], route('teams.dashboard', $team))->with('warning', 'La tarea no está accesible o es privada.');
+            return redirect()->route('teams.tasks.index', $team)->with('warning', 'Acceso prohibido: La tarea no está accesible o es privada.');
         }
 
         $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments', 'attachments.logs.user']);
@@ -251,8 +251,8 @@ class TaskController extends Controller
         }
 
         if (auth()->user()->cannot('update', $task)) {
-            return redirect()->back(302, [], route('teams.tasks.show', [$team, $task]))
-                ->with('warning', __('No tienes permisos para modificar esta tarea privada.'));
+            return redirect()->route('teams.tasks.index', $team)
+                ->with('warning', 'Acceso prohibido: No tienes permisos para modificar esta tarea privada.');
         }
 
         $task->load('attachments');
@@ -320,6 +320,12 @@ class TaskController extends Controller
         // Notification for Blocked status
         if ($task->status === 'blocked' && $oldStatus !== 'blocked') {
              $task->notifyCreatorAndCoordinators(new \App\Notifications\TaskEventNotification($task, 'blocked'));
+        }
+
+        if (auth()->user()->cannot('view', $task)) {
+            return redirect()->route('teams.tasks.index', $team)
+                ->with('success', __('tasks.updated'))
+                ->with('warning', 'Acceso prohibido: La tarea ahora es privada y ha dejado de estar visible para ti.');
         }
 
         return redirect()->route('teams.tasks.show', [$team, $task])
