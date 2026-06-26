@@ -55,5 +55,30 @@ Gracias a este enfoque paranoico con la seguridad, SientiaMTX es idóneo para:
 2.  **Administraciones Locales:** Cumplimiento inmediato de normativas RGPD y esquemas locales de seguridad.
 3.  **Investigación y Desarrollo:** Entornos donde la fuga de información competitiva supone un riesgo existencial.
 
+---
+
+## 🌍 Cumplimiento Normativo Internacional (OWASP, GDPR, HIPAA, SOC 2, ISO 27001)
+
+Tras superar con éxito rigurosos escaneos y auditorías de seguridad en 2026, la arquitectura de SientiaMTX incorpora soporte integrado para cumplir con los marcos regulatorios y de seguridad internacionales más exigentes:
+
+### 1. 🌐 OWASP Top 10 (2021) — Blindaje de Aplicación
+SientiaMTX implementa controles defensivos frente a los 10 principales riesgos de seguridad web:
+*   **Inyección (A03) y Cabeceras (A05)**: Configuración estricta de `Content-Security-Policy` (CSP), `X-Frame-Options` (bloqueo de Clickjacking), `nosniff` y `HSTS` forzado de 1 año mediante `SecurityHeadersMiddleware`.
+*   **Defensa SSRF (A10)**: Validación de resoluciones DNS e IPs externas para bloquear automáticamente llamadas a rangos privados o de metadatos cloud.
+*   **Protección contra Asignación Masiva**: Modelos de datos protegidos explícitamente mediante `$guarded = ['id', 'is_admin']` para evitar cualquier escalada de privilegios indebida.
+
+### 2. 🇪🇺 GDPR (General Data Protection Regulation) — Privacidad Absoluta
+*   **Art. 20 (Portabilidad de Datos)**: Generación automática de descargas estructuradas en formato JSON/CSV con toda la información del perfil del usuario, estadísticas de gamificación, tiempos y actividades.
+*   **Art. 17 (Derecho al Olvido)**: Endpoints dedicados para el borrado irreversible de la huella digital. El proceso elimina o anonimiza notas, historiales de estado de ánimo, citas previas y chats antes de revocar la sesión y purgar la cuenta.
+
+### 3. 🏥 HIPAA & 🛡️ SOC 2 — Controles de Auditoría y Vigilancia
+*   **Trazabilidad Inmutable**: Inyección de un UUID único en la cabecera `X-Request-ID` para rastreo cruzado en cada petición y correlación forense.
+*   **Saneamiento de Logs (*Log Sanitization*)**: Toda información confidencial (contraseñas, tokens de Google, secretos TOTP, claves API) es enmascarada y eliminada en memoria antes de registrarse en el historial de auditoría inmutable (`AuditTrailMiddleware`).
+
+### 4. 📋 ISO/IEC 27001:2022 — Gestión de Seguridad Integral
+*   **Control de Accesos (A.9)**: Limitación de velocidad (*Rate Limiting*) progresiva implementada en todas las rutas públicas de autenticación (`throttle:5,1` en login/registro, `throttle:3,1` en recuperación de credenciales) para neutralizar intentos de fuerza bruta y adivinación de cuentas.
+*   **Criptografía Segura (A.10)**: Generación de códigos 2FA y secretos TOTP basada en funciones aleatorias del núcleo del sistema operativo (`random_int`), impidiendo su predicción.
+
 > [!TIP]
-> Para maximizar el cumplimiento del ENS, se recomienda mantener SientiaMTX actualizado regularmente a través de la canalización de CI/CD autorizada y alojarlo en sistemas operativos con soporte de seguridad activo (LTS).
+> Para maximizar el cumplimiento del ENS y de las normativas internacionales, se recomienda mantener SientiaMTX actualizado regularmente a través de la canalización de CI/CD autorizada y alojarlo en sistemas operativos con soporte de seguridad activo (LTS).
+

@@ -134,6 +134,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/bulk', [App\Http\Controllers\NotificationController::class, 'bulkAction'])->name('notifications.bulk-action');
     Route::patch('/profile/zone', [ProfileController::class, 'updateZone'])->name('user.update-zone');
     Route::get('/profile/export', [GDPRController::class, 'export'])->name('profile.export');
+    Route::delete('/profile/erasure', [GDPRController::class, 'erasure'])->name('profile.erasure');
     Route::post('/teams/{team}/kudos', [App\Http\Controllers\KudoController::class, 'store'])->name('teams.kudos.store');
 
     // Teams routes

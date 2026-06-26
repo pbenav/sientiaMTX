@@ -158,4 +158,49 @@ class GDPRController extends Controller
             'Content-Type' => 'application/json',
         ]);
     }
+
+    /**
+     * Procesar la solicitud de borrado definitivo y derecho al olvido (Artículo 17 GDPR).
+     */
+    public function erasure(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // 1. Limpiar o anonimizar relaciones directas
+        $user->quickNotes()->delete();
+        $user->moodLogs()->delete();
+        $user->timeLogs()->delete();
+        $user->aiPreferences()->delete();
+        $user->skills()->detach();
+        $user->teams()->detach();
+
+        // 2. Anonimizar citas previas gestionadas
+        \App\Models\Appointment::where('user_id', $user->id)->update([
+            'user_id' => null,
+            'notes' => 'Usuario gestor eliminado por GDPR.'
+        ]);
+
+        // 3. Anonimizar citas como cliente
+        \App\Models\Appointment::where('email', $user->email)->update([
+            'email' => 'gdpr-deleted-' . $user->id . '@sientia.local',
+            'name' => 'Usuario Eliminado (GDPR)'
+        ]);
+
+        // 4. Borrar mensajes de chat
+        \App\Models\ChatMessage::where('sender_id', $user->id)->delete();
+
+        // 5. Revocar sesión y borrar usuario
+        auth()->logout();
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Tu cuenta y tus datos personales han sido eliminados de acuerdo al Artículo 17 del GDPR (Derecho al olvido).');
+    }
 }

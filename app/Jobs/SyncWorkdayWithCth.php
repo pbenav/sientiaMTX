@@ -45,6 +45,19 @@ class SyncWorkdayWithCth implements ShouldQueue
             return;
         }
 
+        // SSRF Protection (OWASP A10): Validar URL externa y descartar IPs privadas o AWS Metadata
+        $parsedHost = parse_url($apiUrl, PHP_URL_HOST);
+        if ($parsedHost) {
+            $resolvedIp = gethostbyname($parsedHost);
+            if (filter_var($resolvedIp, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                // Permitir solo si estamos en entorno de desarrollo/local
+                if (!app()->environment('local', 'development', 'testing')) {
+                    Log::error('CTH Sync SSRF Block: Intento de acceso a IP privada o reservada', ['ip' => $resolvedIp, 'host' => $parsedHost]);
+                    return;
+                }
+            }
+        }
+
         try {
             $clockResponse = Http::withHeaders(['X-S2S-Secret' => $secret])
                 ->acceptJson()

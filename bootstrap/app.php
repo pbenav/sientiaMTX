@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Global compliance middleware: Injects X-Request-ID and audits sensitive events
+        $middleware->append(\App\Http\Middleware\AuditTrailMiddleware::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
+
         // Outermost wrapper: catches TokenMismatchException before Laravel converts it to HttpException(419)
         $middleware->web(prepend: [
             \App\Http\Middleware\HandleSessionExpiration::class,

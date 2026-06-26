@@ -49,6 +49,13 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     ];
 
     /**
+     * The attributes that are not mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['id', 'is_admin'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
