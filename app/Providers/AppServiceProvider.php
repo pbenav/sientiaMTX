@@ -43,8 +43,9 @@ class AppServiceProvider extends ServiceProvider
         // Register Activity policy (universal polymorphic entity)
         Gate::policy(\App\Models\Activity::class, \App\Policies\ActivityPolicy::class);
 
-        if ($this->app->environment('production', 'staging', 'local') && (str_starts_with(config('app.url') ?? '', 'https') || request()->header('X-Forwarded-Proto') === 'https')) {
-
+        if ($this->app->environment('production', 'staging')) {
+            URL::forceScheme('https');
+        } elseif (str_starts_with(config('app.url') ?? '', 'https') || request()->header('X-Forwarded-Proto') === 'https') {
             URL::forceScheme('https');
         }
 
