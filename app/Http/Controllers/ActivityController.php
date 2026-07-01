@@ -75,9 +75,9 @@ class ActivityController extends Controller
         }
 
         // Cargar datos necesarios para el formulario
-        $members = $team->members()->orderBy('name')->get();
-        $groups  = $team->groups()->orderBy('name')->get();
-        $expedientes = $team->expedientes()->orderBy('title')->get();
+        $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
+        $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
+        $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
         
         // Actividades padre disponibles para jerarquía (no circulares)
         $parentActivities = Activity::with('creator:id,name')
@@ -156,9 +156,10 @@ class ActivityController extends Controller
         }
 
         $activity = $activity->asSubtype();
-        $members = $team->members()->orderBy('name')->get();
-        $groups  = $team->groups()->orderBy('name')->get();
-        $expedientes = $team->expedientes()->orderBy('title')->get();
+        $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
+        $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
+        $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
+
         
         $parentActivities = Activity::with('creator:id,name')
             ->byTeam($team->id)
