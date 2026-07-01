@@ -102,18 +102,18 @@ class GDPRController extends Controller
                 'role' => $exp->created_by_id === $user->id ? 'creator' : 'collaborator',
                 'created_at' => $exp->created_at,
             ]),
-            'appointments_managed' => $user->appointments()->get()->map(fn($appt) => [
+            'appointments_managed' => $user->appointments()->with('visitor')->get()->map(fn($appt) => [
                 'localizador' => $appt->localizador,
-                'date' => $appt->date,
-                'time' => $appt->time,
+                'date' => $appt->appointment_date?->format('Y-m-d'),
+                'time' => $appt->appointment_time,
                 'status' => $appt->status,
-                'client_name' => $appt->name,
-                'client_email' => $appt->email,
+                'client_name' => $appt->visitor?->full_name,
+                'client_email' => $appt->visitor?->email,
             ]),
-            'appointments_as_client' => \App\Models\Appointment::where('email', $user->email)->get()->map(fn($appt) => [
+            'appointments_as_client' => \App\Models\Appointment::whereHas('visitor', fn($q) => $q->where('email', $user->email))->with('service')->get()->map(fn($appt) => [
                 'localizador' => $appt->localizador,
-                'date' => $appt->date,
-                'time' => $appt->time,
+                'date' => $appt->appointment_date?->format('Y-m-d'),
+                'time' => $appt->appointment_time,
                 'status' => $appt->status,
                 'service' => $appt->service ? $appt->service->name : null,
             ]),
@@ -201,13 +201,14 @@ class GDPRController extends Controller
         // 2. Anonimizar citas previas gestionadas
         \App\Models\Appointment::where('user_id', $user->id)->update([
             'user_id' => null,
-            'notes' => 'Usuario gestor eliminado por GDPR.'
+            'member_notes' => 'Usuario gestor eliminado por GDPR.'
         ]);
 
         // 3. Anonimizar citas como cliente
-        \App\Models\Appointment::where('email', $user->email)->update([
+        \App\Models\AppointmentVisitor::where('email', $user->email)->update([
             'email' => 'gdpr-deleted-' . $user->id . '@sientia.local',
-            'name' => 'Usuario Eliminado (GDPR)'
+            'first_name' => 'Usuario Eliminado',
+            'last_name' => '(GDPR)'
         ]);
 
         // 4. Borrar mensajes de chat
