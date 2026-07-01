@@ -101,6 +101,7 @@
                                                 'team.member_added' => 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
                                                 'team.role_updated' => 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
                                                 'team.member_removed' => 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+                                                'admin.user.force_logout' => 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400',
                                                 default => 'bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
                                             };
                                             $eventLabel = match($log->event) {
@@ -111,6 +112,7 @@
                                                 'team.member_added' => 'Miembro Añadido',
                                                 'team.role_updated' => 'Rol Actualizado',
                                                 'team.member_removed' => 'Miembro Eliminado',
+                                                'admin.user.force_logout' => 'Cierre de Sesión Forzado',
                                                 default => $log->event
                                             };
                                         @endphp
