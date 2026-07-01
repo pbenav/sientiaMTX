@@ -53,10 +53,11 @@ class TaskExportController extends Controller
                 // 2. Importar en el equipo de destino mediante la factoría
                 $jsonContent = json_encode($exportedArray);
                 $cloned = $this->activityFactory->makeFromJson($targetTeam, $jsonContent);
-                
                 // 3. Ajustes específicos de la reproducción
-                $cloned->assigned_user_id = $user->id; 
-                $cloned->saveQuietly();
+                $cloned->assignedTo()->syncWithPivotValues([$user->id], [
+                    'assigned_by_id' => $user->id,
+                    'assigned_at' => now(),
+                ]);
 
                 // 4. Crear registro de historial
                 $cloned->histories()->create([
@@ -145,10 +146,16 @@ class TaskExportController extends Controller
 
             // 4. Sincronizar Asignaciones de Usuarios y Grupos
             if ($task->assignedTo->isNotEmpty()) {
-                $new->assignedTo()->syncWithPivotValues($task->assignedTo->pluck('id')->toArray(), ['assigned_by_id' => $user->id]);
+                $new->assignedTo()->syncWithPivotValues($task->assignedTo->pluck('id')->toArray(), [
+                    'assigned_by_id' => $user->id,
+                    'assigned_at' => now(),
+                ]);
             }
             if ($task->assignedGroups->isNotEmpty()) {
-                $new->assignedGroups()->syncWithPivotValues($task->assignedGroups->pluck('id')->toArray(), ['assigned_by_id' => $user->id]);
+                $new->assignedGroups()->syncWithPivotValues($task->assignedGroups->pluck('id')->toArray(), [
+                    'assigned_by_id' => $user->id,
+                    'assigned_at' => now(),
+                ]);
             }
 
             // Crear registro de historial
