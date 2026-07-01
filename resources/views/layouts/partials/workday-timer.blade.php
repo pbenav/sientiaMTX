@@ -11,7 +11,7 @@
     compact: {{ isset($compact) && $compact ? 'true' : 'false' }},
     
     init() {
-        this.fetchStatus();
+        this.fetchStatus(true);
         setInterval(() => {
             if (this.working) this.elapsed++;
         }, 1000);
@@ -23,8 +23,10 @@
         });
     },
     
-    fetchStatus() {
-        fetch('{{ route('time-logs.status') }}')
+    fetchStatus(isInit = false) {
+        let url = '{{ route('time-logs.status') }}';
+        if (isInit) url += '?init=1';
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 this.working = data.is_working;

@@ -225,12 +225,14 @@ class TimeLogController extends Controller
             if ($cthStatus['success']) {
                 $activeWorkday = $user->activeWorkdayLog();
                 if ($cthStatus['is_working'] && !$activeWorkday) {
-                    // Si en CTH está trabajando pero en MTX no, abrimos jornada en MTX con la hora real de CTH
-                    $startTime = $cthStatus['start_time'] ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : now();
-                    $user->timeLogs()->create([
-                        'type' => 'workday',
-                        'start_at' => $startTime,
-                    ]);
+                    if (request()->has('init')) {
+                        // Si en CTH está trabajando pero en MTX no, abrimos jornada en MTX con la hora real de CTH (solo al inicio/login)
+                        $startTime = $cthStatus['start_time'] ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : now();
+                        $user->timeLogs()->create([
+                            'type' => 'workday',
+                            'start_at' => $startTime,
+                        ]);
+                    }
                 } elseif (!$cthStatus['is_working'] && $activeWorkday) {
                     // Si en CTH NO está trabajando pero en MTX sí, cerramos el contador local con la hora EXACTA de CTH
                     $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();

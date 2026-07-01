@@ -181,6 +181,16 @@ class SyncWorkdayWithCth implements ShouldQueue
                 $graceAvailable = $response->json('data.grace_closing_available') ?? $response->json('grace_closing_available') ?? false;
                 $status = $response->json('status_code') ?? $response->json('status') ?? 'error';
                 
+                // Interceptar error de exceso de jornada laboral
+                if (
+                    in_array($status, ['MAX_WORKED_HOURS', 'MAX_HOURS_EXCEEDED']) || 
+                    str_contains(strtolower($msg), 'maximum worked hours') || 
+                    str_contains(strtolower($msg), 'exceso de jornada')
+                ) {
+                    $graceAvailable = true;
+                    $msg = __('Exceso de jornada laboral superado. Se requiere cerrar los turnos anteriores como excepción.');
+                }
+                
                 if ($mtxAction !== 'grace_closing' && !$graceAvailable) {
                     $user->notify(new \App\Notifications\CthSyncFailedNotification($mtxAction, $msg));
                 }
