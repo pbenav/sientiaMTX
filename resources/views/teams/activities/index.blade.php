@@ -481,10 +481,12 @@
                                 <td class="px-4 py-4 whitespace-nowrap">
                                      @if($activity->assignedUser)
                                          <div class="flex items-center gap-2">
-                                             <img src="{{ $activity->assignedUser->profile_photo_url }}" 
-                                                 alt="{{ $activity->assignedUser->name }}"
-                                                 class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
-                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedUser->name }}</span>
+                                             <div class="flex -space-x-2">
+                                                <img src="{{ $activity->assignedUser->profile_photo_url }}" 
+                                                     alt="{{ $activity->assignedUser->name }}"
+                                                     class="w-5 h-5 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800" title="{{ $activity->assignedUser->name }}">
+                                             </div>
+                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">1 {{ __('tasks.member') ?? 'Miembro' }}</span>
                                          </div>
                                      @elseif($activity->assignedTo->count() > 0)
                                          <div class="flex items-center gap-2">
@@ -493,20 +495,14 @@
                                                      <img src="{{ $u->profile_photo_url }}" alt="{{ $u->name }}" class="w-5 h-5 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800" title="{{ $u->name }}">
                                                  @endforeach
                                              </div>
-                                             @if($activity->assignedTo->count() > 3)
-                                                 <span class="text-xs text-gray-500">+{{ $activity->assignedTo->count() - 3 }}</span>
-                                             @elseif($activity->assignedTo->count() === 1)
-                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{{ $activity->assignedTo->first()->name }}</span>
-                                             @else
-                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedTo->count() }} {{ __('tasks.members') ?? 'Miembros' }}</span>
-                                             @endif
+                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedTo->count() }} {{ $activity->assignedTo->count() == 1 ? (__('tasks.member') ?? 'Miembro') : (__('tasks.members') ?? 'Miembros') }}</span>
                                          </div>
                                      @elseif($activity->assignedGroups->count() > 0)
                                          <div class="flex items-center gap-2">
                                              <div class="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-white dark:border-gray-800 shrink-0">
                                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                              </div>
-                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{{ $activity->assignedGroups->first()->name }}</span>
+                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedGroups->count() }} {{ $activity->assignedGroups->count() == 1 ? (__('tasks.group') ?? 'Grupo') : (__('tasks.groups') ?? 'Grupos') }}</span>
                                          </div>
                                      @else
                                         <div class="flex items-center gap-2 opacity-75">
@@ -665,15 +661,11 @@
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         @if($subtask->assignedUser)
-                                            {{ $subtask->assignedUser->name }}
+                                            1 {{ __('tasks.member') ?? 'Miembro' }}
                                         @elseif($subtask->assignedTo->count() > 0)
-                                            @if($subtask->assignedTo->count() === 1)
-                                                {{ $subtask->assignedTo->first()->name }}
-                                            @else
-                                                {{ $subtask->assignedTo->count() }} {{ __('tasks.members') ?? 'Miembros' }}
-                                            @endif
+                                            {{ $subtask->assignedTo->count() }} {{ $subtask->assignedTo->count() == 1 ? (__('tasks.member') ?? 'Miembro') : (__('tasks.members') ?? 'Miembros') }}
                                         @elseif($subtask->assignedGroups->count() > 0)
-                                            {{ $subtask->assignedGroups->first()->name }}
+                                            {{ $subtask->assignedGroups->count() }} {{ $subtask->assignedGroups->count() == 1 ? (__('tasks.group') ?? 'Grupo') : (__('tasks.groups') ?? 'Grupos') }}
                                         @else
                                             —
                                         @endif
