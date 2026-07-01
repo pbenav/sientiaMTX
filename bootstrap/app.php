@@ -40,9 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
             '/api/s2s/sync-history',
         ]);
 
-        $middleware->trustProxies(at: [
-            '192.168.10.10',
-        ]);
+        $trusted = env('TRUSTED_PROXIES', '*');
+        $middleware->trustProxies(at: $trusted === '*' ? '*' : array_map('trim', explode(',', $trusted)));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
