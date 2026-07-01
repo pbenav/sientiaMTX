@@ -54,6 +54,8 @@ class Activity extends Model
     public const GANTT_TYPES  = ['task', 'meeting', 'document', 'reminder', 'decision'];
 
     // ─── Atributos ────────────────────────────────────────────────────────────
+    protected $table = 'activities';
+
     protected $fillable = [
         'uuid',
         'team_id',
