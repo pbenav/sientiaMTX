@@ -80,7 +80,13 @@ class ActivityController extends Controller
         $expedientes = $team->expedientes()->orderBy('title')->get();
         
         // Actividades padre disponibles para jerarquía (no circulares)
-        $parentActivities = Activity::byTeam($team->id)->active()->where('is_template', false)->orderBy('title')->get();
+        $parentActivities = Activity::with('creator:id,name')
+            ->byTeam($team->id)
+            ->active()
+            ->where('is_template', false)
+            ->select('id', 'title', 'created_by_id')
+            ->orderBy('title')
+            ->get();
 
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
@@ -154,9 +160,12 @@ class ActivityController extends Controller
         $groups  = $team->groups()->orderBy('name')->get();
         $expedientes = $team->expedientes()->orderBy('title')->get();
         
-        $parentActivities = Activity::byTeam($team->id)
+        $parentActivities = Activity::with('creator:id,name')
+            ->byTeam($team->id)
             ->active()
             ->where('id', '!=', $activity->id)
+            ->where('is_template', false)
+            ->select('id', 'title', 'created_by_id')
             ->orderBy('title')
             ->get();
 
