@@ -113,7 +113,6 @@ class TaskExportController extends Controller
                 'due_date'             => $task->due_date,
                 'original_due_date'    => $task->due_date,
                 'created_by_id'        => $user->id,
-                'observations'         => $task->observations,
                 'parent_id'            => $task->parent_id,
                 'is_template'          => $task->is_template,
                 'visibility'           => $task->visibility,

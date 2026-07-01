@@ -45,7 +45,6 @@ class ActivityFactory
                 'type'                 => $taskData['type'] ?? 'task',
                 'title'                => $taskData['title'] ?? __('Sin título'),
                 'description'          => $taskData['description'] ?? null,
-                'observations'         => $taskData['observations'] ?? null,
                 'priority'             => $taskData['priority'] ?? 'medium',
                 'urgency'              => $taskData['urgency'] ?? 'medium',
                 'visibility'           => $taskData['visibility'] ?? 'private',
@@ -73,7 +72,6 @@ class ActivityFactory
             'type'           => 'required|string|max:50',
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string|max:1000000',
-            'observations'   => 'nullable|string|max:1000000',
             'priority'       => 'nullable|string|in:low,medium,high,critical',
             'urgency'        => 'nullable|string|in:low,medium,high,critical',
             'visibility'     => 'nullable|string|in:public,private,semiprivate,team',
@@ -106,7 +104,6 @@ class ActivityFactory
             $activity->type = $type;
             $activity->title = $core['title'];
             $activity->description = $core['description'] ?? null;
-            $activity->observations = $core['observations'] ?? null;
             $activity->priority = $core['priority'] ?? 'medium';
             $activity->visibility = $core['visibility'] ?? 'private';
             $activity->is_template = $core['is_template'] ?? false;
@@ -128,7 +125,9 @@ class ActivityFactory
                 $meta = $activity->metadata ?? [];
                 $activity->metadata = array_merge($meta, $specs);
             }
-
+            if (empty($activity->uuid)) {
+                $activity->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
             $activity->saveQuietly();
 
             // ─── 3. Sincronización de Especialidades (Skills) ─────────────────
@@ -184,7 +183,6 @@ class ActivityFactory
             'type'           => $subtype->type ?? 'task',
             'title'          => $subtype->title,
             'description'    => $subtype->description,
-            'observations'   => $subtype->observations,
             'priority'       => $subtype->priority,
             'urgency'        => $subtype->urgency,
             'visibility'     => $subtype->visibility,
