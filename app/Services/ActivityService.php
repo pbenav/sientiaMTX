@@ -107,10 +107,7 @@ class ActivityService
                 'kanban_column_id', 'kanban_order', 'matrix_order',
             ];
 
-            $updateData = array_filter(
-                array_intersect_key($data, array_flip($fillable)),
-                fn($v) => $v !== null
-            );
+            $updateData = array_intersect_key($data, array_flip($fillable));
 
             // Status
             if (!empty($data['status'])) {
@@ -512,8 +509,7 @@ class ActivityService
             }
         }
 
-        // Limpiamos nulos para no ensuciar el JSON final, igual que hacía el array_filter
-        $specifics = array_filter($specifics, fn($val) => $val !== null);
+        // Permitimos valores nulos para que el usuario pueda vaciar campos explícitamente
 
         return array_merge($base, $specifics);
     }
