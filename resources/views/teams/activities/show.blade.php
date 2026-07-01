@@ -1897,14 +1897,77 @@
             });
         }
 
+        @php
+            $clonableTeams = auth()->user()->teams()->select('teams.id', 'teams.name')->where('teams.id', '!=', $team->id)->get();
+        @endphp
         function reproduceInTeam() {
+            const teams = @json($clonableTeams);
+            if (teams.length === 0) {
+                Swal.fire({
+                    title: 'Sin equipos',
+                    text: 'No perteneces a ningún otro equipo al que clonar esta actividad.',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            let optionsHtml = '<select id="target_team_id" class="swal2-input bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 max-w-full">';
+            optionsHtml += '<option value="">Selecciona un equipo...</option>';
+            teams.forEach(t => {
+                optionsHtml += `<option value="${t.id}">${t.name}</option>`;
+            });
+            optionsHtml += '</select>';
+
             Swal.fire({
                 title: 'Reproducir en Equipo',
-                text: 'Selecciona el equipo al que deseas clonar esta actividad',
+                html: '<div class="text-sm text-gray-500 mb-4">Selecciona el equipo al que deseas clonar esta actividad:</div>' + optionsHtml,
                 icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Clonar Actividad',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#7c3aed',
                 background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
                 color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
-                customClass: { popup: 'rounded-[2rem]' }
+                customClass: { popup: 'rounded-[2rem]', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' },
+                preConfirm: () => {
+                    const teamId = document.getElementById('target_team_id').value;
+                    if (!teamId) {
+                        Swal.showValidationMessage('Debes seleccionar un equipo');
+                    }
+                    return teamId;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const targetTeamId = result.value;
+                    Swal.fire({
+                        title: 'Clonando...',
+                        text: 'Por favor espera',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch('{{ route('teams.activities.copy-to-team', [$team, $activity]) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ target_team_id: targetTeamId })
+                    })
+                    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                    .then(res => {
+                        if (res.status === 200 || res.status === 201 || res.body.success) {
+                            Swal.fire('¡Éxito!', res.body.message || 'Actividad reproducida correctamente.', 'success');
+                        } else {
+                            Swal.fire('Error', res.body.message || 'Error al clonar la actividad.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+                    });
+                }
             });
         }
 

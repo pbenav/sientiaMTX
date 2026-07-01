@@ -74,6 +74,9 @@ class ActivityController extends Controller
             return view('teams.activities.select_type', compact('team'));
         }
 
+        // Temporal escape hatch for heavy views with multiple large dropdowns
+        ini_set('memory_limit', '256M');
+
         // Cargar datos necesarios para el formulario
         $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
@@ -84,8 +87,9 @@ class ActivityController extends Controller
             ->byTeam($team->id)
             ->active()
             ->where('is_template', false)
-            ->select('id', 'title', 'created_by_id')
-            ->orderBy('title')
+            ->select('id', 'title', 'created_by_id', 'created_at')
+            ->latest()
+            ->limit(300)
             ->get();
 
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
@@ -155,6 +159,9 @@ class ActivityController extends Controller
             abort(403, 'No tienes permiso para modificar esta actividad.');
         }
 
+        // Temporal escape hatch for heavy views with multiple large dropdowns
+        ini_set('memory_limit', '256M');
+
         $activity = $activity->asSubtype();
         $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
@@ -166,8 +173,9 @@ class ActivityController extends Controller
             ->active()
             ->where('id', '!=', $activity->id)
             ->where('is_template', false)
-            ->select('id', 'title', 'created_by_id')
-            ->orderBy('title')
+            ->select('id', 'title', 'created_by_id', 'created_at')
+            ->latest()
+            ->limit(300)
             ->get();
 
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();

@@ -128,6 +128,11 @@ return [
         'dismissed'   => 'Descartada',
         'snoozed'     => 'Pospuesta',
         'done'        => 'Hecha',
+        'uploaded'    => 'Subido',
+        'editing'     => 'En edición',
+        'reviewed'    => 'Revisado',
+        'reviewing'   => 'En revisión',
+        'deprecated'  => 'Obsoleto',
     ],
 
     'urgent' => 'Urgente',
