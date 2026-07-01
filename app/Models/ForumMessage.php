@@ -35,13 +35,18 @@ class ForumMessage extends Model
         return $this->belongsTo(ForumMessage::class, 'parent_id');
     }
 
-    public function replies()
+    public function replies($userId = null, $team = null)
     {
+        if ($userId === null) {
+            $userId = auth()->id();
+        }
+
+        if ($team === null) {
+            $team = request()?->route('team');
+        }
+
         return $this->hasMany(ForumMessage::class, 'parent_id')
-            ->where(function($query) {
-                $userId = auth()->id();
-                $team = request()->route('team'); // Get current team from route
-                
+            ->where(function($query) use ($userId, $team) {
                 $query->where('is_private', false)
                     ->orWhere('user_id', $userId);
 

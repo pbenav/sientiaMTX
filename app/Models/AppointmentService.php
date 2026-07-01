@@ -25,6 +25,7 @@ class AppointmentService extends Model
         'sort_order',
         'translations',
         'custom_fields',
+        'data_protection',
     ];
 
     const MODALITIES = [
@@ -42,6 +43,7 @@ class AppointmentService extends Model
         'is_active'               => 'boolean',
         'translations'            => 'array',
         'custom_fields'           => 'array',
+        'data_protection'         => 'array',
     ];
 
     /**
@@ -116,11 +118,6 @@ class AppointmentService extends Model
     public function blocks(): HasMany
     {
         return $this->hasMany(AppointmentBlock::class, 'service_id');
-    }
-
-    protected static function booted()
-    {
-        // Lifecycle events are now handled by App\Observers\AppointmentServiceObserver
     }
 
     public function getEffectiveSlotDuration(): int

@@ -21,7 +21,7 @@
                 }
             } else {
                 if (Alpine.store('timer')) Alpine.store('timer').stop();
-                window.location.reload();
+                window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: this.taskId } }));
             }
             this.loading = false;
         })

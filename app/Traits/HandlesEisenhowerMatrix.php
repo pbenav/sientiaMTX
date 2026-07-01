@@ -3,16 +3,17 @@
 namespace App\Traits;
 
 use App\Models\Task;
+use App\Models\Activity;
 
 trait HandlesEisenhowerMatrix
 {
     /**
      * Determine which quadrant a task belongs to based on priority and urgency.
      * 
-     * @param Task $task
+     * @param Task|Activity $task
      * @return int
      */
-    public function getQuadrant(Task $task): int
+    public function getQuadrant(Task|Activity $task): int
     {
         // Strictly match the Controller mapping: 
         // Important = high/critical, Not Important = low/medium

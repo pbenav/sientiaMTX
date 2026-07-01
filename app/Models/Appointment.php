@@ -20,6 +20,7 @@ class Appointment extends Model
         'status',
         'member_notes',
         'task_id',
+        'activity_id',
         'expediente_id',
         'google_event_id',
         'google_task_id',
@@ -80,6 +81,11 @@ class Appointment extends Model
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class, 'task_id');
+    }
+
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(Activity::class, 'activity_id');
     }
 
     public function expediente(): BelongsTo

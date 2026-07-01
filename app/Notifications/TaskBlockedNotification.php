@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -22,7 +23,7 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, User $reportedBy)
+    public function __construct(Task|Activity $task, User $reportedBy)
     {
         $this->task = $task;
         $this->reportedBy = $reportedBy;
@@ -46,7 +47,7 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return [
             'text' => "🚫 *¡TAREA BLOQUEADA!*\n\n" .
@@ -62,7 +63,7 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return (new MailMessage)
             ->subject(__('tasks.notifications.blocked_alert'))

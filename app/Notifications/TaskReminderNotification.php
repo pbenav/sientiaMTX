@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +21,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task)
+    public function __construct(Task|Activity $task)
     {
         $this->task = $task;
     }
@@ -30,7 +31,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         
         $now = now();
         $isOverdue = $this->task->due_date->isPast();
@@ -89,7 +90,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         
         return [
             'text' => "🔔 *Recordatorio de Tarea*\n\n" . 

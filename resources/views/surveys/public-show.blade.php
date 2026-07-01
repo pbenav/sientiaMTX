@@ -237,7 +237,41 @@
                                 @endforeach
                             </div>
 
-                            <div class="mt-10 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+                            @if(isset($survey->data_protection['enabled']) && $survey->data_protection['enabled'])
+                                @php
+                                    $dpTemplate = $survey->data_protection['template'] ?? '';
+                                    $dpTemplate = str_replace(
+                                        ['{responsable}', '{correo}', '{direccion}', '{url}', '{finalidad}'],
+                                        [
+                                            '<strong>' . e($survey->data_protection['responsible'] ?? 'No especificado') . '</strong>',
+                                            '<strong>' . e($survey->data_protection['dpo_email'] ?? 'No especificado') . '</strong>',
+                                            '<strong>' . e($survey->data_protection['address'] ?? 'No especificado') . '</strong>',
+                                            !empty($survey->data_protection['url']) ? '<a href="'.e($survey->data_protection['url']).'" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">Enlace a la política ampliada</a>' : '<strong>No especificado</strong>',
+                                            '<strong>' . e($survey->data_protection['purpose'] ?? 'No especificado') . '</strong>',
+                                        ],
+                                        e($dpTemplate)
+                                    );
+                                    // Hack since we escaped everything but we injected strong/a tags.
+                                    $dpTemplate = str_replace(['&lt;strong&gt;', '&lt;/strong&gt;', '&lt;a href=', '&quot;', ' target=_blank class=text-indigo-600 hover:text-indigo-800 underline&gt;', '&lt;/a&gt;'], ['<strong>', '</strong>', '<a href=', '"', ' target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">', '</a>'], $dpTemplate);
+                                @endphp
+                                <div class="mt-10 pt-8 border-t border-gray-100 dark:border-gray-800">
+                                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
+                                        <div class="flex items-start gap-3 mb-3">
+                                            <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg shrink-0">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                                            </div>
+                                            <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mt-0.5">Protección de Datos</h4>
+                                        </div>
+                                        <div class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
+                                            {!! nl2br($dpTemplate) !!}
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="mt-10 pt-8 border-t border-gray-100 dark:border-gray-800"></div>
+                            @endif
+
+                            <div class="mt-8 flex justify-center">
                                 <button type="submit" 
                                         class="group relative inline-flex items-center justify-center px-10 py-4 font-bold text-white tracking-wider uppercase transition-all duration-500 ease-in-out transform bg-indigo-600 rounded-2xl hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] overflow-hidden">
                                     <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700"></div>

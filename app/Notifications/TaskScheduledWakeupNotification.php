@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +21,7 @@ class TaskScheduledWakeupNotification extends Notification implements ShouldQueu
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task)
+    public function __construct(Task|Activity $task)
     {
         $this->task = $task;
     }
@@ -43,7 +44,7 @@ class TaskScheduledWakeupNotification extends Notification implements ShouldQueu
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return [
             'text' => "⏳ *¡TAREA LISTA PARA INICIAR!*\n\n" .
@@ -59,7 +60,7 @@ class TaskScheduledWakeupNotification extends Notification implements ShouldQueu
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return (new MailMessage)
             ->subject(__('¡Tarea lista para iniciar: :title!', ['title' => $this->task->title]))

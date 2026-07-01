@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 
 class AppointmentCancelledMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
     public function __construct(
         public Appointment $appointment,
         public ?string $reason = null

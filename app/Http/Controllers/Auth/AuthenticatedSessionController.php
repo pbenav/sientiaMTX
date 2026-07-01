@@ -113,10 +113,9 @@ class AuthenticatedSessionController extends Controller
                 ->count();
 
             if ($activeSessionsCount === 0) {
-                // Hacer logout en la última o única sesión abierta apaga todos los contadores de tarea y jornada en MTX
+                // Al cerrar la última o única sesión activa, detenemos todos los contadores en MTX y en CTH
                 $user->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
 
-                // Y se interpreta como un cierre de tramo en CTH
                 if ($user->sync_with_cth) {
                     \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'stop');
                 }

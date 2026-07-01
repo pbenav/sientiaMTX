@@ -230,170 +230,148 @@
     </div>
 
     <!-- ================= 🛠️ MODAL DE EDICIÓN (CRUD) ================= -->
-    <template x-if="showModal && getActiveContext()">
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-            <div @click.outside="closeModal()" class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[2.5rem] shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-8 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100">
-                
-                <!-- Header del Modal -->
-                <div class="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
-                    <div class="flex items-center gap-4">
-                        <span class="text-3xl" x-text="getActiveContext().type === 'global' ? '🌍' : '👥'"></span>
-                        <div>
-                            <h4 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight" style="font-family: 'Space Grotesk', sans-serif" x-text="'Configurar: ' + getActiveContext().name"></h4>
-                            <p class="text-xs text-gray-400 font-medium" x-text="getActiveContext().type === 'global' ? 'Preferencias globales de tu cuenta' : 'Ajustes dedicados de integración para este equipo'"></p>
-                        </div>
+    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div @click.outside="closeModal()" class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[2.5rem] shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-8 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100">
+            
+            <!-- Header del Modal -->
+            <div class="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+                <div class="flex items-center gap-4">
+                    <span class="text-3xl" x-text="getActiveContext()?.type === 'global' ? '🌍' : '👥'"></span>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight" style="font-family: 'Space Grotesk', sans-serif" x-text="'Configurar: ' + (getActiveContext()?.name || '')"></h4>
+                        <p class="text-xs text-gray-400 font-medium" x-text="getActiveContext()?.type === 'global' ? 'Preferencias globales de tu cuenta' : 'Ajustes dedicados de integración para este equipo'"></p>
                     </div>
-                    <button @click="closeModal()" type="button" class="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
                 </div>
+                <button @click="closeModal()" type="button" class="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
 
-                <!-- Body del Modal (Scrollable) -->
-                <div class="p-6 sm:p-8 overflow-y-auto space-y-8 flex-1">
-                    
-                    <!-- Tarjeta Google Workspace (Sólo en Modal de Equipo) -->
-                    <template x-if="getActiveContext().type === 'team'">
-                        <div class="p-6 bg-gray-50/80 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div class="flex items-center gap-4">
-                                    <div class="p-2.5 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 shrink-0">
-                                        <svg class="w-7 h-7" viewBox="0 0 48 48">
-                                            <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/><path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/><path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h5 class="text-sm font-bold text-gray-900 dark:text-white">Google Workspace</h5>
-                                        <template x-if="getActiveContext().google_connected">
-                                            <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
-                                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                                                <span x-text="getActiveContext().google_email"></span>
-                                            </p>
-                                        </template>
-                                        <template x-if="!getActiveContext().google_connected">
-                                            <p class="text-[11px] text-gray-400 font-medium mt-0.5">Sin vincular con Google Drive / Calendar</p>
-                                        </template>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3 shrink-0">
-                                    <template x-if="getActiveContext().google_connected">
-                                        <div class="flex items-center gap-3">
-                                            <a :href="'{{ route('google.sync') }}?team_id=' + getActiveContext().id" class="px-4 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                                Sincronizar
-                                            </a>
-                                            <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                                            <form method="POST" :action="'{{ route('google.disconnect') }}?team_id=' + getActiveContext().id">
-                                                @csrf
-                                                <button type="submit" class="text-[10px] text-gray-400 hover:text-rose-600 font-bold uppercase transition-colors">Desvincular</button>
-                                            </form>
-                                        </div>
-                                    </template>
-                                    <template x-if="!getActiveContext().google_connected">
-                                        <button @click="window.openGoogleAuth(getActiveContext().id)" type="button" class="px-6 py-2.5 bg-violet-600 text-white text-[11px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-violet-500/20">
-                                            Vincular Google Workspace
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-
-                    <!-- Formulario IA Gemini -->
-                    <form method="POST" action="{{ route('profile.ai.update') }}" id="modal-ai-form" class="space-y-6">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="team_id" :value="form.team_id">
-
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 flex items-center justify-center bg-violet-100 dark:bg-violet-900/50 rounded-xl text-violet-600 shrink-0">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <!-- Body del Modal (Scrollable) -->
+            <div class="p-6 sm:p-8 overflow-y-auto space-y-8 flex-1">
+                
+                <!-- Tarjeta Google Workspace (Sólo en Modal de Equipo) -->
+                <div x-show="getActiveContext()?.type === 'team'" class="p-6 bg-gray-50/80 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="p-2.5 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 shrink-0">
+                                <svg class="w-7 h-7" viewBox="0 0 48 48">
+                                    <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/><path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/><path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                </svg>
                             </div>
                             <div>
-                                <h5 class="text-sm font-bold text-gray-900 dark:text-white">Motor IA Gemini</h5>
-                                <p class="text-[10px] text-gray-400 font-medium">Ajusta la potencia y el modelo cognitivo para este espacio</p>
+                                <h5 class="text-sm font-bold text-gray-900 dark:text-white">Google Workspace</h5>
+                                <p x-show="getActiveContext()?.google_connected" class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
+                                    <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                    <span x-text="getActiveContext()?.google_email"></span>
+                                </p>
+                                <p x-show="!getActiveContext()?.google_connected" class="text-[11px] text-gray-400 font-medium mt-0.5">Sin vincular con Google Drive / Calendar</p>
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Clave API Gemini</label>
-                                <input name="api_key" type="password" x-model="form.api_key" @input.debounce.500ms="fetchModels()" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner" placeholder="••••••••••••••••">
-                                <p class="text-[10px] text-gray-400 italic px-1" x-text="getActiveContext().type === 'global' ? 'Clave maestra de Google Gemini AI para tu perfil.' : 'Si lo dejas vacío, se utilizará tu Clave Global.'"></p>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <div x-show="getActiveContext()?.google_connected" class="flex items-center gap-3">
+                                <a :href="'{{ route('google.sync') }}?team_id=' + (getActiveContext()?.id || '')" class="px-4 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    Sincronizar
+                                </a>
+                                <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                <form method="POST" :action="'{{ route('google.disconnect') }}?team_id=' + (getActiveContext()?.id || '')">
+                                    @csrf
+                                    <button type="submit" class="text-[10px] text-gray-400 hover:text-rose-600 font-bold uppercase transition-colors">Desvincular</button>
+                                </form>
                             </div>
-                            <div class="space-y-2">
-                                <div class="flex items-center justify-between px-1">
-                                    <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Seleccionado</label>
-                                    <div class="flex items-center gap-2">
-                                        <span x-show="loadingModels" class="flex h-2 w-2 relative">
-                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
-                                        </span>
-                                        <button type="button" @click="fetchModels()" :disabled="loadingModels" class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-gray-400 hover:text-violet-600 transition-all text-[9px] font-black uppercase tracking-widest">
-                                            <svg class="w-2.5 h-2.5" :class="loadingModels ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                            </svg>
-                                            Actualizar
-                                        </button>
-                                    </div>
+                            <button x-show="!getActiveContext()?.google_connected" @click="window.openGoogleAuth(getActiveContext()?.id)" type="button" class="px-6 py-2.5 bg-violet-600 text-white text-[11px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-violet-500/20">
+                                Vincular Google Workspace
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario IA Gemini -->
+                <form method="POST" action="{{ route('profile.ai.update') }}" id="modal-ai-form" class="space-y-6">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="team_id" :value="form.team_id">
+
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 flex items-center justify-center bg-violet-100 dark:bg-violet-900/50 rounded-xl text-violet-600 shrink-0">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold text-gray-900 dark:text-white">Motor IA Gemini</h5>
+                            <p class="text-[10px] text-gray-400 font-medium">Ajusta la potencia y el modelo cognitivo para este espacio</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest px-1">Clave API Gemini</label>
+                            <input name="api_key" type="password" x-model="form.api_key" @input.debounce.500ms="fetchModels()" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner" placeholder="••••••••••••••••">
+                            <p class="text-[10px] text-gray-400 italic px-1" x-text="getActiveContext()?.type === 'global' ? 'Clave maestra de Google Gemini AI para tu perfil.' : 'Si lo dejas vacío, se utilizará tu Clave Global.'"></p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between px-1">
+                                <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Modelo Seleccionado</label>
+                                <div class="flex items-center gap-2">
+                                    <span x-show="loadingModels" class="flex h-2 w-2 relative">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                                    </span>
+                                    <button type="button" @click="fetchModels()" :disabled="loadingModels" class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-gray-400 hover:text-violet-600 transition-all text-[9px] font-black uppercase tracking-widest">
+                                        <svg class="w-2.5 h-2.5" :class="loadingModels ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Actualizar
+                                    </button>
                                 </div>
-                                <select name="ai_model" x-model="form.ai_model" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner">
-                                    <template x-if="getActiveContext().type === 'team'">
-                                        <option value="">🌐 Usar modelo por defecto / Global</option>
+                            </div>
+                            <select name="ai_model" x-model="form.ai_model" class="w-full text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-violet-500 shadow-inner">
+                                <option x-show="getActiveContext()?.type === 'team'" value="">🌐 Usar modelo por defecto / Global</option>
+                                <option x-show="getActiveContext()?.type === 'global' && !form.api_key" value="">⚠️ Introduce una clave para cargar modelos</option>
+                                <option x-show="loadingModels" value="">⏳ Conectando con Google Gemini...</option>
+                                <optgroup x-show="!loadingModels && availableModels.length > 0" label="Modelos disponibles">
+                                    <template x-for="model in availableModels" :key="model.id">
+                                        <option :value="model.id" x-text="model.display_name" :selected="form.ai_model === model.id"></option>
                                     </template>
-                                    <template x-if="getActiveContext().type === 'global' && !form.api_key">
-                                        <option value="">⚠️ Introduce una clave para cargar modelos</option>
-                                    </template>
-                                    <template x-if="loadingModels">
-                                        <option value="">⏳ Conectando con Google Gemini...</option>
-                                    </template>
-                                    <template x-if="!loadingModels && availableModels.length > 0">
-                                        <optgroup label="Modelos disponibles">
-                                            <template x-for="model in availableModels" :key="model.id">
-                                                <option :value="model.id" x-text="model.display_name" :selected="form.ai_model === model.id"></option>
-                                            </template>
-                                        </optgroup>
-                                    </template>
-                                    <template x-if="!loadingModels && availableModels.length === 0 && (form.api_key || getActiveContext().type === 'team')">
-                                        <option value="">⚠️ No se encontraron modelos o usa clave global</option>
-                                    </template>
-                                </select>
+                                </optgroup>
+                                <option x-show="!loadingModels && availableModels.length === 0 && (form.api_key || getActiveContext()?.type === 'team')" value="">⚠️ No se encontraron modelos o usa clave global</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <div class="flex flex-wrap gap-6">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="form.mood_tracking_enabled" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
+                                <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="form.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
+                                <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
+                            </label>
+                            <div x-show="getActiveContext()?.type === 'global'">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="apply_to_all" value="1" x-model="form.apply_to_all" class="w-5 h-5 rounded-lg border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-600 focus:ring-amber-500">
+                                    <span class="text-[10px] font-black text-amber-600 uppercase group-hover:text-amber-700 transition-colors">💥 Aplicar a TODOS mis equipos</span>
+                                </label>
                             </div>
                         </div>
+                    </div>
+                </form>
+            </div>
 
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                            <div class="flex flex-wrap gap-6">
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="form.mood_tracking_enabled" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                                    <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
-                                </label>
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="form.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                                    <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
-                                </label>
-                                <template x-if="getActiveContext().type === 'global'">
-                                    <label class="flex items-center gap-3 cursor-pointer group">
-                                        <input type="checkbox" name="apply_to_all" value="1" x-model="form.apply_to_all" class="w-5 h-5 rounded-lg border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-600 focus:ring-amber-500">
-                                        <span class="text-[10px] font-black text-amber-600 uppercase group-hover:text-amber-700 transition-colors">💥 Aplicar a TODOS mis equipos</span>
-                                    </label>
-                                </template>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Footer del Modal -->
-                <div class="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-4">
-                    <button @click="closeModal()" type="button" class="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-black uppercase text-[10px] rounded-2xl hover:bg-gray-300 dark:hover:bg-gray-700 transition-all">
-                        Cancelar
-                    </button>
-                    <button @click="document.getElementById('modal-ai-form').submit()" type="button" :disabled="loadingModels" :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-2xl transition-all shadow-lg">
-                        <span x-show="!loadingModels">Guardar Cambios</span>
-                        <span x-show="loadingModels">Cargando...</span>
-                    </button>
-                </div>
+            <!-- Footer del Modal -->
+            <div class="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-4">
+                <button @click="closeModal()" type="button" class="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-black uppercase text-[10px] rounded-2xl hover:bg-gray-300 dark:hover:bg-gray-700 transition-all">
+                    Cancelar
+                </button>
+                <button @click="document.getElementById('modal-ai-form').submit()" type="button" :disabled="loadingModels" :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-2xl transition-all shadow-lg">
+                    <span x-show="!loadingModels">Guardar Cambios</span>
+                    <span x-show="loadingModels">Cargando...</span>
+                </button>
             </div>
         </div>
-    </template>
+    </div>
 </section>
 
 <!-- 🔌 SISTEMAS DE CHAT (Habilitar / Deshabilitar) -->
@@ -490,7 +468,16 @@
 
         @if($notifSettings['telegram'] ?? false)
         <!-- 📱 TELEGRAM NOTIFICATIONS (Global Maestro) -->
-        <div x-transition class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-6">
+        <div x-transition x-data="{
+            userTelegramId: {{ !empty($user->telegram_chat_id) ? 'true' : 'false' }},
+            testTelegram() {
+                if (typeof window.testTelegram === 'function') {
+                    window.testTelegram();
+                } else {
+                    console.warn('testTelegram no está definido en el contexto actual.');
+                }
+            }
+        }" class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-6">
             <form method="POST" action="{{ route('profile.notifications.update') }}" class="space-y-4">
                 @csrf
                 @method('PATCH')
@@ -506,9 +493,9 @@
                             <p class="text-[10px] text-gray-400 font-medium">Recibe alertas críticas y resúmenes privados</p>
                         </div>
                     </div>
-                    <template x-if="userTelegramId">
+                    <div x-show="userTelegramId">
                         <span class="px-3 py-1 bg-sky-50 dark:bg-sky-900/20 text-sky-600 text-[10px] font-black uppercase rounded-lg border border-sky-100 dark:border-sky-800">Vinculado</span>
-                    </template>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start bg-gray-50/50 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">

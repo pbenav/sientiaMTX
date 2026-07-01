@@ -1775,13 +1775,13 @@
                 return false;
             },
 
-            async submitServerTransfer(target, rawContent, title = null) {
+            async submitServerTransfer(target, rawContent, title = null, activityType = null) {
                 const isDark = document.documentElement.classList.contains('dark');
                 let url = '';
                 
                 // Re-verify taskId from URL if it's missing in state just before transfer
                 if (!this.taskId) {
-                    const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
+                    const taskMatch = window.location.pathname.match(/\/(?:tasks|activities)\/(\d+)/);
                     if (taskMatch) this.taskId = taskMatch[1];
                 }
 
@@ -1794,7 +1794,7 @@
                     url = url.replace(/\/$/, ""); 
                 } else {
                     if (!this.taskId) {
-                        const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
+                        const taskMatch = window.location.pathname.match(/\/(?:tasks|activities)\/(\d+)/);
                         if (taskMatch) this.taskId = taskMatch[1];
                     }
                     
@@ -1803,7 +1803,7 @@
                         return;
                     }
 
-                    url = '{{ route('ai.transfer', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'
+                    url = '{{ route('ai.transfer', ['team' => 'TEAM_ID', 'taskId' => 'TASK_ID']) }}'
                         .replace('TEAM_ID', this.teamId || '')
                         .replace('TASK_ID', this.taskId || '');
                 }
@@ -1818,7 +1818,12 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ content: rawContent, target: target, title: title })
+                        body: JSON.stringify({ 
+                            content: rawContent, 
+                            target: target, 
+                            title: title,
+                            activity_type: activityType
+                        })
                     });
 
                     const data = await response.json();
@@ -1828,8 +1833,8 @@
 
                         if (target === 'task' && data.task_id) {
                             let teamId = data.team_id || this.teamId || 0;
-                            let editUrl = '{{ route('teams.tasks.edit', ['team' => 'TEAM_ID', 'task' => 'TASK_ID']) }}'.replace('TEAM_ID', teamId).replace('TASK_ID', data.task_id);
-                            Swal.fire({ title: '¡Tarea Creada!', text: 'Redirigiendo...', icon: 'success', timer: 1500, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => { window.location.href = editUrl; });
+                            let editUrl = '{{ route('teams.activities.edit', ['team' => 'TEAM_ID', 'activity' => 'TASK_ID']) }}'.replace('TEAM_ID', teamId).replace('TASK_ID', data.task_id);
+                            Swal.fire({ title: '¡Actividad Creada!', text: 'Redirigiendo...', icon: 'success', timer: 1500, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => { window.location.href = editUrl; });
                         } else {
                             Swal.fire({ title: '¡Hecho!', text: data.message, icon: 'success', timer: 2000, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => {
                                 if (['description', 'observations', 'private_note', 'observations_append'].includes(target)) window.location.reload();
@@ -1863,13 +1868,13 @@
             <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
             </div>
-            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Tarea</div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Actividad</div>
             </button>
             <button type="button" onclick="window._aiSelect1('current-task')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 transition-all text-center group">
             <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
             </div>
-            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Tarea Actual</div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Actividad Actual</div>
             </button>
             <button type="button" onclick="window._aiSelect1('quick-note')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 transition-all text-center group">
             <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
@@ -1908,7 +1913,72 @@
             if (!firstLevelSelection) return;
 
             if (firstLevelSelection === 'new-task') {
-            this.submitServerTransfer('task', rawPayload);
+                let typeSelection = null;
+                await Swal.fire({
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">¿Qué tipo de actividad?</span>',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    showConfirmButton: false,
+                    html: `
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-2">
+                            <!-- Tarea -->
+                            <button type="button" onclick="window._aiSelectType('task')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-indigo-100 dark:border-indigo-900/30 bg-white dark:bg-slate-900 hover:border-indigo-600 transition-all text-center group">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Tarea</div>
+                            </button>
+
+                            <!-- Documento -->
+                            <button type="button" onclick="window._aiSelectType('document')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-orange-100 dark:border-orange-900/30 bg-white dark:bg-slate-900 hover:border-orange-600 transition-all text-center group">
+                                <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Documento</div>
+                            </button>
+
+                            <!-- Nota -->
+                            <button type="button" onclick="window._aiSelectType('note')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 transition-all text-center group">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nota</div>
+                            </button>
+
+                            <!-- Decisión -->
+                            <button type="button" onclick="window._aiSelectType('decision')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-rose-100 dark:border-rose-900/30 bg-white dark:bg-slate-900 hover:border-rose-600 transition-all text-center group">
+                                <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 group-hover:scale-110 transition-transform">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Decisión</div>
+                            </button>
+
+                            <!-- Reunión -->
+                            <button type="button" onclick="window._aiSelectType('meeting')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-slate-900 hover:border-emerald-600 transition-all text-center group">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Reunión</div>
+                            </button>
+
+                            <!-- Recordatorio -->
+                            <button type="button" onclick="window._aiSelectType('reminder')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-fuchsia-100 dark:border-fuchsia-900/30 bg-white dark:bg-slate-900 hover:border-fuchsia-600 transition-all text-center group">
+                                <div class="w-10 h-10 rounded-xl bg-fuchsia-100 dark:bg-fuchsia-900/50 flex items-center justify-center text-fuchsia-600 group-hover:scale-110 transition-transform">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                </div>
+                                <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Recordatorio</div>
+                            </button>
+                        </div>
+                    `,
+                    didOpen: () => {
+                        window._aiSelectType = (val) => {
+                            typeSelection = val;
+                            Swal.clickConfirm();
+                        };
+                    }
+                });
+
+                if (!typeSelection) return;
+                this.submitServerTransfer('task', rawPayload, null, typeSelection);
             } else if (firstLevelSelection === 'quick-note') {
             this.submitServerTransfer('quick-note', rawPayload);
             } else if (firstLevelSelection === 'active-editor') {
@@ -1930,7 +2000,7 @@
                 this.injectMicrosite(micrositeData);
             } else if (firstLevelSelection === 'current-task') {
             if (!this.taskId) {
-                        const taskMatch = window.location.pathname.match(/\/tasks\/(\d+)/);
+                        const taskMatch = window.location.pathname.match(/\/(?:tasks|activities)\/(\d+)/);
             if (taskMatch) this.taskId = taskMatch[1];
             }
             if (!this.taskId) {
@@ -1949,13 +2019,13 @@
             <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
-            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Resumen</div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Descripción / Principal</div>
             </button>
             <button type="button" onclick="window._aiSelect2('observations')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 transition-all text-left group">
             <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </div>
-            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Desarrollo</div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Desarrollo / Nota de Equipo</div>
             </button>
             <button type="button" onclick="window._aiSelect2('private_note')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-slate-100 bg-white dark:bg-slate-900 hover:border-slate-600 transition-all text-left group">
             <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">

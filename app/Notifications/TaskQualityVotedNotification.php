@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -16,7 +17,7 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
     public $voter;
     public $score;
 
-    public function __construct(Task $task, User $voter, int $score)
+    public function __construct(Task|Activity $task, User $voter, int $score)
     {
         $this->task = $task;
         $this->voter = $voter;

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Expediente;
 use App\Models\Team;
 use App\Models\Task;
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class ExpedienteController extends Controller
 
         $query = $team->expedientes()
             ->with(['creator'])
-            ->withCount('rootTasks as tasks_count');
+            ->withCount('rootActivities as activities_count');
 
         $user = auth()->user();
 
@@ -34,9 +35,8 @@ class ExpedienteController extends Controller
               ->orWhere('assigned_user_id', $user->id)
               ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
               ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
-              ->orWhereHas('tasks', function ($sub) use ($user) {
-                  $sub->where('assigned_user_id', $user->id)
-                      ->orWhereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
+              ->orWhereHas('activities', function ($sub) use ($user) {
+                  $sub->whereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))
                       ->orWhereHas('assignedGroups', fn($q) => $q->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
               });
         });
@@ -159,27 +159,26 @@ class ExpedienteController extends Controller
                 || $expediente->assignedTo()->where('users.id', $user->id)->exists()
                 || $expediente->assignedGroups()->whereHas('users', fn($u) => $u->where('users.id', $user->id))->exists();
 
-            $isTaskAssigned = $expediente->tasks()->where(function ($q) use ($user) {
-                $q->where('assigned_user_id', $user->id)
-                  ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
+            $isActivityAssigned = $expediente->activities()->where(function ($q) use ($user) {
+                $q->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
                   ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             })->exists();
             
-            if (!$isCreator && !$isDirectlyAssigned && !$isTaskAssigned) {
+            if (!$isCreator && !$isDirectlyAssigned && !$isActivityAssigned) {
                 return redirect()->route('teams.expedientes.index', $team)
                     ->with('warning', 'Este expediente es privado y solo es accesible de forma estricta para sus responsables y miembros asignados.');
             }
         }
 
-        $expediente->load(['creator', 'rootTasks.assignedUser', 'rootTasks.creator', 'rootTasks.children.assignedUser', 'attachments.user', 'relatedExpedientes']);
+        $expediente->load(['creator', 'rootActivities.assignedTo', 'rootActivities.creator', 'rootActivities.children.assignedTo', 'attachments.user', 'relatedExpedientes']);
 
-        // Get all tasks from the team that aren't currently attached to this expediente.
+        // Get all activities from the team that aren't currently attached to this expediente.
         $availableTasks = $team->tasks()
             ->where(function ($query) use ($expediente) {
                 $query->whereNull('expediente_id')
                       ->orWhere('expediente_id', '!=', $expediente->id);
             })
-            ->where('parent_id', null) // avoid subtasks or similar if needed? Let's just load all standard tasks
+            ->whereNull('parent_id') // avoid subactivities
             ->with('expediente') // so we can show which dossier it already has, if any
             ->orderBy('created_at', 'desc')
             ->get();
@@ -245,21 +244,21 @@ class ExpedienteController extends Controller
 
         $validated = $request->validate([
             'task_ids' => 'required|array',
-            'task_ids.*' => 'exists:tasks,id',
+            'task_ids.*' => 'exists:activities,id',
         ]);
 
-        // Filter only tasks belonging to THIS team to prevent security bypasses
+        // Filter only activities belonging to THIS team to prevent security bypasses
         $updatedCount = $team->tasks()
             ->whereIn('id', $validated['task_ids'])
             ->update(['expediente_id' => $expediente->id]);
 
-        return redirect()->back()->with('success', "Se han vinculado $updatedCount tareas correctamente.");
+        return redirect()->back()->with('success', "Se han vinculado $updatedCount actividades correctamente.");
     }
 
     /**
-     * Unlink a specific task from the expediente.
+     * Unlink a specific activity from the expediente.
      */
-    public function unlinkTask(Team $team, Expediente $expediente, Task $task)
+    public function unlinkTask(Team $team, Expediente $expediente, Activity $task)
     {
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
@@ -274,10 +273,10 @@ class ExpedienteController extends Controller
 
         // If it's a template, cascade the dissociation to all instances
         if ($task->is_template) {
-            $task->instances()->update(['expediente_id' => null]);
+            $task->children()->update(['expediente_id' => null]);
         }
 
-        return redirect()->back()->with('success', "La tarea '{$task->title}' ha sido desvinculada correctamente.");
+        return redirect()->back()->with('success', "La actividad '{$task->title}' ha sido desvinculada correctamente.");
     }
 
     /**

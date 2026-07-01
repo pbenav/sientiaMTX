@@ -161,6 +161,14 @@ class SurveyController extends Controller
             'questions.*.options.*.id' => 'nullable', 
             'questions.*.options.*.label' => 'nullable|string|max:255',
             'questions.*.is_required' => 'boolean',
+            'data_protection' => 'nullable|array',
+            'data_protection.enabled' => 'nullable|boolean',
+            'data_protection.responsible' => 'nullable|string|max:255',
+            'data_protection.address' => 'nullable|string|max:255',
+            'data_protection.dpo_email' => 'nullable|email|max:255',
+            'data_protection.url' => 'nullable|url|max:500',
+            'data_protection.purpose' => 'nullable|string',
+            'data_protection.template' => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($team, $validated, $request) {
@@ -175,6 +183,15 @@ class SurveyController extends Controller
                 'show_results_before_voting' => $request->boolean('show_results_before_voting'),
                 'expires_at' => $validated['expires_at'] ?? null,
                 'published_at' => now(),
+                'data_protection' => [
+                    'enabled' => $request->boolean('data_protection.enabled'),
+                    'responsible' => $validated['data_protection']['responsible'] ?? null,
+                    'address' => $validated['data_protection']['address'] ?? null,
+                    'dpo_email' => $validated['data_protection']['dpo_email'] ?? null,
+                    'url' => $validated['data_protection']['url'] ?? null,
+                    'purpose' => $validated['data_protection']['purpose'] ?? null,
+                    'template' => $validated['data_protection']['template'] ?? null,
+                ],
             ];
 
             $survey = Survey::create($data);
@@ -304,6 +321,14 @@ class SurveyController extends Controller
             'questions.*.options.*.id' => 'nullable|exists:survey_options,id',
             'questions.*.options.*.label' => 'nullable|string|max:255',
             'questions.*.is_required' => 'boolean',
+            'data_protection' => 'nullable|array',
+            'data_protection.enabled' => 'nullable|boolean',
+            'data_protection.responsible' => 'nullable|string|max:255',
+            'data_protection.address' => 'nullable|string|max:255',
+            'data_protection.dpo_email' => 'nullable|email|max:255',
+            'data_protection.url' => 'nullable|url|max:500',
+            'data_protection.purpose' => 'nullable|string',
+            'data_protection.template' => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($team, $survey, $validated, $request) {
@@ -315,6 +340,15 @@ class SurveyController extends Controller
                 'allow_multiple_votes' => $request->boolean('allow_multiple_votes'),
                 'show_results_before_voting' => $request->boolean('show_results_before_voting'),
                 'expires_at' => $validated['expires_at'] ?? null,
+                'data_protection' => [
+                    'enabled' => $request->boolean('data_protection.enabled'),
+                    'responsible' => $validated['data_protection']['responsible'] ?? null,
+                    'address' => $validated['data_protection']['address'] ?? null,
+                    'dpo_email' => $validated['data_protection']['dpo_email'] ?? null,
+                    'url' => $validated['data_protection']['url'] ?? null,
+                    'purpose' => $validated['data_protection']['purpose'] ?? null,
+                    'template' => $validated['data_protection']['template'] ?? null,
+                ],
             ]);
 
             $keepQuestionIds = [];

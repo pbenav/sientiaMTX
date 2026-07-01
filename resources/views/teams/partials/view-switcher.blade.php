@@ -1,7 +1,7 @@
 @php
     $teamId = $team->id;
     $isMatrix = request()->routeIs('teams.eisenhower');
-    $isTaskList = request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show');
+    $isTaskList = request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') || request()->routeIs('teams.activities.*');
     $isGantt = request()->routeIs('teams.gantt');
     $isKanban = request()->routeIs('teams.kanban');
     $isForum = request()->routeIs('teams.forum.*');
@@ -32,8 +32,8 @@
                 'divider' => true,
             ],
             [
-                'name' => __('navigation.task_list'),
-                'route' => route('teams.tasks.index', $teamId),
+                'name' => 'Actividades',
+                'route' => route('teams.activities.index', $teamId),
                 'active' => $isTaskList,
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />',
             ],
@@ -127,7 +127,9 @@
                 <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 shrink-0"></div>
                 <div class="flex items-center gap-1 shrink-0 ml-1">
                     @include('teams.partials.hide-completed-toggle')
-                    @include('teams.partials.subtasks-visibility-toggle')
+                    @if($isTaskList)
+                        @include('teams.partials.subtasks-visibility-toggle')
+                    @endif
                 </div>
             @endif
         </div>

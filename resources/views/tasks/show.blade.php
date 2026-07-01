@@ -40,8 +40,12 @@
                 </a>
                 <div class="min-w-0 flex-1">
                     @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight">
+                    <h1 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
                         {{ __('tasks.detail') }}
+                        <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50 shadow-sm flex items-center gap-1.5 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {{ __('Tarea (Legacy)') }}
+                        </span>
                     </h1>
                     <x-demo-hint>
                         La ficha técnica de la tarea centraliza toda la ejecución: permite el registro de tiempos (Time-tracking), subdividir el trabajo mediante el desglose, sincronizar fechas con Google Calendar/Tasks y gestionar archivos asociados. Además, facilita la clonación y exportación de tareas (Portabilidad JSON).
@@ -320,6 +324,12 @@
                 </button>
             </form>
 
+            @php
+                $activityMapping = \DB::table('activity_task_mapping')->where('task_id', $task->id)->first();
+                $mappedActivity = $activityMapping ? \App\Models\Activity::find($activityMapping->activity_id) : null;
+            @endphp
+
+
             @can('delete', $task)
                 <form id="delete-task-form-{{ $task->id }}" action="{{ route('teams.tasks.destroy', [$team, $task]) }}" method="POST" class="inline">
                     @csrf
@@ -581,6 +591,65 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 lg:pb-0">
         <!-- Main content -->
         <div class="lg:col-span-2 space-y-5">
+            @if(isset($mappedActivity) && $mappedActivity)
+                @if($mappedActivity->isDeprecatedByConversion())
+                    <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-2 border-amber-500/30 dark:border-amber-500/20 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-amber-500 to-orange-500"></div>
+                        <div class="flex items-start sm:items-center gap-4 pl-2">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30 shadow-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="text-sm font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">Tarea Deprecada (Archivada por Conversión)</h3>
+                                    <span class="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-widest border border-amber-200 dark:border-amber-800/50 shadow-sm">
+                                        LEGACY
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
+                                    Esta tarea fue convertida a una nueva actividad unificada. Se ha cerrado y archivado en este formato antiguo para preservar el rastro de auditoría.
+                                </p>
+                                @if($mappedActivity->convertedToActivity)
+                                    <a href="{{ route('teams.activities.show', [$team, $mappedActivity->convertedToActivity]) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline mt-2">
+                                        👉 Ver la nueva actividad resultante ({{ $mappedActivity->convertedToActivity->type_label ?? $mappedActivity->convertedToActivity->type }})
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-2 border-violet-500/30 dark:border-violet-500/20 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-500 to-indigo-500"></div>
+                        <div class="flex items-start sm:items-center gap-4 pl-2">
+                            <div class="w-12 h-12 rounded-2xl bg-violet-500/20 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-500/30 shadow-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="text-sm font-black text-violet-800 dark:text-violet-400 uppercase tracking-wider">Actividad Unificada</h3>
+                                    <span class="px-2.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-[10px] font-black uppercase tracking-widest border border-violet-200 dark:border-violet-800/50 shadow-sm">
+                                        V2 READY
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
+                                    Esta tarea ya ha sido convertida y unificada en el nuevo sistema de Actividades. 
+                                </p>
+                                <a href="{{ route('teams.activities.show', [$team, $mappedActivity]) }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 px-4 py-2 rounded-xl mt-3 transition-colors shadow-sm">
+                                    Ir a la nueva ficha de Actividad
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endif
+
             <!-- Task Name Card -->
             <div
                 class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
@@ -604,7 +673,10 @@
                         </span>
                     @endif
                 </div>
-                <p class="text-xl font-bold text-gray-900 dark:text-white heading leading-tight">
+                <p class="text-xl font-bold text-gray-900 dark:text-white heading leading-tight flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm shrink-0">
+                        {{ __('Tarea') }}
+                    </span>
                     {{ $task->title }}
                 </p>
             </div>
@@ -647,8 +719,8 @@
                             </button>
                         </div>
                     </div>
-                    <div id="description-content"
-                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
+                    <div id="description-content" style="height: 350px; max-height: none; overflow-y: auto;"
+                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed resize-y min-h-[250px] custom-scrollbar pr-4 py-2">
                         {!! str($displayDescription)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     </div>
                 </div>
@@ -682,8 +754,8 @@
                             </button>
                         </div>
                     </div>
-                    <div id="observations-content"
-                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed">
+                    <div id="observations-content" style="height: 350px; max-height: none; overflow-y: auto;"
+                        class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed resize-y min-h-[250px] custom-scrollbar pr-4 py-2">
                         {!! str($displayObservations)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     </div>
                 </div>
@@ -820,7 +892,7 @@
                             </div>
                         </div>
                     @endif
-                    <div class="overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl custom-scrollbar"
+                    <div style="max-height: 500px; overflow-y: auto;" class="overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl custom-scrollbar"
                         x-data="{ 
                             selectedMembers: [],
                             sortKey: 'name', 
@@ -1104,7 +1176,7 @@
                     
                     <form action="{{ route('teams.tasks.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
                         @csrf
-                        <div class="max-h-[500px] overflow-y-auto custom-scrollbar">
+                        <div style="max-height: 400px; overflow-y: auto;" class="max-h-[500px] overflow-y-auto custom-scrollbar">
                             <x-markdown-editor 
                                 name="content" 
                                 id="reply-content-private"
@@ -1274,8 +1346,10 @@
                                         .meta-strip-value { font-size: 9px; font-weight: 700; color: #1e293b; white-space: nowrap; }
 
                                         .content-layout {
-                                            display: grid; grid-template-cols: 1fr 180px; gap: 20px;
+                                            display: flex; gap: 20px;
                                         }
+                                        .main-content { flex: 1; min-width: 0; order: 1; }
+                                        .sidebar-content { width: 180px; flex-shrink: 0; order: 2; }
 
                                         .section { margin-bottom: 12px; }
                                         .section-title { 
@@ -1299,7 +1373,7 @@
                                         .pill { font-size: 7.5px; font-weight: 700; background: #fff; border: 1px solid #e2e8f0; padding: 1px 5px; border-radius: 3px; color: #64748b; }
 
                                         .validation-area {
-                                            margin-top: 15px; display: flex; gap: 40px;
+                                            margin-top: 15px; display: flex; gap: 40px; clear: both;
                                         }
                                         .signature-box { flex: 1; border-top: 1px solid #f1f5f9; padding-top: 4px; min-height: 30px; }
                                         .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }
@@ -1308,11 +1382,16 @@
                                             margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9;
                                             display: flex; justify-content: space-between;
                                             font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase;
+                                            clear: both;
                                         }
                                         
                                         @media print {
                                             html, body { height: auto; }
                                             .sheet { border: none; height: auto; min-height: 0; }
+                                            .content-layout { display: block; }
+                                            .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; }
+                                            .main-content { display: block; }
+                                            .content-layout::after { content: ""; display: table; clear: both; }
                                         }
                                     </style>
                                 </head>
@@ -1360,18 +1439,6 @@
                                         </div>
 
                                         <div class="content-layout">
-                                            <div class="main-content">
-                                                <div class="section">
-                                                    <div class="section-title">Descripción</div>
-                                                    <div class="section-body">${description}</div>
-                                                </div>
-
-                                                <div class="section">
-                                                    <div class="section-title">Observaciones</div>
-                                                    <div class="section-body">${observations}</div>
-                                                </div>
-                                            </div>
-
                                             <aside class="sidebar-content">
                                                 <div class="sidebar-box">
                                                     <div class="sidebar-item">
@@ -1394,6 +1461,18 @@
                                                     </div>
                                                 </div>
                                             </aside>
+
+                                            <div class="main-content">
+                                                <div class="section">
+                                                    <div class="section-title">Descripción</div>
+                                                    <div class="section-body">${description}</div>
+                                                </div>
+
+                                                <div class="section">
+                                                    <div class="section-title">Observaciones</div>
+                                                    <div class="section-body">${observations}</div>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="validation-area">
@@ -1474,8 +1553,8 @@
 
                         {{-- Botón: Nuevo documento (dropdown) --}}
                         @can('update', $task)
-                        <div x-data="{ open: false }" class="relative">
-                            <button type="button" @click="open = !open" @click.outside="open = false"
+                        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                            <button type="button" @click="open = !open"
                                 class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold
                                        bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400
                                        border border-teal-200 dark:border-teal-500/20
@@ -3441,4 +3520,128 @@
         })();
     </script>
 @endpush
+
+    @if(isset($mappedActivity) && $mappedActivity)
+    <!-- MODAL DE CONVERSIÓN DE ACTIVIDAD -->
+    <div x-data="{ 
+        show: false, 
+        targetType: 'task',
+        types: [
+            { id: 'task', label: 'Tarea General', icon: '📝', desc: 'Actividad estándar con seguimiento de urgencia, carga cognitiva y gestión de progreso.' },
+            { id: 'document', label: 'Documento / Base de Conocimiento', icon: '📄', desc: 'Registro centrado en la documentación colaborativa y control de versiones.' },
+            { id: 'link', label: 'Enlace / Recurso Externo', icon: '🔗', desc: 'Referencia a un sitio web, herramienta externa o repositorio de información.' },
+            { id: 'meeting', label: 'Reunión / Encuentro', icon: '🤝', desc: 'Evento programado con modalidad (remota/presencial), duración y ubicación.' },
+            { id: 'reminder', label: 'Recordatorio / Notificación', icon: '🔔', desc: 'Aviso puntual con canales de distribución (Email, Push, etc.).' }
+        ]
+    }"
+        @open-convert-activity-modal.window="show = true"
+        x-show="show"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        x-cloak
+        @click.self="show = false">
+        
+        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left flex flex-col max-h-[90vh]"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95">
+            
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-950/20">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xl">✨</span>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                            {{ __('Convertir Actividad') }}
+                        </h3>
+                    </div>
+                    <p class="text-xs text-gray-500 font-medium">
+                        {{ __('Transforma esta actividad a un nuevo tipo. La original quedará archivada como deprecada para mantener el rastro de auditoría.') }}
+                    </p>
+                </div>
+                <button @click="show = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 rounded-2xl hover:bg-white dark:hover:bg-gray-800 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form action="{{ route('teams.activities.convert', [$team, $mappedActivity]) }}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
+                @csrf
+                <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                    
+                    <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+                        <div class="flex gap-3">
+                            <div class="text-amber-500 mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest mb-1">Aviso de Integridad</h4>
+                                <p class="text-xs text-amber-700/80 dark:text-amber-500/80 leading-relaxed font-medium">
+                                    Solo se conservarán los metadatos y atributos compatibles con el nuevo tipo seleccionado. Los campos exclusivos de "{{ $mappedActivity->type_label ?? 'Tarea' }}" que no existan en el nuevo esquema se descartarán en la nueva versión.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3 ml-1">
+                        Selecciona el nuevo tipo de actividad
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="type in types" :key="type.id">
+                            <label class="relative flex cursor-pointer rounded-2xl border bg-white dark:bg-gray-800/50 p-4 shadow-sm focus:outline-none transition-all group hover:border-violet-300 dark:hover:border-violet-700"
+                                :class="targetType === type.id ? 'border-violet-500 ring-2 ring-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'border-gray-200 dark:border-gray-700'">
+                                
+                                <input type="radio" name="type" :value="type.id" x-model="targetType" class="sr-only">
+                                
+                                <div class="flex w-full items-start justify-between gap-4">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform" 
+                                             :class="targetType === type.id ? 'bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400' : ''"
+                                             x-text="type.icon">
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white mb-1" x-text="type.label"></span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed" x-text="type.desc"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="shrink-0 text-violet-500" x-show="targetType === type.id">
+                                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <circle cx="12" cy="12" r="10" stroke-opacity="0.2" fill="currentColor" fill-opacity="0.1"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                        </template>
+                    </div>
+
+                </div>
+
+                <div class="px-8 py-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex items-center justify-between gap-3 shrink-0">
+                    <button type="button" @click="show = false" class="px-6 py-2.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm active:scale-95">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg shadow-violet-500/25 transition-all active:scale-95 flex items-center gap-2">
+                        <span>Proceder a la Conversión</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
 </x-app-layout>

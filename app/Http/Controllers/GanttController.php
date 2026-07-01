@@ -219,6 +219,7 @@ class GanttController extends Controller
                 }
             ] : ['assignedUser'])
             ->visibleTo($user, $isManager)
+            ->notEphemeral()
             ->operationalFor($user, $team, true)
             ->get();
 

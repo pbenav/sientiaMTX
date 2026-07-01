@@ -1,0 +1,79 @@
+{
+    "type": "decision",
+    "display_name": "Decisión",
+    "description": "Actividad para registrar decisiones y acuerdos",
+    "icon": "icon-decision",
+    "color": "#e74c3c",
+    "properties": {
+        "title": {
+            "type": "string",
+            "required": true,
+            "max_length": 255,
+            "searchable": true
+        },
+        "description": {
+            "type": "text",
+            "required": false,
+            "max_length": 1000000,
+            "searchable": true
+        },
+        "status": {
+            "type": "string",
+            "required": false,
+            "default": "proposed",
+            "enum": [
+                "proposed",
+                "approved",
+                "rejected",
+                "implemented"
+            ]
+        }
+    },
+    "states": {
+        "proposed": {
+            "transitions": [
+                "approved",
+                "rejected"
+            ]
+        },
+        "approved": {
+            "transitions": [
+                "implemented",
+                "rejected"
+            ]
+        },
+        "rejected": {
+            "transitions": [
+                "proposed"
+            ]
+        },
+        "implemented": {
+            "transitions": []
+        }
+    },
+    "conversions": {
+        "allowed_targets": [
+            "task",
+            "document",
+            "meeting"
+        ],
+        "property_mapping": {
+            "title": "title",
+            "description": "description"
+        },
+        "preserve_metadata": [
+            "tags",
+            "assignments",
+            "attachments"
+        ]
+    },
+    "actions": {
+        "create": true,
+        "update": true,
+        "delete": true,
+        "convert": true,
+        "archive": true,
+        "assign": true,
+        "rate": true
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +21,7 @@ class TaskEventNotification extends Notification
      * Create a new notification instance.
      * $type can be: 'blocked', 'milestone_50', 'milestone_75'
      */
-    public function __construct(Task $task, string $type, $causer = null)
+    public function __construct(Task|Activity $task, string $type, $causer = null)
     {
         $this->task = $task;
         $this->type = $type;
@@ -47,7 +48,7 @@ class TaskEventNotification extends Notification
             ->subject($subject)
             ->greeting('Hola, ' . explode(' ', $notifiable->name)[0])
             ->line($message)
-            ->action('Ver Tarea', route('teams.tasks.show', [$this->task->team_id, $this->task->id]))
+            ->action('Ver Tarea', route('teams.activities.show', [$this->task->team_id, $this->task->id]))
             ->line('Gracias por usar SientiaMTX.');
     }
 

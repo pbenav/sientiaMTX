@@ -252,6 +252,63 @@
                 </div>
             </div>
 
+            {{-- Protección de Datos (RGPD) --}}
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" x-data="{ gdprEnabled: {{ old('data_protection.enabled', $service->data_protection['enabled'] ?? false) ? 'true' : 'false' }} }">
+                <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">🛡️ Protección de Datos (RGPD)</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Añade el texto legal para los usuarios que soliciten cita.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="hidden" name="data_protection[enabled]" value="0">
+                        <input type="checkbox" name="data_protection[enabled]" value="1" x-model="gdprEnabled" class="sr-only peer">
+                        <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
+                    </label>
+                </div>
+
+                <div x-show="gdprEnabled" x-collapse class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Responsable</label>
+                            <input type="text" name="data_protection[responsible]" value="{{ old('data_protection.responsible', $service->data_protection['responsible'] ?? '') }}"
+                                   class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                                   placeholder="Ej: Consorcio Puntos Vuela">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Correo DPD / Contacto</label>
+                            <input type="email" name="data_protection[dpo_email]" value="{{ old('data_protection.dpo_email', $service->data_protection['dpo_email'] ?? '') }}"
+                                   class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                                   placeholder="Ej: dpo@empresa.com">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Dirección del Responsable</label>
+                        <input type="text" name="data_protection[address]" value="{{ old('data_protection.address', $service->data_protection['address'] ?? '') }}"
+                               class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                               placeholder="Ej: Avda del Conocimiento nº 41...">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">URL Política Ampliada</label>
+                        <input type="url" name="data_protection[url]" value="{{ old('data_protection.url', $service->data_protection['url'] ?? '') }}"
+                               class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                               placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Finalidad del Tratamiento</label>
+                        <textarea name="data_protection[purpose]" rows="2"
+                                  class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                                  placeholder="Para gestionar la cita previa solicitada...">{{ old('data_protection.purpose', $service->data_protection['purpose'] ?? '') }}</textarea>
+                    </div>
+                    <div class="md:col-span-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-cyan-600 mb-2 ml-1">Plantilla de Texto Legal</label>
+                        <p class="text-[10px] text-gray-500 mb-3 ml-1">Puedes usar las etiquetas: <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{responsable}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{correo}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{direccion}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{url}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{finalidad}</code></p>
+                        <textarea name="data_protection[template]" rows="6"
+                                  class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
+                                  placeholder="POLÍTICA DE PROTECCIÓN DE DATOS... El responsable es {responsable}...">{{ old('data_protection.template', $service->data_protection['template'] ?? "POLÍTICA DE PROTECCIÓN DE DATOS\n\nInformación básica sobre protección de datos\n\nLa identidad del responsable es {responsable} con domicilio en {direccion}. Tratamos sus datos con la finalidad de {finalidad}. Pueden ejercer sus derechos de acceso, rectificación, supresión, oposición y limitación al tratamiento de los datos que tengamos suyos mediante correo electrónico a la dirección {correo}.\nPueden consultar la información adicional y detallada sobre Protección de Datos en {url}.") }}</textarea>
+                    </div>
+                </div>
+            </div>
+
             {{-- Horario y Disponibilidad Semanal --}}
             @php
                 $days = [

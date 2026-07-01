@@ -1,0 +1,146 @@
+{
+    "type": "task",
+    "display_name": "Tarea",
+    "description": "Actividad para gestionar tareas con seguimiento de progreso",
+    "icon": "icon-task",
+    "color": "#3498db",
+    "properties": {
+        "title": {
+            "type": "string",
+            "required": true,
+            "max_length": 255,
+            "searchable": true
+        },
+        "description": {
+            "type": "text",
+            "required": false,
+            "max_length": 1000000,
+            "searchable": true
+        },
+        "quadrant": {
+            "type": "integer",
+            "required": false,
+            "default": 1,
+            "enum": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "validation": {
+                "min": 1,
+                "max": 4
+            }
+        },
+        "priority": {
+            "type": "string",
+            "required": false,
+            "default": "medium",
+            "enum": [
+                "low",
+                "medium",
+                "high",
+                "urgent"
+            ]
+        },
+        "progress": {
+            "type": "integer",
+            "required": false,
+            "default": 0,
+            "validation": {
+                "min": 0,
+                "max": 100
+            }
+        },
+        "status": {
+            "type": "string",
+            "required": false,
+            "default": "pending",
+            "enum": [
+                "pending",
+                "in_progress",
+                "completed",
+                "cancelled"
+            ]
+        },
+        "skills_required": {
+            "type": "array",
+            "required": false,
+            "default": []
+        }
+    },
+    "states": {
+        "pending": {
+            "transitions": [
+                "in_progress",
+                "cancelled"
+            ]
+        },
+        "in_progress": {
+            "transitions": [
+                "completed",
+                "in_progress"
+            ]
+        },
+        "completed": {
+            "transitions": []
+        },
+        "cancelled": {
+            "transitions": [
+                "pending"
+            ]
+        }
+    },
+    "conversions": {
+        "allowed_targets": [
+            "document",
+            "note",
+            "decision",
+            "meeting"
+        ],
+        "property_mapping": {
+            "title": "title",
+            "description": "description",
+            "due_date": "due_date"
+        },
+        "preserve_metadata": [
+            "tags",
+            "assignments",
+            "attachments"
+        ]
+    },
+    "actions": {
+        "create": true,
+        "update": true,
+        "delete": true,
+        "convert": true,
+        "archive": true,
+        "assign": true,
+        "rate": true
+    },
+    "kanban": {
+        "columns": [
+            {
+                "id": "backlog",
+                "name": "Backlog",
+                "status_filter": [
+                    "pending"
+                ]
+            },
+            {
+                "id": "in_progress",
+                "name": "En Progreso",
+                "status_filter": [
+                    "in_progress"
+                ]
+            },
+            {
+                "id": "done",
+                "name": "Hecho",
+                "status_filter": [
+                    "completed"
+                ]
+            }
+        ]
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,7 +22,7 @@ class TaskMilestoneNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, int $progress)
+    public function __construct(Task|Activity $task, int $progress)
     {
         $this->task = $task;
         $this->progress = $progress;
@@ -32,7 +33,7 @@ class TaskMilestoneNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         $key = 'p' . $this->progress;
 
         return [
@@ -60,7 +61,7 @@ class TaskMilestoneNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         $key = 'p' . $this->progress;
 
         return (new MailMessage)

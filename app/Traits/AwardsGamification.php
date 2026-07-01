@@ -3,7 +3,9 @@
 namespace App\Traits;
 
 use App\Models\Task;
+use App\Models\Activity;
 use App\Models\GamificationLog;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
 trait AwardsGamification
@@ -11,12 +13,12 @@ trait AwardsGamification
     /**
      * Award points and handle energy for gamification.
      */
-    protected function awardGamificationPoints(Task $task)
+    protected function awardGamificationPoints(Model $task)
     {
         // Determinamos quién debe recibir los puntos.
         // Si la tarea tiene un usuario asignado, los recibe él.
         // Si no, los recibe el usuario que la está completando (auth user).
-        $user = $task->assignedUser ?? auth()->user();
+        $user = $task->assignedUser ?? ($task->assignedTo->first() ?? auth()->user());
 
         if (!$user) {
             Log::warning("No se pudo otorgar puntos de gamificación para la tarea #{$task->id}: No hay usuario asignado ni autenticado.");
@@ -31,8 +33,15 @@ trait AwardsGamification
         // Reward members for finishing tasks quickly relative to their peers in the same master plan.
         $raceBonusXp = 0;
         if ($task->parent_id && $task->parent && $task->parent->is_template) {
-            $completedCount = $task->parent->children()
-                ->where('status', 'completed')
+            $childrenRelation = method_exists($task->parent, 'children') ? $task->parent->children() : $task->parent->instances();
+            $completedCount = $childrenRelation
+                ->where(function($q) {
+                    $q->where('status', 'completed')
+                      ->orWhere('status', 'LIKE', '%"value":"completed"%')
+                      ->orWhere('status', 'LIKE', '%"value":"done"%')
+                      ->orWhere('status', 'LIKE', '%"value":"approved"%')
+                      ->orWhere('status', 'LIKE', '%"value":"finished"%');
+                })
                 ->where('id', '!=', $task->id)
                 ->count();
             
@@ -137,7 +146,7 @@ trait AwardsGamification
             'team_id' => $task->team_id,
             'points' => $xp + $resilience,
             'type' => $resilience > 0 ? 'resilience' : 'task',
-            'source_type' => 'App\Models\Task',
+            'source_type' => get_class($task),
             'source_id' => $task->id,
             'description' => $description,
         ]);
@@ -175,7 +184,7 @@ trait AwardsGamification
     /**
      * Award XP to the task creator based on high peer ratings when cycle ends.
      */
-    protected function awardTaskQualityBonus(Task $task, $avgScore)
+    protected function awardTaskQualityBonus(Model $task, $avgScore)
     {
         $creator = $task->creator;
         if (!$creator) return;
@@ -196,7 +205,7 @@ trait AwardsGamification
                 'team_id' => $task->team_id,
                 'points' => $bonusXp,
                 'type' => 'management_quality',
-                'source_type' => 'App\Models\Task',
+                'source_type' => get_class($task),
                 'source_id' => $task->id,
                 'description' => "Bonificación por gestión: Tarea \"{$task->title}\" valorada con una media de " . number_format($avgScore, 1) . "/5 estrellas.",
             ]);

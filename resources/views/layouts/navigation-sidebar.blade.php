@@ -105,6 +105,7 @@
                             $isTeamRoute =
                                 request()->routeIs('teams.dashboard') ||
                                 request()->routeIs('teams.tasks.*') ||
+                                request()->routeIs('teams.activities.*') ||
                                 request()->routeIs('teams.gantt') ||
                                 request()->routeIs('teams.kanban') ||
                                 request()->routeIs('teams.forum.*') ||
@@ -171,14 +172,14 @@
                                         </svg>
                                         <span class="truncate">Expedientes</span>
                                     </a>
-                                    <a href="{{ route('teams.tasks.index', $currentTeamId) }}"
-                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                    <a href="{{ route('teams.activities.index', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
-                                        <span class="truncate">{{ __('navigation.task_list') ?? 'Tareas' }}</span>
+                                        <span class="truncate">Actividades</span>
                                     </a>
                                     <a href="{{ route('teams.eisenhower', $currentTeamId) }}"
                                         class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.eisenhower') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">

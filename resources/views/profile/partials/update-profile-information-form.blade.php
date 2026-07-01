@@ -300,7 +300,95 @@
         </div>
 
         <!-- CTH Integration -->
-        <div class="p-6 bg-cyan-50/50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-800/50 space-y-5" x-data="{ syncEnabled: {{ old('sync_with_cth', $user->sync_with_cth) ? 'true' : 'false' }} }">
+        <div class="p-6 bg-cyan-50/50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-800/50 space-y-5" x-data="{ 
+            syncEnabled: {{ old('sync_with_cth', $user->sync_with_cth) ? 'true' : 'false' }},
+            hasToken: {{ $user->cth_api_token ? 'true' : 'false' }},
+            showCthModal: false,
+            cthEmail: '{{ $user->email }}',
+            cthPassword: '',
+            cthUrl: '{{ $user->cth_api_url ?: config('services.cth.url', 'https://cth.sientia.com') }}',
+            pairing: false,
+            pairError: null,
+            pairSuccess: null,
+            pairAccount() {
+                this.pairing = true;
+                this.pairError = null;
+                this.pairSuccess = null;
+                
+                fetch('{{ route('profile.cth.pair') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        email: this.cthEmail,
+                        password: this.cthPassword,
+                        cth_url: this.cthUrl
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    this.pairing = false;
+                    if (data.success) {
+                        this.hasToken = true;
+                        this.syncEnabled = true;
+                        this.showCthModal = false;
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire('¡Conectado!', data.message, 'success');
+                        } else {
+                            alert(data.message);
+                        }
+                    } else {
+                        this.pairError = data.message || 'No se ha podido conectar con CTH.';
+                    }
+                })
+                .catch(error => {
+                    this.pairing = false;
+                    this.pairError = 'Error de red al conectar con el servidor CTH.';
+                });
+            },
+            unpairAccount() {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: '¿Desvincular cuenta?',
+                        text: 'Dejarás de sincronizar tus fichajes con CTH.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'Sí, desvincular',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.performUnpair();
+                        }
+                    });
+                } else {
+                    if (confirm('¿Seguro que deseas desvincular tu cuenta de CTH?')) {
+                        this.performUnpair();
+                    }
+                }
+            },
+            performUnpair() {
+                fetch('{{ route('profile.cth.unpair') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.hasToken = false;
+                        this.syncEnabled = false;
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire('Desvinculado', data.message, 'success');
+                        }
+                    }
+                });
+            }
+        }">
             <div class="flex items-center gap-2">
                 <span class="p-1.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -314,11 +402,39 @@
             </div>
             
             <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                Introduce las credenciales de tu portal de Sientia CTH para que cuando inicies o cierres jornada desde aquí, el fichaje se registre también automáticamente en tu cuenta de CTH.
+                Conecta tu cuenta de Sientia CTH de forma segura. Al iniciar o cerrar jornada desde aquí, tu estado se replicará automáticamente en tu portal de control horario.
             </p>
 
             <div class="space-y-4 pt-2">
-                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <!-- Estado de Enlace -->
+                <div class="p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 text-center sm:text-left">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-inner" :class="hasToken ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'">
+                            <span x-show="hasToken">✓</span>
+                            <span x-show="!hasToken">!</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white block" x-text="hasToken ? 'Cuenta Vinculada a CTH' : 'Cuenta No Vinculada'"></span>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 block" x-text="hasToken ? 'Tus credenciales están configuradas y protegidas.' : 'Haz clic en conectar para enlazar tu portal CTH.'"></span>
+                            <span x-show="hasToken" class="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-600 dark:text-cyan-400 mt-1.5 px-2 py-0.5 bg-cyan-50 dark:bg-cyan-900/30 rounded border border-cyan-100 dark:border-cyan-800" style="display: none;">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                                <span x-text="cthUrl"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="button" x-show="!hasToken" @click="showCthModal = true" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                            {{ __('Conectar con CTH') }}
+                        </button>
+                        <button type="button" x-show="hasToken" @click="unpairAccount()" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-bold text-xs px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 transition-all">
+                            {{ __('Desvincular') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm" x-show="hasToken" x-collapse>
                     <div>
                         <span class="text-sm font-bold text-gray-700 dark:text-gray-300 block">Activar Sincronización</span>
                         <span class="text-[10px] text-gray-500">Si está activo, tus inicios y cierres de jornada se replicarán.</span>
@@ -329,38 +445,45 @@
                         <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                     </label>
                 </div>
+            </div>
 
-                <div x-show="syncEnabled" x-collapse class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-cyan-100 dark:border-cyan-800/50">
-                    <div class="md:col-span-2">
-                        <x-input-label for="cth_api_url" value="Servidor CTH (URL API)" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
-                        <x-text-input id="cth_api_url" name="cth_api_url" type="url" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_api_url', $user->cth_api_url)" placeholder="https://cth.tuservidor.com/api" />
-                        <span class="text-[10px] text-gray-400 block mt-1">Especifica la URL base del API de tu instancia de Sientia CTH.</span>
-                        
-                        <!-- Information Banner: Fallback & Email Identification -->
-                        <div class="mt-3 p-3.5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center gap-3 text-cyan-800 dark:text-cyan-200 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600 dark:text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <div class="text-[11px] leading-relaxed">
-                                <strong class="text-cyan-900 dark:text-white font-black">💡 Servidor por Defecto:</strong> Si dejas este campo vacío, el sistema te identificará automáticamente por tu <strong>correo electrónico ({{ $user->email }})</strong> y utilizará el servidor CTH corporativo principal configurado en la plataforma (<code class="bg-cyan-500/20 px-1 py-0.5 rounded text-cyan-900 dark:text-cyan-100 font-mono">{{ config('services.cth.url') ?: 'https://cth.sientia.es' }}</code>).
-                            </div>
+            <!-- Modal de Vinculación CTH -->
+            <div x-show="showCthModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-transition.opacity style="display: none;">
+                <div @click.outside="showCthModal = false" class="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-800 space-y-6 transform transition-all">
+                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
+                        <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="p-1.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">🔗</span>
+                            Conectar con Sientia CTH
+                        </h3>
+                        <button type="button" @click="showCthModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-bold p-1">✕</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div x-show="pairError" class="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl" x-text="pairError"></div>
+
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 block mb-1">Servidor CTH (URL)</label>
+                            <input type="url" x-model="cthUrl" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl text-sm p-2.5 focus:ring-cyan-500" placeholder="https://cth.sientia.com">
                         </div>
 
-                        <x-input-error class="mt-2" :messages="$errors->get('cth_api_url')" />
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 block mb-1">Correo Electrónico (CTH)</label>
+                            <input type="email" x-model="cthEmail" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl text-sm p-2.5 focus:ring-cyan-500">
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 block mb-1">Contraseña (CTH)</label>
+                            <input type="password" x-model="cthPassword" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl text-sm p-2.5 focus:ring-cyan-500" placeholder="••••••••••••">
+                            <span class="text-[10px] text-gray-400 block mt-1">Tus credenciales viajan encriptadas para generar un token de acceso seguro y no se almacenan en este servidor.</span>
+                        </div>
                     </div>
 
-                    <div>
-                        <x-input-label for="cth_user_code" value="Código Numpad / PIN de Usuario" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
-                        <x-text-input id="cth_user_code" name="cth_user_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_user_code', $user->cth_user_code)" placeholder="Ej. 4829" />
-                        <span class="text-[10px] text-gray-400 block mt-1">El PIN numérico que utilizas para fichar en el Numpad de CTH.</span>
-                        <x-input-error class="mt-2" :messages="$errors->get('cth_user_code')" />
-                    </div>
-
-                    <div>
-                        <x-input-label for="cth_work_center_code" value="Código Centro de Trabajo (Opcional)" class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400" />
-                        <x-text-input id="cth_work_center_code" name="cth_work_center_code" type="text" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('cth_work_center_code', $user->cth_work_center_code)" placeholder="Ej. CEN-01" />
-                        <span class="text-[10px] text-gray-400 block mt-1">Código del centro si estás asignado a una delegación o algún centro de trabajo en concreto.</span>
-                        <x-input-error class="mt-2" :messages="$errors->get('cth_work_center_code')" />
+                    <div class="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+                        <button type="button" @click="showCthModal = false" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Cancelar</button>
+                        <button type="button" @click="pairAccount()" :disabled="pairing" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2 disabled:opacity-50">
+                            <span x-show="pairing" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="pairing ? 'Conectando...' : 'Conectar y Vincular'"></span>
+                        </button>
                     </div>
                 </div>
             </div>

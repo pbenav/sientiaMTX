@@ -7,7 +7,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KanbanColumn;
-use App\Models\Task;
+use App\Models\Activity;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,13 +30,14 @@ class KanbanController extends Controller
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
-        // Sync tasks that don't have a column yet (Only operational tasks, no templates)
-        $team->tasks()
-            ->whereNull('kanban_column_id')
+        // Sync activities to ensure their column matches their actual progress (0%, 1-99%, 100%)
+        $team->activities()
+            ->forKanban()
             ->operationalForKanban($user, $team)
+            ->notEphemeral()
             ->where('is_archived', false)
-            ->get()->each(function ($task) {
-                $task->syncKanbanColumn();
+            ->get()->each(function ($activity) {
+                $activity->syncKanbanColumn();
             });
 
         // --- Filters ---
@@ -45,14 +46,27 @@ class KanbanController extends Controller
         ]);
 
         $columns = $team->kanbanColumns()
-            ->with(['tasks' => function ($query) use ($team, $user, $isManager, $filters) {
+            ->with(['activities' => function ($query) use ($team, $user, $isManager, $filters) {
                 $query->with(['expediente', 'assignedUser', 'assignedTo', 'skills'])
+                      ->forKanban()
                       ->visibleTo($user, $isManager)
                       ->operationalForKanban($user, $team)
+                      ->notEphemeral()
                       ->where('is_archived', false)
-                      ->when($filters['status'] ?? null, fn($q, $s) => $q->where('status', $s))
+                      ->when($filters['status'] ?? null, fn($q, $s) => $q->whereJsonContains('status->value', $s))
                       ->when($filters['priority'] ?? null, fn($q, $p) => $q->where('priority', $p))
-                      ->when($filters['assigned_to'] ?? null, fn($q, $a) => $q->where('assigned_user_id', $a))
+                      ->when($filters['assigned_to'] ?? null, function($q, $a) {
+                          $q->where(function ($sq) use ($a) {
+                              $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
+                                 ->orWhereExists(function ($subq) use ($a) {
+                                     $subq->select(\DB::raw(1))
+                                          ->from('activity_task_mapping')
+                                          ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                          ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
+                                          ->where('task_assignments.user_id', $a);
+                                 });
+                          });
+                      })
                       ->when($filters['search'] ?? null, function($q, $s) {
                           $q->where('title', 'like', "%{$s}%")
                             ->orWhere('description', 'like', "%{$s}%");
@@ -60,8 +74,8 @@ class KanbanController extends Controller
                       ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId))
                       ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
                           $q->where(function ($sq) use ($skillId) {
-                              $sq->where('skill_id', $skillId)
-                                ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
+                              $sq->where('metadata->skill_id', $skillId)
+                                 ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
                           });
                       })
                       ->when($filters['type'], function ($q, $type) {
@@ -71,11 +85,12 @@ class KanbanController extends Controller
                               $q->where('is_template', false)->whereNotNull('parent_id');
                           } elseif ($type === 'plain') {
                               $q->where('is_template', false)->whereNull('parent_id');
+                          } else {
+                              $q->where('type', $type);
                           }
                       })
                       ->orderBy('kanban_order', 'asc')
                       ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
-                      ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
                       ->orderBy('progress_percentage', 'desc');
             }])
             ->orderBy('order_index', 'asc')
@@ -94,9 +109,11 @@ class KanbanController extends Controller
             }
         });
 
-        $completedTasks = $team->tasks()
+        $completedTasks = $team->activities()
             ->with(['expediente', 'assignedUser'])
+            ->forKanban()
             ->visibleTo($user, $isManager)
+            ->notEphemeral()
             ->where('is_archived', true)
             ->orderBy('updated_at', 'desc')
             ->limit(50)
@@ -110,13 +127,13 @@ class KanbanController extends Controller
         return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted', 'filters', 'members', 'skills', 'expedientes'));
     }
 
-    public function update(Request $request, Team $team, Task $task)
+    public function update(Request $request, Team $team, Activity $task)
     {
         if (auth()->user()->cannot('view', $team)) {
             return response()->json(['success' => false, 'message' => __('teams.unauthorized_access')], 403);
         }
         $this->authorize('update', $task);
-        $oldStatus = $task->status;
+        $oldStatus = $task->status_value;
 
         $validated = $request->validate([
             'kanban_column_id' => 'required|exists:kanban_columns,id',
@@ -137,10 +154,20 @@ class KanbanController extends Controller
         // Bidirectional sync: Update progress/status based on column type
         if ($column->type === 'todo') {
             $task->progress_percentage = 0;
-            $task->status = 'pending';
+            $task->status = ['value' => match($task->type) {
+                'document' => 'draft',
+                'decision' => 'proposed',
+                'meeting'  => 'scheduled',
+                default    => 'pending',
+            }];
         } elseif ($column->type === 'done') {
             $task->progress_percentage = 100;
-            $task->status = 'completed';
+            $task->status = ['value' => match($task->type) {
+                'document' => 'approved',
+                'decision' => 'accepted',
+                'meeting'  => 'finished',
+                default    => 'completed',
+            }];
         } elseif ($column->type === 'in_progress' || $column->type === 'custom') {
             if ($column->default_progress !== null) {
                 $task->progress_percentage = $column->default_progress;
@@ -153,15 +180,20 @@ class KanbanController extends Controller
                 }
             }
             
-            if ($task->status === 'completed' || $task->status === 'pending') {
-                $task->status = 'in_progress';
+            if ($task->isCompleted() || $task->isPending()) {
+                $task->status = ['value' => match($task->type) {
+                    'document' => 'under_review',
+                    'decision' => 'in_debate',
+                    'meeting'  => 'in_progress',
+                    default    => 'in_progress',
+                }];
             }
         }
 
         $task->save();
         
         // Gamification: Award points if newly completed via Kanban
-        if ($task->status === 'completed' && $oldStatus !== 'completed') {
+        if ($task->isCompleted() && !in_array($oldStatus, ['completed', 'done', 'approved', 'triggered', 'accepted', 'finished'])) {
             $this->awardGamificationPoints($task);
             $task->notifyCoordinatorsIfCompleted();
         }
@@ -170,10 +202,8 @@ class KanbanController extends Controller
         if ($task->parent_id) {
             $currentParent = $task->parent;
             while ($currentParent) {
-                // Update Parent's aggregate progress (calculated by its subtasks)
-                // This ensures consistency across all board/list views
                 $currentParent->update(['progress_percentage' => $currentParent->progress]);
-                $currentParent->syncKanbanColumn(); // Ensure parent moves to the correct Kanban column (todo -> in_progress -> done)
+                $currentParent->syncKanbanColumn();
                 $currentParent = $currentParent->parent;
             }
         }
@@ -190,7 +220,7 @@ class KanbanController extends Controller
 
         return response()->json([
             'success' => true,
-            'status' => $task->status,
+            'status' => $task->status_value,
             'progress' => $task->progress_percentage
         ]);
     }
@@ -238,15 +268,15 @@ class KanbanController extends Controller
         $validated = $request->validate([
             'column_id' => 'required|exists:kanban_columns,id',
             'tasks' => 'required|array',
-            'tasks.*.id' => 'required|exists:tasks,id',
+            'tasks.*.id' => 'required|exists:activities,id',
             'tasks.*.kanban_order' => 'required|integer',
-            'moved_task_id' => 'nullable|exists:tasks,id'
+            'moved_task_id' => 'nullable|exists:activities,id'
         ]);
 
         $column = KanbanColumn::findOrFail($validated['column_id']);
 
         foreach ($validated['tasks'] as $taskData) {
-            $task = Task::where('id', $taskData['id'])
+            $task = Activity::where('id', $taskData['id'])
                 ->where('team_id', $team->id)
                 ->first();
 
@@ -260,18 +290,33 @@ class KanbanController extends Controller
             if ($validated['moved_task_id'] == $task->id && $oldColumnId != $column->id) {
                 if ($column->type === 'todo') {
                     $task->progress_percentage = 0;
-                    $task->status = 'pending';
+                    $task->status = ['value' => match($task->type) {
+                        'document' => 'draft',
+                        'decision' => 'proposed',
+                        'meeting'  => 'scheduled',
+                        default    => 'pending',
+                    }];
                 } elseif ($column->type === 'done') {
                     $task->progress_percentage = 100;
-                    $task->status = 'completed';
+                    $task->status = ['value' => match($task->type) {
+                        'document' => 'approved',
+                        'decision' => 'accepted',
+                        'meeting'  => 'finished',
+                        default    => 'completed',
+                    }];
                 } elseif ($column->type === 'in_progress' || $column->type === 'custom') {
                     if ($column->default_progress !== null) {
                         $task->progress_percentage = $column->default_progress;
                     } elseif ($task->progress_percentage == 0) {
                         $task->progress_percentage = 10;
                     }
-                    if ($task->status === 'completed' || $task->status === 'pending') {
-                        $task->status = 'in_progress';
+                    if ($task->isCompleted() || $task->isPending()) {
+                        $task->status = ['value' => match($task->type) {
+                            'document' => 'under_review',
+                            'decision' => 'in_debate',
+                            'meeting'  => 'in_progress',
+                            default    => 'in_progress',
+                        }];
                     }
                 }
 
@@ -289,10 +334,11 @@ class KanbanController extends Controller
             }
 
             $oldStatus = $task->getOriginal('status');
+            $oldStatusValue = is_array($oldStatus) ? ($oldStatus['value'] ?? null) : $oldStatus;
             $task->save();
 
             // Gamification: Award points if newly completed via Kanban (drag to Done)
-            if ($task->status === 'completed' && $oldStatus !== 'completed') {
+            if ($task->isCompleted() && !in_array($oldStatusValue, ['completed', 'done', 'approved', 'triggered', 'accepted', 'finished'])) {
                 $this->awardGamificationPoints($task);
                 $task->notifyCoordinatorsIfCompleted();
             }
@@ -340,11 +386,11 @@ class KanbanController extends Controller
             ], 422);
         }
 
-        // Move tasks to the first 'todo' column to prevent loss
+        // Move activities to the first 'todo' column to prevent loss
         $defaultColumn = $team->kanbanColumns()->where('type', 'todo')->orderBy('order_index', 'asc')->first();
         
         if ($defaultColumn) {
-            $column->tasks()->update(['kanban_column_id' => $defaultColumn->id]);
+            $column->activities()->update(['kanban_column_id' => $defaultColumn->id]);
         }
 
         $column->delete();

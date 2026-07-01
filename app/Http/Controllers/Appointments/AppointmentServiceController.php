@@ -42,6 +42,14 @@ class AppointmentServiceController extends Controller
             'custom_fields.*.name' => 'required_with:custom_fields|string|max:150',
             'custom_fields.*.type' => 'nullable|string|in:text,textarea,number,date',
             'custom_fields.*.is_required' => 'nullable|boolean',
+            'data_protection' => 'nullable|array',
+            'data_protection.enabled' => 'nullable|boolean',
+            'data_protection.responsible' => 'nullable|string|max:255',
+            'data_protection.address' => 'nullable|string|max:255',
+            'data_protection.dpo_email' => 'nullable|email|max:255',
+            'data_protection.url' => 'nullable|url|max:500',
+            'data_protection.purpose' => 'nullable|string',
+            'data_protection.template' => 'nullable|string',
         ]);
 
         // Asegurar que is_required sea booleano
@@ -53,6 +61,21 @@ class AppointmentServiceController extends Controller
         }
 
         $data['team_id'] = $team->id;
+        
+        if (isset($data['data_protection'])) {
+            $data['data_protection'] = [
+                'enabled' => $request->boolean('data_protection.enabled'),
+                'responsible' => $data['data_protection']['responsible'] ?? null,
+                'address' => $data['data_protection']['address'] ?? null,
+                'dpo_email' => $data['data_protection']['dpo_email'] ?? null,
+                'url' => $data['data_protection']['url'] ?? null,
+                'purpose' => $data['data_protection']['purpose'] ?? null,
+                'template' => $data['data_protection']['template'] ?? null,
+            ];
+        } else {
+            $data['data_protection'] = null;
+        }
+
         $service = auth()->user()->appointmentServices()->create($data);
 
         // Guardar horarios de disponibilidad
@@ -116,6 +139,14 @@ class AppointmentServiceController extends Controller
             'custom_fields.*.name' => 'required_with:custom_fields|string|max:150',
             'custom_fields.*.type' => 'nullable|string|in:text,textarea,number,date',
             'custom_fields.*.is_required' => 'nullable|boolean',
+            'data_protection' => 'nullable|array',
+            'data_protection.enabled' => 'nullable|boolean',
+            'data_protection.responsible' => 'nullable|string|max:255',
+            'data_protection.address' => 'nullable|string|max:255',
+            'data_protection.dpo_email' => 'nullable|email|max:255',
+            'data_protection.url' => 'nullable|url|max:500',
+            'data_protection.purpose' => 'nullable|string',
+            'data_protection.template' => 'nullable|string',
         ]);
 
         // Asegurar que is_required sea booleano
@@ -129,6 +160,21 @@ class AppointmentServiceController extends Controller
         }
 
         $data['team_id'] = $team->id;
+        
+        if (isset($data['data_protection'])) {
+            $data['data_protection'] = [
+                'enabled' => $request->boolean('data_protection.enabled'),
+                'responsible' => $data['data_protection']['responsible'] ?? null,
+                'address' => $data['data_protection']['address'] ?? null,
+                'dpo_email' => $data['data_protection']['dpo_email'] ?? null,
+                'url' => $data['data_protection']['url'] ?? null,
+                'purpose' => $data['data_protection']['purpose'] ?? null,
+                'template' => $data['data_protection']['template'] ?? null,
+            ];
+        } else {
+            $data['data_protection'] = null;
+        }
+
         $service->update($data);
 
         // Actualizar horarios de disponibilidad

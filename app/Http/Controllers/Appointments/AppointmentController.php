@@ -54,13 +54,50 @@ class AppointmentController extends Controller
 
         $totalThisMonth = array_sum($monthAppointments);
 
+        // Stats: duración de citas (últimos 30 días)
+        $pastAppointments = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
+            ->where('appointment_date', '>=', now()->subDays(30)->toDateString())
+            ->where('status', 'completed')
+            ->with(['activity', 'task'])
+            ->get();
+
+        $durations = [];
+        foreach ($pastAppointments as $app) {
+            $seconds = 0;
+            if ($app->activity) {
+                $seconds = $app->activity->totalTrackedSeconds();
+            } elseif ($app->task) {
+                $seconds = $app->task->totalTrackedSeconds();
+            }
+            if ($seconds > 0) {
+                $durations[] = $seconds;
+            }
+        }
+
+        $moda = 0;
+        if (count($durations) > 0) {
+            $durationsInMinutes = array_map(fn($d) => (int) floor($d / 60), $durations);
+            $counts = array_count_values($durationsInMinutes);
+            arsort($counts);
+            $moda = array_key_first($counts) * 60;
+        }
+
+        $statsDuration = [
+            'min' => count($durations) > 0 ? min($durations) : 0,
+            'max' => count($durations) > 0 ? max($durations) : 0,
+            'avg' => count($durations) > 0 ? array_sum($durations) / count($durations) : 0,
+            'mode' => $moda,
+            'count' => count($durations)
+        ];
+
         // Sync appointments shown with Google
         $allShown = $upcoming->merge($todayCitas);
         foreach ($allShown as $app) {
             \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
         }
 
-        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'monthAppointments', 'team', 'selectedDate'));
+        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'monthAppointments', 'team', 'selectedDate', 'statsDuration'));
     }
 
     /**
@@ -76,7 +113,7 @@ class AppointmentController extends Controller
         }
 
         // Persistencia de filtros
-        $filterKeys = ['status', 'service_id', 'date_from', 'date_to', 'search', 'sort_by', 'sort_dir'];
+        $filterKeys = ['status', 'service_id', 'date_from', 'date_to', 'search', 'sort_by', 'sort_dir', 'per_page'];
         
         if (!$request->anyFilled($filterKeys) && !$request->hasAny($filterKeys)) {
             $sessionFilters = session("appointments_filters_{$team->id}", []);
@@ -96,7 +133,7 @@ class AppointmentController extends Controller
 
         $query = Appointment::where('user_id', $user->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
-            ->with(['service', 'visitor']);
+            ->with(['service', 'visitor', 'activity', 'task']);
 
         $sortBy = $request->get('sort_by', 'appointment_date');
         $sortDir = $request->get('sort_dir', 'asc') === 'desc' ? 'desc' : 'asc';
@@ -142,14 +179,63 @@ class AppointmentController extends Controller
             });
         }
 
-        $appointments = $query->paginate(20)->withQueryString();
+        $perPage = (int) $request->get('per_page', 15);
+        if ($perPage < 1) $perPage = 15;
+        if ($perPage > 100) $perPage = 100;
+
+        $appointments = $query->paginate($perPage)->withQueryString();
         $services     = $user->appointmentServices()->where('team_id', $team->id)->active()->get();
 
         foreach ($appointments as $app) {
             \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
         }
 
-        return view('appointments.list', compact('appointments', 'services', 'team'));
+        $todayStats = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
+            ->forDate(now()->toDateString())
+            ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        // Stats: duración de citas (últimos 30 días)
+        $pastAppointments = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
+            ->where('appointment_date', '>=', now()->subDays(30)->toDateString())
+            ->where('status', 'completed')
+            ->with(['activity', 'task'])
+            ->get();
+
+        $durations = [];
+        foreach ($pastAppointments as $app) {
+            $seconds = 0;
+            if ($app->activity) {
+                $seconds = $app->activity->totalTrackedSeconds();
+            } elseif ($app->task) {
+                $seconds = $app->task->totalTrackedSeconds();
+            }
+            if ($seconds > 0) {
+                $durations[] = $seconds;
+            }
+        }
+
+        $moda = 0;
+        if (count($durations) > 0) {
+            $durationsInMinutes = array_map(fn($d) => (int) floor($d / 60), $durations);
+            $counts = array_count_values($durationsInMinutes);
+            arsort($counts);
+            $moda = array_key_first($counts) * 60;
+        }
+
+        $statsDuration = [
+            'min' => count($durations) > 0 ? min($durations) : 0,
+            'max' => count($durations) > 0 ? max($durations) : 0,
+            'avg' => count($durations) > 0 ? array_sum($durations) / count($durations) : 0,
+            'mode' => $moda,
+            'count' => count($durations)
+        ];
+
+        return view('appointments.list', compact('appointments', 'services', 'team', 'todayStats', 'statsDuration'));
     }
 
     /**
@@ -337,7 +423,7 @@ class AppointmentController extends Controller
     /**
      * Cancela y elimina una cita.
      */
-    public function destroy(Team $team, Appointment $appointment, Request $request)
+    public function destroy(Request $request, Team $team, Appointment $appointment)
     {
         $this->authorize('delete', $appointment);
         if ($appointment->service->team_id !== $team->id) {
@@ -368,7 +454,7 @@ class AppointmentController extends Controller
     /**
      * Elimina físicamente una cita de la base de datos.
      */
-    public function forceDestroy(Team $team, Appointment $appointment, Request $request)
+    public function forceDestroy(Request $request, Team $team, Appointment $appointment)
     {
         $this->authorize('delete', $appointment);
         if ($appointment->service->team_id !== $team->id) {

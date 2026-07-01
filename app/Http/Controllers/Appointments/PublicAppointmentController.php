@@ -334,28 +334,35 @@ class PublicAppointmentController extends Controller
                 $description .= "\n\n💻 **Videoconferencia:** [Iniciar Videoconferencia]({$videoUrl}) (Modalidad: " . ucfirst($appointment->modality) . ")";
             }
 
-            $task = \App\Models\Task::create([
+            $activity = \App\Models\Activity::create([
+                'uuid'           => \Illuminate\Support\Str::uuid()->toString(),
                 'title'          => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
                 'description'    => $description,
-                'status'         => 'pending',
+                'status'         => ['value' => 'scheduled'],
                 'priority'       => 'medium',
+                'type'           => 'meeting',
                 'due_date'       => $appointment->end_datetime,
+                'scheduled_date' => $appointment->appointment_datetime,
+                'original_due_date' => clone $appointment->end_datetime,
                 'created_by_id'  => $member->id,
                 'expediente_id'  => $expedienteId,
                 'team_id'        => $appointment->service->team_id ?? $member->favorite_team_id,
-            ]);
-
-            // Asignar al miembro
-            $task->assignedTo()->syncWithoutDetaching([
-                $member->id => [
-                    'assigned_at'    => now(),
-                    'assigned_by_id' => $member->id,
+                'metadata'       => [
+                    'is_ephemeral' => true,
+                    'location'     => \App\Models\AppointmentService::MODALITIES[$appointment->modality] ?? $appointment->modality,
                 ],
             ]);
 
-            // Actualizar la cita con el task_id y expediente_id
+            // Asignar al miembro
+            $activity->assignments()->create([
+                'user_id' => $member->id,
+                'assigned_by_id' => $member->id,
+                'assigned_at' => now(),
+            ]);
+
+            // Actualizar la cita con el activity_id y expediente_id
             $appointment->update([
-                'task_id'       => $task->id,
+                'activity_id'   => $activity->id,
                 'expediente_id' => $expedienteId,
             ]);
         } catch (\Throwable $e) {
@@ -632,6 +639,13 @@ class PublicAppointmentController extends Controller
             $appointment->task->update([
                 'title'    => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
                 'due_date' => $appointment->end_datetime,
+            ]);
+        }
+        if ($appointment->activity) {
+            $appointment->activity->update([
+                'title'          => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
+                'due_date'       => $appointment->end_datetime,
+                'scheduled_date' => $appointment->appointment_datetime,
             ]);
         }
 

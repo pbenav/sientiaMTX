@@ -152,10 +152,10 @@
                                     @continue
                                 @endif
 
-                                @if ($task->status !== 'completed')
+                                @if (!$task->isCompleted())
                                     <div class="flex flex-col gap-1 w-full relative group/task cursor-pointer task-card"
                                         data-id="{{ $task->id }}"
-                                        data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
+                                        data-href="{{ route('teams.activities.show', [$team, $task]) }}">
                                         <div
                                             class="px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-3 hover:bg-black/5 dark:hover:bg-white/5 group transition-all rounded-xl relative overflow-hidden">
                                             <!-- Status indicator -->
@@ -194,8 +194,8 @@
                                                 </button>
                                             @endif
 
-                                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                                class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white transition-colors flex items-center gap-1.5 font-black">
+                                            <a href="{{ route('teams.activities.show', [$team, $task]) }}"
+                                                class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white transition-colors flex items-center gap-1.5 font-black truncate">
                                                 @if ($task->visibility === 'private')
                                                     <svg xmlns="http://www.w3.org/2000/svg"
                                                         class="h-2.5 w-2.5 text-amber-500/80 shrink-0" fill="none"
@@ -205,7 +205,13 @@
                                                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                     </svg>
                                                 @endif
-                                                <span>{{ $task->title }}</span>
+                                                <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1 shrink-0"
+                                                      style="background-color: {{ $task->type_badge_color }}15; color: {{ $task->type_badge_color }}; border-color: {{ $task->type_badge_color }}30;" title="{{ $task->type_label }}">
+                                                    @if($task->type_icon)
+                                                        {!! $task->type_icon !!}
+                                                    @endif
+                                                </span>
+                                                <span class="truncate">{{ $task->title }}</span>
                                                 @if ($task->is_template)
                                                     <span class="px-1 py-0.5 rounded-[4px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-violet-200 dark:border-violet-700/50 shadow-sm" title="{{ __('tasks.plan_master') }}">M</span>
                                                 @endif
@@ -248,7 +254,7 @@
                                                     <div
                                                         class="flex items-center gap-2 py-1 px-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all group/sub">
                                                         <div class="w-1 h-1 rounded-full bg-gray-400/50"></div>
-                                                        <a href="{{ route('teams.tasks.show', [$team, $child]) }}"
+                                                        <a href="{{ route('teams.activities.show', [$team, $child]) }}"
                                                             class="flex-1 text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white">
                                                             {{ $child->title }}
                                                         </a>
@@ -303,10 +309,10 @@
                     data-q="completed">
                     @forelse($completedTasks as $task)
                         <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden cursor-pointer task-card"
-                            data-id="{{ $task->id }}" data-href="{{ route('teams.tasks.show', [$team, $task]) }}">
+                            data-id="{{ $task->id }}" data-href="{{ route('teams.activities.show', [$team, $task]) }}">
                             <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
-                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
-                                class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                            <a href="{{ route('teams.activities.show', [$team, $task]) }}"
+                                class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors truncate">
                                 {{ $task->title }}
                             </a>
                         </div>
@@ -323,9 +329,9 @@
     <div class="mt-6 flex flex-wrap gap-3 text-xs text-gray-500 border-t border-white/5 pt-4 mb-20">
         <span>{{ __('teams.tasks_count', ['count' => $tasks->count()]) }} {{ __('teams.tasks_total') }}</span>
         <span>·</span>
-        <span>{{ $tasks->where('status', 'completed')->count() }}
+        <span>{{ $tasks->filter(fn($t) => $t->isCompleted())->count() }}
             {{ strtolower(__('tasks.statuses.completed')) }}</span>
-        @if($tasks->where('status', 'completed')->count() > $completedLimit)
+        @if($tasks->filter(fn($t) => $t->isCompleted())->count() > $completedLimit)
             <span class="text-[10px] text-amber-500/80 italic">({{ __('navigation.showing_limit', ['limit' => $completedLimit]) ?? "Mostrando solo las últimas $completedLimit" }})</span>
         @endif
         <span>·</span>
@@ -335,7 +341,7 @@
         <span>{{ $tasks->where('status', 'blocked')->count() }}
             {{ strtolower(__('tasks.statuses.blocked')) }}</span>
         <span>·</span>
-        <span>{{ $tasks->where('due_date', '<', now())->whereNotIn('status', ['completed', 'cancelled'])->count() }}
+        <span>{{ $tasks->filter(fn($t) => $t->due_date && $t->due_date->isPast() && !$t->isCompleted())->count() }}
             {{ __('teams.overdue') }}</span>
     </div>
 

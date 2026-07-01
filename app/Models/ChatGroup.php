@@ -43,13 +43,13 @@ class ChatGroup extends Model
                     $firstName = explode(' ', trim($u->name))[0];
                     return ($currentUserId && $u->id === $currentUserId) ? 'Tú' : $firstName;
                 });
-                
+
                 if ($currentUserId) {
                     $me = $names->filter(fn($n) => $n === 'Tú');
                     $others = $names->filter(fn($n) => $n !== 'Tú');
                     $names = $me->merge($others);
                 }
-                
+
                 return $names->implode(', ');
             }
         }

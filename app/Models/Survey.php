@@ -36,6 +36,7 @@ class Survey extends Model
         'published_at',
         'closed_at',
         'uuid',
+        'data_protection',
     ];
 
     /**
@@ -53,6 +54,7 @@ class Survey extends Model
             'expires_at' => 'datetime',
             'published_at' => 'datetime',
             'closed_at' => 'datetime',
+            'data_protection' => 'array',
         ];
     }
 

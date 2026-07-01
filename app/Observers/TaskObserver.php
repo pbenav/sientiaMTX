@@ -87,6 +87,9 @@ class TaskObserver
                 }
             }
         }
+
+        // --- Sincronización bidireccional / réplica hacia Activities ---
+        $this->syncToActivity($task);
     }
 
     /**
@@ -99,6 +102,163 @@ class TaskObserver
             $task->children()->withTrashed()->each(fn (Task $child) => $child->forceDelete());
         } else {
             $task->children()->each(fn (Task $child) => $child->delete());
+        }
+    }
+
+    /**
+     * Handle the Task "deleted" event.
+     */
+    public function deleted(Task $task): void
+    {
+        $mapping = \DB::table('activity_task_mapping')->where('task_id', $task->id)->first();
+        if ($mapping) {
+            $activity = \App\Models\Activity::withTrashed()->find($mapping->activity_id);
+            if ($activity) {
+                if ($task->isForceDeleting()) {
+                    $activity->forceDelete();
+                    \DB::table('activity_task_mapping')->where('task_id', $task->id)->delete();
+                } else {
+                    $activity->delete();
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle the Task "restored" event.
+     */
+    public function restored(Task $task): void
+    {
+        $mapping = \DB::table('activity_task_mapping')->where('task_id', $task->id)->first();
+        if ($mapping) {
+            $activity = \App\Models\Activity::onlyTrashed()->find($mapping->activity_id);
+            if ($activity) {
+                $activity->restore();
+            }
+        }
+    }
+
+    /**
+     * Helper para sincronizar Task a su Activity homóloga.
+     */
+    protected function syncToActivity(Task $task): void
+    {
+        // Evitamos recursiones
+        if (static::$isSyncing) return;
+        static::$isSyncing = true;
+
+        try {
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $task->id)->first();
+            
+            // Buscar si la tarea padre tiene mapeo para enlazar la jerarquía en la tabla de actividades
+            $activityParentId = null;
+            if ($task->parent_id) {
+                $parentMap = \DB::table('activity_task_mapping')->where('task_id', $task->parent_id)->first();
+                if ($parentMap) {
+                    $activityParentId = $parentMap->activity_id;
+                }
+            }
+
+            // Datos comunes a mapear
+            $activityData = [
+                'team_id'             => $task->team_id,
+                'created_by_id'       => $task->created_by_id ?? auth()->id() ?? 1,
+                'parent_id'           => $activityParentId,
+                'expediente_id'       => $task->expediente_id,
+                'type'                => 'task',
+                'title'               => $task->title,
+                'description'         => $task->description,
+                'status'              => ['value' => $task->status],
+                'visibility'          => $task->visibility === 'private' ? 'private' : 'public',
+                'due_date'            => $task->due_date,
+                'scheduled_date'      => $task->scheduled_date,
+                'original_due_date'   => $task->original_due_date,
+                'priority'            => $task->priority,
+                'auto_priority'       => $task->auto_priority ?? false,
+                'progress_percentage' => $task->progress_percentage ?? 0,
+                'kanban_column_id'    => $task->kanban_column_id,
+                'kanban_order'        => $task->kanban_order,
+                'matrix_order'        => $task->matrix_order,
+                'is_archived'          => $task->is_archived ?? false,
+                'is_template'         => $task->is_template ?? false,
+                'google_task_id'      => $task->google_task_id,
+                'google_task_list_id' => $task->google_task_list_id,
+                'google_calendar_event_id' => $task->google_calendar_event_id,
+                'google_calendar_id'  => $task->google_calendar_id,
+                'google_synced_at'    => $task->google_synced_at,
+                // Metadatos específicos de la tarea
+                'metadata' => [
+                    'urgency'              => $task->urgency ?? 'medium',
+                    'cognitive_load'       => $task->cognitive_load ?? 1,
+                    'is_out_of_skill_tree' => $task->is_out_of_skill_tree ?? false,
+                    'autoprogram_settings' => $task->autoprogram_settings,
+                    'service_id'           => $task->service_id,
+                    'skill_id'             => $task->skill_id,
+                    'impact_human_metric'  => $task->impact_human_metric ?? 0,
+                ]
+            ];
+
+            if ($mapping) {
+                $activity = \App\Models\Activity::withTrashed()->find($mapping->activity_id);
+                if ($activity) {
+                    $activity->update($activityData);
+                }
+            } else {
+                $activity = \App\Models\Activity::create($activityData);
+                
+                \DB::table('activity_task_mapping')->insert([
+                    'task_id'     => $task->id,
+                    'activity_id' => $activity->id,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ]);
+            }
+
+            // Sincronizar asignaciones
+            $this->syncAssignments($task, $activity);
+
+            // Sincronizar etiquetas
+            $this->syncTags($task, $activity);
+
+        } finally {
+            static::$isSyncing = false;
+        }
+    }
+
+    protected static bool $isSyncing = false;
+
+    /**
+     * Sincroniza asignaciones de Task a Activity
+     */
+    protected function syncAssignments(Task $task, \App\Models\Activity $activity): void
+    {
+        $activity->assignments()->delete();
+
+        $assignments = $task->assignments()->get();
+        foreach ($assignments as $a) {
+            \App\Models\ActivityAssignment::create([
+                'activity_id'    => $activity->id,
+                'user_id'        => $a->user_id,
+                'group_id'       => $a->group_id,
+                'assigned_by_id' => $a->assigned_by_id ?? 1,
+                'assigned_at'    => $a->assigned_at ?? now(),
+            ]);
+        }
+    }
+
+    /**
+     * Sincroniza etiquetas de Task a Activity
+     */
+    protected function syncTags(Task $task, \App\Models\Activity $activity): void
+    {
+        $activity->tags()->delete();
+
+        $tags = $task->tags()->get();
+        foreach ($tags as $t) {
+            $activity->tags()->create([
+                'tag'       => $t->tag,
+                'color_hex' => $t->color_hex ?? '#6b7280',
+            ]);
         }
     }
 }

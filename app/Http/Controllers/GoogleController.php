@@ -374,9 +374,10 @@ class GoogleController extends Controller
     /**
      * Disconnect a task from Google Tasks/Calendar locally.
      */
-    public function disconnectTask(\App\Models\Team $team, \App\Models\Task $task)
+    public function disconnectTask(\App\Models\Team $team, $taskId)
     {
-        if ($task->team_id !== $team->id) {
+        $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
+        if (!$task || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
 
@@ -396,9 +397,10 @@ class GoogleController extends Controller
     /**
      * Sync a specific task with Google Tasks (Bidirectional).
      */
-    public function syncTask(\App\Models\Team $team, \App\Models\Task $task)
+    public function syncTask(\App\Models\Team $team, $taskId)
     {
-        if ($task->team_id !== $team->id) {
+        $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
+        if (!$task || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
 
@@ -562,9 +564,10 @@ class GoogleController extends Controller
     /**
      * Export a specific task to Google Calendar as an Event.
      */
-    public function exportTaskToCalendar(\App\Models\Team $team, \App\Models\Task $task)
+    public function exportTaskToCalendar(\App\Models\Team $team, $taskId)
     {
-        if ($task->team_id !== $team->id) {
+        $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
+        if (!$task || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
 

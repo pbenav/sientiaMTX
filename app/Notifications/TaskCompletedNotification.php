@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -22,7 +23,7 @@ class TaskCompletedNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, User $completedBy)
+    public function __construct(Task|Activity $task, User $completedBy)
     {
         $this->task = $task;
         $this->completedBy = $completedBy;
@@ -46,7 +47,7 @@ class TaskCompletedNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return [
             'text' => "✅ *¡TAREA COMPLETADA!*\n\n" .
@@ -61,7 +62,7 @@ class TaskCompletedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return (new MailMessage)
             ->subject(__('tasks.notifications.completed_alert', ['title' => $this->task->title]))

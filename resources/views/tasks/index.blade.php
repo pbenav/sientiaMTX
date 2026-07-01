@@ -21,7 +21,7 @@
                         {{ __('navigation.task_list') }}
                     </h1>
                     <x-demo-hint>
-                        El Gestor de Tareas es el corazón operativo del equipo. Permite crear plantillas maestras, instanciar subtareas, asignar responsables, gestionar prioridades y visualizar el progreso en tiempo real. Soporta actualizaciones masivas y sincronización bidireccional con Google Calendar y Tasks.
+                        El Gestor de Actividades es el corazón operativo del equipo. Permite crear plantillas maestras, instanciar subtareas, asignar responsables, gestionar prioridades y visualizar el progreso en tiempo real. Soporta actualizaciones masivas y sincronización bidireccional con Google Calendar y Tasks.
                     </x-demo-hint>
                 </div>
             </div>
@@ -364,7 +364,7 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                 </span>
                                             @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
-                                                <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-700/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                                                <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-700/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors" title="Actividad autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                                 </a>
                                             @endif
@@ -553,7 +553,7 @@
                                             <button type="button"
                                                 onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.tasks.clone', [$team, $task]) }}')"
                                                 class="p-1.5 text-gray-400 hover:text-violet-500 transition-colors"
-                                                title="Clonar tarea">
+                                                title="Clonar actividad">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -613,7 +613,7 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                 </span>
                                             @elseif (!$subtask->is_autoprogrammable && $subtask->parent && $subtask->parent->is_autoprogrammable)
-                                                <a href="{{ route('teams.tasks.show', [$team, $subtask->parent_id]) }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-700/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors flex items-center gap-1" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                                                <a href="{{ route('teams.tasks.show', [$team, $subtask->parent_id]) }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-700/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors flex items-center gap-1" title="Actividad autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                                 </a>
                                             @endif
@@ -702,7 +702,7 @@
                                             <button type="button"
                                                 onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.tasks.clone', [$team, $subtask]) }}')"
                                                 class="p-1 text-gray-400 hover:text-violet-500 transition-colors"
-                                                title="Clonar tarea">
+                                                title="Clonar actividad">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -742,9 +742,9 @@
                                         </div>
                                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('tasks.no_tasks') }}
                                         </p>
-                                        <a href="{{ route('teams.tasks.create', $team) }}"
+                                        <a href="{{ route('teams.activities.create', $team) }}"
                                             class="mt-2 text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
-                                            {{ __('tasks.create') }}
+                                            Nueva Actividad
                                         </a>
                                     </div>
                                 </td>
@@ -790,7 +790,7 @@
 
                     Swal.fire({
                         title: '¿Eliminar selección?',
-                        text: `Estás a punto de eliminar ${selected.length} tareas. Esta acción no se puede deshacer.`,
+                        text: `Estás a punto de eliminar ${selected.length} actividades. Esta acción no se puede deshacer.`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
@@ -829,7 +829,7 @@
 
                     Swal.fire({
                         title: `¿Cambiar ${fieldLabels[field]}?`,
-                        text: `Vas a actualizar ${selected.length} tareas seleccionadas.`,
+                        text: `Vas a actualizar ${selected.length} actividades seleccionadas.`,
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: 'Sí, actualizar',
@@ -891,7 +891,7 @@
                 function openBulkMergeModal() {
                     const selected = [...document.querySelectorAll('.task-checkbox:checked')];
                     if (selected.length < 2) {
-                        Swal.fire({ title: 'Selección insuficiente', text: 'Debes seleccionar al menos 2 tareas para fusionarlas.', icon: 'info',
+                        Swal.fire({ title: 'Selección insuficiente', text: 'Debes seleccionar al menos 2 actividades para fusionarlas.', icon: 'info',
                             background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                             color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827' });
                         return;
@@ -902,7 +902,7 @@
 
                     selected.forEach((cb, i) => {
                         const id = cb.value;
-                        const title = taskTitles[id] ?? `Tarea #${id}`;
+                        const title = taskTitles[id] ?? `Actividad #${id}`;
                         const div = document.createElement('label');
                         div.className = 'flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 cursor-pointer transition-all group';
                         div.innerHTML = `
@@ -938,13 +938,13 @@
                     if (!targetId) return;
 
                     const selected = [...document.querySelectorAll('.task-checkbox:checked')];
-                    const targetTitle = taskTitles[targetId] ?? `Tarea #${targetId}`;
+                    const targetTitle = taskTitles[targetId] ?? `Actividad #${targetId}`;
 
                     closeBulkMergeModal();
 
                     Swal.fire({
                         title: '¿Confirmas la fusión?',
-                        html: `<p class="text-sm">Se fusionarán <strong>${selected.length} tareas</strong> en:</p><p class="mt-2 font-bold text-amber-600">«${targetTitle}»</p><p class="text-xs text-gray-500 mt-1">Las demás tareas serán eliminadas tras migrar su contenido.</p>`,
+                        html: `<p class="text-sm">Se fusionarán <strong>${selected.length} actividades</strong> en:</p><p class="mt-2 font-bold text-amber-600">«${targetTitle}»</p><p class="text-xs text-gray-500 mt-1">Las demás actividades serán eliminadas tras migrar su contenido.</p>`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Sí, fusionar',
@@ -980,8 +980,8 @@
 
                 window.cloneTask = function(url) {
                     Swal.fire({
-                        title: '¿Clonar tarea?',
-                        text: 'Se creará una copia exacta de esta tarea en este mismo equipo.',
+                        title: '¿Clonar actividad?',
+                        text: 'Se creará una copia exacta de esta actividad en este mismo equipo.',
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#7c3aed',
@@ -1006,8 +1006,8 @@
 
                 function confirmDeleteTask(taskId, taskTitle) {
                     Swal.fire({
-                        title: '¿Eliminar tarea?',
-                        text: `¿Estás seguro de que quieres eliminar la tarea "${taskTitle}"? Esta acción no se puede deshacer y su progreso dejará de sumar.`,
+                        title: '¿Eliminar actividad?',
+                        text: `¿Estás seguro de que quieres eliminar la actividad "${taskTitle}"? Esta acción no se puede deshacer y su progreso dejará de sumar.`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
@@ -1067,7 +1067,7 @@
                 function confirmPurgeTrash() {
                     Swal.fire({
                         title: '¿Vaciar papelera?',
-                        text: 'Se eliminarán PERMANENTEMENTE todas las tareas de este equipo que estén en la papelera, junto con sus historiales y archivos. Esta acción no se puede deshacer.',
+                        text: 'Se eliminarán PERMANENTEMENTE todas las actividades de este equipo que estén en la papelera, junto con sus historiales y archivos. Esta acción no se puede deshacer.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
@@ -1130,8 +1130,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Fusión masiva de tareas</h3>
-                            <p class="text-[11px] text-gray-400">Elige cuál será la tarea principal (destino)</p>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Fusión masiva de actividades</h3>
+                            <p class="text-[11px] text-gray-400">Elige cuál será la actividad principal (destino)</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeBulkMergeModal()" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg transition-colors">
@@ -1144,7 +1144,7 @@
                 {{-- Info banner --}}
                 <div class="mx-5 mt-4 px-3 py-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
                     <p class="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-snug">
-                        <strong>Todas las tareas</strong> se fusionarán en la que marques como destino. Sus contenidos, adjuntos, tiempo, notas y asignaciones se migrarán. Las demás serán eliminadas.
+                        <strong>Todas las actividades</strong> se fusionarán en la que marques como destino. Sus contenidos, adjuntos, tiempo, notas y asignaciones se migrarán. Las demás serán eliminadas.
                     </p>
                 </div>
 

@@ -1,0 +1,78 @@
+{
+    "type": "link",
+    "display_name": "Enlace",
+    "description": "Actividad para gestionar enlaces a recursos externos",
+    "icon": "icon-link",
+    "color": "#9b59b6",
+    "properties": {
+        "title": {
+            "type": "string",
+            "required": true,
+            "max_length": 255,
+            "searchable": true
+        },
+        "description": {
+            "type": "text",
+            "required": false,
+            "max_length": 1000000,
+            "searchable": true
+        },
+        "url": {
+            "type": "string",
+            "required": true,
+            "max_length": 1000
+        },
+        "status": {
+            "type": "string",
+            "required": false,
+            "default": "active",
+            "enum": [
+                "active",
+                "broken",
+                "archived"
+            ]
+        }
+    },
+    "states": {
+        "active": {
+            "transitions": [
+                "broken",
+                "archived"
+            ]
+        },
+        "broken": {
+            "transitions": [
+                "active",
+                "archived"
+            ]
+        },
+        "archived": {
+            "transitions": [
+                "active"
+            ]
+        }
+    },
+    "conversions": {
+        "allowed_targets": [
+            "task",
+            "note"
+        ],
+        "property_mapping": {
+            "title": "title",
+            "description": "description"
+        },
+        "preserve_metadata": [
+            "tags",
+            "assignments"
+        ]
+    },
+    "actions": {
+        "create": true,
+        "update": true,
+        "delete": true,
+        "convert": true,
+        "archive": true,
+        "assign": true,
+        "rate": false
+    }
+}

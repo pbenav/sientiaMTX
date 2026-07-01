@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,7 +23,7 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, string $type = 'collaborative', int $teamProgress = 0, ?string $customMessage = null)
+    public function __construct(Task|Activity $task, string $type = 'collaborative', int $teamProgress = 0, ?string $customMessage = null)
     {
         $this->task = $task;
         $this->type = $type;
@@ -71,7 +72,7 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         
         $timeText = '';
         if ($this->task->due_date) {
@@ -108,7 +109,7 @@ class TaskNudgeNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         
         $timeText = '';
         if ($this->task->due_date) {

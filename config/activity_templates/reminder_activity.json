@@ -1,0 +1,56 @@
+{
+  "type": "reminder",
+  "display_name": "Recordatorio",
+  "description": "Actividad ligera para recordatorios puntuales",
+  "icon": "icon-reminder",
+  "color": "#e84393",
+  "properties": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "max_length": 255,
+      "searchable": true
+    },
+    "description": {
+      "type": "text",
+      "required": false,
+      "max_length": 1000,
+      "searchable": true
+    },
+    "status": {
+      "type": "string",
+      "required": false,
+      "default": "pending",
+      "enum": ["pending", "completed", "cancelled"]
+    }
+  },
+  "states": {
+    "pending": {
+      "transitions": ["completed", "cancelled"]
+    },
+    "completed": {
+      "transitions": ["pending"]
+    },
+    "cancelled": {
+      "transitions": ["pending"]
+    }
+  },
+  "conversions": {
+    "allowed_targets": ["task", "meeting"],
+    "property_mapping": {
+      "title": "title",
+      "description": "description",
+      "due_date": "due_date"
+    },
+    "preserve_metadata": ["tags", "assignments"]
+  },
+  "actions": {
+    "create": true,
+    "update": true,
+    "delete": true,
+    "convert": true,
+    "archive": true,
+    "assign": true,
+    "rate": false
+  }
+}

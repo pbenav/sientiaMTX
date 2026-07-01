@@ -272,6 +272,35 @@
                         <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('4. Consentimiento y GDPR') }}</h3>
                     </div>
                     
+                    @if(isset($service->data_protection['enabled']) && $service->data_protection['enabled'])
+                        @php
+                            $dpTemplate = $service->data_protection['template'] ?? '';
+                            $dpTemplate = str_replace(
+                                ['{responsable}', '{correo}', '{direccion}', '{url}', '{finalidad}'],
+                                [
+                                    '<strong>' . e($service->data_protection['responsible'] ?? 'No especificado') . '</strong>',
+                                    '<strong>' . e($service->data_protection['dpo_email'] ?? 'No especificado') . '</strong>',
+                                    '<strong>' . e($service->data_protection['address'] ?? 'No especificado') . '</strong>',
+                                    !empty($service->data_protection['url']) ? '<a href="'.e($service->data_protection['url']).'" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">Enlace a la política ampliada</a>' : '<strong>No especificado</strong>',
+                                    '<strong>' . e($service->data_protection['purpose'] ?? 'No especificado') . '</strong>',
+                                ],
+                                e($dpTemplate)
+                            );
+                            $dpTemplate = str_replace(['&lt;strong&gt;', '&lt;/strong&gt;', '&lt;a href=', '&quot;', ' target=_blank class=text-cyan-600 hover:text-cyan-800 underline&gt;', '&lt;/a&gt;'], ['<strong>', '</strong>', '<a href=', '"', ' target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">', '</a>'], $dpTemplate);
+                        @endphp
+                        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 mb-4">
+                            <div class="flex items-start gap-3 mb-2">
+                                <div class="p-1.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                                </div>
+                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mt-0.5">Política de Protección de Datos</h4>
+                            </div>
+                            <div class="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
+                                {!! nl2br($dpTemplate) !!}
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="space-y-3">
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_data" value="1" required class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">

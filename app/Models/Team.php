@@ -42,15 +42,16 @@ class Team extends Model
         'disk_used' => 'integer',
     ];
 
-    protected static function booted(): void
-    {
-        // Lifecycle events are now handled by App\Observers\TeamObserver
-    }
-
     // Relationship: A team has many tasks
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    // Relationship: A team has many activities (unified polymorphic architecture)
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class);
     }
 
     // Relationship: A team has many users (members)

@@ -25,9 +25,9 @@
             <div class="flex items-center justify-between">
                 <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                     {{ __('teams.members') }} ({{ $team->members->count() }})</h3>
-                <a href="{{ route('teams.tasks.create', $team) }}"
+                <a href="{{ route('teams.activities.create', $team) }}"
                     class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg shadow-violet-500/30">
-                    + {{ __('tasks.create') }}
+                    + Nueva Actividad
                 </a>
             </div>
 

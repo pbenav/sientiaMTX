@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\Task;
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use App\Traits\AwardsGamification;
 
@@ -14,8 +15,15 @@ class TaskActionController extends Controller
     /**
      * Move task to a different quadrant (Ajax)
      */
-    public function move(Request $request, Team $team, Task $task)
+    public function move(Request $request, Team $team, $taskId)
     {
+        $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+        $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+
+        if (!$task) {
+            return response()->json(['success' => false, 'error' => 'Tarea o actividad no encontrada.'], 404);
+        }
+
         $this->authorize('update', $task);
 
         if ($task->is_timeline_locked && ($request->has('scheduled_date') || $request->has('due_date'))) {
@@ -35,10 +43,10 @@ class TaskActionController extends Controller
             'assigned_user_id' => 'nullable|exists:users,id',
             'matrix_order' => 'nullable|integer|min:0',
             'full_order' => 'nullable|array',
-            'full_order.*' => 'integer|exists:tasks,id',
+            'full_order.*' => 'integer',
         ]);
 
-        $oldStatus = $task->status;
+        $oldStatus = $task->status_value ?? ($task->status['value'] ?? $task->status);
         \Log::info('Task move request:', ['task_id' => $task->id, 'data' => $request->all()]);
 
         // Collect all changes in the model object first
@@ -49,13 +57,45 @@ class TaskActionController extends Controller
             
             if (!$request->has('status')) {
                 if ($task->progress_percentage == 100 && $oldStatus !== 'completed' && $oldStatus !== 'cancelled') {
-                    $task->status = 'completed';
+                    $newSt = match($task->type ?? 'task') {
+                        'document' => 'approved',
+                        'decision' => 'accepted',
+                        'meeting'  => 'finished',
+                        default    => 'completed',
+                    };
+                    if ($task instanceof Activity) {
+                        $task->status = ['value' => $newSt];
+                    } else {
+                        $task->status = $newSt;
+                    }
                     $this->awardGamificationPoints($task);
-                    $task->notifyCoordinatorsIfCompleted();
+                    if (method_exists($task, 'notifyCoordinatorsIfCompleted')) {
+                        $task->notifyCoordinatorsIfCompleted();
+                    }
                 } elseif ($task->progress_percentage == 0 && $oldStatus !== 'pending') {
-                    $task->status = 'pending';
-                } elseif ($task->progress_percentage > 0 && $task->progress_percentage < 100 && in_array($oldStatus, ['completed', 'pending'])) {
-                    $task->status = 'in_progress';
+                    $newSt = match($task->type ?? 'task') {
+                        'document' => 'draft',
+                        'decision' => 'proposed',
+                        'meeting'  => 'scheduled',
+                        default    => 'pending',
+                    };
+                    if ($task instanceof Activity) {
+                        $task->status = ['value' => $newSt];
+                    } else {
+                        $task->status = $newSt;
+                    }
+                } elseif ($task->progress_percentage > 0 && $task->progress_percentage < 100 && in_array($oldStatus, ['completed', 'pending', 'draft', 'proposed', 'scheduled', 'approved', 'accepted', 'finished'])) {
+                    $newSt = match($task->type ?? 'task') {
+                        'document' => 'under_review',
+                        'decision' => 'in_debate',
+                        'meeting'  => 'in_progress',
+                        default    => 'in_progress',
+                    };
+                    if ($task instanceof Activity) {
+                        $task->status = ['value' => $newSt];
+                    } else {
+                        $task->status = $newSt;
+                    }
                 }
             }
         }
@@ -64,45 +104,73 @@ class TaskActionController extends Controller
             \Log::info('Setting is_archived to:', ['val' => $task->is_archived]);
         }
         if ($request->has('assigned_user_id')) {
-            $task->assigned_user_id = $validated['assigned_user_id'];
+            if ($task instanceof Activity) {
+                $task->assignedTo()->sync([$validated['assigned_user_id']]);
+            } else {
+                $task->assignments()->delete();
+                $task->assignments()->create([
+                    'user_id' => $validated['assigned_user_id'],
+                    'assigned_by_id' => auth()->id() ?? 1,
+                    'assigned_at' => now(),
+                ]);
+            }
         }
         
         if ($request->has('status')) {
-            $task->status = $validated['status'];
+            if ($task instanceof Activity) {
+                $task->status = ['value' => $validated['status']];
+            } else {
+                $task->status = $validated['status'];
+            }
             
-            if ($task->status === 'completed') {
+            $currentStVal = $task->status_value ?? ($task->status['value'] ?? $task->status);
+
+            if ($currentStVal === 'completed') {
                 $task->progress_percentage = 100;
-            } elseif (in_array($task->status, ['pending', 'in_progress', 'blocked']) && $task->progress_percentage === 100) {
+            } elseif (in_array($currentStVal, ['pending', 'in_progress', 'blocked']) && $task->progress_percentage === 100) {
                 $task->progress_percentage = 90;
             }
 
             // Automatic de-completion for parents
-            if ($task->isInstance() && $oldStatus === 'completed' && $task->status !== 'completed') {
+            if (method_exists($task, 'isInstance') && $task->isInstance() && $oldStatus === 'completed' && $currentStVal !== 'completed') {
                 $parent = $task->parent;
-                if ($parent && $parent->status === 'completed') {
-                    $parent->update(['status' => 'in_progress']);
+                if ($parent) {
+                    $parentStVal = $parent->status_value ?? ($parent->status['value'] ?? $parent->status);
+                    if ($parentStVal === 'completed') {
+                        if ($parent instanceof Activity) {
+                            $parent->update(['status' => ['value' => 'in_progress']]);
+                        } else {
+                            $parent->update(['status' => 'in_progress']);
+                        }
+                    }
                 }
             }
 
             // Gamification: Award points if newly completed via move
-            if ($task->status === 'completed' && $oldStatus !== 'completed') {
+            if ($currentStVal === 'completed' && $oldStatus !== 'completed') {
                 $this->awardGamificationPoints($task);
             }
         }
 
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
-            $mapping = [
+            $mappingQ = [
                 1 => ['priority' => 'high', 'urgency' => 'high'],
                 2 => ['priority' => 'high', 'urgency' => 'low'],
                 3 => ['priority' => 'low', 'urgency' => 'high'],
                 4 => ['priority' => 'low', 'urgency' => 'low'],
             ];
-            $task->priority = $mapping[$validated['quadrant']]['priority'];
-            $task->urgency = $mapping[$validated['quadrant']]['urgency'];
+            $task->priority = $mappingQ[$validated['quadrant']]['priority'];
+            $task->urgency = $mappingQ[$validated['quadrant']]['urgency'];
+            
+            $currentStVal = $task->status_value ?? ($task->status['value'] ?? $task->status);
             
             // If it was a template, keep it as is, but if it was a child/instance, it's always in_progress when moved
-            if (!$task->is_template && !in_array($task->status, ['completed', 'cancelled'])) {
-                $task->status = 'in_progress';
+            if (!$task->is_template && !in_array($currentStVal, ['completed', 'cancelled'])) {
+                if ($task instanceof Activity) {
+                    $task->status = ['value' => 'in_progress'];
+                } else {
+                    $task->status = 'in_progress';
+                }
             }
         }
 
@@ -117,24 +185,28 @@ class TaskActionController extends Controller
         if ($request->has('full_order') && is_array($request->full_order)) {
             $fullOrder = $request->full_order;
             // Use a transaction for bulk updates to ensure atomicity and speed
-            \Illuminate\Support\Facades\DB::transaction(function() use ($fullOrder, $team) {
+            \Illuminate\Support\Facades\DB::transaction(function() use ($fullOrder, $team, $task) {
                 foreach ($fullOrder as $index => $id) {
-                    \App\Models\Task::where('id', $id)
-                        ->where('team_id', $team->id)
-                        ->update(['matrix_order' => $index]);
+                    if ($task instanceof Activity) {
+                        \App\Models\Activity::where('id', $id)->where('team_id', $team->id)->update(['matrix_order' => $index]);
+                    } else {
+                        \App\Models\Task::where('id', $id)->where('team_id', $team->id)->update(['matrix_order' => $index]);
+                    }
                 }
             });
         }
 
         // Secondary Effects (Notifications & Syncs)
         if ($task->is_template && ($request->has('scheduled_date') || $request->has('due_date'))) {
-            $task->instances()->update([
+            $task->children()->update([
                 'scheduled_date' => $task->scheduled_date,
                 'due_date' => $task->due_date
             ]);
         }
 
-        if ($request->has('status') && $task->status === 'blocked' && $oldStatus !== 'blocked') {
+        $currentStVal = $task->status_value ?? ($task->status['value'] ?? $task->status);
+
+        if ($request->has('status') && $currentStVal === 'blocked' && $oldStatus !== 'blocked') {
             $team->creator->notify(new \App\Notifications\TaskBlockedNotification($task, auth()->user()));
             foreach ($team->members()->wherePivotIn('role_id', function ($q) {
                 $q->select('id')->from('team_roles')->where('name', 'coordinator');
@@ -145,48 +217,58 @@ class TaskActionController extends Controller
             }
         }
 
-        if ($task->isInstance() && ($request->has('status') || $request->has('progress_percentage'))) {
+        if (method_exists($task, 'isInstance') && $task->isInstance() && ($request->has('status') || $request->has('progress_percentage'))) {
             $currentParent = $task->parent;
             while ($currentParent) {
-                // For template tasks, we must update the progress_percentage column 
-                // so that queries/scopes that don't use the attribute still work.
                 $currentParent->update(['progress_percentage' => $currentParent->progress]);
-                $currentParent->syncKanbanColumn(); // Update its column if needed
+                if (method_exists($currentParent, 'syncKanbanColumn')) {
+                    $currentParent->syncKanbanColumn(); // Update its column if needed
+                }
                 $currentParent = $currentParent->parent;
             }
             $task->refresh();
         }
 
         \Log::info("Task Team ID: " . $task->team_id . " | Team is null: " . ($task->team === null ? "yes" : "no"));
-        $task->syncKanbanColumn();
+        if (method_exists($task, 'syncKanbanColumn')) {
+            $task->syncKanbanColumn();
+        }
 
         return response()->json([
             'success' => true,
-            'task_status' => $task->status,
+            'task_status' => $task->status_value ?? ($task->status['value'] ?? $task->status),
             'task_progress' => $task->progress_percentage,
             'kanban_column_id' => $task->kanban_column_id,
-            'parent_progress' => $task->parent_id ? $task->parent->progress_percentage : null
+            'parent_progress' => $task->parent_id && $task->parent ? $task->parent->progress_percentage : null
         ]);
     }
 
     /**
      * Nudge a user assigned to a task instance
      */
-    public function nudge(Request $request, Team $team, Task $task)
+    public function nudge(Request $request, Team $team, $taskId)
     {
         $this->authorize('view', $team);
 
-        $type = 'collaborative';
-        $progress = $task->progress;
+        $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+        $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
 
-        if ($task->status === 'blocked') {
+        if (!$task) {
+            return response()->json(['success' => false, 'message' => 'Tarea no encontrada.'], 404);
+        }
+
+        $type = 'collaborative';
+        $progress = $task->progress ?? $task->progress_percentage ?? 0;
+        $statusVal = $task->status_value ?? ($task->status['value'] ?? $task->status);
+
+        if ($statusVal === 'blocked') {
             $type = 'unblocking';
         } elseif ($task->due_date && $task->due_date->isFuture() && $task->due_date->diffInHours(now()) < 24) {
             $type = 'deadline';
         }
 
         $recipientId = $request->input('user_id');
-        $recipient = $recipientId ? \App\Models\User::find($recipientId) : ($task->assignedUser ?: $task->creator);
+        $recipient = $recipientId ? \App\Models\User::find($recipientId) : ($task->assignedUser ?: ($task->assignedTo?->first() ?: $task->creator));
 
         if (!$recipient) {
             return response()->json([
@@ -218,7 +300,7 @@ class TaskActionController extends Controller
 
         $validated = $request->validate([
             'task_ids'      => 'nullable|array',
-            'task_ids.*'    => 'exists:tasks,id',
+            'task_ids.*'    => 'integer',
             'targets'       => 'nullable|array',
             'targets.*'     => 'string',
             'custom_message'=> 'nullable|string|max:500'
@@ -264,16 +346,20 @@ class TaskActionController extends Controller
         $skipped = 0;
 
         foreach ($items as $item) {
-            $task = Task::where('id', $item['task_id'])->where('team_id', $team->id)->first();
+            $tId = $item['task_id'];
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $tId)->first();
+            $task = $mapping ? Task::where('id', $tId)->where('team_id', $team->id)->first() : (Activity::where('id', $tId)->where('team_id', $team->id)->first() ?? Task::where('id', $tId)->where('team_id', $team->id)->first());
+            
             if (!$task) {
                 $skipped++;
                 continue;
             }
 
             $type      = 'collaborative';
-            $progress  = $task->progress;
+            $progress  = $task->progress ?? $task->progress_percentage ?? 0;
+            $statusVal = $task->status_value ?? ($task->status['value'] ?? $task->status);
 
-            if ($task->status === 'blocked') {
+            if ($statusVal === 'blocked') {
                 $type = 'unblocking';
             } elseif ($task->due_date && $task->due_date->isFuture() && $task->due_date->diffInHours(now()) < 24) {
                 $type = 'deadline';
@@ -282,7 +368,7 @@ class TaskActionController extends Controller
             $recipientId = $item['user_id'];
             $recipient   = $recipientId
                 ? \App\Models\User::find($recipientId)
-                : ($task->assignedUser ?: ($task->assignedTo->first() ?: $task->creator));
+                : ($task->assignedUser ?: ($task->assignedTo?->first() ?: $task->creator));
 
             if (!$recipient) {
                 $skipped++;
@@ -295,18 +381,20 @@ class TaskActionController extends Controller
                 ));
                 $task->increment('nudge_count');
 
-                // Auditoría: registrar en el historial de la tarea
-                $task->histories()->create([
-                    'user_id' => auth()->id(),
-                    'action'  => 'bulk_nudge_sent',
-                    'notes'   => sprintf(
-                        'Recordatorio masivo enviado a %s%s',
-                        $recipient->name,
-                        !empty($validated['custom_message'])
-                            ? ' — Mensaje: "' . $validated['custom_message'] . '"'
-                            : ''
-                    ),
-                ]);
+                // Auditoría: registrar en el historial de la tarea si existe la relación
+                if (method_exists($task, 'histories')) {
+                    $task->histories()->create([
+                        'user_id' => auth()->id(),
+                        'action'  => 'bulk_nudge_sent',
+                        'notes'   => sprintf(
+                            'Recordatorio masivo enviado a %s%s',
+                            $recipient->name,
+                            !empty($validated['custom_message'])
+                                ? ' — Mensaje: "' . $validated['custom_message'] . '"'
+                                : ''
+                        ),
+                    ]);
+                }
 
                 $sent++;
             } catch (\Exception $e) {
@@ -333,16 +421,19 @@ class TaskActionController extends Controller
     /**
      * Store a user's rating for the quality of this task.
      */
-    public function rate(Request $request, Team $team, Task $task)
+    public function rate(Request $request, Team $team, $taskId)
     {
-        if ($task->team_id !== $team->id) abort(404);
+        $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+        $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+
+        if (!$task || $task->team_id !== $team->id) abort(404);
 
         $user = auth()->user();
         
-        $isAssigned = $task->assignedTo()->where('users.id', $user->id)->exists() 
+        $isAssigned = ($task instanceof Activity ? $task->assignedTo()->where('users.id', $user->id)->exists() : $task->assignments()->where('user_id', $user->id)->exists()) 
                    || $task->assigned_user_id === $user->id;
                    
-        if (!$isAssigned && !$team->isManager($user)) {
+        if (!$isAssigned && (!$team->isManager($user) || $task->visibility === 'private')) {
             return response()->json(['message' => 'Solo los usuarios asignados pueden valorar esta tarea.'], 403);
         }
 
@@ -359,7 +450,9 @@ class TaskActionController extends Controller
             ]
         );
 
-        $task->updateQualityCache();
+        if (method_exists($task, 'updateQualityCache')) {
+            $task->updateQualityCache();
+        }
 
         if ($rating->score >= 4 && $task->creator && $task->creator->id !== $user->id) {
              try {
@@ -376,17 +469,24 @@ class TaskActionController extends Controller
         ]);
     }
 
-    public function toggleAutoPriority(Team $team, Task $task)
+    public function toggleAutoPriority(Team $team, $taskId)
     {
-        \Log::info("Toggle AutoPriority Attempt: Task #{$task->id} by User #" . auth()->id());
+        \Log::info("Toggle AutoPriority Attempt: Task #{$taskId} by User #" . auth()->id());
         
         try {
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+            $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+
+            if (!$task) {
+                return response()->json(['success' => false, 'error' => 'Tarea no encontrada'], 404);
+            }
+
             $this->authorize('update', $task);
             
             $task->auto_priority = !$task->auto_priority;
             $task->save();
 
-            if ($task->auto_priority) {
+            if ($task->auto_priority && method_exists($task, 'updateAutoPriority')) {
                 $task->updateAutoPriority();
             }
 
@@ -403,7 +503,7 @@ class TaskActionController extends Controller
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         } catch (\Exception $e) {
             \Log::error("Toggle AutoPriority CRITICAL ERROR: " . $e->getMessage(), [
-                'task_id' => $task->id,
+                'task_id' => $taskId,
                 'user_id' => auth()->id(),
                 'trace' => $e->getTraceAsString()
             ]);

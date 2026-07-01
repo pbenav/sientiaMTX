@@ -15,12 +15,8 @@ class TeamRole extends Model
 
     protected $fillable = ['name', 'description'];
 
-    protected static function boot()
+    public function scopeExcludeModerator($query)
     {
-        parent::boot();
-
-        static::addGlobalScope('active_roles', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            $builder->where('name', '!=', 'moderator');
-        });
+        return $query->where('name', '!=', 'moderator');
     }
 }

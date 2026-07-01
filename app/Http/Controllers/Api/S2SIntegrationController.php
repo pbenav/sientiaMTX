@@ -11,20 +11,33 @@ class S2SIntegrationController extends Controller
 {
     public function syncWorkday(Request $request)
     {
-        $secret = config('services.cth.secret');
-        if (!$secret || $request->header('X-S2S-Secret') !== $secret) {
+        $email = $request->input('email');
+        $user = User::where('email', $email)->first();
+
+        if (!$user || !$user->sync_with_cth) {
+            return response()->json(['message' => 'User not found or sync disabled'], 404);
+        }
+
+        $receivedSecret = $request->header('X-S2S-Secret') ?: $request->bearerToken();
+        $globalSecret = config('services.cth.secret');
+        $userSecret = $user->cth_api_token;
+
+        $isValid = false;
+        if ($globalSecret && $receivedSecret === $globalSecret) {
+            $isValid = true;
+        } elseif ($userSecret && $receivedSecret === $userSecret) {
+            $isValid = true;
+        }
+
+        if (!$isValid) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $email = $request->input('email');
         $action = $request->input('action'); // 'start' or 'stop'
         $timestampStr = $request->input('timestamp');
         $timestamp = $timestampStr ? \Carbon\Carbon::parse($timestampStr)->setTimezone(config('app.timezone')) : now();
 
-        $user = User::where('email', $email)->first();
-        if (!$user || !$user->sync_with_cth) {
-            return response()->json(['message' => 'User not found or sync disabled'], 404);
-        }
+        \Illuminate\Support\Facades\Cache::forget('cth_status_' . $user->id);
 
         try {
             $activeLog = $user->activeWorkdayLog();

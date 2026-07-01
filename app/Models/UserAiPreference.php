@@ -15,11 +15,19 @@ class UserAiPreference extends Model
         'team_id',
         'default_provider',
         'ai_model',
-        'api_key',
         'smart_matching_opt_in',
         'mood_tracking_enabled',
         'ai_settings',
     ];
+
+    /**
+     * La api_key se excluye de $fillable para prevenir mass assignment.
+     * Debe establecerse siempre a través del mutador setApiKeyAttribute()
+     * que se encarga de la encriptación.
+     *
+     * @var array
+     */
+    protected $guarded = ['id', 'user_id', 'team_id', 'created_at', 'updated_at'];
 
     public function team()
     {

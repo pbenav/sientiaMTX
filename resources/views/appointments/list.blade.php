@@ -35,6 +35,91 @@
             </div>
         @endif
 
+        {{-- Resumen de hoy --}}
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm text-sm">
+            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Hoy:</span>
+            
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="flex flex-col leading-none">
+                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['pending'] ?? 0 }}</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Previstas</span>
+                </div>
+            </div>
+
+            <div class="hidden sm:block w-px h-6 bg-gray-200 dark:bg-gray-800"></div>
+
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <div class="flex flex-col leading-none">
+                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['confirmed'] ?? 0 }}</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Confirmadas</span>
+                </div>
+            </div>
+
+            <div class="hidden sm:block w-px h-6 bg-gray-200 dark:bg-gray-800"></div>
+
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="flex flex-col leading-none">
+                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['completed'] ?? 0 }}</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Completadas</span>
+                </div>
+            </div>
+
+            <div class="hidden sm:block w-px h-6 bg-gray-200 dark:bg-gray-800"></div>
+
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </div>
+                <div class="flex flex-col leading-none">
+                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['cancelled'] ?? 0 }}</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Canceladas</span>
+                </div>
+            </div>
+
+            <div class="hidden xl:block w-px h-6 bg-gray-200 dark:bg-gray-800 mx-2"></div>
+
+            <div class="flex items-center gap-5 xl:ml-auto">
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400" title="Calculado sobre citas completadas con tiempo registrado en los últimos 30 días">⏱️ Tiempos (30d):</span>
+                
+                <div class="flex items-center gap-2.5">
+                    <div class="flex flex-col leading-none">
+                        <span class="font-black text-gray-700 dark:text-gray-300 tabular-nums">{{ floor(($statsDuration['min'] ?? 0) / 60) }}m</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Min</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <div class="flex flex-col leading-none">
+                        <span class="font-black text-indigo-600 dark:text-indigo-400 tabular-nums">{{ floor(($statsDuration['avg'] ?? 0) / 60) }}m</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Media</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <div class="flex flex-col leading-none">
+                        <span class="font-black text-gray-700 dark:text-gray-300 tabular-nums">{{ floor(($statsDuration['mode'] ?? 0) / 60) }}m</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Moda</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <div class="flex flex-col leading-none">
+                        <span class="font-black text-gray-700 dark:text-gray-300 tabular-nums">{{ floor(($statsDuration['max'] ?? 0) / 60) }}m</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Max</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Filtros --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
             <form method="GET" action="{{ route('appointments.list', $team) }}" class="flex flex-wrap gap-3 items-end">
@@ -138,6 +223,7 @@
                                         Estado @if($sort_by === 'status') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Tiempo</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Completada</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400"></th>
                             </tr>
@@ -184,16 +270,46 @@
                                         </span>
                                     </td>
                                     <td class="px-5 py-3.5 text-center">
+                                        @php
+                                            $seconds = 0;
+                                            if ($cita->activity) $seconds = $cita->activity->totalTrackedSeconds();
+                                            elseif ($cita->task) $seconds = $cita->task->totalTrackedSeconds();
+                                        @endphp
+                                        @if($seconds > 0)
+                                            <div class="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400" title="Tiempo dedicado a esta cita">
+                                                <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <span class="text-xs font-bold tabular-nums">{{ floor($seconds / 60) }}<span class="text-[10px] ml-0.5 opacity-70">m</span></span>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-300 dark:text-gray-600 font-bold">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-3.5 text-center">
                                         @if(!in_array($cita->status, ['cancelled', 'blocked']))
-                                            <form method="POST" action="{{ route('appointments.update', [$team, $cita]) }}" x-data class="inline-block">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="status" x-ref="statusInput" value="{{ $cita->status }}">
-                                                <label class="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" class="sr-only peer" {{ $cita->status === 'completed' ? 'checked' : '' }}
-                                                           @change="$refs.statusInput.value = $el.checked ? 'completed' : 'confirmed'; $el.closest('form').submit()">
+                                            <div x-data="{ loading: false, isCompleted: {{ $cita->status === 'completed' ? 'true' : 'false' }} }" class="inline-block">
+                                                <label class="relative inline-flex items-center cursor-pointer" :class="{ 'opacity-50 pointer-events-none': loading }">
+                                                    <input type="checkbox" class="sr-only peer" x-model="isCompleted"
+                                                           @change="
+                                                                loading = true;
+                                                                let formData = new FormData();
+                                                                formData.append('_token', '{{ csrf_token() }}');
+                                                                formData.append('_method', 'PATCH');
+                                                                formData.append('status', isCompleted ? 'completed' : 'confirmed');
+                                                                
+                                                                fetch('{{ route('appointments.update', [$team, $cita]) }}', {
+                                                                    method: 'POST',
+                                                                    body: formData,
+                                                                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                                                                }).then(res => {
+                                                                    loading = false;
+                                                                }).catch(() => {
+                                                                    loading = false;
+                                                                    isCompleted = !isCompleted;
+                                                                });
+                                                           ">
                                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
                                                 </label>
-                                            </form>
+                                            </div>
                                         @endif
                                     </td>
                                     <td class="px-5 py-3.5 text-right">
@@ -221,18 +337,31 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="px-5 py-4 border-t border-gray-100 dark:border-gray-800">
-                    {{ $appointments->links() }}
+                <div class="px-5 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <label for="per_page_bottom" class="text-[10px] font-black uppercase tracking-widest text-gray-400">Mostrar:</label>
+                        <select id="per_page_bottom" onchange="window.location.href=this.value" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-1.5 pl-3 pr-8 focus:ring-cyan-500 focus:border-cyan-500 text-gray-900 dark:text-white transition-all shadow-sm">
+                            <option value="{{ request()->fullUrlWithQuery(['per_page' => 15]) }}" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="{{ request()->fullUrlWithQuery(['per_page' => 30]) }}" {{ request('per_page') == 30 ? 'selected' : '' }}>30</option>
+                            <option value="{{ request()->fullUrlWithQuery(['per_page' => 50]) }}" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="{{ request()->fullUrlWithQuery(['per_page' => 100]) }}" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-auto overflow-x-auto">
+                        {{ $appointments->links() }}
+                    </div>
                 </div>
             @endif
-        </div>
-    </div>
-</div>
-
-<script>
+ <script>
     function confirmSingleDelete(event, id) {
         event.preventDefault();
         const form = document.getElementById(`delete-appointment-${id}`);
+        if (typeof Swal === 'undefined') {
+            if (confirm('¿Eliminar físicamente esta cita de la base de datos por completo?')) {
+                HTMLFormElement.prototype.submit.call(form);
+            }
+            return;
+        }
         Swal.fire({
             title: '¿Eliminar físicamente esta cita?',
             text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo, junto con su tarea asociada. Indique a continuación el motivo de la anulación definitiva para el correo del ciudadano (opcional).',
@@ -256,12 +385,31 @@
                 reasonInput.name = 'cancellation_reason';
                 reasonInput.value = result.value || '';
                 form.appendChild(reasonInput);
-                form.submit();
+                HTMLFormElement.prototype.submit.call(form);
             }
         });
     }
 
     function confirmBulkDelete() {
+        if (typeof Swal === 'undefined') {
+            if (confirm('¿Eliminar permanentemente las citas seleccionadas?')) {
+                const form = document.getElementById('bulk-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'bulk_action';
+                actionInput.value = 'delete';
+                form.appendChild(actionInput);
+                document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'appointment_ids[]';
+                    idInput.value = cb.value;
+                    form.appendChild(idInput);
+                });
+                HTMLFormElement.prototype.submit.call(form);
+            }
+            return;
+        }
         Swal.fire({
             title: '¿Eliminar permanentemente las seleccionadas?',
             text: '⚠️ ATENCIÓN: Esta acción no se puede deshacer. Se borrarán todas las citas seleccionadas de la base de datos por completo. Indique a continuación el motivo de la anulación definitiva para el correo de los ciudadanos (opcional).',
@@ -300,12 +448,31 @@
                     form.appendChild(idInput);
                 });
 
-                form.submit();
+                HTMLFormElement.prototype.submit.call(form);
             }
         });
     }
 
     function confirmBulkCancel() {
+        if (typeof Swal === 'undefined') {
+            if (confirm('¿Cancelar las citas seleccionadas?')) {
+                const form = document.getElementById('bulk-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'bulk_action';
+                actionInput.value = 'cancel';
+                form.appendChild(actionInput);
+                document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'appointment_ids[]';
+                    idInput.value = cb.value;
+                    form.appendChild(idInput);
+                });
+                HTMLFormElement.prototype.submit.call(form);
+            }
+            return;
+        }
         Swal.fire({
             title: '¿Cancelar las citas seleccionadas?',
             text: 'Indique a continuación el motivo de la cancelación masiva (opcional). Los ciudadanos correspondientes recibirán esta información por email si prestaron su consentimiento.',
@@ -344,7 +511,7 @@
                     form.appendChild(idInput);
                 });
 
-                form.submit();
+                HTMLFormElement.prototype.submit.call(form);
             }
         });
     }

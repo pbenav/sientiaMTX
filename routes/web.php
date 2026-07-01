@@ -111,6 +111,8 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::post('/profile/toggle-privacy-mode', [ProfileController::class, 'togglePrivacyMode'])->name('profile.toggle-privacy-mode');
+    Route::post('/profile/cth/pair', [\App\Http\Controllers\CthPairingController::class, 'pair'])->name('profile.cth.pair');
+    Route::post('/profile/cth/unpair', [\App\Http\Controllers\CthPairingController::class, 'unpair'])->name('profile.cth.unpair');
     Route::patch('/profile/ai', [ProfileController::class, 'updateAi'])->name('profile.ai.update');
     Route::patch('/profile/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.notifications.update');
     Route::patch('/profile/chat-integrations', [ProfileController::class, 'updateChatIntegrations'])->name('profile.chat-integrations.update');
@@ -181,6 +183,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/tasks/bulk-delete', [TaskBulkController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
     Route::post('/teams/{team}/tasks/bulk-merge', [TaskBulkController::class, 'bulkMerge'])->name('teams.tasks.bulk-merge');
     Route::post('/teams/{team}/tasks/purge-trash', [TaskBulkController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
+    
+    // Activity Bulk Routes
+    Route::patch('/teams/{team}/activities/bulk-update', [\App\Http\Controllers\ActivityBulkController::class, 'bulkUpdate'])->name('teams.activities.bulk-update');
+    Route::delete('/teams/{team}/activities/bulk-delete', [\App\Http\Controllers\ActivityBulkController::class, 'bulkDelete'])->name('teams.activities.bulk-delete');
+    Route::post('/teams/{team}/activities/bulk-merge', [\App\Http\Controllers\ActivityBulkController::class, 'bulkMerge'])->name('teams.activities.bulk-merge');
+
     Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit', 'update', 'destroy']);
 
     // Override show/edit/update/destroy to avoid Scoped Binding and handle SoftDeletes
@@ -189,6 +197,46 @@ Route::middleware('auth')->group(function () {
         Route::get('tasks/{task}/edit', [TaskController::class, 'edit'])->name('teams.tasks.edit')->withTrashed()->withoutScopedBindings();
         Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('teams.tasks.update')->withTrashed()->withoutScopedBindings();
         Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('teams.tasks.destroy')->withTrashed()->withoutScopedBindings();
+    });
+
+    // Activities routes (universal polymorphic activities infrastructure)
+    Route::resource('teams.activities', \App\Http\Controllers\ActivityController::class)->except(['show', 'edit', 'update', 'destroy']);
+    Route::prefix('teams/{team}')->group(function() {
+        Route::get('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'show'])->name('teams.activities.show')->withTrashed()->withoutScopedBindings();
+        Route::get('activities/{activity}/edit', [\App\Http\Controllers\ActivityController::class, 'edit'])->name('teams.activities.edit')->withTrashed()->withoutScopedBindings();
+        Route::patch('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'update'])->name('teams.activities.update')->withTrashed()->withoutScopedBindings();
+        Route::delete('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'destroy'])->name('teams.activities.destroy')->withTrashed()->withoutScopedBindings();
+        
+        Route::post('activities/{activity}/archive', [\App\Http\Controllers\ActivityController::class, 'archive'])->name('teams.activities.archive');
+        Route::post('activities/{activity}/unarchive', [\App\Http\Controllers\ActivityController::class, 'unarchive'])->name('teams.activities.unarchive');
+        Route::patch('activities/{activity}/status', [\App\Http\Controllers\ActivityController::class, 'changeStatus'])->name('teams.activities.change-status');
+        Route::post('activities/{activity}/notes', [\App\Http\Controllers\ActivityController::class, 'addNote'])->name('teams.activities.notes.store');
+        Route::patch('activities/{activity}/notes/{note}', [\App\Http\Controllers\ActivityController::class, 'updateNote'])->name('teams.activities.notes.update');
+        Route::delete('activities/{activity}/notes/{note}', [\App\Http\Controllers\ActivityController::class, 'deleteNote'])->name('teams.activities.notes.destroy');
+        Route::post('activities/{activity}/attachments', [\App\Http\Controllers\ActivityController::class, 'uploadAttachment'])->name('teams.activities.attachments.upload');
+        Route::delete('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'deleteAttachment'])->name('teams.activities.attachments.destroy');
+        Route::get('activities/{activity}/attachments/{attachment}/download', [\App\Http\Controllers\ActivityController::class, 'downloadAttachment'])->name('teams.activities.attachments.download');
+
+        // Portabilidad, Clonación e Integraciones de Actividades (Universal Polymorphic Integration)
+        Route::post('activities/import-json', [TaskExportController::class, 'importJson'])->name('teams.activities.import-json');
+        Route::post('activities/{activity}/copy-to-team', [TaskExportController::class, 'copyToTeam'])->name('teams.activities.copy-to-team');
+        Route::post('activities/{activity}/clone', [TaskExportController::class, 'cloneTask'])->name('teams.activities.clone');
+        Route::get('activities/{activity}/export-json', [TaskExportController::class, 'exportJson'])->name('teams.activities.export-json');
+
+        // Conversión y flujos auxiliares de deprecación
+        Route::post('activities/{activity}/convert', [\App\Http\Controllers\ActivityController::class, 'convert'])->name('teams.activities.convert')->withTrashed()->withoutScopedBindings();
+        Route::post('activities/{activity}/restore-deprecated', [\App\Http\Controllers\ActivityController::class, 'restoreDeprecated'])->name('teams.activities.restore-deprecated')->withTrashed()->withoutScopedBindings();
+        Route::post('activities/{activity}/clone-deprecated', [\App\Http\Controllers\ActivityController::class, 'cloneDeprecated'])->name('teams.activities.clone-deprecated')->withTrashed()->withoutScopedBindings();
+        Route::post('activities/{activity}/merge-deprecated', [\App\Http\Controllers\ActivityController::class, 'mergeDeprecated'])->name('teams.activities.merge-deprecated')->withTrashed()->withoutScopedBindings();
+
+        // Gestión de Capítulos para Documentos
+        Route::post('activities/{activity}/chapters', [\App\Http\Controllers\ActivityController::class, 'addChapter'])->name('teams.activities.chapters.store');
+        Route::patch('activities/{activity}/chapters/{chapterId}', [\App\Http\Controllers\ActivityController::class, 'updateChapter'])->name('teams.activities.chapters.update');
+        Route::delete('activities/{activity}/chapters/{chapterId}', [\App\Http\Controllers\ActivityController::class, 'deleteChapter'])->name('teams.activities.chapters.destroy');
+
+        Route::post('activities/{activity}/google-sync', [\App\Http\Controllers\GoogleController::class, 'syncTask'])->name('google.sync_activity');
+        Route::post('activities/{activity}/google-disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnectTask'])->name('google.disconnect_activity');
+        Route::post('activities/{activity}/google-calendar', [\App\Http\Controllers\GoogleController::class, 'exportTaskToCalendar'])->name('google.export_calendar_activity');
     });
 
     // Expedientes routes
@@ -405,7 +453,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ai/undo', [\App\Http\Controllers\AiContentTransferController::class, 'undoLastTransfer'])->name('ai.undo');
     Route::delete('/ai/history', [\App\Http\Controllers\AiChatController::class, 'clearHistory'])->name('ai.clear-history');
     Route::delete('/ai/messages/{id}', [\App\Http\Controllers\AiChatController::class, 'deleteMessage'])->name('ai.delete-message');
-    Route::post('/teams/{team}/tasks/{task}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferContent'])->name('ai.transfer');
+    Route::post('/teams/{team}/tasks/{taskId}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferContent'])->name('ai.transfer');
     Route::post('/teams/{team}/forum/{thread}/ai/transfer', [\App\Http\Controllers\AiContentTransferController::class, 'transferForumContent'])->name('ai.transfer_forum');
     Route::post('/ai/transfer-global/{team?}', [\App\Http\Controllers\AiContentTransferController::class, 'transferGlobalContent'])->name('ai.transfer_global');
     Route::post('/ai/microsites/quick-create', [\App\Http\Controllers\Microsite\AiMicrositeController::class, 'quickCreate'])->name('ai.microsites.quick-create');
@@ -415,6 +463,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/toggle-workday', [\App\Http\Controllers\TimeLogController::class, 'toggleWorkday'])->name('toggle-workday');
         Route::post('/toggle-task/{task}', [\App\Http\Controllers\TimeLogController::class, 'toggleTask'])->name('toggle-task');
         Route::get('/status', [\App\Http\Controllers\TimeLogController::class, 'status'])->name('status');
+        Route::post('/apply-cth-grace-closing', [\App\Http\Controllers\TimeLogController::class, 'applyCthGraceClosing'])->name('apply-cth-grace-closing');
     });
 
     Route::get('/teams/{team}/time-reports', [\App\Http\Controllers\TimeLogController::class, 'index'])->name('teams.time-reports');
@@ -486,6 +535,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/chat/group/{group}/rename', [\App\Http\Controllers\ChatGroupController::class, 'renameGroup'])->name('chat.group.rename');
     Route::delete('/chat/group/{group}', [\App\Http\Controllers\ChatGroupController::class, 'deleteGroup'])->name('chat.group.delete');
     Route::post('/chat/meet', [\App\Http\Controllers\ChatCallController::class, 'startGoogleMeet'])->name('chat.meet');
+    Route::post('/meet/generate', [\App\Http\Controllers\ChatCallController::class, 'generateMeetLink'])->name('meet.generate');
     Route::delete('/chat/message/{id}', [\App\Http\Controllers\ChatMessageController::class, 'destroy'])->name('chat.message.delete');
     Route::delete('/chat/clear/{receiverId}', [\App\Http\Controllers\ChatMessageController::class, 'clear'])->name('chat.clear');
 });
@@ -500,11 +550,19 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\OnlyOfficeController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/attachments/{attachment}/edit', [OnlyOfficeController::class, 'edit'])->name('onlyoffice.edit');
+    Route::get('/activity-attachments/{attachment}/edit', [OnlyOfficeController::class, 'editActivity'])->name('onlyoffice.activity.edit');
+    
     // Crear un documento nuevo vacío directamente desde una tarea y abrir el editor
     Route::post('/teams/{team}/tasks/{task}/documents/create', [OnlyOfficeController::class, 'createDocument'])->name('onlyoffice.create');
+    Route::post('/teams/{team}/activities/{activity}/documents/create', [OnlyOfficeController::class, 'createActivityDocument'])->name('onlyoffice.activity.create');
 });
+
+// Rutas de Webhook/Descarga de OnlyOffice Server
 Route::get('/onlyoffice/download/{attachment}', [OnlyOfficeController::class, 'downloadFile'])->name('onlyoffice.download');
 Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');
+
+Route::get('/onlyoffice/activity-download/{attachment}', [OnlyOfficeController::class, 'downloadActivityFile'])->name('onlyoffice.activity.download');
+Route::post('/onlyoffice/activity-callback/{attachment}', [OnlyOfficeController::class, 'activityCallback'])->name('onlyoffice.activity.callback');
 
 // --- Citas Previas — Panel de Gestión (autenticado) ---
 Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::class])->prefix('teams/{team}/mis-citas')->name('appointments.')->group(function () {

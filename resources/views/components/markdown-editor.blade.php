@@ -406,7 +406,7 @@
                 ></textarea>
             </div>
             <div x-show="tab === 'preview'" 
-                class="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed py-5 px-6 bg-gray-50/30 dark:bg-gray-950/20"
+                class="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed py-5 px-6 bg-gray-50/30 dark:bg-gray-950/20 resize-y overflow-y-auto max-h-[650px] min-h-[250px] custom-scrollbar"
                 x-html="preview"
                 x-cloak>
             </div>

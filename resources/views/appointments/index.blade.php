@@ -65,7 +65,7 @@
         @endif
 
         {{-- Estadísticas del día --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
 
             {{-- Este mes --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between">
@@ -130,6 +130,32 @@
                     </div>
                 </div>
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            </div>
+
+            {{-- Duración Citas --}}
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3" title="Calculado sobre citas completadas con tiempo registrado en los últimos 30 días">⏱️ Tiempos (30d)</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-3xl font-black text-indigo-600 dark:text-indigo-400 tabular-nums">{{ floor(($statsDuration['avg'] ?? 0) / 60) }}<span class="text-lg">m</span></h3>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">MEDIA</span>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-2">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl border border-gray-100 dark:border-gray-700/50 flex flex-col items-center">
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">MIN</span>
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ floor(($statsDuration['min'] ?? 0) / 60) }}m</span>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl border border-gray-100 dark:border-gray-700/50 flex flex-col items-center">
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">MAX</span>
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ floor(($statsDuration['max'] ?? 0) / 60) }}m</span>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl border border-gray-100 dark:border-gray-700/50 flex flex-col items-center">
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">MODA</span>
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ floor(($statsDuration['mode'] ?? 0) / 60) }}m</span>
+                    </div>
+                </div>
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             </div>
 
             {{-- Próxima cita --}}
@@ -214,15 +240,30 @@
                                     </span>
                                     
                                     @if(!in_array($cita->status, ['cancelled', 'blocked']))
-                                        <form method="POST" action="{{ route('appointments.update', [$team, $cita]) }}" x-data class="inline-block">
-                                            @csrf @method('PATCH')
-                                            <input type="hidden" name="status" x-ref="statusInput" value="{{ $cita->status }}">
-                                            <label class="relative inline-flex items-center cursor-pointer mb-0">
-                                                <input type="checkbox" class="sr-only peer" {{ $cita->status === 'completed' ? 'checked' : '' }}
-                                                       @change="$refs.statusInput.value = $el.checked ? 'completed' : 'confirmed'; $el.closest('form').submit()">
+                                        <div x-data="{ loading: false, isCompleted: {{ $cita->status === 'completed' ? 'true' : 'false' }} }" class="inline-block">
+                                            <label class="relative inline-flex items-center cursor-pointer mb-0" :class="{ 'opacity-50 pointer-events-none': loading }">
+                                                <input type="checkbox" class="sr-only peer" x-model="isCompleted"
+                                                       @change="
+                                                            loading = true;
+                                                            let formData = new FormData();
+                                                            formData.append('_token', '{{ csrf_token() }}');
+                                                            formData.append('_method', 'PATCH');
+                                                            formData.append('status', isCompleted ? 'completed' : 'confirmed');
+                                                            
+                                                            fetch('{{ route('appointments.update', [$team, $cita]) }}', {
+                                                                method: 'POST',
+                                                                body: formData,
+                                                                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                                                            }).then(res => {
+                                                                loading = false;
+                                                            }).catch(() => {
+                                                                loading = false;
+                                                                isCompleted = !isCompleted;
+                                                            });
+                                                       ">
                                                 <div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
                                             </label>
-                                        </form>
+                                        </div>
                                     @endif
                                 </div>
                             </div>

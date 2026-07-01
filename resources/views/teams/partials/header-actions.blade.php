@@ -1,7 +1,7 @@
 @php
     $teamId = $team->id;
     $isMatrix = request()->routeIs('teams.dashboard');
-    $isTaskList = request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show');
+    $isTaskList = request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') || request()->routeIs('teams.activities.*');
     $isGantt = request()->routeIs('teams.gantt');
     $isKanban = request()->routeIs('teams.kanban');
     $isForum = request()->routeIs('teams.forum.*');
@@ -23,7 +23,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Nueva tarea</span>
+                    <span>Nueva actividad</span>
                     <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
             </x-slot>
@@ -32,15 +32,23 @@
                 <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
                     Acciones de Creación
                 </div>
-                <x-dropdown-link :href="route('teams.tasks.create', $team)" class="flex items-center gap-3 py-3 px-4">
-                    <div class="p-1.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-lg shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                <x-dropdown-link :href="route('teams.activities.create', [$team, 'type' => 'task'])" class="flex items-center gap-3 py-3 px-4">
+                    <div class="p-1.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-lg shrink-0 text-sm select-none">
+                        📋
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-gray-900 dark:text-white text-xs">Crear Manualmente</span>
-                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">Formulario paso a paso</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs">Crear Tarea</span>
+                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">Planificar una nueva tarea asignable</span>
+                    </div>
+                </x-dropdown-link>
+
+                <x-dropdown-link :href="route('teams.activities.create', $team)" class="flex items-center gap-3 py-3 px-4">
+                    <div class="p-1.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-lg shrink-0 text-sm select-none">
+                        ✨
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-bold text-gray-900 dark:text-white text-xs">Crear Otra Actividad</span>
+                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">Reunión, nota, recordatorio, decisión, enlace o documento</span>
                     </div>
                 </x-dropdown-link>
 

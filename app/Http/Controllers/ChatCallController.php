@@ -139,7 +139,39 @@ class ChatCallController extends Controller
 
             return response()->json(['success' => true, 'meet_url' => $meetUri]);
         } catch (\Throwable $e) {
-            Log::error('startGoogleMeet error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error al crear la sala de Meet'], 500);
+        }
+    }
+
+    public function generateMeetLink(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        $teamId = $request->team_id ?? $user->teams()->first()?->id;
+
+        $googleService = app(\App\Services\GoogleService::class);
+
+        if (!$googleService->setTokenForUser($user, $teamId)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes Google vinculado. Conecta tu cuenta en Perfil → Integraciones.',
+                'needs_auth' => true,
+            ], 403);
+        }
+
+        try {
+            $meetUri = $googleService->createMeetSpace();
+
+            if (!$meetUri) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo crear la sala de Meet. Reconecta tu cuenta de Google para autorizar el nuevo permiso.',
+                    'needs_auth' => true,
+                ], 503);
+            }
+
+            return response()->json(['success' => true, 'meet_url' => $meetUri]);
+        } catch (\Throwable $e) {
+            Log::error('generateMeetLink error: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Error al crear la sala de Meet'], 500);
         }
     }

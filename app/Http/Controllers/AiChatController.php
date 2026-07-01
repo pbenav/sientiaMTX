@@ -57,7 +57,7 @@ class AiChatController extends Controller
         $request->validate([
             'prompt' => 'nullable|string|max:100000',
             'team_id' => 'nullable|integer|exists:teams,id',
-            'task_id' => 'nullable|integer|exists:tasks,id',
+            'task_id' => 'nullable|integer',
             'attachment_id' => 'nullable|integer|exists:task_attachments,id',
             'forum_thread_id' => 'nullable|integer|exists:forum_threads,id',
             'forum_message_id' => 'nullable|integer|exists:forum_messages,id',
@@ -78,7 +78,7 @@ class AiChatController extends Controller
         }
 
         if ($request->task_id) {
-            $task = \App\Models\Task::find($request->task_id);
+            $task = \App\Models\Activity::find($request->task_id) ?? \App\Models\Task::find($request->task_id);
             if (!$task || $user->cannot('view', $task)) {
                 return response()->json(['message' => 'No tienes acceso a esta tarea.'], 403);
             }
@@ -192,7 +192,7 @@ class AiChatController extends Controller
         // (withFile already called above if present)
 
         if ($request->task_id) {
-            $task = \App\Models\Task::find($request->task_id);
+            $task = \App\Models\Activity::find($request->task_id) ?? \App\Models\Task::find($request->task_id);
             if ($task) {
                 $aiAssistant->withTaskContext($task);
             }
@@ -245,8 +245,7 @@ class AiChatController extends Controller
                     // Si la tarea es privada y el usuario no tiene acceso, el controlador del foro 
                     // permite a los coordinadores ver el hilo pero no la tarea. 
                     // Permitimos que la IA procese el hilo si el usuario es manager o puede ver la tarea.
-                    $isManager = $thread->team->isManager($user);
-                    if (!$isManager && $user->cannot('view', $thread->task)) {
+                    if ($user->cannot('view', $thread->task)) {
                         return response()->json(['message' => 'No tienes permiso para acceder al contenido de esta tarea.'], 403);
                     }
                 }

@@ -23,16 +23,14 @@ class TaskAttachment extends Model
         'storage_provider',
         'provider_file_id',
         'web_view_link',
+        'embed_token',
     ];
+
+    protected $appends = ['embed_token'];
 
     public function attachable()
     {
         return $this->morphTo();
-    }
-
-    protected static function booted()
-    {
-        // Lifecycle events are now handled by App\Observers\TaskAttachmentObserver
     }
 
     public function getTeam(): ?Team
@@ -78,7 +76,11 @@ class TaskAttachment extends Model
      */
     public function getEmbedToken(): string
     {
-        return hash_hmac('sha256', (string) $this->id, (string) config('app.key'));
+        if (empty($this->embed_token)) {
+            $this->embed_token = bin2hex(random_bytes(32));
+            $this->saveQuietly();
+        }
+        return $this->embed_token;
     }
 
     /**

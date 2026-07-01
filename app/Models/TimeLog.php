@@ -32,8 +32,16 @@ class TimeLog extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class, 'task_id');
+    }
+
+    /**
+     * @deprecated Use activity() instead
+     */
     public function task()
     {
-        return $this->belongsTo(Task::class);
+        return $this->activity();
     }
 }

@@ -25,9 +25,7 @@ class TaskController extends Controller
 
     public function index(Request $request, Team $team)
     {
-        if (auth()->user()->cannot('view', $team)) {
-            return redirect()->back()->with('warning', __('teams.unauthorized_access'));
-        }
+        return redirect()->route('teams.activities.index', $team);
         $user = auth()->user();
         $isManager = $team->isManager($user);
         

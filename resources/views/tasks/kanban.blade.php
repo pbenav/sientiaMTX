@@ -221,7 +221,7 @@
                                         {{ $column->title }}
                                     </h3>
                                     <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/10 text-[10px] sm:text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm shrink-0">
-                                        {{ count($column->tasks->filter(fn($t) => !$t->is_archived)) }}
+                                        {{ count($column->activities->filter(fn($t) => !$t->is_archived)) }}
                                     </span>
 
                                     <!-- Trash Icon for Custom Columns -->
@@ -231,6 +231,17 @@
                                                 title="Eliminar columna">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 w-3 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    @endif
+
+                                    <!-- Archive All Completed Button -->
+                                    @if($column->type === 'done' && count($column->activities->filter(fn($t) => !$t->is_archived)) > 0)
+                                        <button onclick="archiveAllCompleted({{ $column->id }})" 
+                                                class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 shrink-0 group/btn"
+                                                title="{{ __('Archivar/ocultar todas las tareas completadas de la columna') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 w-3 sm:w-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                                             </svg>
                                         </button>
                                     @endif
@@ -268,7 +279,7 @@
 
                         <!-- Tasks List -->
                         <div class="flex-1 overflow-y-auto px-1.5 sm:px-2 pb-2.5 sm:pb-3.5 md:pb-4 space-y-2 sm:space-y-2.5 md:space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
-                            @foreach($column->tasks->filter(fn($t) => !$t->is_archived) as $task)
+                            @foreach($column->activities->filter(fn($t) => !$t->is_archived) as $task)
                                 @php
                                     $quadrant = $task->getQuadrant($task);
                                     $qCfg = $quadrantConfig[$quadrant] ?? null;
@@ -277,7 +288,7 @@
                                          taskId: {{ $task->id }},
                                          get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
                                      }"
-                                     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ $task->status === 'completed' ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
+                                     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ $task->isCompleted() ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
                                      class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
                                      data-task-id="{{ $task->id }}"
                                      style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms; will-change: transform, opacity;">
@@ -285,7 +296,26 @@
                                     <!-- Card Content -->
                                     <div class="flex items-start justify-between gap-2 mb-2">
                                         <div class="flex flex-col gap-1 flex-1">
-                                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1"
+                                                      style="background-color: {{ $task->type_badge_color }}15; color: {{ $task->type_badge_color }}; border-color: {{ $task->type_badge_color }}30;">
+                                                    @if($task->type_icon)
+                                                        {!! $task->type_icon !!}
+                                                    @endif
+                                                    {{ $task->type_label }}
+                                                </span>
+                                                @if ($task->priority)
+                                                    <span class="text-[9px] font-bold uppercase tracking-tighter px-1.5 py-0.5 rounded border shadow-sm {{ match($task->priority) {
+                                                        'critical' => 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700/50',
+                                                        'high' => 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
+                                                        'medium' => 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700/50',
+                                                        default => 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'
+                                                    } }}">
+                                                        {{ __("tasks.priorities.{$task->priority}") }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <a href="{{ route('teams.activities.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                                 {{ $task->title }}
                                             </a>
                                             <div class="flex flex-wrap gap-1 mt-0.5">
@@ -319,7 +349,7 @@
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                     </span>
                                                 @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
-                                                    <a href="{{ route('teams.tasks.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                                                    <a href="{{ route('teams.activities.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                                     </a>
                                                 @endif
@@ -328,7 +358,7 @@
                                         <div class="shrink-0 flex flex-col items-end gap-1.5">
                                             <div class="flex items-center gap-1.5">
                                                 @include('tasks.partials.task-timer-button')
-                                                @if(!$task->is_archived)
+                                                @if(!$task->is_archived && $column->type === 'done')
                                                     <button onclick="archiveTask({{ $task->id }})" 
                                                             class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-colors"
                                                             title="{{ __('tasks.mark_as_completed_and_archive') }}">
@@ -398,7 +428,7 @@
                                         </div>
                                         
                                         @if($task->due_date)
-                                            <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->due_date->isPast() && $task->status !== 'completed' ? 'text-red-500' : 'text-gray-400' }}">
+                                            <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->due_date->isPast() && !$task->isCompleted() ? 'text-red-500' : 'text-gray-400' }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
                                                 </svg>
@@ -445,7 +475,7 @@
                             <div class="px-4 py-3 flex items-center gap-4 bg-white dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-white/10 group transition-all rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none relative overflow-hidden">
                                 <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-500/20 z-10 relative"></div>
                                 <span class="flex-1 text-[12px] text-gray-400 dark:text-gray-600 line-through truncate group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors cursor-pointer"
-                                    onclick="window.location.href='{{ route('teams.tasks.show', [$team, $task]) }}'">
+                                    onclick="window.location.href='{{ route('teams.activities.show', [$team, $task]) }}'">
                                     {{ $task->title }}
                                 </span>
                                 <button onclick="unarchiveTask({{ $task->id }})" 
@@ -643,6 +673,61 @@
                 .then(response => response.json())
                 .catch(error => console.error('Error:', error));
             }
+
+            window.archiveAllCompleted = function(columnId) {
+                Swal.fire({
+                    title: '¿Archivar todas las tareas?',
+                    text: 'Se ocultarán del tablón principal todas las tareas completadas de esta columna.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, archivar todas',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#10b981',
+                    background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                    color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-0 shadow-2xl',
+                        confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
+                        cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const columnEl = document.querySelector(`.task-list[data-column-id="${columnId}"]`);
+                        if (!columnEl) return;
+
+                        const taskCards = columnEl.querySelectorAll('[data-task-id]');
+                        const totalTasks = taskCards.length;
+                        if (totalTasks === 0) return;
+
+                        let completedCount = 0;
+                        taskCards.forEach((card) => {
+                            const taskId = card.dataset.taskId;
+                            card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                            card.style.transform = 'scale(0.9)';
+                            card.style.opacity = '0';
+                            setTimeout(() => card.remove(), 300);
+
+                            fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    status: 'completed',
+                                    progress_percentage: 100,
+                                    is_archived: true
+                                })
+                            }).then(() => {
+                                completedCount++;
+                                if (completedCount === totalTasks) {
+                                    setTimeout(() => window.location.reload(), 500);
+                                }
+                            }).catch(err => console.error(err));
+                        });
+                    }
+                });
+            };
 
             window.unarchiveTask = function(taskId) {
                 const row = document.querySelector(`button[onclick="unarchiveTask(${taskId})"]`)?.closest('div');

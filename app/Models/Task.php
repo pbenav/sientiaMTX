@@ -27,6 +27,21 @@ class Task extends Model
     protected static function boot(): void
     {
         parent::boot();
+
+        // Alerta de depuración para rastrear accesos al modelo legacy Task
+        static::retrieved(function ($task) {
+            try {
+                if (request()) {
+                    $url = request()->fullUrl();
+                    $action = request()->route()?->getActionName() ?? 'N/A';
+                    \Illuminate\Support\Facades\Log::warning("LEGACY TASK ACCESS: Se ha accedido al modelo obsoleto Task (ID: {$task->id}). URL: {$url} | Action: {$action}");
+                } else {
+                    \Illuminate\Support\Facades\Log::warning("LEGACY TASK ACCESS: Se ha accedido al modelo obsoleto Task (ID: {$task->id}) desde CLI / Background Job.");
+                }
+            } catch (\Exception $e) {
+                // Silenciar para no interferir con la ejecución normal
+            }
+        });
     }
 
 
@@ -230,11 +245,41 @@ class Task extends Model
     }
 
     /**
+     * Get the associated Activity if this Task has been mapped or converted to the new V2 Activity system.
+     */
+    public function getActivityAttribute()
+    {
+        $mapping = \Illuminate\Support\Facades\DB::table('activity_task_mapping')
+            ->where('task_id', $this->id)
+            ->first();
+
+        if ($mapping) {
+            return \App\Models\Activity::find($mapping->activity_id);
+        }
+
+        return null;
+    }
+
+
+    /**
      * Check if this task is an instance of a global task
      */
     public function isInstance(): bool
     {
         return !empty($this->parent_id) && !$this->is_template;
+    }
+
+    /**
+     * Scope a query to only include tasks that are not ephemeral
+     */
+    public function scopeNotEphemeral($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('metadata->is_ephemeral')
+              ->orWhere('metadata->is_ephemeral', false)
+              ->orWhere('metadata->is_ephemeral', 'false')
+              ->orWhere('metadata->is_ephemeral', '0');
+        });
     }
 
     /**
@@ -374,10 +419,13 @@ class Task extends Model
         $builder = $query instanceof \Illuminate\Database\Eloquent\Relations\Relation ? $query->getQuery() : $query;
 
         return $builder->where(function ($q) use ($user, $isManager) {
-            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
+            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo (que no sean privadas)
             if ($isManager) {
                 $q->where('visibility', 'public')
-                  ->orWhere('is_template', true)
+                  ->orWhere(function ($template) {
+                      $template->where('is_template', true)
+                               ->where('visibility', '!=', 'private');
+                  })
                   ->orWhere('created_by_id', $user->id)
                   ->orWhere('assigned_user_id', $user->id);
             } else {

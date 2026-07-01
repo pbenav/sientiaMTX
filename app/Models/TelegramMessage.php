@@ -37,11 +37,6 @@ class TelegramMessage extends Model
         'reply_to_text',
     ];
 
-    protected static function booted()
-    {
-        // Lifecycle events are now handled by App\Observers\TelegramMessageObserver
-    }
-
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);

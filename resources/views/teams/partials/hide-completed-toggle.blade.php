@@ -3,7 +3,8 @@
                    request()->routeIs('teams.tasks.index') || 
                    request()->routeIs('teams.tasks.show') || 
                    request()->routeIs('teams.gantt') || 
-                   request()->routeIs('teams.kanban');
+                   request()->routeIs('teams.kanban') || 
+                   request()->routeIs('teams.activities.*');
     $hideCompleted = session('hide_completed_tasks', true);
 @endphp
 

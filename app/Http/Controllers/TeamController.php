@@ -227,7 +227,7 @@ class TeamController extends Controller
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
-        $query = $team->tasks()
+        $query = $team->activities()
             ->with([
                 'assignedTo', 'assignedGroups', 'tags', 'assignedUser', 'skills', 'parent', 'creator', 'service',
                 'children' => function($q) use ($user, $isManager) {
@@ -236,10 +236,11 @@ class TeamController extends Controller
                 'children.assignedUser'
             ])
             ->visibleTo($user, $isManager)
+            ->notEphemeral()
             ->focusedFor($user, $team)
             ->when(request('skill_id'), function ($q, $skillId) {
                 $q->where(function ($sq) use ($skillId) {
-                    $sq->where('skill_id', $skillId)
+                    $sq->where('metadata->skill_id', $skillId)
                         ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
                 });
             });
@@ -252,11 +253,12 @@ class TeamController extends Controller
                 // OR tasks explicitly created by the user (Ownership)
                 // OR tasks assigned specifically to the user (Direct work)
                 $q->where(function ($backlog) {
-                    $backlog->whereNull('assigned_user_id')
-                            ->whereDoesntHave('assignedTo');
+                    $backlog->whereDoesntHave('assignedTo')
+                            ->whereDoesntHave('assignedGroups');
                 })
                 ->orWhere('created_by_id', $user->id)
-                ->orWhere('assigned_user_id', $user->id);
+                ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $user->id))
+                ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             });
         }
 
@@ -278,7 +280,7 @@ class TeamController extends Controller
         $completedLimit = (int) config('settings.kanban_completed_limit', 10);
 
         foreach ($allTasks as $task) {
-            $isCompleted = in_array($task->status, ['completed', 'cancelled']);
+            $isCompleted = $task->isCompleted();
             if (!$hideCompleted || !$isCompleted) {
                 if (!$isCompleted) {
                     $quadrant = $this->getQuadrant($task);
@@ -288,7 +290,7 @@ class TeamController extends Controller
         }
 
         // Handle completed tasks separately with limit
-        $completedTasks = $allTasks->where('status', 'completed')
+        $completedTasks = $allTasks->filter(fn($t) => $t->isCompleted())
             ->sortByDesc('updated_at')
             ->take($completedLimit);
 

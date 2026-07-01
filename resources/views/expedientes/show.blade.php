@@ -38,9 +38,9 @@
                     </x-demo-hint>
                     
                     @php
-                        $totalTasks = $expediente->rootTasks->count();
-                        $completedTasks = $expediente->rootTasks->where('status', 'completed')->count();
-                        $avgProgress = $totalTasks > 0 ? round($expediente->rootTasks->avg('progress_percentage')) : 0;
+                        $totalTasks = $expediente->rootActivities->count();
+                        $completedTasks = $expediente->rootActivities->filter(fn($act) => $act->isCompleted())->count();
+                        $avgProgress = $totalTasks > 0 ? round($expediente->rootActivities->avg('progress_percentage')) : 0;
                     @endphp
 
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-xs font-bold text-gray-500">
@@ -177,7 +177,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                     <h3 class="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
                         <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                        Tareas Vinculadas ({{ $expediente->rootTasks->count() }})
+                        Actividades Vinculadas ({{ $expediente->rootActivities->count() }})
                     </h3>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <button @click="showLinkBox = !showLinkBox" type="button"
@@ -185,7 +185,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" /></svg>
                             Vincular
                         </button>
-                        <a href="{{ route('teams.tasks.create', [$team, 'expediente_id' => $expediente->id]) }}" 
+                        <a href="{{ route('teams.activities.create', [$team, 'expediente_id' => $expediente->id]) }}" 
                             class="flex-1 sm:flex-none inline-flex justify-center items-center gap-1.5 text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 px-3 py-1.5 rounded-xl transition-all border border-violet-100 dark:border-violet-500/20">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                             Nueva
@@ -195,12 +195,12 @@
 
                 <!-- Drawer for linking tasks -->
                 <div x-show="showLinkBox" x-collapse x-cloak class="mb-6 p-4 bg-violet-50/50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-900/30 rounded-2xl">
-                    <h4 class="text-xs font-black text-violet-700 dark:text-violet-300 uppercase tracking-widest mb-3">Vincular Tareas Existentes</h4>
+                    <h4 class="text-xs font-black text-violet-700 dark:text-violet-300 uppercase tracking-widest mb-3">Vincular Actividades Existentes</h4>
                     <form action="{{ route('teams.expedientes.link-tasks', [$team, $expediente]) }}" method="POST">
                         @csrf
                         <div class="space-y-3">
                             <div>
-                                <select name="task_ids[]" id="task-selector" multiple placeholder="Busca y selecciona tareas para vincular..." class="text-sm">
+                                <select name="task_ids[]" id="task-selector" multiple placeholder="Busca y selecciona actividades para vincular..." class="text-sm">
                                     @foreach($availableTasks as $availTask)
                                         <option value="{{ $availTask->id }}">
                                             [{{ $availTask->id }}] {{ $availTask->title }} 
@@ -208,7 +208,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <p class="text-[10px] text-gray-500 mt-1">Muestra tareas del equipo que no pertenecen a este expediente. Si ya tienen uno, se moverán a este.</p>
+                                <p class="text-[10px] text-gray-500 mt-1">Muestra actividades del equipo que no pertenecen a este expediente. Si ya tienen uno, se moverán a este.</p>
                             </div>
                             <div class="flex justify-end gap-2">
                                 <button @click="showLinkBox = false" type="button" class="text-xs font-bold text-gray-500 px-3 py-1.5 hover:text-gray-700">Cancelar</button>
@@ -218,15 +218,15 @@
                     </form>
                 </div>
                 
-                @if($expediente->rootTasks->isEmpty())
+                @if($expediente->rootActivities->isEmpty())
                     <div class="flex flex-col items-center justify-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
                         <div class="w-12 h-12 rounded-full bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-400 mb-3">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                         </div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Aún no hay tareas en este expediente.</p>
-                        <p class="text-[11px] text-gray-400 mt-1 mb-4">Empieza a organizarte creando tu primera tarea vinculada.</p>
-                        <a href="{{ route('teams.tasks.create', [$team, 'expediente_id' => $expediente->id]) }}" class="text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2 rounded-xl transition-all shadow-md">
-                            Crear Primera Tarea
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Aún no hay actividades en este expediente.</p>
+                        <p class="text-[11px] text-gray-400 mt-1 mb-4">Empieza a organizarte creando tu primera actividad vinculada.</p>
+                        <a href="{{ route('teams.activities.create', [$team, 'expediente_id' => $expediente->id]) }}" class="text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2 rounded-xl transition-all shadow-md">
+                            Crear Primera Actividad
                         </a>
                     </div>
                 @else
@@ -248,10 +248,10 @@
 
                     @php
                         $taskCounts = [
-                            'pending' => $expediente->rootTasks->where('status', 'pending')->count(),
-                            'in_progress' => $expediente->rootTasks->where('status', 'in_progress')->count(),
-                            'completed' => $expediente->rootTasks->where('status', 'completed')->count(),
-                            'blocked' => $expediente->rootTasks->where('status', 'blocked')->count(),
+                            'pending' => $expediente->rootActivities->filter(fn($act) => $act->status_value === 'pending')->count(),
+                            'in_progress' => $expediente->rootActivities->filter(fn($act) => $act->status_value === 'in_progress')->count(),
+                            'completed' => $expediente->rootActivities->filter(fn($act) => $act->isCompleted())->count(),
+                            'blocked' => $expediente->rootActivities->filter(fn($act) => $act->status_value === 'blocked')->count(),
                         ];
                     @endphp
                     <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -281,124 +281,169 @@
                         @endif
                     </div>
 
-                    <div class="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
-                        @foreach($expediente->rootTasks as $task)
-                            @php
-                                $statusClasses = [
-                                    'completed'   => 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',
-                                    'in_progress' => 'bg-blue-50 border-blue-100 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400',
-                                    'blocked'     => 'bg-red-50 border-red-100 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400',
-                                    'default'     => 'bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-500/10 dark:border-gray-500/20 dark:text-gray-400'
-                                ];
-                                $badgeClass = $statusClasses[$task->status] ?? $statusClasses['default'];
-                                $hasChildren = $task->children->count() > 0;
-                            @endphp
-                            <div class="flex flex-col gap-1" x-show="(statusFilter === 'all' || statusFilter === '{{ $task->status }}') && '{{ addslashes(strtolower(str_replace(["\r", "\n"], ' ', $task->title))) }}'.includes(search.toLowerCase())">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gray-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 rounded-2xl border border-gray-100 hover:border-violet-200 dark:border-gray-800 dark:hover:border-violet-900/50 transition-all group shadow-sm hover:shadow-md">
-                                    
-                                    <div class="flex items-center gap-3 min-w-0 flex-1">
-                                        {{-- Toggle Button for Children --}}
-                                        @if($hasChildren)
-                                            <button @click="expanded[{{ $task->id }}] = !expanded[{{ $task->id }}]" 
-                                                class="w-6 h-6 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 hover:text-violet-500 transition-all active:scale-90 shadow-sm">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform duration-300" :class="expanded[{{ $task->id }}] ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </button>
-                                        @else
-                                            <div class="w-6 h-6 flex items-center justify-center">
-                                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                                            </div>
-                                        @endif
+                    @php
+                        $groupedActivities = $expediente->rootActivities->groupBy(fn($a) => array_key_exists($a->type, \App\Models\Activity::SUBTYPES) ? $a->type : 'other');
+                        $activitySubtypes = [
+                            'task'     => ['label' => 'Tareas', 'icon' => '📋'],
+                            'document' => ['label' => 'Documentos', 'icon' => '📄'],
+                            'note'     => ['label' => 'Notas', 'icon' => '📝'],
+                            'decision' => ['label' => 'Decisiones', 'icon' => '⚖️'],
+                            'meeting'  => ['label' => 'Reuniones', 'icon' => '👥'],
+                            'link'     => ['label' => 'Enlaces', 'icon' => '🔗'],
+                            'reminder' => ['label' => 'Recordatorios', 'icon' => '🔔'],
+                            'other'    => ['label' => 'Otras Actividades', 'icon' => '✨'],
+                        ];
+                    @endphp
+                    <div class="space-y-8 max-h-[650px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+                        @foreach($activitySubtypes as $typeKey => $meta)
+                            @if(isset($groupedActivities[$typeKey]) && $groupedActivities[$typeKey]->isNotEmpty())
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
+                                        <span class="text-base select-none">{{ $meta['icon'] }}</span>
+                                        <h4 class="text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300">
+                                            {{ $meta['label'] }} ({{ $groupedActivities[$typeKey]->count() }})
+                                        </h4>
+                                    </div>
 
-                                        <a href="{{ route('teams.tasks.show', [$team, $task]) }}" class="flex flex-col sm:flex-row sm:items-center justify-between flex-1 gap-3 min-w-0">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div @class([
-                                                    'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border',
-                                                    'bg-emerald-100 border-emerald-200 text-emerald-600' => $task->status === 'completed',
-                                                    'bg-white border-gray-200 text-gray-400 group-hover:border-violet-300 group-hover:text-violet-500 dark:bg-gray-900 dark:border-gray-700' => $task->status !== 'completed',
-                                                ])>
-                                                    @if($task->status === 'completed')
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                                    @elseif($task->is_template)
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                                                    @else
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                                    @endif
-                                                </div>
-                                                <div class="min-w-0 flex-1">
-                                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">
-                                                        {{ $task->title }}
-                                                    </h4>
-                                                    <div class="flex items-center gap-2 mt-0.5">
-                                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold border {{ $badgeClass }} uppercase tracking-wider">
-                                                            {{ __("tasks.statuses.{$task->status}") }}
-                                                        </span>
-                                                        @if($task->is_template)
-                                                            <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 uppercase tracking-widest">Plan Maestro</span>
+                                    <div class="space-y-2.5">
+                                        @foreach($groupedActivities[$typeKey] as $task)
+                                            @php
+                                                $statusClasses = [
+                                                    'completed'   => 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',
+                                                    'in_progress' => 'bg-blue-50 border-blue-100 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400',
+                                                    'blocked'     => 'bg-red-50 border-red-100 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400',
+                                                    'default'     => 'bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-500/10 dark:border-gray-500/20 dark:text-gray-400'
+                                                ];
+                                                $badgeClass = $statusClasses[$task->status_value] ?? $statusClasses['default'];
+                                                $hasChildren = $task->children->count() > 0;
+                                            @endphp
+                                            <div class="flex flex-col gap-1" x-show="(statusFilter === 'all' || statusFilter === '{{ $task->status_value }}') && '{{ addslashes(strtolower(str_replace(["\r", "\n"], ' ', $task->title))) }}'.includes(search.toLowerCase())">
+                                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gray-50 hover:bg-white dark:bg-gray-800/50 dark:hover:bg-gray-800 rounded-2xl border border-gray-100 hover:border-violet-200 dark:border-gray-800 dark:hover:border-violet-900/50 transition-all group shadow-sm hover:shadow-md">
+                                                    
+                                                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                                                        {{-- Toggle Button for Children --}}
+                                                        @if($hasChildren)
+                                                            <button @click="expanded[{{ $task->id }}] = !expanded[{{ $task->id }}]" 
+                                                                class="w-6 h-6 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 hover:text-violet-500 transition-all active:scale-90 shadow-sm">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform duration-300" :class="expanded[{{ $task->id }}] ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </button>
+                                                        @else
+                                                            <div class="w-6 h-6 flex items-center justify-center">
+                                                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                                                            </div>
                                                         @endif
-                                                        @if($task->due_date)
-                                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                                {{ $task->due_date->diffForHumans() }}
-                                                            </span>
-                                                        @endif
+
+                                                        <a href="{{ route('teams.activities.show', [$team, $task]) }}" class="flex flex-col sm:flex-row sm:items-center justify-between flex-1 gap-3 min-w-0">
+                                                            <div class="flex items-center gap-3 min-w-0">
+                                                                <div @class([
+                                                                    'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border',
+                                                                    'bg-emerald-100 border-emerald-200 text-emerald-600' => $task->isCompleted(),
+                                                                    'bg-white border-gray-200 text-gray-400 group-hover:border-violet-300 group-hover:text-violet-500 dark:bg-gray-900 dark:border-gray-700' => !$task->isCompleted(),
+                                                                ])>
+                                                                    @if($task->isCompleted())
+                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                                    @else
+                                                                        <span class="text-sm select-none">
+                                                                            @switch($task->type)
+                                                                                @case('task') 📋 @break
+                                                                                @case('document') 📄 @break
+                                                                                @case('note') 📝 @break
+                                                                                @case('link') 🔗 @break
+                                                                                @case('decision') ⚖️ @break
+                                                                                @case('meeting') 👥 @break
+                                                                                @case('reminder') 🔔 @break
+                                                                                @default ✨
+                                                                            @endswitch
+                                                                        </span>
+                                                                    @endif
+                                                                </div>
+                                                                <div class="min-w-0 flex-1">
+                                                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">
+                                                                        {{ $task->title }}
+                                                                    </h4>
+                                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold border {{ $badgeClass }} uppercase tracking-wider">
+                                                                            {{ Lang::has("tasks.statuses.{$task->status_value}") ? __("tasks.statuses.{$task->status_value}") : ucfirst($task->status_value) }}
+                                                                        </span>
+                                                                        @if($task->is_template)
+                                                                            <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 uppercase tracking-widest">Plan Maestro</span>
+                                                                        @endif
+                                                                        @if($task->due_date)
+                                                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                                                {{ $task->due_date->diffForHumans() }}
+                                                                            </span>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-none border-gray-100 dark:border-gray-800 pt-2 sm:pt-0">
+                                                                @if($task->assignedTo->isNotEmpty())
+                                                                    <div class="flex -space-x-2 overflow-hidden">
+                                                                        @foreach($task->assignedTo->take(3) as $user)
+                                                                            <img src="{{ $user->profile_photo_url }}" class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800" title="{{ $user->name }}">
+                                                                        @endforeach
+                                                                        @if($task->assignedTo->count() > 3)
+                                                                            <span class="flex items-center justify-center h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-500 dark:text-gray-400">+{{ $task->assignedTo->count() - 3 }}</span>
+                                                                        @endif
+                                                                    </div>
+                                                                @endif
+                                                                
+                                                                <div class="w-12 text-right">
+                                                                    <span class="text-xs font-black tabular-nums text-gray-400 dark:text-gray-500 group-hover:text-violet-600 dark:group-hover:text-violet-400">{{ $task->progress_percentage }}%</span>
+                                                                </div>
+                                                            </div>
+                                                        </a>
+
+                                                        {{-- Detach Action --}}
+                                                        <div class="flex items-center pl-2 border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-gray-700/50 shrink-0 justify-end sm:justify-start">
+                                                            @if($task->parent_id && !$task->is_template)
+                                                                <div class="p-2 text-gray-300 dark:text-gray-600 cursor-help" title="Heredado del Plan Maestro 🔒">
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                                                </div>
+                                                            @else
+                                                                <form id="unlink-form-{{ $task->id }}" action="{{ route('teams.expedientes.unlink-task', [$team, $expediente, $task]) }}" method="POST" class="inline">
+                                                                    @csrf
+                                                                    <button type="button" onclick="confirmUnlinkTask({{ $task->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Actividad">
+                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-none border-gray-100 dark:border-gray-800 pt-2 sm:pt-0">
-                                                @if($task->assignedUser)
-                                                    <div class="flex items-center gap-2" title="Asignado a {{ $task->assignedUser->name }}">
-                                                        <img src="{{ $task->assignedUser->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-700 shadow-sm">
-                                                        <span class="text-[11px] font-medium text-gray-600 dark:text-gray-300 hidden md:block">{{ explode(' ', $task->assignedUser->name)[0] }}</span>
+                                                {{-- Children List --}}
+                                                @if($hasChildren)
+                                                    <div x-show="expanded[{{ $task->id }}]" x-collapse x-cloak class="ml-10 border-l-2 border-gray-100 dark:border-gray-800/50 pl-4 space-y-2 mb-4">
+                                                        @foreach($task->children as $subtask)
+                                                            <a href="{{ route('teams.activities.show', [$team, $subtask]) }}" class="flex items-center justify-between p-2.5 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl hover:bg-white dark:hover:bg-gray-800 transition-all group/sub">
+                                                                <div class="flex items-center gap-3 min-w-0">
+                                                                    <div class="w-1.5 h-1.5 rounded-full {{ $subtask->isCompleted() ? 'bg-emerald-500' : 'bg-violet-400' }}"></div>
+                                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300 group-hover/sub:text-gray-900 dark:group-hover/sub:text-white truncate">{{ $subtask->title }}</span>
+                                                                </div>
+                                                                <div class="flex items-center gap-3 shrink-0">
+                                                                    @if($subtask->assignedTo->isNotEmpty())
+                                                                        <div class="flex -space-x-1">
+                                                                            @foreach($subtask->assignedTo->take(2) as $u)
+                                                                                <img src="{{ $u->profile_photo_url }}" class="w-5 h-5 rounded-full ring-1 ring-white dark:ring-gray-800 grayscale group-hover/sub:grayscale-0 transition-all" title="{{ $u->name }}">
+                                                                            @endforeach
+                                                                        </div>
+                                                                    @endif
+                                                                    <span class="text-[10px] font-black text-gray-400 w-8 text-right">{{ $subtask->progress_percentage }}%</span>
+                                                                </div>
+                                                            </a>
+                                                        @endforeach
                                                     </div>
                                                 @endif
-                                                
-                                                <div class="w-12 text-right">
-                                                    <span class="text-xs font-black tabular-nums text-gray-400 dark:text-gray-500 group-hover:text-violet-600 dark:group-hover:text-violet-400">{{ $task->progress_percentage }}%</span>
-                                                </div>
                                             </div>
-                                        </a>
-
-                                        {{-- Detach Action --}}
-                                        <div class="flex items-center pl-2 border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-gray-700/50 shrink-0 justify-end sm:justify-start">
-                                            @if($task->parent_id && !$task->is_template)
-                                                <div class="p-2 text-gray-300 dark:text-gray-600 cursor-help" title="Heredado del Plan Maestro 🔒">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                                </div>
-                                            @else
-                                                <form id="unlink-form-{{ $task->id }}" action="{{ route('teams.expedientes.unlink-task', [$team, $expediente, $task]) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="button" onclick="confirmUnlinkTask({{ $task->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Tarea">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Children List --}}
-                                @if($hasChildren)
-                                    <div x-show="expanded[{{ $task->id }}]" x-collapse x-cloak class="ml-10 border-l-2 border-gray-100 dark:border-gray-800/50 pl-4 space-y-2 mb-4">
-                                        @foreach($task->children as $subtask)
-                                            <a href="{{ route('teams.tasks.show', [$team, $subtask]) }}" class="flex items-center justify-between p-2.5 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl hover:bg-white dark:hover:bg-gray-800 transition-all group/sub">
-                                                <div class="flex items-center gap-3 min-w-0">
-                                                    <div class="w-1.5 h-1.5 rounded-full {{ $subtask->status === 'completed' ? 'bg-emerald-500' : 'bg-violet-400' }}"></div>
-                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300 group-hover/sub:text-gray-900 dark:group-hover/sub:text-white truncate">{{ $subtask->title }}</span>
-                                                </div>
-                                                <div class="flex items-center gap-3 shrink-0">
-                                                    @if($subtask->assignedUser)
-                                                        <img src="{{ $subtask->assignedUser->profile_photo_url }}" class="w-5 h-5 rounded-full grayscale group-hover/sub:grayscale-0 transition-all shadow-xs" title="{{ $subtask->assignedUser->name }}">
-                                                    @endif
-                                                    <span class="text-[10px] font-black text-gray-400 w-8 text-right">{{ $subtask->progress_percentage }}%</span>
-                                                </div>
-                                            </a>
                                         @endforeach
                                     </div>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
                         @endforeach
                     </div>
                 @endif
@@ -814,7 +859,7 @@
                     'remove_button': { title: 'Quitar' }
                 },
                 maxItems: null,
-                placeholder: 'Escribe para buscar tareas...',
+                placeholder: 'Escribe para buscar actividades...',
                 render: {
                     option: function(data, escape) {
                         return '<div class="py-1.5 px-2 border-b border-gray-50 dark:border-gray-800/50">' +
@@ -842,8 +887,8 @@
 
         window.confirmUnlinkTask = function(taskId) {
             Swal.fire({
-                title: '¿Desvincular Tarea?',
-                text: "La tarea dejará de pertenecer a este expediente, pero conservará todos sus datos.",
+                title: '¿Desvincular Actividad?',
+                text: "La actividad dejará de pertenecer a este expediente, pero conservará todos sus datos.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#7c3aed',

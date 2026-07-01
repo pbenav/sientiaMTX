@@ -24,11 +24,6 @@ class AiChatMessage extends Model
 
     protected $appends = ['file_url'];
 
-    protected static function booted()
-    {
-        // Lifecycle events are now handled by App\Observers\AiChatMessageObserver
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);

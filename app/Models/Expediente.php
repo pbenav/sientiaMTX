@@ -83,6 +83,19 @@ class Expediente extends Model
         return $this->hasMany(Task::class)->whereNull('parent_id');
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    /**
+     * Get only the root activities (parents) linked to this expediente.
+     */
+    public function rootActivities(): HasMany
+    {
+        return $this->hasMany(Activity::class)->whereNull('parent_id');
+    }
+
     public function attachments(): MorphMany
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');

@@ -28,4 +28,9 @@ class KanbanColumn extends Model
     {
         return $this->hasMany(Task::class);
     }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class, 'kanban_column_id');
+    }
 }

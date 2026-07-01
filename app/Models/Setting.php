@@ -12,11 +12,6 @@ class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
 
-    protected static function booted()
-    {
-        // Lifecycle events are now handled by App\Observers\SettingObserver
-    }
-
     /**
      * Get a setting value by key.
      *

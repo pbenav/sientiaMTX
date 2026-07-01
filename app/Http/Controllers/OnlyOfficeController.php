@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\TaskAttachment;
+use App\Models\Activity;
+use App\Models\ActivityAttachment;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +21,9 @@ class OnlyOfficeController extends Controller
      */
     public function edit(TaskAttachment $attachment)
     {
+        $startTime = microtime(true);
+        Log::info("[OnlyOffice Profiling] Iniciando edit() para TaskAttachment {$attachment->id}");
+
         // Ensure the file exists locally
         if ($attachment->storage_provider === 'google') {
             return back()->with('error', 'La edición en OnlyOffice no soporta archivos en Google Drive.');
@@ -30,6 +35,8 @@ class OnlyOfficeController extends Controller
         if (!$team || !$attachment->canBeAccessedBy(auth()->user(), $team)) {
             abort(403, 'No autorizado.');
         }
+        
+        Log::info("[OnlyOffice Profiling] Auth validado en " . round((microtime(true) - $startTime) * 1000, 2) . "ms");
 
         // Define supported extensions and resolve document type
         $ext = strtolower(pathinfo($attachment->file_name, PATHINFO_EXTENSION));
@@ -83,7 +90,7 @@ class OnlyOfficeController extends Controller
                     'autosave' => true,
                     'chat' => true,
                     'comments' => true,
-                    'forcesave' => false, // set to true if you want explicit save button triggered sync
+                    'forcesave' => true, // set to true if you want explicit save button triggered sync
                     'logo' => [
                         'image' => asset('img/logo.png'), // optional
                         'url' => config('app.url'),
@@ -103,6 +110,8 @@ class OnlyOfficeController extends Controller
             // In newer versions, the token MUST also be inside the object if explicitly passed
             $config['token'] = $token;
         }
+
+        Log::info("[OnlyOffice Profiling] edit() JWT y payload generados. Renderizando vista. Tiempo total: " . round((microtime(true) - $startTime) * 1000, 2) . "ms");
 
         return view('onlyoffice.editor', compact('apiUrl', 'config', 'attachment', 'token'));
     }
@@ -247,6 +256,9 @@ class OnlyOfficeController extends Controller
      */
     public function downloadFile(Request $request, TaskAttachment $attachment)
     {
+        $startTime = microtime(true);
+        Log::info("[OnlyOffice Profiling] Iniciando downloadFile() para TaskAttachment {$attachment->id} desde IP {$request->ip()}");
+
         // Validar que la petición viene de la IP de OnlyOffice o tiene firma válida.
         $onlyOfficeIp = parse_url(config('onlyoffice.internal_server_url', ''), PHP_URL_HOST);
         $clientIp = $request->ip();
@@ -261,6 +273,8 @@ class OnlyOfficeController extends Controller
         if (!Storage::disk('public')->exists($attachment->file_path)) {
             abort(404, 'Archivo no encontrado en disco.');
         }
+
+        Log::info("[OnlyOffice Profiling] Iniciando descarga binaria en downloadFile(). Tiempo hasta aquí: " . round((microtime(true) - $startTime) * 1000, 2) . "ms");
 
         return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
     }
@@ -359,5 +373,234 @@ class OnlyOfficeController extends Controller
         if (in_array($ext, $map['cell'])) return 'cell';
         if (in_array($ext, $map['slide'])) return 'slide';
         return null;
+    }
+
+    /**
+     * Display the document editor for Activity v2.
+     */
+    public function editActivity(ActivityAttachment $attachment)
+    {
+        $startTime = microtime(true);
+        Log::info("[OnlyOffice Profiling] Iniciando editActivity() para ActivityAttachment {$attachment->id}");
+
+        // Ensure the user can access it
+        $activity = $attachment->activity;
+        if (!$activity || auth()->user()->cannot('view', $activity)) {
+            abort(403, 'No autorizado.');
+        }
+
+        Log::info("[OnlyOffice Profiling] Auth validado en " . round((microtime(true) - $startTime) * 1000, 2) . "ms");
+
+        // Define supported extensions and resolve document type
+        $ext = strtolower(pathinfo($attachment->file_name, PATHINFO_EXTENSION));
+        $docType = $this->getDocumentType($ext);
+
+        if (!$docType) {
+            return back()->with('error', 'Este tipo de archivo no es compatible con el editor online.');
+        }
+
+        $configUrl = config('onlyoffice.url');
+        $apiUrl = rtrim($configUrl, '/') . '/web-apps/apps/api/documents/api.js';
+
+        $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
+
+        $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
+        // Usamos las nuevas rutas de actividad
+        $downloadUrl = $baseUrl . '/onlyoffice/activity-download/' . $attachment->id . '?v=' . $key;
+        $callbackUrl = $baseUrl . '/onlyoffice/activity-callback/' . $attachment->id;
+
+        $config = [
+            'document' => [
+                'fileType' => $ext,
+                'key' => $key,
+                'title' => $attachment->file_name,
+                'url' => $downloadUrl,
+                'permissions' => [
+                    'comment' => true,
+                    'download' => true,
+                    'edit' => true,
+                    'print' => true,
+                    'review' => true,
+                ],
+            ],
+            'documentType' => $docType,
+            'editorConfig' => [
+                'callbackUrl' => $callbackUrl,
+                'lang' => 'es',
+                'mode' => 'edit',
+                'user' => [
+                    'id' => (string)auth()->id(),
+                    'name' => auth()->user()->name,
+                ],
+                'customization' => [
+                    'autosave' => true,
+                    'chat' => true,
+                    'comments' => true,
+                    'forcesave' => true,
+                    'logo' => [
+                        'image' => asset('img/logo.png'),
+                        'url' => config('app.url'),
+                    ],
+                ]
+            ],
+        ];
+
+        $secret = config('onlyoffice.secret');
+        $token = null;
+        if (!empty($secret)) {
+            $payload = $config;
+            $payload['iat'] = time();
+            $payload['exp'] = time() + (60 * 60);
+            $token = JWT::encode($payload, $secret, 'HS256');
+            $config['token'] = $token;
+        }
+
+        Log::info("[OnlyOffice Profiling] editActivity() JWT y payload generados. Renderizando vista. Tiempo total: " . round((microtime(true) - $startTime) * 1000, 2) . "ms");
+
+        return view('onlyoffice.editor', compact('apiUrl', 'config', 'attachment', 'token'));
+    }
+
+    /**
+     * Create a new empty document for Activity v2.
+     */
+    public function createActivityDocument(Request $request, Team $team, Activity $activity)
+    {
+        $this->authorize('update', $activity);
+
+        $type = $request->input('type', 'docx');
+        $allowedTypes = ['docx', 'xlsx', 'pptx'];
+        if (!in_array($type, $allowedTypes)) {
+            abort(422, 'Tipo de documento no soportado.');
+        }
+
+        $date    = now()->format('Y-m-d');
+        $slug    = Str::slug($activity->title, '-');
+        $fileName = "{$date}-{$slug}.{$type}";
+
+        $directory = 'attachments/activities/' . $activity->id;
+        $filePath  = $directory . '/' . $fileName;
+        Storage::disk('public')->makeDirectory($directory);
+
+        $emptyContent = match($type) {
+            'docx'  => $this->minimalDocx(),
+            'xlsx'  => $this->minimalXlsx(),
+            'pptx'  => $this->minimalPptx(),
+            default => '',
+        };
+
+        Storage::disk('public')->put($filePath, $emptyContent);
+
+        $mimeMap = [
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        ];
+
+        // Register it as an ActivityAttachment
+        $attachment = ActivityAttachment::create([
+            'activity_id'      => $activity->id,
+            'uploaded_by_id'   => auth()->id(),
+            'file_name'        => $fileName,
+            'file_path'        => $filePath,
+            'file_size'        => strlen($emptyContent),
+            'mime_type'        => $mimeMap[$type],
+            'disk'             => 'public',
+        ]);
+
+        Log::info("[OnlyOffice] Nuevo documento '{$fileName}' creado y vinculado a Activity ID {$activity->id}.");
+
+        return redirect()->route('onlyoffice.activity.edit', $attachment);
+    }
+
+    /**
+     * Secured endpoint for OnlyOffice Server to download the raw Activity file.
+     */
+    public function downloadActivityFile(Request $request, ActivityAttachment $attachment)
+    {
+        $startTime = microtime(true);
+        Log::info("[OnlyOffice Profiling] Iniciando downloadActivityFile() para ActivityAttachment {$attachment->id} desde IP {$request->ip()}");
+
+        $onlyOfficeIp = parse_url(config('onlyoffice.internal_server_url', ''), PHP_URL_HOST);
+        $clientIp = $request->ip();
+
+        $isAuthorized = $request->hasValidSignature() || ($onlyOfficeIp && $clientIp === $onlyOfficeIp);
+
+        if (!$isAuthorized) {
+            Log::warning("[OnlyOffice] Acceso denegado a descarga Activity. IP: {$clientIp}, esperada: {$onlyOfficeIp}");
+            abort(403, 'No autorizado.');
+        }
+
+        if (!Storage::disk($attachment->disk ?? 'public')->exists($attachment->file_path)) {
+            abort(404, 'Archivo no encontrado en disco.');
+        }
+
+        Log::info("[OnlyOffice Profiling] Iniciando descarga binaria en downloadActivityFile(). Tiempo hasta aquí: " . round((microtime(true) - $startTime) * 1000, 2) . "ms");
+
+        return Storage::disk($attachment->disk ?? 'public')->download($attachment->file_path, $attachment->file_name);
+    }
+
+    /**
+     * Callback receiver for OnlyOffice saving cycles on Activity.
+     */
+    public function activityCallback(Request $request, ActivityAttachment $attachment)
+    {
+        $body = $request->json()->all();
+
+        $secret = config('onlyoffice.secret');
+        if (!empty($secret)) {
+            $token = $body['token'] ?? $request->header('Authorization') ?? $request->header('X-CDES-JWT');
+            if (!$token) {
+                return response()->json(['error' => 1, 'message' => 'Authentication required']);
+            }
+            try {
+                $jwtStr = Str::startsWith($token, 'Bearer ') ? substr($token, 7) : $token;
+                JWT::decode($jwtStr, new \Firebase\JWT\Key($secret, 'HS256'));
+            } catch (\Exception $e) {
+                return response()->json(['error' => 1, 'message' => 'Invalid token signature']);
+            }
+        }
+
+        $status = (int) ($body['status'] ?? 0);
+
+        if ($status === 2 || $status === 6) {
+            $downloadUri = $body['url'] ?? null;
+            if (!$downloadUri) {
+                return response()->json(['error' => 1, 'message' => 'No download URL provided by editor']);
+            }
+
+            try {
+                $internalServerUrl = config('onlyoffice.internal_server_url');
+                if (!empty($internalServerUrl)) {
+                    $publicServerUrl = rtrim(config('onlyoffice.url'), '/');
+                    $downloadUri = str_replace($publicServerUrl, rtrim($internalServerUrl, '/'), $downloadUri);
+                }
+
+                $newFileContent = file_get_contents($downloadUri);
+                if ($newFileContent === false) {
+                    throw new \Exception("Could not retrieve file from {$downloadUri}");
+                }
+
+                Storage::disk($attachment->disk ?? 'public')->put($attachment->file_path, $newFileContent);
+                
+                $attachment->update([
+                    'file_size' => strlen($newFileContent),
+                    'updated_at' => now()
+                ]);
+
+                Log::info("[OnlyOffice] ActivityAttachment ID {$attachment->id} ({$attachment->file_name}) updated.");
+                
+                $attachment->activity->histories()->create([
+                    'user_id' => $body['users'][0] ?? null,
+                    'action' => 'edited',
+                    'details' => json_encode(['note' => 'Edición completada mediante OnlyOffice.']),
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error("[OnlyOffice] Error updating Activity file for Attachment {$attachment->id}: " . $e->getMessage());
+                return response()->json(['error' => 1, 'message' => 'Internal write failure']);
+            }
+        }
+
+        return response()->json(['error' => 0]);
     }
 }

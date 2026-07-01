@@ -12,7 +12,7 @@ interface AiAssistantInterface
     /**
      * Set the task context for the next generation.
      */
-    public function withTaskContext(\App\Models\Task $task): self;
+    public function withTaskContext(\App\Models\Activity|\App\Models\Task $task): self;
 
     /**
      * Set an attachment context for the next generation.

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Activity;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -21,7 +22,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, User $assignedBy)
+    public function __construct(Task|Activity $task, User $assignedBy)
     {
         $this->task = $task;
         $this->assignedBy = $assignedBy;
@@ -45,7 +46,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): array
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return [
             'text' => "📬 *¡NUEVA TAREA ASIGNADA!*\n\n" .
@@ -60,7 +61,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = route('teams.tasks.show', [$this->task->team_id, $this->task]);
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
 
         return (new MailMessage)
             ->subject(__('tasks.notifications.assigned_alert', ['title' => $this->task->title]))

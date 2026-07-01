@@ -16,32 +16,32 @@ Route::middleware('guest')->group(function () {
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store'])
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:30,1');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:30,1');
 
     Route::get('login/two-factor', [App\Http\Controllers\Auth\TwoFactorLoginController::class, 'create'])
         ->name('login.two-factor');
 
     Route::post('login/two-factor', [App\Http\Controllers\Auth\TwoFactorLoginController::class, 'store'])
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:30,1');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:3,1')
+        ->middleware('throttle:15,1')
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:3,1')
+        ->middleware('throttle:15,1')
         ->name('password.store');
 });
 

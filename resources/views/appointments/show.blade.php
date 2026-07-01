@@ -70,9 +70,9 @@
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">📅 Datos de la Cita</p>
                         <div class="flex items-center gap-2">
-                            @if($appointment->task)
+                            @if($appointment->activity || $appointment->task)
                                 <div class="mr-2 border-r border-gray-200 dark:border-gray-700 pr-4">
-                                    @include('tasks.partials.task-timer-button', ['task' => $appointment->task])
+                                    @include('tasks.partials.task-timer-button', ['task' => $appointment->activity ?? $appointment->task])
                                 </div>
                             @endif
 
@@ -368,7 +368,15 @@
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">🔗 Vínculos</p>
                     </div>
                     <div class="p-5 space-y-3">
-                        @if($appointment->task)
+                        @if($appointment->activity)
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Actividad Asociada</p>
+                                <a href="{{ route('teams.activities.show', [$team, $appointment->activity]) }}" 
+                                   class="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors truncate block">
+                                    {{ $appointment->activity->title }}
+                                </a>
+                            </div>
+                        @elseif($appointment->task)
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Tarea Asociada</p>
                                 <a href="{{ route('teams.tasks.show', [$team, $appointment->task]) }}" 
@@ -416,6 +424,12 @@
         if (cancelForm) {
             cancelForm.addEventListener('submit', function (e) {
                 e.preventDefault();
+                if (typeof Swal === 'undefined') {
+                    if (confirm('¿Cancelar cita previa?')) {
+                        HTMLFormElement.prototype.submit.call(cancelForm);
+                    }
+                    return;
+                }
                 Swal.fire({
                     title: '¿Cancelar cita previa?',
                     text: 'Indique a continuación el motivo de la cancelación (opcional). El ciudadano recibirá esta información por email si prestó su consentimiento.',
@@ -438,7 +452,7 @@
                         reasonInput.name = 'cancellation_reason';
                         reasonInput.value = result.value || '';
                         cancelForm.appendChild(reasonInput);
-                        cancelForm.submit();
+                        HTMLFormElement.prototype.submit.call(cancelForm);
                     }
                 });
             });
@@ -448,6 +462,12 @@
         if (deleteForm) {
             deleteForm.addEventListener('submit', function (e) {
                 e.preventDefault();
+                if (typeof Swal === 'undefined') {
+                    if (confirm('¿Eliminar permanentemente esta cita de la base de datos?')) {
+                        HTMLFormElement.prototype.submit.call(deleteForm);
+                    }
+                    return;
+                }
                 Swal.fire({
                     title: '¿Eliminar permanentemente?',
                     text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo. Indique a continuación el motivo de la anulación definitiva para el correo del ciudadano (opcional).',
@@ -471,7 +491,7 @@
                         reasonInput.name = 'cancellation_reason';
                         reasonInput.value = result.value || '';
                         deleteForm.appendChild(reasonInput);
-                        deleteForm.submit();
+                        HTMLFormElement.prototype.submit.call(deleteForm);
                     }
                 });
             });

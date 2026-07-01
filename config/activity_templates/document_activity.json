@@ -1,0 +1,96 @@
+{
+    "type": "document",
+    "display_name": "Documento",
+    "description": "Actividad para gestionar documentos y archivos",
+    "icon": "icon-file",
+    "color": "#2ecc71",
+    "properties": {
+        "title": {
+            "type": "string",
+            "required": true,
+            "max_length": 255,
+            "searchable": true
+        },
+        "description": {
+            "type": "text",
+            "required": false,
+            "max_length": 1000000,
+            "searchable": true
+        },
+        "file_path": {
+            "type": "string",
+            "required": false,
+            "max_length": 1000
+        },
+        "file_size": {
+            "type": "integer",
+            "required": false
+        },
+        "mime_type": {
+            "type": "string",
+            "required": false,
+            "max_length": 255
+        },
+        "status": {
+            "type": "string",
+            "required": false,
+            "default": "uploaded",
+            "enum": [
+                "uploaded",
+                "editing",
+                "reviewed",
+                "archived"
+            ]
+        }
+    },
+    "states": {
+        "uploaded": {
+            "transitions": [
+                "editing",
+                "reviewed",
+                "archived"
+            ]
+        },
+        "editing": {
+            "transitions": [
+                "uploaded",
+                "reviewed"
+            ]
+        },
+        "reviewed": {
+            "transitions": [
+                "archived",
+                "uploaded"
+            ]
+        },
+        "archived": {
+            "transitions": [
+                "uploaded"
+            ]
+        }
+    },
+    "conversions": {
+        "allowed_targets": [
+            "task",
+            "note"
+        ],
+        "property_mapping": {
+            "title": "title",
+            "description": "description"
+        },
+        "preserve_metadata": [
+            "tags",
+            "assignments",
+            "attachments"
+        ]
+    },
+    "actions": {
+        "create": true,
+        "update": true,
+        "delete": true,
+        "convert": true,
+        "archive": true,
+        "assign": true,
+        "rate": true
+    }
+}

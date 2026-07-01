@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Log;
 
 class AiContentTransferController extends Controller
 {
-    public function transferContent(Request $request, \App\Models\Team $team, \App\Models\Task $task)
+    public function transferContent(Request $request, \App\Models\Team $team, $taskId)
     {
-        if ($task->team_id !== $team->id) {
+        $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
+        if (!$task || $task->team_id !== $team->id) {
             abort(404);
         }
 
@@ -19,38 +20,71 @@ class AiContentTransferController extends Controller
 
         $payload = $this->extractPayload($request->input('content'));
         
+        $isActivity = $task instanceof \App\Models\Activity;
+
         if ($request->target === 'description' || $request->target === 'observations' || $request->target === 'observations_append') {
             $column = ($request->target === 'description') ? 'description' : 'observations';
             $textToInject = $this->getBestTextFromPayload($payload, $column);
             
-            $oldContent = $task->{$column} ?: '';
-            
-            // Siempre añadimos al final (append) para no perder trabajo previo
-            $newContent = trim($oldContent . "\n\n" . $textToInject);
+            if ($isActivity) {
+                if ($column === 'description') {
+                    $oldContent = $task->description ?: '';
+                    $newContent = trim($oldContent . "\n\n" . $textToInject);
+                    $task->update(['description' => $newContent]);
+                    
+                    $history = $task->histories()->create([
+                        'user_id' => auth()->id(),
+                        'action' => 'ai_transfer',
+                        'old_values' => ['description' => $oldContent],
+                        'new_values' => ['description' => $newContent],
+                        'notes' => 'Transferido desde Ax.ia (' . $request->target . ')'
+                    ]);
+                    $msg = "La descripción de la actividad ha sido actualizada con éxito.";
+                    return response()->json(['success' => true, 'message' => $msg, 'history_id' => $history->id]);
+                } else {
+                    $note = $task->notes()->create([
+                        'user_id' => auth()->id(),
+                        'content' => $textToInject,
+                        'visibility' => 'internal'
+                    ]);
+                    return response()->json(['success' => true, 'message' => 'Se ha añadido el desarrollo como una Nota de Equipo.']);
+                }
+            } else {
+                $oldContent = $task->{$column} ?: '';
+                $newContent = trim($oldContent . "\n\n" . $textToInject);
 
-            $task->update([$column => $newContent]);
-            
-            $history = $task->histories()->create([
-                'user_id' => auth()->id(),
-                'action' => 'ai_transfer',
-                'old_values' => [$column => $oldContent],
-                'new_values' => [$column => $newContent],
-                'notes' => 'Transferido desde Ax.ia (' . $request->target . ')'
-            ]);
-            $msg = ($request->target === 'description') 
-                ? "El resumen de la tarea ha sido actualizado con éxito."
-                : "Se han integrado los nuevos detalles en el desarrollo de la tarea.";
+                $task->update([$column => $newContent]);
+                
+                $history = $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'ai_transfer',
+                    'old_values' => [$column => $oldContent],
+                    'new_values' => [$column => $newContent],
+                    'notes' => 'Transferido desde Ax.ia (' . $request->target . ')'
+                ]);
+                $msg = ($request->target === 'description') 
+                    ? "El resumen de la tarea ha sido actualizado con éxito."
+                    : "Se han integrado los nuevos detalles en el desarrollo de la tarea.";
 
-            return response()->json(['success' => true, 'message' => $msg, 'history_id' => $history->id]);
+                return response()->json(['success' => true, 'message' => $msg, 'history_id' => $history->id]);
+            }
         }
 
         if ($request->target === 'private_note' || $request->target === 'private-notes') {
             $textToInject = $this->getBestTextFromPayload($payload, 'private_note');
             
-            $note = \App\Models\TaskPrivateNote::updateOrCreate(
-                ['task_id' => $task->id, 'user_id' => auth()->id()],
-                ['content' => $textToInject]
-            );
+            if ($isActivity) {
+                $note = $task->notes()->create([
+                    'user_id' => auth()->id(),
+                    'content' => $textToInject,
+                    'visibility' => 'private'
+                ]);
+            } else {
+                $note = \App\Models\TaskPrivateNote::updateOrCreate(
+                    ['task_id' => $task->id, 'user_id' => auth()->id()],
+                    ['content' => $textToInject]
+                );
+            }
             
             return response()->json(['success' => true, 'message' => 'Nota privada guardada y protegida correctamente.']);
         }
@@ -112,7 +146,7 @@ class AiContentTransferController extends Controller
         // If thread has a task and target is task-related, redirect to task transfer
         if ($thread->task_id) {
             $request->merge(['task_id' => $thread->task_id]);
-            return $this->transferContent($request, $team, $thread->task);
+            return $this->transferContent($request, $team, $thread->task_id);
         }
 
         // If no task associated, treat as global transfer (create task)
@@ -175,32 +209,97 @@ class AiContentTransferController extends Controller
                 ]);
             }
 
-            // Create a new task for this content
-            $desc = 'Tarea creada desde Ax.ia.';
-            $obs = $content;
+            // Create a new activity for this content
+            $activityType = $request->activity_type ?: 'task';
+            $targetField = $request->target_field ?: 'description';
+            
+            $text = '';
+            if (is_array($payload)) {
+                $title = $title ?: ($payload['title'] ?? $payload['task_data']['title'] ?? null);
+                $text = $payload['description'] ?? $payload['task_data']['description'] ?? $payload['text'] ?? $payload['content'] ?? '';
+            } else {
+                $text = (string) $payload;
+            }
+
+            if (empty($text)) {
+                $text = 'Actividad creada desde Ax.ia.';
+            }
+
+            $desc = 'Actividad creada desde Ax.ia.';
+            $obs = null;
+            $metadata = null;
+
+            // Determinar status por defecto según el tipo
+            $statusByType = [
+                'task' => 'pending',
+                'document' => 'draft',
+                'note' => 'draft',
+                'decision' => 'proposed',
+                'meeting' => 'scheduled',
+                'reminder' => 'pending',
+            ];
+            $status = $statusByType[$activityType] ?? 'pending';
+
+            if ($targetField === 'description') {
+                $desc = $text;
+            } elseif ($targetField === 'note' || $targetField === 'private_note') {
+                $obs = $text;
+            } elseif ($targetField === 'chapter') {
+                $desc = 'Documento estructurado generado desde Ax.ia.';
+                $metadata = [
+                    'chapters' => [
+                        [
+                            'title' => 'Capítulo Auto-generado',
+                            'content' => $text
+                        ]
+                    ]
+                ];
+            } elseif ($targetField === 'agenda') {
+                $desc = 'Reunión planificada desde Ax.ia.';
+                $metadata = [
+                    'agenda' => [
+                        [
+                            'topic' => 'Punto sugerido por IA',
+                            'description' => $text
+                        ]
+                    ]
+                ];
+            } elseif ($targetField === 'argument') {
+                $desc = 'Decisión propuesta por Ax.ia.';
+                $metadata = [
+                    'arguments' => [
+                        [
+                            'type' => 'pro',
+                            'text' => $text
+                        ]
+                    ]
+                ];
+            }
             
             try {
-                $task = \App\Models\Task::create([
+                $task = \App\Models\Activity::create([
                     'team_id' => $team->id,
-                    'title' => $title ?: '📝 Tarea de Ax.ia: ' . now()->format('d/m H:i'),
+                    'type' => $activityType,
+                    'title' => $title ?: '📝 Actividad de Ax.ia: ' . now()->format('d/m H:i'),
                     'description' => $desc,
-                    'observations' => $obs,
                     'created_by_id' => $user->id,
                     'assigned_user_id' => $user->id,
                     'visibility' => 'private',
-                    'status' => 'pending'
+                    'status' => $status,
+                    'metadata' => $metadata
                 ]);
                 $task->refresh();
+                
+                if (!empty($obs)) {
+                    $task->notes()->create([
+                        'user_id' => $user->id,
+                        'content' => $obs,
+                        'visibility' => 'private'
+                    ]);
+                }
             } catch (\Exception $e) {
-                return response()->json(['success' => false, 'message' => 'Error BD: ' . $e->getMessage()], 500);
-            }
-
-            if ($request->target === 'private_note' || $request->target === 'private-notes') {
-                \App\Models\TaskPrivateNote::create([
-                    'task_id' => $task->id,
-                    'user_id' => $user->id,
-                    'content' => $obs
-                ]);
+                \Log::error("Ax.ia Activity Transfer Error: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+                return response()->json(['success' => false, 'message' => 'Error BD al crear la actividad: ' . $e->getMessage()], 500);
             }
 
             return response()->json([
@@ -237,16 +336,30 @@ class AiContentTransferController extends Controller
 
     public function undoLastTransfer(Request $request)
     {
-        $lastHistory = \App\Models\TaskHistory::where('user_id', auth()->id())
+        $lastTaskHistory = \App\Models\TaskHistory::where('user_id', auth()->id())
             ->where('action', 'ai_transfer')
             ->latest()
             ->first();
+
+        $lastActivityHistory = \App\Models\ActivityHistory::where('user_id', auth()->id())
+            ->where('action', 'ai_transfer')
+            ->latest()
+            ->first();
+
+        $lastHistory = null;
+        if ($lastTaskHistory && $lastActivityHistory) {
+            $lastHistory = $lastTaskHistory->created_at->gt($lastActivityHistory->created_at) ? $lastTaskHistory : $lastActivityHistory;
+        } else {
+            $lastHistory = $lastActivityHistory ?: $lastTaskHistory;
+        }
 
         if (!$lastHistory) {
             return response()->json(['success' => false, 'message' => 'No hay acciones recientes de la IA para deshacer.']);
         }
 
-        $task = $lastHistory->task;
+        $isActivityHistory = $lastHistory instanceof \App\Models\ActivityHistory;
+        $task = $isActivityHistory ? $lastHistory->activity : $lastHistory->task;
+
         if (!$task) {
             return response()->json(['success' => false, 'message' => 'La tarea original ya no existe.']);
         }
@@ -255,13 +368,13 @@ class AiContentTransferController extends Controller
         $oldValues = $lastHistory->old_values;
         $task->update($oldValues);
 
-        // Delete this history record so we don't undo it twice (or we could mark it as undone)
+        // Delete this history record so we don't undo it twice
         $lastHistory->delete();
 
         return response()->json([
             'success' => true, 
             'message' => 'Cambio deshecho correctamente.',
-            'target' => array_keys($oldValues)[0] // e.g. 'description'
+            'target' => array_keys($oldValues)[0] ?? 'contenido'
         ]);
     }
 

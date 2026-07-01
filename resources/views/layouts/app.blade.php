@@ -84,9 +84,19 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        if (typeof Swal === 'undefined') {
+            document.write('<script src="https://unpkg.com/sweetalert2@11"><\/script>');
+        }
+    </script>
 
     <!-- Marked.js (Markdown Rendering) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        if (typeof marked === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"><\/script>');
+        }
+    </script>
 
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

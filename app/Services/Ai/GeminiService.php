@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class GeminiService implements AiAssistantInterface
 {
     protected ?User $user = null;
-    protected ?\App\Models\Task $taskContext = null;
+    protected \App\Models\Activity|\App\Models\Task|null $taskContext = null;
     protected ?\App\Models\TaskAttachment $attachmentContext = null;
     protected ?\App\Models\ForumThread $threadContext = null;
     protected ?\App\Models\ForumMessage $messageContext = null;
@@ -146,7 +146,7 @@ class GeminiService implements AiAssistantInterface
         return $this->targetModel;
     }
 
-    public function withTaskContext(\App\Models\Task $task): self
+    public function withTaskContext(\App\Models\Activity|\App\Models\Task $task): self
     {
         $this->taskContext = $task;
         return $this;

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Setting;
 use App\Models\SecurityLog;
+use Illuminate\Support\Facades\Cache;
 
 class SettingObserver
 {
@@ -18,5 +19,7 @@ class SettingObserver
                 "Configuración modificada: '{$setting->key}'"
             );
         }
+
+        Cache::put('setting_' . $setting->key, null, 1);
     }
 }

@@ -73,6 +73,63 @@
                             </div>
                         </div>
 
+                        <!-- Data Protection Card -->
+                        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-xl shadow-indigo-500/5 border border-gray-100 dark:border-gray-800" x-data="{ gdprEnabled: {{ old('data_protection.enabled') ? 'true' : 'false' }} }">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="text-xs font-black uppercase tracking-widest text-indigo-600 ml-1">{{ __('Protección de Datos (RGPD)') }}</h3>
+                                    <p class="text-[10px] text-gray-500 mt-1 ml-1">{{ __('Añade el texto legal al final de la encuesta.') }}</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="hidden" name="data_protection[enabled]" value="0">
+                                    <input type="checkbox" name="data_protection[enabled]" value="1" x-model="gdprEnabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+
+                            <div x-show="gdprEnabled" x-collapse class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Responsable') }}</label>
+                                        <input type="text" name="data_protection[responsible]" value="{{ old('data_protection.responsible') }}"
+                                               class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
+                                               placeholder="Ej: Consorcio Puntos Vuela">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Correo DPD / Contacto') }}</label>
+                                        <input type="email" name="data_protection[dpo_email]" value="{{ old('data_protection.dpo_email') }}"
+                                               class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
+                                               placeholder="Ej: dpo@empresa.com">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Dirección del Responsable') }}</label>
+                                    <input type="text" name="data_protection[address]" value="{{ old('data_protection.address') }}"
+                                           class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
+                                           placeholder="Ej: Avda del Conocimiento nº 41...">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('URL Política Ampliada') }}</label>
+                                    <input type="url" name="data_protection[url]" value="{{ old('data_protection.url') }}"
+                                           class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
+                                           placeholder="https://...">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Finalidad del Formulario') }}</label>
+                                    <textarea name="data_protection[purpose]" rows="2"
+                                              class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all placeholder-gray-400"
+                                              placeholder="Este formulario es sólo y exclusivamente con el fin de la recogida de datos para...">{{ old('data_protection.purpose') }}</textarea>
+                                </div>
+                                <div class="md:col-span-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">{{ __('Plantilla de Texto Legal') }}</label>
+                                    <p class="text-[10px] text-gray-500 mb-3 ml-1">Puedes usar las etiquetas: <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{responsable}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{correo}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{direccion}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{url}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{finalidad}</code></p>
+                                    <textarea name="data_protection[template]" rows="6"
+                                              class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all placeholder-gray-400"
+                                              placeholder="POLÍTICA DE PROTECCIÓN DE DATOS... El responsable es {responsable}...">{{ old('data_protection.template', "POLÍTICA DE PROTECCIÓN DE DATOS\n\nInformación básica sobre protección de datos\n\nLa identidad del responsable es {responsable} con domicilio en {direccion}. Tratamos sus datos con la finalidad de {finalidad}. Pueden ejercer sus derechos de acceso, rectificación, supresión, oposición y limitación al tratamiento de los datos que tengamos suyos mediante correo electrónico a la dirección {correo}.\nPueden consultar la información adicional y detallada sobre Protección de Datos en {url}.") }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Questions Builder Header -->
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
                             <h2 class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Constructor de Preguntas') }}</h2>
