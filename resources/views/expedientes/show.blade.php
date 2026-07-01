@@ -79,7 +79,7 @@
                 {{ __('Editar') }}
             </a>
 
-            @if(auth()->user()->isCoordinator($team) || $expediente->created_by_id === auth()->id() || $team->owner->id === auth()->id())
+            @if(auth()->user()->isCoordinator($team) || $expediente->created_by_id === auth()->id() || $team->owner?->id === auth()->id())
                 <form id="delete-expediente-form" action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" class="shrink-0">
                     @csrf
                     @method('DELETE')
