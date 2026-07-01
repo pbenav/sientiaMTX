@@ -1,4 +1,4 @@
-# 🚀 SientiaMTX (v1.0.2)
+# 🚀 SientiaMTX (v1.1.0)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/pbenav/cth-mobile/main/assets/icon/icon.png" width="150" alt="SientiaMTX Logo">
@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GNU%20AGPLv3-blue.svg" alt="License"></a>
   <a href="https://laravel.com"><img src="https://img.shields.io/badge/Framework-Laravel%2011-red.svg" alt="Laravel"></a>
   <img src="https://img.shields.io/badge/status-Stable-emerald.svg" alt="Status">
-  <img src="https://img.shields.io/badge/version-1.0.2--GA-violet.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.1.0--GA-violet.svg" alt="Version">
 </p>
 
 ---
@@ -23,7 +23,7 @@ SientiaMTX no es solo una herramienta de gestión; es un ecosistema diseñado pa
 
 ## ✨ Características Principales
 
-### 🌟 Novedades Recientes (v1.0.2)
+### 🌟 Novedades Recientes (v1.1.0)
 *   **Recordatorios Masivos (Bulk Nudge)**: Notificación avanzada y simultánea a múltiples miembros con identificación granular `task_id:user_id`.
 *   **Mapeo de Dominios (CNAME)**: Soporte completo para dominios personalizados eliminando problemas de XSRF y sesiones en iframes.
 *   **Internacionalización Global**: Compatibilidad nativa con modo RTL (ej. Árabe/Darija) y traducción automática por IA de servicios.
