@@ -79,17 +79,17 @@
                 {{ __('Editar') }}
             </a>
 
-            @if(auth()->user()->isCoordinator($team) || $expediente->created_by_id === auth()->id() || $team->owner?->id === auth()->id())
+            @can('delete', $expediente)
                 <form id="delete-expediente-form" action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" class="shrink-0">
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="cascade_delete" id="cascade_delete_input" value="0">
                     <button type="button" onclick="confirmDeleteExpediente()" class="shrink-0 flex items-center gap-1.5 text-xs bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-red-100 dark:hover:bg-red-900/40 active:scale-95 shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        Eliminar Expediente
+                        {{ __('Eliminar Expediente') }}
                     </button>
                 </form>
-            @endif
+            @endcan
         </div>
     </x-slot>
 
@@ -894,7 +894,7 @@
                 confirmButtonColor: '#7c3aed',
                 cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'Sí, desvincular',
-                cancelButtonText: 'Cancelar',
+                cancelButtonText: '{{ __('Cancelar') }}',
                 customClass: {
                     popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
                     title: 'text-xl font-black text-gray-900 dark:text-white pt-4',
@@ -919,7 +919,7 @@
                 confirmButtonColor: '#7c3aed',
                 cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'Sí, desvincular',
-                cancelButtonText: 'Cancelar',
+                cancelButtonText: '{{ __('Cancelar') }}',
                 customClass: {
                     popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
                     title: 'text-xl font-black text-gray-900 dark:text-white pt-4',
@@ -937,16 +937,16 @@
 
         window.confirmDeleteExpediente = function() {
             Swal.fire({
-                title: '¿Eliminar Expediente?',
+                title: '{{ __('¿{{ __('Eliminar Expediente') }}?') }}',
                 html: `
                     <div class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-4">
-                        <p>Esta acción moverá el expediente a la papelera.</p>
+                        <p>{{ __('Esta acción moverá el expediente a la papelera.') }}</p>
                         <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
                             <label class="flex items-start gap-3 cursor-pointer group">
                                 <input type="checkbox" id="swal-cascade-delete" class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 bg-white dark:bg-gray-800 transition-colors">
                                 <div class="flex-1">
-                                    <span class="block text-sm font-bold text-red-700 dark:text-red-400">Eliminación en cascada (Profilaxis)</span>
-                                    <span class="block text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">Eliminará también física y permanentemente TODAS las tareas, notas y archivos adjuntos vinculados. ¡Esta acción física es irreversible y liberará espacio en el servidor!</span>
+                                    <span class="block text-sm font-bold text-red-700 dark:text-red-400">{{ __('Eliminación en cascada (Profilaxis)') }}</span>
+                                    <span class="block text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">{{ __('Eliminará también física y permanentemente TODAS las tareas, notas y archivos adjuntos vinculados. ¡Esta acción física es irreversible y liberará espacio en el servidor!') }}</span>
                                 </div>
                             </label>
                         </div>
@@ -956,8 +956,8 @@
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'Sí, Eliminar',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('Sí, Eliminar') }}',
+                cancelButtonText: '{{ __('Cancelar') }}',
                 customClass: {
                     popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
                     title: 'text-xl font-black text-gray-900 dark:text-white pt-4',

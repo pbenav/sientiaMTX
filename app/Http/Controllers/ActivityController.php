@@ -89,7 +89,7 @@ class ActivityController extends Controller
             ->where('is_template', false)
             ->select('id', 'title', 'created_by_id', 'created_at')
             ->latest()
-            ->limit(300)
+            ->limit(50)
             ->get();
 
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
@@ -123,7 +123,7 @@ class ActivityController extends Controller
         );
 
         return redirect()->route('teams.activities.show', [$team, $activity])
-            ->with('success', 'Actividad creada con éxito.');
+            ->with('success', __('activities.created_success'));
     }
 
     /**
@@ -132,7 +132,7 @@ class ActivityController extends Controller
     public function show(Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', 'Actividad no encontrada en este equipo.');
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found_in_team'));
         }
 
         if (auth()->user()->cannot('view', $activity)) {
@@ -152,7 +152,7 @@ class ActivityController extends Controller
     public function edit(Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', 'Actividad no encontrada.');
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
         }
 
         if (auth()->user()->cannot('update', $activity)) {
@@ -175,7 +175,7 @@ class ActivityController extends Controller
             ->where('is_template', false)
             ->select('id', 'title', 'created_by_id', 'created_at')
             ->latest()
-            ->limit(300)
+            ->limit(50)
             ->get();
 
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
@@ -232,7 +232,7 @@ class ActivityController extends Controller
     public function update(StoreActivityRequest $request, Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', 'Actividad no encontrada.');
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
         }
 
         if (auth()->user()->cannot('update', $activity)) {
@@ -251,7 +251,7 @@ class ActivityController extends Controller
         $this->activityService->update($activity, $validated, $request->file('attachments') ?? []);
 
         return redirect()->route('teams.activities.show', [$team, $activity])
-            ->with('success', 'Actividad actualizada con éxito.');
+            ->with('success', __('activities.updated_success'));
     }
 
     /**
@@ -260,7 +260,7 @@ class ActivityController extends Controller
     public function destroy(Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', 'Actividad no encontrada.');
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
         }
 
         if (auth()->user()->cannot('delete', $activity)) {
@@ -270,7 +270,7 @@ class ActivityController extends Controller
         $this->activityService->delete($activity);
 
         return redirect()->route('teams.activities.index', $team)
-            ->with('success', 'Actividad eliminada con éxito.');
+            ->with('success', __('activities.deleted_success'));
     }
 
     /**
@@ -284,7 +284,7 @@ class ActivityController extends Controller
 
         $this->activityService->archive($activity);
 
-        return back()->with('success', 'Actividad archivada.');
+        return back()->with('success', __('activities.archived_success'));
     }
 
     /**
@@ -298,7 +298,7 @@ class ActivityController extends Controller
 
         $this->activityService->unarchive($activity);
 
-        return back()->with('success', 'Actividad desarchivada.');
+        return back()->with('success', __('activities.unarchived_success'));
     }
 
     /**
@@ -313,7 +313,7 @@ class ActivityController extends Controller
         $request->validate(['status' => 'required|string']);
         $this->activityService->changeStatus($activity, $request->get('status'));
 
-        return back()->with('success', 'Estado de la actividad actualizado.');
+        return back()->with('success', __('activities.status_updated'));
     }
 
     /**
@@ -337,7 +337,7 @@ class ActivityController extends Controller
             'visibility' => $validated['visibility'],
         ]);
 
-        return redirect()->route('teams.activities.show', [$team, $activity])->withFragment('notes')->with('success', 'Nota añadida.');
+        return redirect()->route('teams.activities.show', [$team, $activity])->withFragment('notes')->with('success', __('activities.note_added'));
     }
 
     /**
@@ -359,7 +359,7 @@ class ActivityController extends Controller
             'visibility' => $validated['visibility'],
         ]);
 
-        return redirect()->route('teams.activities.show', [$team, $activity])->withFragment('notes')->with('success', 'Nota actualizada.');
+        return redirect()->route('teams.activities.show', [$team, $activity])->withFragment('notes')->with('success', __('activities.note_updated'));
     }
 
     /**
@@ -373,7 +373,7 @@ class ActivityController extends Controller
 
         $note->delete();
 
-        return redirect()->route('teams.activities.show', [$team, $activity])->withFragment('notes')->with('success', 'Nota eliminada.');
+        return redirect()->route('teams.activities.show', [$team, $activity])->withFragment('notes')->with('success', __('activities.note_deleted'));
     }
 
     /**
@@ -397,7 +397,7 @@ class ActivityController extends Controller
 
         $this->activityService->handleAttachments($activity, $request->file('attachments'));
 
-        return back()->with('success', 'Archivos subidos correctamente.');
+        return back()->with('success', __('activities.files_uploaded'));
     }
 
     /**
@@ -411,7 +411,7 @@ class ActivityController extends Controller
 
         $this->activityService->deleteAttachment($attachment);
 
-        return back()->with('success', 'Archivo adjunto eliminado.');
+        return back()->with('success', __('activities.file_deleted'));
     }
 
     /**
@@ -434,8 +434,12 @@ class ActivityController extends Controller
             abort(404, 'Enlace de Google Drive no válido.');
         }
 
+        if (!\Illuminate\Support\Str::startsWith($attachment->file_path, "activities/{$activity->id}/")) {
+            abort(403, 'Ruta de archivo no válida.');
+        }
+
         if (!\Illuminate\Support\Facades\Storage::disk($attachment->disk)->exists($attachment->file_path)) {
-            return back()->with('error', 'El archivo no se encuentra en el servidor.');
+            return back()->with('error', __('activities.file_not_found'));
         }
 
         return \Illuminate\Support\Facades\Storage::disk($attachment->disk)->download($attachment->file_path, $attachment->file_name);
@@ -447,7 +451,7 @@ class ActivityController extends Controller
     public function convert(Request $request, Team $team, Activity $activity, \App\Actions\Activities\ConvertActivityAction $action)
     {
         if ($activity->team_id !== $team->id) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', 'Actividad no encontrada.');
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
         }
 
         $request->validate([
@@ -471,7 +475,7 @@ class ActivityController extends Controller
     public function restoreDeprecated(Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id || !$activity->isDeprecatedByConversion()) {
-            return back()->with('warning', 'Esta actividad no puede ser restaurada.');
+            return back()->with('warning', __('activities.cannot_restore'));
         }
 
         if (auth()->user()->cannot('update', $activity)) {
@@ -497,7 +501,7 @@ class ActivityController extends Controller
         ]);
 
         return redirect()->route('teams.activities.show', [$team, $activity])
-            ->with('success', 'Actividad restaurada correctamente a estado pendiente.');
+            ->with('success', __('activities.restored_success'));
     }
 
     /**
@@ -506,7 +510,7 @@ class ActivityController extends Controller
     public function cloneDeprecated(Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id || !$activity->isDeprecatedByConversion()) {
-            return back()->with('warning', 'Esta actividad no puede ser clonada.');
+            return back()->with('warning', __('activities.cannot_clone'));
         }
 
         if (auth()->user()->cannot('create', [Activity::class, $team])) {
@@ -557,7 +561,7 @@ class ActivityController extends Controller
         ]);
 
         return redirect()->route('teams.activities.show', [$team, $cloned])
-            ->with('success', 'Actividad clonada correctamente.');
+            ->with('success', __('activities.cloned_success'));
     }
 
     /**
@@ -566,7 +570,7 @@ class ActivityController extends Controller
     public function mergeDeprecated(Request $request, Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id || !$activity->isDeprecatedByConversion()) {
-            return back()->with('warning', 'Esta actividad no es válida para fusión.');
+            return back()->with('warning', __('activities.cannot_merge'));
         }
 
         $request->validate([
@@ -606,7 +610,7 @@ class ActivityController extends Controller
         ]);
 
         return redirect()->route('teams.activities.show', [$team, $target])
-            ->with('success', 'Contenido fusionado correctamente en la actividad destino.');
+            ->with('success', __('activities.merged_success'));
     }
 
     /**
@@ -615,7 +619,7 @@ class ActivityController extends Controller
     public function addChapter(Request $request, Team $team, Activity $activity)
     {
         if ($activity->team_id !== $team->id || $activity->type !== 'document') {
-            return back()->with('warning', 'Solo las actividades de tipo Documento admiten capítulos.');
+            return back()->with('warning', __('activities.chapters_only_documents'));
         }
 
         $request->validate([
@@ -658,7 +662,7 @@ class ActivityController extends Controller
             'action' => \Illuminate\Support\Str::limit("Añadido capítulo: {$newChapter['title']}", 100),
         ]);
 
-        return back()->withFragment('chapters-section')->with('success', 'Capítulo añadido correctamente al documento.');
+        return back()->withFragment('chapters-section')->with('success', __('activities.chapter_added'));
     }
 
     /**
@@ -667,7 +671,7 @@ class ActivityController extends Controller
     public function updateChapter(Request $request, Team $team, Activity $activity, $chapterId)
     {
         if ($activity->team_id !== $team->id || $activity->type !== 'document') {
-            return back()->with('warning', 'Operación no válida.');
+            return back()->with('warning', __('activities.invalid_operation'));
         }
 
         $request->validate([
@@ -691,7 +695,7 @@ class ActivityController extends Controller
         }
 
         if (!$found) {
-            return back()->with('error', 'Capítulo no encontrado.');
+            return back()->with('error', __('activities.chapter_not_found'));
         }
 
         $metadata['chapters'] = $chapters;
@@ -703,7 +707,7 @@ class ActivityController extends Controller
             'action' => "Actualizado capítulo ID #{$chapterId}",
         ]);
 
-        return back()->withFragment('chapters-section')->with('success', 'Capítulo actualizado correctamente.');
+        return back()->withFragment('chapters-section')->with('success', __('activities.chapter_updated'));
     }
 
     /**
@@ -712,7 +716,7 @@ class ActivityController extends Controller
     public function deleteChapter(Request $request, Team $team, Activity $activity, $chapterId)
     {
         if ($activity->team_id !== $team->id || $activity->type !== 'document') {
-            return back()->with('warning', 'Operación no válida.');
+            return back()->with('warning', __('activities.invalid_operation'));
         }
 
         $metadata = $activity->metadata ?? [];
@@ -723,7 +727,7 @@ class ActivityController extends Controller
         });
 
         if (count($filtered) === count($chapters)) {
-            return back()->with('error', 'Capítulo no encontrado.');
+            return back()->with('error', __('activities.chapter_not_found'));
         }
 
         $metadata['chapters'] = array_values($filtered);
@@ -735,7 +739,7 @@ class ActivityController extends Controller
             'action' => "Eliminado capítulo ID #{$chapterId}",
         ]);
 
-        return back()->withFragment('chapters-section')->with('success', 'Capítulo eliminado correctamente.');
+        return back()->withFragment('chapters-section')->with('success', __('activities.chapter_deleted'));
     }
 }
 

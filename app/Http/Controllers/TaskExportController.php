@@ -145,17 +145,36 @@ class TaskExportController extends Controller
             }
 
             // 4. Sincronizar Asignaciones de Usuarios y Grupos
-            if ($task->assignedTo->isNotEmpty()) {
-                $new->assignedTo()->syncWithPivotValues($task->assignedTo->pluck('id')->toArray(), [
-                    'assigned_by_id' => $user->id,
-                    'assigned_at' => now(),
-                ]);
+            $assignments = [];
+            $assignedBy = $user->id;
+            $assignedAt = now();
+            
+            foreach ($task->assignedTo->pluck('id') as $uid) {
+                $assignments[] = [
+                    'activity_id' => $new->id,
+                    'user_id' => $uid,
+                    'group_id' => null,
+                    'assigned_by_id' => $assignedBy,
+                    'assigned_at' => $assignedAt,
+                    'created_at' => $assignedAt,
+                    'updated_at' => $assignedAt,
+                ];
             }
-            if ($task->assignedGroups->isNotEmpty()) {
-                $new->assignedGroups()->syncWithPivotValues($task->assignedGroups->pluck('id')->toArray(), [
-                    'assigned_by_id' => $user->id,
-                    'assigned_at' => now(),
-                ]);
+            
+            foreach ($task->assignedGroups->pluck('id') as $gid) {
+                $assignments[] = [
+                    'activity_id' => $new->id,
+                    'user_id' => null,
+                    'group_id' => $gid,
+                    'assigned_by_id' => $assignedBy,
+                    'assigned_at' => $assignedAt,
+                    'created_at' => $assignedAt,
+                    'updated_at' => $assignedAt,
+                ];
+            }
+            
+            if (!empty($assignments)) {
+                \App\Models\ActivityAssignment::insert($assignments);
             }
 
             // Crear registro de historial

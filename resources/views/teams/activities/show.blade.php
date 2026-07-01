@@ -1904,15 +1904,15 @@
             const teams = @json($clonableTeams);
             if (teams.length === 0) {
                 Swal.fire({
-                    title: 'Sin equipos',
-                    text: 'No perteneces a ningún otro equipo al que clonar esta actividad.',
+                    title: '{{ __("Sin equipos") }}',
+                    text: '{{ __("No perteneces a ningún otro equipo al que clonar esta actividad.") }}',
                     icon: 'warning'
                 });
                 return;
             }
 
             let optionsHtml = '<select id="target_team_id" class="swal2-input bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 max-w-full">';
-            optionsHtml += '<option value="">Selecciona un equipo...</option>';
+            optionsHtml += '<option value="">{{ __("Selecciona un equipo...") }}</option>';
             teams.forEach(t => {
                 optionsHtml += `<option value="${t.id}">${t.name}</option>`;
             });

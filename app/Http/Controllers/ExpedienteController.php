@@ -364,6 +364,10 @@ class ExpedienteController extends Controller
         if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
+        
+        if (auth()->user()->cannot('delete', $expediente)) {
+            abort(403, 'No tienes permiso para eliminar este expediente.');
+        }
 
         if ($request->input('cascade_delete') === '1') {
             // Delete tasks physically

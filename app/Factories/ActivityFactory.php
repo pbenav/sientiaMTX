@@ -123,12 +123,25 @@ class ActivityFactory
             } else {
                 // Fallback genérico para tipos personalizados sin contrato estricto
                 $meta = $activity->metadata ?? [];
+                
+                // Filtro de seguridad (Mass Assignment) usando TemplateLoader
+                $loader = app(\App\Services\TemplateLoader::class);
+                $template = $loader->getTemplate($activity->type);
+                if ($template && isset($template['properties'])) {
+                    $allowedKeys = array_keys($template['properties']);
+                    // Siempre permitimos capítulos si es un documento (u otras propiedades reservadas)
+                    if ($activity->type === 'document') {
+                        $allowedKeys[] = 'chapters';
+                    }
+                    $specs = array_intersect_key($specs, array_flip($allowedKeys));
+                }
+                
                 $activity->metadata = array_merge($meta, $specs);
             }
             if (empty($activity->uuid)) {
                 $activity->uuid = \Illuminate\Support\Str::uuid()->toString();
             }
-            $activity->saveQuietly();
+            $activity->save();
 
             // ─── 3. Sincronización de Especialidades (Skills) ─────────────────
             if (!empty($core['skills']) && is_array($core['skills'])) {

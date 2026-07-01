@@ -464,7 +464,7 @@
                                         $currentClass = $statusClasses[$activity->status_value] ?? $statusClasses['default'];
                                     @endphp
                                     <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg border {{ $activity->trashed() ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' : $currentClass }} uppercase">
-                                        {{ $activity->trashed() ? '🗑️ PAPELERA' : __("tasks.statuses.{$activity->status_value}") }}
+                                        {{ $activity->trashed() ? '🗑️ PAPELERA' : __("activities.statuses.{$activity->status_value}") }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 text-xs whitespace-nowrap">
@@ -647,7 +647,7 @@
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-md {{ $subtask->trashed() ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400' }} uppercase tracking-tight">
-                                            {{ $subtask->trashed() ? '🗑️ PAPELERA' : __("tasks.statuses.{$subtask->status_value}") }}
+                                            {{ $subtask->trashed() ? '🗑️ PAPELERA' : __("activities.statuses.{$subtask->status_value}") }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap flex items-center gap-1.5">
