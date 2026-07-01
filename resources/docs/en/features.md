@@ -1,4 +1,4 @@
-# Sientia MTX: Feature Master Guide (v1.0.2)
+# Sientia MTX: Feature Master Guide (v1.1.0)
 
 SientiaMTX is a high-performance productivity ecosystem that merges the Eisenhower methodology with advanced Artificial Intelligence.
 
@@ -71,6 +71,15 @@ The command center where team effort and service pulse converge.
 
 *   **Professional Evolution**: Tasks feed a skill tree (Support, Development, Systems, etc.), allowing for the real growth of each collaborator to be seen.
 *   **Resilience Points**: Special recognition for those who take on challenges outside their usual area of expertise.
+
+---
+
+## 📈 6. Analytics and Unified Activity Management
+
+*   **Centralized Activity Module**: Unified management of all operations (Notes, Meetings, Calls, Tasks, etc.) with advanced statistics.
+*   **Appointment Time Analytics**: Automatic real-time calculation of duration statistics (Minimum, Average, Mode, Maximum) for appointments over the last 30 days, optimizing schedule planning.
+*   **Intelligent AI Injection**: Ax.ia can generate content and dynamically transfer it to the appropriate fields within activities (e.g., Notes, Descriptions, or Metadata).
+*   **GDPR Compliance and Privacy**: Comprehensive tools for exporting data in JSON format and permanent deletion (anonymization) in compliance with the Right to be Forgotten (GDPR Art. 17).
 
 ---
 **Sientia MTX: Collective Intelligence for High-Performance Teams.**

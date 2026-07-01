@@ -74,6 +74,22 @@ class GDPRController extends Controller
                 'visibility' => $task->visibility,
                 'created_at' => $task->created_at,
             ]),
+            'assigned_activities' => \App\Models\Activity::whereHas('assignedTo', fn($q) => $q->where('users.id', $user->id))->get()->map(fn($act) => [
+                'type' => $act->type,
+                'title' => $act->title,
+                'description' => $act->description,
+                'status' => $act->status,
+                'visibility' => $act->visibility,
+                'created_at' => $act->created_at,
+            ]),
+            'created_activities' => \App\Models\Activity::where('created_by_id', $user->id)->get()->map(fn($act) => [
+                'type' => $act->type,
+                'title' => $act->title,
+                'description' => $act->description,
+                'status' => $act->status,
+                'visibility' => $act->visibility,
+                'created_at' => $act->created_at,
+            ]),
             'expedientes' => \App\Models\Expediente::where(function($q) use ($user) {
                 $q->where('created_by_id', $user->id)
                   ->orWhere('assigned_user_id', $user->id)
@@ -178,6 +194,9 @@ class GDPRController extends Controller
         $user->aiPreferences()->delete();
         $user->skills()->detach();
         $user->teams()->detach();
+        
+        \App\Models\Activity::where('created_by_id', $user->id)->update(['created_by_id' => null, 'description' => \DB::raw('CONCAT(description, "\n\n[Creador original anonimizado por GDPR]")')]);
+        \DB::table('activity_assignments')->where('user_id', $user->id)->delete();
 
         // 2. Anonimizar citas previas gestionadas
         \App\Models\Appointment::where('user_id', $user->id)->update([

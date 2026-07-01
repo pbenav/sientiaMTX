@@ -1,4 +1,4 @@
-# Sientia MTX: Guía Maestra de Funcionalidades (v1.0.2)
+# Sientia MTX: Guía Maestra de Funcionalidades (v1.1.0)
 
 SientiaMTX es un ecosistema de productividad de alto rendimiento que fusiona la metodología de Eisenhower con Inteligencia Artificial avanzada.
 
@@ -71,6 +71,15 @@ El centro de mando donde converge el esfuerzo del equipo y el pulso de los servi
 
 *   **Evolución Profesional**: Las tareas alimentan un árbol de habilidades (Soporte, Desarrollo, Sistemas, etc.), permitiendo ver el crecimiento real de cada colaborador.
 *   **Puntos de Resiliencia**: Reconocimiento especial para quienes aceptan retos fuera de su área de especialidad.
+
+---
+
+## 📈 6. Analítica y Gestión Integral de Actividades
+
+*   **Módulo Centralizado de Actividades**: Gestión unificada de todas las operaciones (Notas, Reuniones, Llamadas, Tareas, etc.) con estadísticas avanzadas.
+*   **Analítica de Tiempos en Citas**: Cálculo automático en tiempo real de estadísticas de duración (Mínima, Media, Moda, Máxima) para las citas previas de los últimos 30 días, optimizando la planificación de agendas.
+*   **Inyección Inteligente de IA**: Ax.ia es capaz de generar contenido y transferirlo dinámicamente a los campos adecuados de las actividades (Ej. Notas, Descripciones o Metadatos).
+*   **Cumplimiento GDPR y Privacidad**: Herramientas integrales de exportación de datos en formato JSON y eliminación definitiva (anonimización) aplicando el Derecho al Olvido (Art. 17 GDPR).
 
 ---
 **Sientia MTX: Inteligencia Colectiva para Equipos de Alto Rendimiento.**

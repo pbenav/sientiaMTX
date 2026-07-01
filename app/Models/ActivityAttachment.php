@@ -60,12 +60,12 @@ class ActivityAttachment extends Model
 
     public function getFilenameAttribute(): string
     {
-        return $this->file_name;
+        return $this->getAttribute('file_name') ?? '';
     }
 
     public function getFilesizeAttribute(): int
     {
-        return $this->file_size ?? 0;
+        return (int) ($this->getAttribute('file_size') ?? 0);
     }
 
     public function isImage(): bool
