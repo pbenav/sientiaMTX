@@ -1112,7 +1112,7 @@
             @csrf
         </form>
         {{-- Formulario de fusión masiva --}}
-        <form id="bulkMergeForm" action="{{ route('teams.tasks.bulk-merge', $team) }}" method="POST" class="hidden">
+        <form id="bulkMergeForm" action="{{ route('teams.activities.bulk-merge', $team) }}" method="POST" class="hidden">
             @csrf
             <div id="bulkMergeInputs"></div>
         </form>
