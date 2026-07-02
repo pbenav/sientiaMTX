@@ -147,8 +147,14 @@ class Expediente extends Model
     public static function generateUniqueCode(): string
     {
         $year = date('Y');
-        $count = static::whereYear('created_at', $year)->count() + 1;
-        return 'EXP-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $count = static::withTrashed()->whereYear('created_at', $year)->count() + 1;
+
+        do {
+            $code = 'EXP-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            $count++;
+        } while (static::withTrashed()->where('code', $code)->exists());
+
+        return $code;
     }
 
     public function notes(): HasMany
