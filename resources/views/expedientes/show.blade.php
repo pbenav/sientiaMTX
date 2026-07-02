@@ -937,7 +937,7 @@
 
         window.confirmDeleteExpediente = function() {
             Swal.fire({
-                title: '{{ __('¿{{ __('Eliminar Expediente') }}?') }}',
+                title: '¿{{ __('Eliminar Expediente') }}?',
                 html: `
                     <div class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-4">
                         <p>{{ __('Esta acción moverá el expediente a la papelera.') }}</p>
