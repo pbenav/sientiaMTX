@@ -254,7 +254,13 @@ class TeamController extends Controller
                 // OR tasks assigned specifically to the user (Direct work)
                 $q->where(function ($backlog) {
                     $backlog->whereDoesntHave('assignedTo')
-                            ->whereDoesntHave('assignedGroups');
+                            ->whereDoesntHave('assignedGroups')
+                            ->whereNotExists(function ($sub) {
+                                $sub->select(\DB::raw(1))
+                                    ->from('activity_task_mapping')
+                                    ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                    ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
+                            });
                 })
                 ->orWhere('created_by_id', $user->id)
                 ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $user->id))

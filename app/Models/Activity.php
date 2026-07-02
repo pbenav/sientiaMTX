@@ -578,7 +578,13 @@ class Activity extends Model
                 // - O si un grupo suyo está asignado
                 $q->where(function ($unassigned) {
                     $unassigned->where('visibility', 'public')
-                               ->whereDoesntHave('assignments');
+                               ->whereDoesntHave('assignments')
+                               ->whereNotExists(function ($sub) {
+                                   $sub->select(\DB::raw(1))
+                                       ->from('activity_task_mapping')
+                                       ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                       ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
+                               });
                 })
                 ->orWhere('created_by_id', $user->id)
                 ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
@@ -613,7 +619,13 @@ class Activity extends Model
                   ->orWhere(function ($unassigned) {
                       $unassigned->where('visibility', 'public')
                                  ->whereDoesntHave('assignedTo')
-                                 ->whereDoesntHave('assignedGroups');
+                                 ->whereDoesntHave('assignedGroups')
+                                 ->whereNotExists(function ($sub) {
+                                     $sub->select(\DB::raw(1))
+                                         ->from('activity_task_mapping')
+                                         ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                         ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
+                                 });
                   })
                   ->orWhereExists(function ($sub) use ($userId) {
                       $sub->select(\DB::raw(1))
