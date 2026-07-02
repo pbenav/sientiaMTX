@@ -453,7 +453,13 @@ class ActivityService
         // Ordenación
         $allowedSorts = ['due_date', 'scheduled_date', 'priority', 'title', 'created_at', 'progress_percentage'];
         if (in_array($sort, $allowedSorts)) {
-            $query->orderBy($sort, $dir === 'desc' ? 'desc' : 'asc');
+            if ($sort === 'priority') {
+                $dirRaw = $dir === 'desc' ? 'DESC' : 'ASC';
+                $query->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') $dirRaw")
+                      ->orderBy('created_at', 'desc');
+            } else {
+                $query->orderBy($sort, $dir === 'desc' ? 'desc' : 'asc');
+            }
         } else {
             $query->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
                   ->orderBy('created_at', 'desc');
@@ -462,9 +468,9 @@ class ActivityService
         return $query;
     }
 
-    public function paginate(Team $team, array $filters = [], int $perPage = 20): LengthAwarePaginator
+    public function paginate(Team $team, array $filters = [], int $perPage = 20, string $sort = 'due_date', string $dir = 'asc'): LengthAwarePaginator
     {
-        return $this->search($team, $filters)->paginate($perPage);
+        return $this->search($team, $filters, $sort, $dir)->paginate($perPage);
     }
 
     // ─── Helpers internos ─────────────────────────────────────────────────────

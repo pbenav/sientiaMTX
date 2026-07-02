@@ -42,14 +42,14 @@ class ActivityController extends Controller
         ]);
 
         $sort = $request->get('sort', 'due_date');
-        $dir  = $request->get('dir', 'asc');
+        $dir  = $request->get('direction', 'asc');
 
         $perPage = (int) ($filters['per_page'] ?? 15);
         if (!in_array($perPage, [10, 15, 20, 30, 50, 100])) {
             $perPage = 15;
         }
 
-        $activities = $this->activityService->paginate($team, $filters, $perPage);
+        $activities = $this->activityService->paginate($team, $filters, $perPage, $sort, $dir);
 
         $members = $team->members()->orderBy('name')->get();
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
