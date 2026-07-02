@@ -286,17 +286,15 @@ class TeamController extends Controller
         $completedLimit = (int) config('settings.kanban_completed_limit', 10);
 
         foreach ($allTasks as $task) {
-            $isCompleted = $task->isCompleted();
-            if (!$hideCompleted || !$isCompleted) {
-                if (!$isCompleted) {
-                    $quadrant = $this->getQuadrant($task);
-                    $quadrants[$quadrant][] = $task;
-                }
+            $isFinished = $task->isCompleted() || $task->status_value === 'deprecated' || $task->status_value === 'legacy' || $task->is_archived;
+            if (!$isFinished) {
+                $quadrant = $this->getQuadrant($task);
+                $quadrants[$quadrant][] = $task;
             }
         }
 
-        // Handle completed tasks separately with limit
-        $completedTasks = $allTasks->filter(fn($t) => $t->isCompleted())
+        // Handle completed and deprecated tasks separately with limit
+        $completedTasks = $allTasks->filter(fn($t) => $t->isCompleted() || $t->status_value === 'deprecated' || $t->status_value === 'legacy' || $t->is_archived)
             ->sortByDesc('updated_at')
             ->take($completedLimit);
 
