@@ -45,13 +45,13 @@ class Activity extends Model
     ];
 
     // Tipos que pueden aparecer en el Kanban
-    public const KANBAN_TYPES = ['task', 'meeting', 'reminder', 'document'];
+    public const KANBAN_TYPES = ['task', 'meeting', 'reminder'];
 
     // Tipos que pueden aparecer en la Matriz Eisenhower
     public const MATRIX_TYPES = ['task', 'meeting', 'reminder'];
 
     // Tipos que aparecen en el Gantt (cualquiera con due_date)
-    public const GANTT_TYPES  = ['task', 'meeting', 'document', 'reminder', 'decision'];
+    public const GANTT_TYPES  = ['task', 'meeting', 'reminder'];
 
     // ─── Atributos ────────────────────────────────────────────────────────────
     protected $table = 'activities';

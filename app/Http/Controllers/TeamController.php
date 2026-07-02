@@ -237,6 +237,7 @@ class TeamController extends Controller
             ])
             ->visibleTo($user, $isManager)
             ->notEphemeral()
+            ->forMatrix()
             ->focusedFor($user, $team)
             ->when(request('skill_id'), function ($q, $skillId) {
                 $q->where(function ($sq) use ($skillId) {
