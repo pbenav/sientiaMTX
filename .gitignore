@@ -26,3 +26,6 @@ Thumbs.db
 /whatsapp-service/node_modules
 /whatsapp-service/.wwebjs_auth
 /.wwebjs_auth
+/docs
+/site
+mkdocs.yml
