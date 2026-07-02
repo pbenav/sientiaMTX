@@ -53,5 +53,7 @@ return [
         'editing'     => 'En edición',
         'reviewed'    => 'Revisado',
         'reviewing'   => 'En revisión',
+        'deprecated'  => 'Deprecada',
+        'legacy'      => 'Legacy',
     ],
 ];
