@@ -370,7 +370,19 @@ class ExpedienteController extends Controller
         }
 
         if ($request->input('cascade_delete') === '1') {
-            // Delete tasks physically
+            // Delete activities physically
+            $expediente->activities()->each(function ($activity) {
+                // Limpiar adjuntos físicos de la actividad si los hay
+                $activity->attachments()->each(function ($attachment) {
+                    if ($attachment->file_path && \Illuminate\Support\Facades\Storage::disk($attachment->disk ?? 'public')->exists($attachment->file_path)) {
+                        \Illuminate\Support\Facades\Storage::disk($attachment->disk ?? 'public')->delete($attachment->file_path);
+                    }
+                    $attachment->delete();
+                });
+                $activity->forceDelete();
+            });
+
+            // For backwards compatibility, also delete legacy tasks if any
             $expediente->tasks()->each(function ($task) {
                 $task->forceDelete();
             });
@@ -397,10 +409,15 @@ class ExpedienteController extends Controller
                 ->with('success', 'Expediente y todo su contenido asociado eliminados de forma permanente.');
         }
 
+        // Modo 1: Eliminar el expediente y DESVINCULAR las actividades
+        // Simplemente dejan de estar vinculadas a ese expediente
+        $expediente->activities()->update(['expediente_id' => null]);
+        $expediente->tasks()->update(['expediente_id' => null]);
+
         $expediente->delete();
 
         return redirect()->route('teams.expedientes.index', $team)
-            ->with('success', 'Expediente movido a la papelera.');
+            ->with('success', 'Expediente movido a la papelera. Las actividades se han conservado desvinculadas.');
     }
 
     /**
