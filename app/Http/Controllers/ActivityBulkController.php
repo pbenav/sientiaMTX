@@ -146,8 +146,8 @@ class ActivityBulkController extends Controller
                 \App\Models\ActivityAttachment::where('activity_id', $task->id)
                     ->update(['activity_id' => $targetTask->id]);
 
-                // 5. Private Notes
-                $task->privateNotes()->update(['activity_id' => $targetTask->id]);
+                // 5. Notes
+                $task->notes()->update(['activity_id' => $targetTask->id]);
 
                 // 6. Kudos (if applicable to activities)
                 \App\Models\Kudo::where('task_id', $task->id)->update(['task_id' => $targetTask->id]);
