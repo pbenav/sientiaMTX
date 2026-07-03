@@ -31,14 +31,32 @@
             "required": false,
             "max_length": 255
         },
+        "version": {
+            "type": "string",
+            "required": false,
+            "default": "1.0.0",
+            "max_length": 20
+        },
+        "is_ephemeral": {
+            "type": "boolean",
+            "required": false,
+            "default": false
+        },
+        "chapters": {
+            "type": "array",
+            "required": false,
+            "default": []
+        },
         "status": {
             "type": "string",
             "required": false,
-            "default": "uploaded",
+            "default": "draft",
             "enum": [
-                "uploaded",
+                "draft",
                 "editing",
                 "reviewed",
+                "approved",
+                "published",
                 "archived"
             ]
         }

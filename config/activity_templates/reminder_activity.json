@@ -17,11 +17,16 @@
       "max_length": 1000,
       "searchable": true
     },
+    "channels": {
+      "type": "array",
+      "required": false,
+      "default": ["email", "push"]
+    },
     "status": {
       "type": "string",
       "required": false,
       "default": "pending",
-      "enum": ["pending", "completed", "cancelled"]
+      "enum": ["pending", "completed", "cancelled", "dismissed", "triggered"]
     }
   },
   "states": {

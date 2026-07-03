@@ -27,6 +27,11 @@
             "required": false,
             "max_length": 1000
         },
+        "duration_minutes": {
+            "type": "integer",
+            "required": false,
+            "default": 60
+        },
         "status": {
             "type": "string",
             "required": false,

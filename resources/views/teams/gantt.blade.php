@@ -70,32 +70,31 @@
     </style>
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-            <div class="flex items-start gap-4 min-w-0 flex-1">
-                <a href="{{ route('teams.index') }}" class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50" title="Volver">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+        {{-- Fila única compacta: breadcrumb + título + acciones --}}
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
+                <a href="{{ route('teams.dashboard', $team) }}" class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0" title="Volver">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0 flex-1">
-                    @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate tracking-tight flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10M3 14h18M11 18h10M3 6h6" />
-                        </svg>
-                        {{ __('navigation.gantt') }}
-                    </h1>
-                    <x-demo-hint>
-                        El diagrama de Gantt ofrece una perspectiva cronológica interactiva del proyecto. Permite arrastrar tareas para reprogramarlas, ajustar sus duraciones o evaluar la carga de trabajo diaria mediante la "Onda de Resiliencia".
-                    </x-demo-hint>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate tracking-tight flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10M3 14h18M11 18h10M3 6h6" />
+                    </svg>
+                    <span class="truncate">{{ __('navigation.gantt') }}</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-actions')
             </div>
         </div>
-        <div class="mt-8 mb-4 flex w-full">@include('teams.partials.view-switcher')</div>
-        <div class="flex items-center gap-3 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">@include('teams.partials.header-actions')</div>
+        <div class="mt-2 flex w-full">@include('teams.partials.view-switcher')</div>
     </x-slot>
 
-    <div class="py-6 space-y-4">
+    <div class="space-y-3">
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
             <form action="{{ route('teams.gantt', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
