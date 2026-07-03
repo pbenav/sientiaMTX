@@ -110,16 +110,16 @@
                     <div class="h-6 w-px bg-gray-300 dark:bg-gray-900 mx-1 shrink-0"></div>
                 @endif
                 <a href="{{ $view['route'] }}"
-                    class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
+                    class="flex flex-col items-center justify-center gap-0.5 px-1.5 md:px-2 py-2 rounded-xl transition-all shrink-0 min-w-max
                         {{ $view['active']
                             ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60' }}"
                     title="{{ $view['name'] }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="{{ $view['active'] ? '2.5' : '2' }}">
                         {!! $view['icon'] !!}
                     </svg>
-                    <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $view['name'] }}</span>
+                    <span class="hidden lg:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $view['name'] }}</span>
                 </a>
             @endforeach
             {{-- Divider + toggle --}}
