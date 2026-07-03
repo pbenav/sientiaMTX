@@ -28,35 +28,40 @@
     @endphp
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-            <div class="flex items-start gap-3 min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
-                    class="mt-1 p-2 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                     title="{{ __('navigation.back') ?? 'Volver' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0 flex-1">
-                    @include('teams.partials.breadcrumb')
-                    <h1 class="text-xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
-                        {{ __('activities.detail') }}
-                        <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50 shadow-sm flex items-center gap-1.5 shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            {{ $activity->type_label ?? __('Actividad') }}
-                        </span>
-                    </h1>
-                    <x-demo-hint>
-                        La ficha técnica de la tarea centraliza toda la ejecución: permite el registro de tiempos (Time-tracking), subdividir el trabajo mediante el desglose, sincronizar fechas con Google Calendar/Activities y gestionar archivos asociados. Además, facilita la clonación y exportación de tareas (Portabilidad JSON).
-                    </x-demo-hint>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    {{ __('activities.detail') }}
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50 shadow-sm flex items-center gap-1 shrink-0 ml-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        {{ $activity->type_label ?? __('Actividad') }}
+                    </span>
+                </h1>
             </div>
+            <div class="flex items-center gap-2 shrink-0">
+                {{-- Actions --}}
+            </div>
+        </div>
+        
+        <div class="mt-2">
+            <x-demo-hint>
+                La ficha técnica de la tarea centraliza toda la ejecución: permite el registro de tiempos (Time-tracking), subdividir el trabajo mediante el desglose, sincronizar fechas con Google Calendar/Activities y gestionar archivos asociados. Además, facilita la clonación y exportación de tareas (Portabilidad JSON).
+            </x-demo-hint>
         </div>
 
         <!-- View Switcher Sub-Header -->
-        <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
+        <div class="mt-4 mb-2 flex w-full">
+            @include('teams.partials.team-view-nav')
         </div>
 
         @if($activity->trashed())

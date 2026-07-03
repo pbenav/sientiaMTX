@@ -1,4 +1,7 @@
-{{-- Partial reutilizable: barra de navegación unificada (Canal Ciudadano + sub-menú de Mis Citas) --}}
+{{-- Partial reutilizable: barra de navegación de Citas Previas
+     Fila 1: Barra inter-módulos compartida (igual que Encuestas y Micrositios)
+     Fila 2: Sub-navegación específica de Citas (Panel, Citas, Servicios, Bloqueos, Config.)
+--}}
 @php
     $navItems = [
         ['route' => 'appointments.index',         'label' => 'Panel',      'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
@@ -14,93 +17,41 @@
         ->get();
 @endphp
 
-<div class="w-full mt-6 mb-4">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm gap-3">
-        <div class="flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+{{-- ── Fila 1: Barra inter-módulos (idéntica a Encuestas y Micrositios) ── --}}
+@php $activeModule = 'appointments'; @endphp
+@include('partials.cross-module-nav')
 
-            {{-- Nivel superior: Portal de Tareas (Escritorio del Equipo) --}}
-            <a href="{{ route('teams.time-reports', $team) }}"
-                class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
-                title="{{ __('Escritorio') }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                </svg>
-                <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Escritorio') }}</span>
-            </a>
-
-            {{-- Nivel superior: Encuestas Colectivas --}}
-            <a href="{{ route('global-surveys.index') }}"
-                class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
-                title="{{ __('Encuestas') }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-                <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Encuestas') }}</span>
-            </a>
-
-            {{-- Nivel superior: Gestión de Citas (activo) --}}
-            <span class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Citas Previas') }}</span>
-            </span>
-
-            {{-- Nivel superior: Micrositios --}}
-            @if(auth()->user()->hasMicrositesEnabled())
-                @php
-                    $targetTeamMicro = null;
-                    if ($team && auth()->user()->hasMicrositesEnabledForTeam($team->id)) {
-                        $targetTeamMicro = $team;
-                    } else {
-                        $targetTeamMicro = auth()->user()->firstTeamWithMicrosites();
-                    }
-                @endphp
-                @if($targetTeamMicro)
-                    <a href="{{ route('teams.microsites.index', $targetTeamMicro) }}"
-                        class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
-                        title="{{ __('Gestión de Micrositios') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('Micrositios') }}</span>
-                    </a>
-                @endif
-            @endif
-
-            {{-- Divisor visual --}}
-            <div class="w-px h-7 bg-gray-300 dark:bg-gray-600 mx-1 shrink-0"></div>
-
-            {{-- Sub-menú: Panel, Citas, Servicios, Bloqueos, Config --}}
+{{-- ── Fila 2: Sub-navegación específica de Citas ── --}}
+<div class="w-full mt-1.5">
+    <div class="flex w-full items-center justify-between bg-gray-50 dark:bg-gray-800/30 p-1 rounded-xl border border-gray-100 dark:border-gray-700/30 overflow-x-auto no-scrollbar gap-1">
+        <div class="flex items-center gap-0.5">
             @foreach($navItems as $item)
                 @php $active = request()->routeIs($item['route']); @endphp
                 <a href="{{ route($item['route'], $team) }}"
-                   class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-2 rounded-xl transition-all shrink-0 min-w-max
+                   class="flex flex-col items-center justify-center gap-0.5 px-1.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 min-w-max
                           {{ $active
                               ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-700'
-                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 border border-transparent' }}"
+                              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-700/40 border border-transparent' }}"
                    title="{{ $item['label'] }}">
-                    <svg class="h-4 sm:h-5 w-4 sm:w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="{{ $active ? '2.5' : '2' }}">
+                    <svg class="h-3.5 sm:h-4 w-3.5 sm:w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="{{ $active ? '2.5' : '2' }}">
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
                     </svg>
-                    <span class="hidden sm:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $item['label'] }}</span>
+                    <span class="hidden sm:block text-[8px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ $item['label'] }}</span>
                 </a>
             @endforeach
         </div>
 
-        {{-- Selector de Equipo --}}
+        {{-- Selector de equipo --}}
         @if($userTeamsWithAppointments->count() > 1)
-            <div class="flex items-center shrink-0 self-start lg:self-center">
+            <div class="flex items-center shrink-0">
                 <x-dropdown align="right" width="60">
                     <x-slot name="trigger">
-                        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors shadow-sm focus:outline-none">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">{{ __('Equipo:') }}</span>
-                            <span class="text-xs font-black text-violet-600 dark:text-violet-400 whitespace-nowrap">👥 {{ $team->name }}</span>
-                            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <button class="flex items-center gap-1 px-2 py-1 bg-white hover:bg-gray-50 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors shadow-sm focus:outline-none text-[9px] font-black uppercase tracking-wider">
+                            <span class="text-gray-400 whitespace-nowrap">{{ __('Equipo:') }}</span>
+                            <span class="text-violet-600 dark:text-violet-400 whitespace-nowrap">👥 {{ $team->name }}</span>
+                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                     </x-slot>
-
                     <x-slot name="content">
                         @foreach($userTeamsWithAppointments as $t)
                             @if($t->id !== $team->id)
@@ -123,9 +74,8 @@
                 </x-dropdown>
             </div>
         @elseif($userTeamsWithAppointments->count() === 1)
-            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 dark:bg-gray-850/50 border border-gray-150 dark:border-gray-755 rounded-xl shrink-0 self-start lg:self-center shadow-sm">
-                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 whitespace-nowrap">{{ __('Equipo:') }}</span>
-                <span class="text-xs font-black text-violet-600 dark:text-violet-400">👥 {{ $team->name }}</span>
+            <div class="flex items-center gap-1 px-2 py-1 rounded-lg shrink-0 text-[9px] font-black text-violet-600 dark:text-violet-400 whitespace-nowrap">
+                👥 {{ $team->name }}
             </div>
         @endif
     </div>

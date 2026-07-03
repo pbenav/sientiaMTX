@@ -1,4 +1,12 @@
+{{--
+    Acciones de cabecera del equipo (creación, integraciones, mantenimiento).
+    Preferir en vistas:
+    - teams.partials.header-toolbar  → esquina superior derecha
+    - teams.partials.team-view-nav   → menú de vistas + creación opcional
+--}}
 @php
+    $toolsOnly = $toolsOnly ?? false;
+    $createOnly = $createOnly ?? false;
     $teamId = $team->id;
     $isMatrix = request()->routeIs('teams.dashboard');
     $isTaskList = request()->routeIs('teams.tasks.index') || request()->routeIs('teams.tasks.show') || request()->routeIs('teams.activities.*');
@@ -9,12 +17,10 @@
     $isSettings = request()->routeIs('teams.edit');
     $isTimeReports = request()->routeIs('teams.time-reports');
 
-    $shouldShowCreateTask = $isTaskList || $isMatrix || $isGantt || $isKanban;
+    $shouldShowCreateTask = !$toolsOnly && ($isTaskList || $isMatrix || $isGantt || $isKanban);
 @endphp
 
 <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-    <!-- Management Actions -->
-    <!-- PRIMARY ACTION: NEW TASK HUB -->
     @if($shouldShowCreateTask)
         <x-dropdown align="left" width="80">
             <x-slot name="trigger">
@@ -53,7 +59,6 @@
                 </x-dropdown-link>
 
                 @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                    <!-- Importar Archivo -->
                     <button type="button" onclick="openImportTaskModal('file')" class="w-full flex items-center gap-3 py-3 px-4 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                         <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -66,7 +71,6 @@
                         </div>
                     </button>
 
-                    <!-- Pegar JSON -->
                     <button type="button" onclick="openImportTaskModal('paste')" class="w-full flex items-center gap-3 py-3 px-4 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                         <div class="p-1.5 bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 rounded-lg shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -83,21 +87,21 @@
         </x-dropdown>
     @endif
 
-        @if(request()->routeIs('teams.tasks.index') && ($team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
-            <button type="button" onclick="confirmPurgeTrash()"
-                class="flex items-center gap-1.5 text-xs bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/40 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                <span class="hidden sm:inline">Vaciar Papelera</span>
-            </button>
-        @endif
+    @if(!$toolsOnly && request()->routeIs('teams.tasks.index') && ($team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
+        <button type="button" onclick="confirmPurgeTrash()"
+            class="flex items-center gap-1.5 text-xs bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/40 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span class="hidden sm:inline">Vaciar Papelera</span>
+        </button>
+    @endif
 
+    @if(!$createOnly)
         @php
             $isGoogleConnected = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
         @endphp
 
-        <!-- Hub de Integraciones -->
         @if(!$isForum && $isGoogleConnected)
             <x-dropdown align="left" width="80">
                 <x-slot name="trigger">
@@ -132,7 +136,6 @@
             </x-dropdown>
         @endif
 
-        <!-- Mantenimiento de Almacenamiento -->
         @if(auth()->user()->is_admin || $team->isCoordinator(auth()->user()))
             <a href="{{ route('teams.storage.index', $team) }}" 
                class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 active:scale-95 shadow-sm"
@@ -143,6 +146,9 @@
                 <span class="hidden sm:inline">Mantenimiento</span>
             </a>
         @endif
-    </div>
+    @endif
+</div>
 
+@if(!$toolsOnly)
     @include('tasks.partials.import-modal-script')
+@endif

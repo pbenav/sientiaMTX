@@ -4,43 +4,43 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-            <div class="flex items-start gap-4 min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.index') }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                     title="{{ __('navigation.back') ?? 'Volver' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0 flex-1">
-                    @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                        Escritorio: Resiliencia Colectiva
-                    </h1>
-                    <x-demo-hint>
-                        El Escritorio de Equipo, o tablero de Resiliencia Colectiva, actúa como el pulso vital de la organización. Aquí se monitoriza la energía y progreso global (XP/RP), el mapa térmico territorial de intervenciones, el estado de los servidores (Sentinel) y se fomenta la moral enviando "Kudos" a los compañeros.
-                    </x-demo-hint>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="truncate">Escritorio: Resiliencia Colectiva</span>
+                </h1>
             </div>
 
-            <div class="flex items-center gap-3 shrink-0">
-                <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 rounded-2xl shadow-sm">
-                    <span class="text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-widest">Nivel 1</span>
-                    <div class="w-20 h-1.5 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 rounded-xl shadow-sm hidden sm:flex">
+                    <span class="text-amber-600 dark:text-amber-400 font-black text-[10px] uppercase tracking-widest">Nivel 1</span>
+                    <div class="w-16 h-1 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
                         <div class="h-full bg-amber-500" style="width: 25%"></div>
                     </div>
                 </div>
-                @include('teams.partials.header-actions')
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
 
-        <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
+        @include('teams.partials.team-view-nav')
+        
+        <div class="mt-2">
+            <x-demo-hint>
+                El Escritorio de Equipo, o tablero de Resiliencia Colectiva, actúa como el pulso vital de la organización. Aquí se monitoriza la energía y progreso global (XP/RP), el mapa térmico territorial de intervenciones, el estado de los servidores (Sentinel) y se fomenta la moral enviando "Kudos" a los compañeros.
+            </x-demo-hint>
         </div>
     </x-slot>
 

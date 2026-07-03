@@ -2,40 +2,37 @@
     @section('title', __('teams.members') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-            <div class="flex items-start gap-4 min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.index') }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                     title="{{ __('navigation.back') ?? 'Volver' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0 flex-1">
-                    @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        {{ __('teams.members_of', ['name' => $team->name]) }}
-                    </h1>
-                    <x-demo-hint>
-                        La gestión de miembros y grupos permite administrar los roles, permisos y agrupaciones del equipo. Puedes invitar usuarios, asignar habilidades con niveles de "expertise", visualizar la conexión en tiempo real y habilitar el acceso al portal de Cita Previa para usuarios externos.
-                    </x-demo-hint>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="truncate">{{ __('teams.members_of', ['name' => $team->name]) }}</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
 
-        <!-- View Switcher Sub-Header -->
-        <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
+        <div class="mt-2">
+            <x-demo-hint>
+                La gestión de miembros y grupos permite administrar los roles, permisos y agrupaciones del equipo. Puedes invitar usuarios, asignar habilidades con niveles de "expertise", visualizar la conexión en tiempo real y habilitar el acceso al portal de Cita Previa para usuarios externos.
+            </x-demo-hint>
         </div>
 
-        <!-- Action Buttons Row -->
-        <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-            @include('teams.partials.header-actions')
-        </div>
+        @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-4 mb-2 flex w-full'])
     </x-slot>
 
     <div x-data="{ activeTab: '{{ session('tab', request('tab', 'members')) }}' }" class="space-y-6">

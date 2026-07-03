@@ -7,42 +7,48 @@
 @section('title', 'Mis Citas Previas')
 
 <x-slot name="header">
-    <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-        <div class="flex items-start gap-4 min-w-0 flex-1">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-2 min-w-0">
             <a href="{{ route('global-surveys.index') }}"
-                class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                 title="{{ __('Volver al Canal Ciudadano') }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <div class="min-w-0 flex-1">
-                @include('teams.partials.breadcrumb')
-                <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Mis Citas Previas
-                </h1>
-                <x-demo-hint>
-                    Este es el <strong>Escritorio Principal de Citas</strong>. Aquí el equipo tiene una visión global del día, estadísticas de rendimiento y acceso rápido a la agenda. Cada miembro solo visualiza las estadísticas y citas de los servicios en los que está asignado.
-                </x-demo-hint>
-            </div>
+            @include('teams.partials.breadcrumb')
+            <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+            <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="truncate">Mis Citas Previas</span>
+            </h1>
+        </div>
+        
+        <div class="flex items-center gap-2 shrink-0">
+            @if($team)
+                @include('teams.partials.header-toolbar')
+            @endif
         </div>
     </div>
-
+    
     @include('appointments.partials.nav')
 
-    {{-- Botón de acción rápida --}}
-    @if($settings && $settings->public_slug)
-    <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+    <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 pt-3">
+        <x-demo-hint>
+            Este es el <strong>Escritorio Principal de Citas</strong>. Aquí el equipo tiene una visión global del día, estadísticas de rendimiento y acceso rápido a la agenda. Cada miembro solo visualiza las estadísticas y citas de los servicios en los que está asignado.
+        </x-demo-hint>
+
+        {{-- Botón Ver Portal Público --}}
+        @if($settings && $settings->public_slug)
         <a href="{{ route('public.appointments.member', $settings->public_slug) }}" target="_blank"
-           class="flex items-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-emerald-500/20 active:scale-95 group">
-            <svg class="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            <span>Ver Portal Público</span>
+           class="flex items-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl transition-all font-bold shadow-sm active:scale-95 group shrink-0 self-start sm:self-center">
+            <svg class="w-4 h-4 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            <span class="hidden sm:inline">Ver Portal Público</span>
         </a>
+        @endif
     </div>
-    @endif
 </x-slot>
 
 <div class="py-8">

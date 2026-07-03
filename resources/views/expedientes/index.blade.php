@@ -2,46 +2,47 @@
     @section('title', 'Expedientes — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-            <div class="flex items-start gap-4 min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.dashboard', $team) }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                     title="Volver">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0 flex-1">
-                    @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                        Gestión de Expedientes
-                    </h1>
-                    <x-demo-hint>
-                        Los expedientes son contenedores lógicos que agrupan y estructuran conjuntos de tareas, notas y documentos relacionados con un mismo asunto o proyecto. Facilitan la trazabilidad y la gestión documental dentro del equipo.
-                    </x-demo-hint>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span class="truncate">Gestión de Expedientes</span>
+                </h1>
             </div>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
+            </div>
+        </div>
+
+        @include('teams.partials.team-view-nav')
+
+        <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-gray-800 pt-3">
+            <x-demo-hint>
+                Los expedientes son contenedores lógicos que agrupan y estructuran conjuntos de tareas, notas y documentos relacionados con un mismo asunto o proyecto. Facilitan la trazabilidad y la gestión documental dentro del equipo.
+            </x-demo-hint>
             
+            <div class="shrink-0 self-start sm:self-center">
+                <a href="{{ route('teams.expedientes.create', $team) }}"
+                    class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl transition-all font-bold shadow-sm active:scale-95 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="hidden sm:inline">Nuevo Expediente</span>
+                </a>
+            </div>
         </div>
 
-        <!-- View Switcher Sub-Header -->
-        <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
-        </div>
-
-        <!-- Action Buttons Row -->
-        <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-            <a href="{{ route('teams.expedientes.create', $team) }}"
-                class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-violet-500/20 active:scale-95 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Nuevo Expediente</span>
-            </a>
-        </div>
     </x-slot>
 
     <div class="space-y-6">

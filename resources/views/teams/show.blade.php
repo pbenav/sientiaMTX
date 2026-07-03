@@ -15,7 +15,7 @@
                     {{ $team->name }}
                 </h1>
             </div>
-            @include('teams.partials.header-actions')
+            @include('teams.partials.header-toolbar')
         </div>
     </x-slot>
 

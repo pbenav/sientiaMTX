@@ -23,14 +23,11 @@
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                @include('teams.partials.header-actions')
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
 
-        {{-- View Switcher --}}
-        <div class="mt-2 flex w-full">
-            @include('teams.partials.view-switcher')
-        </div>
+        @include('teams.partials.team-view-nav', ['showCreateActions' => true])
     </x-slot>
 
     <div class="space-y-6">

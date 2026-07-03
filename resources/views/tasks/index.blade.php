@@ -25,17 +25,12 @@
                     </x-demo-hint>
                 </div>
             </div>
+            <div class="flex items-center gap-2 shrink-0 self-start">
+                @include('teams.partials.header-toolbar')
+            </div>
         </div>
 
-        <!-- View Switcher Sub-Header -->
-        <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
-        </div>
-
-        <!-- Action Buttons Row -->
-        <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-            @include('teams.partials.header-actions')
-        </div>
+        @include('teams.partials.team-view-nav', ['showCreateActions' => true, 'switcherClass' => 'mt-8 mb-4 flex w-full'])
     </x-slot>
     <div class="space-y-4">
         <!-- Filters and Search Bar -->

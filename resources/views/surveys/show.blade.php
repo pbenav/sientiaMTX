@@ -135,9 +135,7 @@
         </div>
 
         @if(!$isGlobal)
-            <div class="mt-8 mb-4 flex w-full view-switcher-container">
-                @include('teams.partials.view-switcher')
-            </div>
+            @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-8 mb-4 flex w-full view-switcher-container'])
         @endif
     </x-slot>
 

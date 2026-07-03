@@ -20,17 +20,10 @@
                         </h1>
                     </div>
                 </div>
+                @include('teams.partials.header-toolbar', ['class' => 'self-start'])
             </div>
 
-            <!-- View Switcher Sub-Header -->
-            <div class="mt-4 mb-2 flex w-full">
-                @include('teams.partials.view-switcher')
-            </div>
-
-            <!-- Action Buttons Row -->
-            <div class="flex items-center gap-3 shrink-0 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-                @include('teams.partials.header-actions')
-            </div>
+            @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-4 mb-2 flex w-full'])
         @else
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">

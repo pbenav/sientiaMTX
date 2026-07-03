@@ -2,25 +2,29 @@
 @section('title', 'Lista de Citas Previas')
 
 <x-slot name="header">
-    <div class="flex items-start gap-4 min-w-0 flex-1">
-        <a href="{{ route('appointments.index', $team) }}"
-           class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-        </a>
-        <div class="min-w-0 flex-1">
+    <div class="flex items-center gap-3 flex-wrap">
+        <div class="flex items-center gap-2 min-w-0">
+            <a href="{{ route('appointments.index', $team) }}"
+                class="p-1.5 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-all shrink-0">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
             @include('teams.partials.breadcrumb')
-            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-3">
-                <svg class="h-7 w-7 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+            <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                Todas las Citas
+                <span class="truncate">Todas las Citas</span>
             </h1>
-            <x-demo-hint>
-                Este <strong>listado maestro</strong> ofrece una vista tabular avanzada con todos los expedientes de citas. Permite filtrar por fechas, servicios o estados, realizar aprobaciones, borrar citas permanentemente o iniciar videocitas directamente desde la tabla.
-            </x-demo-hint>
         </div>
+    </div>
+    
+    <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-gray-800 pt-3">
+        <x-demo-hint>
+            Este <strong>listado maestro</strong> ofrece una vista tabular avanzada con todos los expedientes de citas. Permite filtrar por fechas, servicios o estados, realizar aprobaciones, borrar citas permanentemente o iniciar videocitas directamente desde la tabla.
+        </x-demo-hint>
     </div>
     @include('appointments.partials.nav')
 </x-slot>

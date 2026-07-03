@@ -172,7 +172,7 @@
                 @endif
             </div>
 
-            @include('teams.partials.header-actions')
+            @include('teams.partials.header-toolbar')
         </div>
     </x-slot>
 

@@ -66,7 +66,7 @@
 
         <!-- View Switcher Sub-Header -->
         <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
+            @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-8 mb-4 flex w-full'])
         </div>
 
         <!-- Expediente Actions Footer Row -->

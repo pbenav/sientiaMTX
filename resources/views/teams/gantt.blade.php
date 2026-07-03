@@ -88,10 +88,10 @@
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                @include('teams.partials.header-actions')
+                @include('teams.partials.header-toolbar', ['withCreate' => true])
             </div>
         </div>
-        <div class="mt-2 flex w-full">@include('teams.partials.view-switcher')</div>
+        @include('teams.partials.team-view-nav')
     </x-slot>
 
     <div class="space-y-3">

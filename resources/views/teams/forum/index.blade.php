@@ -1,36 +1,47 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <div class="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-            <div class="flex items-start gap-4 min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.dashboard', $team) }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                     title="{{ __('navigation.back') ?? 'Volver' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div class="min-w-0 flex-1">
-                    @include('teams.partials.breadcrumb')
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading truncate flex items-center gap-3 tracking-tight">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                        </svg>
-                        {{ __('forum.title') ?? 'Foro' }}
-                    </h1>
-                    <x-demo-hint>
-                        El Foro del equipo es un espacio de debate organizado por hilos. Permite discutir ideas, vincular conversaciones a tareas concretas, adjuntar archivos desde Google Drive y mantener un registro permanente del conocimiento y las decisiones grupales.
-                    </x-demo-hint>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                    </svg>
+                    <span class="truncate">{{ __('forum.title') ?? 'Foro' }}</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" x-data=""
+                    x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
+                    class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-lg transition-all font-bold shadow-sm active:scale-95 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo hilo' }}</span>
+                </button>
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
 
-        <!-- View Switcher Sub-Header -->
-        <div class="mt-8 mb-4 flex w-full">
-            @include('teams.partials.view-switcher')
+        @include('teams.partials.team-view-nav')
+
+        <div class="mt-2">
+            <x-demo-hint>
+                El Foro del equipo es un espacio de debate organizado por hilos. Permite discutir ideas, vincular conversaciones a tareas concretas, adjuntar archivos desde Google Drive y mantener un registro permanente del conocimiento y las decisiones grupales.
+            </x-demo-hint>
         </div>
 
         <!-- Action Buttons Row -->
@@ -45,7 +56,6 @@
                     </svg>
                     <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo hilo' }}</span>
                 </button>
-                @include('teams.partials.header-actions')
             </div>
 
             <!-- Filters & Search -->
