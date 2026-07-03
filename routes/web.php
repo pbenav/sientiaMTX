@@ -176,6 +176,8 @@ Route::middleware('auth')->group(function () {
 
     // Tasks routes
     Route::get('/teams/{team}/tasks/search', [TaskController::class, 'search'])->name('teams.tasks.search');
+    // Activities search (for new Activity model compatibility)
+    Route::get('/teams/{team}/activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
     Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');
     Route::get('/teams/{team}/tasks/quadrant', [TaskController::class, 'byQuadrant'])->name('tasks.byQuadrant');
     Route::post('/teams/{team}/tasks/import-json', [TaskExportController::class, 'importJson'])->name('teams.tasks.import-json');

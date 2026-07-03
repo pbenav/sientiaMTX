@@ -105,6 +105,7 @@ class ForumController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'task_id' => 'nullable|exists:tasks,id',
+            'activity_id' => 'nullable|exists:activities,id',
             'content' => 'required|string',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . ((int)ini_get('upload_max_filesize') * 1024),
@@ -113,18 +114,20 @@ class ForumController extends Controller
 
         return \DB::transaction(function() use ($validated, $team, $request) {
             $task = null;
-            if ($validated['task_id']) {
+
+            // If a legacy task id was provided, prefer it
+            if (!empty($validated['task_id'])) {
                 $task = Task::where('team_id', $team->id)->findOrFail($validated['task_id']);
-                
+
                 // DEEP PRIVACY: Ensure user can actually view this task before linking
                 $isCoordinator = $team->isCoordinator(auth()->user());
                 $taskQuery = \App\Models\Task::where('id', $task->id)->visibleTo(auth()->user(), $isCoordinator);
-                
+
                 if (!$taskQuery->exists()) {
                     return redirect()->back()
                         ->with('warning', 'Deep Privacy: No puedes crear hilos para tareas privadas a las que no tienes acceso.');
                 }
-                
+
                 // Force link to the root task
                 while ($task->parent_id && $task->parent) {
                     $task = $task->parent;
@@ -137,12 +140,42 @@ class ForumController extends Controller
                         'user_id' => auth()->id(),
                         'content' => $validated['content'],
                     ]);
-                    
+
                     $thread->touch();
                     $this->notifyThreadParticipants($thread, $message);
 
                     return redirect()->route('teams.forum.show', [$team, $thread])
                         ->with('success', __('forum.thread_already_existed') ?? 'Esta tarea principal ya tenía un hilo activo; el mensaje se ha añadido allí.');
+                }
+
+            // If an activity was provided, try to map to a legacy task (if conversion metadata exists)
+            } elseif (!empty($validated['activity_id'])) {
+                $activity = \App\Models\Activity::where('team_id', $team->id)->findOrFail($validated['activity_id']);
+
+                // Visibility: use Activity's visibility helper when available
+                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user())) {
+                    return redirect()->back()->with('warning', 'No tienes permiso para vincular esta actividad.');
+                }
+
+                // If activity was previously converted from/to a Task, use that mapping to link
+                $convertedToId = data_get($activity->metadata, 'converted_to_id') ?? data_get($activity->metadata, 'converted_to_id');
+                if ($convertedToId) {
+                    $task = Task::where('team_id', $team->id)->find($convertedToId);
+                }
+
+                // If we found a linked legacy task and it already has a thread, append the message
+                if ($task && $task->forumThread) {
+                    $thread = $task->forumThread;
+                    $message = $thread->messages()->create([
+                        'user_id' => auth()->id(),
+                        'content' => $validated['content'],
+                    ]);
+
+                    $thread->touch();
+                    $this->notifyThreadParticipants($thread, $message);
+
+                    return redirect()->route('teams.forum.show', [$team, $thread])
+                        ->with('success', __('forum.thread_already_existed') ?? 'La actividad ya tenía un hilo asociado; el mensaje se ha añadido allí.');
                 }
             }
 
@@ -363,8 +396,10 @@ class ForumController extends Controller
             'is_pinned' => 'sometimes|boolean',
             'is_locked' => 'sometimes|boolean',
             'task_id' => 'nullable|exists:tasks,id',
+            'activity_id' => 'nullable|exists:activities,id',
         ]);
 
+        // Handle changes coming from either a legacy task_id or a new activity_id
         if ($request->has('task_id') && $validated['task_id'] != $thread->task_id) {
             if (empty($validated['task_id'])) {
                 $validated['task_id'] = null;
@@ -391,6 +426,26 @@ class ForumController extends Controller
                 }
                 
                 $validated['task_id'] = $task->id;
+            }
+        }
+
+        // If an activity_id was provided, try to map to a legacy task id via conversion metadata
+        if ($request->has('activity_id') && empty($validated['task_id'])) {
+            if (empty($validated['activity_id'])) {
+                // nothing to do
+            } else {
+                $activity = \App\Models\Activity::where('team_id', $team->id)->findOrFail($validated['activity_id']);
+                $convertedToId = data_get($activity->metadata, 'converted_to_id');
+                if ($convertedToId) {
+                    $maybeTask = Task::where('team_id', $team->id)->find($convertedToId);
+                    if ($maybeTask) {
+                        // ensure no conflict
+                        if ($maybeTask->forumThread && $maybeTask->forumThread->id !== $thread->id) {
+                            return back()->with('error', 'Esa actividad está vinculada a una tarea que ya tiene otro hilo.');
+                        }
+                        $validated['task_id'] = $maybeTask->id;
+                    }
+                }
             }
         }
 

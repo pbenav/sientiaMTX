@@ -381,6 +381,23 @@ class TaskController extends Controller
             ->limit(25)
             ->get(['id', 'title', 'status']);
 
+        // Si no hay tareas legacy, intentar buscar en Activities (subtipo task)
+        if ($tasks->isEmpty()) {
+            $activities = $team->activities()
+                ->when($request->boolean('top_level_only'), fn($q) => $q->whereNull('parent_id'))
+                ->where('type', 'task')
+                ->where('title', 'like', '%' . $queryTerm . '%')
+                ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+                ->orderBy('updated_at', 'desc')
+                ->limit(25)
+                ->get(['id', 'title', 'status']);
+
+            return response()->json($activities->map(fn($a) => [
+                'id' => $a->id,
+                'text' => $a->title . ' (' . strtoupper($a->status_value ?? ($a->status ?? '')) . ')',
+            ]));
+        }
+
         return response()->json($tasks->map(fn($t) => [
             'id' => $t->id,
             'text' => $t->title . ' (' . strtoupper($t->status) . ')',

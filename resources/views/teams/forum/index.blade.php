@@ -313,12 +313,44 @@
     </div>
 
     <!-- Modal to create thread -->
+    <script>
+        // Inline definition disponible antes de que Alpine inicialice
+        window.forumTaskSearch = window.forumTaskSearch || function(config) {
+            return {
+                driveFiles: [],
+                initialised: false,
+                taskQuery: config.initialTaskQuery || '',
+                selectedTaskId: config.initialTaskId || '',
+                taskResults: [],
+                taskHighlight: -1,
+                searchUrl: config.searchUrl || '/teams/' + (config.teamId || '0') + '/tasks/search',
+
+                addFile(file) { this.driveFiles.push(file); },
+                clearTaskSelection() { this.selectedTaskId = ''; this.taskQuery = ''; this.taskResults = []; },
+                selectTask(t) { this.selectedTaskId = t.id; this.taskQuery = t.text || t.title || ''; this.taskResults = []; this.taskHighlight = -1; },
+                async fetchTasks() {
+                    try {
+                        if (!this.taskQuery || this.taskQuery.length < 2) { this.taskResults = []; return; }
+                        const url = new URL(this.searchUrl, window.location.origin);
+                        url.searchParams.set('query', this.taskQuery);
+                        const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                        if (!res.ok) { this.taskResults = []; return; }
+                        const data = await res.json();
+                        this.taskResults = Array.isArray(data) ? data : [];
+                        this.taskHighlight = -1;
+                    } catch (e) { console.error('fetchTasks error', e); this.taskResults = []; }
+                },
+                highlightNext() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight + 1) % this.taskResults.length; },
+                highlightPrev() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight > 0) ? this.taskHighlight - 1 : this.taskResults.length - 1; }
+            };
+        };
+    </script>
     <x-modal name="create-thread-modal" focusable>
         <form method="post" action="{{ route('teams.forum.store', $team) }}"
               x-data="forumTaskSearch({{ json_encode([
-                  'initialTaskId' => old('task_id', ''),
-                  'initialTaskQuery' => old('task_query', optional(\App\Models\Task::find(old('task_id')))->title ?? ''),
-                  'searchUrl' => route('teams.tasks.search', $team),
+                  'initialTaskId' => old('activity_id', ''),
+                  'initialTaskQuery' => old('activity_query', optional(\App\Models\Activity::find(old('activity_id')))->title ?? ''),
+                  'searchUrl' => route('teams.activities.search', $team),
               ]) }})"
               @drive-file-selected.window="addFile($event.detail)"
               class="p-6 dark:bg-gray-900" enctype="multipart/form-data">
@@ -351,8 +383,8 @@
 
                 <div>
                     <x-input-label for="task_query" :value="__('forum.related_task') ?? 'Tarea relacionada (Opcional)'" />
-                    <div class="relative">
-                        <input id="task_query" name="task_query" type="text" autocomplete="off"
+                    <div class="relative z-[999999] overflow-visible">
+                        <input id="task_query" name="activity_query" type="text" autocomplete="off"
                             x-model.debounce.250ms="taskQuery"
                             @input="selectedTaskId = ''; fetchTasks()"
                             @keydown.arrow-down.prevent="if(taskResults.length) taskHighlight = (taskHighlight + 1) % taskResults.length"
@@ -362,16 +394,16 @@
                             placeholder="{{ __('forum.search_task_placeholder') ?? 'Busca una tarea para relacionarla... (mínimo 2 caracteres)' }}"
                         />
 
-                        <input type="hidden" name="task_id" :value="selectedTaskId">
+                        <input type="hidden" name="activity_id" :value="selectedTaskId">
 
                         <button type="button" x-show="selectedTaskId || taskQuery" @click="clearTaskSelection()"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-xs font-bold"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-xs font-bold z-10"
                             x-cloak>
                             ✕
                         </button>
 
                         <div x-show="taskResults.length > 0" x-cloak
-                            class="absolute z-20 mt-1 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                            class="absolute z-[999999] mt-1 w-full overflow-visible rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
                             @mouseleave="taskHighlight = -1">
                             <template x-for="(task, index) in taskResults" :key="task.id">
                                 <button type="button"
@@ -384,7 +416,7 @@
                             </template>
                         </div>
                     </div>
-                    <x-input-error class="mt-2" :messages="$errors->get('task_id')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('activity_id')" />
                     <p class="text-[9px] text-gray-500 ml-1 italic">
                         {{ __('forum.related_task_help') ?? 'Busca la tarea por título y selecciona solo la tarea correspondiente. No se cargan todas las tareas del equipo de una vez.' }}
                     </p>
@@ -756,3 +788,72 @@
         </div>
 @endpush
 </x-app-layout>
+
+@push('scripts')
+    <script>
+        // Proveedor Alpine para el selector de tareas en el modal del foro.
+        window.forumTaskSearch = function(config) {
+            return {
+                driveFiles: [],
+                initialised: false,
+                taskQuery: config.initialTaskQuery || '',
+                selectedTaskId: config.initialTaskId || '',
+                taskResults: [],
+                taskHighlight: -1,
+                searchUrl: config.searchUrl || '/teams/' + (config.teamId || '0') + '/tasks/search',
+
+                addFile(file) {
+                    this.driveFiles.push(file);
+                },
+
+                clearTaskSelection() {
+                    this.selectedTaskId = '';
+                    this.taskQuery = '';
+                    this.taskResults = [];
+                },
+
+                selectTask(t) {
+                    this.selectedTaskId = t.id;
+                    this.taskQuery = t.text || t.title || '';
+                    this.taskResults = [];
+                    this.taskHighlight = -1;
+                },
+
+                async fetchTasks() {
+                    try {
+                        if (!this.taskQuery || this.taskQuery.length < 2) {
+                            this.taskResults = [];
+                            return;
+                        }
+
+                        const url = new URL(this.searchUrl, window.location.origin);
+                        url.searchParams.set('query', this.taskQuery);
+
+                        const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                        if (!res.ok) {
+                            this.taskResults = [];
+                            return;
+                        }
+
+                        const data = await res.json();
+                        this.taskResults = Array.isArray(data) ? data : [];
+                        this.taskHighlight = -1;
+                    } catch (e) {
+                        console.error('fetchTasks error', e);
+                        this.taskResults = [];
+                    }
+                },
+
+                // Helpers for keyboard navigation
+                highlightNext() {
+                    if (!this.taskResults.length) return;
+                    this.taskHighlight = (this.taskHighlight + 1) % this.taskResults.length;
+                },
+                highlightPrev() {
+                    if (!this.taskResults.length) return;
+                    this.taskHighlight = (this.taskHighlight > 0) ? this.taskHighlight - 1 : this.taskResults.length - 1;
+                }
+            };
+        };
+    </script>
+@endpush

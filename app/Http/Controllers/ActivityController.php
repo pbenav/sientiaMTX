@@ -59,6 +59,35 @@ class ActivityController extends Controller
     }
 
     /**
+     * Search activities of subtype 'task' for autocomplete (AJAX).
+     */
+    public function search(Request $request, Team $team)
+    {
+        $queryTerm = $request->input('query');
+        $excludeId = $request->input('exclude_id');
+
+        if (auth()->user()->cannot('view', $team)) {
+            return response()->json([]);
+        }
+
+        $q = $team->activities()
+            ->where('type', 'task')
+            ->when($request->boolean('top_level_only'), fn($q) => $q->whereNull('parent_id'))
+            ->when($request->boolean('exclude_forum_thread'), fn($q) => $q->whereDoesntHave('forumThread'))
+            ->when($queryTerm, fn($q) => $q->where('title', 'like', '%' . $queryTerm . '%'))
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->orderBy('updated_at', 'desc')
+            ->limit(25);
+
+        $activities = $q->get(['id', 'title', 'status', 'metadata']);
+
+        return response()->json($activities->map(fn($a) => [
+            'id' => $a->id,
+            'text' => $a->title . ' (' . strtoupper($a->status_value ?? ($a->status ?? '')) . ')',
+        ]));
+    }
+
+    /**
      * Muestra el selector de tipos o el formulario de creación.
      */
     public function create(Request $request, Team $team)

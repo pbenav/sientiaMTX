@@ -328,7 +328,7 @@
 
         <!-- Uploading overlay -->
         <template x-if="uploading">
-            <div class="absolute inset-0 z-[1100] bg-white/50 dark:bg-gray-900/50 flex items-center justify-center backdrop-blur-[1px] rounded-[2rem]">
+            <div class="absolute inset-0 z-20 bg-white/50 dark:bg-gray-900/50 flex items-center justify-center backdrop-blur-[1px] rounded-[2rem]">
                 <div class="flex items-center gap-3 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
                     <svg class="animate-spin h-5 w-5 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -340,7 +340,7 @@
         </template>
         
         <!-- Header / Toolbar -->
-        <div class="relative z-50 flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem]">
+        <div class="relative z-10 flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem]">
             <div class="flex p-1 bg-gray-200/50 dark:bg-gray-950/50 rounded-xl">
                 <button type="button" 
                     @click="tab = 'write'"
