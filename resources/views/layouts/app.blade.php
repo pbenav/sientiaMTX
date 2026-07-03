@@ -1152,6 +1152,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-amber-400/20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                                 </svg>
+                                <span class="hidden lg:inline-block text-[10px] leading-none ml-2">Escritorio</span>
                             </a>
                         @endif
 
@@ -1164,6 +1165,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
+                            <span class="hidden lg:inline-block text-[10px] leading-none ml-2">{{ __('navigation.my_teams') ?? 'Mis Equipos' }}</span>
                             @php $teamCount = auth()->user()->teams()->count(); @endphp
                             @if($teamCount > 0)
                                 <span class="absolute top-0.5 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-violet-600 text-[8px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-gray-950">
@@ -1181,6 +1183,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                             </svg>
+                            <span class="hidden lg:inline-block text-[10px] leading-none ml-2">Portal Ciudadano</span>
                         </a>
 
                         <!-- Disk Usage -->
@@ -1192,6 +1195,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                             </svg>
+                            <span class="hidden lg:inline-block text-[10px] leading-none ml-2">Archivos</span>
                         </a>
 
                         <a href="{{ route('docs') }}"
@@ -1202,6 +1206,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
+                            <span class="hidden lg:inline-block text-[10px] leading-none ml-2">Docs</span>
                         </a>
 
                         @can('admin')
@@ -1213,6 +1218,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
+                                <span class="hidden lg:inline-block text-[10px] leading-none ml-2">{{ __('navigation.users') }}</span>
                             </a>
 
                             <a href="{{ route('settings.mail') }}"
@@ -1225,6 +1231,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
+                                <span class="hidden lg:inline-block text-[10px] leading-none ml-2">{{ __('navigation.settings') }}</span>
                             </a>
                         @endcan
                     </div>
