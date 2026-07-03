@@ -28,15 +28,15 @@ class TaskController extends Controller
         return redirect()->route('teams.activities.index', $team);
         $user = auth()->user();
         $isManager = $team->isManager($user);
-        
+
         $query = $team->tasks()
             ->visibleTo($user, $isManager)
             ->operationalFor($user, $team, true)
             ->with([
-                'assignedUser', 
-                'tags', 
-                'creator', 
-                'parent', 
+                'assignedUser',
+                'tags',
+                'creator',
+                'parent',
                 'expediente',
                 'children' => function($q) use ($user, $isManager) {
                     $q->visibleTo($user, $isManager);
@@ -101,7 +101,7 @@ class TaskController extends Controller
         // --- Sorting ---
         $sort = $request->get('sort');
         $direction = $request->get('direction', 'asc');
-        
+
         $allowedSorts = ['title', 'status', 'priority', 'due_date', 'created_at', 'progress_percentage'];
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
@@ -189,9 +189,9 @@ class TaskController extends Controller
 
         $taskService = app(\App\Services\TaskService::class);
         $task = $taskService->createTask(
-            $team, 
-            $validated, 
-            $request->file('attachments'), 
+            $team,
+            $validated,
+            $request->file('attachments'),
             $request->input('drive_attachments')
         );
 
@@ -372,6 +372,8 @@ class TaskController extends Controller
         }
 
         $tasks = $team->tasks()
+            ->when($request->boolean('top_level_only'), fn($q) => $q->whereNull('parent_id'))
+            ->when($request->boolean('exclude_forum_thread'), fn($q) => $q->whereDoesntHave('forumThread'))
             ->where('title', 'like', '%' . $queryTerm . '%')
             ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
             ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
@@ -475,7 +477,7 @@ class TaskController extends Controller
         // If 'show' is provided, we use it (absolute set). Otherwise, toggle.
         $current = session('show_all_subtasks', false);
         $show = $request->has('show') ? $request->boolean('show') : !$current;
-        
+
         session(['show_all_subtasks' => $show]);
 
         return response()->json(['success' => true, 'show' => $show]);

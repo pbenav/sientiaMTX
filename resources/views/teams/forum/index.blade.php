@@ -63,7 +63,7 @@
                 @if($filters['orphaned'] ?? null)
                     <input type="hidden" name="orphaned" value="1">
                 @endif
-                
+
                 <div class="flex items-center gap-2 w-full sm:w-auto">
                     <select name="sort" onchange="this.form.submit()" class="flex-1 sm:flex-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
                         <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>Nuevos</option>
@@ -80,18 +80,18 @@
                         <option value="100" {{ ($filters['limit'] ?? 15) == 100 ? 'selected' : '' }}>100</option>
                     </select>
                 </div>
-                
+
                 <div class="relative group w-full sm:w-auto min-w-[250px]">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                            placeholder="{{ __('forum.search_threads') ?? 'Buscar en el foro...' }}"
                            enterkeyhint="search"
                            class="block w-full pl-10 pr-12 py-2.5 {{ !empty($filters['search']) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' }} border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm placeholder:text-gray-400 dark:text-white">
-                    
+
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
                             <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}">
@@ -135,10 +135,10 @@
                         @else
                             <a href="{{ route('teams.forum.index', [$team, 'orphaned' => 1]) }}" class="text-xs font-black uppercase tracking-tighter text-violet-700 hover:text-violet-800 px-4 py-2 transition-colors">{{ __('forum.view_orphans') }}</a>
                         @endif
-                        
+
                         <form action="{{ route('teams.forum.cleanup', $team) }}" method="POST" id="cleanup-form">
                             @csrf
-                            <button type="button" 
+                            <button type="button"
                                     onclick="confirmCleanup()"
                                     class="bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md shadow-violet-600/20 active:scale-95">{{ __('forum.cleanup_stale') }}</button>
                         </form>
@@ -174,7 +174,7 @@
                 </p>
 
                 @if($filters['search'])
-                    <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" 
+                    <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}"
                         class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-6 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
                         {{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}
                     </a>
@@ -217,7 +217,7 @@
                                         </svg>
                                     </span>
                                 @endif
-                                
+
                                 @if(isset($recentThreadIds) && in_array($thread->id, $recentThreadIds))
                                     <span
                                         class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 rounded-xl text-[9px] font-black uppercase tracking-wider shrink-0 animate-pulse border border-amber-500/20"
@@ -249,7 +249,7 @@
 
                             <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="flex items-center gap-1.5 font-medium">
-                                    <img src="{{ $thread->user->profile_photo_url }}" 
+                                    <img src="{{ $thread->user->profile_photo_url }}"
                                         alt="{{ $thread->user->name }}"
                                         class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                     {{ $thread->user->name }}
@@ -262,7 +262,7 @@
                                     </svg>
                                     {{ $thread->created_at->format('d M y, H:i') }}
                                 </span>
-                                
+
                                 <span class="flex items-center gap-1.5" title="Vistas">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -289,7 +289,7 @@
                                         class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">
                                         {{ __('forum.latest') ?? 'Último' }}</p>
                                     <div class="flex items-center gap-2">
-                                        <img src="{{ $thread->messages->first()->user->profile_photo_url }}" 
+                                        <img src="{{ $thread->messages->first()->user->profile_photo_url }}"
                                             alt="{{ $thread->messages->first()->user->name }}"
                                             class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                         <div>
@@ -323,10 +323,10 @@
 
     <!-- Modal to create thread -->
     <x-modal name="create-thread-modal" focusable>
-        <form method="post" action="{{ route('teams.forum.store', $team) }}" 
-              x-data="{ 
-                driveFiles: [], 
-                addFile(detail) { 
+        <form method="post" action="{{ route('teams.forum.store', $team) }}"
+              x-data="{
+                driveFiles: [],
+                addFile(detail) {
                     const file = detail.file;
                     if (!this.driveFiles.find(f => f.id === file.id)) {
                         this.driveFiles.push({
@@ -371,23 +371,85 @@
                     <x-input-error class="mt-2" :messages="$errors->get('title')" />
                 </div>
 
-                <div>
-                    <x-input-label for="task_id" :value="__('forum.related_task') ?? 'Tarea relacionada (Opcional)'" />
-                    <select id="task_id" name="task_id"
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-md shadow-sm sm:text-sm">
-                        <option value="">{{ __('forum.none') ?? '-- Ninguna --' }}</option>
-                        @foreach (\App\Models\Task::where('team_id', $team->id)->whereNull('parent_id')->whereDoesntHave('forumThread')->orderBy('title')->get() as $t)
-                            <option value="{{ $t->id }}">[{{ __('tasks.statuses.' . $t->status) }}]
-                                {{ $t->title }}</option>
-                        @endforeach
-                    </select>
+                <div x-data="{
+                    query: @json(old('task_query', optional(\App\Models\Task::find(old('task_id')))->title ?? '')),
+                    selectedTaskId: @json(old('task_id', '')),
+                    tasks: [],
+                    loading: false,
+                    highlight: -1,
+                    async fetchTasks() {
+                        if (!this.query || this.query.length < 2) {
+                            this.tasks = [];
+                            return;
+                        }
+
+                        this.loading = true;
+                        try {
+                            const response = await fetch(`{{ route('teams.tasks.search', $team) }}?query=${encodeURIComponent(this.query)}&top_level_only=1&exclude_forum_thread=1`);
+                            this.tasks = await response.json();
+                            this.highlight = 0;
+                        } catch (error) {
+                            this.tasks = [];
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    selectTask(task) {
+                        this.selectedTaskId = task.id;
+                        this.query = task.text;
+                        this.tasks = [];
+                        this.highlight = -1;
+                    },
+                    clearSelection() {
+                        this.selectedTaskId = '';
+                        this.query = '';
+                        this.tasks = [];
+                    }
+                }">
+                    <x-input-label for="task_query" :value="__('forum.related_task') ?? 'Tarea relacionada (Opcional)'" />
+                    <div class="relative">
+                        <input id="task_query" name="task_query" type="text" autocomplete="off"
+                            x-model.debounce.250ms="query"
+                            @input="selectedTaskId = ''; fetchTasks()"
+                            @keydown.arrow-down.prevent="if(tasks.length) highlight = (highlight + 1) % tasks.length"
+                            @keydown.arrow-up.prevent="if(tasks.length) highlight = (highlight > 0 ? highlight - 1 : tasks.length - 1)"
+                            @keydown.enter.prevent="if(tasks.length && highlight >= 0) selectTask(tasks[highlight])"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-md shadow-sm sm:text-sm"
+                            placeholder="{{ __('forum.search_task_placeholder') ?? 'Busca una tarea para relacionarla... (mínimo 2 caracteres)' }}"
+                        />
+
+                        <input type="hidden" name="task_id" :value="selectedTaskId">
+
+                        <button type="button" x-show="selectedTaskId || query" @click="clearSelection()"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-xs font-bold"
+                            x-cloak>
+                            ✕
+                        </button>
+
+                        <div x-show="tasks.length > 0" x-cloak
+                            class="absolute z-20 mt-1 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                            @mouseleave="highlight = -1">
+                            <template x-for="(task, index) in tasks" :key="task.id">
+                                <button type="button"
+                                    @click="selectTask(task)"
+                                    @mouseover="highlight = index"
+                                    class="w-full text-left px-4 py-3 text-sm transition-colors"
+                                    :class="highlight === index ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/70 dark:text-violet-200' : 'text-gray-700 dark:text-gray-300'">
+                                    <span x-text="task.text"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
                     <x-input-error class="mt-2" :messages="$errors->get('task_id')" />
+                    <p class="text-[9px] text-gray-500 ml-1 italic">
+                        {{ __('forum.related_task_help') ?? 'Busca la tarea por título y selecciona solo la tarea correspondiente. No se cargan todas las tareas del equipo de una vez.' }}
+                    </p>
                 </div>
 
                 <div>
                     <x-input-label for="content" :value="__('forum.initial_message') ?? 'Mensaje inicial'" />
-                    <x-markdown-editor 
-                        name="content" 
+                    <x-markdown-editor
+                        name="content"
                         id="content"
                         rows="12"
                         placeholder="Escribe aquí el contexto de la conversación... (Soporta Markdown)"
@@ -402,8 +464,8 @@
                 <div class="flex flex-col gap-3">
                     <div class="flex items-center justify-between px-1">
                         <x-input-label value="{{ __('Adjuntar archivos') }}" />
-                        
-                        @php 
+
+                        @php
                             $isTeamLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
                         @endphp
 
@@ -513,19 +575,19 @@
                             break;
                         }
                     }
-                    
+
                     if (blob !== null) {
                         e.preventDefault();
                         let textarea = e.target;
-                        
+
                         let cursorStart = textarea.selectionStart;
                         let cursorEnd = textarea.selectionEnd;
                         let textBefore = textarea.value.substring(0, cursorStart);
                         let textAfter = textarea.value.substring(cursorEnd, textarea.value.length);
                         let placeholder = `![Subiendo imagen...]()`;
-                        
+
                         textarea.value = textBefore + placeholder + textAfter;
-                        
+
                         let formData = new FormData();
                         formData.append('image', blob);
                         let tokenStr = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -534,7 +596,7 @@
                             const tokenEl = document.querySelector('input[name="_token"]');
                             if (tokenEl) formData.append('_token', tokenEl.value);
                         }
-                        
+
                         fetch(`{{ route('teams.forum.upload_image', $team) }}`, {
                             method: 'POST',
                             headers: { 'Accept': 'application/json' },
@@ -595,7 +657,7 @@
                 };
 
                 window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-                
+
                 // Chequeo inicial
                 const initialScroll = window.scrollY || document.documentElement.scrollTop || 0;
                 updateScrollDock(initialScroll);
@@ -606,16 +668,16 @@
                     if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
                         return;
                     }
-                    
+
                     isDragging = true;
                     dock.style.transition = 'none'; // Desactivar transiciones durante el arrastre
-                    
+
                     // Obtener la posición inicial del toque/clic
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                    
+
                     const rect = dock.getBoundingClientRect();
-                    
+
                     // Al iniciar, fijamos el left y top reales para evitar que salte por el transform del CSS
                     if (!hasDragged) {
                         dock.style.bottom = 'auto';
@@ -624,10 +686,10 @@
                         dock.style.top = rect.top + 'px';
                         hasDragged = true;
                     }
-                    
+
                     startX = clientX - rect.left;
                     startY = clientY - rect.top;
-                    
+
                     document.addEventListener('mousemove', drag);
                     document.addEventListener('mouseup', stopDrag);
                     document.addEventListener('touchmove', drag, { passive: false });
@@ -637,21 +699,21 @@
                 const drag = (e) => {
                     if (!isDragging) return;
                     if (e.cancelable) e.preventDefault();
-                    
+
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                    
+
                     let newLeft = clientX - startX;
                     let newTop = clientY - startY;
-                    
+
                     // Límites de la ventana para que no se salga de la pantalla
                     const rect = dock.getBoundingClientRect();
                     const maxLeft = window.innerWidth - rect.width;
                     const maxTop = window.innerHeight - rect.height;
-                    
+
                     newLeft = Math.max(0, Math.min(newLeft, maxLeft));
                     newTop = Math.max(0, Math.min(newTop, maxTop));
-                    
+
                     dock.style.left = newLeft + 'px';
                     dock.style.top = newTop + 'px';
                 };
@@ -668,13 +730,13 @@
                 dock.addEventListener('mousedown', startDrag);
                 dock.addEventListener('touchstart', startDrag, { passive: true });
                 dock.style.cursor = 'grab';
-                
+
                 dock.addEventListener('mouseenter', () => { if (!isDragging) dock.style.cursor = 'grab'; });
                 dock.addEventListener('mousedown', () => { dock.style.cursor = 'grabbing'; });
                 dock.addEventListener('mouseup', () => { dock.style.cursor = 'grab'; });
             });
         </script>
-        
+
         <!-- Floating Contextual Action Dock -->
         <div id="forum-action-dock"
              style="
@@ -698,7 +760,7 @@
                 transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
              "
              class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
-             
+
              <!-- Drag Handle -->
              <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="Arrastrar">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -712,7 +774,7 @@
              </div>
 
              <!-- Back to team button -->
-             <a href="{{ route('teams.show', $team) }}" 
+             <a href="{{ route('teams.show', $team) }}"
                 class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors py-1.5 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -736,7 +798,7 @@
                          window.scrollTo({ top: 0, behavior: 'smooth' });
                          document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
                          document.body.scrollTo({ top: 0, behavior: 'smooth' });
-                         document.querySelectorAll('.overflow-y-auto, [style*=\'overflow-y: auto\'], [style*=\'' + 
+                         document.querySelectorAll('.overflow-y-auto, [style*=\'overflow-y: auto\'], [style*=\'' +
                          'overflow-y: scroll\']').forEach(el => {
                              el.scrollTo({ top: 0, behavior: 'smooth' });
                          });
