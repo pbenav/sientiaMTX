@@ -97,6 +97,18 @@
                 @endcan
             @endif
 
+            @php
+                $canConvert = auth()->user()->is_admin || $team->isCoordinator(auth()->user()) || auth()->id() === $activity->created_by_id || auth()->id() === $activity->assigned_user_id || $activity->assignedTo->contains(auth()->id());
+            @endphp
+            @if($canConvert && !$activity->isDeprecatedByConversion())
+                <button type="button" @click="$dispatch('open-convert-activity-modal')" class="shrink-0 flex items-center gap-1.5 text-xs bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 shadow-lg shadow-violet-500/25 ml-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span class="hidden sm:inline">Convertir Actividad</span>
+                </button>
+            @endif
+
             @if ($activity->is_template && ($team->isCoordinator(auth()->user()) || auth()->id() === $activity->created_by_id))
                 <div class="flex items-center gap-2">
 

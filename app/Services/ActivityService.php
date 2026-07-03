@@ -361,29 +361,10 @@ class ActivityService
                 });
             });
 
-            // Evitar ruido visual de subtareas en el listado general solo para actividades donde el usuario es mero creador/público,
-            // pero SIEMPRE mostrar las actividades/tareas que tenga asignadas explícitamente (aunque sean instancias/subtareas).
+            // Respetar la jerarquía en el listado general: solo mostrar las actividades principales (padres)
+            // a menos que estemos buscando, en cuyo caso mostramos todas las coincidencias.
             if (empty($filters['search'])) {
-                $query->where(function ($q) use ($user) {
-                    $q->whereNull('parent_id')
-                      ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                      ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
-                      ->orWhereExists(function ($sub) use ($user) {
-                          $sub->select(\DB::raw(1))
-                              ->from('activity_task_mapping')
-                              ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                              ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
-                              ->where(function ($a) use ($user) {
-                                  $a->where('task_assignments.user_id', $user->id)
-                                    ->orWhereExists(function ($g) use ($user) {
-                                        $g->select(\DB::raw(1))
-                                          ->from('group_user')
-                                          ->whereColumn('group_user.group_id', 'task_assignments.group_id')
-                                          ->where('group_user.user_id', $user->id);
-                                    });
-                              });
-                      });
-                });
+                $query->whereNull('parent_id');
             }
         }
 

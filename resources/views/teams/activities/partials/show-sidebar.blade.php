@@ -1,5 +1,5 @@
         <!-- Sidebar -->
-        <div class="space-y-4">
+        <div class="space-y-4 lg:col-span-1">
 
             <!-- Quality Rating Widget -->
             @php
