@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
         // Register DemoModeService as a shared singleton
         $this->app->singleton(DemoModeService::class, fn() => new DemoModeService());
 
+        // Register OpenAI-compatible client (Ax.ia)
+        $this->app->singleton(\App\Services\OpenAIClient::class, fn($app) => new \App\Services\OpenAIClient());
+
         // Override Laravel Passkeys configuration generation to support Linux/Mobile QR hybrid flow
         $this->app->bind(
             \Laravel\Passkeys\Actions\GenerateRegistrationOptions::class,
@@ -116,8 +119,8 @@ class AppServiceProvider extends ServiceProvider
                 ->symbols();
 
             // Only perform uncompromised check in production or if database/env is ready
-            return app()->isProduction() 
-                ? $rule->uncompromised() 
+            return app()->isProduction()
+                ? $rule->uncompromised()
                 : $rule;
         });
 

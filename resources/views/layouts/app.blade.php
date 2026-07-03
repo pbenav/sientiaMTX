@@ -5,7 +5,7 @@
         $maxWidth = 'max-w-' . $maxWidth;
     }
     $maxWidth = $maxWidth ?? 'max-w-7xl';
-    
+
     // Get global team context for background tools like chat or drive
     $currentTeamContext = request()->route('team');
     if (!$currentTeamContext && auth()->check()) {
@@ -63,14 +63,14 @@
         [data-fouc-hide] { display: none !important; }
 
         /* Forzar que el cursor del ratón nunca desaparezca en modales y backdrops de SweetAlert2 */
-        body.swal2-shown, 
-        body.swal2-shown *, 
-        .swal2-container, 
-        .swal2-container *, 
-        .swal2-popup, 
-        .swal2-modal, 
-        .swal2-backdrop-show { 
-            cursor: auto !important; 
+        body.swal2-shown,
+        body.swal2-shown *,
+        .swal2-container,
+        .swal2-container *,
+        .swal2-popup,
+        .swal2-modal,
+        .swal2-backdrop-show {
+            cursor: auto !important;
             pointer-events: auto !important;
         }
     </style>
@@ -106,7 +106,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             console.log('🚀 SientiaChat Engine: Initializing stores...');
-            
+
             Alpine.store('chatStore', {
                 unreadConversations: [],
                 setUnread(list) { this.unreadConversations = list; },
@@ -276,7 +276,7 @@
                         }
                     });
                 },
-                
+
                 init() {
                     this.originalTitle = document.title;
                     console.log('✅ SientiaChat Component: Initialized');
@@ -319,7 +319,7 @@
                     document.addEventListener('click', unlockAudio);
                     document.addEventListener('keydown', unlockAudio);
                 },
-                
+
                 openChat(detail) {
                     this.member = detail;
                     try { localStorage.setItem('sientia_last_chat', JSON.stringify(detail)); } catch(e) {}
@@ -335,7 +335,7 @@
                         if (input) input.focus();
                     });
                 },
-                
+
                 openLastChat() {
                     if (Alpine.store('chatStore').unreadConversations.length > 0) {
                         this.openChat(Alpine.store('chatStore').unreadConversations[0]);
@@ -362,9 +362,9 @@
                         Swal.fire({ icon: 'info', title: 'Chat Interno', text: 'No tienes ninguna sala de chat activa. Selecciona un usuario o grupo en la Red Activa o abre un mensaje pendiente.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
                     }
                 },
-                
+
                 close() { this.open = false; this.activeCallRoom = null; this.stopFlashAndSound(); },
-                
+
                 fetchMessages() {
                     if (!this.member.id) return;
                     fetch('/chat/' + this.member.id + '?_=' + Date.now(), {
@@ -378,24 +378,24 @@
                     })
                     .catch(err => console.error('Error fetching chat messages:', err));
                 },
-                
+
                 sendMessage() {
                     if (this.isUploading) return;
                     const text = this.message.trim();
                     if (!text && !this.pendingFile && !this.pendingDriveFile) return;
                     if (!this.member.id) return;
-                    
+
                     this.isUploading = true;
                     this.message = '';
                     this.showEmojis = false;
-                    
+
                     const optimisticMsg = {
                         id: Date.now(),
                         sender: 'me',
                         text: text,
                         file_name: this.pendingDriveFile ? this.pendingDriveFile.name : (this.pendingFile ? this.pendingFile.name : null),
                         file_type: this.pendingDriveFile ? 'file' : (this.pendingFile ? (this.pendingFile.type.startsWith('image/') ? 'image' : 'file') : null),
-                        file_url: this.previewUrl, 
+                        file_url: this.previewUrl,
                         storage_provider: this.pendingDriveFile ? 'google' : 'local',
                         web_view_link: this.pendingDriveFile ? this.pendingDriveFile.webViewLink : null,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -403,7 +403,7 @@
                         parent_text: this.replyingTo ? (this.replyingTo.text || (this.replyingTo.file_name ? '📎 ' + this.replyingTo.file_name : '...')) : null,
                         parent_sender_name: this.replyingTo ? (this.replyingTo.sender === 'me' ? 'Tú' : this.member.name) : null
                     };
-                    
+
                     this.messages.push(optimisticMsg);
                     const replyToId = this.replyingTo ? this.replyingTo.id : null;
                     this.replyingTo = null;
@@ -482,7 +482,7 @@
 
                 clearChat() {
                     if (!this.member || !this.member.id) return;
-                    
+
                     Swal.fire({
                         title: '🧹 ¿LIMPIAR CHAT?',
                         text: 'Se eliminarán todos los mensajes de esta conversación de forma permanente.',
@@ -539,10 +539,10 @@
                                 }
                             });
                             Alpine.store('chatStore').setUnread(Object.values(uniqueMap));
-                            
+
                             const callMsg = data.unread.find(m => m.call_room);
                             const lastMsg = data.unread[0];
-                            
+
                             if (callMsg && !this.activeCallRoom && (!this.incomingCall || this.incomingCall.room !== callMsg.call_room)) {
                                 this.rejectedCalls = this.rejectedCalls || [];
                                 if (!this.rejectedCalls.includes(callMsg.call_room)) {
@@ -585,13 +585,13 @@
                     this.incomingCall = null;
                 },
 
-                rejectCall(room) { 
+                rejectCall(room) {
                     if (room) {
                         this.rejectedCalls = this.rejectedCalls || [];
                         if (!this.rejectedCalls.includes(room)) this.rejectedCalls.push(room);
                     }
-                    this.stopFlashAndSound(); 
-                    this.incomingCall = null; 
+                    this.stopFlashAndSound();
+                    this.incomingCall = null;
                 },
 
                 startFlashAndSound() {
@@ -763,7 +763,7 @@
                 activeTaskId: {{ auth()->check() ? (auth()->user()->activeTaskLog()?->task_id ?? 'null') : 'null' }},
                 elapsed: {{ auth()->check() && auth()->user()->activeTaskLog() ? auth()->user()->activeTaskLog()->start_at->diffInSeconds(now()) : 0 }},
                 timer: null,
-                
+
                 async fetch() {
                     try {
                         const res = await fetch('{{ route('time-logs.status') }}');
@@ -785,35 +785,35 @@
                 },
                 init() {
                     if (this.activeTaskId) this.tick();
-                    
+
                     // Listeners Centralized
                     window.addEventListener('task-started', (e) => {
                         this.activeTaskId = e.detail.taskId;
                         this.elapsed = 0;
                         this.tick();
                     });
-                    
+
                     window.addEventListener('workday-toggled', (e) => {
                         if (!e.detail.working) this.stop();
                     });
                 }
             });
-            
+
             Alpine.store('notifications', {
                 count: {{ auth()->check() ? Auth::user()->unreadNotifications->count() : 0 }},
                 lastChecked: Date.now(),
                 firstCheck: true,
                 lastSummaryShown: localStorage.getItem('last_notification_summary_shown') || 0,
-                
+
                 async check() {
                     try {
                         const res = await fetch('{{ route('notifications.unread-count') }}');
                         const data = await res.json();
-                        
+
                         // Only show pending summary if it hasn't been shown in the last 2 hours
                         const now = Date.now();
                         const twoHours = 2 * 60 * 60 * 1000;
-                        
+
                         if (this.firstCheck && data.count > 0 && (now - this.lastSummaryShown) > twoHours) {
                             if (data.count === 1) {
                                 this.showToast(data.unread[0]);
@@ -838,16 +838,16 @@
                             this.firstCheck = false;
                             this.lastSummaryShown = now;
                             localStorage.setItem('last_notification_summary_shown', now);
-                        } 
+                        }
                         // If count increased during session, show the new one
                         else if (data.count > this.count && data.unread.length > 0) {
                             this.showToast(data.unread[0]);
                         }
-                        
+
                         if (data.count !== this.count) {
                             window.dispatchEvent(new CustomEvent('notifications-updated', { detail: { count: data.count } }));
                         }
-                        
+
                         this.count = data.count;
                     } catch(e) { console.error('Notification check failed', e); }
                 },
@@ -874,12 +874,12 @@
                         }
                     });
                 },
-                
+
                 init() {
                     @auth
                     // Initial check
                     setTimeout(() => this.check(), 5000);
-                    
+
                     // Poll less frequently (1 minute)
                     setInterval(() => this.check(), 60000);
 
@@ -959,10 +959,10 @@
             }
             @media (min-width: 1024px) {
                 body:not(.sidebar-closed) #sidebar { transform: translateX(0) !important; }
-                body:not(.sidebar-closed) #mainContent.lg-layout-v-fix, 
-                body:not(.sidebar-closed) footer.lg-layout-v-fix, 
-                body:not(.sidebar-closed) .header-v-fix { 
-                    padding-left: 18rem !important; 
+                body:not(.sidebar-closed) #mainContent.lg-layout-v-fix,
+                body:not(.sidebar-closed) footer.lg-layout-v-fix,
+                body:not(.sidebar-closed) .header-v-fix {
+                    padding-left: 18rem !important;
                 }
             }
         @endif
@@ -1018,8 +1018,8 @@
         localStorage.setItem('cleanMode', this.cleanMode);
     },
     init() {
-        this.$nextTick(() => { 
-            this.mounted = true; 
+        this.$nextTick(() => {
+            this.mounted = true;
             this.sidebarOpen = (window.innerWidth >= 1024 && this.layout === 'vertical');
         });
         window.addEventListener('resize', () => {
@@ -1030,7 +1030,7 @@
     },
     async updateLayout(newLayout) {
         if (this.layout === newLayout) return;
-        
+
         this.layout = newLayout;
         document.cookie = 'layout=' + newLayout + '; path=/; max-age=' + (30 * 24 * 60 * 60) + '; SameSite=Lax';
 
@@ -1235,7 +1235,7 @@
                             </a>
                         @endcan
                     </div>
- 
+
                     <!-- 2. TABLET & MOBILE (sm to lg): Main Menu Dropdown -->
                     <div class="hidden sm:block lg:hidden relative shrink-0" x-data="{ open: false }">
                         <button @click="open = !open" @click.outside="open = false"
@@ -1245,8 +1245,8 @@
                             </svg>
                             <span>{{ __('Menú') }}</span>
                         </button>
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200" 
-                             x-transition:enter-start="opacity-0 translate-y-1" 
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 translate-y-0"
@@ -1290,7 +1290,7 @@
                                      <span class="font-bold">{{ __('navigation.settings') }}</span>
                                  </a>
                              @endcan
-                             
+
                              {{-- System Preferences for Tablet/Medium screens --}}
                              <div class="px-4 py-2 mt-1 text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 dark:bg-gray-800/80 border-y border-gray-100 dark:border-gray-700">{{ __('Preferencias') }}</div>
                              <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 bg-white dark:bg-gray-900">
@@ -1376,8 +1376,8 @@
                         </div>
 
                         <!-- Notifications Bell: hidden on mobile (in mobile block above) -->
-                        <a href="{{ route('notifications.index') }}" 
-                           class="hidden sm:inline-flex relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10" 
+                        <a href="{{ route('notifications.index') }}"
+                           class="hidden sm:inline-flex relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10"
                            title="{{ __('Notificaciones') }}"
                            x-data
                         >
@@ -1398,7 +1398,7 @@
                         <div class="hidden sm:block relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.outside="open = false"
                                 class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
-                                <img src="{{ auth()->user()->profile_photo_url }}" 
+                                <img src="{{ auth()->user()->profile_photo_url }}"
                                     alt="{{ auth()->user()->name }}"
                                     class="w-8 h-8 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform"
@@ -1546,7 +1546,7 @@
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="-translate-x-full"
              class="fixed inset-y-0 left-0 z-[9999] w-72 bg-white dark:bg-gray-900 shadow-2xl flex flex-col overflow-y-auto transform">
-        
+
 
             {{-- Drawer header --}}
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
@@ -1562,7 +1562,7 @@
 
             {{-- User info --}}
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                <img src="{{ auth()->user()->profile_photo_url }}" 
+                <img src="{{ auth()->user()->profile_photo_url }}"
                     alt="{{ auth()->user()->name }}"
                     class="w-10 h-10 rounded-full object-cover shadow border border-white dark:border-gray-700 shrink-0">
                 <div class="min-w-0">
@@ -1828,7 +1828,7 @@
     </div>
 
     <!-- Page content -->
-    <main id="mainContent" 
+    <main id="mainContent"
         class="px-3 sm:px-6 lg:px-8 py-4 pb-20 sm:pb-4 {{ $layout === 'vertical' ? 'lg-layout-v-fix' : '' }}"
         style="{{ $layout === 'vertical' ? 'padding-left: 18rem;' : '' }}"
         data-wide-content="{{ ($maxWidth === 'max-w-full' || $maxWidth === 'max-w-none') ? 'true' : 'false' }}"
@@ -1880,7 +1880,7 @@
                         <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M23.955 13.587l-1.342-4.135-2.664-8.189c-.135-.417-.724-.417-.86 0L16.425 9.452h-8.85l-2.664-8.189c-.135-.417-.724-.417-.86 0L1.387 9.452.045 13.587c-.11.34.01.711.306.925l11.65 8.458 11.648-8.458c.296-.214.416-.585.306-.925z"/></svg>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
                     <a href="{{ route('privacy') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Privacidad') }}</a>
                     <a href="{{ route('terms') }}" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('Términos') }}</a>
@@ -1908,7 +1908,7 @@
     @auth
         @php
             $notifSettings = auth()->user()->notification_settings ?? auth()->user()->defaultNotificationSettings();
-            
+
             $layoutTeam = $team ?? null;
             if (!$layoutTeam && request()->route('team')) {
                 $routeTeam = request()->route('team');
@@ -1917,17 +1917,17 @@
 
             $currTeam = request()->route('team') ?? $team ?? null;
             $currTeamId = $currTeam ? (is_object($currTeam) ? $currTeam->id : $currTeam) : null;
-            
+
             $currTask = request()->route('task') ?? $task ?? null;
             $currTaskId = $currTask ? (is_object($currTask) ? $currTask->id : $currTask) : null;
-            
+
             if (!$currTeamId && $currTask && is_object($currTask)) {
                 $currTeamId = $currTask->team_id;
             }
 
             $currThread = request()->route('thread') ?? $thread ?? null;
             $currThreadId = $currThread ? (is_object($currThread) ? $currThread->id : $currThread) : null;
-            
+
             if (!$currThreadId && $currTask && is_object($currTask) && $currTask->forumThread) {
                 $currThreadId = $currTask->forumThread->id;
             }
@@ -2034,7 +2034,7 @@
             <a href="{{ route('profile.edit') }}"
                class="flex flex-col items-center justify-center flex-1 gap-1 text-gray-400 dark:text-gray-500 transition-colors
                       {{ request()->routeIs('profile.*') ? 'text-violet-600 dark:text-violet-400' : 'hover:text-gray-700 dark:hover:text-gray-300' }}">
-                <img src="{{ auth()->user()->profile_photo_url }}" 
+                <img src="{{ auth()->user()->profile_photo_url }}"
                     alt="{{ auth()->user()->name }}"
                     class="w-6 h-6 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                 <span class="text-[9px] font-bold uppercase tracking-tight leading-none">Perfil</span>
@@ -2063,7 +2063,7 @@
                 }
             });
         }
-        
+
         // Alias for compatibility with other views
         window.handleGlobalDelete = window.confirmDelete;
 
@@ -2072,10 +2072,10 @@
             const height = 700;
             const left = (window.innerWidth - width) / 2;
             const top = (window.innerHeight - height) / 2;
-            
+
             // Mark that we are starting a Google Auth process
             localStorage.setItem('google_auth_in_progress', '1');
-            
+
             let url = "{{ route('google.auth') }}?popup=1";
             if (teamId) url += "&team_id=" + teamId;
 
@@ -2171,19 +2171,19 @@
     <!-- Lottie Web for animated stickers -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
     @endif
-    
+
     @auth
         <x-task-quick-view-modal />
         <div x-show="!cleanMode" x-cloak x-transition class="contents"
              x-init="$el.removeAttribute('style')">
             <x-quick-notes />
         </div>
-        
+
         <!-- Widget de Comunicación Premium en Vivo Global (Sientia Direct & Videollamadas) -->
         <div x-data="sientiaChat" @open-chat.window="openChat($event.detail)" @open-last-chat.window="openLastChat()">
         <!-- Backdrop blur overlay -->
-        <div x-show="open" 
-             @click="close()" 
+        <div x-show="open"
+             @click="close()"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -2225,7 +2225,7 @@
                                         </template>
                                     </div>
                                 </template>
-                                
+
                                 <!-- Modo Edición -->
                                 <template x-if="editingName">
                                     <div class="flex items-center gap-1 min-w-0 w-full">
@@ -2246,14 +2246,14 @@
                         <p class="text-[9px] text-emerald-500 font-bold truncate tracking-tight" :title="member.status" x-text="member.status"></p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-1 shrink-0">
                     <!-- Chats Grupales Recientes -->
                     <div class="relative" @click.away="showingRecentGroups = false">
                         <button @click="showingRecentGroups = !showingRecentGroups; if(showingRecentGroups) fetchRecentGroups();" class="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-500 rounded-xl transition-colors" title="Chats Grupales Recientes 👥">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </button>
-                        
+
                         <!-- Dropdown de grupos recientes -->
                         <div x-show="showingRecentGroups" x-transition class="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
                             <div class="p-3 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
@@ -2293,7 +2293,7 @@
                         <button @click="addingMember = !addingMember; if(addingMember) fetchUsersForChat();" class="p-2 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 rounded-xl transition-colors" title="Añadir miembro al chat">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                         </button>
-                        
+
                         <!-- Dropdown -->
                         <div x-show="addingMember" x-transition class="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
                             <div class="p-2 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
@@ -2331,12 +2331,12 @@
                     <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="Iniciar Videollamada Sientia">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
                     </button>
-                    
+
                     <!-- Clear Chat Button -->
                     <button @click="clearChat()" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-500 rounded-xl transition-colors" title="Limpiar Conversación 🧹">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
-                    
+
                     <!-- Close Button -->
                     <button @click="close()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -2354,7 +2354,7 @@
                                 <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-black text-gray-400 uppercase rounded-lg" x-text="msg.text"></span>
                             </div>
                         </template>
-                        
+
                         <!-- My message -->
                         <template x-if="msg.sender === 'me'">
                             <div class="flex justify-end group relative my-1">
@@ -2421,7 +2421,7 @@
                                 </div>
                             </div>
                         </template>
-                        
+
                         <!-- Their message -->
                         <template x-if="msg.sender === 'them'">
                             <div class="flex justify-start group relative my-1">
@@ -2469,7 +2469,7 @@
                                             </div>
                                         </a>
                                     </template>
-                                    
+
                                     <p class="text-xs font-semibold leading-relaxed whitespace-pre-wrap" x-show="msg.text" x-text="msg.text"></p>
                                     <template x-if="msg.call_room">
                                         <button @click="window.open(msg.call_room.startsWith('http') ? msg.call_room : 'https://meet.jit.si/' + msg.call_room, '_blank')" class="mt-2 block w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase rounded-xl transition-all">
@@ -2486,7 +2486,7 @@
                         </template>
                     </div>
                 </template>
-                
+
                 <!-- Typing Indicator -->
                 <div x-show="isTyping" class="flex justify-start" style="display: none;">
                     <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-3xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1">
@@ -2496,7 +2496,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Input Area -->
             <!-- Area de vista previa de adjuntos -->
             <!-- Area de vista previa de adjuntos -->
@@ -2518,7 +2518,7 @@
                             <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                         </svg>
                     </template>
-                    
+
                     <button @click="clearPendingAttachments()" class="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-lg shadow hover:bg-red-600 transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
@@ -2530,17 +2530,17 @@
             </div>
 
             <!-- Input Area Enhanced -->
-            <div class="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0" 
+            <div class="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 shrink-0"
                  @drive-file-selected.window="if (open) { pendingDriveFile = $event.detail.file; pendingFile = null; previewUrl = null; $nextTick(() => $refs.chatInput.focus()); }">
                 <div class="flex items-end gap-3">
-                    
+
                     <!-- Tools Column: Grouped for max visibility & aesthetics -->
                     <div class="flex items-center gap-1 mb-1 px-1">
                         <div class="relative">
                             <button @click="showEmojis = !showEmojis" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="Emoticonos">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </button>
-                            
+
                             <!-- Emoji Box WITH ZERO PADDING REQ BY USER AND FIXED HEIGHT SCROLL -->
                             <div x-show="showEmojis" @click.away="showEmojis = false" class="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-60 max-h-64 overflow-y-auto custom-scrollbar z-50 animate-in fade-in slide-in-from-bottom-2" style="display: none;">
                                 <div class="grid grid-cols-8 gap-0 p-0 border-collapse">
@@ -2577,17 +2577,17 @@
                              </div>
                              <button @click="replyingTo = null" class="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
-                        <textarea x-ref="chatInput" 
-                               x-model="message" 
-                               @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); sendMessage(); }" 
+                        <textarea x-ref="chatInput"
+                               x-model="message"
+                               @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); sendMessage(); }"
                                @paste="handlePaste($event)"
                                rows="3"
-                               placeholder="Escribe un mensaje... (Shift+Intro para línea nueva)" 
+                               placeholder="Escribe un mensaje... (Shift+Intro para línea nueva)"
                                class="w-full bg-transparent border-0 px-4 py-3 text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-0 resize-none custom-scrollbar"></textarea>
                     </div>
-                    
+
                     <!-- Send Button -->
-                    <button @click="sendMessage()" 
+                    <button @click="sendMessage()"
                             :disabled="isUploading || (!message.trim() && !pendingFile && !pendingDriveFile)"
                             class="p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 mb-1">
                         <template x-if="!isUploading">
@@ -2642,7 +2642,7 @@
         window.SientiaPrint = {
             async print(title, htmlContent, options = {}) {
                 const isDark = document.documentElement.classList.contains('dark');
-                
+
                 const result = await Swal.fire({
                     title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Formato de Impresión</span>',
                     background: isDark ? '#0f172a' : '#ffffff',
@@ -2704,46 +2704,46 @@
                             <meta charset="utf-8">
                             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
                             <style>
-                                body { 
-                                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-                                    padding: 40px 60px; 
-                                    color: #1e293b; 
+                                body {
+                                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                                    padding: 40px 60px;
+                                    color: #1e293b;
                                     line-height: 1.6;
                                     background-color: #fff;
                                     -webkit-print-color-adjust: exact;
                                     print-color-adjust: exact;
                                 }
-                                .print-header { 
-                                    border-bottom: 4px solid #4f46e5; 
-                                    margin-bottom: 40px; 
-                                    padding-bottom: 20px; 
+                                .print-header {
+                                    border-bottom: 4px solid #4f46e5;
+                                    margin-bottom: 40px;
+                                    padding-bottom: 20px;
                                 }
-                                .brand { 
-                                    font-weight: 900; 
-                                    font-size: 10px; 
-                                    text-transform: uppercase; 
-                                    letter-spacing: 0.3em; 
-                                    color: #6366f1; 
+                                .brand {
+                                    font-weight: 900;
+                                    font-size: 10px;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.3em;
+                                    color: #6366f1;
                                     margin-bottom: 8px;
                                     display: block;
                                 }
-                                .title { 
-                                    font-size: 26px; 
-                                    font-weight: 900; 
-                                    color: #0f172a; 
-                                    margin: 0; 
+                                .title {
+                                    font-size: 26px;
+                                    font-weight: 900;
+                                    color: #0f172a;
+                                    margin: 0;
                                     line-height: 1.2;
                                     letter-spacing: -0.02em;
                                 }
-                                .meta { 
-                                    font-size: 10px; 
-                                    color: #94a3b8; 
-                                    font-weight: 700; 
+                                .meta {
+                                    font-size: 10px;
+                                    color: #94a3b8;
+                                    font-weight: 700;
                                     text-transform: uppercase;
                                     margin-top: 10px;
                                 }
-                                .content { 
-                                    font-size: 14px; 
+                                .content {
+                                    font-size: 14px;
                                     color: #334155;
                                     word-wrap: break-word;
                                 }
@@ -2797,7 +2797,7 @@
 
             async printPage() {
                 const isDark = document.documentElement.classList.contains('dark');
-                
+
                 const result = await Swal.fire({
                     title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Página</span>',
                     background: isDark ? '#0f172a' : '#ffffff',
@@ -2840,7 +2840,7 @@
                 if (!withHeaders) {
                     document.body.classList.add('print-clean-mode');
                 }
-                
+
                 setTimeout(() => {
                     window.print();
                     setTimeout(() => {
@@ -2860,7 +2860,7 @@
             // 1. RESTAURACIÓN INSTANTÁNEA (SOLO EN RECARGAS)
             document.addEventListener("DOMContentLoaded", function() {
                 const savedScroll = sessionStorage.getItem(scrollKey);
-                
+
                 // Verificar si la página fue recargada (reload) o si venimos de una navegación normal
                 const navEntries = performance.getEntriesByType("navigation");
                 const isReload = navEntries.length > 0 && navEntries[0].type === 'reload';
@@ -2906,9 +2906,9 @@
              */
             const processMarkdownLinks = (container) => {
                 if (!container || typeof container.querySelectorAll !== 'function') return;
-                
+
                 const markdownContainers = container.querySelectorAll('.prose, .markdown-content');
-                
+
                 markdownContainers.forEach(mc => {
                     const links = mc.querySelectorAll('a');
                     links.forEach(link => {
@@ -2916,8 +2916,8 @@
                         const href = link.getAttribute('href');
                         if (!href) return;
 
-                        const isExternal = (href.startsWith('http') || href.startsWith('//')) && 
-                                         !href.includes(window.location.hostname) && 
+                        const isExternal = (href.startsWith('http') || href.startsWith('//')) &&
+                                         !href.includes(window.location.hostname) &&
                                          !link.hasAttribute('target');
 
                         if (isExternal) {
@@ -2931,7 +2931,7 @@
             // 1. Initial process on load
             document.addEventListener("DOMContentLoaded", () => {
                 processMarkdownLinks(document);
-                
+
                 // 2. Observer for dynamic content (AI Assistant, Quick Notes, Livewire)
                 const observer = new MutationObserver(mutations => {
                     mutations.forEach(mutation => {
@@ -2947,7 +2947,7 @@
 
                 observer.observe(document.body, { childList: true, subtree: true });
             });
-            
+
             // 3. Hook into specific app events that might re-render markdown
             window.addEventListener('quicknote-state-changed', () => {
                 setTimeout(() => processMarkdownLinks(document), 150);
@@ -2962,18 +2962,18 @@
                 hasDragged: false,
                 startX: 0,
                 startY: 0,
-                
+
                 startDrag(e) {
                     if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
-                    
+
                     this.isDragging = true;
                     this.$el.style.transition = 'none';
-                    
+
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                    
+
                     const rect = this.$el.getBoundingClientRect();
-                    
+
                     if (!this.hasDragged) {
                         this.$el.style.bottom = 'auto';
                         this.$el.style.right = 'auto';
@@ -2982,32 +2982,32 @@
                         this.$el.style.top = rect.top + 'px';
                         this.hasDragged = true;
                     }
-                    
+
                     this.startX = clientX - rect.left;
                     this.startY = clientY - rect.top;
                 },
-                
+
                 drag(e) {
                     if (!this.isDragging) return;
                     if (e.cancelable) e.preventDefault();
-                    
+
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                    
+
                     let newLeft = clientX - this.startX;
                     let newTop = clientY - this.startY;
-                    
+
                     const rect = this.$el.getBoundingClientRect();
                     const maxLeft = window.innerWidth - rect.width;
                     const maxTop = window.innerHeight - rect.height;
-                    
+
                     newLeft = Math.max(0, Math.min(newLeft, maxLeft));
                     newTop = Math.max(0, Math.min(newTop, maxTop));
-                    
+
                     this.$el.style.left = newLeft + 'px';
                     this.$el.style.top = newTop + 'px';
                 },
-                
+
                 stopDrag() {
                     if (!this.isDragging) return;
                     this.isDragging = false;
@@ -3017,10 +3017,10 @@
         });
     </script>
     <!-- Letrero Flotante de Celebración (Tipo Banner de Feria/Fiesta) -->
-    <div x-data="{ 
+    <div x-data="{
             showCelebration: false,
             konami: { keys: [], code: ['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright','b','a'] }
-         }" 
+         }"
          @v1-celebration.window="showCelebration = true; setTimeout(() => showCelebration = false, 5000)"
          @keydown.window="
             konami.keys.push($event.key.toLowerCase());
@@ -3039,9 +3039,9 @@
          x-transition:leave="transition ease-in duration-1000"
          x-transition:leave-start="opacity-100 scale-100"
          x-transition:leave-end="opacity-0 scale-110">
-         
+
          <div class="relative w-full max-w-4xl rounded-sm shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden text-center transform transition-all" style="background-color: #fdfaf3; border: 1px solid #e5e7eb;">
-            
+
             <!-- Borde interior decorativo -->
             <div class="absolute inset-2 border-2 border-dashed rounded-sm pointer-events-none" style="border-color: #d1c8b4;"></div>
 
@@ -3062,26 +3062,26 @@
                   <polygon points="950,20 980,58 1010,12" fill="#8b5cf6" />
                 </svg>
             </div>
-            
+
             <div class="relative z-10 px-8 py-16 md:py-20 mt-4">
                 <h3 class="text-lg md:text-xl font-bold tracking-[0.3em] uppercase mb-3" style="font-family: 'Arial', sans-serif; color: #14b8a6;">
                     Lanzamiento Oficial
                 </h3>
-                
+
                 <h2 class="text-5xl md:text-7xl font-bold mb-6 drop-shadow-sm" style="font-family: 'Georgia', serif; color: #453c38;">
                     SientiaMTX <span style="color: #7c3aed;">v1.1.0</span>
                 </h2>
-                
+
                 <div class="inline-block border-y-2 py-3 mb-6 px-8" style="border-color: #d1c8b4;">
                     <p class="text-xl md:text-2xl font-medium tracking-wider uppercase" style="color: #6b5c54;">
                         Plataforma • Equipo • Éxito
                     </p>
                 </div>
-                
+
                 <p class="text-lg italic max-w-lg mx-auto" style="color: #6b7280;">
                     Gracias por acompañarnos y ser parte fundamental de este gran hito.
                 </p>
-                
+
                 <!-- Decoración inferior geométrica -->
                 <div class="absolute bottom-0 left-0 w-full h-4 flex">
                     <div class="flex-1" style="background-color: #ef4444;"></div>
@@ -3098,7 +3098,7 @@
             </div>
          </div>
     </div>
-    
+
     <script>
         window.triggerV1Celebration = function() {
             const fireConfetti = () => {
@@ -3109,7 +3109,7 @@
                     confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, zIndex: 999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
                     if (Date.now() < end) requestAnimationFrame(frame);
                 }());
-                
+
                 // Disparar evento Alpine para mostrar el letrero
                 window.dispatchEvent(new CustomEvent('v1-celebration'));
             };
@@ -3147,18 +3147,18 @@
                 if (target) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
-                    
+
                     const onclickAttr = target.getAttribute('onclick');
                     const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
                     const message = match ? match[1] : '¿Estás seguro?';
-                    
-                    const isDanger = message.toLowerCase().includes('eliminar') || 
-                                     message.toLowerCase().includes('borrar') || 
+
+                    const isDanger = message.toLowerCase().includes('eliminar') ||
+                                     message.toLowerCase().includes('borrar') ||
                                      message.toLowerCase().includes('cancelar') ||
-                                     message.toLowerCase().includes('physical') || 
-                                     message.toLowerCase().includes('físicamente') || 
+                                     message.toLowerCase().includes('physical') ||
+                                     message.toLowerCase().includes('físicamente') ||
                                      message.includes('⚠️');
-                    
+
                     Swal.fire({
                         title: isDanger ? '¿Estás seguro?' : 'Confirmación',
                         text: message,
@@ -3177,7 +3177,7 @@
                         if (result.isConfirmed) {
                             const originalOnclick = target.getAttribute('onclick');
                             target.removeAttribute('onclick');
-                            
+
                             if (target.type === 'submit' && target.form) {
                                 if (target.name) {
                                     const hiddenInput = document.createElement('input');
@@ -3191,7 +3191,7 @@
                             } else {
                                 target.click();
                             }
-                            
+
                             setTimeout(() => target.setAttribute('onclick', originalOnclick), 50);
                         }
                     });
@@ -3205,22 +3205,22 @@
                     delete form.dataset.swalConfirmed;
                     return;
                 }
-                
+
                 const onsubmitAttr = form.getAttribute('onsubmit');
                 if (onsubmitAttr && onsubmitAttr.includes('confirm(')) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
-                    
+
                     const match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
                     const message = match ? match[1] : '¿Estás seguro de que deseas continuar?';
-                    
-                    const isDanger = message.toLowerCase().includes('eliminar') || 
-                                     message.toLowerCase().includes('borrar') || 
+
+                    const isDanger = message.toLowerCase().includes('eliminar') ||
+                                     message.toLowerCase().includes('borrar') ||
                                      message.toLowerCase().includes('cancelar') ||
-                                     message.toLowerCase().includes('physical') || 
-                                     message.toLowerCase().includes('físicamente') || 
+                                     message.toLowerCase().includes('physical') ||
+                                     message.toLowerCase().includes('físicamente') ||
                                      message.includes('⚠️');
-                    
+
                     Swal.fire({
                         title: isDanger ? '¿Estás seguro?' : 'Confirmación',
                         text: message,

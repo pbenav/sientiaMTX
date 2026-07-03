@@ -23,15 +23,6 @@
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                <button type="button" x-data=""
-                    x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
-                    class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-lg transition-all font-bold shadow-sm active:scale-95 shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span class="hidden sm:inline">{{ __('forum.new_thread') ?? 'Nuevo hilo' }}</span>
-                </button>
                 @include('teams.partials.header-toolbar')
             </div>
         </div>
@@ -324,24 +315,11 @@
     <!-- Modal to create thread -->
     <x-modal name="create-thread-modal" focusable>
         <form method="post" action="{{ route('teams.forum.store', $team) }}"
-              x-data="{
-                driveFiles: [],
-                addFile(detail) {
-                    const file = detail.file;
-                    if (!this.driveFiles.find(f => f.id === file.id)) {
-                        this.driveFiles.push({
-                            id: file.id,
-                            name: file.name,
-                            webViewLink: file.webViewLink,
-                            size: file.size || 0,
-                            mimeType: file.mimeType
-                        });
-                    }
-                },
-                removeFile(id) {
-                    this.driveFiles = this.driveFiles.filter(f => f.id !== id);
-                }
-              }"
+              x-data="forumTaskSearch({{ json_encode([
+                  'initialTaskId' => old('task_id', ''),
+                  'initialTaskQuery' => old('task_query', optional(\App\Models\Task::find(old('task_id')))->title ?? ''),
+                  'searchUrl' => route('teams.tasks.search', $team),
+              ]) }})"
               @drive-file-selected.window="addFile($event.detail)"
               class="p-6 dark:bg-gray-900" enctype="multipart/form-data">
             @csrf
@@ -371,70 +349,36 @@
                     <x-input-error class="mt-2" :messages="$errors->get('title')" />
                 </div>
 
-                <div x-data="{
-                    query: @json(old('task_query', optional(\App\Models\Task::find(old('task_id')))->title ?? '')),
-                    selectedTaskId: @json(old('task_id', '')),
-                    tasks: [],
-                    loading: false,
-                    highlight: -1,
-                    async fetchTasks() {
-                        if (!this.query || this.query.length < 2) {
-                            this.tasks = [];
-                            return;
-                        }
-
-                        this.loading = true;
-                        try {
-                            const response = await fetch(`{{ route('teams.tasks.search', $team) }}?query=${encodeURIComponent(this.query)}&top_level_only=1&exclude_forum_thread=1`);
-                            this.tasks = await response.json();
-                            this.highlight = 0;
-                        } catch (error) {
-                            this.tasks = [];
-                        } finally {
-                            this.loading = false;
-                        }
-                    },
-                    selectTask(task) {
-                        this.selectedTaskId = task.id;
-                        this.query = task.text;
-                        this.tasks = [];
-                        this.highlight = -1;
-                    },
-                    clearSelection() {
-                        this.selectedTaskId = '';
-                        this.query = '';
-                        this.tasks = [];
-                    }
-                }">
+                <div>
                     <x-input-label for="task_query" :value="__('forum.related_task') ?? 'Tarea relacionada (Opcional)'" />
                     <div class="relative">
                         <input id="task_query" name="task_query" type="text" autocomplete="off"
-                            x-model.debounce.250ms="query"
+                            x-model.debounce.250ms="taskQuery"
                             @input="selectedTaskId = ''; fetchTasks()"
-                            @keydown.arrow-down.prevent="if(tasks.length) highlight = (highlight + 1) % tasks.length"
-                            @keydown.arrow-up.prevent="if(tasks.length) highlight = (highlight > 0 ? highlight - 1 : tasks.length - 1)"
-                            @keydown.enter.prevent="if(tasks.length && highlight >= 0) selectTask(tasks[highlight])"
+                            @keydown.arrow-down.prevent="if(taskResults.length) taskHighlight = (taskHighlight + 1) % taskResults.length"
+                            @keydown.arrow-up.prevent="if(taskResults.length) taskHighlight = (taskHighlight > 0 ? taskHighlight - 1 : taskResults.length - 1)"
+                            @keydown.enter.prevent="if(taskResults.length && taskHighlight >= 0) selectTask(taskResults[taskHighlight])"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-md shadow-sm sm:text-sm"
                             placeholder="{{ __('forum.search_task_placeholder') ?? 'Busca una tarea para relacionarla... (mínimo 2 caracteres)' }}"
                         />
 
                         <input type="hidden" name="task_id" :value="selectedTaskId">
 
-                        <button type="button" x-show="selectedTaskId || query" @click="clearSelection()"
+                        <button type="button" x-show="selectedTaskId || taskQuery" @click="clearTaskSelection()"
                             class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-xs font-bold"
                             x-cloak>
                             ✕
                         </button>
 
-                        <div x-show="tasks.length > 0" x-cloak
+                        <div x-show="taskResults.length > 0" x-cloak
                             class="absolute z-20 mt-1 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
-                            @mouseleave="highlight = -1">
-                            <template x-for="(task, index) in tasks" :key="task.id">
+                            @mouseleave="taskHighlight = -1">
+                            <template x-for="(task, index) in taskResults" :key="task.id">
                                 <button type="button"
                                     @click="selectTask(task)"
-                                    @mouseover="highlight = index"
+                                    @mouseover="taskHighlight = index"
                                     class="w-full text-left px-4 py-3 text-sm transition-colors"
-                                    :class="highlight === index ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/70 dark:text-violet-200' : 'text-gray-700 dark:text-gray-300'">
+                                    :class="taskHighlight === index ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/70 dark:text-violet-200' : 'text-gray-700 dark:text-gray-300'">
                                     <span x-text="task.text"></span>
                                 </button>
                             </template>
