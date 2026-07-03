@@ -650,7 +650,9 @@
 
         <!-- Sidebar -->
         @include('teams.activities.partials.show-sidebar')
+    </div>
 
+    @push('scripts')
         @include('teams.activities.partials.import-modal-script')
     @endpush
 
@@ -776,7 +778,7 @@
     </script>
 @endpush
 
-    @if(isset($mappedActivity) && $mappedActivity)
+    @if(isset($activity) && $activity)
     <!-- MODAL DE CONVERSIÓN DE ACTIVIDAD -->
     <div x-data="{ 
         show: false, 
@@ -828,7 +830,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('teams.activities.convert', [$team, $mappedActivity]) }}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
+            <form action="{{ route('teams.activities.convert', [$team, $activity]) }}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
                 @csrf
                 <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
                     
@@ -842,7 +844,7 @@
                             <div>
                                 <h4 class="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest mb-1">Aviso de Integridad</h4>
                                 <p class="text-xs text-amber-700/80 dark:text-amber-500/80 leading-relaxed font-medium">
-                                    Solo se conservarán los metadatos y atributos compatibles con el nuevo tipo seleccionado. Los campos exclusivos de "{{ $mappedActivity->type_label ?? 'Tarea' }}" que no existan en el nuevo esquema se descartarán en la nueva versión.
+                                    Solo se conservarán los metadatos y atributos compatibles con el nuevo tipo seleccionado. Los campos exclusivos de "{{ $activity->type_label ?? 'Tarea' }}" que no existan en el nuevo esquema se descartarán en la nueva versión.
                                 </p>
                             </div>
                         </div>
