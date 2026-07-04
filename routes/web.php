@@ -174,33 +174,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/groups/{group}/members', [GroupController::class, 'addMember'])->name('teams.groups.addMember');
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
-    // Tasks routes
-    Route::get('/teams/{team}/tasks/search', [TaskController::class, 'search'])->name('teams.tasks.search');
-    // Activities search (for new Activity model compatibility)
-    Route::get('/teams/{team}/activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
-    Route::get('/teams/{team}/tasks/status/{status}', [TaskController::class, 'byStatus'])->name('tasks.byStatus');
-    Route::get('/teams/{team}/tasks/quadrant', [TaskController::class, 'byQuadrant'])->name('tasks.byQuadrant');
-    Route::post('/teams/{team}/tasks/import-json', [TaskExportController::class, 'importJson'])->name('teams.tasks.import-json');
-    Route::patch('/teams/{team}/tasks/bulk-update', [TaskBulkController::class, 'bulkUpdate'])->name('teams.tasks.bulk-update');
-    Route::delete('/teams/{team}/tasks/bulk-delete', [TaskBulkController::class, 'bulkDelete'])->name('teams.tasks.bulk-delete');
-    Route::post('/teams/{team}/tasks/bulk-merge', [TaskBulkController::class, 'bulkMerge'])->name('teams.tasks.bulk-merge');
-    Route::post('/teams/{team}/tasks/purge-trash', [TaskBulkController::class, 'purgeTrash'])->name('teams.tasks.purge-trash');
-    
-    // Activity Bulk Routes
-    Route::patch('/teams/{team}/activities/bulk-update', [\App\Http\Controllers\ActivityBulkController::class, 'bulkUpdate'])->name('teams.activities.bulk-update');
-    Route::delete('/teams/{team}/activities/bulk-delete', [\App\Http\Controllers\ActivityBulkController::class, 'bulkDelete'])->name('teams.activities.bulk-delete');
-    Route::post('/teams/{team}/activities/bulk-merge', [\App\Http\Controllers\ActivityBulkController::class, 'bulkMerge'])->name('teams.activities.bulk-merge');
-
-    Route::resource('teams.tasks', TaskController::class)->except(['show', 'edit', 'update', 'destroy']);
-
-    // Override show/edit/update/destroy to avoid Scoped Binding and handle SoftDeletes
-    Route::prefix('teams/{team}')->group(function() {
-        Route::get('tasks/{task}', [TaskController::class, 'show'])->name('teams.tasks.show')->withTrashed()->withoutScopedBindings();
-        Route::get('tasks/{task}/edit', [TaskController::class, 'edit'])->name('teams.tasks.edit')->withTrashed()->withoutScopedBindings();
-        Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('teams.tasks.update')->withTrashed()->withoutScopedBindings();
-        Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('teams.tasks.destroy')->withTrashed()->withoutScopedBindings();
-    });
-
     // Activities routes (universal polymorphic activities infrastructure)
     Route::resource('teams.activities', \App\Http\Controllers\ActivityController::class)->except(['show', 'edit', 'update', 'destroy']);
     Route::prefix('teams/{team}')->group(function() {
@@ -208,7 +181,7 @@ Route::middleware('auth')->group(function () {
         Route::get('activities/{activity}/edit', [\App\Http\Controllers\ActivityController::class, 'edit'])->name('teams.activities.edit')->withTrashed()->withoutScopedBindings();
         Route::patch('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'update'])->name('teams.activities.update')->withTrashed()->withoutScopedBindings();
         Route::delete('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'destroy'])->name('teams.activities.destroy')->withTrashed()->withoutScopedBindings();
-        
+
         Route::post('activities/{activity}/archive', [\App\Http\Controllers\ActivityController::class, 'archive'])->name('teams.activities.archive');
         Route::post('activities/{activity}/unarchive', [\App\Http\Controllers\ActivityController::class, 'unarchive'])->name('teams.activities.unarchive');
         Route::patch('activities/{activity}/status', [\App\Http\Controllers\ActivityController::class, 'changeStatus'])->name('teams.activities.change-status');
@@ -218,6 +191,12 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/attachments', [\App\Http\Controllers\ActivityController::class, 'uploadAttachment'])->name('teams.activities.attachments.upload');
         Route::delete('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'deleteAttachment'])->name('teams.activities.attachments.destroy');
         Route::get('activities/{activity}/attachments/{attachment}/download', [\App\Http\Controllers\ActivityController::class, 'downloadAttachment'])->name('teams.activities.attachments.download');
+
+        // Bulk operations (replaces legacy task bulk routes)
+        Route::patch('activities/bulk-update', [\App\Http\Controllers\ActivityBulkController::class, 'bulkUpdate'])->name('teams.activities.bulk-update');
+        Route::delete('activities/bulk-delete', [\App\Http\Controllers\ActivityBulkController::class, 'bulkDelete'])->name('teams.activities.bulk-delete');
+        Route::post('activities/bulk-merge', [\App\Http\Controllers\ActivityBulkController::class, 'bulkMerge'])->name('teams.activities.bulk-merge');
+        Route::post('activities/purge-trash', [\App\Http\Controllers\ActivityBulkController::class, 'purgeTrash'])->name('teams.activities.purge-trash');
 
         // Portabilidad, Clonación e Integraciones de Actividades (Universal Polymorphic Integration)
         Route::post('activities/import-json', [TaskExportController::class, 'importJson'])->name('teams.activities.import-json');
@@ -239,6 +218,26 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/google-sync', [\App\Http\Controllers\GoogleController::class, 'syncTask'])->name('google.sync_activity');
         Route::post('activities/{activity}/google-disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnectTask'])->name('google.disconnect_activity');
         Route::post('activities/{activity}/google-calendar', [\App\Http\Controllers\GoogleController::class, 'exportTaskToCalendar'])->name('google.export_calendar_activity');
+
+        // Search - unified (handles both Activity and legacy Task)
+        Route::get('activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
+    });
+
+    // Legacy Task routes - all redirect to Activity equivalents
+    // These exist only for backward compatibility with existing bookmarks/links
+    Route::prefix('teams/{team}')->group(function() {
+        Route::get('tasks/{task}', function(Team $team, $task) {
+            return redirect()->route('teams.activities.show', [$team, $task]);
+        })->name('teams.tasks.show')->withTrashed()->withoutScopedBindings();
+        Route::get('tasks/{task}/edit', function(Team $team, $task) {
+            return redirect()->route('teams.activities.edit', [$team, $task]);
+        })->name('teams.tasks.edit')->withTrashed()->withoutScopedBindings();
+        Route::patch('tasks/{task}', function(Team $team, $task) {
+            return redirect()->route('teams.activities.update', [$team, $task]);
+        })->name('teams.tasks.update')->withTrashed()->withoutScopedBindings();
+        Route::delete('tasks/{task}', function(Team $team, $task) {
+            return redirect()->route('teams.activities.destroy', [$team, $task]);
+        })->name('teams.tasks.destroy')->withTrashed()->withoutScopedBindings();
     });
 
     // Expedientes routes
@@ -270,9 +269,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/forum/replace-inline-image', [ForumMessageController::class, 'replaceInlineImage'])->name('teams.forum.replace_inline_image');
     Route::post('/teams/{team}/forum/upload-attachment', [ForumMessageController::class, 'uploadAttachment'])->name('teams.forum.upload_attachment');
     
-    // Task Attachments
+    // Attachment routes (shared - TaskAttachmentController handles TaskAttachment model)
     Route::prefix('teams/{team}')->group(function () {
-        Route::post('tasks/{task}/attachments', [TaskAttachmentController::class, 'uploadAttachment'])->name('teams.tasks.attachments.upload');
         Route::get('attachments/{attachment}/download', [TaskAttachmentController::class, 'downloadAttachment'])->name('teams.attachments.download');
         Route::get('attachments/{attachment}/view', [TaskAttachmentController::class, 'viewAttachment'])->name('teams.attachments.view');
         Route::patch('attachments/{attachment}', [TaskAttachmentController::class, 'updateAttachment'])->name('teams.attachments.update');
@@ -280,29 +278,22 @@ Route::middleware('auth')->group(function () {
         Route::delete('attachments/{attachment}', [TaskAttachmentController::class, 'destroyAttachment'])->name('teams.attachments.destroy');
         Route::get('attachments/history/{attachment}', [TaskAttachmentController::class, 'attachmentHistory'])->name('teams.attachments.history');
         Route::post('tasks/{task}/sync', [TaskController::class, 'syncToChildren'])->name('teams.tasks.sync-to-children')->withoutScopedBindings();
-        
-        // Private Notes
-        Route::post('tasks/{task}/private-notes', [\App\Http\Controllers\TaskNoteController::class, 'update'])->name('teams.tasks.private-notes.update');
-        
-        // Activity Private Notes
-        Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
     });
 
-    Route::post('/teams/{team}/tasks/{task}/nudge', [TaskActionController::class, 'nudge'])->name('teams.tasks.nudge');
-    Route::post('/teams/{team}/tasks/{task}/rate', [TaskActionController::class, 'rate'])->name('teams.tasks.rate');
-    Route::post('/teams/{team}/tasks/bulk-nudge', [TaskActionController::class, 'bulkNudge'])->name('teams.tasks.bulk-nudge');
-    Route::post('/teams/{team}/tasks/{task}/move', [TaskActionController::class, 'move'])->name('teams.tasks.move');
-    Route::post('/teams/{team}/tasks/{task}/toggle-auto-priority', [TaskActionController::class, 'toggleAutoPriority'])->name('teams.tasks.toggle-auto-priority');
-    Route::post('/teams/{team}/tasks/{task}/copy-to-team', [TaskExportController::class, 'copyToTeam'])->name('teams.tasks.copy-to-team');
-    Route::post('/teams/{team}/tasks/{task}/clone', [TaskExportController::class, 'cloneTask'])->name('teams.tasks.clone');
-    Route::get('/teams/{team}/tasks/{task}/export-json', [TaskExportController::class, 'exportJson'])->name('teams.tasks.export-json');
-    Route::post('/teams/{team}/tasks/{task}/merge', [TaskController::class, 'merge'])->name('teams.tasks.merge');
+    // Action routes - unified for Activity (TaskActionController handles both Task and Activity)
+    Route::post('/teams/{team}/activities/{activity}/nudge', [TaskActionController::class, 'nudge'])->name('teams.activities.nudge');
+    Route::post('/teams/{team}/activities/{activity}/rate', [TaskActionController::class, 'rate'])->name('teams.activities.rate');
+    Route::post('/teams/{team}/activities/bulk-nudge', [TaskActionController::class, 'bulkNudge'])->name('teams.activities.bulk-nudge');
+    Route::post('/teams/{team}/activities/{activity}/move', [TaskActionController::class, 'move'])->name('teams.activities.move');
+    Route::post('/teams/{team}/activities/{activity}/toggle-auto-priority', [TaskActionController::class, 'toggleAutoPriority'])->name('teams.activities.toggle-auto-priority');
+    Route::post('/teams/{team}/activities/{activity}/copy-to-team', [TaskExportController::class, 'copyToTeam'])->name('teams.activities.copy-to-team');
+    Route::post('/teams/{team}/activities/{activity}/clone', [TaskExportController::class, 'cloneTask'])->name('teams.activities.clone');
+    Route::get('/teams/{team}/activities/{activity}/export-json', [TaskExportController::class, 'exportJson'])->name('teams.activities.export-json');
     Route::get('/teams/{team}/gantt', [\App\Http\Controllers\GanttController::class, 'index'])->name('teams.gantt');
     Route::get('/teams/{team}/gantt/data', [\App\Http\Controllers\GanttController::class, 'data'])->name('teams.gantt.data');
-    
+
     // Kanban routes
     Route::get('/teams/{team}/kanban', [KanbanController::class, 'index'])->name('teams.kanban');
-    Route::patch('/teams/{team}/tasks/{task}/kanban', [KanbanController::class, 'update'])->name('teams.tasks.kanban.update');
     Route::patch('/teams/{team}/kanban/columns/{column}', [KanbanController::class, 'updateColumn'])->name('teams.kanban.columns.update');
     Route::post('/teams/{team}/kanban/columns', [KanbanController::class, 'storeColumn'])->name('teams.kanban.columns.store');
     Route::post('/teams/{team}/kanban/columns/order', [KanbanController::class, 'updateColumnOrder'])->name('teams.kanban.columns.order');

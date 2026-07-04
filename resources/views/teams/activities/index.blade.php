@@ -1101,7 +1101,7 @@
             <div id="bulkUpdateInputs"></div>
         </form>
 
-        <form id="purgeTrashForm" action="{{ route('teams.tasks.purge-trash', $team) }}" method="POST" class="hidden">
+        <form id="purgeTrashForm" action="{{ route('teams.activities.purge-trash', $team) }}" method="POST" class="hidden">
             @csrf
         </form>
         {{-- Formulario de fusión masiva --}}

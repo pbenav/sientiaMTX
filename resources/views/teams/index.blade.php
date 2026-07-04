@@ -133,7 +133,7 @@
                         </a>
 
                         <!-- Tareas -->
-                        <a href="{{ route('teams.tasks.index', $team) }}" @click.stop
+                        <a href="{{ route('teams.activities.index', $team) }}" @click.stop
                             class="flex-1 flex items-center justify-center py-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                             title="{{ __('navigation.task_list') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

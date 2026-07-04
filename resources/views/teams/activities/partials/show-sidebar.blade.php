@@ -46,7 +46,7 @@
                         this.rating = val;
                         this.submitting = true;
                         try {
-                            const res = await fetch('{{ route('teams.tasks.rate', [$team, $activity]) }}', {
+                            const res = await fetch('{{ route('teams.activities.rate', [$team, $activity]) }}', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -716,7 +716,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const customMessage = result.value;
-                        const url = isBulk ? `{{ route('teams.tasks.bulk-nudge', $team) }}` : `{{ route('teams.tasks.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
+                        const url = isBulk ? `{{ route('teams.activities.bulk-nudge', $team) }}` : `{{ route('teams.activities.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
                         const cleanTaskIds = ids.map(target => target.toString().split(':')[0]);
                         const payload = isBulk ? { targets: ids, task_ids: cleanTaskIds, custom_message: customMessage } : { custom_message: customMessage };
                         if (userId) payload.user_id = userId;

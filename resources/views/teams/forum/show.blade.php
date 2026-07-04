@@ -96,7 +96,7 @@
                         </span>
                         @if ($thread->task)
                             <span class="shrink-0">•</span>
-                            <a href="{{ route('teams.tasks.show', [$team, $thread->task]) }}"
+                            <a href="{{ route('teams.activities.show', [$team, $thread->task]) }}"
                                 class="text-blue-600 dark:text-blue-400 hover:underline truncate flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
                                 <span>Tarea: {{ Str::limit($thread->task->title, 30) }}</span>

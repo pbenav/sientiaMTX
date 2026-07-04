@@ -380,7 +380,7 @@
                         @elseif($appointment->task)
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Tarea Asociada</p>
-                                <a href="{{ route('teams.tasks.show', [$team, $appointment->task]) }}" 
+                                <a href="{{ route('teams.activities.show', [$team, $appointment->task]) }}" 
                                    class="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors truncate block">
                                     {{ $appointment->task->title }}
                                 </a>

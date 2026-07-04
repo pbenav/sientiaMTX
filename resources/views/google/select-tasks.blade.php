@@ -4,7 +4,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="{{ route('teams.tasks.index', $team) }}"
+                <a href="{{ route('teams.activities.index', $team) }}"
                     class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -171,7 +171,7 @@
                             <span class="text-[10px] font-mono opacity-75 normal-case bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-md">({{ $googleEmail }})</span>
                         @endif
                     </button>
-                    <a href="{{ route('teams.tasks.index', $team) }}"
+                    <a href="{{ route('teams.activities.index', $team) }}"
                         class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all uppercase tracking-wider">
                         {{ __('Cancel') }}
                     </a>

@@ -195,7 +195,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         @if ($file->task)
-                                            <a href="{{ route('teams.tasks.show', [$file->task->team_id, $file->task]) }}"
+                                            <a href="{{ route('teams.activities.show', [$file->task->team_id, $file->task]) }}"
                                                 class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
                                                 {{ $file->task->title }}
                                             </a>

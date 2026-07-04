@@ -226,7 +226,7 @@
                                 </a>
 
                                 @if ($thread->task)
-                                    <a href="{{ route('teams.tasks.show', [$team, $thread->task]) }}"
+                                    <a href="{{ route('teams.activities.show', [$team, $thread->task]) }}"
                                         class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-gray-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 rounded-md transition-colors border border-gray-200 dark:border-gray-700 hover:border-violet-200 dark:hover:border-violet-800">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

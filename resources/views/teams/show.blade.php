@@ -71,10 +71,10 @@
                         };
                     @endphp
                     <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 last:border-0 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors cursor-pointer task-row"
-                        data-href="{{ route('teams.tasks.show', [$team, $task]) }}"
+                        data-href="{{ route('teams.activities.show', [$team, $task]) }}"
                         onclick="if(!event.target.closest('a, button')) window.location=this.dataset.href">
                         <div class="flex-1 min-w-0 relative">
-                            <a href="{{ route('teams.tasks.show', [$team, $task]) }}"
+                            <a href="{{ route('teams.activities.show', [$team, $task]) }}"
                                 class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-violet-600 dark:hover:text-white truncate block transition-colors">
                                 {{ $task->title }}
                             </a>
@@ -87,7 +87,7 @@
                             {{ __('tasks.statuses.' . $task->status) }}
                         </span>
                         @can('update', $task)
-                            <a href="{{ route('teams.tasks.edit', [$team, $task]) }}"
+                            <a href="{{ route('teams.activities.edit', [$team, $task]) }}"
                                 class="shrink-0 text-gray-400 hover:text-blue-500 transition-colors" title="{{ __('tasks.edit') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" stroke-width="2">

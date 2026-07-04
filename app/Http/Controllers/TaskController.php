@@ -212,27 +212,8 @@ class TaskController extends Controller
             return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
         }
 
-        if (auth()->user()->cannot('view', $task)) {
-            return redirect()->route('teams.tasks.index', $team)->with('warning', 'Acceso prohibido: La tarea no está accesible o es privada.');
-        }
-
-        $task->load(['assignedTo', 'assignedGroups', 'creator', 'histories', 'tags', 'attachments', 'attachments.logs.user']);
-
-        // Load parent attachments if it's an instance or has a parent
-        if ($task->parent_id) {
-            $task->load('parent.attachments');
-        }
-
-        $referer = request()->headers->get('referer');
-        if ($referer && str_starts_with($referer, url('/'))) {
-            // Only update the back url if we are not coming from the same task
-            if (!str_contains($referer, "/tasks/{$task->id}")) {
-                session()->put("back_url_task_{$task->id}", $referer);
-            }
-        }
-        $backUrl = session("back_url_task_{$task->id}", route('teams.dashboard', $team));
-
-        return view('tasks.show', compact('team', 'task', 'backUrl'));
+        // Redirect legacy task URLs to the new Activity system
+        return redirect()->route('teams.activities.show', [$team, $task->id]);
     }
 
     /**
@@ -248,34 +229,8 @@ class TaskController extends Controller
             return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
         }
 
-        if (auth()->user()->cannot('update', $task)) {
-            return redirect()->route('teams.tasks.index', $team)
-                ->with('warning', 'Acceso prohibido: No tienes permisos para modificar esta tarea privada.');
-        }
-
-        $task->load('attachments');
-        $allMembers = $team->members; // All members — for owner selector
-        // Allow the current user to be assigned as well so they can generate instances for themselves if they wish
-        $users = $team->members;
-        $groups = $team->groups;
-        $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
-        $statuses = ['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'cancelled' => 'Cancelada', 'blocked' => 'Bloqueada'];
-        $tasks = $team->tasks()->with('assignedUser')->where('id', '!=', $task->id)->orderBy('title')->get();
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
-        $services = $team->services()->orderBy('name')->get();
-
-        $referer = request()->headers->get('referer');
-        if ($referer && str_starts_with($referer, url('/'))) {
-            if (!str_contains($referer, "/tasks/{$task->id}/edit")) {
-                session()->put("back_url_task_edit_{$task->id}", $referer);
-            }
-        }
-        $backUrl = session("back_url_task_edit_{$task->id}", route('teams.tasks.show', [$team, $task]));
-
-        $services = $team->services()->orderBy('name')->get();
-        $expedientes = $team->expedientes()->orderBy('code', 'desc')->get();
-
-        return view('tasks.edit', compact('team', 'task', 'users', 'allMembers', 'groups', 'priorities', 'statuses', 'tasks', 'backUrl', 'skills', 'services', 'expedientes'));
+        // Redirect legacy task URLs to the new Activity system
+        return redirect()->route('teams.activities.edit', [$team, $task->id]);
     }
 
     /**
@@ -283,51 +238,9 @@ class TaskController extends Controller
      */
     public function update(\App\Http\Requests\UpdateTaskRequest $request, Team $team, Task $task)
     {
-        $validated = $request->validated();
-
-        // Store old values for history
-        $oldValues = $task->getAttributes();
-        $statusChanged = $task->status !== ($validated['status'] ?? $task->status);
-
-        // La auto-publicación ha sido eliminada.
-        // Las tareas mantienen su visibilidad definida sin importar los colaboradores asignados.
-        $autoPublic = false;
-        $visibility = $validated['visibility'] ?? $task->visibility;
-        $validated['visibility'] = $visibility;
-
-
-        // Store old status for gamification check
-        $oldStatus = $oldValues['status'] ?? null;
-        $isCoordinator = $team->isCoordinator(auth()->user()) || auth()->id() === $task->created_by_id;
-
-        $taskService = app(\App\Services\TaskService::class);
-        $task = $taskService->updateTask(
-            $task,
-            $team,
-            $validated,
-            $request->all(),
-            $isCoordinator
-        );
-
-        // Gamification: Award points if completed
-        if ($task->status === 'completed' && $oldStatus !== 'completed') {
-            $this->awardGamificationPoints($task);
-            $task->notifyCoordinatorsIfCompleted();
-        }
-
-        // Notification for Blocked status
-        if ($task->status === 'blocked' && $oldStatus !== 'blocked') {
-             $task->notifyCreatorAndCoordinators(new \App\Notifications\TaskEventNotification($task, 'blocked'));
-        }
-
-        if (auth()->user()->cannot('view', $task)) {
-            return redirect()->route('teams.tasks.index', $team)
-                ->with('success', __('tasks.updated'))
-                ->with('warning', 'Acceso prohibido: La tarea ahora es privada y ha dejado de estar visible para ti.');
-        }
-
-        return redirect()->route('teams.tasks.show', [$team, $task])
-            ->with('success', __('tasks.updated'));
+        // Redirect legacy task updates to the new Activity system
+        return redirect()->route('teams.activities.update', [$team, $task->id])
+            ->with('warning', 'Use the new Activity system for editing.');
     }
 
     /**
@@ -335,28 +248,8 @@ class TaskController extends Controller
      */
     public function destroy(Team $team, Task $task)
     {
-        if ($task->team_id !== $team->id) {
-            return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
-        }
-
-        if (auth()->user()->cannot('view', $team)) {
-            return redirect()->route('dashboard')->with('warning', __('teams.unauthorized_access'));
-        }
-        if (auth()->user()->cannot('delete', $task)) {
-            return redirect()->route('teams.tasks.show', [$team, $task])->with('warning', 'No tienes permisos para eliminar esta tarea.');
-        }
-
-        // Delete from Google Tasks if synced
-        if ($task->google_task_id && auth()->user()->google_token) {
-            $googleService = app(\App\Services\GoogleService::class);
-            $googleService->deleteTask($task->google_task_list_id, $task->google_task_id);
-        }
-
-
-        $task->delete();
-
-        return redirect()->route('teams.tasks.index', $team)
-            ->with('success', __('tasks.deleted'));
+        // Redirect legacy task deletion to the new Activity system
+        return redirect()->route('teams.activities.destroy', [$team, $task->id]);
     }
 
     /**
