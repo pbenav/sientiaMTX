@@ -100,7 +100,7 @@
     "Cita Confirmada": "Appointment Confirmed",
     "Nueva Cita Previa": "New Appointment",
     "Información Adicional": "Additional Information",
-    "Por favor, completa los siguientes campos requeridos por el servicio": "Please complete the following required fields for this service"
+    "Por favor, completa los siguientes campos requeridos por el servicio": "Please complete the following required fields for this service",
     "forum.search_task_placeholder": "Search for a task to relate... (minimum 2 characters)",
     "forum.related_task_help": "Search by task title and select only the correct task. Not all team tasks are loaded at once."
 }
