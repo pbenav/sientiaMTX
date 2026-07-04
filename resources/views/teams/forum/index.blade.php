@@ -354,7 +354,7 @@
                     <x-input-label for="task_query" :value="__('forum.related_task') ?? 'Tarea relacionada (Opcional)'" />
                     <div class="relative z-[999999] overflow-visible">
                         <input id="task_query" name="activity_query" type="text" autocomplete="off"
-                            x-model.debounce.250ms="taskQuery"
+                            x-model="taskQuery"
                             @input="selectedTaskId = ''; fetchTasks()"
                             @keydown.arrow-down.prevent="if(taskResults.length) taskHighlight = (taskHighlight + 1) % taskResults.length"
                             @keydown.arrow-up.prevent="if(taskResults.length) taskHighlight = (taskHighlight > 0 ? taskHighlight - 1 : taskResults.length - 1)"
@@ -695,17 +695,20 @@
                     addFile(file) { this.driveFiles.push(file); },
                     clearTaskSelection() { this.selectedTaskId = ''; this.taskQuery = ''; this.taskResults = []; },
                     selectTask(t) { this.selectedTaskId = t.id; this.taskQuery = t.text || t.title || ''; this.taskResults = []; this.taskHighlight = -1; },
-                    async fetchTasks() {
-                        try {
-                            if (!this.taskQuery || this.taskQuery.length < 2) { this.taskResults = []; return; }
-                            const url = new URL(this.searchUrl, window.location.origin);
-                            url.searchParams.set('query', this.taskQuery);
-                            const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
-                            if (!res.ok) { this.taskResults = []; return; }
-                            const data = await res.json();
-                            this.taskResults = Array.isArray(data) ? data : [];
-                            this.taskHighlight = -1;
-                        } catch (e) { console.error('fetchTasks error', e); this.taskResults = []; }
+                    fetchTasks() {
+                        if (!this.taskQuery || this.taskQuery.length < 2) { this.taskResults = []; return; }
+                        clearTimeout(this._fetchTimer);
+                        this._fetchTimer = setTimeout(async () => {
+                            try {
+                                const url = new URL(this.searchUrl, window.location.origin);
+                                url.searchParams.set('query', this.taskQuery);
+                                const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                                if (!res.ok) { this.taskResults = []; return; }
+                                const data = await res.json();
+                                this.taskResults = Array.isArray(data) ? data : [];
+                                this.taskHighlight = -1;
+                            } catch (e) { console.error('fetchTasks error', e); this.taskResults = []; }
+                        }, 300);
                     },
                     highlightNext() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight + 1) % this.taskResults.length; },
                     highlightPrev() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight > 0) ? this.taskHighlight - 1 : this.taskResults.length - 1; }
