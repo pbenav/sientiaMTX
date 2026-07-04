@@ -172,8 +172,8 @@ class ExpedienteController extends Controller
 
         $expediente->load(['creator', 'rootActivities.assignedTo', 'rootActivities.creator', 'rootActivities.children.assignedTo', 'attachments.user', 'relatedExpedientes']);
 
-        // Get all activities from the team that aren't currently attached to this expediente.
-        $availableTasks = $team->tasks()
+        // Get all root activities from the team that aren't currently attached to this expediente.
+        $availableActivities = $team->activities()
             ->where(function ($query) use ($expediente) {
                 $query->whereNull('expediente_id')
                       ->orWhere('expediente_id', '!=', $expediente->id);
@@ -191,7 +191,9 @@ class ExpedienteController extends Controller
             ->orderBy('code', 'desc')
             ->get();
 
-        return view('expedientes.show', compact('team', 'expediente', 'availableTasks', 'availableRelatedExpedientes'));
+        $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
+
+        return view('expedientes.show', compact('team', 'expediente', 'availableActivities', 'availableRelatedExpedientes', 'members'));
     }
 
     /**
@@ -248,11 +250,57 @@ class ExpedienteController extends Controller
         ]);
 
         // Filter only activities belonging to THIS team to prevent security bypasses
-        $updatedCount = $team->tasks()
+        $updatedCount = $team->activities()
             ->whereIn('id', $validated['task_ids'])
             ->update(['expediente_id' => $expediente->id]);
 
         return redirect()->back()->with('success', "Se han vinculado $updatedCount actividades correctamente.");
+    }
+
+    /**
+     * Create a new activity directly from an expediente (quick create).
+     */
+    public function storeFromExpediente(Request $request, Team $team, Expediente $expediente)
+    {
+        if (auth()->user()->cannot('view', $team) || $expediente->team_id !== $team->id) {
+            return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|string|in:task,document,note,link,decision,meeting,reminder',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'priority' => 'required|in:low,medium,high,critical',
+            'visibility' => 'required|in:public,private,semi-private',
+            'due_date' => 'nullable|date',
+            'assigned_to' => 'nullable|array',
+            'assigned_to.*' => 'integer|exists:users,id',
+        ]);
+
+        $activity = $team->activities()->create([
+            'type' => $validated['type'],
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'priority' => $validated['priority'],
+            'visibility' => $validated['visibility'],
+            'status' => json_encode(['value' => 'pending']),
+            'expediente_id' => $expediente->id,
+            'created_by_id' => auth()->id(),
+            'due_date' => $validated['due_date'] ?? null,
+        ]);
+
+        // Assign users if provided
+        if (!empty($validated['assigned_to'])) {
+            foreach ($validated['assigned_to'] as $userId) {
+                $activity->assignments()->create([
+                    'user_id' => $userId,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+        }
+
+        return redirect()->route('teams.expedientes.show', [$team, $expediente])
+            ->with('success', "Actividad '{$activity->title}' creada y vinculada al expediente correctamente.");
     }
 
     /**

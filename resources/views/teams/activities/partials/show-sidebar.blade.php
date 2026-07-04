@@ -10,6 +10,7 @@
                 $ratingsCount = $ratings->count();
             @endphp
 
+            @if($activity->type !== 'note')
             @if($canRate || $activity->avg_quality_score > 0)
             <div x-data="{ showRatingsModal: false }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-all hover:shadow-md relative overflow-hidden group/rating">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 dark:bg-amber-400/5 rounded-full -mr-10 -mt-10 blur-2xl transition-all group-hover/rating:scale-150 duration-700 pointer-events-none"></div>
@@ -45,7 +46,7 @@
                         this.rating = val;
                         this.submitting = true;
                         try {
-                            const res = await fetch('{{ route('teams.activities.rate', [$team, $activity]) }}', {
+                            const res = await fetch('{{ route('teams.tasks.rate', [$team, $activity]) }}', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -187,6 +188,7 @@
                 </div>
             </div>
             @endif
+            @endif
 
 
 
@@ -275,6 +277,7 @@
             @endif
 
             <!-- 2. TU EJECUCIÓN Card -->
+            @if ($activity->type !== 'note')
             @if ($personalInstance)
                 <div class="bg-violet-50/40 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-5 space-y-5 shadow-sm transition-colors relative overflow-hidden">
                     <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-black flex items-center gap-2">
@@ -339,8 +342,10 @@
                     </div>
                 </div>
             @endif
+            @endif
 
             <!-- 3. TIEMPO DEDICADO Card -->
+            @if ($activity->type !== 'note')
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-colors">
                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black mb-4">{{ __('TIEMPO DEDICADO') }}</p>
                 <div class="flex items-center justify-between">
@@ -372,6 +377,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- 5. Propietario Card -->
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none">
@@ -397,12 +403,14 @@
                         {{ __('activities.statuses.' . $activity->status_value) }}
                     </span>
                 </div>
+                @if($activity->type !== 'note')
                 <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('activities.quadrant') }}</span>
                     <span class="text-[11px] font-bold {{ $qCfg['color'] }} uppercase tracking-wider">
                         Q{{ $q }}: {{ __('activities.quadrants.' . $q . '.label') }}
                     </span>
                 </div>
+                @endif
                 <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
                     <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('activities.visibility') }}</span>
                     <div class="flex items-center gap-1.5">
@@ -427,6 +435,7 @@
             </div>
 
             <!-- 7. Prioridad Card -->
+            @if ($activity->type !== 'note')
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
                 @foreach ([['activities.priority', $activity->priority, 'activities.priorities'], ['activities.urgency', $activity->urgency, 'activities.urgencies']] as [$lbl, $val, $map])
                     <div class="flex items-center justify-between">
@@ -455,8 +464,10 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             <!-- Expediente Card -->
+            @if ($activity->type !== 'note')
             @if ($activity->expediente)
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
                     <div class="flex items-center gap-3 mb-3">
@@ -485,9 +496,39 @@
                     </a>
                 </div>
             @endif
+            @endif
 
             <!-- Cita Previa Card -->
+            @if ($activity->type !== 'note')
             @if ($activity->appointment)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('Cita Previa') }}</h4>
+                            <p class="text-xs font-bold text-gray-900 dark:text-white truncate">Loc: {{ $activity->appointment->localizador }}</p>
+                        </div>
+                    </div>
+                    @if(in_array($activity->appointment->modality, ['jitsi', 'meet']))
+                        <a href="{{ route('public.appointments.video.auth', $activity->appointment) }}?localizador={{ $activity->appointment->localizador }}" target="_blank" class="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-700 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 py-2 border border-cyan-100 dark:border-cyan-800/50 rounded-xl transition-all shadow-sm">
+                            💻 {{ __('Iniciar Videoconferencia') }}
+                        </a>
+                    @else
+                        <p class="w-full text-center text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 py-2 border border-gray-100 dark:border-gray-800/50 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                            🏢 {{ __('Modalidad Presencial') }}
+                        </p>
+                    @endif
+                </div>
+            @endif
+            @endif
+
+            <!-- 8. Fechas Card -->
+            @if ($activity->type !== 'note')
+            @if ($activity->due_date || $activity->scheduled_date)
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-500/10">
@@ -529,8 +570,10 @@
                     @endif
                 </div>
             @endif
+            @endif
 
             <!-- 9. Autoprogramación Card -->
+            @if ($activity->type !== 'note')
             @if ($activity->is_autoprogrammable)
                 <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 space-y-3 shadow-sm border-l-4 border-l-violet-500">
                     <div class="flex items-center justify-between">
@@ -551,8 +594,10 @@
                     </div>
                 </div>
             @endif
+            @endif
 
             <!-- 10. Quota de disco Card -->
+            @if ($activity->type !== 'note')
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('activities.disk_quota') }}</h3>
@@ -566,7 +611,6 @@
                     <div class="h-full {{ $barColor }} transition-all duration-1000 shadow-sm" style="width: {{ $perc }}%"></div>
                 </div>
             </div>
-
 
             <!-- 11. Etiquetas (Capacidades) -->
             @php $taskSkills = $activity->skills; @endphp
@@ -582,6 +626,7 @@
                         </div>
                     @endforeach
                 </div>
+            @endif
             @endif
 
             <!-- Historial de cambios como Timeline -->
@@ -671,7 +716,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const customMessage = result.value;
-                        const url = isBulk ? `{{ route('teams.activities.bulk-nudge', $team) }}` : `{{ route('teams.activities.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
+                        const url = isBulk ? `{{ route('teams.tasks.bulk-nudge', $team) }}` : `{{ route('teams.tasks.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
                         const cleanTaskIds = ids.map(target => target.toString().split(':')[0]);
                         const payload = isBulk ? { targets: ids, task_ids: cleanTaskIds, custom_message: customMessage } : { custom_message: customMessage };
                         if (userId) payload.user_id = userId;

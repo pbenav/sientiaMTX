@@ -192,6 +192,14 @@ class Activity extends Model
             ->first();
     }
 
+    /**
+     * Get the private note for the current user (Task compat).
+     */
+    public function currentPrivateNote()
+    {
+        return $this->hasOne(\App\Models\TaskPrivateNote::class, 'task_id')->where('user_id', auth()->id());
+    }
+
     public function attachments(): HasMany
     {
         return $this->hasMany(ActivityAttachment::class, 'activity_id');
@@ -337,6 +345,45 @@ class Activity extends Model
     public function totalTrackedTimeHuman(): string
     {
         $seconds = $this->totalTrackedSeconds();
+        if ($seconds === 0) return '0m';
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        
+        if ($hours > 0) {
+            return "{$hours}h {$minutes}m";
+        }
+        return "{$minutes}m";
+    }
+
+    /**
+     * Get aggregate time tracked today by ALL USERS on this activity and its children.
+     */
+    public function totalTrackedTimeTodaySeconds(): int
+    {
+        $own = (int) $this->timeLogs()
+            ->where('created_at', '>=', now()->startOfDay())
+            ->get()
+            ->sum(fn($log) => $log->end_at ? $log->start_at->diffInSeconds($log->end_at) : $log->start_at->diffInSeconds(now()));
+
+        $childrenSeconds = 0;
+        if ($this->children()->exists()) {
+            $childrenIds = $this->children()->pluck('id');
+            $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)
+                ->where('created_at', '>=', now()->startOfDay())
+                ->get();
+            $childrenSeconds = (int) $childrenLogs->sum(fn($log) => $log->end_at ? $log->start_at->diffInSeconds($log->end_at) : $log->start_at->diffInSeconds(now()));
+        }
+
+        return $own + $childrenSeconds;
+    }
+
+    /**
+     * Get human-readable aggregate time tracked today.
+     */
+    public function totalTrackedTimeTodayHuman(): string
+    {
+        $seconds = $this->totalTrackedTimeTodaySeconds();
         if ($seconds === 0) return '0m';
 
         $hours = floor($seconds / 3600);
@@ -755,6 +802,14 @@ class Activity extends Model
     {
         $fromUuid = data_get($this->metadata, 'converted_from_uuid');
         return $fromUuid ? static::where('uuid', $fromUuid)->first() : null;
+    }
+
+    // ─── Adjuntos ──────────────────────────────────────────────────────────────
+    public function getAllAttachmentsAttribute()
+    {
+        return $this->attachments()
+            ->with('attachable')
+            ->get();
     }
 }
 

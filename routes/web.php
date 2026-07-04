@@ -248,6 +248,7 @@ Route::middleware('auth')->group(function () {
     Route::post('teams/{team}/expedientes/{expediente}/link-related', [\App\Http\Controllers\ExpedienteController::class, 'linkRelated'])->name('teams.expedientes.link-related');
     Route::post('teams/{team}/expedientes/{expediente}/unlink-related/{related_id}', [\App\Http\Controllers\ExpedienteController::class, 'unlinkRelated'])->name('teams.expedientes.unlink-related');
     Route::post('teams/{team}/expedientes/{expediente}/unlink-task/{task}', [\App\Http\Controllers\ExpedienteController::class, 'unlinkTask'])->name('teams.expedientes.unlink-task');
+    Route::post('teams/{team}/expedientes/{expediente}/activities', [\App\Http\Controllers\ExpedienteController::class, 'storeFromExpediente'])->name('teams.expedientes.activities.store');
     Route::post('teams/{team}/expedientes/{expediente}/notes', [\App\Http\Controllers\ExpedienteNoteController::class, 'store'])->name('teams.expedientes.notes.store');
     Route::patch('teams/{team}/expedientes/{expediente}/notes/{note}', [\App\Http\Controllers\ExpedienteNoteController::class, 'update'])->name('teams.expedientes.notes.update');
     Route::delete('teams/{team}/expedientes/{expediente}/notes/{note}', [\App\Http\Controllers\ExpedienteNoteController::class, 'destroy'])->name('teams.expedientes.notes.destroy');
@@ -282,6 +283,9 @@ Route::middleware('auth')->group(function () {
         
         // Private Notes
         Route::post('tasks/{task}/private-notes', [\App\Http\Controllers\TaskNoteController::class, 'update'])->name('teams.tasks.private-notes.update');
+        
+        // Activity Private Notes
+        Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
     });
 
     Route::post('/teams/{team}/tasks/{task}/nudge', [TaskActionController::class, 'nudge'])->name('teams.tasks.nudge');

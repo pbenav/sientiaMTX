@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'detail' => 'Detalles de la actividad',
+    'description' => 'Descripción',
+    'create' => 'Nueva actividad',
+    'edit' => 'Editar actividad',
     'created_success' => 'Actividad creada con éxito.',
     'updated_success' => 'Actividad actualizada con éxito.',
     'deleted_success' => 'Actividad eliminada con éxito.',

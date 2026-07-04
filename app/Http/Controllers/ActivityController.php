@@ -405,6 +405,35 @@ class ActivityController extends Controller
     }
 
     /**
+     * Update or create a private note for an activity.
+     */
+    public function updatePrivateNote(Request $request, Team $team, Activity $activity)
+    {
+        if ($activity->team_id !== $team->id) {
+            abort(404);
+        }
+
+        if ($request->user()->cannot('view', $activity)) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'content' => 'nullable|string',
+        ]);
+
+        \App\Models\TaskPrivateNote::updateOrCreate(
+            ['task_id' => $activity->id, 'user_id' => auth()->id()],
+            ['content' => $validated['content'] ?? '']
+        );
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Nota guardada correctamente.']);
+        }
+
+        return back()->with('success', 'Nota privada guardada correctamente.');
+    }
+
+    /**
      * Elimina una nota/comentario.
      */
     public function deleteNote(Team $team, Activity $activity, ActivityNote $note)

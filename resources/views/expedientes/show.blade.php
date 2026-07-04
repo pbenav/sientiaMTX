@@ -173,7 +173,7 @@
             </div>
 
             <!-- Card: Tasks placeholder -->
-            <div x-data="{ showLinkBox: false, search: '', statusFilter: 'all', expanded: {} }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+            <div x-data="{ showLinkBox: false, showCreateModal: false, activityType: 'task', search: '', statusFilter: 'all', expanded: {} }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                     <h3 class="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
                         <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
@@ -185,11 +185,11 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" /></svg>
                             Vincular
                         </button>
-                        <a href="{{ route('teams.activities.create', [$team, 'expediente_id' => $expediente->id]) }}" 
+                        <button @click="showCreateModal = true" type="button"
                             class="flex-1 sm:flex-none inline-flex justify-center items-center gap-1.5 text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 px-3 py-1.5 rounded-xl transition-all border border-violet-100 dark:border-violet-500/20">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                             Nueva
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -201,10 +201,10 @@
                         <div class="space-y-3">
                             <div>
                                 <select name="task_ids[]" id="task-selector" multiple placeholder="Busca y selecciona actividades para vincular..." class="text-sm">
-                                    @foreach($availableTasks as $availTask)
-                                        <option value="{{ $availTask->id }}">
-                                            [{{ $availTask->id }}] {{ $availTask->title }} 
-                                            @if($availTask->expediente) (Cambiar de {{ $availTask->expediente->code }}) @endif
+                                    @foreach($availableActivities as $availActivity)
+                                        <option value="{{ $availActivity->id }}" data-type="{{ $availActivity->type }}">
+                                            [{{ $availActivity->id }}] {{ $availActivity->title }} ({{ $availActivity->type_label }})
+                                            @if($availActivity->expediente) — Cambiar de {{ $availActivity->expediente->code }} @endif
                                         </option>
                                     @endforeach
                                 </select>
@@ -218,6 +218,136 @@
                     </form>
                 </div>
                 
+                <!-- Quick Create Activity Modal -->
+                <div x-show="showCreateModal" x-cloak
+                    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0">
+                    <div x-show="showCreateModal" x-cloak @click="showCreateModal = false"
+                        class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"></div>
+                    
+                    <div x-show="showCreateModal" x-cloak
+                        @click.stop
+                        class="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 scale-95 translate-y-4">
+                        
+                        <!-- Header -->
+                        <div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-10">
+                            <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                Nueva Actividad para {{ $expediente->code }}
+                            </h3>
+                            <button @click="showCreateModal = false" type="button" class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Form -->
+                        <form action="{{ route('teams.expedientes.activities.store', [$team, $expediente]) }}" method="POST" class="p-6 space-y-4">
+                            @csrf
+                            
+                            <!-- Type -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Tipo de Actividad</label>
+                                <select name="type" x-model="activityType" required
+                                    class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                                    <option value="task">📋 Tarea</option>
+                                    <option value="document">📄 Documento</option>
+                                    <option value="note">📝 Nota</option>
+                                    <option value="link">🔗 Enlace</option>
+                                    <option value="decision">⚖️ Decisión</option>
+                                    <option value="meeting">👥 Reunión</option>
+                                    <option value="reminder">🔔 Recordatorio</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Title -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Título *</label>
+                                <input type="text" name="title" required
+                                    placeholder="Nombre de la actividad..."
+                                    class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                            </div>
+                            
+                            <!-- Description -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Descripción</label>
+                                <textarea name="description" rows="3"
+                                    placeholder="Detalles adicionales..."
+                                    class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors resize-none"></textarea>
+                            </div>
+                            
+                            <!-- Priority and Visibility -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Prioridad</label>
+                                    <select name="priority" required
+                                        class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                                        <option value="low">Baja</option>
+                                        <option value="medium" selected>Media</option>
+                                        <option value="high">Alta</option>
+                                        <option value="critical">Crítica</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Visibilidad</label>
+                                    <select name="visibility" required
+                                        class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                                        <option value="public">Pública</option>
+                                        <option value="private">Privada</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Due Date -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Fecha Límite</label>
+                                <input type="date" name="due_date"
+                                    class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                            </div>
+                            
+                            <!-- Assigned To -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Asignar a</label>
+                                <select name="assigned_to[]" multiple
+                                    class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-violet-500 focus:border-violet-500 shadow-sm transition-colors">
+                                    @foreach($members as $member)
+                                        <option value="{{ $member->id }}">{{ $member->name }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="text-[10px] text-gray-400 mt-1">Mantén Ctrl/Cmd para seleccionar varios</p>
+                            </div>
+                            
+                            <!-- Submit -->
+                            <div class="flex justify-end gap-2 pt-2">
+                                <button type="button" @click="showCreateModal = false"
+                                    class="text-xs font-bold text-gray-500 px-4 py-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                    class="text-xs font-black uppercase bg-violet-600 text-white px-5 py-2 rounded-xl shadow-sm hover:bg-violet-700 transition-all">
+                                    Crear y Vincular
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
                 @if($expediente->rootActivities->isEmpty())
                     <div class="flex flex-col items-center justify-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
                         <div class="w-12 h-12 rounded-full bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-400 mb-3">
@@ -225,9 +355,9 @@
                         </div>
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Aún no hay actividades en este expediente.</p>
                         <p class="text-[11px] text-gray-400 mt-1 mb-4">Empieza a organizarte creando tu primera actividad vinculada.</p>
-                        <a href="{{ route('teams.activities.create', [$team, 'expediente_id' => $expediente->id]) }}" class="text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2 rounded-xl transition-all shadow-md">
+                        <button @click="showCreateModal = true" type="button" class="text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2 rounded-xl transition-all shadow-md">
                             Crear Primera Actividad
-                        </a>
+                        </button>
                     </div>
                 @else
                     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-center">

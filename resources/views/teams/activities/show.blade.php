@@ -520,7 +520,7 @@
 
                                             const form = document.createElement('form');
                                             form.method = 'POST';
-                                            form.action = "{{ route('teams.activities.merge', [$team, $activity]) }}";
+                                            form.action = "{{ route('teams.activities.merge-deprecated', [$team, $activity]) }}";
                                             
                                             const token = document.createElement('input');
                                             token.type = 'hidden';

@@ -1,6 +1,7 @@
 <x-app-layout>
     @section('title', 'Crear ' . ucfirst($type) . ' — ' . $team->name)
 
+    <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.activities.index', $team) }}"
@@ -44,7 +45,7 @@
                         {{ __('Cargar Archivo (.json)') }}
                     </button>
                 @endif
-                @include('teams.partials.header-toolbar')
+                @include('teams.partials.header-toolbar', ['toolsOnly' => true])
             </div>
         </div>
     </x-slot>
