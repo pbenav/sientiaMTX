@@ -71,19 +71,32 @@ class ActivityController extends Controller
         }
 
         $q = $team->activities()
-            ->where('type', 'task')
+            ->whereIn('type', array_keys(Activity::SUBTYPES))
+            ->where('is_archived', false)
+            ->where('is_template', false)
             ->when($request->boolean('top_level_only'), fn($q) => $q->whereNull('parent_id'))
             ->when($request->boolean('exclude_forum_thread'), fn($q) => $q->whereDoesntHave('forumThread'))
             ->when($queryTerm, fn($q) => $q->where('title', 'like', '%' . $queryTerm . '%'))
             ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
-            ->orderBy('updated_at', 'desc')
-            ->limit(25);
+            ->orderByRaw($queryTerm ? "CASE WHEN title LIKE ? THEN 0 ELSE 1 END, updated_at DESC" : "updated_at DESC",
+                $queryTerm ? ['%' . $queryTerm . '%'] : [])
+            ->limit(20);
 
         $activities = $q->get(['id', 'title', 'status', 'metadata']);
 
+        $typeLabels = [
+            'task'     => 'Tarea',
+            'document' => 'Doc',
+            'note'     => 'Nota',
+            'link'     => 'Enlace',
+            'decision' => 'Decisión',
+            'meeting'  => 'Reunión',
+            'reminder' => 'Aviso',
+        ];
+
         return response()->json($activities->map(fn($a) => [
-            'id' => $a->id,
-            'text' => $a->title . ' (' . strtoupper($a->status_value ?? ($a->status ?? '')) . ')',
+            'id'   => $a->id,
+            'text' => '[' . ($typeLabels[$a->type] ?? $a->type) . '] ' . $a->title . ' — ' . strtoupper($a->status_value ?? ($a->status ?? '')),
         ]));
     }
 
