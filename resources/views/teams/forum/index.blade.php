@@ -313,38 +313,7 @@
     </div>
 
     <!-- Modal to create thread -->
-    <script>
-        // Inline definition disponible antes de que Alpine inicialice
-        window.forumTaskSearch = window.forumTaskSearch || function(config) {
-            return {
-                driveFiles: [],
-                initialised: false,
-                taskQuery: config.initialTaskQuery || '',
-                selectedTaskId: config.initialTaskId || '',
-                taskResults: [],
-                taskHighlight: -1,
-                searchUrl: config.searchUrl || '/teams/' + (config.teamId || '0') + '/tasks/search',
 
-                addFile(file) { this.driveFiles.push(file); },
-                clearTaskSelection() { this.selectedTaskId = ''; this.taskQuery = ''; this.taskResults = []; },
-                selectTask(t) { this.selectedTaskId = t.id; this.taskQuery = t.text || t.title || ''; this.taskResults = []; this.taskHighlight = -1; },
-                async fetchTasks() {
-                    try {
-                        if (!this.taskQuery || this.taskQuery.length < 2) { this.taskResults = []; return; }
-                        const url = new URL(this.searchUrl, window.location.origin);
-                        url.searchParams.set('query', this.taskQuery);
-                        const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
-                        if (!res.ok) { this.taskResults = []; return; }
-                        const data = await res.json();
-                        this.taskResults = Array.isArray(data) ? data : [];
-                        this.taskHighlight = -1;
-                    } catch (e) { console.error('fetchTasks error', e); this.taskResults = []; }
-                },
-                highlightNext() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight + 1) % this.taskResults.length; },
-                highlightPrev() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight > 0) ? this.taskHighlight - 1 : this.taskResults.length - 1; }
-            };
-        };
-    </script>
     <x-modal name="create-thread-modal" focusable>
         <form method="post" action="{{ route('teams.forum.store', $team) }}"
               x-data="forumTaskSearch({{ json_encode([
@@ -711,6 +680,37 @@
                 dock.addEventListener('mousedown', () => { dock.style.cursor = 'grabbing'; });
                 dock.addEventListener('mouseup', () => { dock.style.cursor = 'grab'; });
             });
+        </script>
+        <script>
+            window.forumTaskSearch = function(config) {
+                return {
+                    driveFiles: [],
+                    initialised: false,
+                    taskQuery: config.initialTaskQuery || '',
+                    selectedTaskId: config.initialTaskId || '',
+                    taskResults: [],
+                    taskHighlight: -1,
+                    searchUrl: config.searchUrl || '/teams/' + (config.teamId || '0') + '/tasks/search',
+
+                    addFile(file) { this.driveFiles.push(file); },
+                    clearTaskSelection() { this.selectedTaskId = ''; this.taskQuery = ''; this.taskResults = []; },
+                    selectTask(t) { this.selectedTaskId = t.id; this.taskQuery = t.text || t.title || ''; this.taskResults = []; this.taskHighlight = -1; },
+                    async fetchTasks() {
+                        try {
+                            if (!this.taskQuery || this.taskQuery.length < 2) { this.taskResults = []; return; }
+                            const url = new URL(this.searchUrl, window.location.origin);
+                            url.searchParams.set('query', this.taskQuery);
+                            const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                            if (!res.ok) { this.taskResults = []; return; }
+                            const data = await res.json();
+                            this.taskResults = Array.isArray(data) ? data : [];
+                            this.taskHighlight = -1;
+                        } catch (e) { console.error('fetchTasks error', e); this.taskResults = []; }
+                    },
+                    highlightNext() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight + 1) % this.taskResults.length; },
+                    highlightPrev() { if (!this.taskResults.length) return; this.taskHighlight = (this.taskHighlight > 0) ? this.taskHighlight - 1 : this.taskResults.length - 1; }
+                };
+            };
         </script>
 
         <!-- Floating Contextual Action Dock -->
