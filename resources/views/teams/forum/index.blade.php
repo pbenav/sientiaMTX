@@ -38,7 +38,7 @@
         <!-- Action Buttons Row -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
             <div class="flex items-center gap-3 shrink-0">
-                <button type="button" x-data=""
+                <button type="button" x-data="{}"
                     x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
                     class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -170,7 +170,7 @@
                         {{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}
                     </a>
                 @else
-                    <button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
+                    <button x-data="{}" x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
                         class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-500/25">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
@@ -788,72 +788,3 @@
         </div>
 @endpush
 </x-app-layout>
-
-@push('scripts')
-    <script>
-        // Proveedor Alpine para el selector de tareas en el modal del foro.
-        window.forumTaskSearch = function(config) {
-            return {
-                driveFiles: [],
-                initialised: false,
-                taskQuery: config.initialTaskQuery || '',
-                selectedTaskId: config.initialTaskId || '',
-                taskResults: [],
-                taskHighlight: -1,
-                searchUrl: config.searchUrl || '/teams/' + (config.teamId || '0') + '/tasks/search',
-
-                addFile(file) {
-                    this.driveFiles.push(file);
-                },
-
-                clearTaskSelection() {
-                    this.selectedTaskId = '';
-                    this.taskQuery = '';
-                    this.taskResults = [];
-                },
-
-                selectTask(t) {
-                    this.selectedTaskId = t.id;
-                    this.taskQuery = t.text || t.title || '';
-                    this.taskResults = [];
-                    this.taskHighlight = -1;
-                },
-
-                async fetchTasks() {
-                    try {
-                        if (!this.taskQuery || this.taskQuery.length < 2) {
-                            this.taskResults = [];
-                            return;
-                        }
-
-                        const url = new URL(this.searchUrl, window.location.origin);
-                        url.searchParams.set('query', this.taskQuery);
-
-                        const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
-                        if (!res.ok) {
-                            this.taskResults = [];
-                            return;
-                        }
-
-                        const data = await res.json();
-                        this.taskResults = Array.isArray(data) ? data : [];
-                        this.taskHighlight = -1;
-                    } catch (e) {
-                        console.error('fetchTasks error', e);
-                        this.taskResults = [];
-                    }
-                },
-
-                // Helpers for keyboard navigation
-                highlightNext() {
-                    if (!this.taskResults.length) return;
-                    this.taskHighlight = (this.taskHighlight + 1) % this.taskResults.length;
-                },
-                highlightPrev() {
-                    if (!this.taskResults.length) return;
-                    this.taskHighlight = (this.taskHighlight > 0) ? this.taskHighlight - 1 : this.taskResults.length - 1;
-                }
-            };
-        };
-    </script>
-@endpush
