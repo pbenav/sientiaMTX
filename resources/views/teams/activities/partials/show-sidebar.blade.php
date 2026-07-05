@@ -277,7 +277,7 @@
             @endif
 
             <!-- 2. TU EJECUCIÓN Card -->
-            @if ($activity->type !== 'note')
+            @if ($activity->type === 'task')
             @if ($personalInstance)
                 <div class="bg-violet-50/40 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-5 space-y-5 shadow-sm transition-colors relative overflow-hidden">
                     <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-black flex items-center gap-2">
@@ -345,7 +345,7 @@
             @endif
 
             <!-- 3. TIEMPO DEDICADO Card -->
-            @if ($activity->type !== 'note')
+            @if ($activity->type === 'task')
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-colors">
                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black mb-4">{{ __('TIEMPO DEDICADO') }}</p>
                 <div class="flex items-center justify-between">
@@ -403,7 +403,7 @@
                         {{ __('activities.statuses.' . $activity->status_value) }}
                     </span>
                 </div>
-                @if($activity->type !== 'note')
+                @if($activity->type === 'task')
                 <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('activities.quadrant') }}</span>
                     <span class="text-[11px] font-bold {{ $qCfg['color'] }} uppercase tracking-wider">
@@ -435,7 +435,7 @@
             </div>
 
             <!-- 7. Prioridad Card -->
-            @if ($activity->type !== 'note')
+            @if ($activity->type === 'task')
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
                 @foreach ([['activities.priority', $activity->priority, 'activities.priorities'], ['activities.urgency', $activity->urgency, 'activities.urgencies']] as [$lbl, $val, $map])
                     <div class="flex items-center justify-between">
@@ -573,7 +573,7 @@
             @endif
 
             <!-- 9. Autoprogramación Card -->
-            @if ($activity->type !== 'note')
+            @if ($activity->type === 'task')
             @if ($activity->is_autoprogrammable)
                 <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 space-y-3 shadow-sm border-l-4 border-l-violet-500">
                     <div class="flex items-center justify-between">
@@ -597,7 +597,7 @@
             @endif
 
             <!-- 10. Quota de disco Card -->
-            @if ($activity->type !== 'note')
+            @if (false)
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('activities.disk_quota') }}</h3>

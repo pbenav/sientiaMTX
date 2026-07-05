@@ -20,7 +20,25 @@ return [
     'assigned_to_many'          => 'instancias asignadas',
     'groups'                    => 'Grupos',
     'quadrant'                  => 'Cuadrante',
+    'quadrants'                 => [
+        '1'  => ['label' => 'Urgente e Importante'],
+        '2'  => ['label' => 'Importante pero No Urgente'],
+        '3'  => ['label' => 'Urgente pero No Importante'],
+        '4'  => ['label' => 'Ni Urgente ni Importante'],
+    ],
     'observations'              => 'Observaciones',
+    'priorities'                => [
+        'low'     => 'Baja',
+        'medium'  => 'Media',
+        'high'    => 'Alta',
+        'critical' => 'Crítica',
+    ],
+    'urgencies'                 => [
+        'low'     => 'Baja',
+        'medium'  => 'Media',
+        'high'    => 'Alta',
+        'critical' => 'Crítica',
+    ],
     'history'                   => 'Historial',
     'activity_history'          => 'Historial de actividad',
     'no_history'                => 'Sin historial registrado.',
@@ -31,6 +49,7 @@ return [
     'your_execution'            => 'Tu ejecución',
     'time_spent'                => 'Tiempo',
     'disk_quota'                => 'Cuota de almacenamiento',
+    'member_since'              => 'Desde :date',
 
     // ─── Adjuntos ─────────────────────────────────────────────────────────────
     'attachments'               => 'Adjuntos',
