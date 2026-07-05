@@ -528,7 +528,7 @@
 
             <!-- 8. Fechas Card -->
             @if ($activity->type !== 'note')
-            @if ($activity->due_date || $activity->scheduled_date)
+            @if (($activity->due_date || $activity->scheduled_date) && $activity->appointment)
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-500/10">
