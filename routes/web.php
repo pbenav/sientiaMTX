@@ -221,6 +221,9 @@ Route::middleware('auth')->group(function () {
 
         // Search - unified (handles both Activity and legacy Task)
         Route::get('activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
+
+        // Private Notes
+        Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
     });
 
     // Legacy Task routes - all redirect to Activity equivalents
