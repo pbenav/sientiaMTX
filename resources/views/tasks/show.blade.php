@@ -62,7 +62,7 @@
         <!-- Task Actions Footer Row -->
         <div class="flex items-center gap-2 flex-wrap shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
             @if($team->isCoordinator(auth()->user()) || auth()->user()->is_admin)
-                <a href="{{ route('teams.tasks.create', $team) }}"
+                <a href="{{ route('teams.activities.create', $team) }}"
                     class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20 font-bold active:scale-95">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -169,7 +169,7 @@
                     <!-- Exportar JSON -->
                     <div class="flex flex-col border-t border-gray-50 dark:border-gray-800 pt-1 mt-1">
                         <div class="px-5 py-2 text-[9px] font-black uppercase tracking-widest text-gray-400">Portabilidad (Outbound)</div>
-                        <x-dropdown-link :href="route('teams.tasks.export-json', [$team, $task])" class="flex items-center gap-4 py-3 px-5 group">
+                        <x-dropdown-link :href="route('teams.activities.export-json', [$team, $task])" class="flex items-center gap-4 py-3 px-5 group">
                             <div class="shrink-0 p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -314,7 +314,7 @@
             @endif
 
             <!-- Cloning Button -->
-            <form id="clone-task-form-{{ $task->id }}" action="{{ route('teams.tasks.clone', [$team, $task]) }}" method="POST" class="inline">
+            <form id="clone-task-form-{{ $task->id }}" action="{{ route('teams.activities.clone', [$team, $task]) }}" method="POST" class="inline">
                 @csrf
                 <button type="button" onclick="confirmCloneTask('clone-task-form-{{ $task->id }}')" class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 border border-violet-100 dark:border-violet-900/50 shadow-sm ml-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -402,7 +402,7 @@
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            fetch("{{ route('teams.tasks.copy-to-team', [$team, $task]) }}", {
+                            fetch("{{ route('teams.activities.copy-to-team', [$team, $task]) }}", {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -437,7 +437,7 @@
                         title: 'Cargando tareas...',
                         didOpen: () => {
                             Swal.showLoading();
-                            fetch("{{ route('teams.tasks.search', $team) }}?query=&exclude_id={{ $task->id }}")
+                            fetch("{{ route('teams.activities.search', $team) }}?query=&exclude_id={{ $task->id }}")
                                 .then(res => res.json())
                                 .then(data => {
                                     let options = '<option value="" disabled selected>Elige la tarea de destino...</option>';
@@ -488,7 +488,7 @@
 
                                             const form = document.createElement('form');
                                             form.method = 'POST';
-                                            form.action = "{{ route('teams.tasks.merge', [$team, $task]) }}";
+                                            form.action = "{{ route('teams.activities.bulk-merge', [$team, $task]) }}";
                                             
                                             const token = document.createElement('input');
                                             token.type = 'hidden';
@@ -1174,7 +1174,7 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('teams.tasks.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
+                    <form action="{{ route('teams.activities.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
                         @csrf
                         <div style="max-height: 400px; overflow-y: auto;" class="max-h-[500px] overflow-y-auto custom-scrollbar">
                             <x-markdown-editor 
@@ -1533,7 +1533,7 @@
                     <div class="flex flex-wrap items-center justify-end gap-2">
 
                         {{-- Botón: Subir archivo --}}
-                        <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="m-0 p-0 inline-block">
+                        <form id="attachment-form" action="{{ route('teams.activities.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="m-0 p-0 inline-block">
                             @csrf
                             <label class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold
                                    bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400
@@ -1922,7 +1922,7 @@
                         this.rating = val;
                         this.submitting = true;
                         try {
-                            const res = await fetch('{{ route('teams.tasks.rate', [$team, $task]) }}', {
+                            const res = await fetch('{{ route('teams.activities.rate', [$team, $task]) }}', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -2549,7 +2549,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const customMessage = result.value;
-                        const url = isBulk ? `{{ route('teams.tasks.bulk-nudge', $team) }}` : `{{ route('teams.tasks.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
+                        const url = isBulk ? `{{ route('teams.activities.bulk-nudge', $team) }}` : `{{ route('teams.activities.nudge', [$team, 'TASK_ID']) }}`.replace('TASK_ID', taskIds);
                         const cleanTaskIds = ids.map(target => target.toString().split(':')[0]);
                         const payload = isBulk ? { targets: ids, task_ids: cleanTaskIds, custom_message: customMessage } : { custom_message: customMessage };
                         if (userId) payload.user_id = userId;
@@ -3361,7 +3361,7 @@
             btn.disabled = true;
             btn.style.opacity = '0.5';
 
-            fetch("{{ route('teams.tasks.export-json', [$team, $task]) }}", {
+            fetch("{{ route('teams.activities.export-json', [$team, $task]) }}", {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -3455,7 +3455,7 @@
         button.disabled = true;
         button.innerHTML = '<svg class="animate-spin h-3 w-3 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> GUARDANDO...';
 
-        fetch("{{ route('teams.tasks.private-notes.update', [$team, $personalInstance]) }}", {
+        fetch("{{ route('teams.activities.private-notes.update', [$team, $personalInstance]) }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

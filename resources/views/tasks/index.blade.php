@@ -36,7 +36,7 @@
         <!-- Filters and Search Bar -->
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm transition-all">
-            <form action="{{ route('teams.tasks.index', $team) }}" method="GET"
+            <form action="{{ route('teams.activities.index', $team) }}" method="GET"
                 class="flex flex-wrap items-center gap-4">
                 <!-- Search -->
                 <div class="relative flex-1 group">
@@ -52,7 +52,7 @@
                     
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
-                            <a href="{{ route('teams.tasks.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
+                            <a href="{{ route('teams.activities.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -148,7 +148,7 @@
                 </div>
 
                 @if (collect($filters)->filter()->isNotEmpty())
-                    <a href="{{ route('teams.tasks.index', [$team, 'reset_filters' => 1]) }}"
+                    <a href="{{ route('teams.activities.index', [$team, 'reset_filters' => 1]) }}"
                         class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
                         {{ __('tasks.clear_filters') }}
                     </a>
@@ -546,7 +546,7 @@
                                             </a>
                                             <!-- Cloning button -->
                                             <button type="button"
-                                                onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.tasks.clone', [$team, $task]) }}')"
+                                                onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.activities.clone', [$team, $task]) }}')"
                                                 class="p-1.5 text-gray-400 hover:text-violet-500 transition-colors"
                                                 title="Clonar actividad">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -695,7 +695,7 @@
                                             </a>
                                             <!-- Cloning button -->
                                             <button type="button"
-                                                onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.tasks.clone', [$team, $subtask]) }}')"
+                                                onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.activities.clone', [$team, $subtask]) }}')"
                                                 class="p-1 text-gray-400 hover:text-violet-500 transition-colors"
                                                 title="Clonar actividad">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
@@ -1089,21 +1089,21 @@
             @csrf
         </form>
 
-        <form id="bulkDeleteForm" action="{{ route('teams.tasks.bulk-delete', $team) }}" method="POST"
+        <form id="bulkDeleteForm" action="{{ route('teams.activities.bulk-delete', $team) }}" method="POST"
             class="hidden">
             @csrf
             @method('DELETE')
             <div id="bulkDeleteInputs"></div>
         </form>
 
-        <form id="bulkUpdateForm" action="{{ route('teams.tasks.bulk-update', $team) }}" method="POST"
+        <form id="bulkUpdateForm" action="{{ route('teams.activities.bulk-update', $team) }}" method="POST"
             class="hidden">
             @csrf
             @method('PATCH')
             <div id="bulkUpdateInputs"></div>
         </form>
 
-        <form id="purgeTrashForm" action="{{ route('teams.tasks.purge-trash', $team) }}" method="POST" class="hidden">
+        <form id="purgeTrashForm" action="{{ route('teams.activities.purge-trash', $team) }}" method="POST" class="hidden">
             @csrf
         </form>
         {{-- Formulario de fusión masiva --}}

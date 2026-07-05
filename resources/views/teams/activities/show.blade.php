@@ -118,7 +118,7 @@
                 <div class="flex items-center gap-2">
 
 
-                    <form action="{{ route('teams.activities.sync-to-children', [$team, $activity]) }}" method="POST" class="inline">
+                    <form action="{{ route('teams.tasks.sync-to-children', [$team, $activity]) }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

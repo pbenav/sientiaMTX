@@ -1114,7 +1114,7 @@
                 @csrf @method('DELETE')
             </form>
 
-            <form id="attachment-form" action="{{ route('teams.tasks.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="hidden">
+            <form id="attachment-form" action="{{ route('teams.activities.attachments.upload', [$team, $task]) }}" method="POST" enctype="multipart/form-data" class="hidden">
                 @csrf
                 <input type="file" id="attachment-input" name="files[]" multiple onchange="handleAttachmentUpload(this)">
             </form>

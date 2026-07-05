@@ -654,7 +654,7 @@
                     setTimeout(() => card.remove(), 300);
                 }
 
-                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -703,7 +703,7 @@
                             card.style.opacity = '0';
                             setTimeout(() => card.remove(), 300);
 
-                            fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                            fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -732,7 +732,7 @@
                     setTimeout(() => row.remove(), 300);
                 }
 
-                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -768,7 +768,7 @@
             }
 
             function updateTaskProgress(taskId, progress) {
-                fetch(`{{ route('teams.tasks.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
+                fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
