@@ -76,7 +76,7 @@
                     }
                     formData.append('_token', '{{ csrf_token() }}');
                     
-                    return fetch("{{ route('teams.tasks.import-json', $team) }}", {
+                    return fetch("{{ route('teams.activities.import-json', $team) }}", {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json'
