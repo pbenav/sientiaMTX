@@ -46,7 +46,7 @@
                         this.rating = val;
                         this.submitting = true;
                         try {
-                            const res = await fetch('{{ route('teams.activities.rate', [$team, $activity]) }}', {
+                            const res = await fetch('{{ route('teams.activities.rate', [$team, $activity], false) }}', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -814,9 +814,9 @@
             function updateTaskStatus(status, taskId = {{ $activity->id }}) {
                 const messages = {
                     'completed': '¿Marcar como completada?',
-                    'blocked': '¿Informar un bloqueo en esta tarea?',
-                    'pending': '¿Reabrir esta tarea?',
-                    'in_progress': '¿Quitar el bloqueo de esta tarea?'
+                    'blocked': '¿Informar un bloqueo en esta actividad?',
+                    'pending': '¿Reabrir esta actividad?',
+                    'in_progress': '¿Quitar el bloqueo de esta actividad?'
                 };
 
                 Swal.fire({
@@ -1113,7 +1113,7 @@
                 if (provider === 'google') {
                     Swal.fire({
                         title: '¿Qué deseas hacer?',
-                        text: "Este archivo está en Google Drive. ¿Quieres eliminarlo de la nube o solo desvincularlo de esta tarea?",
+                        text: "Este archivo está en Google Drive. ¿Quieres eliminarlo de la nube o solo desvincularlo de esta actividad?",
                         icon: 'question',
                         showDenyButton: true,
                         showCancelButton: true,
@@ -1192,7 +1192,7 @@
 
                 // 2. Check team quota BEFORE uploading
                 try {
-                    const res = await fetch('{{ route("teams.quota-status", $team) }}', {
+                    const res = await fetch('{{ route("teams.quota-status", $team, false) }}', {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     });
                     if (res.ok) {
@@ -1528,7 +1528,7 @@
             btn.disabled = true;
             btn.style.opacity = '0.5';
 
-            fetch("{{ route('teams.activities.export-json', [$team, $activity]) }}", {
+            fetch("{{ route('teams.activities.export-json', [$team, $activity], false) }}", {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -1541,7 +1541,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: '¡Copiado!',
-                        text: 'El JSON de la tarea está en tu portapapeles.',
+                        text: 'El JSON de la actividad está en tu portapapeles.',
                         timer: 2000,
                         showConfirmButton: false,
                         background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
@@ -1554,7 +1554,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'No se pudo obtener el JSON de la tarea.'
+                    text: 'No se pudo obtener el JSON de la actividad.'
                 });
             })
             .finally(() => {

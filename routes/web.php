@@ -177,6 +177,9 @@ Route::middleware('auth')->group(function () {
     // Activities routes (universal polymorphic activities infrastructure)
     Route::resource('teams.activities', \App\Http\Controllers\ActivityController::class)->except(['show', 'edit', 'update', 'destroy']);
     Route::prefix('teams/{team}')->group(function() {
+        // Search - unified (handles both Activity and legacy Task)
+        Route::get('activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
+
         Route::get('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'show'])->name('teams.activities.show')->withTrashed()->withoutScopedBindings();
         Route::get('activities/{activity}/edit', [\App\Http\Controllers\ActivityController::class, 'edit'])->name('teams.activities.edit')->withTrashed()->withoutScopedBindings();
         Route::patch('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'update'])->name('teams.activities.update')->withTrashed()->withoutScopedBindings();
@@ -218,9 +221,6 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/google-sync', [\App\Http\Controllers\GoogleController::class, 'syncTask'])->name('google.sync_activity');
         Route::post('activities/{activity}/google-disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnectTask'])->name('google.disconnect_activity');
         Route::post('activities/{activity}/google-calendar', [\App\Http\Controllers\GoogleController::class, 'exportTaskToCalendar'])->name('google.export_calendar_activity');
-
-        // Search - unified (handles both Activity and legacy Task)
-        Route::get('activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
 
         // Private Notes
         Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');

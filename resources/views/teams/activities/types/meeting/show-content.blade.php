@@ -3,6 +3,7 @@
     $location = $meta['location'] ?? '';
     $joinUrl = filter_var($location, FILTER_VALIDATE_URL) ? $location : ($meta['join_url'] ?? null);
     $duration = $meta['duration_minutes'] ?? null;
+    $displayObservations = $activity->observations ?: ($activity->parent?->observations ?? null);
 @endphp
 
 {{-- Meeting Details Card --}}
@@ -66,10 +67,9 @@
 @endif
 
 {{-- Post-meeting Acta --}}
-@if(!empty($meta['post_meeting_acta']) || $displayObservations ?? null)
+@if(!empty($meta['post_meeting_acta']) || $displayObservations)
 @php
     $acta = $meta['post_meeting_acta'] ?? null;
-    $displayObservations = $activity->observations ?: ($activity->parent?->observations ?? null);
 @endphp
 @if($acta || $displayObservations)
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">

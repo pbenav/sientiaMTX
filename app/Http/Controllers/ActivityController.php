@@ -82,7 +82,7 @@ class ActivityController extends Controller
                 $queryTerm ? ['%' . $queryTerm . '%'] : [])
             ->limit(20);
 
-        $activities = $q->get(['id', 'title', 'status', 'metadata']);
+        $activities = $q->get(['id', 'title', 'status', 'metadata', 'type']);
 
         $typeLabels = [
             'task'     => 'Tarea',
@@ -96,7 +96,7 @@ class ActivityController extends Controller
 
         return response()->json($activities->map(fn($a) => [
             'id'   => $a->id,
-            'text' => '[' . ($typeLabels[$a->type] ?? $a->type) . '] ' . $a->title . ' — ' . strtoupper($a->status_value ?? ($a->status ?? '')),
+            'text' => '[' . ($a->type ? ($typeLabels[$a->type] ?? $a->type) : 'Actividad') . '] ' . $a->title . ' — ' . strtoupper($a->status_value ?? ($a->status ?? '')),
         ]));
     }
 

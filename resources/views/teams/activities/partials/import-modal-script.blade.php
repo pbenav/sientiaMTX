@@ -1,7 +1,7 @@
     <script>
-        function openImportTaskModal(initialMode = 'all') {
+        function openImportActivityModal(initialMode = 'all') {
             Swal.fire({
-                title: 'Importar Tarea',
+                title: 'Importar Actividad',
                 html: `
                     <div class="text-left mt-4 border-t border-gray-100 dark:border-gray-800 pt-5">
                         <div class="flex items-center justify-between mb-2 ml-1">
@@ -24,7 +24,7 @@
                         <input type="file" id="import-json-file" accept=".json" class="w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-violet-100 file:text-violet-700 hover:file:bg-violet-200 dark:file:bg-violet-900/40 dark:file:text-violet-400 transition-all cursor-pointer"/>
                         
                         <p class="mt-5 text-[10px] text-gray-500 font-medium leading-relaxed italic border-l-2 border-amber-200 pl-3">
-                            * Se creará una nueva tarea con todos los metadatos exportados. Los archivos binarios adjuntos no se transportan en el JSON.
+                            * Se creará una nueva actividad con todos los metadatos exportados. Los archivos binarios adjuntos no se transportan en el JSON.
                         </p>
                     </div>
                 `,
@@ -97,7 +97,7 @@
                 if (result.isConfirmed && result.value.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: '¡Tarea Importada!',
+                        title: '¡Actividad Importada!',
                         text: result.value.message,
                         timer: 1500,
                         showConfirmButton: false
