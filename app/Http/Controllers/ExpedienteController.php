@@ -295,6 +295,7 @@ class ExpedienteController extends Controller
                 $activity->assignments()->create([
                     'user_id' => $userId,
                     'assigned_by_id' => auth()->id(),
+                    'assigned_at' => now(),
                 ]);
             }
         }

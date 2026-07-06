@@ -14,6 +14,15 @@ class ActivityAssignment extends Model
         'activity_id', 'user_id', 'group_id', 'assigned_by_id', 'assigned_at', 'completed_at',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($assignment) {
+            if (empty($assignment->assigned_at)) {
+                $assignment->assigned_at = now();
+            }
+        });
+    }
+
     protected $casts = [
         'assigned_at'  => 'datetime',
         'completed_at' => 'datetime',
