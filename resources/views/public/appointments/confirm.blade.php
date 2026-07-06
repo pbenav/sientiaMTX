@@ -23,7 +23,7 @@
         <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
         
         <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Localizador Único') }}</p>
-        <p class="text-2xl font-black text-cyan-600 dark:text-cyan-400 font-mono tracking-wider select-all py-2.5 px-4 bg-gray-50 dark:bg-gray-850 rounded-2xl inline-block shadow-inner border border-gray-150/50 dark:border-gray-800">
+        <p class="text-2xl font-black text-cyan-600 dark:text-cyan-400 font-mono tracking-wider select-all py-2.5 px-4 bg-gray-50 dark:bg-gray-800 rounded-2xl inline-block shadow-inner border border-gray-150/50 dark:border-gray-800">
             {{ $appointment->localizador }}
         </p>
         

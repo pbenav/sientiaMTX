@@ -147,7 +147,7 @@
                         @csrf
                         <div>
                             <input type="text" name="localizador" required autocomplete="off"
-                                   class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl text-xs font-mono font-bold uppercase tracking-wide text-gray-950 dark:text-white outline-none transition-all placeholder-gray-400"
+                                   class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl text-xs font-mono font-bold uppercase tracking-wide text-gray-950 dark:text-white outline-none transition-all placeholder-gray-400"
                                    placeholder="MTXCITA-XXXXXXXX">
                             @error('localizador_search')
                                 <p class="mt-1.5 text-[9px] text-red-500 font-bold leading-tight">{{ $message }}</p>

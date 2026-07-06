@@ -174,19 +174,19 @@
                 <div class="md:col-span-6">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Nombre') }} *</label>
                     <input type="text" name="first_name" required value="{{ old('first_name') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
                 
                 <div class="md:col-span-6">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Apellidos') }} *</label>
                     <input type="text" name="last_name" required value="{{ old('last_name') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('DNI / NIE / Pasaporte') }}</label>
                     <input type="text" id="input-dni" name="dni" value="{{ old('dni') }}" autocomplete="off"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="12345678A, X1234567A...">
                     <p id="hint-dni" class="mt-1 text-[10px] font-semibold hidden"></p>
                     @error('dni') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
@@ -195,7 +195,7 @@
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Correo Electrónico') }}</label>
                     <input type="email" id="input-email" name="email" value="{{ old('email') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="nombre@ejemplo.com">
                     <p id="hint-email" class="mt-1 text-[10px] font-semibold hidden"></p>
                     @error('email') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
@@ -204,7 +204,7 @@
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Teléfono Móvil') }}</label>
                     <input type="tel" id="input-phone" name="phone" value="{{ old('phone') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="+34 600 000 000">
                     <p id="hint-phone" class="mt-1 text-[10px] font-semibold hidden"></p>
                     @error('phone') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
@@ -217,19 +217,19 @@
                         <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 {{ __('Rellenado por ubicación del servicio') }}</span>
                     </label>
                     <input type="text" id="input-city" name="city" value="{{ old('city') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Código Postal') }}</label>
                     <input type="text" id="input-postal" name="postal_code" value="{{ old('postal_code') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-12">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Observaciones') }}</label>
                     <textarea name="observations" rows="3"
-                              class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
+                              class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
                               placeholder="{{ __('Indica de forma breve el motivo de tu consulta...') }}">{{ old('observations') }}</textarea>
                 </div>
             </div>
@@ -248,14 +248,14 @@
                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ $field['name'] }} @if($field['is_required']) * @endif</label>
                         @if($field['type'] === 'textarea')
                             <textarea name="custom_fields_values[{{ $field['id'] }}]" {{ $field['is_required'] ? 'required' : '' }} rows="3"
-                                      class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
+                                      class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
                                       >{{ old('custom_fields_values.' . $field['id']) }}</textarea>
                         @else
                             <input type="{{ $field['type'] === 'number' ? 'number' : ($field['type'] === 'date' ? 'date' : 'text') }}" 
                                    name="custom_fields_values[{{ $field['id'] }}]" 
                                    value="{{ old('custom_fields_values.' . $field['id']) }}" 
                                    {{ $field['is_required'] ? 'required' : '' }}
-                                   class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                                   class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                         @endif
                         @error('custom_fields_values.' . $field['id']) <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
                     </div>
