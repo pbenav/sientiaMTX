@@ -137,7 +137,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Fecha *</label>
-                                <input type="date" name="appointment_date" x-model="appointment_date" required min="{{ date('Y-m-d') }}"
+                                <input type="date" name="appointment_date" x-model="appointment_date" required
                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                             <div>
