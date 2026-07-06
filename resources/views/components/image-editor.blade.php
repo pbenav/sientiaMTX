@@ -102,35 +102,46 @@
                 heightLimit: 4000
             },
             onSave: (editedImageObject, designState) => {
-                fetch(editedImageObject.imageBase64)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        let originalName = 'edited-image.jpg';
-                        if (fileOrUrl instanceof File) {
-                            originalName = fileOrUrl.name;
-                        } else if (typeof fileOrUrl === 'string') {
-                            originalName = fileOrUrl.substring(fileOrUrl.lastIndexOf('/') + 1) || originalName;
-                            // strip query parameters if any
-                            originalName = originalName.split('?')[0];
-                        }
-                        
-                        const mimeType = editedImageObject.mimeType || blob.type || 'image/webp';
-                        let ext = mimeType.split('/')[1] || 'webp';
-                        if (ext === 'jpeg') ext = 'jpg';
-                        
-                        const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
-                        const finalName = `${nameWithoutExt}-edited.${ext}`;
+                try {
+                    const base64Data = editedImageObject.imageBase64;
+                    const parts = base64Data.split(',');
+                    const mime = parts[0].match(/:(.*?);/)[1];
+                    const bstr = atob(parts[1]);
+                    let n = bstr.length;
+                    const u8arr = new Uint8Array(n);
+                    while (n--) {
+                        u8arr[n] = bstr.charCodeAt(n);
+                    }
+                    const blob = new Blob([u8arr], { type: mime });
 
-                        const newFile = new File([blob], finalName, { type: mimeType });
-                        
-                        if (onSaveCallback) {
-                            onSaveCallback(newFile, editedImageObject.imageBase64);
-                        }
-                        
-                        setTimeout(() => {
-                            closeGlobalImageEditor();
-                        }, 50);
-                    });
+                    let originalName = 'edited-image.jpg';
+                    if (fileOrUrl instanceof File) {
+                        originalName = fileOrUrl.name;
+                    } else if (typeof fileOrUrl === 'string') {
+                        originalName = fileOrUrl.substring(fileOrUrl.lastIndexOf('/') + 1) || originalName;
+                        // strip query parameters if any
+                        originalName = originalName.split('?')[0];
+                    }
+                    
+                    const mimeType = editedImageObject.mimeType || blob.type || 'image/webp';
+                    let ext = mimeType.split('/')[1] || 'webp';
+                    if (ext === 'jpeg') ext = 'jpg';
+                    
+                    const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+                    const finalName = `${nameWithoutExt}-edited.${ext}`;
+
+                    const newFile = new File([blob], finalName, { type: mimeType });
+                    
+                    if (onSaveCallback) {
+                        onSaveCallback(newFile, editedImageObject.imageBase64);
+                    }
+                    
+                    setTimeout(() => {
+                        closeGlobalImageEditor();
+                    }, 50);
+                } catch (e) {
+                    console.error('Error al procesar la imagen guardada:', e);
+                }
             },
             onClose: () => {
                 closeGlobalImageEditor();
