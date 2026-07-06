@@ -125,6 +125,11 @@ class Activity extends Model
         return $this->hasMany(Activity::class, 'parent_id')->orderBy('created_at');
     }
 
+    public function instances(): HasMany
+    {
+        return $this->hasMany(Activity::class, 'parent_id')->where('is_template', false)->orderBy('title');
+    }
+
     public function kanbanColumn(): BelongsTo
     {
         return $this->belongsTo(KanbanColumn::class);
