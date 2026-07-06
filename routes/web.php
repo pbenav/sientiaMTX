@@ -231,16 +231,30 @@ Route::middleware('auth')->group(function () {
     // These exist only for backward compatibility with existing bookmarks/links
     Route::prefix('teams/{team}')->group(function() {
         Route::get('tasks/{task}', function(Team $team, $task) {
-            return redirect()->route('teams.activities.show', [$team, $task]);
+            $taskId = $task instanceof \App\Models\Task ? $task->id : $task;
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+            $activityId = $mapping ? $mapping->activity_id : $taskId;
+            return redirect()->route('teams.activities.show', [$team, $activityId]);
         })->name('teams.tasks.show')->withTrashed()->withoutScopedBindings();
         Route::get('tasks/{task}/edit', function(Team $team, $task) {
-            return redirect()->route('teams.activities.edit', [$team, $task]);
+            $taskId = $task instanceof \App\Models\Task ? $task->id : $task;
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+            $activityId = $mapping ? $mapping->activity_id : $taskId;
+            return redirect()->route('teams.activities.edit', [$team, $activityId]);
         })->name('teams.tasks.edit')->withTrashed()->withoutScopedBindings();
-        Route::patch('tasks/{task}', function(Team $team, $task) {
-            return redirect()->route('teams.activities.update', [$team, $task]);
+        Route::patch('tasks/{task}', function(\Illuminate\Http\Request $request, Team $team, $task) {
+            $taskId = $task instanceof \App\Models\Task ? $task->id : $task;
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+            $activityId = $mapping ? $mapping->activity_id : $taskId;
+            $activity = \App\Models\Activity::withTrashed()->findOrFail($activityId);
+            return app(\App\Http\Controllers\ActivityController::class)->update($request, $team, $activity);
         })->name('teams.tasks.update')->withTrashed()->withoutScopedBindings();
-        Route::delete('tasks/{task}', function(Team $team, $task) {
-            return redirect()->route('teams.activities.destroy', [$team, $task]);
+        Route::delete('tasks/{task}', function(\Illuminate\Http\Request $request, Team $team, $task) {
+            $taskId = $task instanceof \App\Models\Task ? $task->id : $task;
+            $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
+            $activityId = $mapping ? $mapping->activity_id : $taskId;
+            $activity = \App\Models\Activity::withTrashed()->findOrFail($activityId);
+            return app(\App\Http\Controllers\ActivityController::class)->destroy($request, $team, $activity);
         })->name('teams.tasks.destroy')->withTrashed()->withoutScopedBindings();
     });
 

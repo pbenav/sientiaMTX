@@ -125,6 +125,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         \App\Models\Task::observe(\App\Observers\TaskObserver::class);
+        \App\Models\Activity::observe(\App\Observers\ActivityObserver::class);
         \App\Models\Team::observe(\App\Observers\TeamObserver::class);
         \App\Models\TaskAttachment::observe(\App\Observers\TaskAttachmentObserver::class);
         \App\Models\TelegramMessage::observe(\App\Observers\TelegramMessageObserver::class);

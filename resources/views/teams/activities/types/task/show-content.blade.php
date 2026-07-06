@@ -620,13 +620,13 @@
                             </button>
 
                             {{-- Formularios ocultos para cada tipo --}}
-                            <form id="create-docx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $activity]) }}" target="_blank">
+                            <form id="create-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
                                 @csrf <input type="hidden" name="type" value="docx">
                             </form>
-                            <form id="create-xlsx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $activity]) }}" target="_blank">
+                            <form id="create-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
                                 @csrf <input type="hidden" name="type" value="xlsx">
                             </form>
-                            <form id="create-pptx-form" method="POST" action="{{ route('onlyoffice.create', [$team, $activity]) }}" target="_blank">
+                            <form id="create-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
                                 @csrf <input type="hidden" name="type" value="pptx">
                             </form>
 

@@ -29,10 +29,18 @@ class TaskObserver
             }
         }
 
-        // Cascade completion: If this task is completed, all children should be completed (except for Master Plans / Distributed Templates)
-        if ($task->isDirty('status') && $task->status === 'completed' && !$task->is_template) {
-            $task->children()->where('status', '!=', 'completed')->each(function($child) {
-                $child->update(['status' => 'completed', 'progress_percentage' => 100]);
+        // Cascade completion: If this task is completed, all children should be completed
+        if ($task->isDirty('status') && $task->status === 'completed') {
+            $task->children()->whereNotIn('status', ['completed', 'cancelled'])->each(function($child) {
+                $meta = $child->metadata ?? [];
+                $meta['was_incomplete_before_parent_completion'] = true;
+                $meta['original_status_before_cascade'] = $child->status;
+                $meta['original_progress_before_cascade'] = $child->progress_percentage;
+                $child->update([
+                    'status' => 'completed',
+                    'progress_percentage' => 100,
+                    'metadata' => $meta
+                ]);
             });
         }
 
@@ -225,7 +233,7 @@ class TaskObserver
         }
     }
 
-    protected static bool $isSyncing = false;
+    public static bool $isSyncing = false;
 
     /**
      * Sincroniza asignaciones de Task a Activity

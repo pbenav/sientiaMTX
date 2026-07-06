@@ -128,6 +128,10 @@ class ActivityService
 
             $activity->update($updateData);
 
+            if (isset($updateData['status']) && data_get($updateData, 'status.value') === 'completed') {
+                $this->cascadeCompletion($activity);
+            }
+
             if (array_key_exists('assigned_to', $data) || array_key_exists('assigned_groups', $data)) {
                 $this->syncAssignments($activity, $data);
             }
@@ -154,6 +158,10 @@ class ActivityService
         $activity->update(['status' => ['value' => $statusValue]]);
 
         $this->recordHistory($activity, auth()->user(), 'status_changed', $oldStatus, ['value' => $statusValue]);
+
+        if ($statusValue === 'completed') {
+            $this->cascadeCompletion($activity);
+        }
 
         return $activity->fresh();
     }
@@ -501,6 +509,40 @@ class ActivityService
         return array_merge($base, $specifics);
     }
 
+    protected function cascadeCompletion(Activity $parent): void
+    {
+        $parent->children()->whereJsonDoesntContain('status->value', 'completed')
+            ->whereJsonDoesntContain('status->value', 'cancelled')
+            ->each(function (Activity $child) {
+                $oldStatus = $child->status;
+                $oldProgress = $child->progress_percentage;
+
+                $meta = $child->metadata ?? [];
+                $meta['was_incomplete_before_parent_completion'] = true;
+                $meta['original_status_before_cascade'] = $child->status_value;
+                $meta['original_progress_before_cascade'] = $oldProgress;
+
+                $child->update([
+                    'status' => ['value' => 'completed'],
+                    'progress_percentage' => 100,
+                    'metadata' => $meta
+                ]);
+
+                // Registrar historial de auditoría
+                $this->recordHistory(
+                    $child,
+                    auth()->user(),
+                    'status_changed',
+                    $oldStatus,
+                    ['value' => 'completed', 'progress_percentage' => 100],
+                    'Completada automáticamente por cascada al completarse la actividad padre'
+                );
+
+                // Recursión para descendientes
+                $this->cascadeCompletion($child);
+            });
+    }
+
     protected function recordHistory(
         Activity $activity,
         ?User    $user,
@@ -511,7 +553,7 @@ class ActivityService
     ): void {
         ActivityHistory::create([
             'activity_id' => $activity->id,
-            'user_id'     => $user?->id ?? auth()->id(),
+            'user_id'     => $user?->id ?? auth()->id() ?? $activity->created_by_id ?? 1,
             'action'      => $action,
             'old_values'  => $oldValues,
             'new_values'  => $newValues,
