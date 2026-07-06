@@ -196,6 +196,10 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/attachments', [\App\Http\Controllers\ActivityController::class, 'uploadAttachment'])->name('teams.activities.attachments.upload');
         Route::delete('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'deleteAttachment'])->name('teams.activities.attachments.destroy');
         Route::get('activities/{activity}/attachments/{attachment}/download', [\App\Http\Controllers\ActivityController::class, 'downloadAttachment'])->name('teams.activities.attachments.download');
+        Route::get('activities/{activity}/attachments/{attachment}/view', [\App\Http\Controllers\ActivityController::class, 'viewAttachment'])->name('teams.activities.attachments.view');
+        Route::post('activities/{activity}/attachments/{attachment}/to-drive', [\App\Http\Controllers\GoogleDriveController::class, 'uploadActivityAttachmentToDrive'])->name('teams.activities.attachments.to-drive');
+        Route::patch('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'updateAttachment'])->name('teams.activities.attachments.update');
+        Route::post('activities/{activity}/attachments/{attachment}/replace', [\App\Http\Controllers\ActivityController::class, 'replaceAttachmentContent'])->name('teams.activities.attachments.replace');
 
         // Bulk operations (replaces legacy task bulk routes)
         Route::patch('activities/bulk-update', [\App\Http\Controllers\ActivityBulkController::class, 'bulkUpdate'])->name('teams.activities.bulk-update');

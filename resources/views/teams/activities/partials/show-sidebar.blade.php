@@ -1032,7 +1032,7 @@
                             }
                         });
 
-                        fetch(`/teams/{{ $team->id }}/attachments/${id}/replace`, {
+                        fetch(`/teams/{{ $team->id }}/activities/{{ $activity->id }}/attachments/${id}/replace`, {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -1080,7 +1080,7 @@
                     if (result.isConfirmed) {
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/teams/{{ $team->id }}/attachments/${id}`;
+                        form.action = `/teams/{{ $team->id }}/activities/{{ $activity->id }}/attachments/${id}`;
                         
                         // Add CSRF token safely
                         const csrfInput = document.createElement('input');

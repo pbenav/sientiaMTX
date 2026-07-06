@@ -213,7 +213,7 @@ class Activity extends Model
     // ─── Relaciones de especialidades y servicios (Task compat layer) ─────────
     public function skills(): BelongsToMany
     {
-        return $this->belongsToMany(Skill::class, 'skill_task', 'task_id', 'skill_id');
+        return $this->belongsToMany(Skill::class, 'activity_skills', 'activity_id', 'skill_id');
     }
 
     public function getSkillIdAttribute(): ?int

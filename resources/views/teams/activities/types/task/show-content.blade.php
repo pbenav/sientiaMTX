@@ -743,7 +743,7 @@
                                                 <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                                             </svg>
                                         @elseif(str_starts_with($attachment->mime_type ?? '', 'image/'))
-                                            <img src="{{ route('teams.attachments.view', [$team, $attachment]) }}" alt="Preview" class="w-full h-full object-cover rounded-lg" />
+                                            <img src="{{ route('teams.activities.attachments.view', [$team, $activity, $attachment]) }}" alt="Preview" class="w-full h-full object-cover rounded-lg" />
                                         @else
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -766,7 +766,7 @@
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                                 </a>
                                             @else
-                                                <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}" 
+                                                <a href="{{ route('teams.activities.attachments.download', [$team, $activity, $attachment]) }}" 
                                                    target="_blank" 
                                                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                                     {{ $attachment->file_name }}
@@ -795,7 +795,7 @@
                                 <div
                                     class="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-all duration-200">
                                     @if($attachment->storage_provider === 'local' && auth()->user()->google_token)
-                                        <form action="{{ route('teams.attachments.to-drive', [$team, $attachment]) }}" method="POST" class="inline">
+                                        <form action="{{ route('teams.activities.attachments.to-drive', [$team, $activity, $attachment]) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" 
                                                 class="p-1.5 text-gray-500 hover:text-blue-600 transition-colors"
@@ -820,7 +820,7 @@
                                         @click="$dispatch('ai:analyze-file', { 
                                             fileName: '{{ addslashes($attachment->file_name) }}', 
                                             fileId: {{ $attachment->id }},
-                                            fileUrl: '{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}',
+                                            fileUrl: '{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.activities.attachments.view', [$team, $activity, $attachment]) }}',
                                             fileType: '{{ $attachment->mime_type }}',
                                             taskId: {{ $activity->id }},
                                             teamId: {{ $team->id }},
@@ -834,7 +834,7 @@
                                     </button>
 
                                     @if($attachment->is_office_compatible)
-                                        <a href="{{ route('onlyoffice.edit', $attachment) }}"
+                                        <a href="{{ route('onlyoffice.activity.edit', $attachment) }}"
                                             target="_blank" rel="noopener noreferrer"
                                             onclick="sessionStorage.setItem('needs_office_reload', '1')"
                                             class="p-1.5 text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors"
@@ -845,7 +845,7 @@
                                         </a>
                                     @endif
 
-                                    <a href="{{ route('teams.attachments.download', [$team, $attachment]) }}"
+                                    <a href="{{ route('teams.activities.attachments.download', [$team, $activity, $attachment]) }}"
                                         target="_blank" rel="noopener noreferrer"
                                         class="p-1.5 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
                                         title="{{ __('activities.view_or_download') ?? 'Ver o descargar' }}">
@@ -859,7 +859,7 @@
                                     @can('delete', $attachment)
                                         @if($attachment->storage_provider === 'local' && str_starts_with($attachment->mime_type, 'image/'))
                                             <button type="button"
-                                                onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.attachments.view', [$team, $attachment]) }}')"
+                                                onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.activities.attachments.view', [$team, $activity, $attachment]) }}')"
                                                 class="p-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-all"
                                                 title="{{ __('Editar Imagen') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -879,7 +879,7 @@
                                             </svg>
                                         </button>
                                         <form
-                                            action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}"
+                                            action="{{ route('teams.activities.attachments.destroy', [$team, $activity, $attachment]) }}"
                                             method="POST" class="inline"
                                             id="delete-attachment-{{ $attachment->id }}">
                                             @csrf

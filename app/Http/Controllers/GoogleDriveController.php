@@ -293,6 +293,76 @@ class GoogleDriveController extends Controller
     /**
      * Deprecated OAuth methods - Unified under GoogleController
      */
+    public function uploadActivityAttachmentToDrive(Team $team, Activity $activity, \App\Models\ActivityAttachment $attachment, Request $request)
+    {
+        if ($attachment->activity_id !== $activity->id || $activity->team_id !== $team->id) {
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Este adjunto no pertenece a este equipo.']) : back()->with('warning', 'Este adjunto no pertenece a este equipo.');
+        }
+
+        $user = auth()->user();
+
+        if ($user->cannot('view', $activity)) {
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'No tienes permiso para gestionar este archivo.']) : back()->with('warning', 'No tienes permiso para gestionar este archivo.');
+        }
+
+        if (!$this->isTeamLinked($user, $team)) {
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Este equipo no tiene vinculada una cuenta de Google Workspace.']) : back()->with('error', 'Este equipo no tiene vinculada una cuenta de Google Workspace.');
+        }
+
+        if ($attachment->storage_provider === 'google') {
+            return $request->wantsJson() ? response()->json(['success' => true, 'message' => 'Este archivo ya está en Google Drive.']) : back()->with('info', 'Este archivo ya está en Google Drive.');
+        }
+
+        // 1. Get local file path (we support local and public)
+        $localPath = Storage::disk($attachment->disk ?? 'public')->path($attachment->file_path);
+        
+        if (!file_exists($localPath)) {
+            Log::error('Local file not found for Drive migration: ' . $localPath);
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'El archivo local no existe o no se puede encontrar.']) : back()->with('error', 'El archivo local no existe o no se puede encontrar.');
+        }
+
+        try {
+            // 2. Get/Create Sientia Folder in Drive for this Team account, or use requested folder
+            $folderId = $request->input('folder_id');
+            if (!$folderId) {
+                $folderId = $this->driveService->getOrCreateSientiaFolder($user, $team->id);
+            }
+
+            // 3. Upload to Drive
+            $result = $this->driveService->uploadFileFromPath($user, $localPath, $attachment->file_name, $folderId, $team->id);
+
+            if ($result) {
+                // 4. Update Attachment record
+                $attachment->update([
+                    'storage_provider' => 'google',
+                    'provider_file_id' => $result['id'],
+                    'web_view_link' => $result['webViewLink'],
+                ]);
+
+                // 5. Delete local file (User asked to "move")
+                Storage::disk($attachment->disk ?? 'public')->delete($attachment->file_path);
+
+                AttachmentLog::create([
+                    'attachment_id' => $attachment->id,
+                    'user_id' => $user->id,
+                    'action' => 'move_to_drive',
+                    'metadata' => [
+                        'file_id' => $result['id']
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+
+                return $request->wantsJson() ? response()->json(['success' => true, 'message' => 'Archivo movido a Google Drive correctamente.']) : back()->with('success', 'Archivo movido a Google Drive correctamente.');
+            }
+
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Hubo un error al subir el archivo a Google Drive.']) : back()->with('error', 'Hubo un error al subir el archivo a Google Drive.');
+
+        } catch (\Exception $e) {
+            Log::error('Drive Migration Error: ' . $e->getMessage());
+            return $request->wantsJson() ? response()->json(['success' => false, 'message' => 'Error en la migración: ' . $e->getMessage()]) : back()->with('error', 'Error en la migración: ' . $e->getMessage());
+        }
+    }
+
     public function redirect() { return $this->deprecated(); }
     public function callback() { return $this->deprecated(); }
     public function disconnect() { return $this->deprecated(); }

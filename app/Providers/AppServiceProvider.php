@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\Survey::class, \App\Policies\SurveyPolicy::class);
         // Register Activity policy (universal polymorphic entity)
         Gate::policy(\App\Models\Activity::class, \App\Policies\ActivityPolicy::class);
+        Gate::policy(\App\Models\ActivityAttachment::class, \App\Policies\ActivityAttachmentPolicy::class);
 
         if ($this->app->environment('production', 'staging')) {
             URL::forceScheme('https');

@@ -505,7 +505,9 @@ class ActivityController extends Controller
             abort(404, 'Enlace de Google Drive no válido.');
         }
 
-        if (!\Illuminate\Support\Str::startsWith($attachment->file_path, "activities/{$activity->id}/")) {
+        $isValidPath = \Illuminate\Support\Str::startsWith($attachment->file_path, "activities/{$activity->id}/") ||
+                       \Illuminate\Support\Str::startsWith($attachment->file_path, "attachments/activities/{$activity->id}/");
+        if (!$isValidPath) {
             abort(403, 'Ruta de archivo no válida.');
         }
 
@@ -514,6 +516,139 @@ class ActivityController extends Controller
         }
 
         return \Illuminate\Support\Facades\Storage::disk($attachment->disk)->download($attachment->file_path, $attachment->file_name);
+    }
+
+    /**
+     * Visualiza un adjunto.
+     */
+    public function viewAttachment(Team $team, Activity $activity, ActivityAttachment $attachment)
+    {
+        if ($attachment->activity_id !== $activity->id) {
+            abort(404);
+        }
+
+        if (auth()->user()->cannot('view', $activity)) {
+            abort(403, 'No tienes permiso para acceder a este archivo.');
+        }
+
+        if ($attachment->disk === 'google_drive') {
+            if ($attachment->web_view_link) {
+                return redirect()->away($attachment->web_view_link);
+            }
+            abort(404, 'Enlace de Google Drive no válido.');
+        }
+
+        $isValidPath = \Illuminate\Support\Str::startsWith($attachment->file_path, "activities/{$activity->id}/") ||
+                       \Illuminate\Support\Str::startsWith($attachment->file_path, "attachments/activities/{$activity->id}/");
+        if (!$isValidPath) {
+            abort(403, 'Ruta de archivo no válida.');
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk($attachment->disk)->exists($attachment->file_path)) {
+            abort(404, 'El archivo no se encuentra en el servidor.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk($attachment->disk)->response($attachment->file_path);
+    }
+
+    /**
+     * Renombra un adjunto.
+     */
+    public function updateAttachment(Request $request, Team $team, Activity $activity, ActivityAttachment $attachment)
+    {
+        if ($attachment->activity_id !== $activity->id) {
+            abort(404);
+        }
+
+        if (auth()->user()->cannot('update', $activity)) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'file_name' => 'required|string|max:255',
+        ]);
+
+        $oldName = $attachment->file_name;
+        $attachment->update([
+            'file_name' => $validated['file_name'],
+        ]);
+
+        \App\Models\AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'rename',
+            'metadata' => [
+                'old_name' => $oldName,
+                'new_name' => $validated['file_name']
+            ],
+            'ip_address' => request()->ip()
+        ]);
+
+        return back()->with('success', 'Archivo renombrado correctamente.');
+    }
+
+    /**
+     * Reemplaza el contenido de un adjunto.
+     */
+    public function replaceAttachmentContent(Request $request, Team $team, Activity $activity, ActivityAttachment $attachment)
+    {
+        if ($attachment->activity_id !== $activity->id) {
+            abort(404);
+        }
+
+        if (auth()->user()->cannot('update', $activity)) {
+            abort(403);
+        }
+
+        if ($attachment->storage_provider !== 'local') {
+            return response()->json(['success' => false, 'message' => 'Solo se pueden editar archivos locales.'], 400);
+        }
+
+        $request->validate([
+            'file' => 'required|file|max:' . (\Illuminate\Http\UploadedFile::getMaxFilesize() / 1024),
+        ]);
+
+        $newFile = $request->file('file');
+        $oldSize = $attachment->file_size;
+        $newSize = $newFile->getSize();
+
+        if ($newSize > $oldSize) {
+            $difference = $newSize - $oldSize;
+            if (!$team->hasAvailableQuota($difference)) {
+                return response()->json(['success' => false, 'message' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.'], 403);
+            }
+        }
+
+        // Store new file in the same directory structure
+        $path = $newFile->store("activities/{$activity->id}", 'local');
+
+        // Delete old file
+        if (\Illuminate\Support\Facades\Storage::disk($attachment->disk)->exists($attachment->file_path)) {
+            \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete($attachment->file_path);
+        }
+
+        // Update database
+        $attachment->update([
+            'file_path' => $path,
+            'file_size' => $newSize,
+            'mime_type' => $newFile->getMimeType(),
+        ]);
+
+        \App\Models\AttachmentLog::create([
+            'attachment_id' => $attachment->id,
+            'user_id' => auth()->id(),
+            'action' => 'edit',
+            'metadata' => [
+                'old_size' => $oldSize,
+                'new_size' => $newSize
+            ],
+            'ip_address' => request()->ip()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'attachment' => $attachment
+        ]);
     }
 
     /**
