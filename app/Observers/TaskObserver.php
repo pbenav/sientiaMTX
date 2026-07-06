@@ -243,13 +243,28 @@ class TaskObserver
         $activity->assignments()->delete();
 
         $assignments = $task->assignments()->get();
+        $assignedUserIds = [];
+
         foreach ($assignments as $a) {
+            if ($a->user_id) {
+                $assignedUserIds[] = (int) $a->user_id;
+            }
             \App\Models\ActivityAssignment::create([
                 'activity_id'    => $activity->id,
                 'user_id'        => $a->user_id,
                 'group_id'       => $a->group_id,
                 'assigned_by_id' => $a->assigned_by_id ?? 1,
                 'assigned_at'    => $a->assigned_at ?? now(),
+            ]);
+        }
+
+        if ($task->assigned_user_id && !in_array((int) $task->assigned_user_id, $assignedUserIds)) {
+            \App\Models\ActivityAssignment::create([
+                'activity_id'    => $activity->id,
+                'user_id'        => $task->assigned_user_id,
+                'group_id'       => null,
+                'assigned_by_id' => $task->created_by_id ?? 1,
+                'assigned_at'    => $task->created_at ?? now(),
             ]);
         }
     }

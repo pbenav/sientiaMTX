@@ -124,16 +124,12 @@
 
                     if ($isRoadmap) {
                         $instancesQuery = $activity->is_template ? $activity->instances() : $activity->children();
-                        $withRelation = $activity->is_template ? 'assignedUser' : 'assignedTo';
                         
                         $instances = $instancesQuery->getQuery()
                             ->visibleTo($currentUser, $isUserMgr)
-                            ->with($withRelation)
+                            ->with(['assignedTo', 'timeLogs'])
                             ->get()
-                            ->sortBy(function($inst) use ($activity) {
-                                if ($activity->is_template) {
-                                    return mb_strtolower(($inst->assignedUser?->name ?? '') . ' ' . $inst->title);
-                                }
+                            ->sortBy(function($inst) {
                                 return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
                             });
                     } else {
@@ -355,8 +351,8 @@
                                 @foreach ($instances as $inst)
                                     @php
                                         $isSimulated = isset($inst->is_simulated) && $inst->is_simulated;
-                                        $instMember = $isSimulated ? $inst->assignedUser : ($inst->assignedUser ?? $inst->assignedTo->first());
-                                        $instMemberName = $instMember?->name ?? 'Múltiples asignados';
+                                        $instMember = $isSimulated ? $inst->assignedUser : $inst->assignedTo->first();
+                                        $instMemberName = $instMember?->name ?? 'Sin asignar';
                                         $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
                                         $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
                                         $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
