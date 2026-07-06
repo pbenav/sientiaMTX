@@ -117,7 +117,7 @@ class ActivityService
             }
 
             // Metadata: merge parcial de campos específicos del tipo
-            $newMetadata = $this->buildMetadata($activity->type, $data);
+            $newMetadata = $this->buildMetadata($activity->type, $data, true);
             if (!empty($newMetadata) || !empty($data['metadata'])) {
                 $updateData['metadata'] = array_merge(
                     $activity->metadata ?? [],
@@ -477,7 +477,7 @@ class ActivityService
         }];
     }
 
-    protected function buildMetadata(string $type, array $data): array
+    protected function buildMetadata(string $type, array $data, bool $isUpdate = false): array
     {
         // metadata base si viene del formulario
         $base = $data['metadata'] ?? [];
@@ -490,7 +490,7 @@ class ActivityService
             foreach ($template['properties'] as $key => $rules) {
                 if (array_key_exists($key, $data)) {
                     $specifics[$key] = $data[$key];
-                } elseif (isset($rules['default'])) {
+                } elseif (!$isUpdate && isset($rules['default'])) {
                     $specifics[$key] = $rules['default'];
                 }
             }

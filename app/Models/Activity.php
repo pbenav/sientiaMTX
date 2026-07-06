@@ -808,7 +808,6 @@ class Activity extends Model
     public function getAllAttachmentsAttribute()
     {
         return $this->attachments()
-            ->with('attachable')
             ->get();
     }
 }

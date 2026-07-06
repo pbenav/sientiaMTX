@@ -942,7 +942,7 @@
                                         </span>
                                         <div class="min-w-0">
                                             <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $chapter['title'] }}</h4>
-                                            <p class="text-[10px] text-gray-400">Por {{ $chapter['author_name'] ?? 'Autor' }} • {{ \Carbon\Carbon::parse($chapter['updated_at'])->diffForHumans() }}</p>
+                                            <p class="text-[10px] text-gray-400">Por {{ $chapter['author_name'] ?? 'Autor' }} • {{ \Carbon\Carbon::parse($chapter['updated_at'] ?? $chapter['created_at'] ?? now())->diffForHumans() }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-1 shrink-0">
@@ -966,7 +966,7 @@
                                 </div>
 
                                 <div x-show="!editing" id="chapter-content-{{ $chapter['id'] }}" style="height: 200px; max-height: none; overflow-y: auto;" class="prose dark:prose-invert prose-sm max-w-none text-xs text-gray-700 dark:text-gray-300 leading-relaxed resize-y min-h-[120px] custom-scrollbar pr-4 p-4 bg-white dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800/80 rounded-2xl shadow-sm">
-                                    {!! str($chapter['content'])->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                    {!! str($chapter['content'] ?? '')->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                                 </div>
 
                                 <form x-show="editing" x-cloak action="{{ route('teams.activities.chapters.update', [$team, $activity, $chapter['id']]) }}" method="POST" class="space-y-4 pt-2">
@@ -981,7 +981,7 @@
                                         <x-markdown-editor 
                                             name="chapter_content" 
                                             id="edit-chap-{{ $chapter['id'] }}"
-                                            :value="$chapter['content']"
+                                            :value="$chapter['content'] ?? ''"
                                             :label="null"
                                             rows="4"
                                             placeholder="Contenido del capítulo..."

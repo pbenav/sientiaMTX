@@ -50,8 +50,9 @@
         "status": {
             "type": "string",
             "required": false,
-            "default": "draft",
+            "default": "uploaded",
             "enum": [
+                "uploaded",
                 "draft",
                 "editing",
                 "reviewed",
