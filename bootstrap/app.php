@@ -44,6 +44,23 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: $trusted === '*' ? '*' : array_map('trim', explode(',', $trusted)));
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Redirección elegante para rutas legacy /tasks/{id} que ya no existen
+        // Las tareas han sido migradas al modelo unificado Activity
+        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
+            if (str_contains($request->path(), '/tasks/')) {
+                // Intentar encontrar el equipo en la URL para redirigir correctamente
+                preg_match('#teams/(\d+)#', $request->path(), $matches);
+                $teamId = $matches[1] ?? null;
+
+                $redirectUrl = $teamId
+                    ? route('teams.activities.index', $teamId)
+                    : route('dashboard');
+
+                return redirect($redirectUrl)
+                    ->with('warning', __('Esta tarea ha sido migrada o eliminada. Usa el listado de actividades para encontrarla.'));
+            }
+        });
+
         $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
             if (str_contains($e->getMessage(), 'Connection refused') || str_contains($e->getMessage(), 'SQLSTATE[HY000] [2002]')) {
                 return response()->view('errors.database', [], 500);
