@@ -52,6 +52,7 @@ Route::prefix('citas')->name('public.appointments.')->group(function () {
 
     // Buscador de videocita por localizador (desde el portal principal)
     Route::post('/mi-videocita', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'findVideoAppointment'])->name('video.find');
+    Route::post('/visitor-by-email', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'getVisitorByEmail'])->name('visitor-by-email');
 });
 
 // --- Directorio y Micrositios Públicos ---

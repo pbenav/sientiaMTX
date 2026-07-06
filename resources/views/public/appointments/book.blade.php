@@ -171,15 +171,27 @@
                     <input type="hidden" name="modality" value="{{ $modalities[0] }}">
                 @endif
 
+                <div class="md:col-span-12">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Correo Electrónico') }} *</label>
+                    <input type="email" id="input-email" name="email" value="{{ old('email') }}" required
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
+                           placeholder="nombre@ejemplo.com">
+                    <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-1 font-semibold">
+                        💡 {{ __('Si ya has reservado una cita anteriormente, introduce tu correo para recuperar tus datos automáticamente.') }}
+                    </p>
+                    <p id="hint-email" class="mt-1 text-[10px] font-semibold hidden"></p>
+                    @error('email') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="md:col-span-6">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Nombre') }} *</label>
-                    <input type="text" name="first_name" required value="{{ old('first_name') }}"
+                    <input type="text" id="input-first-name" name="first_name" required value="{{ old('first_name') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
                 
                 <div class="md:col-span-6">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Apellidos') }} *</label>
-                    <input type="text" name="last_name" required value="{{ old('last_name') }}"
+                    <input type="text" id="input-last-name" name="last_name" required value="{{ old('last_name') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
@@ -193,15 +205,6 @@
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Correo Electrónico') }}</label>
-                    <input type="email" id="input-email" name="email" value="{{ old('email') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
-                           placeholder="nombre@ejemplo.com">
-                    <p id="hint-email" class="mt-1 text-[10px] font-semibold hidden"></p>
-                    @error('email') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
-                </div>
-
-                <div class="md:col-span-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Teléfono Móvil') }}</label>
                     <input type="tel" id="input-phone" name="phone" value="{{ old('phone') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
@@ -210,19 +213,19 @@
                     @error('phone') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="md:col-span-8">
+                <div class="md:col-span-4">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Código Postal') }}</label>
+                    <input type="text" id="input-postal" name="postal_code" value="{{ old('postal_code') }}"
+                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
+                </div>
+
+                <div class="md:col-span-12">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">
                         {{ __('Municipio') }}
                         <span id="geo-loading" class="hidden ml-2 text-cyan-500 normal-case tracking-normal font-semibold">⟳ {{ __('Detectando ubicación...') }}</span>
                         <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 {{ __('Rellenado por ubicación del servicio') }}</span>
                     </label>
                     <input type="text" id="input-city" name="city" value="{{ old('city') }}"
-                           class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
-                </div>
-
-                <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Código Postal') }}</label>
-                    <input type="text" id="input-postal" name="postal_code" value="{{ old('postal_code') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
@@ -615,12 +618,83 @@
                 const v = this.value.trim();
                 if (!v) { clearHint(emailHint, emailInput); return; }
                 const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-                valid
-                    ? setHint(emailHint, emailInput, '✓ Correo válido', false)
-                    : setHint(emailHint, emailInput, '✗ Formato de correo incorrecto', true);
+                if (valid) {
+                    setHint(emailHint, emailInput, '✓ Correo válido', false);
+                    
+                    // Buscar si ya existe el visitante
+                    fetch('/citas/visitor-by-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSR-Token': document.querySelector('input[name="_token"]').value
+                        },
+                        body: JSON.stringify({ email: v })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.found) {
+                            setHint(emailHint, emailInput, '✓ Datos de usuario localizados y autocompletados', false);
+                            
+                            const firstNameEl = document.getElementById('input-first-name');
+                            const lastNameEl  = document.getElementById('input-last-name');
+                            const dniEl       = document.getElementById('input-dni');
+                            const phoneEl     = document.getElementById('input-phone');
+                            const cityEl      = document.getElementById('input-city');
+                            const postalEl    = document.getElementById('input-postal');
+                            
+                            if (firstNameEl) {
+                                firstNameEl.value = data.first_name || '';
+                                firstNameEl.readOnly = true;
+                                firstNameEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                            }
+                            if (lastNameEl) {
+                                lastNameEl.value = data.last_name || '';
+                                lastNameEl.readOnly = true;
+                                lastNameEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                            }
+                            if (dniEl) {
+                                dniEl.value = data.dni || '';
+                                if (data.dni) {
+                                    dniEl.readOnly = true;
+                                    dniEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                                }
+                            }
+                            if (phoneEl) {
+                                phoneEl.value = data.phone || '';
+                                if (data.phone) {
+                                    phoneEl.readOnly = true;
+                                    phoneEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                                }
+                            }
+                            if (cityEl) {
+                                cityEl.value = data.city || '';
+                            }
+                            if (postalEl) {
+                                postalEl.value = data.postal_code || '';
+                            }
+                        }
+                    });
+                } else {
+                    setHint(emailHint, emailInput, '✗ Formato de correo incorrecto', true);
+                }
             });
             emailInput.addEventListener('input', function () {
-                if (!this.value.trim()) clearHint(emailHint, emailInput);
+                if (!this.value.trim()) {
+                    clearHint(emailHint, emailInput);
+                    
+                    const firstNameEl = document.getElementById('input-first-name');
+                    const lastNameEl  = document.getElementById('input-last-name');
+                    const dniEl       = document.getElementById('input-dni');
+                    const phoneEl     = document.getElementById('input-phone');
+                    
+                    [firstNameEl, lastNameEl, dniEl, phoneEl].forEach(el => {
+                        if (el) {
+                            el.value = '';
+                            el.readOnly = false;
+                            el.classList.remove('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                        }
+                    });
+                }
             });
         }
 

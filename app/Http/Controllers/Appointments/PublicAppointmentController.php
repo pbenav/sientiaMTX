@@ -225,21 +225,42 @@ class PublicAppointmentController extends Controller
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
 
-        // Crear visitante
-        $visitor = AppointmentVisitor::create([
-            'first_name'    => $firstName,
-            'last_name'     => $lastName,
-            'dni'           => $data['dni'] ?? null,
-            'email'         => $data['email'] ?? null,
-            'phone'         => $data['phone'] ?? null,
-            'city'          => $data['city'] ?? null,
-            'postal_code'   => $data['postal_code'] ?? null,
-            'observations'  => $data['observations'] ?? null,
-            'consent_email' => $request->boolean('consent_email'),
-            'consent_data'  => true,
-            'consent_legal' => true,
-            'ip_address'    => $request->ip(),
-        ]);
+        // Buscar si existe un visitante previo con ese mismo email
+        $visitor = null;
+        if (!empty($data['email'])) {
+            $visitor = AppointmentVisitor::where('email', $data['email'])->first();
+        }
+
+        if ($visitor) {
+            // Actualizar datos del visitante existente
+            $visitor->update([
+                'first_name'    => $firstName,
+                'last_name'     => $lastName,
+                'dni'           => $data['dni'] ?? $visitor->dni,
+                'phone'         => $data['phone'] ?? $visitor->phone,
+                'city'          => $data['city'] ?? $visitor->city,
+                'postal_code'   => $data['postal_code'] ?? $visitor->postal_code,
+                'observations'  => $data['observations'] ?? $visitor->observations,
+                'consent_email' => $request->boolean('consent_email'),
+                'ip_address'    => $request->ip(),
+            ]);
+        } else {
+            // Crear nuevo visitante
+            $visitor = AppointmentVisitor::create([
+                'first_name'    => $firstName,
+                'last_name'     => $lastName,
+                'dni'           => $data['dni'] ?? null,
+                'email'         => $data['email'] ?? null,
+                'phone'         => $data['phone'] ?? null,
+                'city'          => $data['city'] ?? null,
+                'postal_code'   => $data['postal_code'] ?? null,
+                'observations'  => $data['observations'] ?? null,
+                'consent_email' => $request->boolean('consent_email'),
+                'consent_data'  => true,
+                'consent_legal' => true,
+                'ip_address'    => $request->ip(),
+            ]);
+        }
 
         // Crear cita
         $appointment = Appointment::create([
@@ -668,6 +689,32 @@ class PublicAppointmentController extends Controller
 
         return redirect()->route('public.appointments.confirm', $appointment->localizador)
             ->with('success', '¡Cita modificada correctamente!');
+    }
+
+    /**
+     * Busca y retorna los datos de un visitante si el email ya existe.
+     */
+    public function getVisitorByEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $visitor = AppointmentVisitor::where('email', $request->email)->first();
+
+        if ($visitor) {
+            return response()->json([
+                'found'      => true,
+                'first_name' => $visitor->first_name,
+                'last_name'  => $visitor->last_name,
+                'dni'        => $visitor->dni,
+                'phone'      => $visitor->phone,
+                'city'       => $visitor->city,
+                'postal_code'=> $visitor->postal_code,
+            ]);
+        }
+
+        return response()->json(['found' => false]);
     }
 
     /**
