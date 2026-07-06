@@ -55,8 +55,37 @@
                     />
                 </div>
 
-                <!-- Estado de la Actividad -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+                @if($activity->type === "task")
+                <!-- Observations (Markdown) -->
+                <div>
+                    <x-markdown-editor 
+                        name="metadata[observations]" 
+                        id="observations"
+                        :value="old('metadata.observations', data_get($activity->metadata, 'observations'))"
+                        :label="__('tasks.observations')"
+                        rows="4"
+                        :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
+                    />
+                </div>
+                @endif
+
+                <!-- Estado, Prioridad y Progreso -->
+                <div class="grid grid-cols-1 md:grid-cols-{{ $activity->type === 'task' ? '3' : '2' }} gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+                    
+
+                    @if ($activity->type === 'task')
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Urgencia</label>
+                        <select name="urgency" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                            <option value="low" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'low' ? 'selected' : '' }}>Baja</option>
+                            <option value="medium" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'medium' ? 'selected' : '' }}>Media</option>
+                            <option value="high" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'high' ? 'selected' : '' }}>Alta</option>
+                            <option value="critical" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'critical' ? 'selected' : '' }}>Crítica</option>
+                        </select>
+                    </div>
+                    @endif
+
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Estado</label>
                         <select name="status" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
@@ -70,22 +99,30 @@
                             <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Porcentaje de Progreso</label>
-                        <div x-data="{ progress: {{ old('progress_percentage', $activity->progress_percentage ?? 0) }} }" class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <input type="range" name="progress_percentage" min="0" max="100" step="5" x-model="progress"
-                                    class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600">
-                                <span class="text-sm font-bold text-violet-600 dark:text-violet-400 w-12 text-right select-none ml-3" x-text="progress + '%'">0%</span>
-                            </div>
-                            @error('progress_percentage')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
                 </div>
 
+                @if($activity->type === 'task')
+                    <!-- Eisenhower Matrix Preview -->
+                    <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
+                        <span class="font-bold uppercase tracking-wider" id="qp-label"></span>
+                        <span class="text-gray-500 dark:text-gray-400 ml-1 italic font-medium" id="qp-desc"></span>
+                    </div>
+                @endif
+                
+                <!-- Progreso (Global) -->
+                <div class="bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Porcentaje de Progreso</label>
+                    <div x-data="{ progress: {{ old('progress_percentage', $activity->progress_percentage ?? 0) }} }" class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <input type="range" name="progress_percentage" min="0" max="100" step="5" x-model="progress"
+                                class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600">
+                            <span class="text-sm font-bold text-violet-600 dark:text-violet-400 w-12 text-right select-none ml-3" x-text="progress + '%'">0%</span>
+                        </div>
+                        @error('progress_percentage')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
                 <!-- Campos Específicos según el Tipo -->
                 <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 space-y-6">
                     <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
@@ -98,16 +135,6 @@
                     @if ($activity->type === 'task')
                         <!-- TAREA ESPECÍFICO -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Urgencia</label>
-                                <select name="urgency" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    <option value="low" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'low' ? 'selected' : '' }}>Baja</option>
-                                    <option value="medium" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'medium' ? 'selected' : '' }}>Media</option>
-                                    <option value="high" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'high' ? 'selected' : '' }}>Alta</option>
-                                    <option value="critical" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'critical' ? 'selected' : '' }}>Crítica</option>
-                                </select>
-                            </div>
-
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Carga Cognitiva</label>
                                 <select name="cognitive_load" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
@@ -615,16 +642,7 @@
                         </div>
                     </div>
 
-                    @if($activity->type === 'task')
-                        <!-- Eisenhower Matrix Preview -->
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Vista Previa Eisenhower</label>
-                            <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
-                                <span class="font-bold uppercase tracking-wider" id="qp-label"></span>
-                                <span class="text-gray-500 dark:text-gray-400 ml-1 italic font-medium" id="qp-desc"></span>
-                            </div>
-                        </div>
-                    @endif
+                    
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Fecha Programada</label>
