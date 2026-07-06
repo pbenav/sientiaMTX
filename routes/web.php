@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
+use App\Models\Team;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskActionController;
