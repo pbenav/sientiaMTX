@@ -55,10 +55,20 @@ class OnlyOfficeController extends Controller
         $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
 
         // Construir las URLs que OnlyOffice usará para descargar y hacer callback.
-        // Usa la IP interna si está configurada para que OnlyOffice conecte directamente por LAN.
         // IMPORTANTE: Usa config() no env() para que funcione con config:cache activo.
+        // La URL de descarga se firma temporalmente (2h) para que hasValidSignature() funcione
+        // sin necesidad de configurar IPs. El callback usa la URL pública de la app.
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        $downloadUrl = $baseUrl . '/onlyoffice/download/' . $attachment->id . '?v=' . $key;
+        $downloadUrl = URL::temporarySignedRoute(
+            'onlyoffice.download',
+            now()->addHours(2),
+            ['attachment' => $attachment->id]
+        );
+        // Si hay una URL interna configurada diferente a APP_URL, reemplazarla en la URL firmada
+        $appUrl = rtrim(config('app.url'), '/');
+        if ($baseUrl !== $appUrl) {
+            $downloadUrl = str_replace($appUrl, $baseUrl, $downloadUrl);
+        }
         $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
 
 
@@ -263,10 +273,12 @@ class OnlyOfficeController extends Controller
         $onlyOfficeIp = parse_url(config('onlyoffice.internal_server_url', ''), PHP_URL_HOST);
         $clientIp = $request->ip();
 
+        // Autorizado si: la URL tiene firma válida (generada por temporarySignedRoute)
+        // O si la IP de la petición coincide con la IP configurada del servidor OnlyOffice.
         $isAuthorized = $request->hasValidSignature() || ($onlyOfficeIp && $clientIp === $onlyOfficeIp);
 
         if (!$isAuthorized) {
-            Log::warning("[OnlyOffice] Acceso denegado a descarga. IP: {$clientIp}, esperada: {$onlyOfficeIp}");
+            Log::warning("[OnlyOffice] Acceso denegado a descarga TaskAttachment. IP: {$clientIp}, esperada: {$onlyOfficeIp}, firma: " . ($request->hasValidSignature() ? 'ok' : 'inválida'));
             abort(403, 'No autorizado.');
         }
 
@@ -404,9 +416,19 @@ class OnlyOfficeController extends Controller
 
         $key = md5($attachment->id . '_' . $attachment->updated_at->timestamp);
 
+        // URL pública que OnlyOffice puede alcanzar (configurable via ONLYOFFICE_INTERNAL_APP_URL)
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        // Usamos las nuevas rutas de actividad
-        $downloadUrl = $baseUrl . '/onlyoffice/activity-download/' . $attachment->id . '?v=' . $key;
+        // URL de descarga firmada temporalmente (2h) — no requiere configuración de IPs
+        $downloadUrl = URL::temporarySignedRoute(
+            'onlyoffice.activity.download',
+            now()->addHours(2),
+            ['attachment' => $attachment->id]
+        );
+        // Si hay URL interna diferente a APP_URL, reemplazar en la URL firmada
+        $appUrl = rtrim(config('app.url'), '/');
+        if ($baseUrl !== $appUrl) {
+            $downloadUrl = str_replace($appUrl, $baseUrl, $downloadUrl);
+        }
         $callbackUrl = $baseUrl . '/onlyoffice/activity-callback/' . $attachment->id;
 
         $config = [
@@ -523,10 +545,12 @@ class OnlyOfficeController extends Controller
         $onlyOfficeIp = parse_url(config('onlyoffice.internal_server_url', ''), PHP_URL_HOST);
         $clientIp = $request->ip();
 
+        // Autorizado si: la URL tiene firma válida (generada por temporarySignedRoute)
+        // O si la IP de la petición coincide con la IP configurada del servidor OnlyOffice.
         $isAuthorized = $request->hasValidSignature() || ($onlyOfficeIp && $clientIp === $onlyOfficeIp);
 
         if (!$isAuthorized) {
-            Log::warning("[OnlyOffice] Acceso denegado a descarga Activity. IP: {$clientIp}, esperada: {$onlyOfficeIp}");
+            Log::warning("[OnlyOffice] Acceso denegado a descarga ActivityAttachment. IP: {$clientIp}, esperada: {$onlyOfficeIp}, firma: " . ($request->hasValidSignature() ? 'ok' : 'inválida'));
             abort(403, 'No autorizado.');
         }
 
