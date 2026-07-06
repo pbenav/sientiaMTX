@@ -294,8 +294,8 @@ class ConvertActivityAction
             return true;
         }
 
-        // 4. Es administrador del equipo o del sistema
-        if ($user->isTeamAdmin()) {
+        // 4. Es administrador del sistema
+        if ($user->is_admin) {
             return true;
         }
 
