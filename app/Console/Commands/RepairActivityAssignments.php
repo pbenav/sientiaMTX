@@ -139,6 +139,9 @@ class RepairActivityAssignments extends Command
             } elseif ($userId) {
                 $this->fixed++;   // contamos los "reparables" en dry-run
             } else {
+                if (! $isDryRun) {
+                    \App\Models\Activity::where('id', $orphan->activity_id)->forceDelete();
+                }
                 $this->missing++;
             }
         }
@@ -148,10 +151,10 @@ class RepairActivityAssignments extends Command
         $this->info('');
 
         if ($isDryRun) {
-            $this->info("🔍 DRY-RUN: {$this->fixed} instancias se podrían reparar, {$this->missing} sin datos suficientes.");
+            $this->info("🔍 DRY-RUN: {$this->fixed} instancias se podrían reparar, {$this->missing} huérfanos se eliminarían por falta de datos.");
             $this->warn('   Ejecuta con --fix para aplicar los cambios.');
         } else {
-            $this->info("✅ Reparadas: {$this->fixed} | ❌ Sin datos: {$this->missing}");
+            $this->info("✅ Reparadas: {$this->fixed} | 🗑️ Eliminadas (sin datos): {$this->missing}");
         }
 
         return self::SUCCESS;
