@@ -61,10 +61,10 @@ class SkillController extends Controller
         if ($team) {
             $globalSkill = Skill::whereNull('team_id')->where('name', $skill->name)->first();
             if ($globalSkill) {
-                $teamTaskIds = \App\Models\Task::where('team_id', $team->id)->pluck('id');
-                if ($teamTaskIds->isNotEmpty()) {
-                    \Illuminate\Support\Facades\DB::table('skill_task')
-                        ->whereIn('task_id', $teamTaskIds)
+                $teamActivityIds = \App\Models\Activity::where('team_id', $team->id)->pluck('id');
+                if ($teamActivityIds->isNotEmpty()) {
+                    \Illuminate\Support\Facades\DB::table('activity_skills')
+                        ->whereIn('activity_id', $teamActivityIds)
                         ->where('skill_id', $globalSkill->id)
                         ->update(['skill_id' => $skill->id]);
                 }
@@ -147,11 +147,11 @@ class SkillController extends Controller
                     'icon' => $globalSkill->icon,
                 ]);
 
-                // Migrate existing tasks from global skill to new local skill safely
-                $teamTaskIds = \App\Models\Task::where('team_id', $team->id)->pluck('id');
-                if ($teamTaskIds->isNotEmpty()) {
-                    \Illuminate\Support\Facades\DB::table('skill_task')
-                        ->whereIn('task_id', $teamTaskIds)
+                // Migrate existing activities from global skill to new local skill safely
+                $teamActivityIds = \App\Models\Activity::where('team_id', $team->id)->pluck('id');
+                if ($teamActivityIds->isNotEmpty()) {
+                    \Illuminate\Support\Facades\DB::table('activity_skills')
+                        ->whereIn('activity_id', $teamActivityIds)
                         ->where('skill_id', $globalSkill->id)
                         ->update(['skill_id' => $newSkill->id]);
                 }
@@ -169,14 +169,21 @@ class SkillController extends Controller
 
     public function tasks(Request $request, \App\Models\Team $team, $skillName)
     {
-        $tasks = \App\Models\Task::visibleTo(auth()->user(), $team->isManager(auth()->user()))
-            ->join('skill_task', 'tasks.id', '=', 'skill_task.task_id')
-            ->join('skills', 'skill_task.skill_id', '=', 'skills.id')
-            ->where('tasks.team_id', $team->id)
+        $tasks = \App\Models\Activity::visibleTo(auth()->user(), $team->isManager(auth()->user()))
+            ->where('activities.type', 'task')
+            ->join('activity_skills', 'activities.id', '=', 'activity_skills.activity_id')
+            ->join('skills', 'activity_skills.skill_id', '=', 'skills.id')
+            ->where('activities.team_id', $team->id)
             ->where('skills.name', $skillName)
-            ->select('tasks.id', 'tasks.title', 'tasks.status', 'tasks.cognitive_load', 'tasks.created_at')
+            ->select(
+                'activities.id', 
+                'activities.title', 
+                'activities.status', 
+                \Illuminate\Support\Facades\DB::raw('CAST(JSON_UNQUOTE(JSON_EXTRACT(activities.metadata, "$.cognitive_load")) AS UNSIGNED) as cognitive_load'),
+                'activities.created_at'
+            )
             ->distinct()
-            ->orderBy('tasks.created_at', 'desc')
+            ->orderBy('activities.created_at', 'desc')
             ->paginate(10);
 
         return response()->json($tasks);

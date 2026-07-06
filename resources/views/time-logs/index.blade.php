@@ -360,23 +360,25 @@
                                 ->pluck('aggregate_xp', 'name');
 
                             // Potential XP: Summing cognitive load of pending/active tasks per skill name
-                            $potentialXp = \DB::table('tasks')
-                                ->join('skill_task', 'tasks.id', '=', 'skill_task.task_id')
-                                ->join('skills', 'skill_task.skill_id', '=', 'skills.id')
-                                ->where('tasks.team_id', $team->id)
-                                ->whereNotIn('tasks.status', ['completed', 'cancelled', 'blocked'])
-                                ->select('skills.name', \DB::raw('SUM(tasks.cognitive_load * 10) as potential'), \DB::raw('COUNT(tasks.id) as count'))
+                            $potentialXp = \DB::table('activities')
+                                ->join('activity_skills', 'activities.id', '=', 'activity_skills.activity_id')
+                                ->join('skills', 'activity_skills.skill_id', '=', 'skills.id')
+                                ->where('activities.team_id', $team->id)
+                                ->where('activities.type', 'task')
+                                ->whereNotIn('activities.status', ['completed', 'cancelled', 'blocked'])
+                                ->select('skills.name', \DB::raw('SUM(CAST(JSON_UNQUOTE(JSON_EXTRACT(activities.metadata, "$.cognitive_load")) AS UNSIGNED) * 10) as potential'), \DB::raw('COUNT(activities.id) as count'))
                                 ->groupBy('skills.name')
                                 ->get()
                                 ->keyBy('name');
 
                             // Real Task Count: Count of completed tasks per skill
-                            $completedTaskCount = \DB::table('tasks')
-                                ->join('skill_task', 'tasks.id', '=', 'skill_task.task_id')
-                                ->join('skills', 'skill_task.skill_id', '=', 'skills.id')
-                                ->where('tasks.team_id', $team->id)
-                                ->where('tasks.status', 'completed')
-                                ->select('skills.name', \DB::raw('COUNT(tasks.id) as count'))
+                            $completedTaskCount = \DB::table('activities')
+                                ->join('activity_skills', 'activities.id', '=', 'activity_skills.activity_id')
+                                ->join('skills', 'activity_skills.skill_id', '=', 'skills.id')
+                                ->where('activities.team_id', $team->id)
+                                ->where('activities.type', 'task')
+                                ->where('activities.status', 'completed')
+                                ->select('skills.name', \DB::raw('COUNT(activities.id) as count'))
                                 ->groupBy('skills.name')
                                 ->pluck('count', 'name');
 
