@@ -131,7 +131,7 @@ class RepairActivityAssignments extends Command
                     'activity_id'    => $orphan->activity_id,
                     'user_id'        => $userId,
                     'assigned_at'    => now(),
-                    'assigned_by_id' => null,
+                    'assigned_by_id' => $task?->created_by_id ?? $userId,
                     'created_at'     => now(),
                     'updated_at'     => now(),
                 ]);
