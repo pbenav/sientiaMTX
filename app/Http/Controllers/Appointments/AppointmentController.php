@@ -334,6 +334,7 @@ class AppointmentController extends Controller
             'visitor_city'      => 'nullable|string|max:255',
             'visitor_postal_code' => 'nullable|string|max:50',
             'visitor_observations' => 'nullable|string|max:2000',
+            'tracked_minutes'   => 'nullable|integer|min:0',
         ]);
 
         // Si cambia fecha/hora, revalidar disponibilidad
@@ -414,6 +415,28 @@ class AppointmentController extends Controller
             }
             if (!empty($taskData)) {
                 $task->update($taskData);
+            }
+        }
+
+        if ($request->has('tracked_minutes') && ($appointment->activity || $appointment->task)) {
+            $taskObj = $appointment->activity ?? $appointment->task;
+            $minutes = (int) $request->input('tracked_minutes');
+            
+            // Borrar time logs de tipo task para esta actividad/tarea
+            $taskObj->timeLogs()->delete();
+            
+            if ($minutes > 0) {
+                // Crear un único log de la duración deseada
+                $start = Carbon::parse($appointment->appointment_date->format('Y-m-d') . ' ' . $appointment->appointment_time);
+                $end = $start->copy()->addMinutes($minutes);
+                
+                $taskObj->timeLogs()->create([
+                    'user_id' => $appointment->user_id ?? auth()->id(),
+                    'type' => 'task',
+                    'start_at' => $start,
+                    'end_at' => $end,
+                    'note' => 'Ajuste manual de duración desde edición de cita',
+                ]);
             }
         }
 

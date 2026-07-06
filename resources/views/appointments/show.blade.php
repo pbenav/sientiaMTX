@@ -118,6 +118,17 @@
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Duración</p>
                             <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $appointment->slot_duration_minutes }} minutos</p>
                         </div>
+                        @if($appointment->activity || $appointment->task)
+                        @php
+                            $task = $appointment->activity ?? $appointment->task;
+                        @endphp
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Duración real (contador)</p>
+                            <p class="text-sm font-bold text-cyan-600 dark:text-cyan-400">
+                                {{ $task->totalTrackedTimeHuman() }}
+                            </p>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Formulario de Edición -->
@@ -135,6 +146,21 @@
                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                         </div>
+
+                        @if($appointment->activity || $appointment->task)
+                        @php
+                            $task = $appointment->activity ?? $appointment->task;
+                            $trackedSeconds = $task->totalTrackedSeconds();
+                            $trackedMinutes = (int) floor($trackedSeconds / 60);
+                        @endphp
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Duración real de la cita (minutos del contador)</label>
+                            <input type="number" name="tracked_minutes" value="{{ $trackedMinutes }}" min="0"
+                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all"
+                                   placeholder="Introduce la duración en minutos...">
+                            <p class="mt-1 text-[10px] text-gray-450 dark:text-gray-500">Si se dejó el contador encendido por error, puedes corregir aquí el total de minutos acumulados.</p>
+                        </div>
+                        @endif
                         
                         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                             <button type="button" @click="editing = false" class="px-4 py-2 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl transition-all">
