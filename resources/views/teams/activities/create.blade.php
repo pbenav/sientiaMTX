@@ -127,7 +127,7 @@
                             @foreach ($expedientes as $exp)
                                 <option value="{{ $exp->id }}" 
                                     data-code="{{ $exp->code }}"
-                                    {{ (old('expediente_id', $selectedExpedienteId) == $exp->id) ? 'selected' : '' }}>
+                                    {{ (old('expediente_id', request('expediente_id')) == $exp->id) ? 'selected' : '' }}>
                                     {{ $exp->code }} — {{ $exp->title }}
                                 </option>
                             @endforeach

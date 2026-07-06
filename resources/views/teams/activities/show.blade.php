@@ -474,7 +474,10 @@
                                 }
                             });
                         }
-                              function mergeTaskModal() {
+                    });
+                }
+
+                function mergeTaskModal() {
                     const isDark = document.documentElement.classList.contains('dark');
                     Swal.fire({
                         title: '¿Fusionar esta actividad?',
@@ -573,7 +576,12 @@
                 }
 
                 function printSection(sectionLabel, contentId) {
-                    const content = document.getElementById(contentId).innerHTML;
+                    const el = document.getElementById(contentId);
+                    if (!el) {
+                        console.error('Print section element not found:', contentId);
+                        return;
+                    }
+                    const content = el.innerHTML;
                     const taskTitle = @json($activity->title);
                     SientiaPrint.print(taskTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
                 }
@@ -620,13 +628,14 @@
                             </div>
                         `,
                         didOpen: (el) => {
-                            el.querySelector('#print-full-btn-with').onclick = () => Swal.close({ value: 'with' });
-                            el.querySelector('#print-full-btn-without').onclick = () => Swal.close({ value: 'without' });
+                            el.querySelector('#print-full-btn-with').onclick = () => { window._sientiaPrintFullMode = 'with'; Swal.close(); };
+                            el.querySelector('#print-full-btn-without').onclick = () => { window._sientiaPrintFullMode = 'without'; Swal.close(); };
                         }
                     });
 
-                    if (!result || !result.value) return;
-                    const withHeaders = result.value === 'with';
+                    if (!window._sientiaPrintFullMode) return;
+                    const withHeaders = window._sientiaPrintFullMode === 'with';
+                    window._sientiaPrintFullMode = null;
 
                     const taskTitle = @json($activity->title);
                     const taskId = @json($activity->id);
