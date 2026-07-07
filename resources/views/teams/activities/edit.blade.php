@@ -745,30 +745,7 @@
                         
                     </div>
 
-                    @if ($activity->type === 'task')
-                        <!-- TAREA ESPECÍFICO -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Carga Cognitiva</label>
-                                <select name="cognitive_load" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    @for ($i = 1; $i <= 10; $i++)
-                                        <option value="{{ $i }}" {{ old('cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) == $i ? 'selected' : '' }}>{{ $i }} ({{ $i == 1 ? 'Mínima' : ($i == 5 ? 'Media' : ($i == 10 ? 'Extrema' : '')) }})</option>
-                                    @endfor
-                                </select>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="is_out_of_skill_tree" value="1" {{ old('is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }}
-                                        class="accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Fuera de mi Skill Tree</span>
-                                        <span class="text-xs text-gray-500">¿Esta actividad requiere habilidades que no forman parte de tu formación principal?</span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
+                    @if ($activity->type === 'document')
                         <!-- DOCUMENTO ESPECÍFICO -->
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -915,8 +892,16 @@
         </label>
         <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all shadow-inner">
     </div>
-    <div class="flex items-center h-full pt-1">
-        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group w-full shadow-inner">
+    <div class="flex flex-col justify-center gap-3 pt-1">
+        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
+            <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
+                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
+            </div>
+        </label>
+        
+        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
             <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
             <div class="flex flex-col">
                 <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
