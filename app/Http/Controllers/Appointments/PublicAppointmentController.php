@@ -12,6 +12,8 @@ use App\Rules\DniNie;
 use App\Services\AppointmentAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class PublicAppointmentController extends Controller
 {
@@ -216,54 +218,80 @@ class PublicAppointmentController extends Controller
 
         $date = Carbon::parse($data['appointment_date']);
 
-        // Validar disponibilidad en tiempo real
-        if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'])) {
-            return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
-        }
-
         // Traducir caracteres árabes si existen
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
 
-        // Buscar si existe un visitante previo con ese mismo email
-        $visitor = null;
-        if (!empty($data['email'])) {
-            $visitor = AppointmentVisitor::where('email', $data['email'])->first();
-        }
+        // Crear una clave de bloqueo para prevenir envíos dobles o concurrentes para la misma persona
+        $lockKey = 'appointment_store_' . md5(($data['dni'] ?? '') . ($data['email'] ?? '') . $firstName . $lastName);
 
-        if ($visitor) {
-            // Actualizar datos del visitante existente
-            $visitor->update([
-                'first_name'    => $firstName,
-                'last_name'     => $lastName,
-                'dni'           => $data['dni'] ?? $visitor->dni,
-                'phone'         => $data['phone'] ?? $visitor->phone,
-                'city'          => $data['city'] ?? $visitor->city,
-                'postal_code'   => $data['postal_code'] ?? $visitor->postal_code,
-                'observations'  => $data['observations'] ?? $visitor->observations,
-                'consent_email' => $request->boolean('consent_email'),
-                'ip_address'    => $request->ip(),
-            ]);
-        } else {
-            // Crear nuevo visitante
-            $visitor = AppointmentVisitor::create([
-                'first_name'    => $firstName,
-                'last_name'     => $lastName,
-                'dni'           => $data['dni'] ?? null,
-                'email'         => $data['email'] ?? null,
-                'phone'         => $data['phone'] ?? null,
-                'city'          => $data['city'] ?? null,
-                'postal_code'   => $data['postal_code'] ?? null,
-                'observations'  => $data['observations'] ?? null,
-                'consent_email' => $request->boolean('consent_email'),
-                'consent_data'  => true,
-                'consent_legal' => true,
-                'ip_address'    => $request->ip(),
-            ]);
-        }
+        return Cache::lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
+            return DB::transaction(function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
+                // Validar disponibilidad en tiempo real dentro de la transacción
+                if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'])) {
+                    return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
+                }
 
-        // Crear cita
-        $appointment = Appointment::create([
+                // Buscar si existe un visitante previo con coincidencia estricta para evitar cruce de datos
+                $visitorQuery = AppointmentVisitor::query();
+                if (!empty($data['dni'])) {
+                    $visitorQuery->where('dni', $data['dni']);
+                } elseif (!empty($data['email'])) {
+                    $visitorQuery->where('email', $data['email'])
+                                 ->where('first_name', $firstName)
+                                 ->where('last_name', $lastName);
+                } else {
+                    $visitorQuery->where('first_name', $firstName)
+                                 ->where('last_name', $lastName)
+                                 ->where('phone', $data['phone']);
+                }
+
+                // Bloqueamos la fila del visitante para actualización si existe
+                $visitor = $visitorQuery->lockForUpdate()->first();
+
+                if ($visitor) {
+                    // Restricción: No puede tener más de una cita el mismo día
+                    $hasAppointmentToday = Appointment::where('visitor_id', $visitor->id)
+                        ->where('appointment_date', $date->toDateString())
+                        ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
+                        ->exists();
+
+                    if ($hasAppointmentToday) {
+                        return back()->withErrors(['appointment_date' => 'Ya tienes una cita programada para este día. No se permite solicitar más de una cita en la misma fecha.'])->withInput();
+                    }
+
+                    // Actualizar datos del visitante existente
+                    $visitor->update([
+                        'first_name'    => $firstName,
+                        'last_name'     => $lastName,
+                        'dni'           => $data['dni'] ?? $visitor->dni,
+                        'phone'         => $data['phone'] ?? $visitor->phone,
+                        'city'          => $data['city'] ?? $visitor->city,
+                        'postal_code'   => $data['postal_code'] ?? $visitor->postal_code,
+                        'observations'  => $data['observations'] ?? $visitor->observations,
+                        'consent_email' => $request->boolean('consent_email'),
+                        'ip_address'    => $request->ip(),
+                    ]);
+                } else {
+                    // Crear nuevo visitante
+                    $visitor = AppointmentVisitor::create([
+                        'first_name'    => $firstName,
+                        'last_name'     => $lastName,
+                        'dni'           => $data['dni'] ?? null,
+                        'email'         => $data['email'] ?? null,
+                        'phone'         => $data['phone'] ?? null,
+                        'city'          => $data['city'] ?? null,
+                        'postal_code'   => $data['postal_code'] ?? null,
+                        'observations'  => $data['observations'] ?? null,
+                        'consent_email' => $request->boolean('consent_email'),
+                        'consent_data'  => true,
+                        'consent_legal' => true,
+                        'ip_address'    => $request->ip(),
+                    ]);
+                }
+
+                // Crear cita
+                $appointment = Appointment::create([
             'localizador'         => Appointment::generateLocalizador(),
             'user_id'             => $service->user_id,
             'service_id'          => $service->id,
@@ -286,28 +314,30 @@ class PublicAppointmentController extends Controller
             $this->syncToGoogleCalendar($appointment);
         }
 
-        // Sincronizar con Google Tasks si está habilitado en el servicio
-        if ($service->sync_to_google_tasks && $service->user->google_token) {
-            $this->syncToGoogleTasks($appointment);
-        }
+                // Sincronizar con Google Tasks si está habilitado en el servicio
+                if ($service->sync_to_google_tasks && $service->user->google_token) {
+                    $this->syncToGoogleTasks($appointment);
+                }
 
-        // Email de confirmación al visitante (si consintió y tiene email)
-        if ($visitor->consent_email && $visitor->email && $settings->email_confirmation) {
-            try {
-                \Mail::to($visitor->email)->locale(app()->getLocale())->send(new \App\Mail\AppointmentConfirmedMail($appointment));
-            } catch (\Throwable $e) {
-                \Log::warning("AppointmentConfirmed mail failed: " . $e->getMessage());
-            }
-        }
+                // Email de confirmación al visitante (si consintió y tiene email)
+                if ($visitor->consent_email && $visitor->email && $settings->email_confirmation) {
+                    try {
+                        \Mail::to($visitor->email)->locale(app()->getLocale())->send(new \App\Mail\AppointmentConfirmedMail($appointment));
+                    } catch (\Throwable $e) {
+                        \Log::warning("AppointmentConfirmed mail failed: " . $e->getMessage());
+                    }
+                }
 
-        // Email al miembro de nueva cita
-        try {
-            \Mail::to($service->user->email)->locale($service->user->preferredLocale())->send(new \App\Mail\AppointmentNewRequestMail($appointment));
-        } catch (\Throwable $e) {
-            \Log::warning("AppointmentNewRequest mail failed: " . $e->getMessage());
-        }
+                // Email al miembro de nueva cita
+                try {
+                    \Mail::to($service->user->email)->locale($service->user->preferredLocale())->send(new \App\Mail\AppointmentNewRequestMail($appointment));
+                } catch (\Throwable $e) {
+                    \Log::warning("AppointmentNewRequest mail failed: " . $e->getMessage());
+                }
 
-        return redirect()->route('public.appointments.confirm', $appointment->localizador);
+                return redirect()->route('public.appointments.confirm', $appointment->localizador);
+            });
+        });
     }
 
     /**
@@ -624,20 +654,38 @@ class PublicAppointmentController extends Controller
         $newDate = Carbon::parse($data['appointment_date']);
         $newTime = $data['appointment_time'];
 
-        $isOwnSlot = $appointment->appointment_date->eq($newDate) && $appointment->appointment_time === $newTime . ':00';
-
-        if (!$isOwnSlot && !$this->availability->isSlotAvailable($service, $newDate, $newTime)) {
-            return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
-        }
-
-        $originalDate = $appointment->appointment_date;
-        $originalTime = $appointment->appointment_time;
-
         // Traducir caracteres árabes si existen
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
 
-        $appointment->visitor->update([
+        $lockKey = 'appointment_update_' . $appointment->id;
+
+        return Cache::lock($lockKey, 10)->block(5, function () use ($request, $appointment, $service, $data, $newDate, $newTime, $firstName, $lastName) {
+            return DB::transaction(function () use ($request, $appointment, $service, $data, $newDate, $newTime, $firstName, $lastName) {
+                // Volver a cargar el appointment con bloqueo para evitar actualizaciones concurrentes
+                $appointment = Appointment::where('id', $appointment->id)->lockForUpdate()->first();
+
+                $isOwnSlot = $appointment->appointment_date->eq($newDate) && $appointment->appointment_time === $newTime . ':00';
+
+                if (!$isOwnSlot && !$this->availability->isSlotAvailable($service, $newDate, $newTime)) {
+                    return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
+                }
+
+                // Restricción: No puede tener más de una cita el mismo día (excluyendo la propia que está modificando)
+                $hasOtherAppointmentThatDay = Appointment::where('visitor_id', $appointment->visitor_id)
+                    ->where('id', '!=', $appointment->id)
+                    ->where('appointment_date', $newDate->toDateString())
+                    ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
+                    ->exists();
+
+                if ($hasOtherAppointmentThatDay) {
+                    return back()->withErrors(['appointment_date' => 'Ya tienes otra cita programada para este día. No se permite más de una cita en la misma fecha.'])->withInput();
+                }
+
+                $originalDate = clone $appointment->appointment_date;
+                $originalTime = $appointment->appointment_time;
+
+                $appointment->visitor->update([
             'first_name'    => $firstName,
             'last_name'     => $lastName,
             'dni'           => $data['dni'] ?? null,
@@ -689,6 +737,8 @@ class PublicAppointmentController extends Controller
 
         return redirect()->route('public.appointments.confirm', $appointment->localizador)
             ->with('success', '¡Cita modificada correctamente!');
+            });
+        });
     }
 
     /**
