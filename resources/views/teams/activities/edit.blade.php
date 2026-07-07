@@ -24,7 +24,7 @@
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-6">
+    <div class="w-full sm:px-6 lg:px-8 py-6">
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all duration-300">
             <form id="edit-activity-form" method="POST" action="{{ route('teams.activities.update', [$team, $activity]) }}" class="space-y-6" enctype="multipart/form-data">
                 @csrf

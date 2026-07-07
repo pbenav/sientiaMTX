@@ -50,7 +50,7 @@
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="w-full sm:px-6 lg:px-8">
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
             <form id="create-task-form" method="POST" action="{{ route('teams.activities.store', $team) }}" class="space-y-6" enctype="multipart/form-data">
