@@ -27,6 +27,8 @@ return [
         '4'  => ['label' => 'Ni Urgente ni Importante'],
     ],
     'observations'              => 'Observaciones',
+    'priority'                  => 'Prioridad',
+    'urgency'                   => 'Urgencia',
     'priorities'                => [
         'low'     => 'Baja',
         'medium'  => 'Media',

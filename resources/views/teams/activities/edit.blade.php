@@ -42,6 +42,170 @@
                     @enderror
                 </div>
 
+                <!-- Asignaciones de Miembros y Grupos -->
+                @php
+                    $assignedUserIds = $activity->assignedTo->pluck('id')->toArray();
+                    $assignedGroupIds = $activity->assignedGroups->pluck('id')->toArray();
+                @endphp
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100 dark:border-gray-800" x-data="{
+                    selectAll(status) {
+                        document.querySelectorAll('.user-checkbox').forEach(cb => {
+                            cb.checked = status;
+                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                    },
+                    syncGroup(groupCb) {
+                        try {
+                            const memberIds = JSON.parse(groupCb.dataset.members);
+                            const isChecked = groupCb.checked;
+                            memberIds.forEach(id => {
+                                const userCb = document.getElementById('user_checkbox_' + id);
+                                if (userCb) {
+                                    userCb.checked = isChecked;
+                                    userCb.dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                            });
+                        } catch (err) {
+                            console.error('Group sync error:', err);
+                        }
+                    }
+                }">
+                    @if ($members->count() > 0)
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    Miembros Asignados
+                                </label>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="selectAll(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 transition-colors">
+                                        Todos
+                                    </button>
+                                    <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
+                                    <button type="button" @click="selectAll(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 transition-colors">
+                                        Ninguno
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto">
+                                @foreach ($members as $member)
+                                    <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-150 shadow-sm">
+                                        <input type="checkbox" name="assigned_to[]" value="{{ $member->id }}"
+                                            id="user_checkbox_{{ $member->id }}"
+                                            {{ in_array($member->id, old('assigned_to', $assignedUserIds)) ? 'checked' : '' }}
+                                            class="user-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 transition-colors leading-tight">{{ $member->name }}</span>
+                                            <span class="text-[10px] text-gray-500 truncate">{{ $member->email }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($groups->count() > 0)
+                        <div class="space-y-3">
+                            <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                Grupos Asignados
+                            </label>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto">
+                                @foreach ($groups as $group)
+                                    <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-150 shadow-sm">
+                                        <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
+                                            data-members="{{ json_encode($group->users->pluck('id')) }}"
+                                            @change="syncGroup($el)"
+                                            {{ in_array($group->id, old('assigned_groups', $assignedGroupIds)) ? 'checked' : '' }}
+                                            class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 transition-colors leading-tight">{{ $group->name }}</span>
+                                            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{{ $group->users->count() }} Miembros</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Contexto y Vinculaciones -->
+                <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 space-y-6 shadow-sm">
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Contexto y Vinculaciones</h3>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400">Asocia esta actividad a un expediente o dependencias.</p>
+                        </div>
+                    </div>
+
+                    <!-- Expediente Vinculado -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Expediente Vinculado</label>
+                        @if($activity->parent_id && !$activity->is_template)
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    @if($activity->expediente)
+                                        <span class="px-2 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-md text-[10px] font-black uppercase font-mono">
+                                            {{ $activity->expediente->code }}
+                                        </span>
+                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $activity->expediente->title }}</span>
+                                    @else
+                                        <span class="text-sm text-gray-400 italic">(Ningún expediente)</span>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                    Heredado del Maestro
+                                </div>
+                            </div>
+                            <!-- Hidden input to preserve existing value on submission -->
+                            <input type="hidden" name="expediente_id" value="{{ $activity->expediente_id }}">
+                        @else
+                            <select name="expediente_id" id="expediente_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer font-medium">
+                                <option value="">(Ningún expediente)</option>
+                                @foreach ($expedientes as $exp)
+                                    <option value="{{ $exp->id }}" data-code="{{ $exp->code }}" {{ old('expediente_id', $activity->expediente_id) == $exp->id ? 'selected' : '' }}>
+                                        {{ $exp->code }} — {{ $exp->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
+
+                    <!-- Secondary Grid: Actividad Padre y Dependencia de Servicio -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <!-- Actividad Padre -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Actividad Padre (Dependencia)</label>
+                            <select name="parent_id" id="parent_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium">
+                                <option value="">(Ninguna)</option>
+                                @foreach ($parentActivities as $parent)
+                                    <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
+                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}">
+                                        {{ $parent->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Dependencia de Servicio -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Dependencia de Servicio</label>
+                            <select name="service_id" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium font-sans">
+                                <option value="">Sin dependencia externa</option>
+                                @foreach ($services as $service)
+                                    <option value="{{ $service->id }}" {{ old('service_id', data_get($activity->metadata, 'service_id')) == $service->id ? 'selected' : '' }}>
+                                        {{ $service->icon }} {{ $service->name }} ({{ $service->getStatusLabel() }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Description -->
                 <div>
                     <x-markdown-editor 
@@ -70,24 +234,36 @@
                 </div>
                 @endif
 
-                <!-- Estado, Prioridad y Progreso -->
+                
+                <!-- Prioridad, Urgencia y Estado -->
                 <div class="grid grid-cols-1 md:grid-cols-{{ $activity->type === 'task' ? '3' : '2' }} gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
-                    
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.priority') ?? 'Prioridad' }}</label>
+                        <select name="priority" id="priority_select" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                            <option value="low" {{ old('priority', $activity->priority) == 'low' ? 'selected' : '' }}>{{ __('activities.priorities.low') ?? 'Baja' }}</option>
+                            <option value="medium" {{ old('priority', $activity->priority) == 'medium' ? 'selected' : '' }}>{{ __('activities.priorities.medium') ?? 'Media' }}</option>
+                            <option value="high" {{ old('priority', $activity->priority) == 'high' ? 'selected' : '' }}>{{ __('activities.priorities.high') ?? 'Alta' }}</option>
+                            <option value="critical" {{ old('priority', $activity->priority) == 'critical' ? 'selected' : '' }}>{{ __('activities.priorities.critical') ?? 'Crítica' }}</option>
+                        </select>
+                    </div>
+
 
                     @if ($activity->type === 'task')
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Urgencia</label>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.urgency') ?? 'Urgencia' }}</label>
                         <select name="urgency" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                            <option value="low" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'low' ? 'selected' : '' }}>Baja</option>
-                            <option value="medium" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'medium' ? 'selected' : '' }}>Media</option>
-                            <option value="high" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'high' ? 'selected' : '' }}>Alta</option>
-                            <option value="critical" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'critical' ? 'selected' : '' }}>Crítica</option>
+                            <option value="low" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'low' ? 'selected' : '' }}>{{ __('activities.urgencies.low') ?? 'Baja' }}</option>
+                            <option value="medium" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'medium' ? 'selected' : '' }}>{{ __('activities.urgencies.medium') ?? 'Media' }}</option>
+                            <option value="high" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'high' ? 'selected' : '' }}>{{ __('activities.urgencies.high') ?? 'Alta' }}</option>
+                            <option value="critical" {{ old('urgency', data_get($activity->metadata, 'urgency', 'medium')) == 'critical' ? 'selected' : '' }}>{{ __('activities.urgencies.critical') ?? 'Crítica' }}</option>
                         </select>
                     </div>
                     @endif
 
+
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Estado</label>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.status') ?? 'Estado' }}</label>
                         <select name="status" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
                             @foreach ($statuses as $val => $label)
                                 <option value="{{ $val }}" {{ old('status', $activity->status_value) === $val ? 'selected' : '' }}>
@@ -99,9 +275,9 @@
                             <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
 
-                @if($activity->type === 'task')
+                </div>
+@if($activity->type === 'task')
                     <!-- Eisenhower Matrix Preview -->
                     <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
                         <span class="font-bold uppercase tracking-wider" id="qp-label"></span>
@@ -123,7 +299,51 @@
                         @enderror
                     </div>
                 </div>
-                <!-- Campos Específicos según el Tipo -->
+                
+                <!-- Nivel de Privacidad y Visibilidad -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.visibility') ?? 'Nivel de Privacidad' }}</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative flex cursor-pointer">
+                                <input type="radio" name="visibility" value="public" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'public' ? 'checked' : '' }}>
+                                <div class="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                        👥
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('activities.public') ?? 'Pública' }}</span>
+                                        <span class="text-[10px] text-gray-500">Todo el equipo</span>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="relative flex cursor-pointer">
+                                <input type="radio" name="visibility" value="private" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'private' ? 'checked' : '' }}>
+                                <div class="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                        🔒
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('activities.private') ?? 'Privada' }}</span>
+                                        <span class="text-[10px] text-gray-500">Solo yo</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col justify-center">
+                        <label class="relative flex items-center gap-3 cursor-pointer group w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-4 transition-all">
+                            <input type="hidden" name="metadata[is_ephemeral]" value="0">
+                            <input type="checkbox" name="metadata[is_ephemeral]" value="1" {{ old('metadata.is_ephemeral', data_get($activity->metadata, 'is_ephemeral', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Actividad Efímera (Ocultar)</span>
+                                <span class="text-[11px] text-gray-500">No aparecerá en el Kanban ni en Gantt.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+<!-- Campos Específicos según el Tipo -->
                 <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 space-y-6">
                     <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
                         <div class="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
@@ -509,155 +729,23 @@
                     @endif
                 </div>
 
-                <!-- Contexto y Vinculaciones -->
-                <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 space-y-6 shadow-sm">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-500/10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Contexto y Vinculaciones</h3>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400">Asocia esta actividad a un expediente o dependencias.</p>
-                        </div>
-                    </div>
-
-                    <!-- Expediente Vinculado -->
+                
+                <!-- Fechas y Timeline Lock -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Expediente Vinculado</label>
-                        @if($activity->parent_id && !$activity->is_template)
-                            <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center gap-3">
-                                    @if($activity->expediente)
-                                        <span class="px-2 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-md text-[10px] font-black uppercase font-mono">
-                                            {{ $activity->expediente->code }}
-                                        </span>
-                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $activity->expediente->title }}</span>
-                                    @else
-                                        <span class="text-sm text-gray-400 italic">(Ningún expediente)</span>
-                                    @endif
-                                </div>
-                                <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                    Heredado del Maestro
-                                </div>
-                            </div>
-                            <!-- Hidden input to preserve existing value on submission -->
-                            <input type="hidden" name="expediente_id" value="{{ $activity->expediente_id }}">
-                        @else
-                            <select name="expediente_id" id="expediente_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer font-medium">
-                                <option value="">(Ningún expediente)</option>
-                                @foreach ($expedientes as $exp)
-                                    <option value="{{ $exp->id }}" data-code="{{ $exp->code }}" {{ old('expediente_id', $activity->expediente_id) == $exp->id ? 'selected' : '' }}>
-                                        {{ $exp->code }} — {{ $exp->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        @endif
-                    </div>
-
-                    <!-- Secondary Grid: Actividad Padre y Dependencia de Servicio -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                        <!-- Actividad Padre -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Actividad Padre (Dependencia)</label>
-                            <select name="parent_id" id="parent_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium">
-                                <option value="">(Ninguna)</option>
-                                @foreach ($parentActivities as $parent)
-                                    <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
-                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}">
-                                        {{ $parent->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Dependencia de Servicio -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Dependencia de Servicio</label>
-                            <select name="service_id" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium font-sans">
-                                <option value="">Sin dependencia externa</option>
-                                @foreach ($services as $service)
-                                    <option value="{{ $service->id }}" {{ old('service_id', data_get($activity->metadata, 'service_id')) == $service->id ? 'selected' : '' }}>
-                                        {{ $service->icon }} {{ $service->name }} ({{ $service->getStatusLabel() }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Visibilidad en vistas (Efímera) -->
-                <div class="bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-4 transition-all">
-                    <label class="relative flex items-center gap-3 cursor-pointer group w-full">
-                        <input type="hidden" name="metadata[is_ephemeral]" value="0">
-                        <input type="checkbox" name="metadata[is_ephemeral]" value="1" {{ old('metadata.is_ephemeral', data_get($activity->metadata, 'is_ephemeral', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Actividad Efímera (Ocultar visualmente)</span>
-                            <span class="text-[11px] text-gray-500">No aparecerá en el Kanban, Diagrama de Gantt ni en la Matriz de Eisenhower. Útil para tareas de sistema o reuniones rutinarias que no requieren seguimiento visual.</span>
-                        </div>
-                    </label>
-                </div>
-
-                <!-- Prioridad, Privacidad y Fechas -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Prioridad</label>
-                        <select name="priority" id="priority_select" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                            <option value="low" {{ old('priority', $activity->priority) == 'low' ? 'selected' : '' }}>Baja</option>
-                            <option value="medium" {{ old('priority', $activity->priority) == 'medium' ? 'selected' : '' }}>Media</option>
-                            <option value="high" {{ old('priority', $activity->priority) == 'high' ? 'selected' : '' }}>Alta</option>
-                            <option value="critical" {{ old('priority', $activity->priority) == 'critical' ? 'selected' : '' }}>Crítica</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Nivel de Privacidad</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <label class="relative flex cursor-pointer">
-                                <input type="radio" name="visibility" value="public" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'public' ? 'checked' : '' }}>
-                                <div class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
-                                        👥
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">Pública</span>
-                                        <span class="text-[10px] text-gray-500">Todo el equipo</span>
-                                    </div>
-                                </div>
-                            </label>
-                            <label class="relative flex cursor-pointer">
-                                <input type="radio" name="visibility" value="private" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'private' ? 'checked' : '' }}>
-                                <div class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
-                                        🔒
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">Privada</span>
-                                        <span class="text-[10px] text-gray-500">Solo yo</span>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Fecha Programada</label>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.scheduled_date') ?? 'Fecha Programada' }}</label>
                         <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}"
-                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
+                            class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.due_date') ?? 'Fecha de Vencimiento' }}</label>
                         <input type="datetime-local" name="due_date" value="{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}"
-                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
+                            class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                     </div>
 
                     <!-- Timeline Lock -->
-                    <div class="md:col-span-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <div class="md:col-span-2 bg-white dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
                                 🔒
@@ -673,93 +761,7 @@
                         </label>
                     </div>
                 </div>
-
-                <!-- Asignaciones de Miembros y Grupos -->
-                @php
-                    $assignedUserIds = $activity->assignedTo->pluck('id')->toArray();
-                    $assignedGroupIds = $activity->assignedGroups->pluck('id')->toArray();
-                @endphp
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100 dark:border-gray-800" x-data="{
-                    selectAll(status) {
-                        document.querySelectorAll('.user-checkbox').forEach(cb => {
-                            cb.checked = status;
-                            cb.dispatchEvent(new Event('change', { bubbles: true }));
-                        });
-                    },
-                    syncGroup(groupCb) {
-                        try {
-                            const memberIds = JSON.parse(groupCb.dataset.members);
-                            const isChecked = groupCb.checked;
-                            memberIds.forEach(id => {
-                                const userCb = document.getElementById('user_checkbox_' + id);
-                                if (userCb) {
-                                    userCb.checked = isChecked;
-                                    userCb.dispatchEvent(new Event('change', { bubbles: true }));
-                                }
-                            });
-                        } catch (err) {
-                            console.error('Group sync error:', err);
-                        }
-                    }
-                }">
-                    @if ($members->count() > 0)
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    Miembros Asignados
-                                </label>
-                                <div class="flex gap-2">
-                                    <button type="button" @click="selectAll(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 transition-colors">
-                                        Todos
-                                    </button>
-                                    <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
-                                    <button type="button" @click="selectAll(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 transition-colors">
-                                        Ninguno
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto">
-                                @foreach ($members as $member)
-                                    <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-150 shadow-sm">
-                                        <input type="checkbox" name="assigned_to[]" value="{{ $member->id }}"
-                                            id="user_checkbox_{{ $member->id }}"
-                                            {{ in_array($member->id, old('assigned_to', $assignedUserIds)) ? 'checked' : '' }}
-                                            class="user-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 transition-colors leading-tight">{{ $member->name }}</span>
-                                            <span class="text-[10px] text-gray-500 truncate">{{ $member->email }}</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    @if ($groups->count() > 0)
-                        <div class="space-y-3">
-                            <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                Grupos Asignados
-                            </label>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto">
-                                @foreach ($groups as $group)
-                                    <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-150 shadow-sm">
-                                        <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
-                                            data-members="{{ json_encode($group->users->pluck('id')) }}"
-                                            @change="syncGroup($el)"
-                                            {{ in_array($group->id, old('assigned_groups', $assignedGroupIds)) ? 'checked' : '' }}
-                                            class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 transition-colors leading-tight">{{ $group->name }}</span>
-                                            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{{ $group->users->count() }} Miembros</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Archivos Adjuntos existentes e Integrated File Section -->
+<!-- Archivos Adjuntos existentes e Integrated File Section -->
                 <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
