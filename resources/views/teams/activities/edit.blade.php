@@ -31,8 +31,25 @@
                 @method('PATCH')
                 <input type="hidden" name="type" value="{{ $activity->type }}">
 
-                <!-- Title -->
-                <div>
+                
+    <!-- BLOCK: Título de la Actividad -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Título de la Actividad
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Identificación principal</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div>
                     <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Título de la Actividad</label>
                     <input type="text" name="title" value="{{ old('title', $activity->title) }}" required
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-2xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none transition-all"
@@ -41,9 +58,92 @@
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
+        </div>
+    </div>
 
-                <!-- Asignaciones de Miembros y Grupos -->
-                @php
+    <!-- BLOCK: Descripción -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Descripción
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Detalles y contexto de la actividad</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div>
+                    <x-markdown-editor 
+                        name="description" 
+                        id="description"
+                        :value="old('description', $activity->description)"
+                        :label="__('Descripción o Contenido')"
+                        rows="4"
+                        :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
+                    />
+                </div>
+
+                @if($activity->type === "task")
+        </div>
+    </div>
+
+    <!-- BLOCK: Observaciones -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Observaciones
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Notas internas o apuntes adicionales</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div>
+                    <x-markdown-editor 
+                        name="metadata[observations]" 
+                        id="observations"
+                        :value="old('metadata.observations', data_get($activity->metadata, 'observations'))"
+                        :label="__('tasks.observations')"
+                        rows="4"
+                        :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
+                    />
+                </div>
+                @endif
+        </div>
+    </div>
+
+    <!-- BLOCK: Miembros Asignados -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Miembros Asignados
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Responsables y colaboradores</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            @php
                     $assignedUserIds = $activity->assignedTo->pluck('id')->toArray();
                     $assignedGroupIds = $activity->assignedGroups->pluck('id')->toArray();
                 @endphp
@@ -126,117 +226,89 @@
                         </div>
                     @endif
                 </div>
+        </div>
+    </div>
 
-                <!-- Contexto y Vinculaciones -->
-                <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 space-y-6 shadow-sm">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-500/10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Contexto y Vinculaciones</h3>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400">Asocia esta actividad a un expediente o dependencias.</p>
-                        </div>
-                    </div>
-
-                    <!-- Expediente Vinculado -->
+    <!-- BLOCK: Nivel de Visibilidad -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Nivel de Visibilidad
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Privacidad y acceso</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Expediente Vinculado</label>
-                        @if($activity->parent_id && !$activity->is_template)
-                            <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center gap-3">
-                                    @if($activity->expediente)
-                                        <span class="px-2 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-md text-[10px] font-black uppercase font-mono">
-                                            {{ $activity->expediente->code }}
-                                        </span>
-                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $activity->expediente->title }}</span>
-                                    @else
-                                        <span class="text-sm text-gray-400 italic">(Ningún expediente)</span>
-                                    @endif
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.visibility') ?? 'Nivel de Privacidad' }}</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative flex cursor-pointer">
+                                <input type="radio" name="visibility" value="public" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'public' ? 'checked' : '' }}>
+                                <div class="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                        👥
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('activities.public') ?? 'Pública' }}</span>
+                                        <span class="text-[10px] text-gray-500">Todo el equipo</span>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                    Heredado del Maestro
+                            </label>
+                            <label class="relative flex cursor-pointer">
+                                <input type="radio" name="visibility" value="private" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'private' ? 'checked' : '' }}>
+                                <div class="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                        🔒
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('activities.private') ?? 'Privada' }}</span>
+                                        <span class="text-[10px] text-gray-500">Solo yo</span>
+                                    </div>
                                 </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col justify-center">
+                        <label class="relative flex items-center gap-3 cursor-pointer group w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-4 transition-all">
+                            <input type="hidden" name="metadata[is_ephemeral]" value="0">
+                            <input type="checkbox" name="metadata[is_ephemeral]" value="1" {{ old('metadata.is_ephemeral', data_get($activity->metadata, 'is_ephemeral', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Actividad Efímera (Ocultar)</span>
+                                <span class="text-[11px] text-gray-500">No aparecerá en el Kanban ni en Gantt.</span>
                             </div>
-                            <!-- Hidden input to preserve existing value on submission -->
-                            <input type="hidden" name="expediente_id" value="{{ $activity->expediente_id }}">
-                        @else
-                            <select name="expediente_id" id="expediente_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer font-medium">
-                                <option value="">(Ningún expediente)</option>
-                                @foreach ($expedientes as $exp)
-                                    <option value="{{ $exp->id }}" data-code="{{ $exp->code }}" {{ old('expediente_id', $activity->expediente_id) == $exp->id ? 'selected' : '' }}>
-                                        {{ $exp->code }} — {{ $exp->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        @endif
-                    </div>
-
-                    <!-- Secondary Grid: Actividad Padre y Dependencia de Servicio -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                        <!-- Actividad Padre -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Actividad Padre (Dependencia)</label>
-                            <select name="parent_id" id="parent_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium">
-                                <option value="">(Ninguna)</option>
-                                @foreach ($parentActivities as $parent)
-                                    <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
-                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}">
-                                        {{ $parent->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Dependencia de Servicio -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Dependencia de Servicio</label>
-                            <select name="service_id" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium font-sans">
-                                <option value="">Sin dependencia externa</option>
-                                @foreach ($services as $service)
-                                    <option value="{{ $service->id }}" {{ old('service_id', data_get($activity->metadata, 'service_id')) == $service->id ? 'selected' : '' }}>
-                                        {{ $service->icon }} {{ $service->name }} ({{ $service->getStatusLabel() }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        </label>
                     </div>
                 </div>
+        </div>
+    </div>
 
-                <!-- Description -->
-                <div>
-                    <x-markdown-editor 
-                        name="description" 
-                        id="description"
-                        :value="old('description', $activity->description)"
-                        :label="__('Descripción o Contenido')"
-                        rows="4"
-                        :upload-url="route('teams.forum.upload_image', $team)"
-                        :mentions-url="route('teams.mentions', $team)"
-                    />
-                </div>
-
-                @if($activity->type === "task")
-                <!-- Observations (Markdown) -->
-                <div>
-                    <x-markdown-editor 
-                        name="metadata[observations]" 
-                        id="observations"
-                        :value="old('metadata.observations', data_get($activity->metadata, 'observations'))"
-                        :label="__('tasks.observations')"
-                        rows="4"
-                        :upload-url="route('teams.forum.upload_image', $team)"
-                        :mentions-url="route('teams.mentions', $team)"
-                    />
-                </div>
-                @endif
-
-                
-                <!-- Prioridad, Urgencia y Estado -->
-                <div class="grid grid-cols-1 md:grid-cols-{{ $activity->type === 'task' ? '3' : '2' }} gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+    <!-- BLOCK: Prioridad, Urgencia y Estado -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Prioridad, Urgencia y Estado
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Matriz Eisenhower y situación actual</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-{{ $activity->type === 'task' ? '3' : '2' }} gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.priority') ?? 'Prioridad' }}</label>
@@ -284,9 +356,8 @@
                         <span class="text-gray-500 dark:text-gray-400 ml-1 italic font-medium" id="qp-desc"></span>
                     </div>
                 @endif
-                
-                <!-- Progreso (Global) -->
-                <div class="bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+<div class='my-8 border-t border-gray-100 dark:border-gray-800'></div>
+<div class="bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
                     <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Porcentaje de Progreso</label>
                     <div x-data="{ progress: {{ old('progress_percentage', $activity->progress_percentage ?? 0) }} }" class="space-y-2">
                         <div class="flex items-center justify-between">
@@ -299,85 +370,77 @@
                         @enderror
                     </div>
                 </div>
-                
-                <!-- Nivel de Privacidad y Visibilidad -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
+        </div>
+    </div>
+
+    <!-- BLOCK: Fechas y Bloqueo -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Fechas y Bloqueo
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Planificación temporal e inamovilidad</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.visibility') ?? 'Nivel de Privacidad' }}</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <label class="relative flex cursor-pointer">
-                                <input type="radio" name="visibility" value="public" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'public' ? 'checked' : '' }}>
-                                <div class="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
-                                        👥
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('activities.public') ?? 'Pública' }}</span>
-                                        <span class="text-[10px] text-gray-500">Todo el equipo</span>
-                                    </div>
-                                </div>
-                            </label>
-                            <label class="relative flex cursor-pointer">
-                                <input type="radio" name="visibility" value="private" class="peer sr-only" {{ old('visibility', $activity->visibility) === 'private' ? 'checked' : '' }}>
-                                <div class="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
-                                        🔒
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('activities.private') ?? 'Privada' }}</span>
-                                        <span class="text-[10px] text-gray-500">Solo yo</span>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.scheduled_date') ?? 'Fecha Programada' }}</label>
+                        <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}"
+                            class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                     </div>
-                    
-                    <div class="flex flex-col justify-center">
-                        <label class="relative flex items-center gap-3 cursor-pointer group w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-4 transition-all">
-                            <input type="hidden" name="metadata[is_ephemeral]" value="0">
-                            <input type="checkbox" name="metadata[is_ephemeral]" value="1" {{ old('metadata.is_ephemeral', data_get($activity->metadata, 'is_ephemeral', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Actividad Efímera (Ocultar)</span>
-                                <span class="text-[11px] text-gray-500">No aparecerá en el Kanban ni en Gantt.</span>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.due_date') ?? 'Fecha de Vencimiento' }}</label>
+                        <input type="datetime-local" name="due_date" value="{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}"
+                            class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
+                    </div>
+
+                    <!-- Timeline Lock -->
+                    <div class="md:col-span-2 bg-white dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+                                🔒
                             </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">Bloquear programación (Inamovible)</span>
+                                <span class="text-[11px] text-gray-500 dark:text-gray-400">Evita que la actividad sea desplazada o redimensionada en el Gantt de forma accidental.</span>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_timeline_locked" value="1" {{ old('is_timeline_locked', $activity->is_timeline_locked ?? false) ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-500/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
                         </label>
                     </div>
                 </div>
-<!-- Campos Específicos según el Tipo -->
-                <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 space-y-6">
-                    <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
-                        <div class="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
-                            ✨
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Información Específica del Tipo</h3>
-                    </div>
+        </div>
+    </div>
 
-                    @if ($activity->type === 'task')
-                        <!-- TAREA ESPECÍFICO -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Carga Cognitiva</label>
-                                <select name="cognitive_load" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    @for ($i = 1; $i <= 10; $i++)
-                                        <option value="{{ $i }}" {{ old('cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) == $i ? 'selected' : '' }}>{{ $i }} ({{ $i == 1 ? 'Mínima' : ($i == 5 ? 'Media' : ($i == 10 ? 'Extrema' : '')) }})</option>
-                                    @endfor
-                                </select>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="is_out_of_skill_tree" value="1" {{ old('is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }}
-                                        class="accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Fuera de mi Skill Tree</span>
-                                        <span class="text-xs text-gray-500">¿Esta actividad requiere habilidades que no forman parte de tu formación principal?</span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Autoprogramable (Recurrencia) -->
-                        @php
+    <!-- BLOCK: Autoprogramación -->
+    <div id="recurrence-block" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Autoprogramación
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Recurrencia y automatización</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            @php
                             $hasAutoprogram = data_get($activity->metadata, 'autoprogram_settings') !== null;
                             $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
                         @endphp
@@ -560,55 +623,152 @@
                                 </div>
                             </div>
                         </div>
+        </div>
+    </div>
 
-                        <!-- Gamification Features (Resiliencia Colectiva) -->
-                        <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6 mt-6">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shadow-sm border border-amber-200/20">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
+    <!-- BLOCK: Contexto y Vinculaciones -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Contexto y Vinculaciones
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Relaciones con expedientes y servicios</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <div>
+                            
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400">Asocia esta actividad a un expediente o dependencias.</p>
+                        </div>
+                    </div>
+
+                    <!-- Expediente Vinculado -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Expediente Vinculado</label>
+                        @if($activity->parent_id && !$activity->is_template)
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    @if($activity->expediente)
+                                        <span class="px-2 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-md text-[10px] font-black uppercase font-mono">
+                                            {{ $activity->expediente->code }}
+                                        </span>
+                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $activity->expediente->title }}</span>
+                                    @else
+                                        <span class="text-sm text-gray-400 italic">(Ningún expediente)</span>
+                                    @endif
                                 </div>
-                                <h4 class="text-sm font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">Impacto y Bienestar</h4>
+                                <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                    Heredado del Maestro
+                                </div>
+                            </div>
+                            <!-- Hidden input to preserve existing value on submission -->
+                            <input type="hidden" name="expediente_id" value="{{ $activity->expediente_id }}">
+                        @else
+                            <select name="expediente_id" id="expediente_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer font-medium">
+                                <option value="">(Ningún expediente)</option>
+                                @foreach ($expedientes as $exp)
+                                    <option value="{{ $exp->id }}" data-code="{{ $exp->code }}" {{ old('expediente_id', $activity->expediente_id) == $exp->id ? 'selected' : '' }}>
+                                        {{ $exp->code }} — {{ $exp->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
+
+                    <!-- Secondary Grid: Actividad Padre y Dependencia de Servicio -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <!-- Actividad Padre -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Actividad Padre (Dependencia)</label>
+                            <select name="parent_id" id="parent_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium">
+                                <option value="">(Ninguna)</option>
+                                @foreach ($parentActivities as $parent)
+                                    <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
+                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}">
+                                        {{ $parent->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Dependencia de Servicio -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Dependencia de Servicio</label>
+                            <select name="service_id" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium font-sans">
+                                <option value="">Sin dependencia externa</option>
+                                @foreach ($services as $service)
+                                    <option value="{{ $service->id }}" {{ old('service_id', data_get($activity->metadata, 'service_id')) == $service->id ? 'selected' : '' }}>
+                                        {{ $service->icon }} {{ $service->name }} ({{ $service->getStatusLabel() }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+        </div>
+    </div>
+
+    <!-- BLOCK: Información Específica -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Información Específica
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Campos dinámicos según el tipo de actividad</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
+                        <div class="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
+                            ✨
+                        </div>
+                        
+                    </div>
+
+                    @if ($activity->type === 'task')
+                        <!-- TAREA ESPECÍFICO -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Carga Cognitiva</label>
+                                <select name="cognitive_load" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                                    @for ($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}" {{ old('cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) == $i ? 'selected' : '' }}>{{ $i }} ({{ $i == 1 ? 'Mínima' : ($i == 5 ? 'Media' : ($i == 10 ? 'Extrema' : '')) }})</option>
+                                    @endfor
+                                </select>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <!-- Skill Selection -->
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                        Árbol de Capacidades
-                                    </label>
-                                    <select name="skill_id" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:border-amber-500 outline-none text-gray-900 dark:text-white cursor-pointer">
-                                        <option value="">Seleccionar habilidad principal...</option>
-                                        @foreach($skills as $skill)
-                                            <option value="{{ $skill->id }}" {{ old('skill_id', data_get($activity->metadata, 'skill_id')) == $skill->id ? 'selected' : '' }}>
-                                                {{ $skill->name }} ({{ $skill->category }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- Impact Human Metric -->
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                        Impacto Social / Humano (Puntos)
-                                    </label>
-                                    <input type="number" name="impact_human_metric" value="{{ old('impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
-                                </div>
-
-                                <!-- Backstage Checkbox -->
-                                <div class="flex items-center">
-                                    <label class="relative flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-emerald-300 transition-all group w-full">
-                                        <input type="checkbox" name="is_backstage" value="1" {{ old('is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-4 h-4">
-                                        <div class="flex flex-col">
-                                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Backstage / Preparación</span>
-                                            <span class="text-[9px] text-gray-400 uppercase font-black">Visibiliza el esfuerzo invisible</span>
-                                        </div>
-                                    </label>
-                                </div>
+                            <div class="md:col-span-2">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="is_out_of_skill_tree" value="1" {{ old('is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }}
+                                        class="accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">Fuera de mi Skill Tree</span>
+                                        <span class="text-xs text-gray-500">¿Esta actividad requiere habilidades que no forman parte de tu formación principal?</span>
+                                    </div>
+                                </label>
                             </div>
                         </div>
-                    @elseif ($activity->type === 'document')
+
                         <!-- DOCUMENTO ESPECÍFICO -->
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -727,42 +887,127 @@
                             </div>
                         </div>
                     @endif
-                </div>
+        </div>
+    </div>
 
-                
-                <!-- Fechas y Timeline Lock -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.scheduled_date') ?? 'Fecha Programada' }}</label>
-                        <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}"
-                            class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
-                    </div>
+    <!-- BLOCK: Impacto y Bienestar -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Impacto y Bienestar
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas y resiliencia</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div>
+        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+            Impacto Social / Humano (Puntos)
+        </label>
+        <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all shadow-inner">
+    </div>
+    <div class="flex items-center h-full pt-1">
+        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group w-full shadow-inner">
+            <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
+                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
+            </div>
+        </label>
+    </div>
+</div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.due_date') ?? 'Fecha de Vencimiento' }}</label>
-                        <input type="datetime-local" name="due_date" value="{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}"
-                            class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
-                    </div>
+        </div>
+    </div>
 
-                    <!-- Timeline Lock -->
-                    <div class="md:col-span-2 bg-white dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
-                                🔒
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">Bloquear programación (Inamovible)</span>
-                                <span class="text-[11px] text-gray-500 dark:text-gray-400">Evita que la actividad sea desplazada o redimensionada en el Gantt de forma accidental.</span>
-                            </div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="is_timeline_locked" value="1" {{ old('is_timeline_locked', $activity->is_timeline_locked ?? false) ? 'checked' : '' }} class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-500/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
-                        </label>
-                    </div>
-                </div>
-<!-- Archivos Adjuntos existentes e Integrated File Section -->
-                <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
+    <!-- BLOCK: Capacidades y Carga Cognitiva -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Capacidades y Carga Cognitiva
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Esfuerzo mental y skills requeridas</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
+        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+            Árbol de Capacidades (Selección Múltiple)
+        </label>
+        <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
+            @foreach($skills as $skill)
+                <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
+                    {{ $skill->name }} ({{ $skill->category }})
+                </option>
+            @endforeach
+        </select>
+        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Mantén presionado Ctrl (o Cmd) para seleccionar varias habilidades
+        </p>
+    </div>
+
+    <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
+        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
+            <span>Carga Cognitiva (Drenaje de Energía)</span>
+            <span :class="{
+                'text-emerald-500': load <= 3,
+                'text-blue-500': load > 3 && load <= 6,
+                'text-amber-500': load > 6 && load <= 8,
+                'text-red-500': load > 8
+            }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
+        </label>
+        <div class="relative pt-2">
+            <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
+                class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 shadow-inner">
+            <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
+                <span>Baja (1)</span>
+                <span>Media (5)</span>
+                <span>Extrema (10)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+        </div>
+    </div>
+
+    <!-- BLOCK: Archivos Adjuntos -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Archivos Adjuntos
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Documentos y evidencias</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
@@ -831,8 +1076,9 @@
                         <!-- Lista temporal de nuevos archivos seleccionados -->
                     </div>
                 </div>
-
-                <!-- Botones de Acción -->
+        </div>
+    </div>
+<!-- Botones de Acción -->
                 <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
                         class="text-sm text-gray-500 hover:text-gray-900 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
