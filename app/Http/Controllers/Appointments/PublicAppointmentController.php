@@ -241,6 +241,8 @@ class PublicAppointmentController extends Controller
         }
 
         // Crear una clave de bloqueo para prevenir envíos dobles o concurrentes para la misma persona
+        $lockKey = 'appointment_store_' . md5(($data['email'] ?? '') . ($data['dni'] ?? '') . $firstName . $lastName . $request->ip());
+        
         // Evitamos usar el driver 'file' para los bloqueos, ya que puede dar fallos de 'fopen' si los directorios temporales no existen
         $cacheStore = config('cache.default') === 'file' ? 'database' : null;
 

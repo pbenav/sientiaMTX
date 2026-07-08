@@ -609,6 +609,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
         Route::delete('/{block}', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'destroy'])->name('destroy');
     });
 
+    // Visitantes (Personas)
+    Route::prefix('personas')->name('visitors.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Appointments\AppointmentVisitorController::class, 'index'])->name('index');
+        Route::get('/{visitor}/editar', [\App\Http\Controllers\Appointments\AppointmentVisitorController::class, 'edit'])->name('edit');
+        Route::patch('/{visitor}', [\App\Http\Controllers\Appointments\AppointmentVisitorController::class, 'update'])->name('update');
+        Route::delete('/{visitor}', [\App\Http\Controllers\Appointments\AppointmentVisitorController::class, 'destroy'])->name('destroy');
+    });
+
     // Configuración del portal
     Route::get('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'edit'])->name('settings');
     Route::patch('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'update'])->name('settings.update');
