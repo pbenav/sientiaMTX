@@ -222,6 +222,24 @@ class PublicAppointmentController extends Controller
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
 
+        if (!empty($data['email'])) {
+            $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])->first();
+            if ($existingEmailVisitor) {
+                $isDifferentPerson = false;
+                
+                if (!empty($data['dni']) && !empty($existingEmailVisitor->dni) && mb_strtoupper($data['dni']) !== mb_strtoupper($existingEmailVisitor->dni)) {
+                    $isDifferentPerson = true;
+                } elseif (mb_strtolower(trim($firstName)) !== mb_strtolower(trim($existingEmailVisitor->first_name)) || 
+                          mb_strtolower(trim($lastName)) !== mb_strtolower(trim($existingEmailVisitor->last_name))) {
+                    $isDifferentPerson = true;
+                }
+                
+                if ($isDifferentPerson) {
+                    return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
+                }
+            }
+        }
+
         // Crear una clave de bloqueo para prevenir envíos dobles o concurrentes para la misma persona
         // Evitamos usar el driver 'file' para los bloqueos, ya que puede dar fallos de 'fopen' si los directorios temporales no existen
         $cacheStore = config('cache.default') === 'file' ? 'database' : null;
@@ -235,12 +253,10 @@ class PublicAppointmentController extends Controller
 
                 // Buscar si existe un visitante previo con coincidencia estricta para evitar cruce de datos
                 $visitorQuery = AppointmentVisitor::query();
-                if (!empty($data['dni'])) {
+                if (!empty($data['email'])) {
+                    $visitorQuery->where('email', $data['email']);
+                } elseif (!empty($data['dni'])) {
                     $visitorQuery->where('dni', $data['dni']);
-                } elseif (!empty($data['email'])) {
-                    $visitorQuery->where('email', $data['email'])
-                                 ->where('first_name', $firstName)
-                                 ->where('last_name', $lastName);
                 } else {
                     $visitorQuery->where('first_name', $firstName)
                                  ->where('last_name', $lastName)
@@ -658,6 +674,27 @@ class PublicAppointmentController extends Controller
         // Traducir caracteres árabes si existen
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
+
+        if (!empty($data['email'])) {
+            $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])
+                ->where('id', '!=', $appointment->visitor_id)
+                ->first();
+                
+            if ($existingEmailVisitor) {
+                $isDifferentPerson = false;
+                
+                if (!empty($data['dni']) && !empty($existingEmailVisitor->dni) && mb_strtoupper($data['dni']) !== mb_strtoupper($existingEmailVisitor->dni)) {
+                    $isDifferentPerson = true;
+                } elseif (mb_strtolower(trim($firstName)) !== mb_strtolower(trim($existingEmailVisitor->first_name)) || 
+                          mb_strtolower(trim($lastName)) !== mb_strtolower(trim($existingEmailVisitor->last_name))) {
+                    $isDifferentPerson = true;
+                }
+                
+                if ($isDifferentPerson) {
+                    return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
+                }
+            }
+        }
 
         $lockKey = 'appointment_update_' . $appointment->id;
 
