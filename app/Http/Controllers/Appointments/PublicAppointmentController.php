@@ -223,9 +223,10 @@ class PublicAppointmentController extends Controller
         $lastName = $this->transliterateArabic($data['last_name']);
 
         // Crear una clave de bloqueo para prevenir envíos dobles o concurrentes para la misma persona
-        $lockKey = 'appointment_store_' . md5(($data['dni'] ?? '') . ($data['email'] ?? '') . $firstName . $lastName);
+        // Evitamos usar el driver 'file' para los bloqueos, ya que puede dar fallos de 'fopen' si los directorios temporales no existen
+        $cacheStore = config('cache.default') === 'file' ? 'database' : null;
 
-        return Cache::lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
+        return Cache::store($cacheStore)->lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
             return DB::transaction(function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
                 // Validar disponibilidad en tiempo real dentro de la transacción
                 if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'])) {
@@ -660,7 +661,10 @@ class PublicAppointmentController extends Controller
 
         $lockKey = 'appointment_update_' . $appointment->id;
 
-        return Cache::lock($lockKey, 10)->block(5, function () use ($request, $appointment, $service, $data, $newDate, $newTime, $firstName, $lastName) {
+        // Evitamos usar el driver 'file' para los bloqueos
+        $cacheStore = config('cache.default') === 'file' ? 'database' : null;
+
+        return Cache::store($cacheStore)->lock($lockKey, 10)->block(5, function () use ($request, $appointment, $service, $data, $newDate, $newTime, $firstName, $lastName) {
             return DB::transaction(function () use ($request, $appointment, $service, $data, $newDate, $newTime, $firstName, $lastName) {
                 // Volver a cargar el appointment con bloqueo para evitar actualizaciones concurrentes
                 $appointment = Appointment::where('id', $appointment->id)->lockForUpdate()->first();
