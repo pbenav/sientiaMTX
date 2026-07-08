@@ -36,8 +36,9 @@
     .dark select:-webkit-autofill,
     .dark select:-webkit-autofill:hover,
     .dark select:-webkit-autofill:focus {
-        -webkit-text-fill-color: white !important;
+        -webkit-text-fill-color: #e5e7eb !important;
         -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
+        caret-color: #e5e7eb !important;
     }
 }
 @keyframes pulse-subtle {

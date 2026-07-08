@@ -44,3 +44,29 @@ Schedule::command('sentinel:check')->everyFifteenMinutes();
 // Purga automática de mensajes de chat antiguos según preferencias de equipo — Cada día a las 04:00
 Schedule::command('chat:purge-old-messages --force')->dailyAt('04:00');
 
+// --- Métricas y Analytics Scheduled Jobs ---
+
+// Generar snapshots de métricas cada 15 minutos
+Schedule::command('metrics:snapshots')->everyFifteenMinutes();
+
+// Generar reportes diarios a las 6:00 AM
+Schedule::command('metrics:reports --daily')->dailyAt('06:00');
+
+// Generar reporte semanal de productividad los viernes a las 3:00 PM
+Schedule::command('metrics:reports --weekly --productivity')->fridays()->at('15:00');
+
+// Generar reporte semanal de bienestar los lunes a las 9:00 AM
+Schedule::command('metrics:reports --weekly --wellness')->mondays()->at('09:00');
+
+// Generar reporte ejecutivo mensual el 1ero del mes a las 8:00 AM
+Schedule::command('metrics:reports --monthly --executive')->monthly()->days(1)->at('08:00');
+
+// Verificar alertas de métricas cada 5 minutos
+Schedule::command('metrics:check-alerts')->everyFiveMinutes();
+
+// Agregaciones semanales los domingos a las 11:00 PM
+Schedule::command('metrics:snapshots --weekly')->dailyAt('23:00');
+
+// Agregaciones mensuales el último día del mes a las 11:59 PM
+Schedule::command('metrics:snapshots --monthly')->when(fn () => now()->isLastOfMonth());
+

@@ -627,3 +627,40 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
     Route::delete('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'destroy'])->name('destroy');
     Route::delete('/{appointment}/force', [\App\Http\Controllers\Appointments\AppointmentController::class, 'forceDestroy'])->name('forceDestroy');
 });
+
+// --- Métricas y Analytics Dashboard ---
+Route::middleware(['auth'])->prefix('metrics')->name('metrics.')->group(function () {
+    // Dashboard principal
+    Route::get('/', [\App\Http\Controllers\Metrics\MetricsController::class, 'index'])->name('index');
+
+    // Dashboard Personal
+    Route::get('/personal/diario', [\App\Http\Controllers\Metrics\PersonalDashboardController::class, 'daily'])->name('personal.daily');
+    Route::get('/personal/semanal', [\App\Http\Controllers\Metrics\PersonalDashboardController::class, 'weekly'])->name('personal.weekly');
+
+    // Dashboard Manager
+    Route::get('/gestion', [\App\Http\Controllers\Metrics\ManagerDashboardController::class, 'index'])->name('manager.index');
+
+    // Dashboard Bienestar
+    Route::get('/bienestar', [\App\Http\Controllers\Metrics\WellnessDashboardController::class, 'index'])->name('wellness.index');
+    Route::get('/bienestar/{userId}', [\App\Http\Controllers\Metrics\WellnessDashboardController::class, 'individual'])->name('wellness.individual');
+
+    // Dashboard Gamificación
+    Route::get('/gamificacion', [\App\Http\Controllers\Metrics\GamificationDashboardController::class, 'index'])->name('gamification.index');
+
+    // Dashboard Citas
+    Route::get('/citas', [\App\Http\Controllers\Metrics\AppointmentsDashboardController::class, 'index'])->name('appointments.index');
+
+    // Dashboard Ejecutivo
+    Route::get('/ejecutivo', [\App\Http\Controllers\Metrics\ExecutiveDashboardController::class, 'index'])->name('executive.index');
+
+    // API endpoints para datos de gráficos
+    Route::get('/api/personal/resumen', [\App\Http\Controllers\Metrics\ApiController::class, 'personalSummary'])->name('api.personal.summary');
+    Route::get('/api/personal/tendencias', [\App\Http\Controllers\Metrics\ApiController::class, 'personalTrends'])->name('api.personal.trends');
+    Route::get('/api/manager/equipo/{teamId}', [\App\Http\Controllers\Metrics\ApiController::class, 'teamSummary'])->name('api.manager.team');
+    Route::get('/api/wellness/equipo/{teamId}', [\App\Http\Controllers\Metrics\ApiController::class, 'teamWellness'])->name('api.wellness.team');
+    Route::get('/api/gamificacion/leaderboard', [\App\Http\Controllers\Metrics\ApiController::class, 'leaderboard'])->name('api.gamification.leaderboard');
+    Route::get('/api/citas/resumen', [\App\Http\Controllers\Metrics\ApiController::class, 'appointmentsSummary'])->name('api.appointments.summary');
+    Route::get('/api/ejecutivo/resumen', [\App\Http\Controllers\Metrics\ApiController::class, 'executiveSummary'])->name('api.executive.summary');
+    Route::get('/api/snapshots', [\App\Http\Controllers\Metrics\ApiController::class, 'snapshots'])->name('api.snapshots');
+    Route::get('/api/alerts', [\App\Http\Controllers\Metrics\ApiController::class, 'alerts'])->name('api.alerts');
+});
