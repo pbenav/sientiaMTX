@@ -324,38 +324,40 @@
     </template>
 
     <!-- Mood Checkin Modal -->
-    <div x-show="showMoodModal" x-cloak class="fixed inset-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-md" style="z-index: 106000;" @click.self="showMoodModal = false" @keydown.escape.window="showMoodModal = false">
-        <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl w-full max-w-sm p-8 mx-4 transform transition-all border border-gray-100 dark:border-gray-700"
-             x-show="showMoodModal"
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-             x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95">
-            
-            <h3 class="text-xl font-black text-gray-800 dark:text-white text-center mb-2" x-text="working ? '¡Que tengas un buen turno!' : '¡Buen trabajo hoy!'"></h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 text-center mb-8">¿Cómo definirías tu energía en este momento?</p>
-            
-            <div class="flex justify-center gap-3 sm:gap-4 mb-8">
-                <template x-for="(emoji, idx) in ['😫', '🙁', '😐', '🙂', '🤩']">
-                    <button type="button" 
-                            class="text-[2.5rem] leading-none transition-all duration-300 rounded-full hover:scale-125 focus:outline-none focus:ring-0 p-1" 
-                            :class="selectedMood === (idx + 1) ? 'ring-4 ring-violet-500/40 scale-125 bg-violet-50 dark:bg-violet-900/30' : 'grayscale hover:grayscale-0 opacity-70 hover:opacity-100'"
-                            @click="selectedMood = idx + 1">
-                        <span x-text="emoji"></span>
+    <template x-teleport="body">
+        <div x-show="showMoodModal" x-cloak class="fixed inset-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-md" style="z-index: 106000;" @click.self="showMoodModal = false" @keydown.escape.window="showMoodModal = false">
+            <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl w-full max-w-sm p-8 mx-4 transform transition-all border border-gray-100 dark:border-gray-700"
+                 x-show="showMoodModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95">
+                
+                <h3 class="text-xl font-black text-gray-800 dark:text-white text-center mb-2" x-text="working ? '¡Que tengas un buen turno!' : '¡Buen trabajo hoy!'"></h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 text-center mb-8">¿Cómo definirías tu energía en este momento?</p>
+                
+                <div class="flex justify-center gap-3 sm:gap-4 mb-8">
+                    <template x-for="(emoji, idx) in ['😫', '🙁', '😐', '🙂', '🤩']">
+                        <button type="button" 
+                                class="text-[2.5rem] leading-none transition-all duration-300 rounded-full hover:scale-125 focus:outline-none focus:ring-0 p-1" 
+                                :class="selectedMood === (idx + 1) ? 'ring-4 ring-violet-500/40 scale-125 bg-violet-50 dark:bg-violet-900/30' : 'grayscale hover:grayscale-0 opacity-70 hover:opacity-100'"
+                                @click="selectedMood = idx + 1">
+                            <span x-text="emoji"></span>
+                        </button>
+                    </template>
+                </div>
+                
+                <div class="flex gap-3 justify-center">
+                    <button @click="showMoodModal = false" class="rounded-xl px-6 py-3 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        Omitir
                     </button>
-                </template>
-            </div>
-            
-            <div class="flex gap-3 justify-center">
-                <button @click="showMoodModal = false" class="rounded-xl px-6 py-3 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    Omitir
-                </button>
-                <button @click="submitMood()" :disabled="!selectedMood" class="rounded-xl px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-500/30">
-                    Guardar
-                </button>
+                    <button @click="submitMood()" :disabled="!selectedMood" class="rounded-xl px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-500/30">
+                        Guardar
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
 </div>
