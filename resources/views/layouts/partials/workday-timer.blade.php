@@ -56,10 +56,11 @@
             // Dispatch event to update task buttons if any
             window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: this.working } }));
             
-            // Trigger mood checkin
-            this.selectedMood = null;
-            setTimeout(() => { this.showMoodModal = true; }, 800);
-            
+            const triggerMood = () => {
+                this.selectedMood = null;
+                setTimeout(() => { this.showMoodModal = true; }, 300);
+            };
+
             if (data.syncing_cth && data.cth_result) {
                 this.fetchStatus(); // Refrescar los datos de CTH después de hacer toggle
                 if (typeof window.Swal !== 'undefined') {
@@ -78,6 +79,8 @@
                                 title: 'text-sm font-bold text-gray-800 dark:text-white',
                                 htmlContainer: 'text-xs text-emerald-600 dark:text-emerald-400 font-bold'
                             }
+                        }).then(() => {
+                            triggerMood();
                         });
                     } else {
                         if (data.cth_result.grace_closing_available) {
@@ -119,9 +122,11 @@
                                                 this.toggle();
                                             });
                                         } else {
-                                            window.Swal.fire('Error', res.message, 'error');
+                                            window.Swal.fire('Error', res.message, 'error').then(() => triggerMood());
                                         }
                                     });
+                                } else {
+                                    triggerMood();
                                 }
                             });
                         } else {
@@ -139,10 +144,16 @@
                                     title: 'text-sm font-black text-red-600 dark:text-red-400 uppercase tracking-wide',
                                     htmlContainer: 'text-xs text-gray-600 dark:text-gray-300 font-medium'
                                 }
+                            }).then(() => {
+                                triggerMood();
                             });
                         }
                     }
+                } else {
+                    triggerMood();
                 }
+            } else {
+                triggerMood();
             }
         });
     },
