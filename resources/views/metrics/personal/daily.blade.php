@@ -39,7 +39,13 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Productividad</h3>
-                        <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Puntuación global de tu productividad hoy en base a horas y tareas completadas.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Puntuación global de tu productividad hoy en base a horas y tareas completadas.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <p class="text-2xl font-black text-gray-900 dark:text-white">{{ number_format($productivityScore['score'] ?? ($productivityScore['productivity_score'] ?? 0), 0) }}<span class="text-sm text-gray-400 font-medium">/100</span></p>
                 </div>
@@ -60,7 +66,13 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Bienestar</h3>
-                        <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Tu nivel de bienestar diario basado en la carga de trabajo y descansos.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Tu nivel de bienestar diario basado en la carga de trabajo y descansos.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <p class="text-2xl font-black text-gray-900 dark:text-white">{{ number_format($wellnessData['score'] ?? 0, 0) }}<span class="text-sm text-gray-400 font-medium">%</span></p>
                 </div>
@@ -85,7 +97,13 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Racha Activa</h3>
-                        <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Días consecutivos manteniendo una buena actividad y productividad.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Días consecutivos manteniendo una buena actividad y productividad.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <p class="text-2xl font-black text-gray-900 dark:text-white">{{ $streakDays }}<span class="text-sm text-gray-400 font-medium"> días</span></p>
                 </div>
@@ -106,7 +124,13 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tareas Semana</h3>
-                        <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Número total de tareas completadas en lo que va de semana.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Número total de tareas completadas en lo que va de semana.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <p class="text-2xl font-black text-gray-900 dark:text-white">{{ $weekCompleted }}</p>
                 </div>
@@ -134,7 +158,13 @@
                             <h2 class="text-lg font-black text-gray-900 dark:text-white">Actividades Desarrolladas</h2>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Resumen de actividades de hoy por tipo.</p>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Resumen estadístico de las actividades y tareas que has completado o gestionado hoy.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Resumen estadístico de las actividades y tareas que has completado o gestionado hoy.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <span class="flex h-10 w-10 items-center justify-center rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 font-bold">
                         {{ $activitiesByType->sum() }}
@@ -203,7 +233,13 @@
                             <h2 class="text-lg font-black text-gray-900 dark:text-white">Matriz de Eficiencia (Eisenhower)</h2>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visión estratégica de tus tareas actuales.</p>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Clasificación de tareas según su importancia y urgencia para priorizar el trabajo diario.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Clasificación de tareas según su importancia y urgencia para priorizar el trabajo diario.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                 </div>
                 
@@ -253,7 +289,13 @@
                 <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full -mr-8 -mt-8"></div>
                 <div class="flex justify-between items-start">
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Tendencia de Productividad</h3>
-                    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Evolución de tu puntuación de productividad a lo largo de los últimos 7 días.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Evolución de tu puntuación de productividad a lo largo de los últimos 7 días.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                 </div>
                 <p class="text-xs text-gray-500 mb-6">Puntuación diaria en los últimos 7 días</p>
                 <div id="productivitySparkline" class="w-full relative z-10" style="min-height: 200px;"></div>
@@ -263,7 +305,13 @@
             <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 p-6">
                 <div class="flex justify-between items-start">
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Volumen Semanal</h3>
-                    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Comparativa semanal entre las nuevas tareas asignadas y las tareas que has completado.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Comparativa semanal entre las nuevas tareas asignadas y las tareas que has completado.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                 </div>
                 <p class="text-xs text-gray-500 mb-6">Nuevas vs Completadas</p>
                 <div id="weeklySparkline" class="w-full" style="min-height: 220px;"></div>
@@ -280,7 +328,13 @@
                             <h3 class="text-sm font-bold text-gray-900 dark:text-white">Reconocimientos de Hoy</h3>
                             <p class="text-[10px] text-gray-500 uppercase tracking-wide">Kudos recibidos</p>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Mensajes de agradecimiento o reconocimiento recibidos hoy de parte de tus compañeros.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Mensajes de agradecimiento o reconocimiento recibidos hoy de parte de tus compañeros.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                 </div>
                 
@@ -309,7 +363,13 @@
             <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 p-6 text-center">
                 <div class="flex items-center justify-center gap-2 mb-4">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">¿Cómo está tu energía?</p>
-                    <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Registro diario de tu estado de ánimo para monitorizar tu bienestar a lo largo del tiempo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Registro diario de tu estado de ánimo para monitorizar tu bienestar a lo largo del tiempo.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                 </div>
                 <div class="flex justify-center gap-2 sm:gap-4" x-data="{ mood: {{ $latestMood ? $latestMood->score : 'null' }} }">
                     <template x-for="(emoji, index) in ['😫', '🙁', '😐', '🙂', '🤩']" :key="index">

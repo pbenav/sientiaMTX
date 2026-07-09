@@ -150,33 +150,8 @@ class WellnessDashboardController extends Controller
             ];
         }
 
-        // FALLBACK LOGIC
+        // FALLBACK LOGIC ELIMINADO: Usaremos los datos reales directamente, sin falsear si están vacíos.
         $hasDummyData = false;
-        if (empty($heatMapData) || count(array_filter(array_column($heatMapData, 'avg_mood'))) === 0) {
-            $hasDummyData = true;
-            $heatMapData = [];
-            $stressHistory = [];
-            $moodHistory = [];
-            for ($i = $days; $i >= 0; $i--) {
-                $date = now()->subDays($i)->format('Y-m-d');
-                $stress = rand(20, 80);
-                $energy = rand(40, 90);
-                $mood = ($stress + $energy) / 2;
-                $stressHistory[] = ['date' => $date, 'avg_stress' => $stress];
-                $moodHistory[] = ['date' => $date, 'avg_energy' => $energy];
-                $heatMapData[] = ['date' => $date, 'avg_mood' => $mood / 20]; // 1-5 scale roughly
-            }
-        }
-        
-        if (empty($scatterData)) {
-            for ($i = 0; $i < ($team ? $team->members->count() : 5); $i++) {
-                $scatterData[] = [rand(40, 100), rand(5, 40)];
-            }
-        }
-
-        if (array_sum($loadDistribution) === 0) {
-            $loadDistribution = [rand(2, 5), rand(8, 15), rand(18, 25), rand(28, 35), rand(40, 50)];
-        }
 
         $recommendations = [];
         if (($teamWellnessData['overall_score'] ?? 100) < 60) {

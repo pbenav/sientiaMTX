@@ -187,7 +187,13 @@
                             <h2 class="text-base font-black text-white uppercase tracking-widest">Flujo de Accesos</h2>
                             <p class="text-xs text-gray-500 mt-1">Conexiones únicas diarias (14 días)</p>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 cursor-help mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Tendencia del número de usuarios únicos que inician sesión diariamente en el sistema.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Tendencia del número de usuarios únicos que inician sesión diariamente en el sistema.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <div id="loginTrendChart" class="w-full" style="min-height: 280px;"></div>
                 </div>
@@ -199,7 +205,13 @@
                             <h2 class="text-base font-black text-white uppercase tracking-widest">Carga Transaccional</h2>
                             <p class="text-xs text-gray-500 mt-1">Peticiones y operaciones por hora (Últimas 24h)</p>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 cursor-help mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Volumen de actividad y operaciones realizadas en la plataforma segmentado por horas.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Volumen de actividad y operaciones realizadas en la plataforma segmentado por horas.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <div id="systemActivityChart" class="w-full" style="min-height: 280px;"></div>
                 </div>
@@ -217,7 +229,13 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-[10px] font-black uppercase tracking-widest text-white bg-blue-600 px-3 py-1.5 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]">Top 5 Creadores</span>
-                            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Ranking de los usuarios más activos en base a la cantidad de tareas gestionadas.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Ranking de los usuarios más activos en base a la cantidad de tareas gestionadas.') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                         </div>
                     </div>
                     
@@ -254,7 +272,13 @@
                             <h2 class="text-base font-black text-white uppercase tracking-widest">Distribución de Estados</h2>
                             <p class="text-xs text-gray-500 mt-1">Visión macro del volumen de trabajo actual</p>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 cursor-help mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Proporción de todas las tareas del sistema según su estado (ej. completadas, en progreso, canceladas).') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+    <svg class="w-4 h-4 text-gray-400 cursor-help mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+        {{ __('Proporción de todas las tareas del sistema según su estado (ej. completadas, en progreso, canceladas).') }}
+        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    </div>
+</div>
                     </div>
                     <div id="statusDistributionChart" class="w-full flex-grow flex items-center justify-center min-h-[280px]"></div>
                 </div>
