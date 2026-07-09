@@ -324,7 +324,7 @@
     </template>
 
     <!-- Mood Checkin Modal -->
-    <div x-show="showMoodModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-md" @click.self="showMoodModal = false" @keydown.escape.window="showMoodModal = false">
+    <div x-show="showMoodModal" x-cloak class="fixed inset-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-md" style="z-index: 106000;" @click.self="showMoodModal = false" @keydown.escape.window="showMoodModal = false">
         <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl w-full max-w-sm p-8 mx-4 transform transition-all border border-gray-100 dark:border-gray-700"
              x-show="showMoodModal"
              x-transition:enter="ease-out duration-300"
