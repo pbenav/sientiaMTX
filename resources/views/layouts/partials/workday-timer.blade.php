@@ -178,7 +178,7 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch('{{ route('wellness.mood.store') }}', {
+                    fetch('{{ route('metrics.wellness.mood.store') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
