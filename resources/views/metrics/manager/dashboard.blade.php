@@ -15,7 +15,7 @@
                     {{ __('metrics.manager_dashboard') }}
                 </h1>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {{ $team->name }} — {{ __('metrics.period', ['days' => 30]) }}
+                    {{ $team->name }} — {{ __('metrics.period', ['days' => $days ?? 90]) }}
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -32,7 +32,7 @@
         {{-- Completed This Week --}}
         <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('metrics.completed_this_week') }}</span>
+                <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('metrics.completed') }}</span>
                 <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -43,7 +43,7 @@
                 {{ number_format($teamMetricsData['completed_this_week'] ?? 0) }}
             </p>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ __('metrics.this_week') }}
+                Últimos {{ $days ?? 90 }} días
             </p>
         </div>
 
@@ -129,7 +129,9 @@
                 </h2>
                 <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Distribución de tareas completadas por cada miembro del equipo frente al promedio.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <div id="loadChart"></div>
+            <div class="overflow-y-auto overflow-x-auto max-h-[400px] pr-1">
+                <div id="loadChart" style="min-width: 600px;"></div>
+            </div>
         </div>
     </div>
 
@@ -179,9 +181,25 @@
                                 {{ $bottleneck['days_stuck'] }}
                             </td>
                             <td class="py-3 px-3">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                      style="background-color: {{ ($bottleneck['activity']->quadrant?->color ?? '#6b7280') }}15; color: {{ $bottleneck['activity']->quadrant?->color ?? '#6b7280' }};">
-                                    {{ $bottleneck['activity']->quadrant?->name ?? '—' }}
+                                @php
+                                    $prio = $bottleneck['activity']->priority ?? 'normal';
+                                    $prioColors = [
+                                        'critical' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                        'high'     => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                                        'medium'   => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                        'low'      => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                        'normal'   => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                                    ];
+                                    $prioLabels = [
+                                        'critical' => 'Crítica',
+                                        'high'     => 'Alta',
+                                        'medium'   => 'Media',
+                                        'low'      => 'Baja',
+                                        'normal'   => 'Normal',
+                                    ];
+                                @endphp
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $prioColors[$prio] ?? $prioColors['normal'] }}">
+                                    {{ $prioLabels[$prio] ?? ucfirst($prio) }}
                                 </span>
                             </td>
                         </tr>
@@ -210,7 +228,9 @@
                 </h2>
                 <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Porcentaje de finalización de tareas asignadas para cada miembro del equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <div id="completionBulletChart"></div>
+            <div class="overflow-y-auto overflow-x-auto max-h-[400px] pr-1">
+                <div id="completionBulletChart" style="min-width: 600px;"></div>
+            </div>
         </div>
 
         {{-- Priority vs Completion Scatter Plot --}}
@@ -310,15 +330,7 @@
                 </h2>
                 <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Nivel de interacción y apoyo cruzado entre los miembros del equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <div id="collaborationChart" class="flex items-center justify-center py-8">
-                <div class="text-center text-gray-400 dark:text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <p class="text-xs font-medium">{{ __('metrics.collaboration_placeholder') }}</p>
-                    <p class="text-[10px] mt-1 opacity-60">{{ number_format($teamMetricsData['collaboration_index'] ?? 0, 1) }}</p>
-                </div>
-            </div>
+            <div id="collaborationChart" class="flex items-center justify-center min-h-[280px]"></div>
         </div>
 
         {{-- Sprint Projection --}}
@@ -412,7 +424,7 @@
                 </h2>
                 <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Miembros del equipo con un volumen de trabajo superior a su capacidad estimada.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 @forelse($overloadedMembers as $member)
                     <div class="flex items-center gap-3 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/30">
                         <img src="{{ $member['profile_photo'] ?? 'https://ui-avatars.com/api/?name=?&color=EF4444&background=FEF2F2' }}"
@@ -438,7 +450,7 @@
                 </h2>
                 <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Miembros del equipo con capacidad disponible para asumir más tareas.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 @forelse($underloadedMembers as $member)
                     <div class="flex items-center gap-3 p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
                         <img src="{{ $member['profile_photo'] ?? 'https://ui-avatars.com/api/?name=?&color=3B82F6&background=EFF6FF' }}"
@@ -503,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Team Velocity Area Chart (last 8 weeks)
-    const velocitySeries = {{ json_encode($teamMetricsData['velocity_history'] ?? []) }};
+    const velocitySeries = @json($teamMetricsData['velocity_history'] ?? []);
     const velocityChart = new ApexCharts(document.querySelector("#velocityChart"), {
         ...commonOptions,
         chart: { ...commonOptions.chart, type: 'area', height: 300, fontFamily: 'Inter, sans-serif' },
@@ -517,7 +529,10 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         yaxis: {
             title: { text: '{{ __("metrics.tasks") }}', style: { fontSize: '10px' } },
-            labels: { style: { fontSize: '10px', fontFamily: 'Inter' } },
+            labels: { 
+                style: { fontSize: '10px', fontFamily: 'Inter' },
+                formatter: function (val) { return val.toFixed(0); }
+            },
         },
         fill: {
             type: 'gradient',
@@ -544,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
     velocityChart.render();
 
     // Load Distribution Horizontal Bar Chart
-    const loadSeries = {{ json_encode($teamMetricsData['member_completion_rates'] ?? []) }};
+    const loadSeries = @json($teamMetricsData['member_completion_rates'] ?? []);
     const avgLoad = loadSeries.length > 0
         ? loadSeries.reduce((sum, m) => sum + (m.completed ?? 0), 0) / loadSeries.length
         : 0;
@@ -552,21 +567,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const loadChart = new ApexCharts(document.querySelector("#loadChart"), {
         ...commonOptions,
-        chart: { ...commonOptions.chart, type: 'bar', height: 300, horizontal: true, fontFamily: 'Inter, sans-serif' },
+        chart: { 
+            ...commonOptions.chart, 
+            type: 'bar', 
+            height: Math.max(350, loadSeries.length * 45), 
+            horizontal: true, 
+            fontFamily: 'Inter, sans-serif',
+            toolbar: { show: true },
+            zoom: { enabled: true }
+        },
         series: [{
             name: '{{ __("metrics.completed") }}',
-            data: loadSeries.map(m => m.completed ?? 0) || []
+            data: loadSeries.map(m => ({ x: m.name || '—', y: m.completed ?? 0 }))
         }],
         xaxis: {
-            labels: { style: { fontSize: '10px', fontFamily: 'Inter' } },
+            labels: { 
+                style: { fontSize: '10px', fontFamily: 'Inter' },
+                formatter: function (val) { return Math.round(val); }
+            },
         },
         yaxis: {
-            labels: {
-                style: { fontSize: '10px', fontFamily: 'Inter' },
-                formatter: (val, index) => {
-                    return (loadSeries[index] && loadSeries[index].name) ? loadSeries[index].name : '';
-                }
-            },
+            labels: { style: { fontSize: '10px', fontFamily: 'Inter' } },
         },
         plotOptions: {
             bar: {
@@ -594,13 +615,21 @@ document.addEventListener('DOMContentLoaded', function() {
     loadChart.render();
 
     // Member Completion Bullet Chart
-    const bulletSeries = {{ json_encode($teamMetricsData['member_completion_rates'] ?? []) }};
+    const bulletSeries = @json($teamMetricsData['member_completion_rates'] ?? []);
     const bulletChart = new ApexCharts(document.querySelector("#completionBulletChart"), {
         ...commonOptions,
-        chart: { ...commonOptions.chart, type: 'bar', height: 320, horizontal: true, fontFamily: 'Inter, sans-serif' },
+        chart: { 
+            ...commonOptions.chart, 
+            type: 'bar', 
+            height: Math.max(350, bulletSeries.length * 45), 
+            horizontal: true, 
+            fontFamily: 'Inter, sans-serif',
+            toolbar: { show: true },
+            zoom: { enabled: true }
+        },
         series: [{
             name: '{{ __("metrics.completion_rate") }}',
-            data: bulletSeries.map(m => m.completion_rate ?? 0) || []
+            data: bulletSeries.map(m => ({ x: m.name || '—', y: m.completion_rate ?? 0 }))
         }],
         xaxis: {
             min: 0,
@@ -611,12 +640,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
         },
         yaxis: {
-            labels: {
-                style: { fontSize: '10px', fontFamily: 'Inter' },
-                formatter: (val, index) => {
-                    return (bulletSeries[index] && bulletSeries[index].name) ? bulletSeries[index].name : '';
-                }
-            },
+            labels: { style: { fontSize: '10px', fontFamily: 'Inter' } },
         },
         plotOptions: {
             bar: {
@@ -652,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
     bulletChart.render();
 
     // Priority vs Completion Scatter Plot
-    const scatterSeries = {{ json_encode($teamMetricsData['priority_completion_data'] ?? []) }};
+    const scatterSeries = @json($teamMetricsData['priority_completion_data'] ?? []);
     const scatterChart = new ApexCharts(document.querySelector("#scatterChart"), {
         ...commonOptions,
         chart: { ...commonOptions.chart, type: 'scatter', height: 320, fontFamily: 'Inter, sans-serif', zoom: { enabled: true } },
@@ -666,11 +690,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }],
         xaxis: {
             title: { text: '{{ __("metrics.priority") }}', style: { fontSize: '10px' } },
-            labels: { style: { fontSize: '10px', fontFamily: 'Inter' } },
+            labels: { 
+                style: { fontSize: '10px', fontFamily: 'Inter' },
+                formatter: function (val) { return val.toFixed(0); }
+            },
         },
         yaxis: {
             title: { text: '{{ __("metrics.completion") }}', style: { fontSize: '10px' } },
-            labels: { style: { fontSize: '10px', fontFamily: 'Inter' } },
+            labels: { 
+                style: { fontSize: '10px', fontFamily: 'Inter' },
+                formatter: function (val) { return val.toFixed(0) + "%"; }
+            },
         },
         colors: ['#ec4899'],
         markers: {
@@ -685,6 +715,32 @@ document.addEventListener('DOMContentLoaded', function() {
         },
     });
     scatterChart.render();
+
+    // Collaboration Index Gauge Chart
+    const collabScore = {{ $teamMetricsData['collaboration_index'] ?? 0 }};
+    const collabChart = new ApexCharts(document.querySelector("#collaborationChart"), {
+        ...commonOptions,
+        chart: { ...commonOptions.chart, type: 'radialBar', height: 280, fontFamily: 'Inter, sans-serif' },
+        series: [collabScore],
+        plotOptions: {
+            radialBar: {
+                hollow: { size: '65%' },
+                dataLabels: {
+                    name: { show: false },
+                    value: {
+                        formatter: function (val) { return val.toFixed(1) + "%"; },
+                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827',
+                        fontSize: '28px',
+                        fontWeight: 700,
+                        offsetY: 10
+                    }
+                }
+            }
+        },
+        colors: ['#06b6d4'],
+        stroke: { lineCap: 'round' },
+    });
+    collabChart.render();
 
     // Team Wellness Radar Chart
     const radarData = @json($wellnessRadar);

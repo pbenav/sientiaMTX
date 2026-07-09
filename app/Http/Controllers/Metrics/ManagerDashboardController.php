@@ -26,8 +26,8 @@ class ManagerDashboardController extends Controller
             return redirect()->route('metrics.personal.daily');
         }
 
-        $days = $request->input('days', 30);
-        $weekStart = now()->startOfWeek();
+        $days = $request->input('days', 90); // Default a 90 días para mostrar histórico
+        $weekStart = now()->subDays($days);
         
         $teamMembers = $team->members;
         $teamUserIds = $teamMembers->pluck('id')->toArray();
@@ -40,7 +40,7 @@ class ManagerDashboardController extends Controller
             ->count();
         $completedTasks = \App\Models\Activity::whereIn('created_by_id', $teamUserIds)
             ->where('updated_at', '>=', $weekStart)
-            ->whereJsonContains('status', 'completed')
+            ->whereIn('status->value', ['completed', 'done', 'approved', 'triggered'])
             ->count();
             
         $sprintProgress = [
@@ -56,7 +56,7 @@ class ManagerDashboardController extends Controller
             $end = now()->subWeeks($i)->endOfWeek();
             $count = \App\Models\Activity::whereIn('created_by_id', $teamUserIds)
                 ->whereBetween('updated_at', [$start, $end])
-                ->whereJsonContains('status', 'completed')
+                ->whereIn('status->value', ['completed', 'done', 'approved', 'triggered'])
                 ->count();
             $velocityHistory[] = ['week' => 'W' . $start->format('W'), 'count' => $count];
         }
@@ -73,7 +73,7 @@ class ManagerDashboardController extends Controller
                 ->where('updated_at', '>=', $weekStart)->count();
             $memberCompleted = \App\Models\Activity::where('created_by_id', $member->id)
                 ->where('updated_at', '>=', $weekStart)
-                ->whereJsonContains('status', 'completed')->count();
+                ->whereIn('status->value', ['completed', 'done', 'approved', 'triggered'])->count();
             
             $rate = $memberTotal > 0 ? ($memberCompleted / $memberTotal) * 100 : 0;
             $memberCompletionRates[] = [
@@ -99,26 +99,21 @@ class ManagerDashboardController extends Controller
             'at_risk_count' => count($overloadedMembers),
             'velocity_history' => $velocityHistory,
             'member_completion_rates' => $memberCompletionRates,
-            'priority_completion_data' => [
-                ['priority' => 1, 'completion' => 80],
-                ['priority' => 2, 'completion' => 60],
-                ['priority' => 3, 'completion' => 40],
-                ['priority' => 4, 'completion' => 90],
-            ],
-            'collaboration_index' => 85,
+            'priority_completion_data' => [], // Dynamic below
+            'collaboration_index' => 0, // Dynamic below
         ];
 
         // Bottlenecks
         $bottlenecksRaw = \App\Models\Activity::with(['assignedTo'])
             ->whereIn('created_by_id', $teamUserIds)
-            ->whereJsonContains('status', 'in_progress')
+            ->whereNotIn('status->value', ['completed', 'done', 'approved', 'triggered', 'cancelled'])
             ->where('updated_at', '<', now()->subDays(3))
             ->get();
         $bottlenecks = [];
         foreach ($bottlenecksRaw as $activity) {
             $bottlenecks[] = [
                 'activity' => $activity,
-                'days_stuck' => now()->diffInDays($activity->updated_at),
+                'days_stuck' => (int) abs(now()->diffInDays($activity->updated_at)),
             ];
         }
 
@@ -202,22 +197,38 @@ class ManagerDashboardController extends Controller
             ];
         }
 
+        $dynProductivity = $sprintProgress['progress'] > 0 ? $sprintProgress['progress'] : ($hasDummyData ? rand(60, 90) : 0);
+        $dynCollaboration = min(100, 40 + (count($kudosBoard) * 5) + (count($teamMembers) * 2));
+        $dynWellness = max(0, 100 - (count($overloadedMembers) * 10) - (count($bottlenecks) * 2));
+        $dynEngagement = min(100, 50 + ($completedTasks > 0 ? 20 : 0) + (count($kudosBoard) * 2));
+        $dynBalance = max(0, 100 - (abs(count($overloadedMembers) - count($underloadedMembers)) * 8) - (count($overloadedMembers) * 5));
+
         $teamWellness = [
-            'team_wellness_score' => 82,
+            'team_wellness_score' => $dynWellness,
             'burnout_risk_count' => count($overloadedMembers),
         ];
 
         $teamProductivity = [
-            'productivity_score' => 78,
+            'productivity_score' => $dynProductivity,
         ];
 
         $wellnessRadar = [
-            'wellness' => 82,
-            'productivity' => 78,
-            'collaboration' => 85,
-            'engagement' => 80,
-            'balance' => 75,
+            'wellness' => $dynWellness,
+            'productivity' => $dynProductivity,
+            'collaboration' => $dynCollaboration,
+            'engagement' => $dynEngagement,
+            'balance' => $dynBalance,
         ];
+
+        $teamMetricsData['collaboration_index'] = $dynCollaboration;
+        
+        $priorityData = [];
+        foreach ([1, 2, 3, 4] as $p) {
+            $t = \App\Models\Activity::whereIn('created_by_id', $teamUserIds)->where('priority', $p)->where('updated_at', '>=', $weekStart)->count();
+            $c = \App\Models\Activity::whereIn('created_by_id', $teamUserIds)->where('priority', $p)->where('updated_at', '>=', $weekStart)->whereIn('status->value', ['completed', 'done', 'approved', 'triggered'])->count();
+            $priorityData[] = ['priority' => $p, 'completion' => $t > 0 ? ($c / $t) * 100 : ($hasDummyData ? rand(30, 90) : 0)];
+        }
+        $teamMetricsData['priority_completion_data'] = $priorityData;
 
         $alertList = [];
         if (count($bottlenecks) > 0) {
