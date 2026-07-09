@@ -23,6 +23,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.08 3.277a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.08 3.277c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.08-3.277a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.08-3.277z"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Your Position') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Tu posición actual en el ranking global del equipo basada en puntos.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
 
             <div class="flex flex-col items-center py-4">
@@ -58,6 +59,7 @@
                 <div class="flex items-center gap-2">
                     <svg class="w-5 h-5 text-violet-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
                     <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Level Progress') }}</h2>
+                    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Progreso de experiencia necesario para alcanzar el siguiente nivel en la plataforma.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <span class="text-xs font-bold px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
                     {{ __('Level :level', ['level' => $userProgress['level'] ?? 1]) }}
@@ -109,6 +111,7 @@
             <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <h2 class="text-lg font-bold">{{ __('Team Leaderboard') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Clasificación global de los miembros del equipo en función de los puntos y nivel de experiencia.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <select class="text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-violet-500 focus:border-transparent">
                 <option value="">{{ __('All Teams') }}</option>
@@ -175,6 +178,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.08 3.277a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.08 3.277c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.08-3.277a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.08-3.277z"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Badges') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Insignias y logros que puedes desbloquear al alcanzar hitos en la plataforma.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
 
             <div class="grid grid-cols-4 gap-3">
@@ -214,6 +218,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Most Popular Badges') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Insignias obtenidas con mayor frecuencia por los miembros del equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div id="popularBadgesChart" class="w-full" style="min-height: 280px;"></div>
         </div>
@@ -226,6 +231,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Top 10 Kudos Sent') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Usuarios que más reconocimientos (Kudos) han enviado a sus compañeros.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div class="space-y-2">
                 @forelse(($kudosSent ?? []) as $index => $kudo)
@@ -248,6 +254,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Top 10 Kudos Received') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Usuarios que más reconocimientos (Kudos) han recibido por parte del equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div class="space-y-2">
                 @forelse(($kudosReceived ?? []) as $index => $kudo)
@@ -271,6 +278,7 @@
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Streak Leaderboard') }}</h2>
+            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Ranking de usuarios con más días consecutivos de actividad en la plataforma.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             @forelse(($streakLeaderboard ?? []) as $index => $streak)
@@ -298,6 +306,7 @@
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Engagement Trend') }}</h2>
+            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Evolución temporal del nivel de participación y actividad de los usuarios.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="ml-auto text-xs text-gray-400">{{ __('Last 30 days') }}</span>
         </div>
         <div id="engagementTrendChart" class="w-full" style="min-height: 300px;"></div>
@@ -310,6 +319,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Points Distribution') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Distribución estadística de los puntos obtenidos agrupados por categoría o acción.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div id="pointsDistributionChart" class="w-full" style="min-height: 300px;"></div>
         </div>
@@ -319,6 +329,7 @@
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8s1-3.5 4-3.5 4 7 4 7-1 3.5-4 3.5-4-7-4-7z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8s1-3.5 4-3.5 4 7 4 7-1 3.5-4 3.5-4-7-4-7z"/></svg>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Engagement vs Productivity') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Comparativa entre la implicación en la plataforma y el rendimiento productivo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div id="scatterPlotChart" class="w-full" style="min-height: 300px;"></div>
         </div>
@@ -329,22 +340,23 @@
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.08 3.277a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.08 3.277c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.08-3.277a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.08-3.277z"/></svg>
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Recent Achievements') }}</h2>
+            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Últimos logros e insignias desbloqueados recientemente por el equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
 
         <div class="overflow-hidden rounded-xl bg-gradient-to-r from-violet-500/5 via-purple-500/5 to-pink-500/5 dark:from-violet-900/10 dark:via-purple-900/10 dark:to-pink-900/10 border border-violet-100 dark:border-violet-800/30">
             <div class="flex items-center gap-6 py-3 px-5 animate-marquee whitespace-nowrap" style="animation: marquee 30s linear infinite;">
-                @foreach($recentAchievements ?? [] as $achievement)
+                @forelse($recentAchievements ?? [] as $achievement)
                 <div class="inline-flex items-center gap-2 text-sm">
                     <span class="text-base">🏅</span>
-                    <span class="font-medium text-gray-700 dark:text-gray-200">{{ $achievement->user->name ?? __('Someone') }}</span>
+                    <span class="font-medium text-gray-700 dark:text-gray-200">{{ $user->name ?? __('You') }}</span>
                     <span class="text-gray-400">{{ __('earned') }}</span>
-                    <span class="font-bold text-violet-600 dark:text-violet-400">{{ $achievement->metadata['badge_name'] ?? $achievement->metadata['source'] ?? __('achievement') }}</span>
-                    <span class="text-xs text-gray-400">{{ $achievement->created_at->diffForHumans() }}</span>
+                    <span class="font-bold text-violet-600 dark:text-violet-400">{{ is_array($achievement) ? ($achievement['description'] ?? __('achievement')) : ($achievement->description ?? __('achievement')) }}</span>
+                    <span class="text-xs text-gray-400">{{ \Carbon\Carbon::parse(is_array($achievement) ? ($achievement['created_at'] ?? now()) : ($achievement->created_at ?? now()))->diffForHumans() }}</span>
                 </div>
                 @if(!$loop->last)<span class="text-gray-300 dark:text-gray-700">•</span>@endif
                 @empty
                 <span class="text-sm text-gray-400">{{ __('No achievements yet. Keep going!') }}</span>
-                @endif
+                @endforelse
             </div>
         </div>
 
@@ -361,26 +373,27 @@
         <div class="flex items-center gap-2 mb-6">
             <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Your Achievement History') }}</h2>
+            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Historial cronológico de todos los logros y puntos que has obtenido.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
 
         <div class="relative">
             <div class="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
             <div class="space-y-4">
                 @php
-                    $userAchievements = $recentAchievements ?? collect();
+                    $userAchievements = collect($recentAchievements ?? []);
                 @endphp
 
-                @forelse($userAchievements->where('user_id', $user->id)->take(10) as $achievement)
+                @forelse($userAchievements->take(10) as $achievement)
                 <div class="relative flex items-start gap-4 pl-10">
                     <div class="absolute left-1.5 top-1.5 w-4 h-4 rounded-full bg-violet-500 border-2 border-white dark:border-gray-900 z-10"></div>
                     <div class="flex-1 min-w-0">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $achievement->metadata['badge_name'] ?? $achievement->metadata['source'] ?? __('Achievement') }}</p>
-                            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $achievement->created_at->format('M d, Y H:i') }}</span>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ is_array($achievement) ? ($achievement['description'] ?? __('Achievement')) : ($achievement->description ?? __('Achievement')) }}</p>
+                            <span class="text-xs text-gray-400 whitespace-nowrap">{{ \Carbon\Carbon::parse(is_array($achievement) ? $achievement['created_at'] : $achievement->created_at)->format('M d, Y H:i') }}</span>
                         </div>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {{ __('+') }}{{ $achievement->points_earned ?? 0 }} {{ __('points') }}
-                            — {{ $achievement->type }}
+                            {{ __('+') }}{{ is_array($achievement) ? ($achievement['points_earned'] ?? 0) : ($achievement->points_earned ?? 0) }} {{ __('points') }}
+                            — {{ is_array($achievement) ? ($achievement['type'] ?? '') : ($achievement->type ?? '') }}
                         </p>
                     </div>
                 </div>
@@ -400,8 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const textColor = isDark ? '#9ca3af' : '#6b7280';
 
     // Popular Badges Horizontal Bar Chart
-    const popularBadgesData = {{ json_encode($1 ?? []) }};
-    if (typeof apexcharts !== 'undefined') {
+    const popularBadgesData = {!! json_encode($popularBadgesData ?? []) !!};
+    if (typeof ApexCharts !== 'undefined') {
         const pbChart = new ApexCharts(document.getElementById("popularBadgesChart"), {
             chart: { type: 'bar', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
             series: [{ name: '{{ __('Count') }}', data: popularBadgesData.map(d => d.count ?? d.total_points ?? 0) }],
@@ -416,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pbChart.render();
 
         // Engagement Trend Area Chart
-        const engagementData = {{ json_encode($1 ?? []) }};
+        const engagementData = {!! json_encode($engagementData ?? []) !!};
         const etChart = new ApexCharts(document.getElementById("engagementTrendChart"), {
             chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
             series: [{ name: '{{ __('Activities') }}', data: engagementData.map(d => d.activities ?? d.count ?? 0) }],
@@ -431,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function() {
         etChart.render();
 
         // Points Distribution Histogram
-        const pointsData = {{ json_encode($1 ?? []) }};
+        const pointsData = {!! json_encode($pointsData ?? []) !!};
         const pdChart = new ApexCharts(document.getElementById("pointsDistributionChart"), {
             chart: { type: 'bar', height: 300, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
             series: [{ name: '{{ __('Total Points') }}', data: pointsData.map(d => d.total_points ?? d.count ?? 0) }],
@@ -446,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Engagement vs Productivity Scatter Plot
         const scatterData = [];
-        const teamLeaderboard = {{ json_encode($1 ?? []) }};
+        const teamLeaderboard = {!! json_encode($teamLeaderboard ?? []) !!};
         teamLeaderboard.forEach((member, i) => {
             scatterData.push({ x: i + 1, y: member.total_points ?? Math.floor(Math.random() * 500) });
         });

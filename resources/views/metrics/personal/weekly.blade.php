@@ -1,31 +1,39 @@
 @extends('metrics.layouts.app')
 
-@section('title', 'Dashboard Semanal - sientiaMTX')
-@section('header-title', 'Dashboard Semanal')
-
-@section('header-actions')
-    <div class="flex items-center gap-2">
-        <a href="{{ route('metrics.personal.daily') }}" class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-            \u{1F4C5} Diario
-        </a>
-        <span class="text-xs text-gray-400">|</span>
-        <span class="text-xs text-gray-500 dark:text-gray-400">
-            {{ $startDate->format('d M') }} - {{ $endDate->format('d M, Y') }}
-        </span>
-    </div>
-@endsection
+@section('title', __('Dashboard Semanal'))
+@section('breadcrumb', __('Dashboard Semanal'))
 
 @section('content')
+
 <div class="max-w-7xl mx-auto space-y-6">
+    {{-- Page Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight">{{ __('Dashboard Semanal') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Resumen de tu rendimiento personal en los últimos 7 días.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('metrics.personal.daily') }}" class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                📅 Diario
+            </a>
+            <span class="text-xs text-gray-400">|</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+                {{ $startDate->format('d M') }} - {{ $endDate->format('d M, Y') }}
+            </span>
+        </div>
+    </div>
 
     {{-- Week Summary Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 card-shadow border border-gray-100 dark:border-gray-800">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Completadas</span>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase">Completadas</span>
+                <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Total de tareas completadas exitosamente durante la semana.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 {{ $dailyCompletion->sum('completed') }}
@@ -33,11 +41,14 @@
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 card-shadow border border-gray-100 dark:border-gray-800">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">En Progreso</span>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase">En Progreso</span>
+                <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Tareas que están actualmente en desarrollo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {{ \App\Models\Activity::where('user_id', $user->id)->whereIn('status', ['in_progress'])->whereBetween('updated_at', [$startDate, $endDate])->count() }}
@@ -45,11 +56,14 @@
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 card-shadow border border-gray-100 dark:border-gray-800">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Vencidas</span>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase">Vencidas</span>
+                <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Tareas cuya fecha límite ya ha pasado.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <p class="text-2xl font-bold text-red-600 dark:text-red-400">
                 {{ \App\Models\Activity::where('user_id', $user->id)->where('status', 'pending')->where('due_date', '<', now())->whereBetween('updated_at', [$startDate, $endDate])->count() }}
@@ -57,11 +71,14 @@
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 card-shadow border border-gray-100 dark:border-gray-800">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Nuevas</span>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase">Nuevas</span>
+                <svg class="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Tareas creadas recientemente durante esta semana.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <p class="text-2xl font-bold text-violet-600 dark:text-violet-400">
                 {{ \App\Models\Activity::where('user_id', $user->id)->whereBetween('created_at', [$startDate, $endDate])->count() }}
@@ -72,12 +89,18 @@
     {{-- Completion Rate Gauge + Productivity Score --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F4CC} Tasa de Completaci\u00f3n</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F4CC} Tasa de Completaci\u00f3n</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Porcentaje de tareas completadas respecto al total de tareas asignadas o iniciadas en la semana.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="completionGauge" class="w-full" style="min-height: 220px;"></div>
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F4CA} Puntaje de Productividad</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F4CA} Puntaje de Productividad</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Métrica global de productividad calculada con base en los objetivos semanales alcanzados.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div class="flex flex-col items-center justify-center h-full" style="min-height: 220px;">
                 <div class="relative w-36 h-36">
                     <svg class="w-full h-full" viewBox="0 0 36 36">
@@ -100,7 +123,10 @@
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{2728} Bienestar</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{2728} Bienestar</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Nivel promedio de bienestar y riesgo de agotamiento (burnout) en los últimos 7 días.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div class="flex flex-col items-center justify-center h-full" style="min-height: 220px;">
                 <div class="relative w-36 h-36">
                     <svg class="w-full h-full" viewBox="0 0 36 36">
@@ -133,29 +159,44 @@
     {{-- Activities by Type (Donut) + Activities by Priority (Horizontal Bar) --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F4CB} Actividades por Tipo</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F4CB} Actividades por Tipo</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Desglose de las tareas de la semana clasificadas por su tipo (reunión, desarrollo, etc.).') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="typeDonut" class="w-full" style="min-height: 300px;"></div>
         </div>
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F3AF} Actividades por Prioridad</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F3AF} Actividades por Prioridad</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Cantidad de actividades distribuidas según su nivel de prioridad (crítica, alta, media, baja).') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="priorityBar" class="w-full" style="min-height: 300px;"></div>
         </div>
     </div>
 
     {{-- Hours Logged vs Goal --}}
     <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F4CA} Horas Registradas vs Meta</h3>
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F4CA} Horas Registradas vs Meta</h3>
+            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Comparativa diaria entre las horas registradas en actividades y las horas esperadas (meta).') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
         <div id="hoursBar" class="w-full" style="min-height: 220px;"></div>
     </div>
 
     {{-- Estimation Accuracy + Mood Trend --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F5B2}\ufe0f Precisi\u00f3n de Estimaci\u00f3n</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F5B2}\ufe0f Precisi\u00f3n de Estimaci\u00f3n</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Relación entre el tiempo estimado para una actividad y el tiempo real invertido en completarla.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="scatterPlot" class="w-full" style="min-height: 250px;"></div>
         </div>
         <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F60A} Tendencia de Estado de \u00c1nimo</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F60A} Tendencia de Estado de \u00c1nimo</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Historial de tu registro diario del estado de ánimo a lo largo de la semana.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="moodTrend" class="w-full" style="min-height: 250px;"></div>
         </div>
     </div>
@@ -163,12 +204,18 @@
     {{-- Quadrant Distribution + Recognition --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-1 bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F4CA} Distribuci\u00f3n por Cuadrante</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F4CA} Distribuci\u00f3n por Cuadrante</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Cantidad de actividades en los cuadrantes de prioridad según el modelo Eisenhower.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="quadrantStacked" class="w-full" style="min-height: 280px;"></div>
         </div>
 
         <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F3AF} Reconocimientos de la Semana</h3>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F3AF} Reconocimientos de la Semana</h3>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Resumen de los kudos recibidos y las insignias desbloqueadas durante los últimos 7 días.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {{-- Kudos --}}
                 <div>
@@ -210,7 +257,10 @@
 
     {{-- Sprint Goals Progress --}}
     <div class="bg-white dark:bg-gray-900 rounded-2xl card-shadow border border-gray-100 dark:border-gray-800 p-5">
-        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">\u{1F3C1} Objetivos del Siguiente Sprint</h3>
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white">\u{1F3C1} Objetivos del Siguiente Sprint</h3>
+            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Metas de rendimiento y progreso calculadas para tu próximo ciclo de trabajo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
         <div class="space-y-4">
             @php
                 $sprintGoals = [
@@ -259,7 +309,7 @@
         </div>
     </div>
 </div>
-
+@endsection
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {

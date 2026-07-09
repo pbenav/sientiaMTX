@@ -16,6 +16,6 @@ class MetricsController extends Controller
 {
     public function index()
     {
-        return redirect()->route('metrics.personal.daily');
+        return view('metrics.index');
     }
 }

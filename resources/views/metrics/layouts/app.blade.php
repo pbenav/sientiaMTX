@@ -662,10 +662,98 @@
 
 <body class="h-full bg-gray-50 dark:bg-gray-950 font-inter text-sm antialiased">
     <div class="min-h-full">
-        <x-installs-navbar />
+        @include('layouts.navigation')
 
         <main class="py-6">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+                <nav class="mb-4 flex text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-2">
+                        <li class="inline-flex items-center">
+                            <a href="{{ route('dashboard') }}" class="inline-flex items-center hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                                {{ __('Inicio') }}
+                            </a>
+                        </li>
+                        
+                        @if(isset($currentTeamContext) && is_object($currentTeamContext))
+                        <li>
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                <a href="{{ route('teams.dashboard', $currentTeamContext) }}" class="ml-1 md:ml-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{ $currentTeamContext->name }}
+                                </a>
+                            </div>
+                        </li>
+                        @endif
+
+                        @if(!request()->routeIs('metrics.index'))
+                        <li>
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                <a href="{{ route('metrics.index') }}" class="ml-1 md:ml-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{ __('Métricas') }}
+                                </a>
+                            </div>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                <span class="ml-1 md:ml-2 font-medium text-gray-800 dark:text-gray-200">
+                                    @yield('breadcrumb', __('Dashboard'))
+                                </span>
+                            </div>
+                        </li>
+                        @else
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                <span class="ml-1 md:ml-2 font-medium text-gray-800 dark:text-gray-200">
+                                    {{ __('Métricas') }}
+                                </span>
+                            </div>
+                        </li>
+                        @endif
+                    </ol>
+                </nav>
+
+                @if(isset($hasDummyData) && $hasDummyData)
+                <div class="mb-4 rounded-md bg-amber-50 p-4 border border-amber-200 dark:bg-amber-900/30 dark:border-amber-800">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-amber-400 dark:text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                {{ __('Datos simulados') }}
+                            </h3>
+                            <div class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                                <p>{{ __('A la espera de suficientes datos para generar la información real de este dashboard.') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: '{{ __("Modo Demostración") }}',
+                                text: '{{ __("Se están visualizando datos de ejemplo por falta de registros.") }}',
+                                icon: 'info',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 6000,
+                                timerProgressBar: true,
+                                background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
+                            });
+                        }
+                    });
+                </script>
+                @endif
+
                 @yield('content')
             </div>
         </main>

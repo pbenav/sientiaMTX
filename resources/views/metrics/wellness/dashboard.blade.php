@@ -1,6 +1,7 @@
 @extends('metrics.layouts.app')
 
 @section('title', 'Wellness Dashboard — sientiaMTX')
+@section('breadcrumb', __('metrics.categories.wellness'))
 
 @section('content')
 <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -9,17 +10,17 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white" style="font-family:'Space Grotesk',sans-serif">
-                Wellness Dashboard
+                {{ __('metrics.wellness.title') }}
             </h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {{ $team->name }} &mdash; Últimos 30 días
+                {{ $team->name }} &mdash; {{ __('metrics.wellness.last_30_days') }}
             </p>
         </div>
         <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold
                 {{ $teamWellness['overall_score'] >= 70 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : ($teamWellness['overall_score'] >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400') }}">
                 <span class="w-2 h-2 rounded-full {{ $teamWellness['overall_score'] >= 70 ? 'bg-emerald-500' : ($teamWellness['overall_score'] >= 40 ? 'bg-amber-500' : 'bg-red-500') }}"></span>
-                Score Equipo: {{ $teamWellness['overall_score'] ?? 'N/A' }}
+                {{ __('metrics.wellness.team_score') }} {{ $teamWellness['overall_score'] ?? __('metrics.wellness.na') }}
             </span>
         </div>
     </div>
@@ -29,7 +30,10 @@
 
         {{-- Team Wellness Score Gauge --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Score Bienestar Equipo</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.team_wellness_score') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Índice de bienestar general calculado en base a las métricas del equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div class="flex items-center justify-center">
                 <div id="teamWellnessGauge" class="w-full"></div>
             </div>
@@ -37,7 +41,10 @@
 
         {{-- Member Wellness Horizontal Bars --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Bienestar por Miembro</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.member_wellness') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Nivel de bienestar individual registrado por cada miembro.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div class="space-y-3 overflow-y-auto max-h-[320px] pr-1">
                 @forelse($memberWellness as $member)
                 <a href="{{ route('metrics.wellness.individual', $member['user_id']) }}"
@@ -58,14 +65,17 @@
                     </div>
                 </a>
                 @empty
-                <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-8">Sin datos de miembros.</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-8">{{ __('metrics.wellness.no_member_data') }}</p>
                 @endforelse
             </div>
         </div>
 
         {{-- Mood Heatmap Calendar --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Mapa de Estado de Ánimo</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.mood_heatmap') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Distribución histórica del estado de ánimo a lo largo del mes.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="moodHeatmap" class="w-full overflow-x-auto"></div>
         </div>
 
@@ -76,13 +86,19 @@
 
         {{-- Stress Trend Line Chart --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Tendencia de Estrés (30 días)</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.stress_trend') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Evolución del nivel de estrés reportado por el equipo a lo largo del tiempo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="stressTrendChart" class="w-full"></div>
         </div>
 
         {{-- Energy Trend Line Chart --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Tendencia de Energía (30 días)</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.energy_trend') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Evolución general del nivel de energía y motivación en el entorno de trabajo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="energyTrendChart" class="w-full"></div>
         </div>
 
@@ -93,7 +109,10 @@
 
         {{-- Burnout Risk Traffic Light --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Riesgo de Burnout por Miembro</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.burnout_risk') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Alertas de miembros que presentan un riesgo elevado de desgaste profesional o sobrecarga.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div class="space-y-3">
                 @forelse($burnoutRiskList as $burnout)
                 <div class="flex items-center justify-between py-2.5 px-3 rounded-xl
@@ -111,7 +130,7 @@
                             {{ $burnout['risk_score'] }}
                         </span>
                         <a href="{{ route('metrics.wellness.individual', $burnout['user_id']) }}"
-                           class="text-xs text-violet-600 dark:text-violet-400 hover:underline">Ver perfil</a>
+                           class="text-xs text-violet-600 dark:text-violet-400 hover:underline">{{ __('metrics.wellness.view_profile') }}</a>
                     </div>
                 </div>
                 @empty
@@ -119,7 +138,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    No hay miembros con riesgo de burnout detectado.
+                    {{ __('metrics.wellness.no_burnout_risk') }}
                 </p>
                 @endforelse
             </div>
@@ -127,7 +146,10 @@
 
         {{-- Team Overtime Bar Chart --}}
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Horas Extra por Semana (Últimas 4 semanas)</h2>
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.overtime_weeks') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Volumen de horas extraordinarias reportadas de forma semanal.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
             <div id="overtimeChart" class="w-full"></div>
         </div>
 
@@ -136,52 +158,31 @@
     {{-- Row 4: Load distribution + Work-life balance + Mood-productivity --}}
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-        {{-- Load Distribution Box Plot Placeholder --}}
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 flex flex-col items-center justify-center min-h-[300px]">
-            <div class="text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Distribución de Carga</h3>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Gráfico de caja (box plot) — Próximamente</p>
-                <div class="mt-4 flex items-center justify-center gap-1">
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                </div>
+        {{-- Load Distribution Box Plot --}}
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.load_distribution') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Distribución estadística de la carga operativa y tareas asignadas dentro del equipo.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
+            <div id="loadDistributionChart" class="w-full"></div>
         </div>
 
-        {{-- Work-Life Balance Radar Chart Placeholder --}}
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 flex flex-col items-center justify-center min-h-[300px]">
-            <div class="text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Equilibrio Vida-Trabajo</h3>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Gráfico radar — Próximamente</p>
-                <div class="mt-4 flex items-center justify-center gap-1">
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                </div>
+        {{-- Work-Life Balance Radar Chart --}}
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.work_life_balance') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Métricas y valoración relacionadas con el equilibrio entre la vida personal y laboral.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
+            <div id="workLifeBalanceChart" class="w-full"></div>
         </div>
 
-        {{-- Mood-Productivity Correlation Scatter Plot Placeholder --}}
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 flex flex-col items-center justify-center min-h-[300px]">
-            <div class="text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ánimo vs Productividad</h3>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Gráfico de dispersión — Próximamente</p>
-                <div class="mt-4 flex items-center justify-center gap-1">
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                </div>
+        {{-- Mood-Productivity Correlation Scatter Plot --}}
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.mood_vs_productivity') }}</h2>
+                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ __('Análisis de correlación que evalúa cómo impacta el estado de ánimo en el volumen de tareas completadas.') }}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
+            <div id="moodProductivityChart" class="w-full"></div>
         </div>
 
     </div>
@@ -195,7 +196,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Alertas Activas</h2>
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.active_alerts') }}</h2>
                 @if(count($activeAlerts) > 0)
                 <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                     {{ count($activeAlerts) }}
@@ -213,7 +214,7 @@
                         @if(!empty($alert['user_id']))
                         <a href="{{ route('metrics.wellness.individual', $alert['user_id']) }}"
                            class="text-xs text-violet-600 dark:text-violet-400 hover:underline mt-1 inline-block">
-                            Ver perfil completo &rarr;
+                            {!! __('metrics.wellness.view_full_profile') !!}
                         </a>
                         @endif
                     </div>
@@ -223,7 +224,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p class="text-sm text-emerald-700 dark:text-emerald-400">No hay alertas activas. El equipo se mantiene estable.</p>
+                    <p class="text-sm text-emerald-700 dark:text-emerald-400">{{ __('metrics.wellness.no_active_alerts') }}</p>
                 </div>
                 @endforelse
             </div>
@@ -235,7 +236,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
-                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recomendaciones</h2>
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('metrics.wellness.recommendations') }}</h2>
             </div>
             <div class="space-y-3">
                 @forelse($recommendations as $rec)
@@ -246,7 +247,7 @@
                     <p class="text-sm text-gray-800 dark:text-gray-200">{{ $rec }}</p>
                 </div>
                 @empty
-                <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No hay recomendaciones en este momento.</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-4">{{ __('metrics.wellness.no_recommendations') }}</p>
                 @endforelse
             </div>
         </div>
@@ -301,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     value: { fontSize: '36px', fontWeight: 700, offsetY: 5 },
                     total: {
                         show: true,
-                        label: 'Promedio',
+                        label: '{{ __('metrics.wellness.average') }}',
                         fontSize: '12px',
                         color: '#9ca3af',
                         formatter: () => teamScore + '/100',
@@ -325,9 +326,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const stressChart = new ApexCharts(document.querySelector('#stressTrendChart'), {
         ...commonChartOptions,
         chart: { ...commonChartOptions.chart, type: 'line', height: 300 },
-        series: [{ name: 'Estrés', data: stressValues }],
+        series: [{ name: '{{ __('metrics.wellness.stress') }}', data: stressValues }],
         xaxis: { categories: stressCategories },
-        yaxis: { min: 0, max: 100, title: { text: 'Nivel' } },
+        yaxis: { min: 0, max: 100, title: { text: '{{ __('metrics.wellness.level') }}' } },
         colors: ['#ef4444'],
         annotations: {
             yaxis: [{
@@ -335,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 borderColor: '#ef4444',
                 strokeDashArray: 6,
                 label: {
-                    text: 'Alerta (' + stressThreshold + ')',
+                    text: '{{ __('metrics.wellness.alert') }} (' + stressThreshold + ')',
                     style: { color: '#fff', background: '#ef4444' },
                 },
             }],
@@ -352,9 +353,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const energyChart = new ApexCharts(document.querySelector('#energyTrendChart'), {
         ...commonChartOptions,
         chart: { ...commonChartOptions.chart, type: 'line', height: 300 },
-        series: [{ name: 'Energía', data: energyValues }],
+        series: [{ name: '{{ __('metrics.wellness.energy') }}', data: energyValues }],
         xaxis: { categories: energyCategories },
-        yaxis: { min: 0, max: 100, title: { text: 'Nivel' } },
+        yaxis: { min: 0, max: 100, title: { text: '{{ __('metrics.wellness.level') }}' } },
         colors: ['#10b981'],
         markers: { size: 3 },
     });
@@ -374,19 +375,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 enableShades: false,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 20, color: '#fecaca', name: 'Muy bajo' },
-                        { from: 20.01, to: 40, color: '#fde68a', name: 'Bajo' },
-                        { from: 40.01, to: 60, color: '#fde047', name: 'Neutral' },
-                        { from: 60.01, to: 80, color: '#86efac', name: 'Alto' },
-                        { from: 80.01, to: 100, color: '#22c55e', name: 'Muy alto' },
+                        { from: 0, to: 20, color: '#fecaca', name: '{{ __('metrics.wellness.very_low') }}' },
+                        { from: 20.01, to: 40, color: '#fde68a', name: '{{ __('metrics.wellness.low') }}' },
+                        { from: 40.01, to: 60, color: '#fde047', name: '{{ __('metrics.wellness.neutral') }}' },
+                        { from: 60.01, to: 80, color: '#86efac', name: '{{ __('metrics.wellness.high') }}' },
+                        { from: 80.01, to: 100, color: '#22c55e', name: '{{ __('metrics.wellness.very_high') }}' },
                     ],
                 },
             },
         },
-        series: heatmapSeries.length > 0 ? [{ name: 'Ánimo promedio', data: heatmapSeries }] : [],
+        series: heatmapSeries.length > 0 ? [{ name: '{{ __('metrics.wellness.avg_mood') }}', data: heatmapSeries }] : [],
         xaxis: { labels: { rotate: -45, style: { fontSize: '10px' } } },
         tooltip: {
-            y: { formatter: (val) => val ? val.toFixed(1) + '%' : 'Sin datos' },
+            y: { formatter: (val) => val ? val.toFixed(1) + '%' : '{{ __('metrics.wellness.no_data') }}' },
             theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
         },
     });
@@ -402,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const numWeeks = overtimeData[0].weekly.length;
         for (let w = 0; w < numWeeks; w++) {
             overtimeWeeks.push(
-                'Sem ' + (w + 1)
+                '{{ __('metrics.wellness.week') }} ' + (w + 1)
             );
         }
         overtimeData.forEach(member => {
@@ -423,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
             bar: { columnWidth: '60%' },
         },
         xaxis: { categories: overtimeWeeks },
-        yaxis: { title: { text: 'Horas extra' }, min: 0 },
+        yaxis: { title: { text: '{{ __('metrics.wellness.overtime') }}' }, min: 0 },
         colors: overtimeNames.map((_, i) => {
             const hue = (i * 37) % 360;
             return `hsl(${hue}, 60%, 50%)`;
@@ -436,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 borderColor: '#ef4444',
                 strokeDashArray: 6,
                 label: {
-                    text: 'Límite (5h)',
+                    text: '{{ __('metrics.wellness.limit') }} (5h)',
                     style: { color: '#fff', background: '#ef4444' },
                 },
             }] : [],
@@ -446,6 +447,101 @@ document.addEventListener('DOMContentLoaded', function() {
         },
     });
     overtimeChart.render();
+
+    // ── Load Distribution Box Plot ──
+    const loadDistribution = @json($loadDistribution ?? []);
+    if (loadDistribution.length === 5 && loadDistribution[4] > 0) {
+        new ApexCharts(document.querySelector('#loadDistributionChart'), {
+            series: [{
+                type: 'boxPlot',
+                data: [{
+                    x: 'Equipo',
+                    y: loadDistribution
+                }]
+            }],
+            chart: { type: 'boxPlot', height: 300, toolbar: { show: false } },
+            colors: ['#8b5cf6'],
+            plotOptions: {
+                boxPlot: {
+                    colors: {
+                        upper: '#a78bfa',
+                        lower: '#c4b5fd'
+                    }
+                }
+            },
+            yaxis: {
+                title: { text: 'Actividades asignadas' },
+                labels: { style: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' } }
+            },
+            tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+            grid: {
+                borderColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#f3f4f6',
+            }
+        }).render();
+    } else {
+        document.querySelector('#loadDistributionChart').innerHTML = '<p class="text-sm text-gray-400 text-center mt-12">Sin datos suficientes</p>';
+    }
+
+    // ── Work-Life Balance Radar Chart ──
+    const radarData = @json($radarData ?? []);
+    if (radarData.categories) {
+        new ApexCharts(document.querySelector('#workLifeBalanceChart'), {
+            series: [
+                { name: 'Usuario', data: radarData.user },
+                { name: 'Promedio Equipo', data: radarData.team }
+            ],
+            chart: { type: 'radar', height: 300, toolbar: { show: false } },
+            labels: radarData.categories,
+            stroke: { width: 2 },
+            fill: { opacity: 0.2 },
+            markers: { size: 4 },
+            colors: ['#10b981', '#3b82f6'],
+            xaxis: {
+                labels: {
+                    style: {
+                        colors: radarData.categories.map(() => document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'),
+                        fontSize: '11px'
+                    }
+                }
+            },
+            yaxis: { show: false, min: 0, max: 100 },
+            legend: {
+                position: 'bottom',
+                labels: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }
+            },
+            tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
+        }).render();
+    }
+
+    // ── Mood-Productivity Scatter Plot ──
+    const scatterDataRaw = @json($scatterData ?? []);
+    if (scatterDataRaw.length > 0) {
+        new ApexCharts(document.querySelector('#moodProductivityChart'), {
+            series: [{
+                name: 'Productividad',
+                data: scatterDataRaw.map(d => [d[0], d[1]])
+            }],
+            chart: { type: 'scatter', height: 300, toolbar: { show: false }, zoom: { enabled: false } },
+            colors: ['#f59e0b'],
+            xaxis: {
+                title: { text: 'Índice de Ánimo (0-100)' },
+                min: 0, max: 100,
+                labels: { style: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' } }
+            },
+            yaxis: {
+                title: { text: 'Actividades Completadas' },
+                labels: { style: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' } }
+            },
+            grid: {
+                borderColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#f3f4f6',
+                strokeDashArray: 3
+            },
+            markers: { size: 6, hover: { size: 8 } },
+            tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
+        }).render();
+    } else {
+        document.querySelector('#moodProductivityChart').innerHTML = '<p class="text-sm text-gray-400 text-center mt-12">Sin datos suficientes</p>';
+    }
 
 });
 </script>

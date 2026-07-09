@@ -212,7 +212,7 @@ class GamificationMetricsService
         return DB::table('gamification_logs')
             ->where('user_id', $userId)
             ->whereIn('type', ['badge', 'points', 'streak', 'kudos'])
-            ->select('type', 'source_type', 'points', 'message', 'created_at')
+            ->select('type', 'source_type', 'points', 'description', 'created_at')
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()

@@ -195,17 +195,60 @@ class WellnessMetricsService
         return $heatmap;
     }
 
+    public function getTeamMoodHeatmap(int $teamId, ?int $days = 30): array
+    {
+        $endDate = Carbon::now();
+        $startDate = $endDate->copy()->subDays($days);
+
+        $logs = DB::table('user_mood_logs')
+            ->join('team_user', 'user_mood_logs.user_id', '=', 'team_user.user_id')
+            ->where('team_user.team_id', $teamId)
+            ->whereBetween('user_mood_logs.created_at', [$startDate, $endDate])
+            ->select('user_mood_logs.mood_label', 'user_mood_logs.energy_level', 'user_mood_logs.created_at')
+            ->orderBy('user_mood_logs.created_at')
+            ->get();
+
+        $heatmap = [];
+        $cursor = $startDate->copy();
+        while ($cursor <= $endDate) {
+            $dayLogs = $logs->where('created_at', '>=', $cursor->copy()->startOfDay())
+                ->where('created_at', '<', $cursor->copy()->addDay());
+
+            $moodAvg = $dayLogs->isEmpty()
+                ? null
+                : round($dayLogs->avg(function ($log) {
+                    return WellnessMetricsService::moodToScoreStatic($log->mood_label ?? '');
+                }) * 20);
+
+            $energyAvg = $dayLogs->isEmpty()
+                ? null
+                : round(($dayLogs->avg('energy_level') ?? 3) * 20);
+
+            $heatmap[] = [
+                'date' => $cursor->toDateString(),
+                'mood' => $moodAvg,
+                'energy' => $energyAvg,
+                'stress' => $moodAvg !== null ? max(0, 100 - $moodAvg) : null,
+                'satisfaction' => $moodAvg,
+            ];
+            $cursor->addDay();
+        }
+
+        return $heatmap;
+    }
+
     public function getTeamWellness(int $teamId, ?int $days = 7): array
     {
         $endDate = Carbon::now();
         $startDate = $endDate->copy()->subDays($days);
 
         $members = DB::table('users')
+            ->join('team_user', 'users.id', '=', 'team_user.user_id')
+            ->where('team_user.team_id', $teamId)
             ->leftJoin('user_mood_logs', function ($join) use ($startDate, $endDate) {
                 $join->on('users.id', '=', 'user_mood_logs.user_id')
                      ->whereBetween('user_mood_logs.created_at', [$startDate, $endDate]);
             })
-            ->where('users.favorite_team_id', $teamId)
             ->select(
                 'users.id',
                 'users.name',

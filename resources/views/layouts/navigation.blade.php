@@ -251,6 +251,15 @@
                         @if(Auth::user()->is_admin)
                             <div class="border-t border-gray-100 dark:border-gray-800 my-1"></div>
                             
+                            <x-dropdown-link :href="route('metrics.index')" class="font-bold text-indigo-600 dark:text-indigo-400">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    {{ __('Cuadros de Mando') }}
+                                </div>
+                            </x-dropdown-link>
+
                             <x-dropdown-link :href="route('settings.teams')" class="font-bold text-violet-600 dark:text-violet-400">
                                 <div class="flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -480,6 +489,15 @@
                 </x-responsive-nav-link>
 
                 @if(Auth::user()->is_admin)
+                    <x-responsive-nav-link :href="route('metrics.index')" :active="request()->routeIs('metrics.*')" class="font-bold text-indigo-600 dark:text-indigo-400">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            {{ __('Cuadros de Mando') }}
+                        </div>
+                    </x-responsive-nav-link>
+
                     <x-responsive-nav-link :href="route('settings.mail')" :active="request()->routeIs('settings.*')" class="font-bold text-violet-600 dark:text-violet-400">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

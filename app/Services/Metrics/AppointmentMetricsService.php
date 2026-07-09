@@ -50,18 +50,19 @@ class AppointmentMetricsService
             ->orderBy('day')
             ->get();
 
-        $labels = [];
-        $data = [];
+        $result = [];
         $cursor = $startDate->copy();
         while ($cursor <= Carbon::now()) {
             $dayStr = $cursor->toDateString();
             $row = $rows->firstWhere('day', $dayStr);
-            $labels[] = $cursor->format('d/M');
-            $data[] = $row ? (int) $row->count : 0;
+            $result[] = [
+                'label' => $cursor->format('d/M'),
+                'count' => $row ? (int) $row->count : 0,
+            ];
             $cursor->addDay();
         }
 
-        return ['labels' => $labels, 'data' => $data];
+        return $result;
     }
 
     public function getDistributionByService(int $days = 30): array
@@ -129,14 +130,17 @@ class AppointmentMetricsService
             ->orderBy('year_week')
             ->get();
 
-        $labels = [];
-        $rates = [];
-        $rows->each(function ($r) use (&$labels, &$rates) {
-            $labels[] = 'W' . $r->year_week;
-            $rates[] = $r->total > 0 ? round(($r->cancelled / $r->total) * 100, 1) : 0;
+        $result = [];
+        $rows->each(function ($r) use (&$result) {
+            $result[] = [
+                'label' => 'W' . $r->year_week,
+                'total' => (int) $r->total,
+                'cancelled' => (int) $r->cancelled,
+                'rate' => $r->total > 0 ? round(($r->cancelled / $r->total) * 100, 1) : 0,
+            ];
         });
 
-        return ['labels' => $labels, 'data' => $rates];
+        return $result;
     }
 
     public function getNoShowTrend(int $weeks = 8): array
@@ -150,14 +154,17 @@ class AppointmentMetricsService
             ->orderBy('year_week')
             ->get();
 
-        $labels = [];
-        $rates = [];
-        $rows->each(function ($r) use (&$labels, &$rates) {
-            $labels[] = 'W' . $r->year_week;
-            $rates[] = $r->total > 0 ? round(($r->no_show / $r->total) * 100, 1) : 0;
+        $result = [];
+        $rows->each(function ($r) use (&$result) {
+            $result[] = [
+                'label' => 'W' . $r->year_week,
+                'total' => (int) $r->total,
+                'no_show' => (int) $r->no_show,
+                'rate' => $r->total > 0 ? round(($r->no_show / $r->total) * 100, 1) : 0,
+            ];
         });
 
-        return ['labels' => $labels, 'data' => $rates];
+        return $result;
     }
 
     public function getReturnRate(int $days = 90): array
