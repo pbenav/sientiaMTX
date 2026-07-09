@@ -642,6 +642,7 @@ Route::middleware(['auth'])->prefix('metrics')->name('metrics.')->group(function
 
     // Dashboard Bienestar
     Route::get('/bienestar', [\App\Http\Controllers\Metrics\WellnessDashboardController::class, 'index'])->name('wellness.index');
+    Route::post('/bienestar/mood', [\App\Http\Controllers\Metrics\WellnessDashboardController::class, 'storeMood'])->name('wellness.mood.store');
     Route::get('/bienestar/{userId}', [\App\Http\Controllers\Metrics\WellnessDashboardController::class, 'individual'])->name('wellness.individual');
 
     // Dashboard Gamificación

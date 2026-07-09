@@ -214,4 +214,31 @@ class WellnessDashboardController extends Controller
         if ($score >= 40) return 'average';
         return 'poor';
     }
+    
+    /**
+     * Guarda el estado de ánimo / energía del usuario.
+     */
+    public function storeMood(Request $request)
+    {
+        $request->validate([
+            'score' => 'required|integer|min:1|max:5',
+            'notes' => 'nullable|string'
+        ]);
+
+        \App\Models\UserMoodLog::create([
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'energy_level' => $request->score,
+            'mood_label' => match((int)$request->score) {
+                1 => 'Agotado',
+                2 => 'Cansado',
+                3 => 'Normal',
+                4 => 'Bien',
+                5 => 'Excelente',
+                default => 'Normal'
+            },
+            'notes' => $request->notes,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }
