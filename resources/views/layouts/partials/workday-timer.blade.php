@@ -55,7 +55,7 @@
             window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: this.working } }));
             
             // Trigger mood checkin
-            this.promptMoodCheckin(this.working);
+            window.promptMoodCheckin(this.working);
             
             if (data.syncing_cth && data.cth_result) {
                 this.fetchStatus(); // Refrescar los datos de CTH después de hacer toggle
@@ -142,66 +142,6 @@
                 }
             }
         });
-    },
-    
-    promptMoodCheckin(isStart) {
-        if (typeof window.Swal === 'undefined') return;
-        setTimeout(() => {
-            window.Swal.fire({
-                title: isStart ? '¡Que tengas un buen turno!' : '¡Buen trabajo hoy!',
-                text: '¿Cómo definirías tu energía en este momento?',
-                html: `
-                    <div class="flex justify-center gap-2 sm:gap-4 mt-6 mb-2" id="mood-selector">
-                        ${['😫', '🙁', '😐', '🙂', '🤩'].map((emoji, idx) => 
-                            '<button type="button" class="text-4xl transition-all duration-300 rounded-full hover:scale-125 focus:outline-none focus:ring-0" onclick="document.querySelectorAll(\\'#mood-selector button\\').forEach(b => b.classList.remove(\\'ring-4\\', \\'ring-violet-500/30\\', \\'scale-125\\', \\'bg-gray-100\\', \\'dark:bg-gray-800\\')); this.classList.add(\\'ring-4\\', \\'ring-violet-500/30\\', \\'scale-125\\', \\'bg-gray-100\\', \\'dark:bg-gray-800\\'); window._selectedMood = ' + (idx + 1) + '">' + emoji + '</button>'
-                        ).join('')}
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Guardar Estado',
-                cancelButtonText: 'Omitir',
-                confirmButtonColor: '#8b5cf6',
-                cancelButtonColor: '#9ca3af',
-                customClass: {
-                    popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl rounded-[2rem]',
-                    title: 'text-xl font-black text-gray-800 dark:text-white',
-                    htmlContainer: 'text-sm text-gray-600 dark:text-gray-300',
-                    confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest focus:ring-0',
-                    cancelButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest focus:ring-0'
-                },
-                preConfirm: () => {
-                    if (!window._selectedMood) {
-                        window.Swal.showValidationMessage('Por favor selecciona un estado o pulsa Omitir');
-                        return false;
-                    }
-                    return window._selectedMood;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('{{ route('metrics.wellness.mood.store') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({ score: result.value })
-                    }).then(() => {
-                        window.Swal.fire({
-                            toast: true,
-                            position: 'bottom-end',
-                            icon: 'success',
-                            title: '¡Energía registrada!',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            customClass: {
-                                popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl rounded-2xl'
-                            }
-                        });
-                    });
-                }
-                window._selectedMood = null;
-            });
-        }, 800); // Pequeño retraso para que los toast de la app fluyan
     },
     
     formatTime(seconds) {
