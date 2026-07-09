@@ -49,6 +49,7 @@ class DocumentationController extends Controller
                 'user-manual'       => 'Manual de Usuario',
                 'admin-manual'      => 'Manual de Administrador',
                 'gamification'      => 'Sistema de Gamificación',
+                'wellness-metrics'  => 'Métricas de Bienestar (Wellness)',
                 'spdx'              => 'Compatibilidad SPDX',
                 'ens'               => 'Cumplimiento ENS',
             ],
@@ -62,6 +63,7 @@ class DocumentationController extends Controller
                 'user-manual'       => 'User Manual',
                 'admin-manual'      => 'Admin Manual',
                 'gamification'      => 'Gamification System',
+                'wellness-metrics'  => 'Wellness Metrics',
                 'spdx'              => 'SPDX Compatibility',
                 'ens'               => 'ENS Compliance',
             ]

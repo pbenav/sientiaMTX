@@ -347,6 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         yaxis: {
             labels: { style: { fontSize: '11px' } },
         },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
         tooltip: {
             theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
         },
@@ -407,7 +408,11 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         markers: { size: 3 },
     });
-    stressChart.render();
+    if (stressValues.length > 0) {
+        stressChart.render();
+    } else {
+        document.querySelector('#stressTrendChart').innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500 text-center mt-12">Sin datos suficientes</p>';
+    }
 
     // ── Energy Trend Chart ──
     const energyData = @json($moodHistory);
@@ -423,7 +428,11 @@ document.addEventListener('DOMContentLoaded', function() {
         colors: ['#10b981'],
         markers: { size: 3 },
     });
-    energyChart.render();
+    if (energyValues.length > 0) {
+        energyChart.render();
+    } else {
+        document.querySelector('#energyTrendChart').innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500 text-center mt-12">Sin datos suficientes</p>';
+    }
 
     // ── Mood Heatmap (ApexCharts heatmap) ──
     const heatMapData = @json($heatMapData);
@@ -455,7 +464,11 @@ document.addEventListener('DOMContentLoaded', function() {
             theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
         },
     });
-    moodHeatmap.render();
+    if (heatmapSeries.length > 0) {
+        moodHeatmap.render();
+    } else {
+        document.querySelector('#moodHeatmap').innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500 text-center mt-12">Sin datos suficientes</p>';
+    }
 
     // ── Overtime Bar Chart ──
     const overtimeData = @json($overtimeByMember);
@@ -506,11 +519,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
             }] : [],
         },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
         tooltip: {
             theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
         },
     });
-    overtimeChart.render();
+    if (overtimeSeries.length > 0) {
+        overtimeChart.render();
+    } else {
+        document.querySelector('#overtimeChart').innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500 text-center mt-12">Sin datos suficientes</p>';
+    }
 
     // ── Load Distribution Box Plot ──
     const loadDistribution = @json($loadDistribution ?? []);
@@ -537,6 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: { text: 'Actividades asignadas' },
                 labels: { style: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' } }
             },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
             tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
             grid: {
                 borderColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#f3f4f6',
@@ -573,6 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 position: 'bottom',
                 labels: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' }
             },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
             tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
         }).render();
     }
@@ -607,6 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 strokeDashArray: 3
             },
             markers: { size: 6, hover: { size: 8 } },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
             tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
         }).render();
     } else {
