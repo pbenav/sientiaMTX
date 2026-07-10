@@ -218,6 +218,7 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/restore-deprecated', [\App\Http\Controllers\ActivityController::class, 'restoreDeprecated'])->name('teams.activities.restore-deprecated')->withTrashed()->withoutScopedBindings();
         Route::post('activities/{activity}/clone-deprecated', [\App\Http\Controllers\ActivityController::class, 'cloneDeprecated'])->name('teams.activities.clone-deprecated')->withTrashed()->withoutScopedBindings();
         Route::post('activities/{activity}/merge-deprecated', [\App\Http\Controllers\ActivityController::class, 'mergeDeprecated'])->name('teams.activities.merge-deprecated')->withTrashed()->withoutScopedBindings();
+        Route::post('activities/{activity}/restore-metadata', [\App\Http\Controllers\ActivityController::class, 'restoreMetadata'])->name('teams.activities.restore-metadata');
 
         // Gestión de Capítulos para Documentos
         Route::post('activities/{activity}/chapters', [\App\Http\Controllers\ActivityController::class, 'addChapter'])->name('teams.activities.chapters.store');

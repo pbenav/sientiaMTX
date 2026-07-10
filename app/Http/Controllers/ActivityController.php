@@ -947,5 +947,56 @@ class ActivityController extends Controller
 
         return back()->withFragment('chapters-section')->with('success', __('activities.chapter_deleted'));
     }
+
+    /**
+     * Restaura los metadatos y configuraciones de la actividad desde su ancestro deprecado.
+     */
+    public function restoreMetadata(Request $request, Team $team, Activity $activity)
+    {
+        if ($activity->team_id !== $team->id) {
+            abort(404);
+        }
+
+        if (auth()->user()->cannot('update', $activity)) {
+            abort(403, 'No tienes permiso para modificar esta actividad.');
+        }
+
+        $ancestor = $activity->convertedFromActivity;
+
+        if (!$ancestor) {
+            return back()->with('error', 'No se encontró el historial de conversión original.');
+        }
+
+        // Recuperar campos genéricos
+        $activity->description = $ancestor->description;
+        $activity->due_date = $ancestor->due_date;
+        $activity->scheduled_date = $ancestor->scheduled_date;
+        $activity->original_due_date = $ancestor->original_due_date;
+        $activity->priority = $ancestor->priority;
+        $activity->auto_priority = $ancestor->auto_priority;
+
+        // Mezclar metadatos respetando la estructura del nuevo tipo
+        $currentMetadata = $activity->metadata ?? [];
+        $ancestorMetadata = $ancestor->metadata ?? [];
+
+        // Conservar campos especiales del tipo actual (ej. chapters de document) pero pisar los compartidos
+        foreach ($ancestorMetadata as $key => $value) {
+            // Evitar pisar llaves de estado del sistema de conversiones
+            if (!in_array($key, ['converted_to_uuid', 'converted_to_id', 'is_deprecated'])) {
+                $currentMetadata[$key] = $value;
+            }
+        }
+        $activity->metadata = $currentMetadata;
+
+        $activity->saveQuietly();
+
+        $activity->histories()->create([
+            'user_id' => auth()->id(),
+            'action' => 'restored_metadata',
+            'details' => json_encode(['from_uuid' => $ancestor->uuid])
+        ]);
+
+        return back()->with('success', 'Metadatos y configuraciones de la versión original restaurados correctamente.');
+    }
 }
 

@@ -389,6 +389,30 @@
             @endif
 
             <script>
+                function confirmRestoreMetadata(formId) {
+                    Swal.fire({
+                        title: '¿Restaurar metadatos?',
+                        text: 'Esto sobreescribirá la descripción, fecha límite y otras configuraciones de esta actividad con los datos de su versión original. Las notas y archivos actuales no se borrarán.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#7c3aed',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, restaurar',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                        color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest',
+                            cancelButton: 'rounded-xl font-black uppercase text-xs tracking-widest'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(formId).submit();
+                        }
+                    });
+                }
+
                 function confirmCloneTask(formId) {
                     Swal.fire({
                         title: '¿Clonar actividad?',
@@ -1083,6 +1107,51 @@
                             <a href="{{ route('teams.activities.show', [$team, $activity->convertedToActivity]) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline mt-2">
                                 👉 Ver la nueva actividad resultante ({{ $activity->convertedToActivity->type_label ?? $activity->convertedToActivity->type }})
                             </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            
+            @if(!$activity->isDeprecatedByConversion() && $activity->convertedFromActivity)
+                <div class="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/10 dark:to-indigo-900/10 border border-violet-200 dark:border-violet-800/50 rounded-2xl p-4 shadow-sm mb-6">
+                    <div class="flex items-start sm:items-center gap-4 pl-2">
+                        <div class="w-10 h-10 rounded-2xl bg-violet-500/20 text-violet-600 dark:text-violet-500 flex items-center justify-center shrink-0 border border-violet-500/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="w-full">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-sm font-black text-violet-800 dark:text-violet-400 uppercase tracking-wider">Historial de Conversión (Vidas Pasadas)</h3>
+                                <span class="px-2.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-[10px] font-black uppercase tracking-widest border border-violet-200 dark:border-violet-800/50 shadow-sm">
+                                    {{ $activity->convertedFromActivity->type_label ?? $activity->convertedFromActivity->type }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
+                                Esta actividad nació como una conversión de <strong>"{{ $activity->convertedFromActivity->title }}"</strong> ({{ $activity->convertedFromActivity->type_label ?? $activity->convertedFromActivity->type }}). La versión original se encuentra archivada pero mantiene todos sus datos y configuraciones intactos.
+                            </p>
+                            
+                            <div class="mt-3 flex items-center gap-3">
+                                <a href="{{ route('teams.activities.show', [$team, $activity->convertedFromActivity]) }}" class="inline-flex items-center gap-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg transition-all font-bold hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Ver actividad original
+                                </a>
+                                
+                                @if(auth()->user()->can('update', $activity))
+                                <form id="restore-metadata-form-{{ $activity->id }}" action="{{ route('teams.activities.restore-metadata', [$team, $activity]) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="button" onclick="confirmRestoreMetadata('restore-metadata-form-{{ $activity->id }}')" class="inline-flex items-center gap-1.5 text-xs bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 px-3 py-1.5 rounded-lg transition-all font-bold hover:bg-violet-100 dark:hover:bg-violet-900/40">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Restaurar Metadatos
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
