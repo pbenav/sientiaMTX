@@ -727,22 +727,29 @@ class Activity extends Model
         if (!$team) return;
 
         $currentProgress = (int)$this->progress;
+        $expectedTypes = [];
         if ($currentProgress === 100) {
-            $type = 'done';
+            $expectedTypes = ['done'];
         } elseif ($currentProgress === 0) {
-            $type = 'todo';
+            $expectedTypes = ['todo'];
         } else {
-            $type = 'in_progress';
+            $expectedTypes = ['in_progress', 'custom'];
         }
 
-        $column = $team->kanbanColumns()
-            ->where('type', $type)
-            ->orderBy('order_index')
-            ->first();
+        $currentColumn = \App\Models\KanbanColumn::find($this->kanban_column_id);
 
-        if ($column && $this->kanban_column_id !== $column->id) {
-            $this->kanban_column_id = $column->id;
-            $this->saveQuietly();
+        if (!$currentColumn || !in_array($currentColumn->type, $expectedTypes)) {
+            $typeToAssign = $currentProgress === 100 ? 'done' : ($currentProgress === 0 ? 'todo' : 'in_progress');
+            
+            $defaultColumn = $team->kanbanColumns()
+                ->where('type', $typeToAssign)
+                ->orderBy('order_index')
+                ->first();
+
+            if ($defaultColumn && $this->kanban_column_id !== $defaultColumn->id) {
+                $this->kanban_column_id = $defaultColumn->id;
+                $this->saveQuietly();
+            }
         }
     }
 

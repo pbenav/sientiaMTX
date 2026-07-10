@@ -72,16 +72,22 @@ class TaskActivity extends Activity implements ExportableActivityInterface
         if (!$team) return;
 
         $progress = $this->progress_percentage;
-        $type = match(true) {
-            $progress === 100 => 'done',
-            $progress === 0   => 'todo',
-            default           => 'in_progress',
+        $expectedTypes = match(true) {
+            $progress === 100 => ['done'],
+            $progress === 0   => ['todo'],
+            default           => ['in_progress', 'custom'],
         };
 
-        $column = $team->kanbanColumns()->where('type', $type)->orderBy('order_index')->first();
-        if ($column && $this->kanban_column_id !== $column->id) {
-            $this->kanban_column_id = $column->id;
-            $this->saveQuietly();
+        $currentColumn = \App\Models\KanbanColumn::find($this->kanban_column_id);
+        
+        if (!$currentColumn || !in_array($currentColumn->type, $expectedTypes)) {
+            $typeToAssign = $progress === 100 ? 'done' : ($progress === 0 ? 'todo' : 'in_progress');
+            
+            $column = $team->kanbanColumns()->where('type', $typeToAssign)->orderBy('order_index')->first();
+            if ($column && $this->kanban_column_id !== $column->id) {
+                $this->kanban_column_id = $column->id;
+                $this->saveQuietly();
+            }
         }
     }
 
