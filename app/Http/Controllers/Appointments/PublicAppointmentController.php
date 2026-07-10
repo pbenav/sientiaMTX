@@ -240,8 +240,9 @@ class PublicAppointmentController extends Controller
             }
         }
 
-        // Crear una clave de bloqueo para prevenir envíos dobles o concurrentes para la misma persona
-        $lockKey = 'appointment_store_' . md5(($data['email'] ?? '') . ($data['dni'] ?? '') . $firstName . $lastName . $request->ip());
+        // Bloquear el tramo horario específico para evitar que múltiples personas (o clics dobles)
+        // reserven el mismo espacio simultáneamente, causando una condición de carrera.
+        $lockKey = 'appointment_slot_' . $service->id . '_' . $date->format('Ymd') . '_' . str_replace(':', '', $data['appointment_time']);
         
         // Evitamos usar el driver 'file' para los bloqueos, ya que puede dar fallos de 'fopen' si los directorios temporales no existen
         $cacheStore = config('cache.default') === 'file' ? 'database' : null;
@@ -698,7 +699,8 @@ class PublicAppointmentController extends Controller
             }
         }
 
-        $lockKey = 'appointment_update_' . $appointment->id;
+        // Bloquear el tramo horario de destino para evitar condiciones de carrera si varios intentan ocupar el mismo hueco
+        $lockKey = 'appointment_slot_' . $service->id . '_' . $newDate->format('Ymd') . '_' . str_replace(':', '', $newTime);
 
         // Evitamos usar el driver 'file' para los bloqueos
         $cacheStore = config('cache.default') === 'file' ? 'database' : null;
