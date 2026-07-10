@@ -271,7 +271,10 @@
                     </div>
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
                         <span class="font-medium">Usuario:</span>
-                        <span class="font-mono text-xs" :class="!cthData.user_code ? 'text-red-500 font-bold' : ''" x-text="cthData.user_code || 'No configurado'"></span>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-gray-900 dark:text-white block">{{ auth()->user()->name }}</span>
+                            <span class="text-[9px] text-red-500 font-bold block mt-0.5" x-show="!cthData.user_code">Sincronización no configurada</span>
+                        </div>
                     </div>
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
                         <span class="font-medium">Centro de Trabajo:</span>
