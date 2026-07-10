@@ -229,10 +229,8 @@ class PublicAppointmentController extends Controller
                 
                 if (!empty($data['dni']) && !empty($existingEmailVisitor->dni) && mb_strtoupper($data['dni']) !== mb_strtoupper($existingEmailVisitor->dni)) {
                     $isDifferentPerson = true;
-                } elseif (mb_strtolower(trim($firstName)) !== mb_strtolower(trim($existingEmailVisitor->first_name)) || 
-                          mb_strtolower(trim($lastName)) !== mb_strtolower(trim($existingEmailVisitor->last_name))) {
-                    $isDifferentPerson = true;
                 }
+                // Se elimina la validación estricta de nombre y apellidos para permitir erratas, diminutivos o pequeños cambios.
                 
                 if ($isDifferentPerson) {
                     return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
@@ -688,10 +686,8 @@ class PublicAppointmentController extends Controller
                 
                 if (!empty($data['dni']) && !empty($existingEmailVisitor->dni) && mb_strtoupper($data['dni']) !== mb_strtoupper($existingEmailVisitor->dni)) {
                     $isDifferentPerson = true;
-                } elseif (mb_strtolower(trim($firstName)) !== mb_strtolower(trim($existingEmailVisitor->first_name)) || 
-                          mb_strtolower(trim($lastName)) !== mb_strtolower(trim($existingEmailVisitor->last_name))) {
-                    $isDifferentPerson = true;
                 }
+                // Se elimina la validación estricta de nombre y apellidos para permitir erratas, diminutivos o pequeños cambios.
                 
                 if ($isDifferentPerson) {
                     return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
@@ -795,20 +791,9 @@ class PublicAppointmentController extends Controller
             'email' => 'required|email'
         ]);
 
-        $visitor = AppointmentVisitor::where('email', $request->email)->first();
-
-        if ($visitor) {
-            return response()->json([
-                'found'      => true,
-                'first_name' => $visitor->first_name,
-                'last_name'  => $visitor->last_name,
-                'dni'        => $visitor->dni,
-                'phone'      => $visitor->phone,
-                'city'       => $visitor->city,
-                'postal_code'=> $visitor->postal_code,
-            ]);
-        }
-
+        // Por motivos estrictos de privacidad (RGPD) y prevención de enumeración de datos
+        // no debemos devolver información personal en base a un simple email.
+        // El autocompletado inseguro queda desactivado desde el servidor.
         return response()->json(['found' => false]);
     }
 
