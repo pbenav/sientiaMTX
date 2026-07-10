@@ -371,7 +371,7 @@
     </div>
 </div>
                 </div>
-                <div class="flex justify-center gap-2 sm:gap-4" x-data="{ mood: {{ $latestMood ? $latestMood->score : 'null' }} }">
+                <div class="flex justify-center gap-2 sm:gap-4" x-data="{ mood: {{ $latestMood ? $latestMood->energy_level : 'null' }} }">
                     <template x-for="(emoji, index) in ['😫', '🙁', '😐', '🙂', '🤩']" :key="index">
                         <button @click="mood = index + 1"
                                 :class="mood === index + 1 ? 'scale-125 ring-4 ring-violet-500/30' : 'opacity-60 hover:opacity-100 hover:scale-110'"
