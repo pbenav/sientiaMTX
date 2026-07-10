@@ -9,12 +9,23 @@ use Illuminate\Http\Request;
 
 class AppointmentVisitorController extends Controller
 {
-    public function index(Team $team)
+    public function index(Request $request, Team $team)
     {
+        $search = $request->input('search');
+
         // Obtener los visitantes que tienen citas con servicios de este equipo
         $visitors = AppointmentVisitor::whereHas('appointments', function ($query) use ($team) {
             $query->whereHas('service', function ($q) use ($team) {
                 $q->where('team_id', $team->id);
+            });
+        })
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('dni', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         })
         ->withCount(['appointments' => function ($query) use ($team) {
@@ -24,7 +35,8 @@ class AppointmentVisitorController extends Controller
         }])
         ->orderBy('first_name')
         ->orderBy('last_name')
-        ->paginate(15);
+        ->paginate(15)
+        ->withQueryString();
 
         return view('appointments.visitors.index', compact('team', 'visitors'));
     }
