@@ -39,16 +39,16 @@
             </div>
         @endif
 
-        {{-- Resumen de hoy --}}
+        {{-- Resumen del periodo filtrado --}}
         <div class="flex flex-wrap items-center gap-x-6 gap-y-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm text-sm">
-            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Hoy:</span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Periodo:</span>
             
             <div class="flex items-center gap-2.5">
                 <div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div class="flex flex-col leading-none">
-                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['pending'] ?? 0 }}</span>
+                    <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['pending'] ?? 0 }}</span>
                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Previstas</span>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                 </div>
                 <div class="flex flex-col leading-none">
-                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['confirmed'] ?? 0 }}</span>
+                    <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['confirmed'] ?? 0 }}</span>
                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Confirmadas</span>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div class="flex flex-col leading-none">
-                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['completed'] ?? 0 }}</span>
+                    <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['completed'] ?? 0 }}</span>
                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Completadas</span>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </div>
                 <div class="flex flex-col leading-none">
-                    <span class="font-black text-gray-900 dark:text-white">{{ $todayStats['cancelled'] ?? 0 }}</span>
+                    <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['cancelled'] ?? 0 }}</span>
                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Canceladas</span>
                 </div>
             </div>
@@ -92,7 +92,7 @@
             <div class="hidden xl:block w-px h-6 bg-gray-200 dark:bg-gray-800 mx-2"></div>
 
             <div class="flex items-center gap-5 xl:ml-auto">
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400" title="Calculado sobre citas completadas con tiempo registrado en los últimos 30 días">⏱️ Tiempos (30d):</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400" title="Calculado sobre citas completadas con tiempo registrado en el periodo filtrado">⏱️ Tiempos (Periodo):</span>
                 
                 <div class="flex items-center gap-2.5">
                     <div class="flex flex-col leading-none">

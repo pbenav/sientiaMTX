@@ -190,18 +190,39 @@ class AppointmentController extends Controller
             \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
         }
 
-        $todayStats = Appointment::where('user_id', $user->id)
-            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
-            ->forDate(now()->toDateString())
+        $statsBaseQuery = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id));
+
+        if ($request->filled('service_id')) {
+            $statsBaseQuery->where('service_id', $request->service_id);
+        }
+        if ($request->filled('date_from')) {
+            $statsBaseQuery->where('appointment_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $statsBaseQuery->where('appointment_date', '<=', $request->date_to);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $statsBaseQuery->where(function($q) use ($search) {
+                $q->where('localizador', 'like', "%{$search}%")
+                  ->orWhereHas('visitor', function($vq) use ($search) {
+                      $vq->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%")
+                         ->orWhere('dni', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $periodStats = (clone $statsBaseQuery)
             ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
 
-        // Stats: duración de citas (últimos 30 días)
-        $pastAppointments = Appointment::where('user_id', $user->id)
-            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
-            ->where('appointment_date', '>=', now()->subDays(30)->toDateString())
+        // Stats: duración de citas (del periodo filtrado)
+        $pastAppointments = (clone $statsBaseQuery)
             ->where('status', 'completed')
             ->with(['activity', 'task'])
             ->get();
@@ -235,7 +256,7 @@ class AppointmentController extends Controller
             'count' => count($durations)
         ];
 
-        return view('appointments.list', compact('appointments', 'services', 'team', 'todayStats', 'statsDuration'));
+        return view('appointments.list', compact('appointments', 'services', 'team', 'periodStats', 'statsDuration'));
     }
 
     /**
