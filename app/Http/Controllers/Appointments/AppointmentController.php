@@ -246,7 +246,7 @@ class AppointmentController extends Controller
         $request->validate([
             'appointment_ids' => 'required|array',
             'appointment_ids.*' => 'exists:appointments,id',
-            'bulk_action' => 'required|in:complete,cancel,delete',
+            'bulk_action' => 'required|in:complete,cancel,delete,no_show',
         ]);
 
         $appointments = Appointment::whereIn('id', $request->appointment_ids)
@@ -261,11 +261,15 @@ class AppointmentController extends Controller
                 if ($appointment->task) {
                     $appointment->task->update(['status' => 'completed', 'progress_percentage' => 100]);
                 }
-            } elseif ($request->bulk_action === 'cancel') {
+            } elseif ($request->bulk_action === 'cancel' || $request->bulk_action === 'no_show') {
+                $reason = $request->bulk_action === 'no_show' 
+                    ? 'El ciudadano no se ha presentado a la cita en la fecha y hora acordadas.' 
+                    : $request->input('cancellation_reason');
+
                 $appointment->update([
                     'status'              => 'cancelled',
                     'cancelled_at'        => now(),
-                    'cancellation_reason' => $request->input('cancellation_reason'),
+                    'cancellation_reason' => $reason,
                 ]);
                 $this->deleteGoogleEvent($appointment);
                 $this->deleteGoogleTask($appointment);

@@ -185,6 +185,7 @@
                     <span class="text-xs font-bold text-gray-600 dark:text-gray-400"><span x-text="count"></span> seleccionadas</span>
                     <div class="flex gap-2">
                         <button type="submit" name="bulk_action" value="complete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400 rounded-lg transition-colors">Completar</button>
+                        <button type="button" onclick="confirmBulkNoShow()" class="px-3 py-1.5 text-xs font-black bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700/50 dark:text-gray-300 rounded-lg transition-colors">No presentado</button>
                         <button type="button" onclick="confirmBulkCancel()" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">Cancelar</button>
                         <button type="button" onclick="confirmBulkDelete()" class="px-3 py-1.5 text-xs font-black bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg transition-colors">Borrar</button>
                     </div>
@@ -506,6 +507,61 @@
                 reasonInput.name = 'cancellation_reason';
                 reasonInput.value = result.value || '';
                 form.appendChild(reasonInput);
+                
+                document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'appointment_ids[]';
+                    idInput.value = cb.value;
+                    form.appendChild(idInput);
+                });
+
+                HTMLFormElement.prototype.submit.call(form);
+            }
+        });
+    }
+
+    function confirmBulkNoShow() {
+        if (typeof Swal === 'undefined') {
+            if (confirm('¿Marcar las citas seleccionadas como NO PRESENTADO? (Se cancelarán)')) {
+                const form = document.getElementById('bulk-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'bulk_action';
+                actionInput.value = 'no_show';
+                form.appendChild(actionInput);
+                document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'appointment_ids[]';
+                    idInput.value = cb.value;
+                    form.appendChild(idInput);
+                });
+                HTMLFormElement.prototype.submit.call(form);
+            }
+            return;
+        }
+        Swal.fire({
+            title: '¿Marcar como NO PRESENTADO?',
+            text: 'Las citas seleccionadas pasarán a estado cancelado y se registrará que el ciudadano no se ha presentado.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, marcar',
+            cancelButtonText: 'Volver',
+            customClass: {
+                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-800 hover:bg-gray-900 text-white dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 rounded-xl transition-all shadow-md',
+                cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('bulk-form');
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'bulk_action';
+                actionInput.value = 'no_show';
+                form.appendChild(actionInput);
                 
                 document.querySelectorAll('.bulk-cb:checked').forEach(cb => {
                     const idInput = document.createElement('input');
