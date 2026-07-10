@@ -14,7 +14,7 @@
     "description": {
       "type": "text",
       "required": false,
-      "max_length": 1000,
+      "max_length": 1000000,
       "searchable": true
     },
     "channels": {
