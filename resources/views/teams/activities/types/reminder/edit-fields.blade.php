@@ -52,6 +52,48 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Notificación Push') }}</span>
                     </div>
                 </label>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative flex items-center justify-center">
+                        <input type="checkbox" name="channels[]" value="whatsapp"
+                            {{ in_array('whatsapp', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
+                            class="peer sr-only">
+                        <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('WhatsApp') }}</span>
+                    </div>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative flex items-center justify-center">
+                        <input type="checkbox" name="channels[]" value="telegram"
+                            {{ in_array('telegram', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
+                            class="peer sr-only">
+                        <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Telegram') }}</span>
+                    </div>
+                </label>
             </div>
         </div>
     </div>

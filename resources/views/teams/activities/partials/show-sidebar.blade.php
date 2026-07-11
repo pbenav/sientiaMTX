@@ -683,6 +683,75 @@
                 </div>
             </div>
 
+            <!-- Widget de Vidas Pasadas (Historial de Conversiones) -->
+            @if(!$activity->isDeprecatedByConversion() && $activity->convertedFromActivity)
+                <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-3xl overflow-hidden shadow-sm">
+                    <div class="bg-violet-50/50 dark:bg-violet-900/10 px-6 py-4 border-b border-violet-100 dark:border-violet-900/30">
+                        <h3 class="text-xs font-black text-violet-900 dark:text-violet-300 uppercase tracking-widest flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Historial de Conversión
+                        </h3>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
+                            Convertida desde: <strong class="text-gray-700 dark:text-gray-300">"{{ $activity->convertedFromActivity->title }}"</strong> ({{ $activity->convertedFromActivity->type_label ?? $activity->convertedFromActivity->type }}).
+                        </p>
+                        
+                        <div class="flex flex-col gap-2">
+                            <a href="{{ route('teams.activities.show', [$team, $activity->convertedFromActivity]) }}" class="w-full text-center text-[10px] font-bold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 py-2 rounded-xl transition-colors">
+                                Ver vida anterior
+                            </a>
+                            
+                            @if(auth()->user()->can('update', $activity))
+                            <form id="restore-metadata-form-{{ $activity->id }}" action="{{ route('teams.activities.restore-metadata', [$team, $activity]) }}" method="POST">
+                                @csrf
+                                <button type="button" onclick="confirmRestoreMetadata('restore-metadata-form-{{ $activity->id }}')" class="w-full text-center text-[10px] font-bold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 border border-violet-200 dark:border-violet-800/50 py-2 rounded-xl transition-colors">
+                                    Restaurar Tipo y Metadatos
+                                </button>
+                            </form>
+                            @endif
+                        </div>
+
+                        <div class="mt-4 border-t border-violet-100 dark:border-violet-900/30 pt-4">
+                            <h4 class="text-[10px] font-bold text-violet-800 dark:text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                Linaje Completo
+                            </h4>
+                            <div class="space-y-3 relative before:absolute before:inset-0 before:ml-[9px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-violet-200 before:to-transparent dark:before:from-violet-800/50">
+                                @php
+                                    $currentAncestor = $activity;
+                                    $ancestryIndex = 1;
+                                @endphp
+                                @while($currentAncestor->convertedFromActivity)
+                                    @php
+                                        $currentAncestor = $currentAncestor->convertedFromActivity;
+                                    @endphp
+                                    <div class="relative flex items-center gap-3">
+                                        <div class="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/60 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-[9px] shrink-0 border-2 border-white dark:border-gray-900 z-10 shadow-sm">
+                                            {{ $ancestryIndex }}
+                                        </div>
+                                        <div class="truncate text-xs flex-1 bg-gray-50/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-800">
+                                            <div class="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1 mb-0.5">
+                                                {!! $currentAncestor->type_icon !!}
+                                                {{ $currentAncestor->type_label ?? $currentAncestor->type }}
+                                            </div>
+                                            <a href="{{ route('teams.activities.show', [$team, $currentAncestor]) }}" class="text-violet-600 dark:text-violet-400 hover:underline truncate block w-full opacity-80 hover:opacity-100">
+                                                {{ $currentAncestor->title }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @php $ancestryIndex++; @endphp
+                                @endwhile
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Foro / Discusión -->
             <div class="mt-0">
                 @include('teams.forum.partials.thread-widget', ['task' => $activity])

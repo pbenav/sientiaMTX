@@ -609,25 +609,29 @@
                                 {{ __('tasks.limit') ?? 'Terminar' }}
                             </label>
                             <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                                <label class="relative flex items-center gap-3 cursor-pointer group">
-                                    <div class="relative flex items-center justify-center">
-                                        <input type="radio" name="autoprogram_settings[limit_type]" value="count" checked class="peer sr-only">
-                                        <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
-                                        <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
-                                    </div>
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.after_n_times') ?? 'Después de' }}</span>
+                                <div class="relative flex items-center gap-3 group">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <div class="relative flex items-center justify-center">
+                                            <input type="radio" name="autoprogram_settings[limit_type]" value="count" checked class="peer sr-only">
+                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
+                                            <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.after_n_times') ?? 'Después de' }}</span>
+                                    </label>
                                     <input type="number" name="autoprogram_settings[limit_value_count]" value="5" min="1" class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all">
                                     <span class="text-xs text-gray-500">{{ __('tasks.times') ?? 'veces' }}</span>
-                                </label>
-                                <label class="relative flex items-center gap-3 cursor-pointer group">
-                                    <div class="relative flex items-center justify-center">
-                                        <input type="radio" name="autoprogram_settings[limit_type]" value="date" class="peer sr-only">
-                                        <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
-                                        <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
-                                    </div>
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.on_date') ?? 'El día' }}</span>
+                                </div>
+                                <div class="relative flex items-center gap-3 group">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <div class="relative flex items-center justify-center">
+                                            <input type="radio" name="autoprogram_settings[limit_type]" value="date" class="peer sr-only">
+                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
+                                            <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('tasks.on_date') ?? 'El día' }}</span>
+                                    </label>
                                     <input type="date" name="autoprogram_settings[limit_value_date]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                </label>
+                                </div>
                             </div>
                         </div>
 

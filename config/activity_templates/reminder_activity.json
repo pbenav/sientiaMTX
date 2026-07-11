@@ -20,7 +20,7 @@
     "channels": {
       "type": "array",
       "required": false,
-      "default": ["email", "push"]
+      "default": ["email", "push", "whatsapp", "telegram"]
     },
     "status": {
       "type": "string",

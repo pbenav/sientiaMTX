@@ -92,9 +92,9 @@ class ActivityTemplateValidator
     {
         return match ($expectedType) {
             'string', 'text' => is_string($value),
-            'integer' => is_int($value),
-            'float' => is_float($value) || is_int($value),
-            'boolean' => is_bool($value),
+            'integer' => is_int($value) || (is_string($value) && ctype_digit($value)),
+            'float' => is_numeric($value),
+            'boolean' => is_bool($value) || in_array($value, [0, 1, '0', '1', 'true', 'false'], true),
             'array' => is_array($value),
             'object' => is_object($value) || (is_array($value) && $this->isAssoc($value)),
             default => false,

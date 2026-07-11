@@ -968,6 +968,7 @@ class ActivityController extends Controller
         }
 
         // Recuperar campos genéricos
+        $activity->type = $ancestor->type;
         $activity->description = $ancestor->description;
         $activity->due_date = $ancestor->due_date;
         $activity->scheduled_date = $ancestor->scheduled_date;
@@ -975,18 +976,26 @@ class ActivityController extends Controller
         $activity->priority = $ancestor->priority;
         $activity->auto_priority = $ancestor->auto_priority;
 
-        // Mezclar metadatos respetando la estructura del nuevo tipo
+        // Recuperar la estructura de metadatos del ancestro, pero mantener la trazabilidad
         $currentMetadata = $activity->metadata ?? [];
         $ancestorMetadata = $ancestor->metadata ?? [];
-
-        // Conservar campos especiales del tipo actual (ej. chapters de document) pero pisar los compartidos
-        foreach ($ancestorMetadata as $key => $value) {
-            // Evitar pisar llaves de estado del sistema de conversiones
-            if (!in_array($key, ['converted_to_uuid', 'converted_to_id', 'is_deprecated'])) {
-                $currentMetadata[$key] = $value;
+        
+        // Mantener las claves de conversión de la actividad actual para no perder el enlace "vidas pasadas"
+        $internalKeys = ['converted_from_uuid', 'converted_from_id'];
+        $conversionLinks = [];
+        foreach ($internalKeys as $k) {
+            if (isset($currentMetadata[$k])) {
+                $conversionLinks[$k] = $currentMetadata[$k];
             }
         }
-        $activity->metadata = $currentMetadata;
+
+        // Limpiar claves del ancestro que marcan que está deprecado
+        unset($ancestorMetadata['converted_to_uuid'], $ancestorMetadata['converted_to_id'], $ancestorMetadata['is_deprecated']);
+
+        // Metadatos finales: los del ancestro más los enlaces de conversión
+        $finalMetadata = array_merge($ancestorMetadata, $conversionLinks);
+        
+        $activity->metadata = $finalMetadata;
 
         $activity->saveQuietly();
 
