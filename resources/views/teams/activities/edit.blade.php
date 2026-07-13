@@ -89,8 +89,6 @@
                         :mentions-url="route('teams.mentions', $team)"
                     />
                 </div>
-
-                @if($activity->type === "task")
         </div>
     </div>
 
@@ -276,7 +274,6 @@
                         :mentions-url="route('teams.mentions', $team)"
                     />
                 </div>
-                @endif
         </div>
     </div>
 
