@@ -109,12 +109,6 @@
             </div>
         </div>
         <div class="space-y-6 relative z-10">
-            <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
-                        <div class="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
-                            ✨
-                        </div>
-                        
-                    </div>
 
                     @if ($activity->type === 'document')
                         <!-- DOCUMENTO ESPECÍFICO -->
