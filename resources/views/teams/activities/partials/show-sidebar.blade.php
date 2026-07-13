@@ -966,22 +966,27 @@
                             progress_percentage: progress
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                console.error('Server error ' + response.status + ':', text);
+                                throw new Error('Error del servidor (' + response.status + '): ' + (text.length < 200 ? text : text.substring(0, 200)));
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
-                            // If status has changed (e.g. from completed back to in_progress), reload
+                            // Si cambió el estado o llegó al 100%, recargamos para que todo sea consistente
                             if (data.task_status !== currentStatus || progress == 100) {
                                 window.location.reload();
                             } else {
-                                // Subtle label update without animations that feel like glitches
-                                // Actualización masiva de todos los elementos de progreso
                                 const finalProgress = data.parent_progress !== null ? data.parent_progress : data.task_progress;
                                 const finalProgressRounded = Math.round(finalProgress);
 
                                 document.querySelectorAll('.js-global-progress-val').forEach(el => el.innerText = finalProgressRounded + '%');
                                 document.querySelectorAll('.js-global-progress-bar').forEach(el => el.style.width = finalProgress + '%');
 
-                                // Sincronizar todos los miembros (tareas colaborativas/maestras)
                                 document.querySelectorAll('.js-member-progress-bar').forEach(bar => {
                                     bar.style.width = finalProgress + '%';
                                 });
@@ -992,15 +997,21 @@
                                     slider.value = finalProgressRounded;
                                 });
 
-                                // Elemento específico del sidebar si existe
                                 const valSpan = document.getElementById('progress-val');
                                 if (valSpan) valSpan.innerText = finalProgressRounded;
-
+                            }
+                        } else {
+                            console.error('move failed:', data);
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({ title: 'Error', text: data.error || data.message || 'No se pudo actualizar el progreso', icon: 'error' });
                             }
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        console.error('updateTaskProgress error:', error);
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ title: 'Error', text: error.message || 'No se pudo actualizar el progreso', icon: 'error' });
+                        }
                     });
             }
 

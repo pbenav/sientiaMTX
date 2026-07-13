@@ -26,6 +26,8 @@ class TaskActionController extends Controller
 
         $this->authorize('update', $task);
 
+        try {
+
         if ($task->is_timeline_locked && ($request->has('scheduled_date') || $request->has('due_date'))) {
             return response()->json([
                 'success' => false,
@@ -241,6 +243,15 @@ class TaskActionController extends Controller
             'kanban_column_id' => $task->kanban_column_id,
             'parent_progress' => $task->parent_id && $task->parent ? $task->parent->progress_percentage : null
         ]);
+
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return response()->json(['success' => false, 'error' => 'Sin permiso para modificar esta actividad.'], 403);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'error' => implode(' ', $e->validator->errors()->all())], 422);
+        } catch (\Exception $e) {
+            \Log::error('TaskActionController::move error: ' . $e->getMessage(), ['task_id' => $taskId, 'user_id' => auth()->id()]);
+            return response()->json(['success' => false, 'error' => 'Error interno: ' . $e->getMessage()], 500);
+        }
     }
 
     /**
