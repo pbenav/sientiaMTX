@@ -132,6 +132,24 @@
                             ->sortBy(function($inst) {
                                 return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
                             });
+                            
+                        // Fallback: Si es un Plan Maestro vacío (p. ej. plantilla autoprogramable que no ha arrancado, 
+                        // o actividad legacy) pero tiene un equipo asignado, mostramos el equipo.
+                        if ($instances->isEmpty() && $activity->assignedTo->isNotEmpty()) {
+                            $instances = $activity->assignedTo->map(function($user) use ($activity) {
+                                return (object)[
+                                    'id' => $activity->id,
+                                    'name' => $activity->title,
+                                    'status_value' => 'pending',
+                                    'progress' => 0,
+                                    'assignedUser' => $user,
+                                    'timeLogs' => collect(),
+                                    'is_simulated' => true,
+                                    'user_id' => $user->id
+                                ];
+                            });
+                            $isRoadmap = false; // Ajustamos la lógica de porcentajes para simular una compartida
+                        }
                     } else {
                         // For regular activities, we "simulate" instances using the assigned users
                         $instances = $activity->assignedTo->map(function($user) use ($activity) {
