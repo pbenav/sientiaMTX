@@ -1116,6 +1116,9 @@
 
         <div class="lg:col-span-2 space-y-5">
             @include('teams.activities.types.' . $activity->type . '.show-content')
+            
+            <!-- Attachments Section (For all types) -->
+            @include('teams.activities.partials.activity-attachments')
         </div>
 
         <!-- Sidebar -->

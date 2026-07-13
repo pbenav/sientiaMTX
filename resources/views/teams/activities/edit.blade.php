@@ -1045,20 +1045,48 @@
                                         <div class="flex items-center gap-3 overflow-hidden">
                                             <span class="text-xl">📄</span>
                                             <div class="flex flex-col min-w-0">
-                                                <a href="{{ Storage::disk($attach->disk)->url($attach->file_path) }}" target="_blank"
-                                                   class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate hover:text-violet-600 transition-colors">
-                                                    {{ $attach->file_name }}
-                                                </a>
+                                                @if($attach->storage_provider === 'google' && $attach->web_view_link)
+                                                    <a href="{{ $attach->web_view_link }}" target="_blank"
+                                                       class="text-xs font-bold text-blue-600 dark:text-blue-400 truncate hover:underline transition-colors flex items-center gap-1">
+                                                        {{ $attach->file_name }}
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('teams.activities.attachments.view', [$team, $activity, $attach]) }}" target="_blank"
+                                                       class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate hover:text-violet-600 transition-colors">
+                                                        {{ $attach->file_name }}
+                                                    </a>
+                                                @endif
                                                 <span class="text-[9px] text-gray-400">{{ number_format($attach->file_size / 1024, 1) }} KB</span>
                                             </div>
                                         </div>
                                         
-                                        <!-- Botón para eliminar archivo de la DB -->
-                                        <button type="button" onclick="deleteExistingAttachment(this, {{ $attach->id }})" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all">
+                                        <div class="flex items-center gap-1">
+                                            @if($attach->is_office_compatible)
+                                                <a href="{{ route('onlyoffice.activity.edit', $attach) }}" target="_blank" rel="noopener noreferrer"
+                                                   class="text-teal-500 hover:text-teal-700 p-1 hover:bg-teal-50 dark:hover:bg-teal-950/20 rounded-lg transition-all"
+                                                   title="Editar con Office">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </a>
+                                            @endif
+                                            
+                                            <a href="{{ route('teams.activities.attachments.download', [$team, $activity, $attach]) }}"
+                                               class="text-gray-500 hover:text-violet-600 p-1 hover:bg-violet-50 dark:hover:bg-violet-950/20 rounded-lg transition-all"
+                                               title="Descargar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                            </a>
+
+                                            <!-- Botón para eliminar archivo de la DB -->
+                                            <button type="button" onclick="deleteExistingAttachment(this, {{ $attach->id }})" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all" title="Eliminar">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
