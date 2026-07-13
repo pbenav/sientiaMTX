@@ -46,8 +46,8 @@ trait ManagesTaskDeletion
                 $attachment->delete();
             }
 
-            // 7. Pivot Skill-Task
-            DB::table('skill_task')->where('task_id', $task->id)->delete();
+            // 7. Pivot Skill-Activity (tabla renombrada de skill_task -> activity_skills)
+            DB::table('activity_skills')->where('activity_id', $task->id)->delete();
 
             // 8. Finally, the task itself (Force Delete)
             $task->forceDelete();

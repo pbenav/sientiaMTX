@@ -199,7 +199,10 @@ class Task extends Model
 
     public function skills(): BelongsToMany
     {
-        return $this->belongsToMany(Skill::class, 'skill_task');
+        // La tabla pivot fue renombrada de skill_task -> activity_skills en la migración
+        // 2026_07_06_172548_rename_skill_task_to_activity_skills, con FK activity_id.
+        // El modelo Task mantiene compatibilidad pasiva; las skills se gestionan desde Activity.
+        return $this->belongsToMany(Skill::class, 'activity_skills', 'activity_id', 'skill_id');
     }
 
     public function skill(): BelongsTo
