@@ -875,111 +875,96 @@
         </div>
     </div>
 
-    <!-- BLOCK: Impacto y Bienestar -->
+    <!-- BLOCK: Gamificación, Impacto y Bienestar -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
         <div class="absolute top-0 right-0 p-8 opacity-5">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         </div>
         <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
-            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner border border-amber-100/50 dark:border-amber-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Impacto y Bienestar
+                    Gamificación, Impacto y Bienestar
                 </h3>
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas y resiliencia</p>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
             </div>
         </div>
-        <div class="space-y-6 relative z-10">
+        <div class="space-y-8 relative z-10">
             
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <div>
-        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-            Impacto Social / Humano (Puntos)
-        </label>
-        <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all shadow-inner">
-    </div>
-    <div class="flex flex-col justify-center gap-3 pt-1">
-        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
-            <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
-            <div class="flex flex-col">
-                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
-                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
-            </div>
-        </label>
-        
-        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
-            <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
-            <div class="flex flex-col">
-                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
-                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
-            </div>
-        </label>
-    </div>
-</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Columna 1: Impacto Humano y Gamificación -->
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Impacto Social / Humano (Puntos)
+                        </label>
+                        <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
+                    </div>
+                    
+                    <div class="flex flex-col gap-3">
+                        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
+                            <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
+                                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
+                            </div>
+                        </label>
+                        
+                        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
+                            <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
+                                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
 
-        </div>
-    </div>
+                <!-- Columna 2: Skills -->
+                <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        Árbol de Capacidades
+                    </label>
+                    <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
+                        @foreach($skills as $skill)
+                            <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
+                                {{ $skill->name }} ({{ $skill->category }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Mantén presionado Ctrl (o Cmd) para selección múltiple
+                    </p>
+                </div>
 
-    <!-- BLOCK: Capacidades y Carga Cognitiva -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-8 opacity-5">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-        </div>
-        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
-            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                <!-- Columna 3: Carga Cognitiva -->
+                <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
+                    <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
+                        <span>Carga Cognitiva (Drenaje de Energía)</span>
+                        <span :class="{
+                            'text-emerald-500': load <= 3,
+                            'text-blue-500': load > 3 && load <= 6,
+                            'text-amber-500': load > 6 && load <= 8,
+                            'text-red-500': load > 8
+                        }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
+                    </label>
+                    <div class="relative pt-2">
+                        <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
+                            class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
+                        <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
+                            <span>Baja (1)</span>
+                            <span>Media (5)</span>
+                            <span>Extrema (10)</span>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
-            <div>
-                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Capacidades y Carga Cognitiva
-                </h3>
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Esfuerzo mental y skills requeridas</p>
-            </div>
-        </div>
-        <div class="space-y-6 relative z-10">
             
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
-        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-            Árbol de Capacidades (Selección Múltiple)
-        </label>
-        <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
-            @foreach($skills as $skill)
-                <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
-                    {{ $skill->name }} ({{ $skill->category }})
-                </option>
-            @endforeach
-        </select>
-        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            Mantén presionado Ctrl (o Cmd) para seleccionar varias habilidades
-        </p>
-    </div>
-
-    <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
-        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
-            <span>Carga Cognitiva (Drenaje de Energía)</span>
-            <span :class="{
-                'text-emerald-500': load <= 3,
-                'text-blue-500': load > 3 && load <= 6,
-                'text-amber-500': load > 6 && load <= 8,
-                'text-red-500': load > 8
-            }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
-        </label>
-        <div class="relative pt-2">
-            <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
-                class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-600 shadow-inner">
-            <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
-                <span>Baja (1)</span>
-                <span>Media (5)</span>
-                <span>Extrema (10)</span>
-            </div>
-        </div>
-    </div>
-</div>
-
         </div>
     </div>
 
@@ -1001,16 +986,7 @@
         </div>
         <div class="space-y-6 relative z-10">
             <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
-                                📎
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Archivos Adjuntos</h3>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Administra los archivos actuales o añade nuevos.</p>
-                            </div>
-                        </div>
+                    <div class="flex items-center justify-end mb-6">
                         <div class="flex items-center gap-2">
                             @php
                                 $isGoogleLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();

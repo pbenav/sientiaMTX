@@ -741,19 +741,8 @@
 
 
                 <!-- Integrated Attachments Section -->
-                <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.attachments') }}</h3>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('tasks.attachments_hint') ?? 'Sube archivos relevantes para esta tarea' }}</p>
-                            </div>
-                        </div>
+            <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-end mb-6">
                                 <div class="flex items-center gap-2">
                                     @php
                                         $isGoogleLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();

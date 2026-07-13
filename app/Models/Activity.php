@@ -753,6 +753,27 @@ class Activity extends Model
         }
     }
 
+    public function notifyCreatorAndCoordinators($notification)
+    {
+        $recipients = collect();
+
+        // 1. Add Creator
+        if ($this->creator && $this->creator->id !== auth()->id()) {
+            $recipients->push($this->creator);
+        }
+
+        // 2. Add Coordinators
+        $coordinators = $this->team->coordinators()
+            ->where('users.id', '!=', auth()->id())
+            ->get();
+        
+        $recipients = $recipients->merge($coordinators)->unique('id');
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify($notification);
+        }
+    }
+
     public function notifyCoordinatorsIfCompleted()
     {
         if ($this->status_value !== 'completed') return;

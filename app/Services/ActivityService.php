@@ -128,8 +128,26 @@ class ActivityService
 
             $activity->update($updateData);
 
-            if (isset($updateData['status']) && data_get($updateData, 'status.value') === 'completed') {
-                $this->cascadeCompletion($activity);
+            if (isset($updateData['status'])) {
+                $newStatus = data_get($updateData, 'status.value');
+                $oldStatus = data_get($oldValues, 'status.value');
+
+                if ($newStatus === 'completed') {
+                    $this->cascadeCompletion($activity);
+                    $activity->notifyCoordinatorsIfCompleted();
+                } elseif ($newStatus === 'blocked' && $oldStatus !== 'blocked') {
+                    $activity->notifyCreatorAndCoordinators(new \App\Notifications\TaskBlockedNotification($activity, auth()->user()));
+                }
+            }
+
+            $oldProgress = (int) ($oldValues['progress_percentage'] ?? 0);
+            $newProgress = (int) ($updateData['progress_percentage'] ?? $oldProgress);
+
+            if ($newProgress >= 50 && $oldProgress < 50) {
+                 $activity->notifyCreatorAndCoordinators(new \App\Notifications\TaskEventNotification($activity, 'milestone_50'));
+            }
+            if ($newProgress >= 75 && $oldProgress < 75) {
+                 $activity->notifyCreatorAndCoordinators(new \App\Notifications\TaskEventNotification($activity, 'milestone_75'));
             }
 
             if (array_key_exists('assigned_to', $data) || array_key_exists('assigned_groups', $data)) {
@@ -161,6 +179,9 @@ class ActivityService
 
         if ($statusValue === 'completed') {
             $this->cascadeCompletion($activity);
+            $activity->notifyCoordinatorsIfCompleted();
+        } elseif ($statusValue === 'blocked' && (!isset($oldStatus['value']) || $oldStatus['value'] !== 'blocked')) {
+            $activity->notifyCreatorAndCoordinators(new \App\Notifications\TaskBlockedNotification($activity, auth()->user()));
         }
 
         return $activity->fresh();
@@ -202,6 +223,8 @@ class ActivityService
 
     public function syncAssignments(Activity $activity, array $data): void
     {
+        $previousUserIds = $activity->assignments()->whereNotNull('user_id')->pluck('user_id')->toArray();
+        
         // Borrar asignaciones actuales
         $activity->assignments()->delete();
 
@@ -209,6 +232,19 @@ class ActivityService
         $assignedAt  = now();
         $userIds     = $data['assigned_to'] ?? [];
         $groupIds    = $data['assigned_groups'] ?? [];
+
+        // Expand group members into userIds if they are not already there
+        // Actually, previous task assignment expansion was handled in Controller/Service
+        // but here we just store the group_id. We should also notify users in those groups!
+        // But for simplicity, let's keep it to direct user assignments first, or expand them for notifications.
+        $notifyUserIds = collect($userIds);
+        foreach ($groupIds as $groupId) {
+            $group = $activity->team->groups()->find($groupId);
+            if ($group) {
+                $notifyUserIds = $notifyUserIds->merge($group->users->pluck('id'));
+            }
+        }
+        $uniqueNotifyUserIds = $notifyUserIds->unique()->toArray();
 
         foreach ($userIds as $userId) {
             ActivityAssignment::create([
@@ -228,6 +264,17 @@ class ActivityService
                 'assigned_by_id' => $assignedBy,
                 'assigned_at'    => $assignedAt,
             ]);
+        }
+
+        $newUserIds = array_diff($uniqueNotifyUserIds, $previousUserIds);
+        foreach ($newUserIds as $userId) {
+            if ($userId && $userId !== $assignedBy) {
+                try {
+                    \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($activity, auth()->user()));
+                } catch (\Exception $e) {
+                    \Log::error("Failed to send TaskAssignedNotification: " . $e->getMessage());
+                }
+            }
         }
 
         $this->recordHistory($activity, auth()->user(), 'assigned', null, compact('userIds', 'groupIds'));
