@@ -109,15 +109,7 @@ class TeamController extends Controller
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
 
-        $user = auth()->user();
-        $isManager = $team->isManager($user);
-
-        $team->load(['members', 'tasks' => function($query) use ($user, $isManager, $team) {
-            $query->visibleTo($user, $isManager)
-                  ->operationalFor($user, $team, true);
-        }]);
-
-        return view('teams.show', compact('team'));
+        return redirect()->route('teams.activities.index', $team);
     }
 
     /**
