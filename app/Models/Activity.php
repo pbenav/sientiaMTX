@@ -707,6 +707,66 @@ class Activity extends Model
         return $query;
     }
 
+    public function scopeOperationalFor($query, $user, Team $team, $includeFuture = false)
+    {
+        $isManager = $team->isManager($user);
+        $userId = $user->id;
+
+        $query->where(function ($main) use ($userId, $isManager) {
+            if ($isManager) {
+                // GESTIÓN (Managers/Coordinators): Ve el esqueleto (Plantillas y Raíces)
+                $main->where(function($q) {
+                    $q->whereNull('parent_id')
+                      ->orWhere('is_template', true);
+                });
+
+                // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia, 
+                // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos 
+                // ver la instancia suelta arriba para no triplicar.
+                $main->where(function($q) use ($userId) {
+                    $q->where('is_template', true)
+                      ->orWhereDoesntHave('assignedTo')
+                      ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', '!=', $userId))
+                      ->orWhereNull('parent_id'); // SIEMPRE ver tareas raíz
+                });
+            } else {
+                // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado Y las tareas puras (sin asignar a nadie)
+                $main->where(function ($q) use ($userId) {
+                    $q->whereHas('assignedTo', fn ($as) => $as->where('users.id', $userId))
+                      ->orWhereHas('assignedGroups', fn ($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
+                      ->orWhere(function ($own) use ($userId) {
+                          $own->where('created_by_id', $userId)
+                              ->whereNull('parent_id');
+                      })
+                      ->orWhere(function ($unassigned) {
+                          $unassigned->where('is_template', false)
+                                     ->whereDoesntHave('assignedTo')
+                                     ->whereDoesntHave('assignedGroups')
+                                     ->where('visibility', 'public');
+                      });
+                });
+
+                // DEDUPLICACIÓN EN EJECUCIÓN (Miembro): Si ve la hija, ocultamos el padre
+                $main->whereDoesntHave('children', function ($q) use ($userId) {
+                    $q->where(function($sub) use ($userId) {
+                        $sub->whereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
+                            ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)));
+                    });
+                });
+            }
+        });
+
+        if (!$includeFuture) {
+            $query->where(function ($q) {
+                $q->whereNull('scheduled_date')
+                  ->orWhere('scheduled_date', '<=', now())
+                  ->orWhere('metadata->is_occurrence', true);
+            });
+        }
+
+        return $query;
+    }
+
     public function scopeOperationalForKanban($query, $user, $team, $includeFuture = false)
     {
         return $query->where(function($q) {

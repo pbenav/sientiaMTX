@@ -67,6 +67,15 @@
             "type": "array",
             "required": false,
             "default": []
+        },
+        "assignment_mode": {
+            "type": "string",
+            "required": false,
+            "default": "shared",
+            "enum": [
+                "shared",
+                "distributed"
+            ]
         }
     },
     "states": {

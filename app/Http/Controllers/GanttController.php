@@ -7,7 +7,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Team;
-use App\Models\Task;
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -61,10 +61,10 @@ class GanttController extends Controller
             });
 
             $actionHeat[$i] = [
-                'weight' => $dayTasks->sum(fn($t) => $t->cognitive_load ?? 1),
-                'user_weight' => $dayTasks->where('assigned_user_id', $userId)->sum(fn($t) => $t->cognitive_load ?? 1),
+                'weight' => $dayTasks->sum(fn($t) => data_get($t->metadata, 'cognitive_load', 1)),
+                'user_weight' => $dayTasks->filter(fn($t) => $t->assigned_user_id === $userId)->sum(fn($t) => data_get($t->metadata, 'cognitive_load', 1)),
                 'count' => $dayTasks->count(),
-                'user_count' => $dayTasks->where('assigned_user_id', $userId)->count(),
+                'user_count' => $dayTasks->filter(fn($t) => $t->assigned_user_id === $userId)->count(),
             ];
         }
 
@@ -80,15 +80,15 @@ class GanttController extends Controller
             $tasks = $this->getTaskSet($request, $team);
 
             // Map to Frappe Gantt format
-            $formattedTasks = $tasks->map(function (Task $task) use ($request) {
+            $formattedTasks = $tasks->map(function (Activity $task) use ($request) {
                 $start = $task->scheduled_date ?: ($task->created_at ?: now());
                 $end   = $task->due_date       ?: $start->copy()->addDay();
                 $progress = $task->progress;
 
                 // Distinguish template vs instance vs recurring in the label
-                $lockIcon = $task->is_timeline_locked ? '🔒 ' : '';
-                if ($task->is_template || $task->is_autoprogrammable) {
-                    $label = ($task->is_autoprogrammable ? '🔄 ' : '📋 ') . $task->title;
+                $lockIcon = data_get($task->metadata, 'is_timeline_locked') ? '🔒 ' : '';
+                if ($task->is_template || data_get($task->metadata, 'is_autoprogrammable')) {
+                    $label = (data_get($task->metadata, 'is_autoprogrammable') ? '🔄 ' : '📋 ') . $task->title;
                 } elseif ($task->metadata && isset($task->metadata['is_occurrence'])) {
                     $label = '📅 ' . $task->title;
                 } elseif ($task->assignedUser) {
@@ -103,7 +103,7 @@ class GanttController extends Controller
 
                 $typeClass = $task->is_template ? 'gantt-master' : ($task->parent_id ? 'gantt-instance' : 'gantt-plain');
                 // Only templates should be forced readonly for regular members in this context
-                $isReadonly = ($task->is_template && auth()->user()->cannot('update', $task)) || $task->is_timeline_locked;
+                $isReadonly = ($task->is_template && auth()->user()->cannot('update', $task)) || data_get($task->metadata, 'is_timeline_locked');
                 $readonlyClass = $isReadonly ? 'gantt-readonly' : '';
                 $colorClass = $task->getGanttColorClass();
 
@@ -128,7 +128,7 @@ class GanttController extends Controller
                                         ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) 
                                         : ($task->children->count() > 0 ? 'EQ' : '??'),
                     'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
-                    'weight'       => $task->cognitive_load ?? 1,
+                    'weight'       => data_get($task->metadata, 'cognitive_load', 1),
                     'parent_id'    => $task->parent_id ? (string)$task->parent_id : null,
                     'parent_title' => $task->parent?->title,
                     'readonly'     => $isReadonly || auth()->user()->cannot('update', $task),
@@ -211,7 +211,7 @@ class GanttController extends Controller
         $isManager = $team->isManager($user);
 
         // Step 1: Base operational set (visibility)
-        $baseTasks = $team->tasks()
+        $baseTasks = $team->activities()->forGantt()
             ->with($loadRelations ? [
                 'parent', 'assignedUser', 'creator', 'skills',
                 'children' => function($q) use ($user, $isManager) {
@@ -270,7 +270,7 @@ class GanttController extends Controller
         // If we are showing a child, we MUST show its parent (even if completed/hidden) 
         // to maintain the grouping structure in the Gantt UI.
         // BUT: if we are a regular member, we might prefer a FLAT view to avoid "Sin asignar" phantoms.
-        $parentIds = Task::whereIn('id', $ganttTaskIds->filter())->whereNotNull('parent_id')->pluck('parent_id');
+        $parentIds = Activity::whereIn('id', $ganttTaskIds->filter())->whereNotNull('parent_id')->pluck('parent_id');
         
         if ($isManager) {
             $ganttTaskIds = $ganttTaskIds->merge($parentIds);
@@ -281,7 +281,7 @@ class GanttController extends Controller
         }
 
         if ($team->isModerator($user)) {
-             $templateIds = $team->tasks()->where('is_template', true)->pluck('id');
+             $templateIds = $team->activities()->forGantt()->where('is_template', true)->pluck('id');
              $ganttTaskIds = $ganttTaskIds->merge($templateIds);
         }
 
@@ -292,7 +292,7 @@ class GanttController extends Controller
             'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id'
         ]);
 
-        $query = Task::with($loadRelations ? ['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user', 'children.assignedUser'] : ['assignedUser'])
+        $query = Activity::with($loadRelations ? ['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user', 'children.assignedUser'] : ['assignedUser'])
             ->whereIn('id', $uniqueIds)
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
@@ -308,7 +308,18 @@ class GanttController extends Controller
                 });
             })
             ->when($filters['priority'] ?? null, fn($q, $priority) => $q->where('priority', $priority))
-            ->when($filters['assigned_to'] ?? null, fn($q, $assignedTo) => $q->where('assigned_user_id', $assignedTo))
+            ->when($filters['assigned_to'] ?? null, function($q, $a) {
+                $q->where(function ($sq) use ($a) {
+                    $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
+                       ->orWhereExists(function ($subq) use ($a) {
+                           $subq->select(\DB::raw(1))
+                                ->from('activity_task_mapping')
+                                ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
+                                ->where('task_assignments.user_id', $a);
+                       });
+                });
+            })
             ->when($filters['type'] ?? null, function ($q, $type) {
                 if ($type === 'template') {
                     $q->where('is_template', true);
@@ -338,7 +349,7 @@ class GanttController extends Controller
             })->pluck('id');
 
             // Include parents of matching tasks even if they are out of range
-            $parentIds = Task::whereIn('id', $matchingIds)->whereNotNull('parent_id')->pluck('parent_id')->unique();
+            $parentIds = Activity::whereIn('id', $matchingIds)->whereNotNull('parent_id')->pluck('parent_id')->unique();
             $finalSetIds = $matchingIds->merge($parentIds)->unique();
             
             $query->whereIn('id', $finalSetIds);

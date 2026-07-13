@@ -66,9 +66,16 @@ class ActivityService
                 'matrix_order'        => $data['matrix_order'] ?? null,
             ]);
 
+            // Determinar si es Plan Maestro a partir de properties dinámicas o datos directos
+            $assignmentMode = $data['assignment_mode'] ?? data_get($activity->metadata, 'assignment_mode', 'shared');
+            if ($type === 'task' && $assignmentMode === 'distributed') {
+                $activity->update(['is_template' => true]);
+            }
+
             // Asignaciones
+            $assignedUserIds = [];
             if (!empty($data['assigned_to']) || !empty($data['assigned_groups'])) {
-                $this->syncAssignments($activity, $data);
+                $assignedUserIds = $this->syncAssignments($activity, $data);
             }
 
             // Adjuntos
@@ -88,6 +95,10 @@ class ActivityService
             }
 
             $this->recordHistory($activity, auth()->user(), 'created', null, $activity->toArray());
+
+            if ($activity->is_template && $activity->type === 'task') {
+                $this->syncDistributedInstances($activity, $assignedUserIds, $data);
+            }
 
             return $activity->fresh();
         });
@@ -128,6 +139,15 @@ class ActivityService
 
             $activity->update($updateData);
 
+            $assignmentMode = $data['assignment_mode'] ?? data_get($activity->metadata, 'assignment_mode');
+            if ($activity->type === 'task' && $assignmentMode !== null) {
+                if ($assignmentMode === 'distributed' && !$activity->is_template) {
+                    $activity->update(['is_template' => true]);
+                } elseif ($assignmentMode === 'shared' && $activity->is_template) {
+                    $activity->update(['is_template' => false]);
+                }
+            }
+
             if (isset($updateData['status'])) {
                 $newStatus = data_get($updateData, 'status.value');
                 $oldStatus = data_get($oldValues, 'status.value');
@@ -150,8 +170,11 @@ class ActivityService
                  $activity->notifyCreatorAndCoordinators(new \App\Notifications\TaskEventNotification($activity, 'milestone_75'));
             }
 
+            $assignedUserIds = [];
             if (array_key_exists('assigned_to', $data) || array_key_exists('assigned_groups', $data)) {
-                $this->syncAssignments($activity, $data);
+                $assignedUserIds = $this->syncAssignments($activity, $data);
+            } else {
+                $assignedUserIds = $this->getUniqueAssignedUserIds($activity);
             }
 
             if (!empty($files)) {
@@ -163,6 +186,18 @@ class ActivityService
             }
 
             $this->recordHistory($activity, auth()->user(), 'updated', $oldValues, $activity->fresh()->toArray());
+
+            if ($activity->is_template && $activity->type === 'task') {
+                $this->syncDistributedInstances($activity, $assignedUserIds, $data);
+            } elseif (!$activity->is_template && data_get($oldValues, 'is_template') === true && $activity->type === 'task') {
+                $activity->children()
+                    ->where('is_template', false)
+                    ->where(function($q) {
+                        $q->whereNull('metadata->is_occurrence')
+                          ->orWhere('metadata->is_occurrence', false);
+                    })
+                    ->each(fn($c) => $c->delete());
+            }
 
             return $activity->fresh();
         });
@@ -221,7 +256,7 @@ class ActivityService
 
     // ─── Asignaciones ─────────────────────────────────────────────────────────
 
-    public function syncAssignments(Activity $activity, array $data): void
+    public function syncAssignments(Activity $activity, array $data): array
     {
         $previousUserIds = $activity->assignments()->whereNotNull('user_id')->pluck('user_id')->toArray();
         
@@ -266,18 +301,133 @@ class ActivityService
             ]);
         }
 
-        $newUserIds = array_diff($uniqueNotifyUserIds, $previousUserIds);
-        foreach ($newUserIds as $userId) {
-            if ($userId && $userId !== $assignedBy) {
-                try {
-                    \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($activity, auth()->user()));
-                } catch (\Exception $e) {
-                    \Log::error("Failed to send TaskAssignedNotification: " . $e->getMessage());
+        $isDistributedPlan = ($activity->is_template && $activity->type === 'task');
+
+        if (!$isDistributedPlan) {
+            $newUserIds = array_diff($uniqueNotifyUserIds, $previousUserIds);
+            foreach ($newUserIds as $userId) {
+                if ($userId && $userId !== $assignedBy) {
+                    try {
+                        \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($activity, auth()->user()));
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to send TaskAssignedNotification: " . $e->getMessage());
+                    }
                 }
             }
         }
 
         $this->recordHistory($activity, auth()->user(), 'assigned', null, compact('userIds', 'groupIds'));
+
+        return $uniqueNotifyUserIds;
+    }
+
+    protected function getUniqueAssignedUserIds(Activity $activity): array
+    {
+        $userIds = $activity->assignedTo->pluck('id');
+        foreach ($activity->assignedGroups as $group) {
+            $userIds = $userIds->merge($group->users->pluck('id'));
+        }
+        return $userIds->unique()->toArray();
+    }
+
+    protected function syncDistributedInstances(Activity $parent, array $userIds, array $data): void
+    {
+        $existingInstances = $parent->children()
+            ->where('is_template', false)
+            ->where(function($q) {
+                $q->whereNull('metadata->is_occurrence')
+                  ->orWhere('metadata->is_occurrence', false)
+                  ->orWhere('metadata->is_occurrence', 'false');
+            })
+            ->get();
+            
+        $existingUserIds = [];
+        foreach ($existingInstances as $instance) {
+            $assignedUserId = $instance->assignments()->first()?->user_id;
+            if ($assignedUserId) {
+                $existingUserIds[$assignedUserId] = $instance;
+            }
+        }
+
+        $userIdsToKeep = array_intersect(array_keys($existingUserIds), $userIds);
+        $userIdsToDelete = array_diff(array_keys($existingUserIds), $userIds);
+        
+        foreach ($userIdsToDelete as $id) {
+            $existingUserIds[$id]->delete();
+        }
+
+        $userIdsToCreate = array_diff($userIds, array_keys($existingUserIds));
+        
+        foreach ($userIdsToCreate as $userId) {
+            $childData = $data;
+            $childData['title'] = $parent->title;
+            $childData['description'] = $parent->description;
+            $childData['priority'] = $parent->priority;
+            $childData['visibility'] = 'private';
+            $childData['parent_id'] = $parent->id;
+            $childData['is_template'] = false;
+            $childData['assigned_to'] = [$userId];
+            $childData['assigned_groups'] = [];
+            
+            $childData['metadata'] = array_merge($parent->metadata ?? [], [
+                'is_distributed_instance' => true,
+                'assignment_mode' => 'shared'
+            ]);
+
+            $instance = Activity::create([
+                'team_id' => $parent->team_id,
+                'created_by_id' => $parent->created_by_id,
+                'type' => $parent->type,
+                'title' => $childData['title'],
+                'description' => $childData['description'] ?? null,
+                'status' => ['value' => 'pending'],
+                'metadata' => $childData['metadata'],
+                'visibility' => 'private',
+                'due_date' => $parent->due_date,
+                'scheduled_date' => $parent->scheduled_date,
+                'original_due_date' => $parent->original_due_date,
+                'priority' => $parent->priority,
+                'parent_id' => $parent->id,
+                'expediente_id' => $parent->expediente_id,
+                'is_template' => false,
+            ]);
+
+            ActivityAssignment::create([
+                'activity_id' => $instance->id,
+                'user_id' => $userId,
+                'assigned_by_id' => auth()->id() ?? $parent->created_by_id,
+                'assigned_at' => now(),
+            ]);
+
+            if (!empty($data['tags'])) {
+                $this->syncTags($instance, $data['tags']);
+            }
+
+            if ((int)$userId !== (int)auth()->id()) {
+                try {
+                    \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($instance, auth()->user()));
+                } catch (\Exception $e) {
+                    \Log::error("Failed to notify user for distributed instance: " . $e->getMessage());
+                }
+            }
+        }
+        
+        foreach ($userIdsToKeep as $id) {
+            $instance = $existingUserIds[$id];
+            $instance->update([
+                'title' => $parent->title,
+                'description' => $parent->description,
+                'priority' => $parent->priority,
+                'due_date' => $parent->due_date,
+                'scheduled_date' => $parent->scheduled_date,
+                'expediente_id' => $parent->expediente_id,
+            ]);
+            $meta = array_merge($instance->metadata ?? [], [
+                'skills_required' => $parent->metadata['skills_required'] ?? [],
+                'cognitive_load' => $parent->metadata['cognitive_load'] ?? 1,
+            ]);
+            $instance->update(['metadata' => $meta]);
+        }
     }
 
     // ─── Adjuntos ─────────────────────────────────────────────────────────────
