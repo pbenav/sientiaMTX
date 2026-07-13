@@ -1,6 +1,9 @@
 @php
     $meta = $activity->metadata ?? [];
-    $url = $meta['url'] ?? '';
+    $links = $meta['links'] ?? [];
+    if (empty($links) && !empty($meta['url'])) {
+        $links = [['title' => 'Enlace Adjunto', 'url' => $meta['url']]];
+    }
     $status = $meta['status'] ?? 'active';
     $statusColors = [
         'active' => ['bg' => 'green-50', 'dark_bg' => 'green-900/10', 'border' => 'green-100', 'dark_border' => 'green-800/30', 'text' => 'green-600', 'dark_text' => 'green-400', 'label' => 'Activo'],
@@ -9,19 +12,35 @@
     ][$status] ?? ['bg' => 'blue-50', 'dark_bg' => 'blue-900/10', 'border' => 'blue-100', 'dark_border' => 'blue-800/30', 'text' => 'blue-600', 'dark_text' => 'blue-400', 'label' => ucfirst($status)];
 @endphp
 
-{{-- URL Card --}}
+{{-- Links Card --}}
 <div class="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30 rounded-2xl p-5 shadow-sm">
     <h3 class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-        Enlace
+        Enlaces Coleccionados
     </h3>
-    @if(!empty($url))
-    <a href="{{ $url }}" target="_blank"
-       class="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-xl border border-purple-100 dark:border-purple-800/20 hover:border-purple-400 transition-colors group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-        <span class="text-sm font-bold text-purple-600 dark:text-purple-400 group-hover:underline truncate">{{ $url }}</span>
-    </a>
-    @endif
+    <div class="space-y-3 mt-4">
+        @forelse($links as $link)
+            <a href="{{ $link['url'] }}" target="_blank"
+               class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-purple-100 dark:border-purple-800/20 hover:border-purple-400 transition-colors group shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-500 shrink-0 border border-purple-100 dark:border-purple-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate">{{ $link['title'] ?? 'Enlace' }}</span>
+                        <span class="text-[10px] text-gray-500 truncate w-48 sm:w-64">{{ $link['url'] }}</span>
+                    </div>
+                </div>
+                <div class="text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors opacity-0 group-hover:opacity-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </div>
+            </a>
+        @empty
+            <p class="text-xs text-gray-500 italic">No hay enlaces asociados a esta actividad.</p>
+        @endforelse
+    </div>
 </div>
 
 {{-- Status & Description --}}

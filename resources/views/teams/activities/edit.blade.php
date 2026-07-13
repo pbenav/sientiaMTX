@@ -130,11 +130,11 @@
                             </div>
                         </div>
                     @elseif ($activity->type === 'link')
-                        <!-- ENLACE ESPECÍFICO -->
+                        <!-- ENLACE ESPECÍFICO (CRUD) -->
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Dirección URL (Enlace)</label>
-                            <input type="url" name="url" value="{{ old('url', data_get($activity->metadata, 'url')) }}" required class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="https://example.com/recurso">
-                            @error('url')
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Colección de Enlaces</label>
+                            <x-link-crud :initialLinks="old('metadata.links', data_get($activity->metadata, 'links', []))" />
+                            @error('metadata.links')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
                         </div>

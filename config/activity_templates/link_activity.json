@@ -17,10 +17,9 @@
             "max_length": 1000000,
             "searchable": true
         },
-        "url": {
-            "type": "string",
-            "required": true,
-            "max_length": 1000
+        "links": {
+            "type": "array",
+            "required": true
         },
         "status": {
             "type": "string",
