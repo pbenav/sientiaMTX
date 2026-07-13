@@ -112,7 +112,6 @@
                                 <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
                                     <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
                                 </div>
-                @endif
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.shared_task') ?? 'Tarea Compartida (Colaborativa)' }}</span>
                                     <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.shared_hint') ?? 'Es UNA única tarea. Todos trabajan sobre ella, comparten el progreso y el tiempo se suma.' }}</span>
@@ -133,6 +132,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{
