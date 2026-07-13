@@ -42,6 +42,14 @@
                 </ul>
             </div>
         </div>
+        @if(session('existing_appointment_localizador'))
+            <div class="flex justify-center mt-4">
+                <a href="{{ route('public.appointments.edit', session('existing_appointment_localizador')) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Modificar Mi Cita Existente
+                </a>
+            </div>
+        @endif
     @endif
 
     <form method="POST" action="{{ route('public.appointments.store', $service) }}" class="space-y-8">
