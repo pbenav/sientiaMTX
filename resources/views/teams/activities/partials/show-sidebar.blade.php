@@ -927,6 +927,14 @@
                                     }).then(() => {
                                         window.location.reload();
                                     });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: data.error || data.message || 'No se pudo actualizar el estado',
+                                        icon: 'error',
+                                        background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                                    });
                                 }
                             })
                             .catch(error => {

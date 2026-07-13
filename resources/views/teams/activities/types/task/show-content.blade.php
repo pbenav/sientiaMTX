@@ -125,6 +125,7 @@
                     if ($isRoadmap) {
                         $instancesQuery = $activity->is_template ? $activity->instances() : $activity->children();
                         
+                        // Coordinators/Managers see all instances; members only their own
                         $instances = $instancesQuery->getQuery()
                             ->visibleTo($currentUser, $isUserMgr)
                             ->with(['assignedTo', 'timeLogs'])
@@ -133,44 +134,55 @@
                                 return mb_strtolower(($inst->assignedTo->first()?->name ?? '') . ' ' . $inst->title);
                             });
                             
-                        // Fallback: Si es un Plan Maestro vacío (p. ej. plantilla autoprogramable que no ha arrancado, 
-                        // o actividad legacy) pero tiene un equipo asignado, mostramos el equipo.
+                        // Fallback: Plan Maestro sin instancias reales generadas aún.
+                        // Mostramos TODOS los asignados directamente (sin filtro visibleTo)
+                        // y la actividad actúa como una tarea colaborativa compartida.
                         if ($instances->isEmpty() && $activity->assignedTo->isNotEmpty()) {
                             $instances = $activity->assignedTo->map(function($user) use ($activity) {
                                 return (object)[
-                                    'id' => $activity->id,
-                                    'name' => $activity->title,
-                                    'status_value' => 'pending',
-                                    'progress' => 0,
-                                    'assignedUser' => $user,
-                                    'timeLogs' => collect(),
-                                    'is_simulated' => true,
-                                    'user_id' => $user->id
+                                    'id'                  => $activity->id,
+                                    'name'                => $activity->title,
+                                    'status_value'        => $activity->status_value,
+                                    'progress'            => $activity->progress_percentage,
+                                    'progress_percentage' => $activity->progress_percentage,
+                                    'status'              => ['value' => $activity->status_value],
+                                    'assignedUser'        => $user,
+                                    'timeLogs'            => $activity->timeLogs()->where('user_id', $user->id)->get(),
+                                    'is_simulated'        => true,
+                                    'user_id'             => $user->id
                                 ];
                             });
-                            $isRoadmap = false; // Ajustamos la lógica de porcentajes para simular una compartida
+                            $isRoadmap = false; // Tratar como colaborativa para los cálculos
                         }
                     } else {
                         // For regular activities, we "simulate" instances using the assigned users
                         $instances = $activity->assignedTo->map(function($user) use ($activity) {
                             return (object)[
-                                'id' => $activity->id, // Reference to same activity
-                                'name' => $activity->title,
-                                'status_value' => $activity->status_value,
-                                'progress' => $activity->progress_percentage,
-                                'assignedUser' => $user,
-                                'timeLogs' => $activity->timeLogs()->where('user_id', $user->id)->get(),
-                                'is_simulated' => true,
-                                'user_id' => $user->id
+                                'id'                  => $activity->id,
+                                'name'                => $activity->title,
+                                'status_value'        => $activity->status_value,
+                                'progress'            => $activity->progress_percentage,
+                                'progress_percentage' => $activity->progress_percentage,
+                                'status'              => ['value' => $activity->status_value],
+                                'assignedUser'        => $user,
+                                'timeLogs'            => $activity->timeLogs()->where('user_id', $user->id)->get(),
+                                'is_simulated'        => true,
+                                'user_id'             => $user->id
                             ];
                         });
                     }
 
-                    $totalInst = $instances->count();
-                    $sumProg = $isRoadmap ? $instances->sum('progress_percentage') : ($totalInst > 0 ? $activity->progress_percentage * $totalInst : 0);
-                    $prog = $totalInst > 0 ? $sumProg / $totalInst : 0;
-                    $doneInst = $isRoadmap ? $instances->where('status', 'completed')->count() : ($activity->status_value === 'completed' ? $totalInst : 0);
-                    $hasBlocker = $isRoadmap ? $instances->where('status', 'blocked')->isNotEmpty() : ($activity->status_value === 'blocked');
+                    $totalInst  = $instances->count();
+                    $sumProg    = $isRoadmap
+                        ? $instances->sum('progress_percentage')
+                        : ($totalInst > 0 ? $activity->progress_percentage * $totalInst : 0);
+                    $prog       = $totalInst > 0 ? $sumProg / $totalInst : 0;
+                    $doneInst   = $isRoadmap
+                        ? $instances->filter(fn($i) => ($i->status_value ?? '') === 'completed')->count()
+                        : ($activity->status_value === 'completed' ? $totalInst : 0);
+                    $hasBlocker = $isRoadmap
+                        ? $instances->filter(fn($i) => ($i->status_value ?? '') === 'blocked')->isNotEmpty()
+                        : ($activity->status_value === 'blocked');
                 @endphp
 
                 <!-- Progress Dashboard -->
