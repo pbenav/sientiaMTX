@@ -17,8 +17,9 @@ class TaskActionController extends Controller
      */
     public function move(Request $request, Team $team, $taskId)
     {
-        $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
-        $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+        // Siempre priorizamos Activity. Si el taskId es una Activity, la usamos directamente.
+        // El ActivityObserver sincronizará el Task legacy si hay mapping.
+        $task = Activity::find($taskId) ?? Task::find($taskId);
 
         if (!$task) {
             return response()->json(['success' => false, 'error' => 'Tarea o actividad no encontrada.'], 404);
@@ -261,8 +262,7 @@ class TaskActionController extends Controller
     {
         $this->authorize('view', $team);
 
-        $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
-        $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+        $task = Activity::find($taskId) ?? Task::find($taskId);
 
         if (!$task) {
             return response()->json(['success' => false, 'message' => 'Tarea no encontrada.'], 404);
@@ -358,8 +358,8 @@ class TaskActionController extends Controller
 
         foreach ($items as $item) {
             $tId = $item['task_id'];
-            $mapping = \DB::table('activity_task_mapping')->where('task_id', $tId)->first();
-            $task = $mapping ? Task::where('id', $tId)->where('team_id', $team->id)->first() : (Activity::where('id', $tId)->where('team_id', $team->id)->first() ?? Task::where('id', $tId)->where('team_id', $team->id)->first());
+            $task = Activity::where('id', $tId)->where('team_id', $team->id)->first()
+                 ?? Task::where('id', $tId)->where('team_id', $team->id)->first();
             
             if (!$task) {
                 $skipped++;
@@ -434,8 +434,7 @@ class TaskActionController extends Controller
      */
     public function rate(Request $request, Team $team, $taskId)
     {
-        $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
-        $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+        $task = Activity::find($taskId) ?? Task::find($taskId);
 
         if (!$task || $task->team_id !== $team->id) abort(404);
 
@@ -485,8 +484,7 @@ class TaskActionController extends Controller
         \Log::info("Toggle AutoPriority Attempt: Task #{$taskId} by User #" . auth()->id());
         
         try {
-            $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
-            $task = $mapping ? Task::find($taskId) : (Activity::find($taskId) ?? Task::find($taskId));
+            $task = Activity::find($taskId) ?? Task::find($taskId);
 
             if (!$task) {
                 return response()->json(['success' => false, 'error' => 'Tarea no encontrada'], 404);
