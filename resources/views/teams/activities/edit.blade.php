@@ -94,6 +94,160 @@
         </div>
     </div>
 
+    <!-- BLOCK: Información Específica -->
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+        </div>
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    Información Específica
+                </h3>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Campos dinámicos según el tipo de actividad</p>
+            </div>
+        </div>
+        <div class="space-y-6 relative z-10">
+            <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
+                        <div class="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
+                            ✨
+                        </div>
+                        
+                    </div>
+
+                    @if ($activity->type === 'document')
+                        <!-- DOCUMENTO ESPECÍFICO -->
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                                Esta actividad es un documento colaborativo accesible mediante OnlyOffice.
+                            </p>
+                            <div class="mt-4">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Actual</label>
+                                <input type="text" name="version" value="{{ old('version', data_get($activity->metadata, 'version', '1.0.0')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none">
+                            </div>
+                        </div>
+                    @elseif ($activity->type === 'link')
+                        <!-- ENLACE ESPECÍFICO -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Dirección URL (Enlace)</label>
+                            <input type="url" name="url" value="{{ old('url', data_get($activity->metadata, 'url')) }}" required class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="https://example.com/recurso">
+                            @error('url')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @elseif ($activity->type === 'decision')
+                        <!-- DECISIÓN ESPECÍFICO -->
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                                Decisión registrada en el historial. Modifica la descripción para documentar cualquier cambio en el acuerdo.
+                            </p>
+                        </div>
+                    @elseif ($activity->type === 'meeting')
+                        <!-- REUNIÓN ESPECÍFICO -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
+                                <select name="modality" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                                    <option value="remote" {{ old('modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
+                                    <option value="presential" {{ old('modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
+                                    <option value="hybrid" {{ old('modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
+                                <input type="number" name="duration_minutes" value="{{ old('duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                            </div>
+
+                            <div class="md:col-span-2" x-data="{
+                                link: '{{ old('location', data_get($activity->metadata, 'location')) }}',
+                                generateJitsi() {
+                                    this.link = 'https://meet.jit.si/SientiaMTX-' + Math.random().toString(36).substring(2, 12);
+                                },
+                                async generateMeet() {
+                                    Swal.fire({
+                                        title: '🌐 Creando sala Meet...',
+                                        text: 'Conectando con Google Meet',
+                                        allowOutsideClick: false,
+                                        showConfirmButton: false,
+                                        didOpen: () => Swal.showLoading(),
+                                    });
+
+                                    try {
+                                        let response = await fetch('{{ route('meet.generate') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                                'Accept': 'application/json',
+                                            },
+                                            body: JSON.stringify({ team_id: {{ $team->id ?? 'null' }} })
+                                        });
+                                        let data = await response.json();
+                                        if (data.success && data.meet_url) {
+                                            this.link = data.meet_url;
+                                            Swal.close();
+                                        } else {
+                                            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo iniciar la llamada.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                                        }
+                                    } catch (err) {
+                                        Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    }
+                                }
+                            }">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">Lugar / Enlace Videollamada</label>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="generateJitsi()" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/50">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+                                            Generar Jitsi
+                                        </button>
+                                        <button type="button" @click="generateMeet()" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-blue-100 dark:border-blue-800/50">
+                                            <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
+                                                <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                            </svg>
+                                            Generar Meet
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="text" name="location" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
+                            </div>
+                        </div>
+                    @elseif ($activity->type === 'reminder')
+                        <!-- RECORDATORIO ESPECÍFICO -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
+                                @php $channels = data_get($activity->metadata, 'channels', ['email']); @endphp
+                                <div class="flex flex-wrap gap-4 mt-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="channels[]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Correo Electrónico</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="channels[]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="channels[]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="channels[]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Telegram</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+        </div>
+    </div>
+
     <!-- BLOCK: Observaciones -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -718,160 +872,6 @@
                             </select>
                         </div>
                     </div>
-        </div>
-    </div>
-
-    <!-- BLOCK: Información Específica -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-8 opacity-5">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-        </div>
-        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
-            <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-            </div>
-            <div>
-                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Información Específica
-                </h3>
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Campos dinámicos según el tipo de actividad</p>
-            </div>
-        </div>
-        <div class="space-y-6 relative z-10">
-            <div class="flex items-center gap-2 border-b border-gray-200/50 dark:border-gray-800 pb-3">
-                        <div class="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
-                            ✨
-                        </div>
-                        
-                    </div>
-
-                    @if ($activity->type === 'document')
-                        <!-- DOCUMENTO ESPECÍFICO -->
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                                Esta actividad es un documento colaborativo accesible mediante OnlyOffice.
-                            </p>
-                            <div class="mt-4">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Actual</label>
-                                <input type="text" name="version" value="{{ old('version', data_get($activity->metadata, 'version', '1.0.0')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none">
-                            </div>
-                        </div>
-                    @elseif ($activity->type === 'link')
-                        <!-- ENLACE ESPECÍFICO -->
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Dirección URL (Enlace)</label>
-                            <input type="url" name="url" value="{{ old('url', data_get($activity->metadata, 'url')) }}" required class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="https://example.com/recurso">
-                            @error('url')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    @elseif ($activity->type === 'decision')
-                        <!-- DECISIÓN ESPECÍFICO -->
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                                Decisión registrada en el historial. Modifica la descripción para documentar cualquier cambio en el acuerdo.
-                            </p>
-                        </div>
-                    @elseif ($activity->type === 'meeting')
-                        <!-- REUNIÓN ESPECÍFICO -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
-                                <select name="modality" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    <option value="remote" {{ old('modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
-                                    <option value="presential" {{ old('modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
-                                    <option value="hybrid" {{ old('modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
-                                <input type="number" name="duration_minutes" value="{{ old('duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
-                            </div>
-
-                            <div class="md:col-span-2" x-data="{
-                                link: '{{ old('location', data_get($activity->metadata, 'location')) }}',
-                                generateJitsi() {
-                                    this.link = 'https://meet.jit.si/SientiaMTX-' + Math.random().toString(36).substring(2, 12);
-                                },
-                                async generateMeet() {
-                                    Swal.fire({
-                                        title: '🌐 Creando sala Meet...',
-                                        text: 'Conectando con Google Meet',
-                                        allowOutsideClick: false,
-                                        showConfirmButton: false,
-                                        didOpen: () => Swal.showLoading(),
-                                    });
-
-                                    try {
-                                        let response = await fetch('{{ route('meet.generate') }}', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                                'Accept': 'application/json',
-                                            },
-                                            body: JSON.stringify({ team_id: {{ $team->id ?? 'null' }} })
-                                        });
-                                        let data = await response.json();
-                                        if (data.success && data.meet_url) {
-                                            this.link = data.meet_url;
-                                            Swal.close();
-                                        } else {
-                                            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo iniciar la llamada.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
-                                        }
-                                    } catch (err) {
-                                        Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
-                                    }
-                                }
-                            }">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">Lugar / Enlace Videollamada</label>
-                                    <div class="flex items-center gap-2">
-                                        <button type="button" @click="generateJitsi()" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/50">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
-                                            Generar Jitsi
-                                        </button>
-                                        <button type="button" @click="generateMeet()" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-blue-100 dark:border-blue-800/50">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
-                                                <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
-                                                <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
-                                                <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
-                                            </svg>
-                                            Generar Meet
-                                        </button>
-                                    </div>
-                                </div>
-                                <input type="text" name="location" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
-                            </div>
-                        </div>
-                    @elseif ($activity->type === 'reminder')
-                        <!-- RECORDATORIO ESPECÍFICO -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
-                                @php $channels = data_get($activity->metadata, 'channels', ['email']); @endphp
-                                <div class="flex flex-wrap gap-4 mt-2">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Correo Electrónico</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Telegram</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
         </div>
     </div>
 

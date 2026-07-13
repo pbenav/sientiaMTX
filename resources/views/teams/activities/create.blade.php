@@ -69,6 +69,38 @@
                     @enderror
                 </div>
 
+                <!-- Description -->
+                <div>
+                    <x-markdown-editor 
+                        name="description" 
+                        id="description"
+                        :value="old('description')"
+                        :label="__('tasks.description')"
+                        rows="4"
+                        :upload-url="route('teams.forum.upload_image', $team)"
+                        :mentions-url="route('teams.mentions', $team)"
+                    />
+                </div>
+                @if ($type === 'document')
+                    <!-- DOCUMENTO ESPECÍFICO -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                            Esta actividad creará un documento de texto colaborativo. Los miembros del equipo podrán editarlo simultáneamente usando OnlyOffice.
+                        </p>
+                        <div class="mt-4">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Inicial</label>
+                            <input type="text" name="metadata[version]" value="{{ old('metadata.version', '1.0.0') }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none">
+                        </div>
+                    </div>
+                @elseif ($type === 'link')
+                    <!-- ENLACE ESPECÍFICO -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
+                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Dirección URL (Enlace)</label>
+                        <input type="url" name="metadata[url]" value="{{ old('metadata.url') }}" required class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="https://example.com/recurso">
+                    </div>
+                @endif
+
+
                 @if($type === "task")
                 <!-- Assignment Mode -->
                 <div class="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -262,38 +294,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Description -->
-                <div>
-                    <x-markdown-editor 
-                        name="description" 
-                        id="description"
-                        :value="old('description')"
-                        :label="__('tasks.description')"
-                        rows="4"
-                        :upload-url="route('teams.forum.upload_image', $team)"
-                        :mentions-url="route('teams.mentions', $team)"
-                    />
-                </div>
-                @if ($type === 'document')
-                    <!-- DOCUMENTO ESPECÍFICO -->
-                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
-                        <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                            Esta actividad creará un documento de texto colaborativo. Los miembros del equipo podrán editarlo simultáneamente usando OnlyOffice.
-                        </p>
-                        <div class="mt-4">
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Inicial</label>
-                            <input type="text" name="metadata[version]" value="{{ old('metadata.version', '1.0.0') }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none">
-                        </div>
-                    </div>
-                @elseif ($type === 'link')
-                    <!-- ENLACE ESPECÍFICO -->
-                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Dirección URL (Enlace)</label>
-                        <input type="url" name="metadata[url]" value="{{ old('metadata.url') }}" required class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="https://example.com/recurso">
-                    </div>
-                @endif
-
 
                 @if($type === "task")
                 <!-- Observations (Markdown) -->
