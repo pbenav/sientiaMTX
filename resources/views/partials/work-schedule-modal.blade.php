@@ -1,8 +1,8 @@
 @auth
 @if(auth()->user()->isWorking())
 @php
-    // Obtenemos la fecha más antigua de inicio de los contadores activos
-    $oldestActiveLog = auth()->user()->timeLogs()->whereNull('end_at')->orderBy('start_at', 'asc')->first();
+    // Obtenemos la fecha más antigua de inicio de los contadores activos de hoy (para evitar arrastrar dias anteriores)
+    $oldestActiveLog = auth()->user()->timeLogs()->whereNull('end_at')->where('start_at', '>=', now()->startOfDay())->orderBy('start_at', 'asc')->first();
     $startedAtDate = $oldestActiveLog && $oldestActiveLog->start_at ? $oldestActiveLog->start_at->toDateString() : now()->toDateString();
 @endphp
 <div x-data="{
