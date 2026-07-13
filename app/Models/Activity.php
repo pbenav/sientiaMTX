@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
  */
 class Activity extends Model
 {
-    use HasFactory, SoftDeletes, HasUuid, HandlesEisenhowerMatrix;
+    use HasFactory, SoftDeletes, HasUuid, HandlesEisenhowerMatrix, \App\Traits\ActivityOccurrences;
 
     // ─── Tipos registrados ────────────────────────────────────────────────────
     public const SUBTYPES = [

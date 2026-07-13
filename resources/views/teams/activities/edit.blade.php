@@ -1004,15 +1004,6 @@
                                     </svg>
                                 </button>
 
-                                <form id="edit-act-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
-                                    @csrf <input type="hidden" name="type" value="docx">
-                                </form>
-                                <form id="edit-act-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
-                                    @csrf <input type="hidden" name="type" value="xlsx">
-                                </form>
-                                <form id="edit-act-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
-                                    @csrf <input type="hidden" name="type" value="pptx">
-                                </form>
 
                                 <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 -translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" x-cloak class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-[300] overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
                                     <div class="px-3 pt-3 pb-1.5">
@@ -1138,6 +1129,17 @@
         </div>
 
         @if ($activity->type === 'document')
+        
+            <!-- OnlyOffice Forms (Moved out of main form to prevent HTML nesting validation issues) -->
+            <form id="edit-act-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
+                @csrf <input type="hidden" name="type" value="docx">
+            </form>
+            <form id="edit-act-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
+                @csrf <input type="hidden" name="type" value="xlsx">
+            </form>
+            <form id="edit-act-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
+                @csrf <input type="hidden" name="type" value="pptx">
+            </form>
             @php
                 $chapters = $activity->metadata['chapters'] ?? [];
                 $docVersion = $activity->metadata['version'] ?? '1.0.0';
