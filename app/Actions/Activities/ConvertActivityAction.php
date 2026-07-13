@@ -168,11 +168,13 @@ class ConvertActivityAction
                 // 4.4 Adjuntos
                 foreach ($source->attachments as $attachment) {
                     $target->attachments()->create([
-                        'user_id' => $attachment->user_id,
-                        'name' => $attachment->name,
-                        'file_path' => $attachment->file_path,
-                        'file_type' => $attachment->file_type,
-                        'file_size' => $attachment->file_size,
+                        'uploaded_by_id' => $attachment->uploaded_by_id,
+                        'file_name'      => $attachment->file_name,
+                        'file_path'      => $attachment->file_path,
+                        'mime_type'      => $attachment->mime_type,
+                        'disk'           => $attachment->disk,
+                        'file_size'      => $attachment->file_size,
+                        'label'          => $attachment->label,
                     ]);
                 }
 
