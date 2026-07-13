@@ -40,7 +40,7 @@
                 "low",
                 "medium",
                 "high",
-                "urgent"
+                "critical"
             ]
         },
         "progress": {

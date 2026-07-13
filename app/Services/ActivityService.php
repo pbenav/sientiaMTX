@@ -481,20 +481,24 @@ class ActivityService
      */
     public function search(Team $team, array $filters = [], string $sort = 'due_date', string $dir = 'asc'): Builder
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = $team->isManager($user);
 
         $query = Activity::byTeam($team->id)
             ->active()
-            ->with(['creator', 'assignedTo', 'kanbanColumn', 'tags', 'assignedGroups', 'expediente',
-                'children' => function ($q) {
-                    $q->where('is_archived', false)->orderBy('created_at');
-                },
-            ]);
+            ->with([
+                'creator', 'assignedTo', 'kanbanColumn', 'tags', 'assignedGroups', 'expediente', 'assignedUser', 'skills', 'parent',
+                'children' => function($q) use ($user, $isManager) {
+                    $q->where('is_archived', false)
+                      ->orderBy('created_at')
+                      ->visibleTo($user, $isManager);
+                }
+            ])
+            ->notEphemeral();
 
-        // Visibilidad y Control de Jerarquía (Garantizando compatibilidad con task_assignments legacy)
+        // Visibilidad y Control de Jerarquía
         if ($isManager) {
-            // GESTIÓN (Managers): Ven todo lo público y esqueleto del equipo, pero NUNCA actividades PRIVADAS de otros
+            // GESTIÓN: Ven todo excepto lo que sea estrictamente 'private' de otros usuarios.
             $query->where(function ($q) use ($user) {
                 $q->where('visibility', '!=', 'private')
                   ->orWhere('created_by_id', $user->id)
@@ -516,40 +520,18 @@ class ActivityService
                           });
                   });
             });
-
-            // Para evitar ruido visual en el listado general, ven las raíces o plantillas maestras.
-            if (empty($filters['search'])) {
-                $query->where(function ($q) {
-                    $q->whereNull('parent_id')
-                      ->orWhere('is_template', true);
-                });
-            }
         } else {
-            // EJECUCIÓN (Miembros): Ven su trabajo asignado (tanto en activity_assignments como en task_assignments legacy),
-            // lo que ellos mismos han creado, o actividades públicas sin asignar.
+            // EJECUCIÓN (Miembros): Ven su trabajo asignado, lo que han creado, actividades públicas, o padres de tareas hijas asignadas.
             $query->where(function ($q) use ($user) {
-                // 1. Creadas por el usuario
-                $q->where('created_by_id', $user->id);
-
-                // 2. Actividades públicas "PURAS" (sin asignaciones)
-                $q->orWhere(function ($subq) {
+                $q->where('created_by_id', $user->id)
+                  ->orWhere(function ($subq) {
                     $subq->where('visibility', 'public')
                          ->whereDoesntHave('assignedTo')
-                         ->whereDoesntHave('assignedGroups')
-                         ->whereNotExists(function ($legacy) {
-                             $legacy->select(\DB::raw(1))
-                                 ->from('activity_task_mapping')
-                                 ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                                 ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
-                         });
-                });
-
-                // 3. Asignaciones directas en activity_assignments (nueva arquitectura)
-                $q->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                  ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-
-                // 4. Asignaciones legacy en task_assignments a través de activity_task_mapping
-                $q->orWhereExists(function ($sub) use ($user) {
+                         ->whereDoesntHave('assignedGroups');
+                  })
+                  ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                  ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
+                  ->orWhereExists(function ($sub) use ($user) {
                     $sub->select(\DB::raw(1))
                         ->from('activity_task_mapping')
                         ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
@@ -563,14 +545,18 @@ class ActivityService
                                     ->where('group_user.user_id', $user->id);
                               });
                         });
-                });
+                  })
+                  ->orWhereHas('children', function ($sub) use ($user) {
+                      $sub->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                          ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                  });
             });
+        }
 
-            // Respetar la jerarquía en el listado general: solo mostrar las actividades principales (padres)
-            // a menos que estemos buscando, en cuyo caso mostramos todas las coincidencias.
-            if (empty($filters['search'])) {
-                $query->whereNull('parent_id');
-            }
+        // Respetar jerarquía en el listado general: solo mostrar las actividades principales (padres)
+        // A MENOS que hayan filtrado explícitamente para ver instancias.
+        if (($filters['template_type'] ?? '') !== 'instance') {
+            $query->whereNull('parent_id');
         }
 
         // Filtros
@@ -629,7 +615,14 @@ class ActivityService
 
         if (!empty($filters['search'])) {
             $term = '%' . $filters['search'] . '%';
-            $query->where(fn($q) => $q->where('title', 'like', $term)->orWhere('description', 'like', $term));
+            $query->where(function($q) use ($term) {
+                $q->where('title', 'like', $term)
+                  ->orWhere('description', 'like', $term)
+                  ->orWhereHas('children', function($subq) use ($term) {
+                      $subq->where('title', 'like', $term)
+                           ->orWhere('description', 'like', $term);
+                  });
+            });
         }
 
         if (!empty($filters['archived'])) {
