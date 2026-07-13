@@ -889,9 +889,10 @@
                 <!-- Columna 1: Impacto Humano y Gamificación -->
                 <div class="space-y-6">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
                             Impacto Social / Humano (Puntos)
                         </label>
+                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3">Valor externo generado para la ciudadanía</p>
                         <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
                     </div>
                     
@@ -943,6 +944,7 @@
                             'text-red-500': load > 8
                         }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
                     </label>
+                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 -mt-3">Coste de esfuerzo interno y desgaste mental</p>
                     <div class="relative pt-2">
                         <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
                             class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
@@ -991,6 +993,63 @@
                                     Google Drive
                                 </button>
                             @endif
+                            <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                                <button type="button" @click="open = !open" class="flex items-center gap-1.5 text-xs bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20 hover:bg-teal-600 hover:text-white hover:border-teal-600 dark:hover:bg-teal-500 dark:hover:text-white dark:hover:border-teal-500 px-4 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    {{ __('Crear en OnlyOffice') }}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <form id="edit-act-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
+                                    @csrf <input type="hidden" name="type" value="docx">
+                                </form>
+                                <form id="edit-act-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
+                                    @csrf <input type="hidden" name="type" value="xlsx">
+                                </form>
+                                <form id="edit-act-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
+                                    @csrf <input type="hidden" name="type" value="pptx">
+                                </form>
+
+                                <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 -translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" x-cloak class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-[300] overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
+                                    <div class="px-3 pt-3 pb-1.5">
+                                        <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Crear con OnlyOffice</p>
+                                    </div>
+                                    <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-docx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group/item">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM9 13h6v1H9v-1zm0 2h6v1H9v-1zm0 2h4v1H9v-1z"/></svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="text-xs font-bold text-gray-800 dark:text-white">Documento de texto</div>
+                                            <div class="text-[10px] text-gray-400 font-medium">.docx · Word / Writer</div>
+                                        </div>
+                                    </button>
+                                    <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-xlsx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group/item">
+                                        <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 12h2v1H8v-1zm0 2h2v1H8v-1zm0 2h2v1H8v-1zm3-4h5v1h-5v-1zm0 2h5v1h-5v-1zm0 2h5v1h-5v-1z"/></svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="text-xs font-bold text-gray-800 dark:text-white">Hoja de cálculo</div>
+                                            <div class="text-[10px] text-gray-400 font-medium">.xlsx · Excel / Calc</div>
+                                        </div>
+                                    </button>
+                                    <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-pptx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors group/item">
+                                        <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 3l-2 3h4l-2-3zm2.5 3.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="text-xs font-bold text-gray-800 dark:text-white">Presentación</div>
+                                            <div class="text-[10px] text-gray-400 font-medium">.pptx · PowerPoint / Impress</div>
+                                        </div>
+                                    </button>
+                                    <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-800 mt-1">
+                                        <p class="text-[9px] text-gray-400 dark:text-gray-500 text-center">Se abre en una nueva pestaña ↗</p>
+                                    </div>
+                                </div>
+                            </div>
                             <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
@@ -1104,65 +1163,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 shrink-0">
-                        @if($canEditDocument)
-                        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
-                            <button type="button" @click="open = !open" class="flex items-center gap-1.5 text-xs bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20 hover:bg-teal-600 hover:text-white hover:border-teal-600 dark:hover:bg-teal-500 dark:hover:text-white dark:hover:border-teal-500 px-3.5 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                {{ __('Nuevo documento OnlyOffice') }}
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
 
-                            <form id="edit-act-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
-                                @csrf <input type="hidden" name="type" value="docx">
-                            </form>
-                            <form id="edit-act-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
-                                @csrf <input type="hidden" name="type" value="xlsx">
-                            </form>
-                            <form id="edit-act-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank">
-                                @csrf <input type="hidden" name="type" value="pptx">
-                            </form>
-
-                            <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 -translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" x-cloak class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-[300] overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
-                                <div class="px-3 pt-3 pb-1.5">
-                                    <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Crear con OnlyOffice</p>
-                                </div>
-                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-docx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group/item">
-                                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM9 13h6v1H9v-1zm0 2h6v1H9v-1zm0 2h4v1H9v-1z"/></svg>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-xs font-bold text-gray-800 dark:text-white">Documento de texto</div>
-                                        <div class="text-[10px] text-gray-400 font-medium">.docx · Word / Writer</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-xlsx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group/item">
-                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 12h2v1H8v-1zm0 2h2v1H8v-1zm0 2h2v1H8v-1zm3-4h5v1h-5v-1zm0 2h5v1h-5v-1zm0 2h5v1h-5v-1z"/></svg>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-xs font-bold text-gray-800 dark:text-white">Hoja de cálculo</div>
-                                        <div class="text-[10px] text-gray-400 font-medium">.xlsx · Excel / Calc</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-pptx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors group/item">
-                                    <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 3l-2 3h4l-2-3zm2.5 3.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-xs font-bold text-gray-800 dark:text-white">Presentación</div>
-                                        <div class="text-[10px] text-gray-400 font-medium">.pptx · PowerPoint / Impress</div>
-                                    </div>
-                                </button>
-                                <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-800 mt-1">
-                                    <p class="text-[9px] text-gray-400 dark:text-gray-500 text-center">Se abre en una nueva pestaña ↗</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
 
                         <button type="button" onclick="printDocumentBook()" class="flex items-center gap-1.5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

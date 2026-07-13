@@ -702,6 +702,7 @@
                                     'text-red-500': load == 5
                                 }" class="font-black tabular-nums transition-colors" x-text="load">1</span>
                             </label>
+                            <p class="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-3 -mt-2">Coste de esfuerzo interno y desgaste mental</p>
                             <input type="range" name="cognitive_load" min="1" max="5" step="1" x-model="load"
                                 class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
                             <div class="flex justify-between text-[10px] text-gray-400 mt-2 font-black uppercase tracking-tighter">
