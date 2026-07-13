@@ -268,14 +268,17 @@ class PublicAppointmentController extends Controller
                 $visitor = $visitorQuery->lockForUpdate()->first();
 
                 if ($visitor) {
-                    // Restricción: No puede tener más de una cita el mismo día
+                    // Restricción: No puede tener más de una cita el mismo día en este centro
                     $hasAppointmentToday = Appointment::where('visitor_id', $visitor->id)
                         ->where('appointment_date', $date->toDateString())
                         ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
+                        ->whereHas('service', function ($query) use ($service) {
+                            $query->where('team_id', $service->team_id);
+                        })
                         ->exists();
 
                     if ($hasAppointmentToday) {
-                        return back()->withErrors(['appointment_date' => 'Ya tienes una cita programada para este día. No se permite solicitar más de una cita en la misma fecha.'])->withInput();
+                        return back()->withErrors(['appointment_date' => 'Ya tienes una cita programada en este centro para este día. Si necesitas modificarla, utiliza el enlace que recibiste en tu correo o contacta directamente con el centro.'])->withInput();
                     }
 
                     // Actualizar datos del visitante existente
@@ -712,15 +715,18 @@ class PublicAppointmentController extends Controller
                     return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
                 }
 
-                // Restricción: No puede tener más de una cita el mismo día (excluyendo la propia que está modificando)
+                // Restricción: No puede tener más de una cita el mismo día en el mismo centro (excluyendo la propia que está modificando)
                 $hasOtherAppointmentThatDay = Appointment::where('visitor_id', $appointment->visitor_id)
                     ->where('id', '!=', $appointment->id)
                     ->where('appointment_date', $newDate->toDateString())
                     ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
+                    ->whereHas('service', function ($query) use ($service) {
+                        $query->where('team_id', $service->team_id);
+                    })
                     ->exists();
 
                 if ($hasOtherAppointmentThatDay) {
-                    return back()->withErrors(['appointment_date' => 'Ya tienes otra cita programada para este día. No se permite más de una cita en la misma fecha.'])->withInput();
+                    return back()->withErrors(['appointment_date' => 'Ya tienes otra cita programada en este centro para este día.'])->withInput();
                 }
 
                 $originalDate = clone $appointment->appointment_date;
