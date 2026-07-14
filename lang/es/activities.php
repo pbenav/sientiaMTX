@@ -95,6 +95,7 @@ return [
     'skip_weekends'             => 'Saltar fines de semana',
     'sequential_dependencies'   => 'Dependencias secuenciales (Gantt)',
     'collaborative_hint'        => 'Modo colaborativo: varios miembros trabajan juntos en la misma instancia.',
+    'collaborative_task'        => 'Tarea colaborativa',
 
     // ─── Bloqueo de servicio ──────────────────────────────────────────────────
     'blocker_detected'          => 'Servicio bloqueado',
