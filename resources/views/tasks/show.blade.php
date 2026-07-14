@@ -2069,8 +2069,13 @@
 
             <!-- 1. Plan Maestro Related (Only if template/child) -->
             @if ($task->is_template)
-                <div class="bg-violet-50/30 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 shadow-sm space-y-4">
-                    <p class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('ACCIONES DEL PLAN MAESTRO') }}</p>
+                @php
+                    $isCollabShow = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                @endphp
+                <div class="{{ $isCollabShow ? 'bg-blue-50/30 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30' : 'bg-violet-50/30 dark:bg-violet-900/10 border-violet-100 dark:border-violet-900/30' }} border rounded-2xl p-4 shadow-sm space-y-4">
+                    <p class="text-[10px] font-bold {{ $isCollabShow ? 'text-blue-600 dark:text-blue-400' : 'text-violet-600 dark:text-violet-400' }} uppercase tracking-widest">
+                        {{ $isCollabShow ? (__('activities.collaborative_task_actions') ?? 'ACCIONES DE TAREA COLABORATIVA') : __('ACCIONES DEL PLAN MAESTRO') }}
+                    </p>
                     
                     <div class="space-y-2">
                         @if ($task->status !== 'completed')
@@ -2079,7 +2084,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                {{ __('Cerrar Plan Maestro') }}
+                                {{ $isCollabShow ? (__('activities.close_collaborative_task') ?? 'Cerrar Tarea Colaborativa') : __('Cerrar Plan Maestro') }}
                             </button>
                         @else
                             <button onclick="updateTaskStatus('in_progress')"
@@ -2087,7 +2092,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                {{ __('Reabrir Plan Maestro') }}
+                                {{ $isCollabShow ? (__('activities.reopen_collaborative_task') ?? 'Reabrir Tarea Colaborativa') : __('Reabrir Plan Maestro') }}
                             </button>
                         @endif
 

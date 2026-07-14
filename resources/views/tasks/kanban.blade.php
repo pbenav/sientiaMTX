@@ -316,8 +316,11 @@
                                             </a>
                                             <div class="flex flex-wrap gap-1 mt-0.5">
                                                 @if ($task->is_template)
-                                                    <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[8px] font-black uppercase tracking-tighter border border-violet-200 dark:border-violet-700/50 shadow-sm">
-                                                        {{ __('tasks.plan_master') }}
+                                                    @php
+                                                        $isCollabKanban = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                                                    @endphp
+                                                    <span class="px-1.5 py-0.5 rounded-md {{ $isCollabKanban ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700/50' : 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700/50' }} text-[8px] font-black uppercase tracking-tighter border shadow-sm">
+                                                        {{ $isCollabKanban ? (__('activities.collaborative_task') ?? 'Tarea Colaborativa') : __('tasks.plan_master') }}
                                                     </span>
                                                 @endif
                                                 @if ($task->assigned_user_id === auth()->id() && $task->parent_id)
