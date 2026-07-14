@@ -40,7 +40,7 @@
     @endphp
 
     <!-- Matrix Labels & Grid -->
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Filters -->
         <div class="mb-8">
             <form action="{{ route('teams.eisenhower', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">
