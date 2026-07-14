@@ -33,7 +33,6 @@
             </x-demo-hint>
         </div>
 
-        @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-4 mb-2 flex w-full'])
 
     @php
         $quadrantConfig = $team->getQuadrantConfig();
