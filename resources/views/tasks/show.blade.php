@@ -771,8 +771,8 @@
                         $instancesQuery = $task->is_template ? $task->instances() : $task->children();
                         $withRelation = $task->is_template ? 'assignedUser' : 'assignedTo';
                         
+                        // Coordinators/Managers and members see all instances in a roadmap to calculate global progress
                         $instances = $instancesQuery->getQuery()
-                            ->visibleTo($currentUser, $isUserMgr)
                             ->with($withRelation)
                             ->get()
                             ->sortBy(function($inst) use ($task) {

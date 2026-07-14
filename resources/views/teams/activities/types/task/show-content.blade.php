@@ -134,9 +134,8 @@
                     if ($isRoadmap) {
                         $instancesQuery = $activity->is_template ? $activity->instances() : $activity->children();
                         
-                        // Coordinators/Managers see all instances; members only their own
+                        // Coordinators/Managers and members see all instances in a roadmap to calculate global progress
                         $instances = $instancesQuery->getQuery()
-                            ->visibleTo($currentUser, $isUserMgr)
                             ->with(['assignedTo', 'timeLogs'])
                             ->get()
                             ->sortBy(function($inst) {
