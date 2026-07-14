@@ -292,13 +292,22 @@ class TaskActionController extends Controller
         
         $recipient->notify(new \App\Notifications\TaskNudgeNotification($task, $type, $progress, $customMessage));
 
-        $task->increment('nudge_count');
-        $task->refresh();
+        if ($task instanceof Activity) {
+            $meta = $task->metadata ?? [];
+            $meta['nudge_count'] = ($meta['nudge_count'] ?? 0) + 1;
+            $task->metadata = $meta;
+            $task->save();
+            $nudgeCount = $task->metadata['nudge_count'];
+        } else {
+            $task->increment('nudge_count');
+            $task->refresh();
+            $nudgeCount = $task->nudge_count;
+        }
 
         return response()->json([
             'success' => true, 
             'message' => __('tasks.nudge_sent'),
-            'nudge_count' => $task->nudge_count
+            'nudge_count' => $nudgeCount
         ]);
     }
 
@@ -390,7 +399,15 @@ class TaskActionController extends Controller
                 $recipient->notify(new \App\Notifications\TaskNudgeNotification(
                     $task, $type, $progress, $validated['custom_message'] ?? null
                 ));
-                $task->increment('nudge_count');
+                
+                if ($task instanceof Activity) {
+                    $meta = $task->metadata ?? [];
+                    $meta['nudge_count'] = ($meta['nudge_count'] ?? 0) + 1;
+                    $task->metadata = $meta;
+                    $task->save();
+                } else {
+                    $task->increment('nudge_count');
+                }
 
                 // Auditoría: registrar en el historial de la tarea si existe la relación
                 if (method_exists($task, 'histories')) {
