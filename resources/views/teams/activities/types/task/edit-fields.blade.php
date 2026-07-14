@@ -441,8 +441,16 @@
             {{ __('Progreso') }}
         </h3>
         <div class="flex items-center gap-4">
-            <input type="range" name="progress_percentage" min="0" max="100" value="{{ old('progress_percentage', $activity->progress_percentage ?? 0) }}" class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-500">
+            <input type="range" name="progress_percentage" min="0" max="100" value="{{ old('progress_percentage', $activity->progress_percentage ?? 0) }}" 
+                class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-violet-500 {{ $activity->is_template ? 'opacity-50 cursor-not-allowed' : '' }}"
+                {{ $activity->is_template ? 'disabled' : '' }}
+                oninput="this.nextElementSibling.innerText = this.value + '%'">
             <span class="text-sm font-bold text-gray-900 dark:text-white font-mono tabular-nums w-12 text-right">{{ old('progress_percentage', $activity->progress_percentage ?? 0) }}%</span>
         </div>
+        @if($activity->is_template)
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-2 font-medium italic leading-tight">
+                El progreso global de este plan maestro se calcula automáticamente en base al progreso de sus subtareas y por tanto no es modificable directamente.
+            </p>
+        @endif
     </div>
 </div>
