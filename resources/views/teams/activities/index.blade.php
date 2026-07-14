@@ -393,13 +393,24 @@
                                                 </span>
                                             @endif
                                             @if ($activity->is_template)
-                                                <span
-                                                    class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded shadow-sm inline-flex items-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                                    </svg>
-                                                    {{ __('tasks.plan_master') }}
-                                                </span>
+                                                @php
+                                                    $isCollaborative = isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'distributed' && $activity->assignedTo->count() > 0;
+                                                @endphp
+                                                @if($isCollaborative)
+                                                    <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded shadow-sm inline-flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                        </svg>
+                                                        {{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}
+                                                    </span>
+                                                @else
+                                                    <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded shadow-sm inline-flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                                        </svg>
+                                                        {{ __('tasks.plan_master') }}
+                                                    </span>
+                                                @endif
                                             @endif
 
                                             @if ($activity->avg_quality_score > 0)

@@ -70,6 +70,10 @@
                 <span class="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700/50 shadow-sm transition-transform group-hover:scale-110">M</span>
                 <span>{{ __('tasks.plan_master') }}</span>
             </div>
+            <div class="flex items-center gap-2 group cursor-help" title="{{ __('activities.collaborative_hint') ?? 'Modo colaborativo' }}">
+                <span class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50 shadow-sm transition-transform group-hover:scale-110">C</span>
+                <span>{{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}</span>
+            </div>
             <div class="flex items-center gap-2 group cursor-help" title="{{ __('tasks.personal_instance_description') }}">
                 <span class="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/50 shadow-sm transition-transform group-hover:scale-110">TE</span>
                 <span>{{ __('tasks.your_execution') }}</span>
@@ -210,7 +214,14 @@
                                                 </span>
                                                 <span class="truncate">{{ $task->title }}</span>
                                                 @if ($task->is_template)
-                                                    <span class="px-1 py-0.5 rounded-[4px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-violet-200 dark:border-violet-700/50 shadow-sm" title="{{ __('tasks.plan_master') }}">M</span>
+                                                    @php
+                                                        $isCollaborative = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                                                    @endphp
+                                                    @if($isCollaborative)
+                                                        <span class="px-1 py-0.5 rounded-[4px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-blue-200 dark:border-blue-700/50 shadow-sm" title="{{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}">C</span>
+                                                    @else
+                                                        <span class="px-1 py-0.5 rounded-[4px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-violet-200 dark:border-violet-700/50 shadow-sm" title="{{ __('tasks.plan_master') }}">M</span>
+                                                    @endif
                                                 @endif
                                                 @if ($task->assigned_user_id === auth()->id() && $task->parent_id)
                                                     <span class="px-1 py-0.5 rounded-[4px] bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-emerald-200 dark:border-emerald-700/50 shadow-sm" title="{{ __('tasks.your_execution') }}">TE</span>

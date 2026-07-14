@@ -194,8 +194,13 @@
 
             <!-- 1. Plan Maestro Related (Only if template/child) -->
             @if ($activity->is_template)
-                <div class="bg-violet-50/30 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 shadow-sm space-y-4">
-                    <p class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('ACCIONES DEL PLAN MAESTRO') }}</p>
+                @php
+                    $isCollaborativeSidebar = isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'distributed' && $activity->assignments()->count() > 0;
+                @endphp
+                <div class="{{ $isCollaborativeSidebar ? 'bg-blue-50/30 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30' : 'bg-violet-50/30 dark:bg-violet-900/10 border-violet-100 dark:border-violet-900/30' }} border rounded-2xl p-4 shadow-sm space-y-4">
+                    <p class="text-[10px] font-bold {{ $isCollaborativeSidebar ? 'text-blue-600 dark:text-blue-400' : 'text-violet-600 dark:text-violet-400' }} uppercase tracking-widest">
+                        {{ $isCollaborativeSidebar ? __('ACCIONES DE TAREA COLABORATIVA') : __('ACCIONES DEL PLAN MAESTRO') }}
+                    </p>
                     
                     <div class="space-y-2">
                         @if ($activity->status_value !== 'completed')
@@ -204,7 +209,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                {{ __('Cerrar Plan Maestro') }}
+                                {{ $isCollaborativeSidebar ? __('Cerrar Tarea Colaborativa') : __('Cerrar Plan Maestro') }}
                             </button>
                         @else
                             <button onclick="updateTaskStatus('in_progress')"
@@ -212,7 +217,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                {{ __('Reabrir Plan Maestro') }}
+                                {{ $isCollaborativeSidebar ? __('Reabrir Tarea Colaborativa') : __('Reabrir Plan Maestro') }}
                             </button>
                         @endif
 
@@ -235,14 +240,17 @@
                         @endif
                     </div>
 
-                    <div class="pt-2 border-t border-violet-100 dark:border-violet-900/20">
-                        <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-violet-400 mb-1">
+                    <div class="pt-2 border-t {{ $isCollaborativeSidebar ? 'border-blue-100 dark:border-blue-900/20' : 'border-violet-100 dark:border-violet-900/20' }}">
+                        <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-widest {{ $isCollaborativeSidebar ? 'text-blue-400' : 'text-violet-400' }} mb-1">
                             <span>{{ __('activities.roadmap_progress') }}</span>
                             <span class="js-global-progress-val">{{ $activity->progress }}%</span>
                         </div>
-                        <div class="w-full h-1 bg-violet-100 dark:bg-violet-900/30 rounded-full overflow-hidden">
-                            <div class="h-full bg-violet-500 transition-all duration-1000 js-global-progress-bar" style="width: {{ $activity->progress }}%"></div>
+                        <div class="w-full h-1 {{ $isCollaborativeSidebar ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-violet-100 dark:bg-violet-900/30' }} rounded-full overflow-hidden">
+                            <div class="h-full {{ $isCollaborativeSidebar ? 'bg-blue-500' : 'bg-violet-500' }} transition-all duration-1000 js-global-progress-bar" style="width: {{ $activity->progress }}%"></div>
                         </div>
+                        <p class="text-[9px] {{ $isCollaborativeSidebar ? 'text-blue-500/70' : 'text-violet-500/70' }} mt-1.5 italic leading-tight">
+                            {{ __('El progreso global se calcula en base al progreso de las subtareas y no es modificable directamente.') }}
+                        </p>
                     </div>
                 </div>
             @elseif ($activity->isInstance())
