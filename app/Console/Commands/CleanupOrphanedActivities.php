@@ -78,7 +78,15 @@ class CleanupOrphanedActivities extends Command
                 $assignedUserId = $activity->created_by_id;
             }
 
-            // Si hemos encontrado a quién asignarlo...
+            // Si hemos encontrado a quién asignarlo, validamos que siga siendo miembro del equipo
+            if ($assignedUserId) {
+                $isMember = $activity->team && $activity->team->members()->where('users.id', $assignedUserId)->exists();
+                if (!$isMember) {
+                    $assignedUserId = null;
+                }
+            }
+
+            // Si finalmente tenemos un candidato válido...
             if ($assignedUserId) {
                 $activity->assignedTo()->syncWithoutDetaching([
                     $assignedUserId => [
