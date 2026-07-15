@@ -1,15 +1,15 @@
 @php
     $meta = $activity->metadata ?? [];
     $channels = $meta['channels'] ?? [];
-    $firingDate = $meta['firing_date'] ?? null;
+    $firingDate = $activity->due_date ?? ($meta['firing_date'] ?? null);
     $countdownText = '';
     if ($firingDate) {
         $now = \Carbon\Carbon::now();
         $firing = \Carbon\Carbon::parse($firingDate);
         if ($firing->isPast()) {
-            $countdownText = 'Vencido hace ' . $firing->diffForHumans(now, false);
+            $countdownText = 'Vencido hace ' . $firing->diffForHumans($now, false);
         } elseif ($firing->isFuture()) {
-            $countdownText = 'Faltan ' . $firing->diffForHumans(now, false);
+            $countdownText = 'Faltan ' . $firing->diffForHumans($now, false);
         } else {
             $countdownText = 'Hora de activación: ' . $firing->format('H:i');
         }

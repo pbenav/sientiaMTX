@@ -417,7 +417,7 @@
                             'task'     => ['label' => 'Tareas', 'icon' => '📋'],
                             'document' => ['label' => 'Documentos', 'icon' => '📄'],
                             'note'     => ['label' => 'Notas', 'icon' => '📝'],
-                            'decision' => ['label' => 'Decisiones', 'icon' => '⚖️'],
+                            'decision' => ['label' => 'Acuerdos', 'icon' => '⚖️'],
                             'meeting'  => ['label' => 'Reuniones', 'icon' => '👥'],
                             'link'     => ['label' => 'Enlaces', 'icon' => '🔗'],
                             'reminder' => ['label' => 'Recordatorios', 'icon' => '🔔'],
@@ -595,6 +595,75 @@
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8.71 4.94L5.33 10.8L8.69 16.64L12.08 10.78L8.71 4.94Z" fill="#0066DA"/><path d="M21.16 16.64H14.44L11.07 22.48H17.78L21.16 16.64Z" fill="#00A668"/><path d="M15.32 4.94L12.08 10.78L15.44 16.64H22.16L18.69 4.94H15.32Z" fill="#FFD04C"/><path d="M15.32 4.94L8.71 4.94L5.33 10.8L12.08 22.48L15.44 16.64L15.32 4.94Z" fill="#00832D"/></svg>
                             Vincular Drive
                         </button>
+                        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                            <button type="button" @click="open = !open"
+                                class="inline-flex items-center gap-1.5 text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 hover:bg-teal-600 hover:text-white dark:hover:bg-teal-500 px-3 py-1.5 rounded-xl transition-all border border-teal-200 dark:border-teal-500/20 shadow-sm active:scale-95 group">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                {{ __('Nuevo documento') }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+
+                            <form id="exp-create-docx" method="POST" action="{{ route('onlyoffice.expediente.create', [$team, $expediente]) }}" target="_blank">
+                                @csrf <input type="hidden" name="type" value="docx">
+                            </form>
+                            <form id="exp-create-xlsx" method="POST" action="{{ route('onlyoffice.expediente.create', [$team, $expediente]) }}" target="_blank">
+                                @csrf <input type="hidden" name="type" value="xlsx">
+                            </form>
+                            <form id="exp-create-pptx" method="POST" action="{{ route('onlyoffice.expediente.create', [$team, $expediente]) }}" target="_blank">
+                                @csrf <input type="hidden" name="type" value="pptx">
+                            </form>
+
+                            <div x-show="open"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                x-cloak
+                                class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
+                                <div class="px-3 pt-3 pb-1.5">
+                                    <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Crear con OnlyOffice</p>
+                                </div>
+                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('exp-create-docx').submit()"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group/item">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM9 13h6v1H9v-1zm0 2h6v1H9v-1zm0 2h4v1H9v-1z"/></svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-xs font-bold text-gray-800 dark:text-white">Documento de texto</div>
+                                        <div class="text-[10px] text-gray-400 font-medium">.docx · Word / Writer</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('exp-create-xlsx').submit()"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group/item">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 12h2v1H8v-1zm0 2h2v1H8v-1zm0 2h2v1H8v-1zm3-4h5v1h-5v-1zm0 2h5v1h-5v-1zm0 2h5v1h-5v-1z"/></svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-xs font-bold text-gray-800 dark:text-white">Hoja de cálculo</div>
+                                        <div class="text-[10px] text-gray-400 font-medium">.xlsx · Excel / Calc</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('exp-create-pptx').submit()"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors group/item">
+                                    <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 3l-2 3h4l-2-3zm2.5 3.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-xs font-bold text-gray-800 dark:text-white">Presentación</div>
+                                        <div class="text-[10px] text-gray-400 font-medium">.pptx · PowerPoint / Impress</div>
+                                    </div>
+                                </button>
+                                <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-800 mt-1">
+                                    <p class="text-[9px] text-gray-400 dark:text-gray-500 text-center">Se abre en una nueva pestaña ↗</p>
+                                </div>
+                            </div>
+                        </div>
                         <button type="button" onclick="document.getElementById('exp-attachment-input').click()" 
                             class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 px-3 py-1.5 rounded-xl transition-all border border-violet-100 dark:border-violet-500/20 shadow-sm active:scale-95">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
@@ -662,6 +731,15 @@
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                         @endif
                                     </a>
+                                    @if($attachment->storage_provider !== 'google')
+                                        <form action="{{ route('teams.attachments.to-drive', [$team, $attachment]) }}" method="POST" class="inline" onsubmit="return confirm('¿Mover este archivo a Google Drive? El archivo original se conservará en Drive y se eliminará del servidor local.')">
+                                            @csrf
+                                            <button type="submit" class="p-1.5 text-gray-400 hover:text-blue-500 transition-colors" title="Mover a Google Drive">
+                                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8.71 4.94L5.33 10.8L8.69 16.64L12.08 10.78L8.71 4.94Z" fill="#0066DA"/><path d="M21.16 16.64H14.44L11.07 22.48H17.78L21.16 16.64Z" fill="#00A668"/><path d="M15.32 4.94L12.08 10.78L15.44 16.64H22.16L18.69 4.94H15.32Z" fill="#FFD04C"/><path d="M15.32 4.94L8.71 4.94L5.33 10.8L12.08 22.48L15.44 16.64L15.32 4.94Z" fill="#00832D"/></svg>
+                                            </button>
+                                        </form>
+                                    @endif
+
                                     @if($attachment->user_id === auth()->id() || $team->isManager(auth()->user()))
                                         <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este adjunto permanentemente?')">
                                             @csrf @method('DELETE')
@@ -986,6 +1064,19 @@
         #task-selector { display: none !important; }
     </style>
     <script>
+        // Mantener posición del scroll al recargar
+        document.addEventListener("DOMContentLoaded", function(event) { 
+            var scrollpos = sessionStorage.getItem('scrollpos_expediente_{{ $expediente->id }}');
+            if (scrollpos) {
+                window.scrollTo(0, scrollpos);
+                sessionStorage.removeItem('scrollpos_expediente_{{ $expediente->id }}');
+            }
+        });
+
+        window.onbeforeunload = function(e) {
+            sessionStorage.setItem('scrollpos_expediente_{{ $expediente->id }}', window.scrollY);
+        };
+
         document.addEventListener('DOMContentLoaded', function () {
             new TomSelect('#task-selector', {
                 plugins: {

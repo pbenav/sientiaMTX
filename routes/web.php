@@ -60,6 +60,33 @@ Route::get('/directorio', [PublicMicrositeController::class, 'directory'])->name
 Route::get('/p/{slug}', [PublicMicrositeController::class, 'show'])->name('public.microsites.show');
 Route::get('/embed/files/{attachment}/{token}', [\App\Http\Controllers\PublicAttachmentController::class, 'embed'])->name('public.attachments.embed');
 
+// --- Firma Digital de Acuerdos ---
+// GET (show + download): protegidas por signed URL (se envían por email)
+Route::prefix('agreements/signature')->name('agreements.signature.')->group(function () {
+    Route::get('/{team}/{activity}', [\App\Http\Controllers\AgreementSignatureController::class, 'show'])->name('show')->withoutScopedBindings();
+    Route::get('/{team}/{activity}/download', [\App\Http\Controllers\AgreementSignatureController::class, 'download'])->name('download')->withoutScopedBindings();
+});
+// POST: protegida por CSRF + token de validación propio en el controlador
+Route::post('agreements/signature/{team}/{activity}', [\App\Http\Controllers\AgreementSignatureController::class, 'processSignature'])
+    ->name('agreements.signature.process')
+    ->withoutScopedBindings();
+Route::get('/agreements/signature/success', [\App\Http\Controllers\AgreementSignatureController::class, 'success'])->name('agreements.signature.success');
+
+// Portal de firma para miembro INTERNO autenticado (redirige al portal AutoFirma sin URL firmada)
+Route::middleware('auth')->get('agreements/signature/{team}/{activity}/internal', [\App\Http\Controllers\AgreementSignatureController::class, 'showInternal'])
+    ->name('agreements.signature.show-internal')
+    ->withoutScopedBindings();
+
+// Reenvío de invitación de firma (requiere auth)
+Route::middleware('auth')->post('agreements/signature/{team}/{activity}/resend', [\App\Http\Controllers\AgreementSignatureController::class, 'resendInvitation'])
+    ->name('agreements.signature.resend')
+    ->withoutScopedBindings();
+
+// Firma interna de miembro autenticado (requiere auth)
+Route::middleware('auth')->post('agreements/signature/{team}/{activity}/sign-internal', [\App\Http\Controllers\AgreementSignatureController::class, 'signAsInternalMember'])
+    ->name('agreements.signature.sign-internal')
+    ->withoutScopedBindings();
+
 // Landing page — shown to all (auth users see a CTA to their dashboard)
 Route::get('/', function () {
     if (auth()->check()) {
@@ -182,6 +209,15 @@ Route::middleware('auth')->group(function () {
         // Search - unified (handles both Activity and legacy Task)
         Route::get('activities/search', [\App\Http\Controllers\ActivityController::class, 'search'])->name('teams.activities.search');
 
+        // Import
+        Route::post('activities/import-json', [TaskExportController::class, 'importJson'])->name('teams.activities.import-json');
+
+        // Bulk operations (replaces legacy task bulk routes)
+        Route::patch('activities/bulk-update', [\App\Http\Controllers\ActivityBulkController::class, 'bulkUpdate'])->name('teams.activities.bulk-update');
+        Route::delete('activities/bulk-delete', [\App\Http\Controllers\ActivityBulkController::class, 'bulkDelete'])->name('teams.activities.bulk-delete');
+        Route::post('activities/bulk-merge', [\App\Http\Controllers\ActivityBulkController::class, 'bulkMerge'])->name('teams.activities.bulk-merge');
+        Route::post('activities/purge-trash', [\App\Http\Controllers\ActivityBulkController::class, 'purgeTrash'])->name('teams.activities.purge-trash');
+
         Route::get('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'show'])->name('teams.activities.show')->withTrashed()->withoutScopedBindings();
         Route::get('activities/{activity}/edit', [\App\Http\Controllers\ActivityController::class, 'edit'])->name('teams.activities.edit')->withTrashed()->withoutScopedBindings();
         Route::patch('activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'update'])->name('teams.activities.update')->withTrashed()->withoutScopedBindings();
@@ -201,14 +237,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'updateAttachment'])->name('teams.activities.attachments.update');
         Route::post('activities/{activity}/attachments/{attachment}/replace', [\App\Http\Controllers\ActivityController::class, 'replaceAttachmentContent'])->name('teams.activities.attachments.replace');
 
-        // Bulk operations (replaces legacy task bulk routes)
-        Route::patch('activities/bulk-update', [\App\Http\Controllers\ActivityBulkController::class, 'bulkUpdate'])->name('teams.activities.bulk-update');
-        Route::delete('activities/bulk-delete', [\App\Http\Controllers\ActivityBulkController::class, 'bulkDelete'])->name('teams.activities.bulk-delete');
-        Route::post('activities/bulk-merge', [\App\Http\Controllers\ActivityBulkController::class, 'bulkMerge'])->name('teams.activities.bulk-merge');
-        Route::post('activities/purge-trash', [\App\Http\Controllers\ActivityBulkController::class, 'purgeTrash'])->name('teams.activities.purge-trash');
 
         // Portabilidad, Clonación e Integraciones de Actividades (Universal Polymorphic Integration)
-        Route::post('activities/import-json', [TaskExportController::class, 'importJson'])->name('teams.activities.import-json');
         Route::post('activities/{activity}/copy-to-team', [TaskExportController::class, 'copyToTeam'])->name('teams.activities.copy-to-team');
         Route::post('activities/{activity}/clone', [TaskExportController::class, 'cloneTask'])->name('teams.activities.clone');
         Route::get('activities/{activity}/export-json', [TaskExportController::class, 'exportJson'])->name('teams.activities.export-json');
@@ -576,6 +606,7 @@ Route::middleware(['auth'])->group(function () {
     // Crear un documento nuevo vacío directamente desde una tarea y abrir el editor
     Route::post('/teams/{team}/tasks/{task}/documents/create', [OnlyOfficeController::class, 'createDocument'])->name('onlyoffice.create');
     Route::post('/teams/{team}/activities/{activity}/documents/create', [OnlyOfficeController::class, 'createActivityDocument'])->name('onlyoffice.activity.create');
+    Route::post('/teams/{team}/expedientes/{expediente}/documents/create', [OnlyOfficeController::class, 'createExpedienteDocument'])->name('onlyoffice.expediente.create');
 });
 
 // Rutas de Webhook/Descarga de OnlyOffice Server

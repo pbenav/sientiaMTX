@@ -91,8 +91,6 @@ class GanttController extends Controller
                     $label = (data_get($task->metadata, 'is_autoprogrammable') ? '🔄 ' : '📋 ') . $task->title;
                 } elseif ($task->metadata && isset($task->metadata['is_occurrence'])) {
                     $label = '📅 ' . $task->title;
-                } elseif ($task->assignedUser) {
-                    $label = '👤 ' . ($task->assignedUser->short_name ?: $task->assignedUser->name) . ': ' . $task->title;
                 } else {
                     $label = $task->title;
                 }
@@ -294,6 +292,8 @@ class GanttController extends Controller
 
         $query = Activity::with($loadRelations ? ['parent', 'assignedUser', 'skills', 'assignedTo', 'timeLogs.user', 'children.assignedUser'] : ['assignedUser'])
             ->whereIn('id', $uniqueIds)
+            ->active() // CRUCIAL: Prevenir fugas de actividades archivadas que entren por parent_id
+            ->notEphemeral() // CRUCIAL: Prevenir tareas efímeras
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")

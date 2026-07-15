@@ -1141,11 +1141,11 @@
      @window:touchmove.passive="drag"
      @window:mouseup="stopDrag"
      @window:touchend="stopDrag"
-     class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+     class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
      :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
     {{-- Volver --}}
-    <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
+    <a href="{{ $backUrl ?? route('teams.activities.index', $team) }}"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
        onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
        onmouseout="this.style.color='#6b7280';this.style.background='transparent'">
@@ -1154,6 +1154,18 @@
         </svg>
         <span>{{ __('navigation.back') ?? 'Volver' }}</span>
     </a>
+
+    <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
+
+    <button type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+       style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;border:none;background:transparent;cursor:pointer;"
+       onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
+       onmouseout="this.style.color='#6b7280';this.style.background='transparent'">
+        <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+        </svg>
+        <span class="hidden sm:inline">Subir</span>
+    </button>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 

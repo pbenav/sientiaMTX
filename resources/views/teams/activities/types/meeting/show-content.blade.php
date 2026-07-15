@@ -12,7 +12,27 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
         Detalles de la Reunión
     </h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Fecha Programada</p>
+            <p class="text-sm font-bold text-gray-900 dark:text-white">
+                {{ $activity->scheduled_date ? $activity->scheduled_date->format('d/m/Y H:i') : 'Por definir' }}
+            </p>
+        </div>
+
+        @if(!empty($meta['modality']))
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Modalidad</p>
+            <p class="text-sm font-bold text-gray-900 dark:text-white">
+                @if($meta['modality'] === 'remote') 💻 En remoto / Online
+                @elseif($meta['modality'] === 'presential') 🏢 Presencial
+                @elseif($meta['modality'] === 'hybrid') 🤝 Híbrido
+                @else {{ ucfirst($meta['modality']) }}
+                @endif
+            </p>
+        </div>
+        @endif
+
         @if(!empty($location))
         <div>
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Ubicación / Enlace</p>
@@ -26,6 +46,7 @@
             @endif
         </div>
         @endif
+
         @if(!empty($duration))
         <div>
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Duración</p>
@@ -51,6 +72,23 @@
         @php $attendees = !empty($meta['attendees']) ? $meta['attendees'] : $activity->assignedTo->pluck('name')->toArray(); @endphp
         @foreach((array)$attendees as $attendee)
         <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/30">{{ $attendee }}</span>
+        @endforeach
+    </div>
+</div>
+@endif
+
+{{-- Invitados Externos --}}
+@if(!empty($meta['guests']))
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm mt-4 mb-4">
+    <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Invitados Externos</h3>
+    <div class="flex gap-2 flex-wrap">
+        @foreach($meta['guests'] as $guest)
+            <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800/30" title="{{ $guest['email'] ?? '' }}">
+                {{ $guest['name'] ?? 'Invitado' }}
+                @if(!empty($guest['email']))
+                    <span class="text-[9px] font-normal opacity-75 ml-1">({{ $guest['email'] }})</span>
+                @endif
+            </span>
         @endforeach
     </div>
 </div>

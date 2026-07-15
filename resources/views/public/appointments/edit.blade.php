@@ -193,8 +193,8 @@
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('DNI / NIE / Pasaporte') }}</label>
-                    <input type="text" id="input-dni" name="dni" value="{{ old('dni', $appointment->visitor->dni) }}" autocomplete="off"
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('DNI / NIE / Pasaporte') }} *</label>
+                    <input type="text" id="input-dni" name="dni" value="{{ old('dni', $appointment->visitor->dni) }}" required autocomplete="off"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="12345678A, X1234567A...">
                     <p id="hint-dni" class="mt-1 text-[10px] font-semibold hidden"></p>

@@ -100,6 +100,8 @@ class ActivityService
                 $this->syncDistributedInstances($activity, $assignedUserIds, $data);
             }
 
+            $this->notifyGuests($activity);
+
             return $activity->fresh();
         });
     }
@@ -198,6 +200,8 @@ class ActivityService
                     })
                     ->each(fn($c) => $c->delete());
             }
+
+            $this->notifyGuests($activity);
 
             return $activity->fresh();
         });
@@ -680,6 +684,22 @@ class ActivityService
         // metadata base si viene del formulario
         $base = $data['metadata'] ?? [];
 
+        // Inicialización de primer capítulo para documentos
+        if (!$isUpdate && $type === 'document' && !empty($base['chapter_title'])) {
+            $base['chapters'] = [
+                [
+                    'id' => uniqid('chap_'),
+                    'title' => $base['chapter_title'],
+                    'content' => $base['chapter_content'] ?? '',
+                    'author_id' => auth()->id(),
+                    'author_name' => auth()->user()?->name ?? 'Autor',
+                    'created_at' => now()->format('Y-m-d H:i:s'),
+                    'updated_at' => now()->format('Y-m-d H:i:s'),
+                ]
+            ];
+            unset($base['chapter_title'], $base['chapter_content']);
+        }
+
         $loader = app(\App\Services\TemplateLoader::class);
         $template = $loader->getTemplate($type);
 
@@ -688,7 +708,9 @@ class ActivityService
             foreach ($template['properties'] as $key => $rules) {
                 if (array_key_exists($key, $data)) {
                     $specifics[$key] = $data[$key];
-                } elseif (!$isUpdate && isset($rules['default'])) {
+                } elseif (!$isUpdate && isset($rules['default']) && !array_key_exists($key, $base)) {
+                    // Solo aplicar default si la clave no fue ya construida en $base
+                    // (evita que defaults como chapters:[] machaquen capítulos ya inicializados)
                     $specifics[$key] = $rules['default'];
                 }
             }
@@ -750,4 +772,98 @@ class ActivityService
             'notes'       => $notes,
         ]);
     }
+
+    protected function notifyGuests(Activity $activity): void
+    {
+        $metadata = $activity->metadata ?? [];
+        $modified = false;
+
+        // ── Firmantes EXTERNOS (guests) ──────────────────────────────────────
+        if (!empty($metadata['guests'])) {
+            $guests        = $metadata['guests'];
+            $customMessage = $metadata['invitation_message'] ?? null;
+
+            foreach ($guests as &$guest) {
+                if (!empty($guest['notify']) && filter_var($guest['email'] ?? '', FILTER_VALIDATE_EMAIL)) {
+                    try {
+                        if ($activity->type === 'decision') {
+                            // Pre-generamos la URL con el host correcto ANTES de encolar el mail.
+                            // El worker de cola no tiene contexto HTTP y usaría APP_URL (localhost en dev).
+                            $signatureUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                                'agreements.signature.show',
+                                now()->addDays(30),
+                                [
+                                    'team'     => $activity->team_id,
+                                    'activity' => $activity->id,
+                                    'email'    => $guest['email'],
+                                ]
+                            );
+                            \Illuminate\Support\Facades\Mail::to($guest['email'])->send(
+                                new \App\Mail\AgreementSignatureMail($activity, $guest['name'] ?? 'Firmante', auth()->user(), $customMessage, $guest['email'], $signatureUrl)
+                            );
+                        } else {
+                            \Illuminate\Support\Facades\Mail::to($guest['email'])->send(
+                                new \App\Mail\MeetingGuestInvitationMail($activity, $guest['name'] ?? 'Invitado', auth()->user(), $customMessage)
+                            );
+                        }
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Failed to send guest invitation mail to {$guest['email']}: " . $e->getMessage());
+                    }
+
+                    $guest['notify'] = 0;
+                    $modified = true;
+                }
+            }
+
+            $metadata['guests'] = $guests;
+        }
+
+        // ── Firmantes INTERNOS (miembros asignados) — solo en decision ───────
+        if ($activity->type === 'decision') {
+            // Forzamos la recarga para ignorar caché y traemos también los grupos
+            $activity->load(['assignedTo', 'assignedGroups.users']);
+            
+            $assignedUsers = $activity->assignedTo;
+            foreach ($activity->assignedGroups as $group) {
+                $assignedUsers = $assignedUsers->merge($group->users);
+            }
+            $assignedUsers = $assignedUsers->unique('id');
+
+            if ($assignedUsers->isNotEmpty()) {
+                $memberSignatures = $metadata['member_signatures'] ?? [];
+                $existingUserIds  = collect($memberSignatures)->pluck('user_id')->map(fn($id) => (int)$id)->toArray();
+
+                foreach ($assignedUsers as $user) {
+                    if (in_array($user->id, $existingUserIds)) {
+                        // Ya está registrado (puede tener ya su firma); no duplicar
+                        continue;
+                    }
+
+                    // Añadir al registro de firmas internas
+                    $memberSignatures[] = [
+                        'user_id'         => $user->id,
+                        'name'            => $user->name,
+                        'signed_at'       => null,
+                        'notified_at'     => now()->format('Y-m-d H:i:s'),
+                    ];
+
+                    // Notificación interna (push / email / telegram según preferencias del usuario)
+                    try {
+                        $user->notify(new \App\Notifications\SignatureRequestedNotification($activity, auth()->user()));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Failed to send SignatureRequestedNotification to user {$user->id}: " . $e->getMessage());
+                    }
+
+                    $modified = true;
+                }
+
+                $metadata['member_signatures'] = $memberSignatures;
+            }
+        }
+
+        if ($modified) {
+            $activity->updateQuietly(['metadata' => $metadata]);
+        }
+    }
 }
+

@@ -528,7 +528,7 @@ class Activity extends Model
             'document' => __('Documento'),
             'note'     => __('Nota'),
             'link'     => __('Enlace'),
-            'decision' => __('Decisión'),
+            'decision' => __('Acuerdo'),
             'meeting'  => __('Reunión'),
             'reminder' => __('Recordatorio'),
             default    => __('Actividad'),

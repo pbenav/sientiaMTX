@@ -273,6 +273,13 @@
                                 </a>
                             </th>
                             <th class="px-4 py-4 whitespace-nowrap hidden md:table-cell">
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('sort') == 'created_at' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
+                                    class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                    Creada
+                                    <x-sort-icon column="created_at" />
+                                </a>
+                            </th>
+                            <th class="px-4 py-4 whitespace-nowrap hidden md:table-cell">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'due_date', 'direction' => request('sort') == 'due_date' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
                                     class="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                     {{ __('tasks.due_date') }}
@@ -536,6 +543,10 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap hidden md:table-cell">
                                     <span
+                                        class="text-xs text-gray-500">{{ $activity->created_at ? $activity->created_at->format('d/m/y') : '—' }}</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <span
                                         class="text-xs text-gray-500">{{ $activity->due_date ? $activity->due_date->format('d/m/y') : '—' }}</span>
                                 </td>
                                 <td class="px-4 py-4 text-right whitespace-nowrap min-w-[124px]">
@@ -685,6 +696,9 @@
                                             <span
                                                 class="text-[9px] font-bold text-gray-400 dark:text-gray-500 w-5">{{ $subtask->progress }}%</span>
                                         </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap hidden md:table-cell">
+                                        {{ $subtask->created_at ? $subtask->created_at->format('d/m/y') : '—' }}
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap hidden md:table-cell">
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
@@ -1043,7 +1057,12 @@
 
                 // Document event listener for data-href rows if any left (though we used inline onclick)
                 document.addEventListener('DOMContentLoaded', function() {
-                    // inline onclick already handles row clicks
+                    updateSelectedCount();
+                });
+
+                // Manejar la restauración de checkboxes cuando el navegador usa bfcache o navega hacia atrás
+                window.addEventListener('pageshow', function(event) {
+                    updateSelectedCount();
                 });
 
                 async function toggleHideCompleted() {

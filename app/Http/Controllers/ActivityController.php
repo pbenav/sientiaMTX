@@ -89,7 +89,7 @@ class ActivityController extends Controller
             'document' => 'Doc',
             'note'     => 'Nota',
             'link'     => 'Enlace',
-            'decision' => 'Decisión',
+            'decision' => 'Acuerdo',
             'meeting'  => 'Reunión',
             'reminder' => 'Aviso',
         ];
@@ -287,6 +287,21 @@ class ActivityController extends Controller
             $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
             if (!$team->hasAvailableQuota($totalUploadSize)) {
                 return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.']);
+            }
+        }
+
+        // Protección de integridad: si el acuerdo ya tiene firmas,
+        // ignorar cualquier intento de modificar los términos del documento.
+        if ($activity->type === 'decision') {
+            $meta = $activity->metadata ?? [];
+            $hasMemberSig = collect($meta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
+            $hasGuestSig  = collect($meta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));
+
+            if ($hasMemberSig || $hasGuestSig) {
+                // Descartar el campo terms del payload para que no se sobreescriba
+                if (isset($validated['metadata']['terms'])) {
+                    unset($validated['metadata']['terms']);
+                }
             }
         }
 

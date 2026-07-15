@@ -113,11 +113,18 @@ class AuthenticatedSessionController extends Controller
                 ->count();
 
             if ($activeSessionsCount === 0) {
-                // Al cerrar la última o única sesión activa, detenemos todos los contadores en MTX y en CTH
-                $user->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
+                $activeWorkday = $user->activeWorkdayLog();
 
-                if ($user->sync_with_cth) {
-                    \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'stop');
+                if (!$user->sync_with_cth) {
+                    // Si no usa CTH, cerramos localmente por seguridad al cerrar la única sesión
+                    $user->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
+                } else {
+                    // Si usa CTH, intentamos cerrar en remoto. La sincronización posterior
+                    // (en login o polling) se encargará de cerrar localmente si CTH confirmó el cierre,
+                    // evitando discrepancias si CTH rechaza el cierre.
+                    if ($activeWorkday) {
+                        \App\Jobs\SyncWorkdayWithCth::dispatch($user, 'stop');
+                    }
                 }
             }
         }

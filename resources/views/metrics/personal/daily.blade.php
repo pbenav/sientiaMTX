@@ -180,7 +180,7 @@
                                 'document' => 'Documentos',
                                 'note' => 'Notas',
                                 'link' => 'Enlaces',
-                                'decision' => 'Decisiones',
+                                'decision' => 'Acuerdos',
                                 'reminder' => 'Recordatorios',
                                 default => ucfirst($type),
                             };

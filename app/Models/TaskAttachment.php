@@ -76,11 +76,19 @@ class TaskAttachment extends Model
      */
     public function getEmbedToken(): string
     {
-        if (empty($this->embed_token)) {
-            $this->embed_token = bin2hex(random_bytes(32));
+        if (empty($this->attributes['embed_token'])) {
+            $this->attributes['embed_token'] = bin2hex(random_bytes(32));
             $this->saveQuietly();
         }
-        return $this->embed_token;
+        return $this->attributes['embed_token'];
+    }
+
+    /**
+     * Accessor para el atributo embed_token.
+     */
+    public function getEmbedTokenAttribute(): string
+    {
+        return $this->getEmbedToken();
     }
 
     /**

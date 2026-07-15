@@ -33,7 +33,13 @@ class TaskEventNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = ['database'];
+        if (method_exists($notifiable, 'wantsNotification') && $notifiable->wantsNotification('mail')) {
+            $channels[] = 'mail';
+        } elseif (!method_exists($notifiable, 'wantsNotification')) {
+            $channels[] = 'mail'; // Fallback
+        }
+        return $channels;
     }
 
     /**

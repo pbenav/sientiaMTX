@@ -45,8 +45,38 @@ class NotificationController extends Controller
         
         Log::emergency('Notification updated in DB', ['id' => $id]);
 
+        // PRIORIDAD 0: Comprobación de Actividad (Activity)
+        if (isset($notification->data['activity_id']) && isset($notification->data['team_id'])) {
+            $activity = \App\Models\Activity::find($notification->data['activity_id']);
+            
+            if (!$activity) {
+                Log::emergency('Activity NOT found, redirecting back with warning');
+                return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'actividad']));
+            }
+
+            if (Auth::user()->cannot('view', $activity)) {
+                Log::warning("Acceso preventivo denegado a actividad #{$activity->id} vía notificación para usuario #" . Auth::id());
+                return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+            }
+
+            Log::emergency('Activity found and authorized, redirecting to activity show');
+            return redirect()->route('teams.activities.show', [$notification->data['team_id'], $notification->data['activity_id']]);
+        }
+
         // PRIORIDAD 1: Comprobación de Tarea (Task)
         if (isset($notification->data['task_id']) && isset($notification->data['team_id'])) {
+            // Fix transicional para notificaciones previas que enviaron task_id en lugar de activity_id
+            if (($notification->data['type'] ?? '') === 'signature_requested') {
+                $activity = \App\Models\Activity::find($notification->data['task_id']);
+                if (!$activity) {
+                    return redirect()->back()->with('warning', __('notifications.resource_deleted', ['resource' => 'actividad']));
+                }
+                if (Auth::user()->cannot('view', $activity)) {
+                    return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+                }
+                return redirect()->route('teams.activities.show', [$notification->data['team_id'], $notification->data['task_id']]);
+            }
+
             $task = Task::find($notification->data['task_id']);
             
             if (!$task) {

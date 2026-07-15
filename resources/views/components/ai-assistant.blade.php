@@ -521,10 +521,12 @@
                         this.messages = data.messages.map(msg => {
                             if (msg.role === 'ai') {
                                 const msgLower = (msg.content || '').toLowerCase();
-                                msg.is_error = msgLower.includes('lo siento') || 
+                                const hasPayload = msg.content && msg.content.includes('[PAYLOAD]');
+                                msg.is_error = !hasPayload && (
+                                               msgLower.includes('lo siento') || 
                                                msgLower.includes('error') || 
                                                msgLower.includes('no está disponible') || 
-                                               msgLower.includes('⚠️');
+                                               msgLower.includes('⚠️'));
                             }
                             return msg;
                         });
@@ -639,6 +641,8 @@
                     this.input = `Ayúdame a mejorar el breve resumen (descripción) de esta tarea. Hazlo más claro y directo.`;
                 } else if (detail.section === 'observaciones') {
                     this.input = `Voy a desarrollar el meollo de esta tarea (las observaciones). Propón un esquema, lista de pasos o mejora lo que ya hay escrito.`;
+                } else if (detail.section && detail.section.startsWith('chapter-')) {
+                    this.input = `Voy a desarrollar un capítulo del documento. Analiza el contexto de la tarea y ayúdame a estructurar, redactar o mejorar este capítulo.`;
                 } else {
                     this.input = `Evalúa esta tarea en general. ¿Qué puedo mejorar en su definición o alcance?`;
                 }
@@ -1162,10 +1166,12 @@
                     
                     // Determine if the returned message is actually an error message
                     const msgLower = (data.message || '').toLowerCase();
-                    const isError = msgLower.includes('lo siento') || 
+                    const hasPayload = data.message && data.message.includes('[PAYLOAD]');
+                    const isError = !hasPayload && (
+                                    msgLower.includes('lo siento') || 
                                     msgLower.includes('error') || 
                                     msgLower.includes('no está disponible') || 
-                                    msgLower.includes('⚠️');
+                                    msgLower.includes('⚠️'));
 
                     // CLEAR INPUT ONLY ON SUCCESS
                     if (!isError) {
@@ -1785,7 +1791,7 @@
                     if (taskMatch) this.taskId = taskMatch[1];
                 }
 
-                const isTaskSpecific = ['description', 'observations', 'private_note', 'observations_append'].includes(target);
+                const isTaskSpecific = ['description', 'observations', 'private_note', 'observations_append', 'chapter'].includes(target);
                 console.log(`[Ax.ia] Iniciando transferencia: ${target} para tarea ${this.taskId} en equipo ${this.teamId}`);
 
                 if ((target === 'task' || target === 'quick-note' || !this.taskId) && !isTaskSpecific) {
@@ -1837,7 +1843,7 @@
                             Swal.fire({ title: '¡Actividad Creada!', text: 'Redirigiendo...', icon: 'success', timer: 1500, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => { window.location.href = editUrl; });
                         } else {
                             Swal.fire({ title: '¡Hecho!', text: data.message, icon: 'success', timer: 2000, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => {
-                                if (['description', 'observations', 'private_note', 'observations_append'].includes(target)) window.location.reload();
+                                if (['description', 'observations', 'private_note', 'observations_append', 'chapter'].includes(target)) window.location.reload();
                             });
                         }
                     } else {
@@ -2032,6 +2038,12 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
             <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Nota Privada</div>
+            </button>
+            <button type="button" onclick="window._aiSelect2('chapter')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-orange-100 dark:border-orange-900/30 bg-white dark:bg-slate-900 hover:border-orange-600 transition-all text-left group">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            </div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Capítulo (Doc)</div>
             </button>
             </div>
             `,

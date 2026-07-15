@@ -227,13 +227,23 @@ class GeminiService implements AiAssistantInterface
             if ($this->taskContext->visibility === 'public' || $canViewPrivate) {
                 $contextInfo .= "- Descripción: " . ($this->taskContext->description ?: 'N/A') . "\n";
                 $contextInfo .= "- Observaciones: " . ($this->taskContext->observations ?: 'N/A') . "\n";
+                
+                if (isset($this->taskContext->metadata['chapters']) && is_array($this->taskContext->metadata['chapters'])) {
+                    $contextInfo .= "- Capítulos del Documento:\n";
+                    foreach ($this->taskContext->metadata['chapters'] as $idx => $chap) {
+                        $cTitle = $chap['title'] ?? 'Sin título';
+                        $cContent = mb_substr($chap['content'] ?? '', 0, 1500); // truncate if too long
+                        $contextInfo .= "  Capítulo " . ($idx+1) . " - {$cTitle}:\n  {$cContent}\n";
+                    }
+                }
             } else {
                 $contextInfo .= "- Descripción: [CONTENIDO PRIVADO - NO DISPONIBLE]\n";
                 $contextInfo .= "- Nota: Tienes acceso a la discusión pero el contenido de la tarea es privado para su creador/asignados.\n";
             }
             
             $contextInfo .= "- Equipo: " . ($this->taskContext->team->name ?? 'N/A') . "\n";
-            $contextInfo .= "- Estado: " . ($this->taskContext->status ?? 'pending') . "\n";
+            $statusVal = $this->taskContext->status_value ?? (is_array($this->taskContext->status) ? ($this->taskContext->status['value'] ?? 'pending') : ($this->taskContext->status ?? 'pending'));
+            $contextInfo .= "- Estado: " . $statusVal . "\n";
             $contextInfo .= "- Fecha prevista: " . ($this->taskContext->scheduled_date?->format('Y-m-d') ?? 'N/A') . "\n";
         }
 
@@ -261,7 +271,8 @@ class GeminiService implements AiAssistantInterface
         if (!empty($this->tasksContext)) {
             $contextInfo .= "\nLISTADO DE TAREAS ACTIVAS/PENDIENTES:\n";
             foreach ($this->tasksContext as $t) {
-                $contextInfo .= "- [ID: {$t->id}] \"{$t->title}\" (Carga: {$t->cognitive_load}/5, Estado: {$t->status})\n";
+                $tStatus = $t->status_value ?? (is_array($t->status) ? ($t->status['value'] ?? 'pending') : ($t->status ?? 'pending'));
+                $contextInfo .= "- [ID: {$t->id}] \"{$t->title}\" (Carga: {$t->cognitive_load}/5, Estado: {$tStatus})\n";
             }
             $contextInfo .= "NOTA: El impacto en energía depende de la Carga Cognitiva. A mayor carga, más desgaste al trabajar, pero más recompensa al completar.\n";
         }

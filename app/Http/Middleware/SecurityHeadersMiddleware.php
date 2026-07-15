@@ -39,8 +39,8 @@ class SecurityHeadersMiddleware
                    "img-src 'self' data: blob: https://* http://*; " .
                    "font-src 'self' data: https://*; " .
                    "media-src 'self' data: blob: https://* http://*; " .
-                   "connect-src 'self' data: https://* http://* ws://* wss://*; " .
-                   "frame-src 'self' https://*;";
+                   "connect-src 'self' data: https://* http://* ws://* wss://* ws://127.0.0.1:* wss://127.0.0.1:*; " .
+                   "frame-src 'self' https://* afirma:;";
             $response->headers->set('Content-Security-Policy', $csp);
         }
 

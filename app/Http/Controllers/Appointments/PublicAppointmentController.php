@@ -185,7 +185,7 @@ class PublicAppointmentController extends Controller
         $validationRules = [
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'required|string|max:150',
-            'dni'           => ['nullable', 'string', 'max:20', new DniNie],
+            'dni'           => ['required', 'string', 'max:20', new DniNie],
             'email'         => 'nullable|email:rfc,dns|max:255',
             'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
             'city'          => 'nullable|string|max:100',
@@ -268,16 +268,15 @@ class PublicAppointmentController extends Controller
                 $visitor = $visitorQuery->lockForUpdate()->first();
 
                 if ($visitor) {
-                    // Restricción: No puede tener más de una cita el mismo día para este servicio específico
-                    $existingAppointment = Appointment::where('visitor_id', $visitor->id)
+                    // Restricción: No puede tener más de dos citas el mismo día para este servicio específico
+                    $existingAppointmentsCount = Appointment::where('visitor_id', $visitor->id)
                         ->where('appointment_date', $date->toDateString())
                         ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
                         ->where('service_id', $service->id)
-                        ->first();
+                        ->count();
 
-                    if ($existingAppointment) {
-                        return back()->withErrors(['appointment_date' => 'Ya tienes una cita programada para este servicio en la fecha indicada.'])
-                                     ->with('existing_appointment_localizador', $existingAppointment->localizador)
+                    if ($existingAppointmentsCount >= 2) {
+                        return back()->withErrors(['appointment_date' => 'Ya tienes el máximo de citas (2) programadas para este servicio en la fecha indicada.'])
                                      ->withInput();
                     }
 
@@ -643,7 +642,7 @@ class PublicAppointmentController extends Controller
         $validationRules = [
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'required|string|max:150',
-            'dni'           => ['nullable', 'string', 'max:20', new DniNie],
+            'dni'           => ['required', 'string', 'max:20', new DniNie],
             'email'         => 'nullable|email:rfc,dns|max:255',
             'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
             'city'          => 'nullable|string|max:100',
@@ -715,17 +714,16 @@ class PublicAppointmentController extends Controller
                     return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
                 }
 
-                // Restricción: No puede tener más de una cita el mismo día para este servicio específico (excluyendo la propia)
-                $existingOtherAppointment = Appointment::where('visitor_id', $appointment->visitor_id)
+                // Restricción: No puede tener más de dos citas el mismo día para este servicio específico (excluyendo la propia)
+                $existingOtherAppointmentsCount = Appointment::where('visitor_id', $appointment->visitor_id)
                     ->where('id', '!=', $appointment->id)
                     ->where('appointment_date', $newDate->toDateString())
                     ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
                     ->where('service_id', $service->id)
-                    ->first();
+                    ->count();
 
-                if ($existingOtherAppointment) {
-                    return back()->withErrors(['appointment_date' => 'Ya tienes otra cita programada para este servicio en la nueva fecha.'])
-                                 ->with('existing_appointment_localizador', $existingOtherAppointment->localizador)
+                if ($existingOtherAppointmentsCount >= 2) {
+                    return back()->withErrors(['appointment_date' => 'Ya tienes el máximo de citas (2) programadas para este servicio en la nueva fecha.'])
                                  ->withInput();
                 }
 
@@ -797,9 +795,20 @@ class PublicAppointmentController extends Controller
             'email' => 'required|email'
         ]);
 
-        // Por motivos estrictos de privacidad (RGPD) y prevención de enumeración de datos
-        // no debemos devolver información personal en base a un simple email.
-        // El autocompletado inseguro queda desactivado desde el servidor.
+        $visitor = \App\Models\AppointmentVisitor::where('email', $request->email)->first();
+
+        if ($visitor) {
+            return response()->json([
+                'found' => true,
+                'first_name' => $visitor->first_name,
+                'last_name' => $visitor->last_name,
+                // No devolver DNI para que el usuario lo escriba y así validarlo
+                'phone' => $visitor->phone,
+                'city' => $visitor->city,
+                'postal_code' => $visitor->postal_code,
+            ]);
+        }
+
         return response()->json(['found' => false]);
     }
 

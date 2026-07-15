@@ -1,6 +1,7 @@
 @props(['name', 'value' => '', 'id' => null, 'label' => null, 'rows' => 6, 'placeholder' => '', 'uploadUrl' => null, 'mentionsUrl' => null, 'required' => false])
 
 <div x-data="{ 
+    id: 'md-editor-' + Math.random().toString(36).substr(2, 9),
     content: @js($value), 
     tab: 'write',
     uploading: false,
@@ -378,6 +379,14 @@
                     </div>
                 </div>
                 <div class="h-6 w-px bg-gray-200 dark:bg-gray-800"></div>
+                <button type="button" @click="if(typeof printSection === 'function') printSection('Vista Previa', id + '-preview'); else { const w = window.open('', '_blank'); w.document.write('<html><head><title>Imprimir</title></head><body style=\'font-family:sans-serif;padding:2rem;\'>' + preview + '</body></html>'); w.document.close(); w.print(); }"
+                    class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-orange-500 transition-colors" title="Imprimir contenido">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Imprimir
+                </button>
+                <div class="h-6 w-px bg-gray-200 dark:bg-gray-800"></div>
                 <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank" 
                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-violet-600 transition-colors">
                     Markdown
@@ -405,7 +414,7 @@
                     {{ $required ? 'required' : '' }}
                 ></textarea>
             </div>
-            <div x-show="tab === 'preview'" 
+            <div :id="id + '-preview'" x-show="tab === 'preview'" 
                 class="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed py-5 px-6 bg-gray-50/30 dark:bg-gray-950/20 resize-y overflow-y-auto max-h-[650px] min-h-[250px] custom-scrollbar"
                 x-html="preview"
                 x-cloak>

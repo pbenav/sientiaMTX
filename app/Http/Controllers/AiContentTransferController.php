@@ -22,6 +22,40 @@ class AiContentTransferController extends Controller
         
         $isActivity = $task instanceof \App\Models\Activity;
 
+        if ($request->target === 'chapter') {
+            $textToInject = $this->getBestTextFromPayload($payload, 'chapter');
+            
+            if ($isActivity && $task->type === 'document') {
+                $meta = $task->metadata ?? [];
+                $chapters = $meta['chapters'] ?? [];
+                $chapters[] = [
+                    'id' => uniqid('chap_'),
+                    'title' => 'Nuevo Capítulo (Ax.ia)',
+                    'content' => $textToInject,
+                    'author_id' => auth()->id(),
+                    'author_name' => auth()->user()->name,
+                    'created_at' => now()->toIso8601String(),
+                    'updated_at' => now()->toIso8601String(),
+                ];
+                $meta['chapters'] = $chapters;
+                
+                $oldMetadata = $task->metadata;
+                $task->update(['metadata' => $meta]);
+                
+                $history = $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'ai_transfer',
+                    'old_values' => ['metadata' => $oldMetadata],
+                    'new_values' => ['metadata' => $meta],
+                    'notes' => 'Nuevo capítulo generado por Ax.ia'
+                ]);
+                
+                return response()->json(['success' => true, 'message' => 'El nuevo capítulo ha sido inyectado con éxito en el documento.', 'history_id' => $history->id]);
+            }
+            
+            return response()->json(['success' => false, 'message' => 'Los capítulos solo pueden inyectarse en actividades de tipo documento.']);
+        }
+
         if ($request->target === 'description' || $request->target === 'observations' || $request->target === 'observations_append') {
             $column = ($request->target === 'description') ? 'description' : 'observations';
             $textToInject = $this->getBestTextFromPayload($payload, $column);

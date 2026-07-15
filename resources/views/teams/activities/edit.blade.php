@@ -25,15 +25,15 @@
     </x-slot>
 
     <div class="w-full sm:px-6 lg:px-8 py-6">
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all duration-300">
-            <form id="edit-activity-form" method="POST" action="{{ route('teams.activities.update', [$team, $activity]) }}" class="space-y-6" enctype="multipart/form-data">
+        <div class="flex flex-col transition-all duration-300">
+            <form id="edit-activity-form" method="POST" action="{{ route('teams.activities.update', [$team, $activity]) }}" class="contents" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="type" value="{{ $activity->type }}">
 
                 
     <!-- BLOCK: Título de la Actividad -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-1">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
         </div>
@@ -62,7 +62,7 @@
     </div>
 
     <!-- BLOCK: Descripción -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-2">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
         </div>
@@ -93,7 +93,7 @@
     </div>
 
     <!-- BLOCK: Información Específica -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-4">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
         </div>
@@ -131,11 +131,61 @@
                             @enderror
                         </div>
                     @elseif ($activity->type === 'decision')
+                        @php
+                            $decisionMeta = $activity->metadata ?? [];
+                            $hasMemberSig = collect($decisionMeta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
+                            $hasGuestSig  = collect($decisionMeta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));
+                            $isTermsLocked = $hasMemberSig || $hasGuestSig;
+                        @endphp
                         <!-- DECISIÓN ESPECÍFICO -->
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                                Decisión registrada en el historial. Modifica la descripción para documentar cualquier cambio en el acuerdo.
-                            </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                                    Define los detalles del acuerdo. Más adelante, los participantes (internos o externos) podrán firmar este documento usando Autofirma.
+                                </p>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                @if ($isTermsLocked)
+                                    {{-- Documento firmado: mostrar como solo lectura --}}
+                                    <div class="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <p class="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                                            Este documento ya ha sido firmado y no puede modificarse. El contenido de los Términos del Acuerdo es de solo lectura.
+                                        </p>
+                                    </div>
+                                    {{-- Campo oculto para preservar el valor actual sin modificaciones --}}
+                                    <input type="hidden" name="metadata[terms]" value="{{ data_get($activity->metadata, 'terms', '') }}">
+                                    <div class="w-full bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed overflow-y-auto resize-y custom-scrollbar" style="min-height: 200px; max-height: 420px;">
+                                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Términos del Acuerdo (Solo Lectura)</p>
+                                        {!! str(data_get($activity->metadata, 'terms', ''))->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                    </div>
+                                @else
+                                    <x-markdown-editor 
+                                        name="metadata[terms]" 
+                                        id="metadata_terms"
+                                        :value="old('metadata.terms', data_get($activity->metadata, 'terms', ''))"
+                                        label="Términos del Acuerdo (Documento a Firmar)"
+                                        rows="8"
+                                        :upload-url="route('teams.forum.upload_image', $team)"
+                                        :mentions-url="route('teams.mentions', $team)"
+                                    />
+                                    <p class="text-[10px] text-gray-500 mt-1 mb-4 leading-tight">Este contenido será el que se exporte al documento PDF para su posterior firma.</p>
+                                @endif
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
+                                <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', data_get($activity->metadata, 'agreement_date', now()->format('Y-m-d'))) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                            </div>
+                            
+                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Partes Externas Involucradas (Firmantes)</label>
+                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que deberán ratificar/firmar este acuerdo. Se les enviará un correo seguro con el documento.</p>
+                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
+                            </div>
                         </div>
                     @elseif ($activity->type === 'meeting')
                         <!-- REUNIÓN ESPECÍFICO -->
@@ -209,6 +259,11 @@
                                 </div>
                                 <input type="text" name="location" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
+                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos</label>
+                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Personas ajenas al equipo que asistirán a la reunión. (No recibirán notificaciones automáticamente por ahora).</p>
+                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
+                            </div>
                         </div>
                     @elseif ($activity->type === 'reminder')
                         <!-- RECORDATORIO ESPECÍFICO -->
@@ -241,7 +296,7 @@
     </div>
 
     <!-- BLOCK: Observaciones -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-5">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
         </div>
@@ -272,7 +327,7 @@
     </div>
 
     <!-- BLOCK: Miembros Asignados -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-6">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
         </div>
@@ -375,7 +430,7 @@
     </div>
 
     <!-- BLOCK: Nivel de Visibilidad -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-7">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
         </div>
@@ -437,7 +492,7 @@
     </div>
 
     <!-- BLOCK: Prioridad, Urgencia y Estado -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-8">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         </div>
@@ -525,7 +580,7 @@
     </div>
 
     <!-- BLOCK: Fechas y Bloqueo -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-9">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         </div>
@@ -575,7 +630,7 @@
     </div>
 
     <!-- BLOCK: Autoprogramación -->
-    <div id="recurrence-block" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div id="recurrence-block" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-10">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
         </div>
@@ -778,7 +833,7 @@
     </div>
 
     <!-- BLOCK: Contexto y Vinculaciones -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-11">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
         </div>
@@ -873,7 +928,7 @@
     </div>
 
     <!-- BLOCK: Gamificación, Impacto y Bienestar -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         </div>
@@ -968,7 +1023,7 @@
     </div>
 
     <!-- BLOCK: Archivos Adjuntos -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-[13]">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
         </div>
@@ -1123,7 +1178,7 @@
         </div>
     </div>
 <!-- Botones de Acción -->
-                <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
                         class="text-sm text-gray-500 hover:text-gray-900 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
                     <button type="submit"
@@ -1132,26 +1187,25 @@
                     </button>
                 </div>
             </form>
-        </div>
+
+        <!-- OnlyOffice Forms (Moved out of main form to prevent HTML nesting validation issues) -->
+        <form id="edit-act-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
+            @csrf <input type="hidden" name="type" value="docx">
+        </form>
+        <form id="edit-act-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
+            @csrf <input type="hidden" name="type" value="xlsx">
+        </form>
+        <form id="edit-act-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
+            @csrf <input type="hidden" name="type" value="pptx">
+        </form>
 
         @if ($activity->type === 'document')
-        
-            <!-- OnlyOffice Forms (Moved out of main form to prevent HTML nesting validation issues) -->
-            <form id="edit-act-docx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
-                @csrf <input type="hidden" name="type" value="docx">
-            </form>
-            <form id="edit-act-xlsx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
-                @csrf <input type="hidden" name="type" value="xlsx">
-            </form>
-            <form id="edit-act-pptx-form" method="POST" action="{{ route('onlyoffice.activity.create', [$team, $activity]) }}" target="_blank" class="hidden">
-                @csrf <input type="hidden" name="type" value="pptx">
-            </form>
             @php
                 $chapters = $activity->metadata['chapters'] ?? [];
                 $docVersion = $activity->metadata['version'] ?? '1.0.0';
                 $canEditDocument = auth()->user()->is_admin || $team->isCoordinator(auth()->user()) || auth()->id() === $activity->created_by_id || auth()->id() === $activity->assigned_user_id || $activity->assignedTo->contains(auth()->id()) || auth()->user()->can('update', $activity);
             @endphp
-            <div id="chapters-section" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mt-6">
+            <div id="chapters-section" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mb-8 order-3">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-800/50 shadow-sm">
@@ -1209,6 +1263,16 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-1 shrink-0">
+                                        <button type="button" @click.stop="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="p-1.5 text-gray-400 hover:text-indigo-500 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Enviar a Ax.ia">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" onclick="printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $chapter['id'] }}')" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Imprimir / Previsualizar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            </svg>
+                                        </button>
                                         @if($canEditDocument)
                                             <button type="button" @click="editing = !editing" class="p-1.5 text-gray-400 hover:text-blue-500 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Editar capítulo">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1252,6 +1316,12 @@
                                         />
                                     </div>
                                     <div class="flex items-center justify-end gap-2">
+                                        <button type="button" @click.prevent="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5" title="Asistencia IA para este capítulo">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                            Consultar Ax.ia
+                                        </button>
                                         <button type="button" @click="editing = false" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition-all active:scale-95">
                                             Cancelar
                                         </button>
@@ -1266,6 +1336,7 @@
                 @endif
             </div>
         @endif
+        </div>
     </div>
 
     @push('scripts')
@@ -1713,7 +1784,7 @@
          @window:touchmove.passive="drag"
          @window:mouseup="stopDrag"
          @window:touchend="stopDrag"
-         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
          :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
         <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
@@ -1731,6 +1802,18 @@
         <span style="font-size:0.75rem;font-weight:900;color:#1f2937;max-width:200px;overflow:hidden;text-overflow:ellipsis;" class="dark:text-gray-300">
             {{ $activity->title }}
         </span>
+
+        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
+
+        <button type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+           style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;border:none;background:transparent;cursor:pointer;"
+           onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
+           onmouseout="this.style.color='#6b7280';this.style.background='transparent'">
+            <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+            </svg>
+            <span class="hidden sm:inline">Subir</span>
+        </button>
 
         <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 

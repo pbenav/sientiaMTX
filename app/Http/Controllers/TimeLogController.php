@@ -237,6 +237,12 @@ class TimeLogController extends Controller
                     // Si en CTH NO está trabajando pero en MTX sí, cerramos el contador local con la hora EXACTA de CTH
                     $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();
                     $activeWorkday->update(['end_at' => $endTime]);
+                    
+                    // Asegurar que cualquier tarea activa también se cierre
+                    $activeTask = $user->activeTaskLog();
+                    if ($activeTask) {
+                        $activeTask->update(['end_at' => $endTime]);
+                    }
                 } elseif ($cthStatus['is_working'] && $activeWorkday && !empty($cthStatus['start_time'])) {
                     // Y si en CTH le han cambiado la hora de inicio (start_at), ¡también sincronizamos la hora de inicio en MTX!
                     $cthStartTime = \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get());

@@ -7,6 +7,7 @@ use App\Models\TaskAttachment;
 use App\Models\Activity;
 use App\Models\ActivityAttachment;
 use App\Models\Team;
+use App\Models\Expediente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -202,6 +203,59 @@ class OnlyOfficeController extends Controller
         Log::info("[OnlyOffice] Nuevo documento '{$fileName}' creado y vinculado a Tarea ID {$task->id}.");
 
         // Redirect straight to the editor
+        return redirect()->route('onlyoffice.edit', $attachment);
+    }
+
+    /**
+     * Create a new empty document, save it as an Expediente attachment, and open the editor.
+     */
+    public function createExpedienteDocument(Request $request, Team $team, Expediente $expediente)
+    {
+        $this->authorize('update', $expediente);
+
+        $type = $request->input('type', 'docx'); // docx | xlsx | pptx
+        $allowedTypes = ['docx', 'xlsx', 'pptx'];
+        if (!in_array($type, $allowedTypes)) {
+            abort(422, 'Tipo de documento no soportado.');
+        }
+
+        $date    = now()->format('Y-m-d');
+        $slug    = Str::slug($expediente->title, '-');
+        $fileName = "{$date}-{$slug}.{$type}";
+
+        $directory = 'attachments/expedientes/' . $expediente->id;
+        $filePath  = $directory . '/' . $fileName;
+        Storage::disk('public')->makeDirectory($directory);
+
+        $emptyContent = match($type) {
+            'docx'  => $this->minimalDocx(),
+            'xlsx'  => $this->minimalXlsx(),
+            'pptx'  => $this->minimalPptx(),
+            default => '',
+        };
+
+        Storage::disk('public')->put($filePath, $emptyContent);
+
+        $mimeMap = [
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        ];
+
+        // Register it as a TaskAttachment (Expedientes use TaskAttachment polymorphically)
+        $attachment = TaskAttachment::create([
+            'attachable_type'  => Expediente::class,
+            'attachable_id'    => $expediente->id,
+            'user_id'          => auth()->id(),
+            'file_name'        => $fileName,
+            'file_path'        => $filePath,
+            'file_size'        => strlen($emptyContent),
+            'mime_type'        => $mimeMap[$type],
+            'storage_provider' => 'local',
+        ]);
+
+        Log::info("[OnlyOffice] Nuevo documento '{$fileName}' creado y vinculado a Expediente ID {$expediente->id}.");
+
         return redirect()->route('onlyoffice.edit', $attachment);
     }
 

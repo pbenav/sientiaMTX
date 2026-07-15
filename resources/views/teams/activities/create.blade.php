@@ -84,12 +84,30 @@
                 @if ($type === 'document')
                     <!-- DOCUMENTO ESPECÍFICO -->
                     <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
-                        <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                            Esta actividad creará un documento de texto colaborativo. Los miembros del equipo podrán editarlo simultáneamente usando OnlyOffice.
+                        <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
+                            Esta actividad creará un documento estructurado. Puedes empezar creando el primer capítulo aquí mismo. Los miembros del equipo también podrán editarlo simultáneamente usando el sistema colaborativo de OnlyOffice.
                         </p>
-                        <div class="mt-4">
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Inicial</label>
-                            <input type="text" name="metadata[version]" value="{{ old('metadata.version', '1.0.0') }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none">
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Título del Primer Capítulo</label>
+                                <input type="text" name="metadata[chapter_title]" value="{{ old('metadata.chapter_title') }}" placeholder="Ej. Introducción" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                            </div>
+                            <div>
+                                <x-markdown-editor 
+                                    name="metadata[chapter_content]" 
+                                    id="chapter_content"
+                                    :value="old('metadata.chapter_content')"
+                                    :label="__('Contenido del Primer Capítulo')"
+                                    rows="8"
+                                    :upload-url="route('teams.forum.upload_image', $team)"
+                                    :mentions-url="route('teams.mentions', $team)"
+                                />
+                            </div>
+                            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Inicial</label>
+                                <input type="text" name="metadata[version]" value="{{ old('metadata.version', '1.0.0') }}" class="w-1/3 min-w-[150px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all font-mono">
+                            </div>
                         </div>
                     </div>
                 @elseif ($type === 'link')
@@ -97,6 +115,145 @@
                     <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
                         <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Colección de Enlaces</label>
                         <x-link-crud :initialLinks="old('metadata.links', [])" />
+                    </div>
+                @elseif ($type === 'decision')
+                    <!-- DECISIÓN ESPECÍFICO -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                                    Define los detalles del acuerdo. Más adelante, los participantes (internos o externos) podrán firmar este documento usando Autofirma.
+                                </p>
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <x-markdown-editor 
+                                    name="metadata[terms]" 
+                                    id="metadata_terms"
+                                    :value="old('metadata.terms')"
+                                    label="Términos del Acuerdo (Documento a Firmar)"
+                                    rows="8"
+                                    :upload-url="route('teams.forum.upload_image', $team)"
+                                    :mentions-url="route('teams.mentions', $team)"
+                                />
+                                <p class="text-[10px] text-gray-500 mt-1 mb-4 leading-tight">Este contenido será el que se exporte al documento PDF para su posterior firma.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
+                                <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', now()->format('Y-m-d')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                            </div>
+                            
+                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Partes Externas Involucradas (Firmantes)</label>
+                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que deberán ratificar/firmar este acuerdo. Se les enviará un correo seguro con el documento.</p>
+                                <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($type === 'meeting')
+                    <!-- REUNIÓN ESPECÍFICO -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
+                                <select name="metadata[modality]" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                                    <option value="remote" {{ old('metadata.modality') == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
+                                    <option value="presential" {{ old('metadata.modality', 'presential') == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
+                                    <option value="hybrid" {{ old('metadata.modality') == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
+                                <input type="number" name="metadata[duration_minutes]" value="{{ old('metadata.duration_minutes', 60) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                            </div>
+
+                            <div class="md:col-span-2" x-data="{
+                                link: '{{ old('metadata.location') }}',
+                                generateJitsi() {
+                                    this.link = 'https://meet.jit.si/SientiaMTX-' + Math.random().toString(36).substring(2, 12);
+                                },
+                                async generateMeet() {
+                                    Swal.fire({
+                                        title: '🌐 Creando sala Meet...',
+                                        text: 'Conectando con Google Meet',
+                                        allowOutsideClick: false,
+                                        showConfirmButton: false,
+                                        didOpen: () => Swal.showLoading(),
+                                    });
+
+                                    try {
+                                        let response = await fetch('{{ route('meet.generate') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                                'Accept': 'application/json',
+                                            },
+                                            body: JSON.stringify({ team_id: {{ $team->id ?? 'null' }} })
+                                        });
+                                        let data = await response.json();
+                                        if (data.success && data.meet_url) {
+                                            this.link = data.meet_url;
+                                            Swal.close();
+                                        } else {
+                                            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo iniciar la llamada.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                                        }
+                                    } catch (err) {
+                                        Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    }
+                                }
+                            }">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">Lugar / Enlace Videollamada</label>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="generateJitsi()" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/50">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+                                            Generar Jitsi
+                                        </button>
+                                        <button type="button" @click="generateMeet()" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-blue-100 dark:border-blue-800/50">
+                                            <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
+                                                <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
+                                                <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
+                                                <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
+                                            </svg>
+                                            Generar Meet
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
+                            </div>
+                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos</label>
+                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Personas ajenas al equipo que asistirán a la reunión. (No recibirán notificaciones automáticamente por ahora).</p>
+                                <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($type === 'reminder')
+                    <!-- RECORDATORIO ESPECÍFICO -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
+                                @php $channels = old('metadata.channels', ['email']); @endphp
+                                <div class="flex flex-wrap gap-4 mt-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Correo Electrónico</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endif
 
@@ -757,6 +914,13 @@
                                             {{ __('Google Drive') }}
                                         </button>
                                     @endif
+
+                                    <button type="button" onclick="Swal.fire({icon: 'info', title: 'Guarda primero', text: 'Para crear documentos con OnlyOffice, primero debes crear y guardar la actividad. Una vez guardada, podrás crear documentos desde la pestaña de edición o vista.'})" class="flex items-center gap-1.5 text-xs bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20 hover:bg-teal-600 hover:text-white hover:border-teal-600 dark:hover:bg-teal-500 dark:hover:text-white dark:hover:border-teal-500 px-4 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        {{ __('Crear en OnlyOffice') }}
+                                    </button>
                                     <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
@@ -1320,11 +1484,11 @@
      @window:touchmove.passive="drag"
      @window:mouseup="stopDrag"
      @window:touchend="stopDrag"
-     class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+     class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
      :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
     {{-- Volver --}}
-    <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
+    <a href="{{ $backUrl ?? route('teams.activities.index', $team) }}"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
        onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
        onmouseout="this.style.color='#6b7280';this.style.background='transparent'">
