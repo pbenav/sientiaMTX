@@ -115,6 +115,12 @@
     @endif
 
 
+    <div style="page-break-before: always; padding-top: 20px;">
+        <div class="section-title" style="margin-top: 0;">Panel de Firmas Electrónicas</div>
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 15px;">
+            A continuación se muestran las rúbricas y constancias criptográficas de los intervinientes de este acuerdo. El documento original digital contiene las firmas PAdES válidas a todos los efectos legales.
+        </p>
+    </div>
 
     <div class="footer">
         Documento generado automáticamente por Sientia MTX &nbsp;·&nbsp; {{ now()->format('d/m/Y H:i') }} &nbsp;·&nbsp; Ref: {{ strtoupper($activity->uuid ?? $activity->id) }}

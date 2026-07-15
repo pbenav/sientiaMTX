@@ -197,25 +197,32 @@
                 return;
             }
 
-            // Calculamos la altura para que las firmas no se solapen.
-            // La primera firma estará en Y=50, la segunda en Y=130, etc.
-            const yStart = 50 + (EXISTING_SIGNATURES * 80);
-            const yEnd = yStart + 70;
+            // Calculamos la posición en formato grid (2 columnas) en la nueva página
+            const rowIndex = Math.floor(EXISTING_SIGNATURES / 2);
+            const colIndex = EXISTING_SIGNATURES % 2;
+
+            // Coordenadas X: Columna izquierda (50 a 280), Columna derecha (310 a 540)
+            const startX = colIndex === 0 ? 50 : 310;
+            const endX = startX + 230;
+
+            // Coordenadas Y: Empezamos en la parte superior (700) y bajamos 90 puntos por fila
+            const yEnd = 700 - (rowIndex * 95);
+            const yStart = yEnd - 80;
 
             const extraParams = "signatureFormat=PADES-BES\n" +
                                 "signaturePage=-1\n" +
-                                "signaturePositionOnPageLowerLeftX=50\n" +
+                                "signaturePositionOnPageLowerLeftX=" + startX + "\n" +
                                 "signaturePositionOnPageLowerLeftY=" + yStart + "\n" +
-                                "signaturePositionOnPageUpperRightX=500\n" +
+                                "signaturePositionOnPageUpperRightX=" + endX + "\n" +
                                 "signaturePositionOnPageUpperRightY=" + yEnd + "\n" +
                                 "layer2FontFamily=1\n" +
-                                "layer2FontSize=9\n" +
-                                "layer2Text=DOCUMENTO FIRMADO ELECTRÓNICAMENTE\\n" +
-                                "-------------------------------------------------------------------------------------------------------\\n" +
+                                "layer2FontSize=8\n" +
+                                "layer2Text=FIRMA ELECTRÓNICA RECONOCIDA\\n" +
+                                "-----------------------------------------------------------\\n" +
                                 "FIRMADO POR: $$SUBJECTCN$$\\n" +
-                                "FECHA DE FIRMA: $$SIGNDATE=dd/MM/yyyy$$ a las $$SIGNDATE=HH:mm$$\\n" +
-                                "-------------------------------------------------------------------------------------------------------\\n" +
-                                "El documento ha sido firmado mediante certificado electrónico reconocido y es válido a todos los efectos.\n";
+                                "FECHA: $$SIGNDATE=dd/MM/yyyy$$ a las $$SIGNDATE=HH:mm$$\\n" +
+                                "-----------------------------------------------------------\\n" +
+                                "Sello de validez PAdES verificado.\n";
 
             AutoScript.sign(
                 pdfBase64,                  // Documento en Base64
