@@ -50,14 +50,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="dni">DNI/NIE</label>
-                            <input type="text" id="dni" name="dni" value="{{ old('dni', $visitor->dni) }}"
-                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                            <input type="text" id="dni" name="dni" value="{{ old('dni', $visitor->dni) }}" oninput="this.value = this.value.toUpperCase()"
+                                   class="w-full uppercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all">
                             @error('dni') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="email">Correo Electrónico *</label>
-                            <input type="email" id="email" name="email" value="{{ old('email', $visitor->email) }}" required
-                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                            <input type="email" id="email" name="email" value="{{ old('email', $visitor->email) }}" required oninput="this.value = this.value.toLowerCase()"
+                                   class="w-full lowercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all">
                             @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
